@@ -149,7 +149,15 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function getBatchRoot(InterchainEntry memory entry, bytes32[] memory proof) external pure returns (bytes32) {
-        // TODO: implement
+        // In "no batching" mode: entry index is 0, proof is empty
+        if (entry.entryIndex != 0) {
+            revert InterchainDB__IncorrectEntryIndex(entry.entryIndex);
+        }
+        if (proof.length != 0) {
+            revert InterchainDB__IncorrectProof();
+        }
+        // In "no batching" mode: the batch root is the same as the entry value
+        return entry.entryValue();
     }
 
     /// @inheritdoc IInterchainDB
