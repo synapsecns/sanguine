@@ -25,6 +25,13 @@ export const GET_INTERCHAIN_TRANSACTIONS = gql`
         interchainBatch {
           id
           status
+          verifiedAt
+          appConfig {
+            id
+            requiredResponses
+            optimisticPeriod
+            modules
+          }
         }
         interchainTransactionSent {
           id

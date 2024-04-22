@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useInterchainTransactions } from '@/hooks/useInterchainTransactions'
@@ -93,6 +93,7 @@ export const TransactionsTable = () => {
               <th className="text-left">dbN</th>
               <th className="text-left">batch status</th>
               <th className="text-left">txn status</th>
+              <th className="text-left">opC</th>
               <th className="text-left text-transparent">pl</th>
             </tr>
           </thead>
@@ -181,6 +182,9 @@ export const TransactionsTable = () => {
                     {transaction.status}
                   </td>
                   <td>
+                    <OptimisticCountdown transaction={transaction} />
+                  </td>
+                  <td>
                     {transaction.interchainTransactionReceived ? (
                       <span className="text-green-500">✓</span>
                     ) : Date.now() -
@@ -200,4 +204,44 @@ export const TransactionsTable = () => {
       </div>
     </>
   )
+}
+
+const OptimisticCountdown = ({
+  transaction,
+}: {
+  transaction: InterchainTransaction
+}) => {
+  const [countdown, setCountdown] = useState<number | string>('')
+
+  useEffect(() => {
+    if (!transaction.interchainBatch?.verifiedAt) {
+      setCountdown('')
+      return
+    }
+
+    const updateCountdown = () => {
+      const timePassedMs =
+        Date.now() - Number(transaction.interchainBatch.verifiedAt) * 1000
+      const timePassedSec = timePassedMs / 1000
+      const remainingSec = Math.max(0, 30 - timePassedSec)
+
+      if (remainingSec > 0) {
+        setCountdown(Math.floor(remainingSec))
+      } else {
+        if (!transaction.interchainTransactionReceived) {
+          setCountdown('...')
+        } else {
+          setCountdown('P')
+        }
+      }
+    }
+
+    updateCountdown()
+
+    const intervalId = setInterval(updateCountdown, 1000)
+
+    return () => clearInterval(intervalId)
+  }, [transaction])
+
+  return <>{countdown}</>
 }
