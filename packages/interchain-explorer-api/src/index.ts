@@ -172,7 +172,7 @@ ponder.on(
   'InterchainDB:InterchainBatchFinalized',
   async ({ event, context }) => {
     const {
-      db: { InterchainBatch, AppConfigV1 },
+      db: { InterchainBatch },
     } = context
 
     const { batchRoot, dbNonce } = event.args
@@ -195,7 +195,7 @@ ponder.on(
       db: { InterchainBatch },
     } = context
 
-    const { batchRoot, dbNonce, dstChainId } = event.args
+    const { batchRoot, dstChainId } = event.args
 
     await InterchainBatch.update({
       id: batchRoot,
