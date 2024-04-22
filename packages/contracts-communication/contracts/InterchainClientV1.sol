@@ -376,10 +376,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (uint256 finalizedResponses)
     {
         for (uint256 i = 0; i < approvedModules.length; ++i) {
-            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(approvedModules[i], batch);
-            // checkVerification() returns 0 if entry hasn't been confirmed by the module, so we check for that as well
-            // TODO: check for type(uint256).max to avoid overflow when conflict occurs
-            if (confirmedAt != 0 && confirmedAt + optimisticPeriod < block.timestamp) {
+            address module = approvedModules[i];
+            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(module, batch);
+            // Zero is returned if entry hasn't been confirmed by the module, so we check for that as well
+            if (confirmedAt == 0) {
+                continue;
+            }
+            // type(uint256).max is returned if a conflicting batch has been confirmed by the module
+            if (confirmedAt == type(uint256).max) {
+                revert InterchainClientV1__BatchConflict(module);
+            }
+            if (confirmedAt + optimisticPeriod < block.timestamp) {
                 ++finalizedResponses;
             }
         }
