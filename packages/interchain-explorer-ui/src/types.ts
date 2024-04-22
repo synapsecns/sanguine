@@ -28,6 +28,7 @@ export type InterchainTransactionReceived = {
 export type InterchainBatch = {
   id: string
   status: string
+  verifiedAt?: bigint
 }
 
 export type InterchainTransaction = {
