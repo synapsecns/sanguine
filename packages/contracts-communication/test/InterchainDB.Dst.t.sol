@@ -26,6 +26,8 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
 
     uint16 public constant DB_VERSION = 1;
 
+    uint256 public constant BATCH_CONFLICT = type(uint256).max;
+
     InterchainBatchLibHarness public batchLibHarness;
     VersionedPayloadLibHarness public payloadLibHarness;
 
@@ -346,7 +348,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         // {0: 10} was verified by module A, but a "fake" batch was verified by module B
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 10);
         assertCorrectInitialVerificationTime(moduleA, batch);
-        checkVerification(moduleB, batch, 0);
+        checkVerification(moduleB, batch, BATCH_CONFLICT);
     }
 
     function test_checkVerification_existingA_emptyB() public {
@@ -354,7 +356,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         // {0: 10} was verified by module A, but an "empty" batch was verified by module B
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 10);
         assertCorrectInitialVerificationTime(moduleA, batch);
-        checkVerification(moduleB, batch, 0);
+        checkVerification(moduleB, batch, BATCH_CONFLICT);
     }
 
     function test_checkVerification_unknownA_existingB() public {
@@ -376,7 +378,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         // Check the fake batch that neither module verified
         InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_1, 0);
         checkVerification(moduleA, fakeBatch, 0);
-        checkVerification(moduleB, fakeBatch, 0);
+        checkVerification(moduleB, fakeBatch, BATCH_CONFLICT);
     }
 
     function test_checkVerification_unknownA_emptyB() public {
@@ -392,7 +394,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         // {0: 10} was verified by module A, but a "fake" batch was verified by module B
         // Check the fake batch that A never verified
         InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_0, 10);
-        checkVerification(moduleA, fakeBatch, 0);
+        checkVerification(moduleA, fakeBatch, BATCH_CONFLICT);
         assertCorrectInitialVerificationTime(moduleB, fakeBatch);
     }
 
@@ -400,7 +402,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         // {0: 10} was verified by module A, but not by module B
         // Check the fake batch that neither module verified
         InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_0, 10);
-        checkVerification(moduleA, fakeBatch, 0);
+        checkVerification(moduleA, fakeBatch, BATCH_CONFLICT);
         checkVerification(moduleB, fakeBatch, 0);
     }
 
@@ -408,15 +410,15 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         // {1: 10} was verified by module A and module B
         // Check the fake batch that neither module verified
         InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_1, 10);
-        checkVerification(moduleA, fakeBatch, 0);
-        checkVerification(moduleB, fakeBatch, 0);
+        checkVerification(moduleA, fakeBatch, BATCH_CONFLICT);
+        checkVerification(moduleB, fakeBatch, BATCH_CONFLICT);
     }
 
     function test_checkVerification_differentA_emptyB() public {
         introduceEmptyBatches();
         // {0: 10} was verified by module A, but an "empty" batch was verified by module B
         InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 10);
-        checkVerification(moduleA, emptyBatch, 0);
+        checkVerification(moduleA, emptyBatch, BATCH_CONFLICT);
         assertCorrectInitialVerificationTime(moduleB, emptyBatch);
     }
 
@@ -424,7 +426,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         introduceEmptyBatches();
         // {1: 0} was verified by module B, but an "empty" batch was verified by module A
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_1, 0);
-        checkVerification(moduleA, batch, 0);
+        checkVerification(moduleA, batch, BATCH_CONFLICT);
         assertCorrectInitialVerificationTime(moduleB, batch);
     }
 
@@ -441,7 +443,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         // {1: 0} was verified by module B, but an "empty" batch was verified by module A
         InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_1, 0);
         assertCorrectInitialVerificationTime(moduleA, emptyBatch);
-        checkVerification(moduleB, emptyBatch, 0);
+        checkVerification(moduleB, emptyBatch, BATCH_CONFLICT);
     }
 
     function test_checkVerification_emptyA_emptyB() public {
@@ -473,7 +475,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
         assertCorrectInitialVerificationTime(moduleA, batch);
         batch.batchRoot ^= bytes32(uint256(1));
-        checkVerification(moduleA, batch, 0);
+        checkVerification(moduleA, batch, BATCH_CONFLICT);
     }
 
     // ═════════════════════════════════════ TESTS: READING BATCHES (REVERTS) ══════════════════════════════════════════
