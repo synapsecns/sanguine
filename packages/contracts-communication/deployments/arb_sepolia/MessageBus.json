@@ -1,9 +1,9 @@
 {
-  "address": "0x012a0311B5e5210E73D9766253A32e14598Ae4d8",
+  "address": "0x8CeFD8163CaBd9BF67071E68668a959CFC50D5E2",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0x1ee71d6c87f77c519a97aa789386b597dd8802261a0eb539f2c53b7b64ed6ca2",
-    "blockNumber": 34358695
+    "hash": "0x682484b618db694da7d564f30f320ecb4ea3ebd39f62a2221ad373a208c9a459",
+    "blockNumber": 34689167
   },
   "abi": [
     {
@@ -156,6 +156,19 @@
           "name": "",
           "type": "uint256",
           "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "gasBuffer",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "stateMutability": "view"
@@ -589,6 +602,19 @@
     },
     {
       "type": "function",
+      "name": "setGasBuffer",
+      "inputs": [
+        {
+          "name": "gasBuffer_",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
       "name": "setLatestInterchainClient",
       "inputs": [
         {
@@ -716,6 +742,19 @@
           "type": "address",
           "indexed": false,
           "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "GasBufferSet",
+      "inputs": [
+        {
+          "name": "gasBuffer",
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
         }
       ],
       "anonymous": false

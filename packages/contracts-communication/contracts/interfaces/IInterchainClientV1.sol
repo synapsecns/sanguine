@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 
 interface IInterchainClientV1 {
+    // TODO: standardize error names across interfaces
     error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
     error InterchainClientV1__IncorrectDstChainId(uint64 chainId);
     error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);

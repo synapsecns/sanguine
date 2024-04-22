@@ -15,8 +15,8 @@ type IConfig interface {
 	GetBatch(chainID int) bool
 	// GetMaxGasPrice returns the maximum gas price to use for transactions.
 	GetMaxGasPrice(chainID int) (maxPrice *big.Int)
-	// GetMinGasPrice returns the maximum gas price to use for transactions.
-	GetMinGasPrice(chainID int) (basePrice *big.Int)
+	// GetMinGasPrice returns the minimum gas price to use for transactions.
+	GetMinGasPrice(chainID int) (minPrice *big.Int)
 	// GetBumpInterval returns the number of seconds to wait before bumping a transaction
 	// TODO: test this method.
 	GetBumpInterval(chainID int) time.Duration

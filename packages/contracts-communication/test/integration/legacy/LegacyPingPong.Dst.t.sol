@@ -84,7 +84,7 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     function test_verifyRemoteBatch_state_db() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
         skip(LONG_PERIOD);
-        assertEq(icDB.checkVerification(address(module), srcEntry, new bytes32[](0)), INITIAL_TS);
+        assertEq(icDB.checkBatchVerification(address(module), srcBatch), INITIAL_TS);
     }
 
     function test_interchainExecute_callMessageBusAndLegacyPP() public {
