@@ -3,6 +3,8 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/synapsecns/sanguine/core"
@@ -27,7 +29,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 const pyroscopeEndpoint = internal.PyroscopeEndpoint
@@ -90,7 +91,8 @@ func (b *baseHandler) Start(ctx context.Context) error {
 const (
 	// MetricsPortEnabledEnv is the environment variable that controls whether the metrics server is enabled.
 	MetricsPortEnabledEnv = "METRICS_PORT_ENABLED"
-	metricsPortEnv        = "METRICS_PORT"
+	// MetricsPortEnv is the environment variable that controls the port for the metrics server.
+	MetricsPortEnv = "METRICS_PORT"
 	// MetricsPath is the environment variable that controls the path for the metrics server.
 	MetricsPath        = "METRICS_PATH"
 	metricsPortDefault = 8080
@@ -105,7 +107,7 @@ func (b *baseHandler) startMetricsServer(ctx context.Context) {
 		return
 	}
 
-	port := core.GetEnvInt(metricsPortEnv, metricsPortDefault)
+	port := core.GetEnvInt(MetricsPortEnv, metricsPortDefault)
 	path := core.GetEnv(MetricsPath, MetricsPathDefault)
 
 	logger.Infof("starting metrics server on port %d at path %s", port, path)
