@@ -19,9 +19,7 @@ interface IInterchainDB {
     error InterchainDB__BatchNotFinalized(uint64 dbNonce);
     error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
     error InterchainDB__EntryIndexOutOfRange(uint64 dbNonce, uint64 entryIndex, uint64 batchSize);
-    error InterchainDB__IncorrectEntryIndex(uint64 entryIndex);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
-    error InterchainDB__IncorrectProof();
     error InterchainDB__InvalidBatchVersion(uint16 version);
     error InterchainDB__InvalidEntryRange(uint64 dbNonce, uint64 start, uint64 end);
     error InterchainDB__NoModulesSpecified();

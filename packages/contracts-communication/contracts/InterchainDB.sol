@@ -5,6 +5,7 @@ import {InterchainDBEvents} from "./events/InterchainDBEvents.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
+import {BatchingV1Lib} from "./libs/BatchingV1.sol";
 import {InterchainBatch, InterchainBatchLib, BatchKey} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {VersionedPayloadLib} from "./libs/VersionedPayload.sol";
@@ -148,16 +149,13 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
-    function getBatchRoot(InterchainEntry memory entry, bytes32[] memory proof) external pure returns (bytes32) {
-        // In "no batching" mode: entry index is 0, proof is empty
-        if (entry.entryIndex != 0) {
-            revert InterchainDB__IncorrectEntryIndex(entry.entryIndex);
-        }
-        if (proof.length != 0) {
-            revert InterchainDB__IncorrectProof();
-        }
-        // In "no batching" mode: the batch root is the same as the entry value
-        return entry.entryValue();
+    function getBatchRoot(InterchainEntry memory entry, bytes32[] calldata proof) external pure returns (bytes32) {
+        return BatchingV1Lib.getBatchRoot({
+            srcWriter: entry.srcWriter,
+            dataHash: entry.dataHash,
+            entryIndex: entry.entryIndex,
+            proof: proof
+        });
     }
 
     /// @inheritdoc IInterchainDB

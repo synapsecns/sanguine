@@ -6,9 +6,7 @@ import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 interface IInterchainClientV1 {
     error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
     error InterchainClientV1__IncorrectDstChainId(uint64 chainId);
-    error InterchainClientV1__IncorrectEntryIndex(uint64 entryIndex);
     error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
-    error InterchainClientV1__IncorrectProof();
     error InterchainClientV1__InvalidTransactionVersion(uint16 version);
     error InterchainClientV1__NoLinkedClient(uint64 chainId);
     error InterchainClientV1__NotEnoughGasSupplied();

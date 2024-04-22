@@ -10,8 +10,8 @@ import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
 import {AppConfigV1, AppConfigLib} from "./libs/AppConfig.sol";
+import {BatchingV1Lib} from "./libs/BatchingV1.sol";
 import {InterchainBatch} from "./libs/InterchainBatch.sol";
-import {InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {
     InterchainTransaction, InterchainTxDescriptor, InterchainTransactionLib
 } from "./libs/InterchainTransaction.sol";
@@ -318,6 +318,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         internal
         view
     {
+        bytes32 linkedClient = _assertLinkedClient(icTx.srcChainId);
+        if (icTx.dstChainId != block.chainid) {
+            revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
+        }
         if (_txExecutor[transactionId] != address(0)) {
             revert InterchainClientV1__TxAlreadyExecuted(transactionId);
         }
@@ -325,7 +329,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         InterchainBatch memory batch = InterchainBatch({
             srcChainId: icTx.srcChainId,
             dbNonce: icTx.dbNonce,
-            batchRoot: _getBatchRoot(icTx, transactionId, proof)
+            batchRoot: BatchingV1Lib.getBatchRoot({
+                srcWriter: linkedClient,
+                dataHash: transactionId,
+                entryIndex: icTx.entryIndex,
+                proof: proof
+            })
         });
         (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
@@ -348,31 +357,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         if (linkedClient == 0) {
             revert InterchainClientV1__NoLinkedClient(chainId);
         }
-    }
-
-    /// @dev Reconstruction of the batch root from the transaction data and proof.
-    function _getBatchRoot(
-        InterchainTransaction memory icTx,
-        bytes32 transactionId,
-        bytes32[] calldata proof
-    )
-        internal
-        view
-        returns (bytes32 batchRoot)
-    {
-        if (icTx.dstChainId != block.chainid) {
-            revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
-        }
-        bytes32 linkedClient = _assertLinkedClient(icTx.srcChainId);
-        // In DB V1 the batching is not implemented, so we expect the entry index to be 0 and proof to be empty.
-        // Therefore, batch root should match the entry value.
-        if (icTx.entryIndex != 0) {
-            revert InterchainClientV1__IncorrectEntryIndex(icTx.entryIndex);
-        }
-        if (proof.length != 0) {
-            revert InterchainClientV1__IncorrectProof();
-        }
-        batchRoot = InterchainEntryLib.getEntryValue({srcWriter: linkedClient, dataHash: transactionId});
     }
 
     /**
