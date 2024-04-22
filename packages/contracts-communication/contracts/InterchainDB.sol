@@ -132,34 +132,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
-    function checkVerification(
-        address dstModule,
-        InterchainEntry memory entry,
-        bytes32[] calldata proof
-    )
-        external
-        view
-        onlyRemoteChainId(entry.srcChainId)
-        returns (uint256 moduleVerifiedAt)
-    {
-        // In "no batching" mode: the batch root is the same as the entry value, hence the proof is empty
-        if (proof.length != 0) {
-            // If proof is not empty, the batch root is not verified
-            return 0;
-        }
-        // In "no batching" mode: entry index is 0, batch size is 1
-        if (entry.entryIndex != 0) {
-            // If entry index is not 0, it does not belong to the batch
-            return 0;
-        }
-        BatchKey batchKey = InterchainBatchLib.encodeBatchKey({srcChainId: entry.srcChainId, dbNonce: entry.dbNonce});
-        RemoteBatch memory remoteBatch = _remoteBatches[dstModule][batchKey];
-        bytes32 entryValue = InterchainEntryLib.entryValue(entry);
-        // Check entry value against the batch root verified by the module
-        return remoteBatch.batchRoot == entryValue ? remoteBatch.verifiedAt : 0;
-    }
-
-    /// @inheritdoc IInterchainDB
     function checkBatchVerification(
         address dstModule,
         InterchainBatch memory batch

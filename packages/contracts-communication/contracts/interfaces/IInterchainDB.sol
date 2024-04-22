@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {InterchainEntry} from "../libs/InterchainEntry.sol";
 import {InterchainBatch} from "../libs/InterchainBatch.sol";
 
 interface IInterchainDB {
@@ -143,22 +142,6 @@ interface IInterchainDB {
     /// @return dbNonce      The database nonce of the batch including the next entry
     /// @return entryIndex   The index of the next entry within that batch
     function getNextEntryIndex() external view returns (uint64 dbNonce, uint64 entryIndex);
-
-    /// @notice Read the data written on specific source chain by a specific writer,
-    /// and verify it on the destination chain using the provided Interchain Module.
-    /// Note: returned zero value indicates that the module has not verified the entry.
-    /// @param entry        The Interchain Entry to read
-    /// @param dstModule    The destination chain addresses of the Interchain Modules to use for verification
-    /// @return moduleVerifiedAt   The block timestamp at which the entry was verified by the module,
-    ///                             or ZERO if the module has not verified the entry.
-    function checkVerification(
-        address dstModule,
-        InterchainEntry memory entry,
-        bytes32[] memory proof
-    )
-        external
-        view
-        returns (uint256 moduleVerifiedAt);
 
     /// @notice Check if the batch is verified by the Interchain Module on the destination chain.
     /// Note: returned zero value indicates that the module has not verified the batch.
