@@ -5,16 +5,6 @@ import {InterchainBatch} from "../libs/InterchainBatch.sol";
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 interface IInterchainDB {
-    /// @notice Struct representing a batch of entries from the remote Interchain DataBase,
-    /// verified by the Interchain Module.
-    /// @param verifiedAt   The block timestamp at which the entry was verified by the module
-    /// @param batchRoot    The Merkle root of the batch
-    struct RemoteBatch {
-        uint256 verifiedAt;
-        bytes32 batchRoot;
-    }
-
-    // TODO: standardize error names across interfaces
     error InterchainDB__BatchDoesNotExist(uint64 dbNonce);
     error InterchainDB__BatchNotFinalized(uint64 dbNonce);
     error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);

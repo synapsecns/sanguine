@@ -14,6 +14,15 @@ import {TypeCasts} from "./libs/TypeCasts.sol";
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
     using VersionedPayloadLib for bytes;
 
+    /// @notice Struct representing a batch of entries from the remote Interchain DataBase,
+    /// verified by the Interchain Module.
+    /// @param verifiedAt   The block timestamp at which the entry was verified by the module
+    /// @param batchRoot    The Merkle root of the batch
+    struct RemoteBatch {
+        uint256 verifiedAt;
+        bytes32 batchRoot;
+    }
+
     uint16 public constant DB_VERSION = 1;
 
     bytes32[] internal _entryValues;
