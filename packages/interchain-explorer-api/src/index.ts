@@ -7,7 +7,12 @@ ponder.on(
   'InterchainClientV1:InterchainTransactionSent',
   async ({ event, context }) => {
     const {
-      db: { InterchainTransactionSent, InterchainTransaction, InterchainBatch },
+      db: {
+        InterchainTransactionSent,
+        InterchainTransaction,
+        InterchainBatch,
+        AppConfigV1,
+      },
       network: { chainId },
     } = context
 
@@ -55,6 +60,17 @@ ponder.on(
       },
     })
 
+    const appConfig =
+      (await AppConfigV1.findUnique({ id: dstReceiver })) ??
+      (await AppConfigV1.create({
+        id: dstReceiver,
+        data: {
+          requiredResponses: 1,
+          optimisticPeriod: 30,
+          modules: [],
+        },
+      }))
+
     const batch = await InterchainBatch.findMany({
       where: {
         srcDbNonce: dbNonce,
@@ -63,6 +79,12 @@ ponder.on(
     })
 
     batch.items.forEach(async (b) => {
+      await InterchainBatch.update({
+        id: b.id,
+        data: {
+          appConfigId: appConfig.id,
+        },
+      })
       await InterchainTransaction.upsert({
         id: transactionId,
         update: {
@@ -150,7 +172,7 @@ ponder.on(
   'InterchainDB:InterchainBatchFinalized',
   async ({ event, context }) => {
     const {
-      db: { InterchainBatch },
+      db: { InterchainBatch, AppConfigV1 },
     } = context
 
     const { batchRoot, dbNonce } = event.args
@@ -194,11 +216,14 @@ ponder.on(
 
     const { srcChainId, dbNonce, batchRoot } = event.args
 
+    const { timestamp } = event.block
+
     await InterchainBatch.update({
       id: batchRoot,
       data: {
         srcChainId,
         dstDbNonce: dbNonce,
+        verifiedAt: timestamp,
         status: 'InterchainBatchVerified',
       },
     })
