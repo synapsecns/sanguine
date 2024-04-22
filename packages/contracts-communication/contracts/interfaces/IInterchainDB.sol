@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {InterchainBatch} from "../libs/InterchainBatch.sol";
+import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 interface IInterchainDB {
     /// @notice Struct representing a batch of entries from the remote Interchain DataBase,
@@ -13,11 +14,14 @@ interface IInterchainDB {
         bytes32 batchRoot;
     }
 
+    // TODO: standardize error names across interfaces
     error InterchainDB__BatchDoesNotExist(uint64 dbNonce);
     error InterchainDB__BatchNotFinalized(uint64 dbNonce);
     error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
     error InterchainDB__EntryIndexOutOfRange(uint64 dbNonce, uint64 entryIndex, uint64 batchSize);
+    error InterchainDB__IncorrectEntryIndex(uint64 entryIndex);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
+    error InterchainDB__IncorrectProof();
     error InterchainDB__InvalidBatchVersion(uint16 version);
     error InterchainDB__InvalidEntryRange(uint64 dbNonce, uint64 start, uint64 end);
     error InterchainDB__NoModulesSpecified();
@@ -156,6 +160,11 @@ interface IInterchainDB {
         external
         view
         returns (uint256 moduleVerifiedAt);
+
+    /// @notice Get the batch root containing the Interchain Entry with the given index.
+    /// @param entry         The Interchain Entry to get the batch root for
+    /// @param proof         The Merkle proof of inclusion for the entry in the batch
+    function getBatchRoot(InterchainEntry memory entry, bytes32[] memory proof) external pure returns (bytes32);
 
     /// @notice Get the version of the Interchain DataBase.
     // solhint-disable-next-line func-name-mixedcase

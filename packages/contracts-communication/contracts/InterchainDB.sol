@@ -148,6 +148,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
+    function getBatchRoot(InterchainEntry memory entry, bytes32[] memory proof) external pure returns (bytes32) {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IInterchainDB
     function getBatchLeafs(uint64 dbNonce) public view returns (bytes32[] memory leafs) {
         // In "no batching" mode: the finalized batch size is 1
         _assertBatchFinalized(dbNonce);

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {IInterchainDB, InterchainBatch} from "../../contracts/interfaces/IInterchainDB.sol";
+import {IInterchainDB, InterchainBatch, InterchainEntry} from "../../contracts/interfaces/IInterchainDB.sol";
 
 // solhint-disable no-empty-blocks
 contract InterchainDBMock is IInterchainDB {
@@ -64,4 +64,6 @@ contract InterchainDBMock is IInterchainDB {
         view
         returns (uint256 moduleVerifiedAt)
     {}
+
+    function getBatchRoot(InterchainEntry memory entry, bytes32[] memory proof) external pure returns (bytes32) {}
 }
