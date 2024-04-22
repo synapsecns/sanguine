@@ -11,7 +11,7 @@ import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
 import {AppConfigV1, AppConfigLib} from "./libs/AppConfig.sol";
 import {BatchingV1Lib} from "./libs/BatchingV1.sol";
-import {InterchainBatch} from "./libs/InterchainBatch.sol";
+import {InterchainBatch, InterchainBatchLib} from "./libs/InterchainBatch.sol";
 import {
     InterchainTransaction, InterchainTxDescriptor, InterchainTransactionLib
 } from "./libs/InterchainTransaction.sol";
@@ -378,14 +378,15 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         for (uint256 i = 0; i < approvedModules.length; ++i) {
             address module = approvedModules[i];
             uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(module, batch);
-            // Zero is returned if entry hasn't been confirmed by the module, so we check for that as well
-            if (confirmedAt == 0) {
+            // No-op if the module has not verified anything with the same batch key
+            if (confirmedAt == InterchainBatchLib.UNVERIFIED) {
                 continue;
             }
-            // type(uint256).max is returned if a conflicting batch has been confirmed by the module
-            if (confirmedAt == type(uint256).max) {
+            // Revert if the module has verified a conflicting batch with the same batch key
+            if (confirmedAt == InterchainBatchLib.CONFLICT) {
                 revert InterchainClientV1__BatchConflict(module);
             }
+            // The module has verified this exact batch, check if optimistic period has passed
             if (confirmedAt + optimisticPeriod < block.timestamp) {
                 ++finalizedResponses;
             }

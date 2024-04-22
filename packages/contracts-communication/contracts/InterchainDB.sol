@@ -24,8 +24,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     uint16 public constant DB_VERSION = 1;
-    uint256 internal constant BATCH_UNVERIFIED = 0;
-    uint256 internal constant BATCH_CONFLICT = type(uint256).max;
 
     bytes32[] internal _entryValues;
     mapping(address module => mapping(BatchKey batchKey => RemoteBatch batch)) internal _remoteBatches;
@@ -157,10 +155,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         RemoteBatch memory remoteBatch = _remoteBatches[dstModule][batchKey];
         // Check if module verified anything for this batch key first
         if (remoteBatch.verifiedAt == 0) {
-            return BATCH_UNVERIFIED;
+            return InterchainBatchLib.UNVERIFIED;
         }
         // Check if the batch root matches the one verified by the module
-        return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : BATCH_CONFLICT;
+        return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : InterchainBatchLib.CONFLICT;
     }
 
     /// @inheritdoc IInterchainDB
