@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -62,7 +63,7 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	g, _ := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		err = ServeMetrics(ctx, handler, cfg.Port)
+		err = ServeMetrics(ctx, handler, &cfg.Port)
 		if err != nil {
 			return fmt.Errorf("could not serve metrics: %w", err)
 		}
@@ -130,18 +131,27 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 }
 
 // ServeMetrics spins up the HTTP server for metrics.
-func ServeMetrics(ctx context.Context, handler metrics.Handler, port int) (err error) {
+func ServeMetrics(ctx context.Context, handler metrics.Handler, port *int) (err error) {
 	// the main server serves metrics since this is only a prom exporter
 	_ = os.Setenv(metrics.MetricsPortEnabledEnv, "false")
+
+	if port == nil {
+		portStr := os.Getenv(metrics.MetricsPortEnv)
+		portInt, err := strconv.Atoi(portStr)
+		if err != nil {
+			return fmt.Errorf("could not parse port: %w", err)
+		}
+		port = &portInt
+	}
 
 	router := ginhelper.New(logger)
 	router.Use(handler.Gin())
 	router.GET(metrics.MetricsPathDefault, gin.WrapH(handler.Handler()))
 
 	var lc net.ListenConfig
-	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", port))
+	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		return fmt.Errorf("could not listen on port %d", port)
+		return fmt.Errorf("could not listen on port %d", *port)
 	}
 
 	//nolint: gosec
