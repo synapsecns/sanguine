@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ipfs/go-log"
 	"github.com/jellydator/ttlcache/v3"
+	"github.com/synapsecns/sanguine/contrib/promexporter/exporters"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/listener"
@@ -154,6 +155,15 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		err = exporters.ServeMetrics(ctx, r.metrics, nil)
+		if err != nil {
+			return fmt.Errorf("could not serve metrics: %w", err)
+		}
+		return nil
+	})
+
 	g.Go(func() error {
 		err := r.startChainIndexers(ctx)
 		if err != nil {
