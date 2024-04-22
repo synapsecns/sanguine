@@ -1,11 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { GraphQLClient } from 'graphql-request'
 
 import { type InterchainTransaction } from '@/types'
 import { GET_INTERCHAIN_TRANSACTIONS } from '@/graphql/queries'
-
-const client = new GraphQLClient('https://sanguine-production.up.railway.app')
-// const client = new GraphQLClient('http://localhost:42069')
+import { client } from '@/graphql/client'
 
 type InterchainTransactionsResponse = {
   interchainTransactions: {
