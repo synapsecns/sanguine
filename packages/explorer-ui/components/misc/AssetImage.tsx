@@ -1,13 +1,13 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { TOKEN_HASH_MAP, AVWETH } from 'synapse-constants'
+import { TOKEN_HASH_MAP, AVWETH, tokenAddressToToken, ETH, USDC, tokenSymbolToToken } from 'synapse-constants'
 import { getTokenAddressUrl } from '@urls'
 import Image from 'next/image'
 
-export function AssetImage({ tokenAddress, chainId, className }) {
+export function AssetImage({ tokenAddress, chainId, className, tokenSymbol= '' }) {
   tokenAddress = tokenAddress
   if (hasRequiredData({ tokenAddress, chainId })) {
     const t = chainId && tokenAddress && TOKEN_HASH_MAP[chainId]?.[tokenAddress]
-    return (
+    return(
       <a href={getTokenAddressUrl({ tokenAddress, chainId })}>
         <Image
           className={`inline w-5 h-5 mr-2 rounded-md ${className}`}
@@ -33,10 +33,16 @@ export function AssetImage({ tokenAddress, chainId, className }) {
     )
   } else {
     return (
-      <QuestionMarkCircleIcon
-        className={`inline w-5 h-5 mr-2 rounded-md ${className}`}
-        strokeWidth={2}
-      />
+      // temporary fix until either symbolToToken works better as a function or explorer indexer has the right token addresses
+      <Image
+      className={`inline w-5 h-5 mr-2 rounded-md ${className}`}
+      src={USDC?.icon}
+      alt=""
+    />
+      // <QuestionMarkCircleIcon
+      //   className={`inline w-5 h-5 mr-2 rounded-md ${className}`}
+      //   strokeWidth={2}
+      // />
     )
   }
 }
