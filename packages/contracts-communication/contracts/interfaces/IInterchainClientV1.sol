@@ -21,6 +21,12 @@ interface IInterchainClientV1 {
     error InterchainClientV1__ZeroReceiver();
     error InterchainClientV1__ZeroRequiredResponses();
 
+    /// @notice Allows the contract owner to set the address of the Guard module.
+    /// Note: batches marked as invalid by the Guard could not be used for message execution,
+    /// if the app opts in to use the Guard.
+    /// @param guard_       The address of the Guard module.
+    function setDefaultGuard(address guard_) external;
+
     /**
      * @notice Sets the linked client for a specific chain ID.
      * @dev Stores the address of the linked client in a mapping with the chain ID as the key.

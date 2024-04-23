@@ -35,6 +35,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @notice Address of the InterchainDB contract, set at the time of deployment.
     address public immutable INTERCHAIN_DB;
 
+    /// @notice Address of the Guard module used to verify the validity of batches.
+    /// Note: batches marked as invalid by the Guard could not be used for message execution,
+    /// if the app opts in to use the Guard.
+    address public defaultGuard;
+
     /// @dev Address of the InterchainClient contract on the remote chain
     mapping(uint64 chainId => bytes32 remoteClient) internal _linkedClient;
     /// @dev Executor address that completed the transaction. Address(0) if not executed yet.
@@ -42,6 +47,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     constructor(address interchainDB, address owner_) Ownable(owner_) {
         INTERCHAIN_DB = interchainDB;
+    }
+
+    // @inheritdoc IInterchainClientV1
+    function setDefaultGuard(address guard) external onlyOwner {
+        defaultGuard = guard;
+        emit DefaultGuardSet(guard);
     }
 
     // @inheritdoc IInterchainClientV1

@@ -5,6 +5,8 @@ import {IInterchainClientV1, InterchainTxDescriptor} from "../../contracts/inter
 
 // solhint-disable no-empty-blocks
 contract InterchainClientV1Mock is IInterchainClientV1 {
+    function setDefaultGuard(address guard_) external {}
+
     function setLinkedClient(uint64 chainId, bytes32 client) external {}
 
     function interchainSend(
