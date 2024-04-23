@@ -37,7 +37,7 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     uint256 public constant MOCK_GAS_LIMIT = 100_000;
     uint256 public constant MOCK_GAS_AIRDROP = 1 ether;
 
-    uint256 public constant MOCK_OPTIMISTIC_PERIOD = 10 minutes;
+    uint256 public constant MOCK_OP = 10 minutes;
     uint256 public constant BIGGER_PERIOD = 7 days;
 
     bytes32 public constant MOCK_SRC_SENDER = keccak256("Sender");
@@ -49,10 +49,16 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     bytes public invalidOptionsV0 = VersionedPayloadLib.encodeVersionedPayload(0, abi.encode(optionsAirdrop));
     bytes public invalidOptionsV1 = VersionedPayloadLib.encodeVersionedPayload(1, abi.encode(optionsAirdrop.gasLimit));
 
-    AppConfigV1 public oneConfNoOP = AppConfigV1({requiredResponses: 1, optimisticPeriod: 0});
-    AppConfigV1 public oneConfWithOP = AppConfigV1({requiredResponses: 1, optimisticPeriod: MOCK_OPTIMISTIC_PERIOD});
-    AppConfigV1 public twoConfNoOP = AppConfigV1({requiredResponses: 2, optimisticPeriod: 0});
-    AppConfigV1 public twoConfWithOP = AppConfigV1({requiredResponses: 2, optimisticPeriod: MOCK_OPTIMISTIC_PERIOD});
+    AppConfigV1 public oneConfNoOP = AppConfigV1({requiredResponses: 1, optimisticPeriod: 0, guardFlag: 0});
+    AppConfigV1 public oneConfWithOP = AppConfigV1({requiredResponses: 1, optimisticPeriod: MOCK_OP, guardFlag: 0});
+    AppConfigV1 public twoConfNoOP = AppConfigV1({requiredResponses: 2, optimisticPeriod: 0, guardFlag: 0});
+    AppConfigV1 public twoConfWithOP = AppConfigV1({requiredResponses: 2, optimisticPeriod: MOCK_OP, guardFlag: 0});
+
+    // TODO: tests with these configs
+    AppConfigV1 public oneConfNoOpWithG = AppConfigV1({requiredResponses: 1, optimisticPeriod: 0, guardFlag: 1});
+    AppConfigV1 public oneConfWithOpWithG = AppConfigV1({requiredResponses: 1, optimisticPeriod: MOCK_OP, guardFlag: 1});
+    AppConfigV1 public twoConfNoOpWithG = AppConfigV1({requiredResponses: 2, optimisticPeriod: 0, guardFlag: 1});
+    AppConfigV1 public twoConfWithOpWithG = AppConfigV1({requiredResponses: 2, optimisticPeriod: MOCK_OP, guardFlag: 1});
 
     address public executor = makeAddr("Executor");
 
@@ -73,8 +79,8 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     uint256 public constant INITIAL_TS = 1_704_067_200; // 2024-01-01 00:00:00 UTC
 
     uint256 public constant NOT_VERIFIED = 0;
-    uint256 public constant ALMOST_VERIFIED = INITIAL_TS - MOCK_OPTIMISTIC_PERIOD;
-    uint256 public constant JUST_VERIFIED = INITIAL_TS - MOCK_OPTIMISTIC_PERIOD - 1;
+    uint256 public constant ALMOST_VERIFIED = INITIAL_TS - MOCK_OP;
+    uint256 public constant JUST_VERIFIED = INITIAL_TS - MOCK_OP - 1;
     uint256 public constant OVER_VERIFIED = INITIAL_TS - BIGGER_PERIOD;
 
     uint256 public constant JUST_NOW = INITIAL_TS - 1;
@@ -82,6 +88,7 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     function setUp() public override {
         vm.warp(INITIAL_TS);
         super.setUp();
+        setDefaultGuard(guardMock);
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
         dstReceiver = address(new InterchainAppMock());
         dstReceiverBytes32 = bytes32(uint256(uint160(dstReceiver)));

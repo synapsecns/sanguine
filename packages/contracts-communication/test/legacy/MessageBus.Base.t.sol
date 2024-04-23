@@ -48,7 +48,8 @@ abstract contract MessageBusBaseTest is MessageBusEvents, Test {
     address public icModule;
     address[] public icModules;
 
-    AppConfigV1 public appConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: BUS_OPTIMISTIC_PERIOD});
+    AppConfigV1 public appConfig =
+        AppConfigV1({requiredResponses: 1, optimisticPeriod: BUS_OPTIMISTIC_PERIOD, guardFlag: 0});
 
     address public admin = makeAddr("Admin");
     address public governor = makeAddr("Governor");
