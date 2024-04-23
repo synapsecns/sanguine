@@ -12,20 +12,20 @@ contract InterchainClientV1ManagementTest is InterchainClientV1BaseTest {
     }
 
     function test_setDefaultGuard_emitsEvent() public {
-        expectEventGuardSet(guardMock);
-        setDefaultGuard(guardMock);
+        expectEventGuardSet(defaultGuard);
+        setDefaultGuard(defaultGuard);
     }
 
     function test_setDefaultGuard_setsGuard() public {
-        setDefaultGuard(guardMock);
-        assertEq(icClient.defaultGuard(), guardMock);
+        setDefaultGuard(defaultGuard);
+        assertEq(icClient.defaultGuard(), defaultGuard);
     }
 
     function test_setDefaultGuard_revert_notOwner(address caller) public {
         vm.assume(caller != owner);
         expectRevertOwnableUnauthorizedAccount(caller);
         vm.prank(caller);
-        icClient.setDefaultGuard(guardMock);
+        icClient.setDefaultGuard(defaultGuard);
     }
 
     function test_setLinkedClient_emitsEvent() public {

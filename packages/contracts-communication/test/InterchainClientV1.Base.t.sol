@@ -38,7 +38,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     address public execService;
 
     address public owner = makeAddr("Owner");
-    address public guardMock = makeAddr("Guard");
+    address public defaultGuard = makeAddr("Default Guard");
 
     function setUp() public virtual {
         vm.chainId(LOCAL_CHAIN_ID);
