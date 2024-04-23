@@ -1,4 +1,5 @@
 import { useStats } from '@/hooks/useStats'
+import { InterchainTransaction } from '@/types'
 
 export const Stats = () => {
   const response = useStats()
@@ -7,15 +8,11 @@ export const Stats = () => {
     return null
   }
 
-  const numSent = response.data
-    .filter((t) => t.interchainTransactionSent !== null)
-    .map((t) => t.interchainTransactionSent)
-    .sort((a, b) => Number(b.count) - Number(a.count))[0].count
-
-  const numReceived = response.data
-    .filter((t) => t.interchainTransactionReceived !== null)
-    .map((t) => t.interchainTransactionReceived)
-    .sort((a, b) => Number(b?.count) - Number(a?.count))[0].count
+  const numSent = getMaxCount(response.data, 'interchainTransactionSent')
+  const numReceived = getMaxCount(
+    response.data,
+    'interchainTransactionReceived'
+  )
 
   return (
     <div className="grid grid-cols-4 gap-4 mb-4">
@@ -34,5 +31,17 @@ export const Stats = () => {
         <p className="text-xl">2</p>
       </div>
     </div>
+  )
+}
+
+const getMaxCount = (
+  data: InterchainTransaction[],
+  key: 'interchainTransactionSent' | 'interchainTransactionReceived'
+): number => {
+  return (
+    data
+      .filter((t) => t[key] !== null)
+      .map((t) => t[key])
+      .sort((a, b) => Number(b?.count) - Number(a?.count))[0]?.count || 0
   )
 }
