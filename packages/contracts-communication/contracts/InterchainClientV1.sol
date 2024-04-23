@@ -363,6 +363,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         internal
         view
     {
+        // Verify against the default Guard if the app opts in
+        if (appConfig.guardFlag == AppConfigLib.GUARD_DEFAULT) {
+            _assertNoGuardConflict(defaultGuard, batch);
+        }
         uint256 finalizedResponses = 0;
         uint256 optimisticPeriod = appConfig.optimisticPeriod;
         for (uint256 i = 0; i < approvedModules.length; ++i) {
@@ -383,6 +387,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
         if (finalizedResponses < appConfig.requiredResponses) {
             revert InterchainClientV1__NotEnoughResponses(finalizedResponses, appConfig.requiredResponses);
+        }
+    }
+
+    /// @dev Asserts that the Guard has not marked the batch as invalid.
+    function _assertNoGuardConflict(address guard, InterchainBatch memory batch) internal view {
+        if (guard != address(0)) {
+            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(guard, batch);
+            if (confirmedAt == InterchainBatchLib.CONFLICT) {
+                revert InterchainClientV1__BatchConflict(guard);
+            }
         }
     }
 
