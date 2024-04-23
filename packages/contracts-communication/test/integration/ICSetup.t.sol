@@ -49,6 +49,7 @@ abstract contract ICSetup is ProxyTest {
     address public srcApp;
     address public dstApp;
 
+    address public guard = makeAddr("Guard");
     address public executor = makeAddr("Executor");
     address public feeCollector = makeAddr("FeeCollector");
     // Signer public keys, sorted by their address:
@@ -108,6 +109,7 @@ abstract contract ICSetup is ProxyTest {
         // For simplicity, we assume that the clients are deployed to the same address on both chains.
         bytes32 linkedClient = address(icClient).addressToBytes32();
         icClient.setLinkedClient(remoteChainId(), linkedClient);
+        icClient.setDefaultGuard(guard);
     }
 
     function configureSynapseModule() internal virtual {

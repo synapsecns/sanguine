@@ -164,6 +164,10 @@ abstract contract ICIntegrationTest is
 
     // ══════════════════════════════════════════════ EXPECT REVERTS ═══════════════════════════════════════════════════
 
+    function expectClientRevertBatchConflict(address module) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__BatchConflict.selector, module));
+    }
+
     function expectClientRevertNotEnoughResponses(uint256 actual, uint256 required) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
@@ -201,6 +205,18 @@ abstract contract ICIntegrationTest is
         (uint64 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
         assertEq(dbNonce, desc.dbNonce + 1);
         assertEq(entryIndex, 0);
+    }
+
+    function markInvalidByGuard(InterchainBatch memory batch) internal {
+        InterchainBatch memory conflictingBatch = InterchainBatch({
+            srcChainId: batch.srcChainId,
+            dbNonce: batch.dbNonce,
+            batchRoot: keccak256("Some other data")
+        });
+        bytes memory encodedBatch =
+            payloadLibHarness.encodeVersionedPayload(DB_VERSION, batchLibHarness.encodeBatch(conflictingBatch));
+        vm.prank(guard);
+        icDB.verifyRemoteBatch(encodedBatch);
     }
 
     // ═══════════════════════════════════════════════ DATA HELPERS ════════════════════════════════════════════════════
