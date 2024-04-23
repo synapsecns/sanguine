@@ -471,7 +471,11 @@ func (i *inventoryManagerImpl) registerPendingRebalance(rebalance *reldb.Rebalan
 	if rebalance == nil {
 		return nil
 	}
-	meter := i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
+
+	if meter == nil {
+		meter = i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
+	}
+
 	rebalanceGauge, err := meter.Float64ObservableGauge("pending_rebalance_amount")
 	if err != nil {
 		return fmt.Errorf("could not create gauge: %w", err)
@@ -747,6 +751,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 }
 
 var logger = log.Logger("inventory")
+var meter metric.Meter
 
 // refreshBalances refreshes all the token balances.
 func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
@@ -755,7 +760,9 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	var wg sync.WaitGroup
 	wg.Add(len(i.tokens))
 
-	meter := i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
+	if meter == nil {
+		meter = i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
+	}
 
 	for chainID, tokenMap := range i.tokens {
 		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))

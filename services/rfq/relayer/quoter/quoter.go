@@ -371,9 +371,13 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 	return quote, nil
 }
 
+var meter metric.Meter
+
 // registerQuote registers a quote with the metrics handler.
 func (m *Manager) registerQuote(quote *model.PutQuoteRequest) (err error) {
-	meter := m.metricsHandler.Meter(meterName)
+	if meter == nil {
+		meter = m.metricsHandler.Meter(meterName)
+	}
 	quoteAmountGauge, err := meter.Float64ObservableGauge("quote_amount")
 	if err != nil {
 		return fmt.Errorf("error creating quote amount gauge: %w", err)
