@@ -6,6 +6,7 @@ import {VersionedPayloadLib} from "./VersionedPayload.sol";
 struct AppConfigV1 {
     uint256 requiredResponses;
     uint256 optimisticPeriod;
+    uint256 guardFlag;
 }
 
 using AppConfigLib for AppConfigV1 global;
@@ -14,6 +15,9 @@ library AppConfigLib {
     using VersionedPayloadLib for bytes;
 
     uint16 internal constant APP_CONFIG_V1 = 1;
+
+    uint256 internal constant GUARD_DISABLED = 0;
+    uint256 internal constant GUARD_DEFAULT = 1;
 
     error AppConfigLib__IncorrectVersion(uint16 version);
 

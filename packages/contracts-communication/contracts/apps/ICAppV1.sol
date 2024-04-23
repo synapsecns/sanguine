@@ -5,7 +5,7 @@ import {AbstractICApp, InterchainTxDescriptor} from "./AbstractICApp.sol";
 
 import {InterchainAppV1Events} from "../events/InterchainAppV1Events.sol";
 import {IInterchainAppV1} from "../interfaces/IInterchainAppV1.sol";
-import {AppConfigV1} from "../libs/AppConfig.sol";
+import {AppConfigV1, AppConfigLib} from "../libs/AppConfig.sol";
 import {OptionsV1} from "../libs/Options.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
@@ -88,6 +88,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     }
 
     /// @inheritdoc IInterchainAppV1
+    // TODO: this should have `requiredResponses` and `optimisticPeriod` as parameters.
     function setAppConfigV1(AppConfigV1 memory appConfig) external onlyRole(IC_GOVERNOR_ROLE) {
         if (appConfig.requiredResponses == 0 || appConfig.optimisticPeriod == 0) {
             revert InterchainApp__InvalidAppConfig(appConfig.requiredResponses, appConfig.optimisticPeriod);
@@ -107,7 +108,11 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     /// @inheritdoc IInterchainAppV1
     function getAppConfigV1() public view returns (AppConfigV1 memory) {
-        return AppConfigV1({requiredResponses: _requiredResponses, optimisticPeriod: _optimisticPeriod});
+        return AppConfigV1({
+            requiredResponses: _requiredResponses,
+            optimisticPeriod: _optimisticPeriod,
+            guardFlag: _getGuardFlag()
+        });
     }
 
     /// @inheritdoc IInterchainAppV1
@@ -217,6 +222,12 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// @dev Returns the configuration of the app for validating the received messages.
     function _getAppConfig() internal view override returns (bytes memory) {
         return getAppConfigV1().encodeAppConfigV1();
+    }
+
+    /// @dev Returns the guard flag in the app config. By default, the ICApp is using the Client-provided guard,
+    /// but it can be overridden in the derived contract.
+    function _getGuardFlag() internal view virtual returns (uint256) {
+        return AppConfigLib.GUARD_DEFAULT;
     }
 
     /// @dev Returns the address of the Execution Service to use for sending messages.
