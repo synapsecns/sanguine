@@ -7,13 +7,15 @@ export const Stats = () => {
     return null
   }
 
-  const numSent = response.data.find(
-    (t) => t.interchainTransactionSent !== null
-  )?.interchainTransactionSent?.count
+  const numSent = response.data
+    .filter((t) => t.interchainTransactionSent !== null)
+    .map((t) => t.interchainTransactionSent)
+    .sort((a, b) => Number(b.count) - Number(a.count))[0].count
 
-  const numReceived = response.data.find(
-    (t) => t.interchainTransactionReceived !== null
-  )?.interchainTransactionReceived?.count
+  const numReceived = response.data
+    .filter((t) => t.interchainTransactionReceived !== null)
+    .map((t) => t.interchainTransactionReceived)
+    .sort((a, b) => Number(b?.count) - Number(a?.count))[0].count
 
   return (
     <div className="grid grid-cols-4 gap-4 mb-4">
