@@ -340,10 +340,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         if (appConfig.requiredResponses == 0) {
             revert InterchainClientV1__ZeroRequiredResponses();
         }
-        uint256 responses = _getFinalizedResponsesCount(approvedDstModules, batch, appConfig.optimisticPeriod);
-        if (responses < appConfig.requiredResponses) {
-            revert InterchainClientV1__NotEnoughResponses(responses, appConfig.requiredResponses);
-        }
+        _assertEnoughFinalizedResponses(approvedDstModules, batch, appConfig);
     }
 
     /// @dev Asserts that the chain is linked and returns the linked client address.
@@ -357,22 +354,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
     }
 
-    /**
-     * @dev Calculates the number of responses that are considered finalized within the optimistic time period.
-     * @param approvedModules       Approved modules that could have confirmed the entry.
-     * @param batch                 The Interchain Batch to confirm.
-     * @param optimisticPeriod      The time period in seconds within which a response is considered valid.
-     * @return finalizedResponses   The count of responses that are finalized within the optimistic time period.
-     */
-    function _getFinalizedResponsesCount(
+    /// @dev Asserts that enough finalized responses have been received.
+    function _assertEnoughFinalizedResponses(
         address[] memory approvedModules,
         InterchainBatch memory batch,
-        uint256 optimisticPeriod
+        AppConfigV1 memory appConfig
     )
         internal
         view
-        returns (uint256 finalizedResponses)
     {
+        uint256 finalizedResponses = 0;
+        uint256 optimisticPeriod = appConfig.optimisticPeriod;
         for (uint256 i = 0; i < approvedModules.length; ++i) {
             address module = approvedModules[i];
             uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(module, batch);
@@ -388,6 +380,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             if (confirmedAt + optimisticPeriod < block.timestamp) {
                 ++finalizedResponses;
             }
+        }
+        if (finalizedResponses < appConfig.requiredResponses) {
+            revert InterchainClientV1__NotEnoughResponses(finalizedResponses, appConfig.requiredResponses);
         }
     }
 
