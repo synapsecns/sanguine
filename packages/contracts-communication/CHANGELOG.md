@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.2](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.2.1...contracts-communication@1.2.2) (2024-04-22)
+
+**Note:** Version bump only for package contracts-communication
+
+
+
+
+
+## [1.2.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.2.0...contracts-communication@1.2.1) (2024-04-18)
+
+
+### Bug Fixes
+
+* Gas buffer in `MessageBus`, pack `AppConfig` in `ICAppV1` ([#2511](https://github.com/synapsecns/sanguine/issues/2511)) ([1903930](https://github.com/synapsecns/sanguine/commit/19039307c895e6cba8ede3fa1fcf35bc043e21bb))
+
+
+
+
+
 # [1.2.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.3...contracts-communication@1.2.0) (2024-04-17)
 
 

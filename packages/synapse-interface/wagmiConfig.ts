@@ -1,112 +1,53 @@
 import '@/patch'
-
+import { type Chain } from 'viem'
+import { createConfig } from '@wagmi/core'
 import {
-  boba,
-  cronos,
-  dfk,
-  dogechain,
-  klaytn,
-  metis,
-  aurora,
-  canto,
-  base,
-  blast,
-} from '@constants/extraWagmiChains'
-import { configureChains, createConfig } from 'wagmi'
-import {
-  arbitrum,
-  avalanche,
-  bsc,
-  fantom,
-  harmonyOne,
-  mainnet,
-  moonbeam,
-  moonriver,
-  optimism,
-  polygon,
-} from 'wagmi/chains'
-import { getDefaultWallets, connectorsForWallets } from '@rainbow-me/rainbowkit'
-import { rabbyWallet } from '@rainbow-me/rainbowkit/wallets'
-import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-import { publicProvider } from 'wagmi/providers/public'
-import * as CHAINS from '@constants/chains/master'
+  metaMaskWallet,
+  rabbyWallet,
+  coinbaseWallet,
+  rainbowWallet,
+  walletConnectWallet,
+  trustWallet,
+  ledgerWallet,
+  frameWallet,
+  safeWallet,
+} from '@rainbow-me/rainbowkit/wallets'
+import { connectorsForWallets } from '@rainbow-me/rainbowkit'
 
-export const rawChains = [
-  mainnet,
-  arbitrum,
-  aurora,
-  avalanche,
-  base,
-  blast,
-  bsc,
-  canto,
-  fantom,
-  harmonyOne,
-  metis,
-  moonbeam,
-  moonriver,
-  optimism,
-  polygon,
-  klaytn,
-  cronos,
-  dfk,
-  dogechain,
-  boba,
-]
+import { createTransports } from '@/utils/createTransports'
+import { supportedChains } from '@/constants/chains/supportedChains'
 
-// Add custom icons
-const chainsMatured = []
-for (const chain of rawChains) {
-  const configChain = Object.values(CHAINS).filter(
-    (chainObj) => chainObj.id === chain.id
-  )[0]
-
-  chainsMatured.push({
-    ...chain,
-    iconUrl: configChain.chainImg.src,
-    configRpc: configChain.rpcUrls.primary,
-    fallbackRpc: configChain.rpcUrls.fallback,
-  })
-}
-
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  chainsMatured,
-  [
-    jsonRpcProvider({
-      rpc: (chain) => ({
-        http: chain['configRpc'],
-      }),
-    }),
-    jsonRpcProvider({
-      rpc: (chain) => ({
-        http: chain['fallbackRpc'],
-      }),
-    }),
-    publicProvider(),
-  ]
-)
-
+const appName = 'Synapse'
 const projectId = 'ab0a846bc693996606734d788cb6561d'
 
-const { wallets } = getDefaultWallets({
-  appName: 'Synapse',
-  projectId,
-  chains,
-})
-
-const connectors = connectorsForWallets([
-  ...wallets,
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: 'Wallets',
+      wallets: [
+        metaMaskWallet,
+        walletConnectWallet,
+        coinbaseWallet,
+        rainbowWallet,
+        rabbyWallet,
+        trustWallet,
+        ledgerWallet,
+        frameWallet,
+        safeWallet,
+      ],
+    },
+  ],
   {
-    groupName: 'Other',
-    wallets: [rabbyWallet({ chains })],
-  },
-])
+    projectId,
+    appName,
+  }
+)
 
-export const wagmiChains = chains
+const transports = createTransports(supportedChains as Chain[])
 
 export const wagmiConfig = createConfig({
-  autoConnect: true,
   connectors,
-  publicClient,
-  webSocketPublicClient,
+  chains: supportedChains as unknown as readonly [Chain, ...Chain[]],
+  transports,
+  ssr: true,
 })

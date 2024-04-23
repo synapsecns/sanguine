@@ -1,7 +1,8 @@
-import { fetchBalance, Address } from '@wagmi/core'
-import { zeroAddress } from 'viem'
+import { getBalance } from '@wagmi/core'
+import { type Address, zeroAddress } from 'viem'
 
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
+import { wagmiConfig } from '@/wagmiConfig'
 
 export const getTokenAllowance = async (
   routerAddress: Address,
@@ -13,7 +14,7 @@ export const getTokenAllowance = async (
   let allowance
 
   if (tokenAddress === zeroAddress) {
-    fetchedBalance = await fetchBalance({
+    fetchedBalance = await getBalance(wagmiConfig, {
       address,
       chainId,
     })

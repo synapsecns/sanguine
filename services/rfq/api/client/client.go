@@ -3,6 +3,7 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"github.com/google/uuid"
 	"strconv"
@@ -22,15 +23,15 @@ import (
 // AuthenticatedClient is an interface for the RFQ API.
 // It provides methods for creating, retrieving and updating quotes.
 type AuthenticatedClient interface {
-	PutQuote(q *model.PutQuoteRequest) error
+	PutQuote(ctx context.Context, q *model.PutQuoteRequest) error
 	UnauthenticatedClient
 }
 
 // UnauthenticatedClient is an interface for the RFQ API.
 type UnauthenticatedClient interface {
-	GetAllQuotes() ([]*model.GetQuoteResponse, error)
-	GetSpecificQuote(q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error)
-	GetQuoteByRelayerAddress(relayerAddr string) ([]*model.GetQuoteResponse, error)
+	GetAllQuotes(ctx context.Context) ([]*model.GetQuoteResponse, error)
+	GetSpecificQuote(ctx context.Context, q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error)
+	GetQuoteByRelayerAddress(ctx context.Context, relayerAddr string) ([]*model.GetQuoteResponse, error)
 	resty() *resty.Client
 }
 
@@ -95,13 +96,16 @@ func NewUnauthenticaedClient(metricHandler metrics.Handler, rfqURL string) (Unau
 			return nil
 		})
 
-	otelresty.TraceClient(client, otelresty.WithTracerProvider(metricHandler.GetTracerProvider()))
+	otelresty.TraceClient(client, otelresty.WithTracerProvider(metricHandler.GetTracerProvider()), otelresty.WithSpanNameFormatter(func(_ string, r *resty.Request) string {
+		return fmt.Sprintf("rfq-api %s", r.Method)
+	}))
 	return &unauthenticatedClient{client}, nil
 }
 
 // PutQuote puts a new quote in the RFQ quoting API.
-func (c *clientImpl) PutQuote(q *model.PutQuoteRequest) error {
+func (c *clientImpl) PutQuote(ctx context.Context, q *model.PutQuoteRequest) error {
 	res, err := c.rClient.R().
+		SetContext(ctx).
 		SetBody(q).
 		Put(rest.QuoteRoute)
 
@@ -112,9 +116,10 @@ func (c *clientImpl) PutQuote(q *model.PutQuoteRequest) error {
 }
 
 // GetAllQuotes retrieves all quotes from the RFQ quoting API.
-func (c *unauthenticatedClient) GetAllQuotes() ([]*model.GetQuoteResponse, error) {
+func (c *unauthenticatedClient) GetAllQuotes(ctx context.Context) ([]*model.GetQuoteResponse, error) {
 	var quotes []*model.GetQuoteResponse
 	resp, err := c.rClient.R().
+		SetContext(ctx).
 		SetResult(&quotes).
 		Get(rest.QuoteRoute)
 
@@ -130,9 +135,10 @@ func (c *unauthenticatedClient) GetAllQuotes() ([]*model.GetQuoteResponse, error
 }
 
 // GetSpecificQuote retrieves a specific quote from the RFQ quoting API.
-func (c *unauthenticatedClient) GetSpecificQuote(q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error) {
+func (c *unauthenticatedClient) GetSpecificQuote(ctx context.Context, q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error) {
 	var quotes []*model.GetQuoteResponse
 	resp, err := c.rClient.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"originChainId":   strconv.Itoa(q.OriginChainID),
 			"originTokenAddr": q.OriginTokenAddr,
@@ -153,9 +159,10 @@ func (c *unauthenticatedClient) GetSpecificQuote(q *model.GetQuoteSpecificReques
 	return quotes, nil
 }
 
-func (c *unauthenticatedClient) GetQuoteByRelayerAddress(relayerAddr string) ([]*model.GetQuoteResponse, error) {
+func (c *unauthenticatedClient) GetQuoteByRelayerAddress(ctx context.Context, relayerAddr string) ([]*model.GetQuoteResponse, error) {
 	var quotes []*model.GetQuoteResponse
 	resp, err := c.rClient.R().
+		SetContext(ctx).
 		SetQueryParams(map[string]string{
 			"relayerAddr": relayerAddr,
 		}).

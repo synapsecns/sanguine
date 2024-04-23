@@ -1,6 +1,10 @@
 import { sortByTokenBalance } from '../sortTokens'
 import { Chain, Token } from '../types'
-import { BRIDGABLE_TOKENS, POOLS_BY_CHAIN } from '@/constants/tokens'
+import {
+  BRIDGABLE_TOKENS,
+  POOLS_BY_CHAIN,
+  NON_BRIDGEABLE_GAS_TOKENS,
+} from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
 
 export interface TokenAndBalance {
@@ -41,7 +45,10 @@ export const fetchPortfolioBalances = async (
 }> => {
   const balanceRecord = {}
   const poolTokenBalances = {}
-  const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS)
+
+  const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS).filter(
+    (id) => id !== '2000'
+  )
   const isSingleNetworkCall: boolean = typeof chainId === 'number'
 
   const filteredChains: string[] = availableChains.filter((chain: string) => {
@@ -50,21 +57,47 @@ export const fetchPortfolioBalances = async (
 
   try {
     const balancePromises = filteredChains.map(async (chainId) => {
-      let currentChainTokens
       const currentChainId = Number(chainId)
 
-      if (POOLS_BY_CHAIN[chainId]) {
-        currentChainTokens = BRIDGABLE_TOKENS[chainId].concat(
-          POOLS_BY_CHAIN[chainId]
-        )
-      } else {
-        currentChainTokens = BRIDGABLE_TOKENS[chainId]
-      }
+      return (async () => {
+        try {
+          let currentChainTokens
 
-      const [tokenBalances] = await Promise.all([
-        getTokenBalances(address, currentChainTokens, currentChainId),
-      ])
-      return { currentChainId, tokenBalances }
+          currentChainTokens = BRIDGABLE_TOKENS[chainId]
+
+          if (POOLS_BY_CHAIN[chainId]) {
+            currentChainTokens = currentChainTokens.concat(
+              POOLS_BY_CHAIN[chainId]
+            )
+          }
+
+          // Reconstruct shape of Token to batch fetching balances
+          if (NON_BRIDGEABLE_GAS_TOKENS[chainId]) {
+            const currentChainGasTokens = NON_BRIDGEABLE_GAS_TOKENS[
+              chainId
+            ].map((gasToken) => [
+              {
+                ...gasToken,
+                chainId: currentChainId,
+                addresses: { [currentChainId]: gasToken.address },
+              },
+            ])
+            currentChainTokens = currentChainTokens.concat(
+              ...currentChainGasTokens
+            )
+          }
+          const [tokenBalances] = await Promise.all([
+            getTokenBalances(address, currentChainTokens, currentChainId),
+          ])
+          return { currentChainId, tokenBalances }
+        } catch (error) {
+          console.error(
+            `Error fetching balances for chainId ${chainId}:`,
+            error
+          )
+          return null
+        }
+      })()
     })
 
     const balances = await Promise.all(balancePromises)
