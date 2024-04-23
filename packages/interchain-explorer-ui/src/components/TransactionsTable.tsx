@@ -92,7 +92,6 @@ export const TransactionsTable = () => {
               <th className="text-left">dest txn hash</th>
               <th className="text-left">batch status</th>
               <th className="text-left">txn status</th>
-              <th className="text-left">op period</th>
               <th className="text-left text-transparent">pl</th>
             </tr>
           </thead>
@@ -168,16 +167,11 @@ export const TransactionsTable = () => {
                         ).toLocaleString()}
                     </span>
                   </td>
-                  <td className="max-w-[89px] break-words">
+                  <td className="max-w-[90px] break-words">
                     {transaction.interchainBatch?.status}
                   </td>
-                  <td className="max-w-[89px] break-words">
-                    {transaction.status}
-                  </td>
-                  <td>
-                    <OptimisticCountdown transaction={transaction} />
-                  </td>
-                  <td>
+                  <td className="">{transaction.status}</td>
+                  <td className="w-[100px]">
                     {transaction.interchainTransactionReceived ? (
                       <span className="text-green-500">✓</span>
                     ) : Date.now() -
@@ -186,7 +180,12 @@ export const TransactionsTable = () => {
                       3600000 ? (
                       <span className="text-red-300">x</span>
                     ) : (
-                      <Loader />
+                      <div className="flex items-center">
+                        <div className="mr-2">
+                          <Loader />
+                        </div>
+                        <OptimisticCountdown transaction={transaction} />
+                      </div>
                     )}
                   </td>
                 </tr>
