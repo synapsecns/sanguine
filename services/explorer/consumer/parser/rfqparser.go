@@ -111,7 +111,7 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 	timeStampBig := uint64(*timeStamp)
 	rfqEvent.TimeStamp = &timeStampBig
 
-	var curCoinGeckoId string
+	var curCoinGeckoID string
 	tokenAddressStr := common.HexToAddress(rfqEvent.OriginToken).Hex()
 	const ethAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
@@ -119,16 +119,16 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 		rfqEvent.TokenSymbol = "ETH"
 		rfqEvent.TokenDecimal = new(uint8)
 		*rfqEvent.TokenDecimal = 18
-		curCoinGeckoId = ethCoinGeckoID
+		curCoinGeckoID = ethCoinGeckoID
 	} else {
 		// Assuming any other token is USDC
 		rfqEvent.TokenSymbol = "USDC"
 		rfqEvent.TokenDecimal = new(uint8)
 		*rfqEvent.TokenDecimal = 6
-		curCoinGeckoId = usdcCoinGeckoID
+		curCoinGeckoID = usdcCoinGeckoID
 	}
 	// find the price data for that specific token
-	p.applyPriceData(ctx, rfqEvent, curCoinGeckoId)
+	p.applyPriceData(ctx, rfqEvent, curCoinGeckoID)
 
 	// Would store into bridge database with a new goroutine but saw unreliable storage of events w/parent context cancellation.
 	bridgeEvent := rfqEventToBridgeEvent(*rfqEvent)
