@@ -64,6 +64,8 @@ export default createSchema((p) => ({
     id: p.string(),
     srcChainId: p.int(),
     dstChainId: p.int(),
+    srcSender: p.string(),
+    dstReceiver: p.string(),
     sentAt: p.bigint().optional(),
     receivedAt: p.bigint().optional(),
     createdAt: p.bigint().optional(),

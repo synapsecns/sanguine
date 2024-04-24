@@ -26,12 +26,12 @@ export const TransactionInfo = ({
       {interchainTransactionSent && (
         <div className="mb-4">
           <h2 className="text-lg">Sent</h2>
-          <p>Chain ID: {interchainTransactionSent.srcChainId}</p>
+          <p>srcChainId: {interchainTransactionSent.srcChainId}</p>
+          <p>dstChainId: {interchainTransactionSent.dstChainId}</p>
           <p>dbNonce: {interchainTransactionSent.dbNonce.toString()}</p>
           <p>Address: {interchainTransactionSent.address}</p>
-          <p>dstChainId: {interchainTransactionSent.dstChainId}</p>
-          <p>dstReceiver: {interchainTransactionSent.dstReceiver}</p>
           <p>srcSender: {interchainTransactionSent.srcSender}</p>
+          <p>dstReceiver: {interchainTransactionSent.dstReceiver}</p>
           <p>
             Timestamp:{' '}
             {new Date(
@@ -51,12 +51,12 @@ export const TransactionInfo = ({
       {interchainTransactionReceived && (
         <div>
           <h2 className="text-lg font-semibold">Received</h2>
-          <p>Chain ID: {interchainTransactionReceived.dstChainId}</p>
+          <p>srcChainId: {interchainTransactionReceived.srcChainId}</p>
+          <p>dstChainId: {interchainTransactionReceived.dstChainId}</p>
           <p>dbNonce: {interchainTransactionReceived.dbNonce.toString()}</p>
           <p>Address: {interchainTransactionReceived.address}</p>
-          <p>srcChainId: {interchainTransactionReceived.srcChainId}</p>
-          <p>dstReceiver: {interchainTransactionReceived.dstReceiver}</p>
           <p>srcSender: {interchainTransactionReceived.srcSender}</p>
+          <p>dstReceiver: {interchainTransactionReceived.dstReceiver}</p>
           <p>
             Timestamp:{' '}
             {new Date(
