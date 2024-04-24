@@ -1,6 +1,6 @@
 export type InterchainTransactionSent = {
   id: string
-  chainId: number
+  srcChainId: number
   address: string
   srcSender: string
   dstChainId: number
@@ -14,7 +14,7 @@ export type InterchainTransactionSent = {
 
 export type InterchainTransactionReceived = {
   id: string
-  chainId: number
+  dstChainId: number
   address: string
   srcSender: string
   srcChainId: string

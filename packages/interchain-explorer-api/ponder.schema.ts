@@ -12,9 +12,9 @@ export default createSchema((p) => ({
     id: p.hex(),
     batchRoot: p.hex(),
     srcDbNonce: p.bigint(),
-    srcChainId: p.bigint().optional(),
+    srcChainId: p.int().optional(),
     dstDbNonce: p.bigint().optional(),
-    dstChainId: p.bigint().optional(),
+    dstChainId: p.int().optional(),
     interchainTransactions: p.many('InterchainTransaction.interchainBatchId'),
     status: p.string(),
     verifiedAt: p.bigint().optional(),
@@ -24,12 +24,12 @@ export default createSchema((p) => ({
 
   InterchainTransactionSent: p.createTable({
     id: p.string(),
-    chainId: p.int(),
+    srcChainId: p.int(),
     name: p.string(),
     transactionId: p.string(),
     dbNonce: p.bigint(),
     entryIndex: p.bigint(),
-    dstChainId: p.bigint(),
+    dstChainId: p.int(),
     srcSender: p.string(),
     dstReceiver: p.string(),
     verificationFee: p.bigint(),
@@ -45,12 +45,12 @@ export default createSchema((p) => ({
 
   InterchainTransactionReceived: p.createTable({
     id: p.string(),
-    chainId: p.int(),
+    dstChainId: p.int(),
     name: p.string(),
     transactionId: p.string(),
     dbNonce: p.bigint(),
     entryIndex: p.bigint(),
-    srcChainId: p.bigint(),
+    srcChainId: p.int(),
     srcSender: p.string(),
     dstReceiver: p.string(),
     address: p.string(),
@@ -62,6 +62,8 @@ export default createSchema((p) => ({
 
   InterchainTransaction: p.createTable({
     id: p.string(),
+    srcChainId: p.int(),
+    dstChainId: p.int(),
     sentAt: p.bigint().optional(),
     receivedAt: p.bigint().optional(),
     createdAt: p.bigint().optional(),

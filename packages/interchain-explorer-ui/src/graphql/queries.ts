@@ -1,6 +1,55 @@
 import { gql } from 'graphql-request'
 
+const SENT_INFO_FRAGMENT = gql`
+  fragment InterchainTransactionSentFields on InterchainTransactionSent {
+    id
+    address
+    srcSender
+    srcChainId
+    dstChainId
+    dstReceiver
+    transactionHash
+    options
+    timestamp
+    dbNonce
+    count
+  }
+`
+
+const RECEIVED_INFO_FRAGMENT = gql`
+  fragment InterchainTransactionReceivedFields on InterchainTransactionReceived {
+    id
+    address
+    srcSender
+    srcChainId
+    dstChainId
+    dstReceiver
+    transactionHash
+    timestamp
+    dbNonce
+    count
+  }
+`
+
+const BATCH_INFO_FRAGMENT = gql`
+  fragment InterchainBatchFields on InterchainBatch {
+    id
+    status
+    verifiedAt
+    appConfig {
+      id
+      requiredResponses
+      optimisticPeriod
+      modules
+    }
+  }
+`
+
 export const GET_INTERCHAIN_TRANSACTIONS = gql`
+  ${BATCH_INFO_FRAGMENT}
+  ${SENT_INFO_FRAGMENT}
+  ${RECEIVED_INFO_FRAGMENT}
+
   query GetInterchainTransactions(
     $limit: Int
     $after: String
@@ -23,40 +72,13 @@ export const GET_INTERCHAIN_TRANSACTIONS = gql`
         id
         status
         interchainBatch {
-          id
-          status
-          verifiedAt
-          appConfig {
-            id
-            requiredResponses
-            optimisticPeriod
-            modules
-          }
+          ...InterchainBatchFields
         }
         interchainTransactionSent {
-          id
-          chainId
-          address
-          srcSender
-          dstChainId
-          dstReceiver
-          transactionHash
-          options
-          timestamp
-          dbNonce
-          count
+          ...InterchainTransactionSentFields
         }
         interchainTransactionReceived {
-          id
-          chainId
-          address
-          srcSender
-          srcChainId
-          transactionHash
-          dstReceiver
-          timestamp
-          dbNonce
-          count
+          ...InterchainTransactionReceivedFields
         }
       }
     }
@@ -85,36 +107,22 @@ export const GET_STATS = gql`
 `
 
 export const GET_INTERCHAIN_TRANSACTION = gql`
+  ${BATCH_INFO_FRAGMENT}
+  ${SENT_INFO_FRAGMENT}
+  ${RECEIVED_INFO_FRAGMENT}
+
   query GetInterchainTransaction($id: String!) {
     interchainTransaction(id: $id) {
       id
       status
       interchainBatch {
-        id
-        status
+        ...InterchainBatchFields
       }
       interchainTransactionSent {
-        id
-        chainId
-        address
-        srcSender
-        dstChainId
-        dstReceiver
-        transactionHash
-        options
-        dbNonce
-        timestamp
+        ...InterchainTransactionSentFields
       }
       interchainTransactionReceived {
-        id
-        chainId
-        address
-        srcSender
-        srcChainId
-        dstReceiver
-        transactionHash
-        dbNonce
-        timestamp
+        ...InterchainTransactionReceivedFields
       }
     }
   }
