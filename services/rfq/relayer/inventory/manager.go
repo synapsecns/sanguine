@@ -807,9 +807,6 @@ func (i *inventoryManagerImpl) registerBalance(ctx context.Context, meter metric
 		}
 	}
 
-	i.mux.RLock()
-	defer i.mux.RUnlock()
-
 	// TODO: make sure this doesn't get called until we're done
 	tokenData, ok := i.tokens[chainID][token]
 	if !ok {
