@@ -372,15 +372,18 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 }
 
 var meter metric.Meter
+var quoteAmountHist metric.Float64Histogram
 
 // registerQuote registers a quote with the metrics handler.
 func (m *Manager) registerQuote(ctx context.Context, quote *model.PutQuoteRequest) (err error) {
 	if meter == nil {
 		meter = m.metricsHandler.Meter(meterName)
 	}
-	quoteAmountHist, err := meter.Float64Histogram("quote_amount")
-	if err != nil {
-		return fmt.Errorf("error creating quote amount gauge: %w", err)
+	if quoteAmountHist == nil {
+		quoteAmountHist, err = meter.Float64Histogram("quote_amount")
+		if err != nil {
+			return fmt.Errorf("error creating quote amount gauge: %w", err)
+		}
 	}
 	attributes := attribute.NewSet(
 		attribute.Int(metrics.Origin, quote.OriginChainID),
