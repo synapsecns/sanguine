@@ -1,7 +1,36 @@
+import { type Address, trim } from 'viem'
+
 import { ponder } from '@/generated'
 
 let sentCount = 0
 let receivedCount = 0
+
+interface TempAppConfig {
+  [key: string]: {
+    [key: number]: {
+      requiredResponses: number
+      optimisticPeriod: number
+      modules: Address[]
+    }
+  }
+}
+
+const TEMP_APP_CONFIG: TempAppConfig = {
+  '0x521931f62298605de22485bb72a86d599f43f823': {
+    11155111: {
+      requiredResponses: 1,
+      optimisticPeriod: 30,
+      modules: ['0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B'],
+    },
+  },
+  '0x67829fee24ae01e2a7f9f09f36bf96fcf7771738': {
+    421614: {
+      requiredResponses: 1,
+      optimisticPeriod: 30,
+      modules: ['0xC13e2b478f6531Ef096FF05733Ed65E3bc7fC5AF'],
+    },
+  },
+}
 
 ponder.on(
   'InterchainClientV1:InterchainTransactionSent',
@@ -60,14 +89,30 @@ ponder.on(
       },
     })
 
+    /* Currently we can't use client to read contract from dst chain */
+    // const response = await client.readContract({
+    //   abi: InterchainClientV1.abi,
+    //   address: InterchainClientV1.address as Address,
+    //   functionName: 'getAppReceivingConfigV1',
+    //   args: [trim(dstReceiver)],
+    // })
+
+    const { requiredResponses, optimisticPeriod, modules } = TEMP_APP_CONFIG[
+      trim(dstReceiver)
+    ]?.[Number(dstChainId)] ?? {
+      requiredResponses: 1,
+      optimisticPeriod: 30,
+      modules: [],
+    }
+
     const appConfig =
       (await AppConfigV1.findUnique({ id: dstReceiver })) ??
       (await AppConfigV1.create({
         id: dstReceiver,
         data: {
-          requiredResponses: 1,
-          optimisticPeriod: 30,
-          modules: [],
+          requiredResponses,
+          optimisticPeriod,
+          modules,
         },
       }))
 
@@ -95,6 +140,8 @@ ponder.on(
           status: 'Sent',
           srcChainId: chainId,
           dstChainId: Number(dstChainId),
+          srcSender,
+          dstReceiver,
         },
         create: {
           sentAt: timestamp,
@@ -104,6 +151,8 @@ ponder.on(
           status: 'Sent',
           srcChainId: chainId,
           dstChainId: Number(dstChainId),
+          srcSender,
+          dstReceiver,
         },
       })
     })
@@ -163,6 +212,8 @@ ponder.on(
         status: 'Received',
         srcChainId: Number(srcChainId),
         dstChainId: chainId,
+        srcSender,
+        dstReceiver,
       },
       update: {
         receivedAt: timestamp,
@@ -171,6 +222,8 @@ ponder.on(
         status: 'Received',
         srcChainId: Number(srcChainId),
         dstChainId: chainId,
+        srcSender,
+        dstReceiver,
       },
     })
   }
@@ -219,21 +272,67 @@ ponder.on(
   'InterchainDB:InterchainBatchVerified',
   async ({ event, context }) => {
     const {
-      db: { InterchainBatch },
+      db: {
+        InterchainBatch,
+        InterchainTransaction,
+        InterchainTransactionSent,
+        AppConfigV1,
+      },
     } = context
 
-    const { srcChainId, dbNonce, batchRoot } = event.args
+    const { module, srcChainId, dbNonce, batchRoot } = event.args
 
     const { timestamp } = event.block
 
-    await InterchainBatch.update({
+    /*
+      1. batchRoot matches the value from InterchainBatchFinalized event
+
+      2. module is in the list of modules that dst receiver trusts
+
+      3. srcChainId, dbNonce match values from the InterchainTransactionSent event
+    */
+
+    // check if batchRoot matches the value from InterchainBatchFinalized event
+    const batch = await InterchainBatch.findUnique({
       id: batchRoot,
-      data: {
-        srcChainId: Number(srcChainId),
-        dstDbNonce: dbNonce,
-        verifiedAt: timestamp,
-        status: 'InterchainBatchVerified',
-      },
     })
+
+    if (batch && batch.appConfigId) {
+      const appConfig = await AppConfigV1.findUnique({ id: batch.appConfigId })
+
+      const modules = appConfig?.modules
+
+      const txns = await InterchainTransaction.findMany({
+        where: {
+          interchainBatchId: batch.batchRoot,
+        },
+      })
+
+      const sentTxns = await Promise.all(
+        txns.items.map(async (t) =>
+          InterchainTransactionSent.findUnique({
+            id: t.interchainTransactionSentId as string,
+          })
+        )
+      )
+
+      // checks srcChainId, dbNonce match values from the InterchainTransactionSent event
+      const allValidTransactions = sentTxns.every(
+        (t) => t && t.srcChainId === Number(srcChainId) && t.dbNonce === dbNonce
+      )
+
+      // check that module is in the list of modules that dst receiver trusts
+      if (allValidTransactions && modules?.includes(module)) {
+        await InterchainBatch.update({
+          id: batchRoot,
+          data: {
+            srcChainId: Number(srcChainId),
+            dstDbNonce: dbNonce,
+            verifiedAt: timestamp,
+            status: 'InterchainBatchVerified',
+          },
+        })
+      }
+    }
   }
 )
