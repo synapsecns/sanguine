@@ -133,10 +133,15 @@ export const TransactionsTable = () => {
                     {transaction.interchainTransactionSent && (
                       <div className="flex items-center space-x-2">
                         <ChainImage
-                          {...transaction.interchainTransactionSent}
+                          chainId={
+                            transaction.interchainTransactionSent.srcChainId
+                          }
                         />
                         <ExplorerLink
                           {...transaction.interchainTransactionSent}
+                          chainId={
+                            transaction.interchainTransactionSent.srcChainId
+                          }
                         />
                       </div>
                     )}
@@ -152,10 +157,15 @@ export const TransactionsTable = () => {
                     {transaction.interchainTransactionReceived && (
                       <div className="flex items-center space-x-2">
                         <ChainImage
-                          {...transaction.interchainTransactionReceived}
+                          chainId={
+                            transaction.interchainTransactionReceived.dstChainId
+                          }
                         />
                         <ExplorerLink
                           {...transaction.interchainTransactionReceived}
+                          chainId={
+                            transaction.interchainTransactionReceived.dstChainId
+                          }
                         />
                       </div>
                     )}

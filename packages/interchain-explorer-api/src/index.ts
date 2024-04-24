@@ -41,11 +41,11 @@ ponder.on(
       id: transactionId,
       data: {
         name,
-        chainId,
+        srcChainId: chainId,
         transactionId,
         dbNonce,
         entryIndex,
-        dstChainId,
+        dstChainId: Number(dstChainId),
         srcSender,
         dstReceiver,
         verificationFee,
@@ -74,7 +74,7 @@ ponder.on(
     const batch = await InterchainBatch.findMany({
       where: {
         srcDbNonce: dbNonce,
-        dstChainId,
+        dstChainId: Number(dstChainId),
       },
     })
 
@@ -93,6 +93,8 @@ ponder.on(
           interchainTransactionSentId: record.id,
           interchainBatchId: b.id,
           status: 'Sent',
+          srcChainId: chainId,
+          dstChainId: Number(dstChainId),
         },
         create: {
           sentAt: timestamp,
@@ -100,6 +102,8 @@ ponder.on(
           interchainTransactionSentId: record.id,
           interchainBatchId: b.id,
           status: 'Sent',
+          srcChainId: chainId,
+          dstChainId: Number(dstChainId),
         },
       })
     })
@@ -135,11 +139,11 @@ ponder.on(
       id: transactionId,
       data: {
         name,
-        chainId,
+        dstChainId: chainId,
         transactionId,
         dbNonce,
         entryIndex,
-        srcChainId,
+        srcChainId: Number(srcChainId),
         srcSender,
         dstReceiver,
         address,
@@ -157,12 +161,16 @@ ponder.on(
         createdAt: BigInt(Math.trunc(Date.now() / 1000)),
         interchainTransactionReceivedId: record.id,
         status: 'Received',
+        srcChainId: Number(srcChainId),
+        dstChainId: chainId,
       },
       update: {
         receivedAt: timestamp,
         updatedAt: BigInt(Math.trunc(Date.now() / 1000)),
         interchainTransactionReceivedId: record.id,
         status: 'Received',
+        srcChainId: Number(srcChainId),
+        dstChainId: chainId,
       },
     })
   }
@@ -200,7 +208,7 @@ ponder.on(
     await InterchainBatch.update({
       id: batchRoot,
       data: {
-        dstChainId,
+        dstChainId: Number(dstChainId),
         status: 'InterchainBatchVerificationRequested',
       },
     })
@@ -221,7 +229,7 @@ ponder.on(
     await InterchainBatch.update({
       id: batchRoot,
       data: {
-        srcChainId,
+        srcChainId: Number(srcChainId),
         dstDbNonce: dbNonce,
         verifiedAt: timestamp,
         status: 'InterchainBatchVerified',

@@ -26,7 +26,7 @@ export const TransactionInfo = ({
       {interchainTransactionSent && (
         <div className="mb-4">
           <h2 className="text-lg">Sent</h2>
-          <p>Chain ID: {interchainTransactionSent.chainId}</p>
+          <p>Chain ID: {interchainTransactionSent.srcChainId}</p>
           <p>dbNonce: {interchainTransactionSent.dbNonce.toString()}</p>
           <p>Address: {interchainTransactionSent.address}</p>
           <p>dstChainId: {interchainTransactionSent.dstChainId}</p>
@@ -40,14 +40,18 @@ export const TransactionInfo = ({
           </p>
           <p>
             Transaction Hash:{' '}
-            <ExplorerLink short={false} {...interchainTransactionSent} />
+            <ExplorerLink
+              short={false}
+              {...interchainTransactionSent}
+              chainId={interchainTransactionSent.srcChainId}
+            />
           </p>
         </div>
       )}
       {interchainTransactionReceived && (
         <div>
           <h2 className="text-lg font-semibold">Received</h2>
-          <p>Chain ID: {interchainTransactionReceived.chainId}</p>
+          <p>Chain ID: {interchainTransactionReceived.dstChainId}</p>
           <p>dbNonce: {interchainTransactionReceived.dbNonce.toString()}</p>
           <p>Address: {interchainTransactionReceived.address}</p>
           <p>srcChainId: {interchainTransactionReceived.srcChainId}</p>
@@ -61,7 +65,11 @@ export const TransactionInfo = ({
           </p>
           <p>
             Transaction Hash:{' '}
-            <ExplorerLink short={false} {...interchainTransactionReceived} />
+            <ExplorerLink
+              short={false}
+              {...interchainTransactionReceived}
+              chainId={interchainTransactionReceived.dstChainId}
+            />
           </p>
         </div>
       )}
