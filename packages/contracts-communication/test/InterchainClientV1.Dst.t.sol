@@ -40,6 +40,12 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     bytes32 public constant MOCK_SRC_SENDER = keccak256("Sender");
     bytes public constant MOCK_MESSAGE = "Hello, World!";
 
+    uint256 public constant GUARD_DISABLED = 0;
+    uint256 public constant GUARD_DEFAULT = 1;
+    uint256 public constant GUARD_CUSTOM = 2;
+
+    address public customGuard = makeAddr("Custom Guard");
+
     address public executor = makeAddr("Executor");
 
     address public dstReceiver;
@@ -120,6 +126,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     function getOptimisticPeriod() internal view virtual returns (uint256);
 
     function getAppConfig(uint256 requiredResponses, uint256 guardFlag) internal view returns (AppConfigV1 memory) {
+        // TODO: add custom guard address once implemented
         return AppConfigV1({
             requiredResponses: requiredResponses,
             optimisticPeriod: getOptimisticPeriod(),
@@ -342,7 +349,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     // ═════════════════════════════════════ APP CONFIG: 1 OUT OF 2 RESPONSES ══════════════════════════════════════════
 
     function test_execute_1_2_noGuard(uint256 indexA, uint256 indexB) public {
-        checkScenario({required: 1, guardFlag: 0, indexA: indexA, indexB: indexB});
+        checkScenario({required: 1, guardFlag: GUARD_DISABLED, indexA: indexA, indexB: indexB});
     }
 
     /// @dev Guard conflict should not affect the behavior if the app didn't opt-in for the guard.
@@ -352,7 +359,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     }
 
     function test_execute_1_2_defaultGuard(uint256 indexA, uint256 indexB) public {
-        checkScenario({required: 1, guardFlag: 1, indexA: indexA, indexB: indexB});
+        checkScenario({required: 1, guardFlag: GUARD_DEFAULT, indexA: indexA, indexB: indexB});
     }
 
     /// @dev Guard conflict should always revert the transaction if the app opted-in for the guard.
@@ -360,13 +367,41 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         addGuardConflict(defaultGuard);
         uint256 timeA = getTimestampFixture(indexA);
         uint256 timeB = getTimestampFixture(indexB);
-        checkBatchConflict({module: defaultGuard, required: 1, guardFlag: 1, times: toArr(timeA, timeB)});
+        checkBatchConflict({module: defaultGuard, required: 1, guardFlag: GUARD_DEFAULT, times: toArr(timeA, timeB)});
+    }
+
+    function test_execute_1_2_customGuard(uint256 indexA, uint256 indexB) public {
+        checkScenario({required: 1, guardFlag: 2, indexA: indexA, indexB: indexB});
+    }
+
+    /// @dev Custom guard conflict should always revert the transaction if the app opted-in for the custom guard.
+    function test_execute_1_2_customGuard_customGuardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(customGuard);
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        checkBatchConflict({module: customGuard, required: 1, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
+    }
+
+    /// @dev Default guard conflict should not affect the behavior if the app opted-in for a custom guard.
+    function test_execute_1_2_customGuard_defaultGuardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        test_execute_1_2_customGuard(indexA, indexB);
+    }
+
+    /// @dev Default Guard conflict should be ignored if the app opted-in for a custom guard,
+    /// but the custom guard conflict should still revert the transaction.
+    function test_execute_1_2_customGuard_bothGuardsConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        addGuardConflict(customGuard);
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        checkBatchConflict({module: customGuard, required: 1, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
     }
 
     // ═════════════════════════════════════ APP CONFIG: 2 OUT OF 2 RESPONSES ══════════════════════════════════════════
 
     function test_execute_2_2_noGuard(uint256 indexA, uint256 indexB) public {
-        checkScenario({required: 2, guardFlag: 0, indexA: indexA, indexB: indexB});
+        checkScenario({required: 2, guardFlag: GUARD_DISABLED, indexA: indexA, indexB: indexB});
     }
 
     /// @dev Guard conflict should not affect the behavior if the app didn't opt-in for the guard.
@@ -376,7 +411,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     }
 
     function test_execute_2_2_defaultGuard(uint256 indexA, uint256 indexB) public {
-        checkScenario({required: 2, guardFlag: 1, indexA: indexA, indexB: indexB});
+        checkScenario({required: 2, guardFlag: GUARD_DEFAULT, indexA: indexA, indexB: indexB});
     }
 
     /// @dev Guard conflict should always revert the transaction if the app opted-in for the guard.
@@ -384,7 +419,35 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         addGuardConflict(defaultGuard);
         uint256 timeA = getTimestampFixture(indexA);
         uint256 timeB = getTimestampFixture(indexB);
-        checkBatchConflict({module: defaultGuard, required: 2, guardFlag: 1, times: toArr(timeA, timeB)});
+        checkBatchConflict({module: defaultGuard, required: 2, guardFlag: GUARD_DEFAULT, times: toArr(timeA, timeB)});
+    }
+
+    function test_execute_2_2_customGuard(uint256 indexA, uint256 indexB) public {
+        checkScenario({required: 2, guardFlag: GUARD_CUSTOM, indexA: indexA, indexB: indexB});
+    }
+
+    /// @dev Custom guard conflict should always revert the transaction if the app opted-in for the custom guard.
+    function test_execute_2_2_customGuard_customGuardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(customGuard);
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        checkBatchConflict({module: customGuard, required: 2, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
+    }
+
+    /// @dev Default guard conflict should not affect the behavior if the app opted-in for a custom guard.
+    function test_execute_2_2_customGuard_defaultGuardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        test_execute_2_2_customGuard(indexA, indexB);
+    }
+
+    /// @dev Default Guard conflict should be ignored if the app opted-in for a custom guard,
+    /// but the custom guard conflict should still revert the transaction.
+    function test_execute_2_2_customGuard_bothGuardsConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        addGuardConflict(customGuard);
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        checkBatchConflict({module: customGuard, required: 2, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
     }
 
     // ═══════════════════════════════════════════ EXECUTE: MISC REVERTS ═══════════════════════════════════════════════
