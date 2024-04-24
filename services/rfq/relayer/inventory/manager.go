@@ -448,7 +448,7 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 		return nil
 	}
 	for _, pendingReb := range pendingRebalances {
-		registerErr := i.registerPendingRebalance(pendingReb)
+		registerErr := i.registerPendingRebalance(ctx, pendingReb)
 		if registerErr != nil {
 			span.AddEvent("could not register pending rebalance", trace.WithAttributes(attribute.String("error", registerErr.Error())))
 		}
@@ -467,7 +467,7 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 }
 
 // registerPendingRebalance registers a callback to update the pending rebalance amount gauge.
-func (i *inventoryManagerImpl) registerPendingRebalance(rebalance *reldb.Rebalance) (err error) {
+func (i *inventoryManagerImpl) registerPendingRebalance(ctx context.Context, rebalance *reldb.Rebalance) (err error) {
 	if rebalance == nil {
 		return nil
 	}
@@ -476,26 +476,23 @@ func (i *inventoryManagerImpl) registerPendingRebalance(rebalance *reldb.Rebalan
 		meter = i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
 	}
 
-	rebalanceGauge, err := meter.Float64ObservableGauge("pending_rebalance_amount")
-	if err != nil {
-		return fmt.Errorf("could not create gauge: %w", err)
-	}
-	_, err = meter.RegisterCallback(func(_ context.Context, o metric.Observer) (err error) {
-		attributes := attribute.NewSet(
-			attribute.Int(metrics.Origin, int(rebalance.Origin)),
-			attribute.Int(metrics.Destination, int(rebalance.Destination)),
-			attribute.String("status", rebalance.Status.String()),
-		)
-		tokenMetadata, err := i.GetTokenMetadata(int(rebalance.Origin), rebalance.OriginTokenAddr)
+	if rebalanceHist == nil {
+		rebalanceHist, err = meter.Float64Histogram("pending_rebalance_amount")
 		if err != nil {
-			return fmt.Errorf("could not get token metadata: %w", err)
+			return fmt.Errorf("could not create gauge: %w", err)
 		}
-		o.ObserveFloat64(rebalanceGauge, core.BigToDecimals(rebalance.OriginAmount, tokenMetadata.Decimals), metric.WithAttributeSet(attributes))
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("could not register callback: %w", err)
 	}
+
+	attributes := attribute.NewSet(
+		attribute.Int(metrics.Origin, int(rebalance.Origin)),
+		attribute.Int(metrics.Destination, int(rebalance.Destination)),
+		attribute.String("status", rebalance.Status.String()),
+	)
+	tokenMetadata, err := i.GetTokenMetadata(int(rebalance.Origin), rebalance.OriginTokenAddr)
+	if err != nil {
+		return fmt.Errorf("could not get token metadata: %w", err)
+	}
+	rebalanceHist.Record(ctx, core.BigToDecimals(rebalance.OriginAmount, tokenMetadata.Decimals), metric.WithAttributeSet(attributes))
 	return nil
 }
 
@@ -705,7 +702,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 			chainID := chainID // capture func literal
 			deferredRegisters = append(deferredRegisters, func() error {
 				//nolint:wrapcheck
-				return i.registerBalance(meter, chainID, token)
+				return i.registerBalance(ctx, meter, chainID, token)
 			})
 		}
 	}
@@ -752,6 +749,8 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 var logger = log.Logger("inventory")
 var meter metric.Meter
+var balanceHist metric.Float64Histogram
+var rebalanceHist metric.Float64Histogram
 
 // refreshBalances refreshes all the token balances.
 func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
@@ -790,7 +789,7 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 			if err != nil {
 				logger.Warnf("could not refresh balances on %d: %v", chainID, err)
 			}
-			err = i.registerBalance(meter, chainID, chain.EthAddress)
+			err = i.registerBalance(ctx, meter, chainID, chain.EthAddress)
 			if err != nil {
 				logger.Warnf("could not register balance: %v", err)
 			}
@@ -800,32 +799,28 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	return nil
 }
 
-func (i *inventoryManagerImpl) registerBalance(meter metric.Meter, chainID int, token common.Address) error {
-	balanceGauge, err := meter.Float64ObservableGauge("inventory_balance")
-	if err != nil {
-		return fmt.Errorf("could not create gauge: %w", err)
-	}
-
-	if _, err := meter.RegisterCallback(func(_ context.Context, observer metric.Observer) error {
-		i.mux.RLock()
-		defer i.mux.RUnlock()
-
-		// TODO: make sure this doesn't get called until we're done
-		tokenData, ok := i.tokens[chainID][token]
-		if !ok {
-			return fmt.Errorf("could not find token in chainTokens for chainID: %d, token: %s", chainID, token)
+func (i *inventoryManagerImpl) registerBalance(ctx context.Context, meter metric.Meter, chainID int, token common.Address) (err error) {
+	if balanceHist == nil {
+		balanceHist, err = meter.Float64Histogram("inventory_balance")
+		if err != nil {
+			return fmt.Errorf("could not create gauge: %w", err)
 		}
-
-		attributes := attribute.NewSet(attribute.Int(metrics.ChainID, chainID), attribute.String("relayer_address", i.relayerAddress.String()),
-			attribute.String("token_name", tokenData.Name), attribute.Int("decimals", int(tokenData.Decimals)),
-			attribute.String("token_address", token.String()))
-
-		observer.ObserveFloat64(balanceGauge, core.BigToDecimals(tokenData.Balance, tokenData.Decimals), metric.WithAttributeSet(attributes))
-
-		return nil
-	}, balanceGauge); err != nil {
-		return fmt.Errorf("could not register callback: %w", err)
 	}
+
+	i.mux.RLock()
+	defer i.mux.RUnlock()
+
+	// TODO: make sure this doesn't get called until we're done
+	tokenData, ok := i.tokens[chainID][token]
+	if !ok {
+		return fmt.Errorf("could not find token in chainTokens for chainID: %d, token: %s", chainID, token)
+	}
+
+	attributes := attribute.NewSet(attribute.Int(metrics.ChainID, chainID), attribute.String("relayer_address", i.relayerAddress.String()),
+		attribute.String("token_name", tokenData.Name), attribute.Int("decimals", int(tokenData.Decimals)),
+		attribute.String("token_address", token.String()))
+
+	balanceHist.Record(ctx, core.BigToDecimals(tokenData.Balance, tokenData.Decimals), metric.WithAttributeSet(attributes))
 	return nil
 }
 
