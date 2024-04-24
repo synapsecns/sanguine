@@ -1,9 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
+import {InterchainTransaction, InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 
 interface IInterchainClientV1 {
+    // TODO: recheck the explicitness of the TxReadiness enum
+    enum TxReadiness {
+        Ready,
+        AlreadyExecuted,
+        BatchConflict,
+        IncorrectDstChainId,
+        NotEnoughResponses,
+        ZeroRequiredResponses,
+        UndeterminedRevert
+    }
+
     // TODO: standardize error names across interfaces
     error InterchainClientV1__BatchConflict(address module);
     error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
@@ -114,6 +125,31 @@ interface IInterchainClientV1 {
      * @return bool Returns true if the transaction is executable, false otherwise.
      */
     function isExecutable(bytes calldata transaction, bytes32[] calldata proof) external view returns (bool);
+
+    /// @notice Returns the readiness status of a transaction to be executed.
+    /// @dev Some of the possible statuses have additional arguments that are returned:
+    /// - Ready: the transaction is ready to be executed.
+    /// - AlreadyExecuted: the transaction has already been executed.
+    ///   - `firstArg` is the transaction ID.
+    /// - BatchConflict: one of the modules have submitted a conflicting batch.
+    ///   - `firstArg` is the address of the module.
+    ///   - This is either one of the modules that the app trusts, or the Guard module used by the app.
+    /// - IncorrectDstChainId: the destination chain ID does not match the local chain ID.
+    ///   - `firstArg` is the destination chain ID.
+    /// - NotEnoughResponses: not enough responses have been received for the transaction.
+    ///   - `firstArg` is the number of responses received.
+    ///   - `secondArg` is the number of responses required.
+    /// - ZeroRequiredResponses: teh app config requires zero responses for the transaction.
+    /// - UndeterminedRevert: the transaction will revert for another reason.
+    ///
+    /// Note: the arguments are abi-encoded bytes32 values (as their types could be different).
+    function getTxReadinessV1(
+        InterchainTransaction memory icTx,
+        bytes32[] calldata proof
+    )
+        external
+        view
+        returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg);
 
     /// @notice Returns the fee for sending an Interchain message.
     /// @param dstChainId           The chain ID of the destination chain.

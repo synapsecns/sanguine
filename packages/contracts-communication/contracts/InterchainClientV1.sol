@@ -157,6 +157,18 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     // @inheritdoc IInterchainClientV1
+    function getTxReadinessV1(
+        InterchainTransaction memory icTx,
+        bytes32[] calldata proof
+    )
+        external
+        view
+        returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg)
+    {
+        // TODO: implement
+    }
+
+    // @inheritdoc IInterchainClientV1
     function getExecutor(bytes calldata encodedTx) external view returns (address) {
         return _txExecutor[keccak256(encodedTx)];
     }
