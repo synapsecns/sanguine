@@ -133,7 +133,7 @@ abstract contract ICSetup is ProxyTest {
         ICAppV1(app).linkRemoteAppEVM(remoteChainId(), remoteApp());
         ICAppV1(app).addTrustedModule(address(module));
         ICAppV1(app).setAppConfigV1(
-            AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD, guardFlag: 0})
+            AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD, guardFlag: 0, guard: address(0)})
         );
         ICAppV1(app).setExecutionService(address(executionService));
         ICAppV1(app).addInterchainClient({client: address(icClient), updateLatest: true});

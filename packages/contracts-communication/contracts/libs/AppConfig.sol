@@ -3,10 +3,12 @@ pragma solidity ^0.8.13;
 
 import {VersionedPayloadLib} from "./VersionedPayload.sol";
 
+// TODO: all of these could fit into a single 32 bytes slot
 struct AppConfigV1 {
     uint256 requiredResponses;
     uint256 optimisticPeriod;
     uint256 guardFlag;
+    address guard;
 }
 
 using AppConfigLib for AppConfigV1 global;
@@ -16,8 +18,9 @@ library AppConfigLib {
 
     uint16 internal constant APP_CONFIG_V1 = 1;
 
-    uint256 internal constant GUARD_DISABLED = 0;
-    uint256 internal constant GUARD_DEFAULT = 1;
+    uint8 internal constant GUARD_DISABLED = 0;
+    uint8 internal constant GUARD_DEFAULT = 1;
+    uint8 internal constant GUARD_CUSTOM = 2;
 
     error AppConfigLib__IncorrectVersion(uint16 version);
 

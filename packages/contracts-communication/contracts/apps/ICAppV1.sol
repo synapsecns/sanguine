@@ -108,10 +108,12 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     /// @inheritdoc IInterchainAppV1
     function getAppConfigV1() public view returns (AppConfigV1 memory) {
+        (uint8 guardFlag, address guard) = _getGuardConfig();
         return AppConfigV1({
             requiredResponses: _requiredResponses,
             optimisticPeriod: _optimisticPeriod,
-            guardFlag: _getGuardFlag()
+            guardFlag: guardFlag,
+            guard: guard
         });
     }
 
@@ -224,10 +226,10 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
         return getAppConfigV1().encodeAppConfigV1();
     }
 
-    /// @dev Returns the guard flag in the app config. By default, the ICApp is using the Client-provided guard,
-    /// but it can be overridden in the derived contract.
-    function _getGuardFlag() internal view virtual returns (uint256) {
-        return AppConfigLib.GUARD_DEFAULT;
+    /// @dev Returns the guard flag and address in the app config.
+    /// By default, the ICApp is using the Client-provided guard, but it can be overridden in the derived contract.
+    function _getGuardConfig() internal view virtual returns (uint8 guardFlag, address guard) {
+        return (AppConfigLib.GUARD_DEFAULT, address(0));
     }
 
     /// @dev Returns the address of the Execution Service to use for sending messages.

@@ -13,6 +13,7 @@ contract AppConfigLibTest is Test {
         uint256 requiredResponses;
         uint256 optimisticPeriod;
         uint256 guardFlag;
+        address guard;
         bytes32 newField;
     }
 
@@ -28,6 +29,7 @@ contract AppConfigLibTest is Test {
         assertEq(decoded.requiredResponses, appConfig.requiredResponses);
         assertEq(decoded.optimisticPeriod, appConfig.optimisticPeriod);
         assertEq(decoded.guardFlag, appConfig.guardFlag);
+        assertEq(decoded.guard, appConfig.guard);
     }
 
     function test_decodeAppConfigV1_decodesV2(MockAppConfigV2 memory appConfig) public {
@@ -39,7 +41,7 @@ contract AppConfigLibTest is Test {
     }
 
     function test_decodeAppConfigV1_revertLowerVersion() public {
-        AppConfigV1 memory appConfig = AppConfigV1(3, 100, 0);
+        AppConfigV1 memory appConfig = AppConfigV1(3, 100, 0, address(0));
         uint16 incorrectVersion = AppConfigLib.APP_CONFIG_V1 - 1;
         bytes memory encoded = VersionedPayloadLib.encodeVersionedPayload(incorrectVersion, abi.encode(appConfig));
         vm.expectRevert(abi.encodeWithSelector(AppConfigLib.AppConfigLib__IncorrectVersion.selector, incorrectVersion));

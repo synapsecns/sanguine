@@ -126,11 +126,11 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     function getOptimisticPeriod() internal view virtual returns (uint256);
 
     function getAppConfig(uint256 requiredResponses, uint256 guardFlag) internal view returns (AppConfigV1 memory) {
-        // TODO: add custom guard address once implemented
         return AppConfigV1({
             requiredResponses: requiredResponses,
             optimisticPeriod: getOptimisticPeriod(),
-            guardFlag: guardFlag
+            guardFlag: guardFlag,
+            guard: guardFlag == GUARD_CUSTOM ? customGuard : address(0)
         });
     }
 

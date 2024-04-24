@@ -31,7 +31,7 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
     bytes32 public linkedAppMockBytes32 = TypeCasts.addressToBytes32(linkedAppMock);
 
     AppConfigV1 public appConfig =
-        AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD, guardFlag: 1});
+        AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD, guardFlag: 1, guard: address(0)});
 
     function setUp() public virtual {
         vm.chainId(LOCAL_CHAIN_ID);
