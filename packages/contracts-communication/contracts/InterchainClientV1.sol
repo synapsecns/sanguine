@@ -363,10 +363,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         internal
         view
     {
-        // Verify against the default Guard if the app opts in
-        if (appConfig.guardFlag == AppConfigLib.GUARD_DEFAULT) {
-            _assertNoGuardConflict(defaultGuard, batch);
-        }
+        // Verify against the Guard if the app opts in to use it
+        _assertNoGuardConflict(_getGuard(appConfig), batch);
         uint256 finalizedResponses = 0;
         uint256 optimisticPeriod = appConfig.optimisticPeriod;
         for (uint256 i = 0; i < approvedModules.length; ++i) {
@@ -390,7 +388,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
     }
 
-    /// @dev Asserts that the Guard has not marked the batch as invalid.
+    /// @dev Asserts that the Guard has not submitted a conflicting batch.
     function _assertNoGuardConflict(address guard, InterchainBatch memory batch) internal view {
         if (guard != address(0)) {
             uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(guard, batch);
@@ -398,6 +396,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 revert InterchainClientV1__BatchConflict(guard);
             }
         }
+    }
+
+    /// @dev Returns the Guard address to use for the given app config.
+    function _getGuard(AppConfigV1 memory appConfig) internal view returns (address) {
+        if (appConfig.guardFlag == AppConfigLib.GUARD_DISABLED) {
+            return address(0);
+        }
+        if (appConfig.guardFlag == AppConfigLib.GUARD_DEFAULT) {
+            return defaultGuard;
+        }
+        return appConfig.guard;
     }
 
     /// @dev Asserts that the transaction version is correct. Returns the decoded transaction for chaining purposes.
