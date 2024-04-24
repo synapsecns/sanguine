@@ -389,54 +389,50 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
     }
 
     function test_setAppConfigV1_whenNotSet() public {
-        expectEventAppConfigV1Set(appConfig);
+        expectEventAppConfigV1Set(APP_REQUIRED_RESPONSES, APP_OPTIMISTIC_PERIOD);
         vm.recordLogs();
         vm.prank(governor);
-        appHarness.setAppConfigV1(appConfig);
+        appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES, APP_OPTIMISTIC_PERIOD);
         assertEq(vm.getRecordedLogs().length, 1);
-        assertEq(appHarness.getAppConfigV1(), appConfig);
+        assertEq(appHarness.getAppConfigV1().requiredResponses, APP_REQUIRED_RESPONSES);
+        assertEq(appHarness.getAppConfigV1().optimisticPeriod, APP_OPTIMISTIC_PERIOD);
     }
 
     function test_setAppConfigV1_whenSet() public {
         vm.prank(governor);
-        appHarness.setAppConfigV1(appConfig);
-        appConfig.requiredResponses += 1;
-        appConfig.optimisticPeriod += 1;
-        expectEventAppConfigV1Set(appConfig);
+        appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES, APP_OPTIMISTIC_PERIOD);
+        expectEventAppConfigV1Set(APP_REQUIRED_RESPONSES + 1, APP_OPTIMISTIC_PERIOD + 1);
         vm.recordLogs();
         vm.prank(governor);
-        appHarness.setAppConfigV1(appConfig);
+        appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES + 1, APP_OPTIMISTIC_PERIOD + 1);
         assertEq(vm.getRecordedLogs().length, 1);
-        assertEq(appHarness.getAppConfigV1(), appConfig);
+        assertEq(appHarness.getAppConfigV1().requiredResponses, APP_REQUIRED_RESPONSES + 1);
+        assertEq(appHarness.getAppConfigV1().optimisticPeriod, APP_OPTIMISTIC_PERIOD + 1);
     }
 
     function test_setAppConfigV1_revert_notGovernor(address caller) public {
         vm.assume(caller != governor);
         expectRevertUnauthorizedGovernor(caller);
         vm.prank(caller);
-        appHarness.setAppConfigV1(appConfig);
+        appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES, APP_OPTIMISTIC_PERIOD);
     }
 
     function test_setAppConfigV1_revert_zeroConfirmations() public {
-        appConfig.requiredResponses = 0;
-        expectRevertInvalidAppConfig(appConfig);
+        expectRevertInvalidAppConfig(0, APP_OPTIMISTIC_PERIOD);
         vm.prank(governor);
-        appHarness.setAppConfigV1(appConfig);
+        appHarness.setAppConfigV1(0, APP_OPTIMISTIC_PERIOD);
     }
 
     function test_setAppConfigV1_revert_zeroOptimisticPeriod() public {
-        appConfig.optimisticPeriod = 0;
-        expectRevertInvalidAppConfig(appConfig);
+        expectRevertInvalidAppConfig(APP_REQUIRED_RESPONSES, 0);
         vm.prank(governor);
-        appHarness.setAppConfigV1(appConfig);
+        appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES, 0);
     }
 
     function test_setAppConfigV1_revert_zeroedAppConfig() public {
-        appConfig.requiredResponses = 0;
-        appConfig.optimisticPeriod = 0;
-        expectRevertInvalidAppConfig(appConfig);
+        expectRevertInvalidAppConfig(0, 0);
         vm.prank(governor);
-        appHarness.setAppConfigV1(appConfig);
+        appHarness.setAppConfigV1(0, 0);
     }
 
     function test_setExecutionService_whenNotSet() public {

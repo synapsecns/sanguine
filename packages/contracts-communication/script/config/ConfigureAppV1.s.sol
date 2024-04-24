@@ -96,18 +96,17 @@ abstract contract ConfigureAppV1 is SynapseScript {
     function setAppConfig() internal virtual {
         printLog("Setting app config");
         increaseIndent();
-        bytes memory rawConfig = config.parseRaw(".appConfig");
-        AppConfigV1 memory appConfig = abi.decode(rawConfig, (AppConfigV1));
-        printLog(string.concat("Required responses: ", vm.toString(appConfig.requiredResponses)));
-        printLog(string.concat("Optimistic period: ", vm.toString(appConfig.optimisticPeriod)));
+        uint256 requiredResponses = config.readUint(".appConfig.requiredResponses");
+        uint256 optimisticPeriod = config.readUint(".appConfig.optimisticPeriod");
+        printLog(string.concat("Required responses: ", vm.toString(requiredResponses)));
+        printLog(string.concat("Optimistic period: ", vm.toString(optimisticPeriod)));
         AppConfigV1 memory existingConfig = app.getAppConfigV1();
         if (
-            appConfig.requiredResponses == existingConfig.requiredResponses
-                && appConfig.optimisticPeriod == existingConfig.optimisticPeriod
+            requiredResponses == existingConfig.requiredResponses && optimisticPeriod == existingConfig.optimisticPeriod
         ) {
             printSkipWithIndent("config is already set");
         } else {
-            app.setAppConfigV1(appConfig);
+            app.setAppConfigV1(requiredResponses, optimisticPeriod);
             printSuccessWithIndent("Config set");
         }
         decreaseIndent();

@@ -88,14 +88,13 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     }
 
     /// @inheritdoc IInterchainAppV1
-    // TODO: this should have `requiredResponses` and `optimisticPeriod` as parameters.
-    function setAppConfigV1(AppConfigV1 memory appConfig) external onlyRole(IC_GOVERNOR_ROLE) {
-        if (appConfig.requiredResponses == 0 || appConfig.optimisticPeriod == 0) {
-            revert InterchainApp__InvalidAppConfig(appConfig.requiredResponses, appConfig.optimisticPeriod);
+    function setAppConfigV1(uint256 requiredResponses, uint256 optimisticPeriod) external onlyRole(IC_GOVERNOR_ROLE) {
+        if (requiredResponses == 0 || optimisticPeriod == 0) {
+            revert InterchainApp__InvalidAppConfig(requiredResponses, optimisticPeriod);
         }
-        _requiredResponses = SafeCast.toUint16(appConfig.requiredResponses);
-        _optimisticPeriod = SafeCast.toUint48(appConfig.optimisticPeriod);
-        emit AppConfigV1Set(appConfig.requiredResponses, appConfig.optimisticPeriod);
+        _requiredResponses = SafeCast.toUint16(requiredResponses);
+        _optimisticPeriod = SafeCast.toUint48(optimisticPeriod);
+        emit AppConfigV1Set(requiredResponses, optimisticPeriod);
     }
 
     /// @inheritdoc IInterchainAppV1

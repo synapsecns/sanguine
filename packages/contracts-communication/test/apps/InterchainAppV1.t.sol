@@ -20,6 +20,7 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
     uint64 public constant REMOTE_CHAIN_ID = 7331;
     uint64 public constant UNKNOWN_CHAIN_ID = 420;
     uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
+    uint256 public constant APP_REQUIRED_RESPONSES = 1;
 
     IInterchainAppV1Harness public appHarness;
     address public icClient;
@@ -29,9 +30,6 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
     address public execServiceMock = makeAddr("Execution Service Mock");
     address public linkedAppMock = makeAddr("Linked App Mock");
     bytes32 public linkedAppMockBytes32 = TypeCasts.addressToBytes32(linkedAppMock);
-
-    AppConfigV1 public appConfig =
-        AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD, guardFlag: 1, guard: address(0)});
 
     function setUp() public virtual {
         vm.chainId(LOCAL_CHAIN_ID);
@@ -68,9 +66,9 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         emit LatestClientSet(client);
     }
 
-    function expectEventAppConfigV1Set(AppConfigV1 memory config) internal {
+    function expectEventAppConfigV1Set(uint256 requiredResponses, uint256 optimisticPeriod) internal {
         vm.expectEmit(address(appHarness));
-        emit AppConfigV1Set(config.requiredResponses, config.optimisticPeriod);
+        emit AppConfigV1Set(requiredResponses, optimisticPeriod);
     }
 
     function expectEventAppLinked(uint64 chainId, bytes32 remoteApp) internal {
@@ -97,12 +95,10 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         vm.expectRevert(IInterchainAppV1.InterchainApp__AppZeroAddress.selector);
     }
 
-    function expectRevertInvalidAppConfig(AppConfigV1 memory config) internal {
+    function expectRevertInvalidAppConfig(uint256 requiredResponses, uint256 optimisticPeriod) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
-                IInterchainAppV1.InterchainApp__InvalidAppConfig.selector,
-                config.requiredResponses,
-                config.optimisticPeriod
+                IInterchainAppV1.InterchainApp__InvalidAppConfig.selector, requiredResponses, optimisticPeriod
             )
         );
     }
