@@ -385,23 +385,27 @@ func (m *Manager) registerQuote(ctx context.Context, quote *model.PutQuoteReques
 			return fmt.Errorf("error creating quote amount gauge: %w", err)
 		}
 	}
-	attributes := attribute.NewSet(
-		attribute.Int(metrics.Origin, quote.OriginChainID),
-		attribute.Int(metrics.Destination, quote.DestChainID),
-		attribute.String("origin_token_addr", quote.OriginTokenAddr),
-		attribute.String("dest_token_addr", quote.DestTokenAddr),
-		attribute.String("max_origin_amount", quote.MaxOriginAmount),
-		attribute.String("fixed_fee", quote.FixedFee),
-	)
-	tokenMetadata, err := m.inventoryManager.GetTokenMetadata(quote.DestChainID, common.HexToAddress(quote.DestTokenAddr))
+	originMetadata, err := m.inventoryManager.GetTokenMetadata(quote.OriginChainID, common.HexToAddress(quote.OriginTokenAddr))
 	if err != nil {
-		return fmt.Errorf("error getting token metadata: %w", err)
+		return fmt.Errorf("error getting origin token metadata: %w", err)
+	}
+	destMetadata, err := m.inventoryManager.GetTokenMetadata(quote.DestChainID, common.HexToAddress(quote.DestTokenAddr))
+	if err != nil {
+		return fmt.Errorf("error getting dest token metadata: %w", err)
 	}
 	destAmount, ok := new(big.Int).SetString(quote.DestAmount, 10)
 	if !ok {
 		return fmt.Errorf("error parsing dest amount: %w", err)
 	}
-	quoteAmountHist.Record(ctx, core.BigToDecimals(destAmount, tokenMetadata.Decimals), metric.WithAttributeSet(attributes))
+	attributes := attribute.NewSet(
+		attribute.Int(metrics.Origin, quote.OriginChainID),
+		attribute.Int(metrics.Destination, quote.DestChainID),
+		attribute.String("origin_token_name", originMetadata.Name),
+		attribute.String("dest_token_name", destMetadata.Name),
+		attribute.String("max_origin_amount", quote.MaxOriginAmount),
+		attribute.String("fixed_fee", quote.FixedFee),
+	)
+	quoteAmountHist.Record(ctx, core.BigToDecimals(destAmount, destMetadata.Decimals), metric.WithAttributeSet(attributes))
 	return nil
 }
 
