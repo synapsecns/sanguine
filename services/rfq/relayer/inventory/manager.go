@@ -813,9 +813,14 @@ func (i *inventoryManagerImpl) registerBalance(ctx context.Context, meter metric
 		return fmt.Errorf("could not find token in chainTokens for chainID: %d, token: %s", chainID, token)
 	}
 
-	attributes := attribute.NewSet(attribute.Int(metrics.ChainID, chainID), attribute.String("relayer_address", i.relayerAddress.String()),
-		attribute.String("token_name", tokenData.Name), attribute.Int("decimals", int(tokenData.Decimals)),
-		attribute.String("token_address", token.String()))
+	attributes := attribute.NewSet(
+		attribute.Int(metrics.ChainID, chainID),
+		attribute.String("relayer_address", i.relayerAddress.String()),
+		attribute.String("token_name", tokenData.Name),
+		attribute.Int("decimals", int(tokenData.Decimals)),
+		attribute.String("token_address", token.String()),
+		attribute.String("raw_balance", tokenData.Balance.String()),
+	)
 
 	balanceHist.Record(ctx, core.BigToDecimals(tokenData.Balance, tokenData.Decimals), metric.WithAttributeSet(attributes))
 	return nil
