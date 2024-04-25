@@ -8,7 +8,6 @@ import {
     InterchainClientV1BaseTest, InterchainTransaction, InterchainTxDescriptor
 } from "./InterchainClientV1.Base.t.sol";
 
-import {ExecutionFeesMock} from "./mocks/ExecutionFeesMock.sol";
 import {ExecutionServiceMock} from "./mocks/ExecutionServiceMock.sol";
 import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 
@@ -21,7 +20,7 @@ import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 /// 2. Construct the interchain transaction struct, and write its UID to the InterchainDB,
 /// requesting verification from the source modules.
 /// 3. Allocate the rest of the msg.value to the execution fees,
-/// and move it to the ExecutionFees contract (if non-zero).
+/// and move it to the ExecutionService contract.
 /// 4. If execution service is provided, request execution from it, passing correct execution fee value.
 /// NOTE: it is the execution service's responsibility to check that the provided execution fee is enough.
 /// We are using the mocks in this test to verify that the correct values are passed to the contracts,
@@ -59,7 +58,6 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
 
     function setUp() public override {
         super.setUp();
-        setExecutionFees(execFees);
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
         twoModules.push(icModuleA);
         twoModules.push(icModuleB);

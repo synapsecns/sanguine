@@ -3,7 +3,6 @@ pragma solidity 0.8.20;
 
 import {InterchainClientV1Events} from "./events/InterchainClientV1Events.sol";
 
-import {IExecutionFees} from "./interfaces/IExecutionFees.sol";
 import {IExecutionService} from "./interfaces/IExecutionService.sol";
 import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
@@ -36,9 +35,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @notice Address of the InterchainDB contract, set at the time of deployment.
     address public immutable INTERCHAIN_DB;
 
-    /// @notice Address of the contract that handles execution fees. Can be updated by the owner.
-    address public executionFees;
-
     /// @dev Address of the InterchainClient contract on the remote chain
     mapping(uint64 chainId => bytes32 remoteClient) internal _linkedClient;
     /// @dev Executor address that completed the transaction. Address(0) if not executed yet.
@@ -46,12 +42,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     constructor(address interchainDB, address owner_) Ownable(owner_) {
         INTERCHAIN_DB = interchainDB;
-    }
-
-    // @inheritdoc IInterchainClientV1
-    function setExecutionFees(address executionFees_) external onlyOwner {
-        executionFees = executionFees_;
-        emit ExecutionFeesSet(executionFees_);
     }
 
     // @inheritdoc IInterchainClientV1
