@@ -70,13 +70,18 @@ contract SynapseExecutionServiceV1 is
         uint64 dstChainId,
         uint256 txPayloadSize,
         bytes32 transactionId,
-        bytes memory options
+        bytes calldata options
     )
         external
         payable
+        virtual
+        onlyRole(IC_CLIENT_ROLE)
     {
-        // TODO: only interchain client
-        // TODO: implement
+        uint256 requiredFee = getExecutionFee(dstChainId, txPayloadSize, options);
+        if (msg.value < requiredFee) {
+            revert SynapseExecutionService__FeeAmountTooLow({actual: msg.value, required: requiredFee});
+        }
+        emit ExecutionRequested({transactionId: transactionId, client: msg.sender, executionFee: msg.value});
     }
 
     /// @inheritdoc IExecutionService
