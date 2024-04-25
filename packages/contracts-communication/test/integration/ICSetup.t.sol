@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {ExecutionFees} from "../../contracts/ExecutionFees.sol";
 import {InterchainClientV1} from "../../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../../contracts/InterchainDB.sol";
 import {ICAppV1} from "../../contracts/apps/ICAppV1.sol";
@@ -39,7 +38,6 @@ abstract contract ICSetup is ProxyTest {
     InterchainTransactionLibHarness public txLibHarness;
     VersionedPayloadLibHarness public payloadLibHarness;
 
-    ExecutionFees public executionFees;
     address public executionServiceImpl;
     SynapseExecutionServiceV1 public executionService;
     InterchainClientV1 public icClient;
@@ -80,7 +78,6 @@ abstract contract ICSetup is ProxyTest {
     }
 
     function deployInterchainContracts() internal virtual {
-        executionFees = new ExecutionFees(address(this));
         executionServiceImpl = address(new SynapseExecutionServiceV1());
         executionService = SynapseExecutionServiceV1(deployProxy(executionServiceImpl));
         icDB = new InterchainDB();
@@ -93,16 +90,10 @@ abstract contract ICSetup is ProxyTest {
     function deployApp() internal virtual returns (address);
 
     function configureInterchainContracts() internal virtual {
-        configureExecutionFees();
         configureExecutionService();
         configureInterchainClient();
         configureSynapseModule();
         configureSynapseGasOracle();
-    }
-
-    function configureExecutionFees() internal virtual {
-        // Adding InterchainClientV1 as Recorder
-        executionFees.grantRole(executionFees.RECORDER_ROLE(), address(icClient));
     }
 
     function configureExecutionService() internal virtual {
