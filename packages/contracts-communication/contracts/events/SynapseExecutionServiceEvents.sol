@@ -29,4 +29,9 @@ abstract contract SynapseExecutionServiceEvents {
     /// @param client        The address of the Interchain Client that requested the execution.
     /// @param executionFee  The fee paid for the execution.
     event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee);
+
+    /// @notice Emitted when the fees accumulated in the contract are claimed.
+    /// @param executorEOA   The address of the executor EOA that received the fees.
+    /// @param amount        The amount of fees claimed.
+    event FeesClaimed(address executorEOA, uint256 amount);
 }

@@ -39,6 +39,11 @@ contract SynapseExecutionServiceV1 is
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
+    function claimFees() external {
+        // TODO: implement
+    }
+
+    /// @inheritdoc ISynapseExecutionServiceV1
     function setExecutorEOA(address executorEOA_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (executorEOA_ == address(0)) {
             revert SynapseExecutionService__ZeroAddress();
