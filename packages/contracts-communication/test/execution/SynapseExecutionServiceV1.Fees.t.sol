@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 
-import {SynapseExecutionServiceV1Test} from "./SynapseExecutionServiceV1.t.sol";
+import {SynapseExecutionServiceV1, SynapseExecutionServiceV1Test} from "./SynapseExecutionServiceV1.t.sol";
 
 import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
 
@@ -112,6 +112,33 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
             transactionId: MOCK_TX_ID,
             options: options
         });
+    }
+
+    function test_claimFees() public {
+        address caller = makeAddr("Random Caller");
+        uint256 amount = 1 ether;
+        deal(address(service), amount);
+        vm.expectEmit(address(service));
+        emit FeesClaimed(executorEOA, amount);
+        vm.prank(caller);
+        service.claimFees();
+        assertEq(executorEOA.balance, amount);
+    }
+
+    function test_claimFees_revert_zeroAmount() public {
+        address caller = makeAddr("Random Caller");
+        expectRevertZeroAmount();
+        vm.prank(caller);
+        service.claimFees();
+    }
+
+    function test_claimFees_revert_zeroExecutorEOA() public {
+        SynapseExecutionServiceV1 freshService = SynapseExecutionServiceV1(deployProxy(address(implementation)));
+        address caller = makeAddr("Random Caller");
+        deal(address(freshService), 1 ether);
+        expectRevertZeroAddress();
+        vm.prank(caller);
+        freshService.claimFees();
     }
 
     function test_getExecutionFee_noAirdrop() public {

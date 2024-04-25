@@ -70,6 +70,10 @@ contract SynapseExecutionServiceV1Test is ProxyTest, SynapseExecutionServiceEven
         vm.expectRevert(ISynapseExecutionServiceV1.SynapseExecutionService__ZeroAddress.selector);
     }
 
+    function expectRevertZeroAmount() internal {
+        vm.expectRevert(ISynapseExecutionServiceV1.SynapseExecutionService__ZeroAmount.selector);
+    }
+
     function expectRevertNotGovernor(address caller) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, caller, GOVERNOR_ROLE)
