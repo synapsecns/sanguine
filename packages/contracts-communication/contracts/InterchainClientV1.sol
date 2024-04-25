@@ -274,12 +274,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         unchecked {
             executionFee = msg.value - verificationFee;
         }
-        IExecutionService(srcExecutionService).requestTxExecution{value: executionFee}(
-            icTx.dstChainId,
-            InterchainTransactionLib.payloadSize(options.length, message.length),
-            desc.transactionId,
-            options
-        );
+        IExecutionService(srcExecutionService).requestTxExecution{value: executionFee}({
+            dstChainId: icTx.dstChainId,
+            txPayloadSize: InterchainTransactionLib.payloadSize(options.length, message.length),
+            transactionId: desc.transactionId,
+            options: options
+        });
         emit InterchainTransactionSent(
             desc.transactionId,
             icTx.dbNonce,
