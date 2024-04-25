@@ -13,7 +13,7 @@
     "test:coverage": "echo 'No tests defined.'"
   },
   "dependencies": {
-    "@ponder/core": "^0.4.9",
+    "@ponder/core": "^0.4.11",
     "viem": "^1.19.3"
   },
   "devDependencies": {
