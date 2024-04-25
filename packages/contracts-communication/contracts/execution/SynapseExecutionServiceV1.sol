@@ -66,6 +66,20 @@ contract SynapseExecutionServiceV1 is
     }
 
     /// @inheritdoc IExecutionService
+    function requestTxExecution(
+        uint64 dstChainId,
+        uint256 txPayloadSize,
+        bytes32 transactionId,
+        bytes memory options
+    )
+        external
+        payable
+    {
+        // TODO: only interchain client
+        // TODO: implement
+    }
+
+    /// @inheritdoc IExecutionService
     function requestExecution(
         uint64 dstChainId,
         uint256 txPayloadSize,

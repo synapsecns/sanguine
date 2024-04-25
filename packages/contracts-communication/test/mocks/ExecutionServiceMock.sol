@@ -7,6 +7,16 @@ import {IExecutionService} from "../../contracts/interfaces/IExecutionService.so
 contract ExecutionServiceMock is IExecutionService {
     address public executorEOA;
 
+    function requestTxExecution(
+        uint64 dstChainId,
+        uint256 txPayloadSize,
+        bytes32 transactionId,
+        bytes memory options
+    )
+        external
+        payable
+    {}
+
     function requestExecution(
         uint64 dstChainId,
         uint256 txPayloadSize,
