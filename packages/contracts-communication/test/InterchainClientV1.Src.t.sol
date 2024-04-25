@@ -315,6 +315,20 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
+    function test_interchainSend_revert_zeroExecutionService() public {
+        prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        expectRevertZeroExecutionService();
+        vm.prank(srcSender);
+        icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: dstReceiver,
+            srcExecutionService: address(0),
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
     function test_interchainSend_revert_emptyOptions() public {
         prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
@@ -501,6 +515,20 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
+    function test_interchainSendEVM_revert_zeroExecutionService() public {
+        prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        expectRevertZeroExecutionService();
+        vm.prank(srcSender);
+        icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: dstReceiverEVM,
+            srcExecutionService: address(0),
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
     function test_interchainSendEVM_revert_emptyOptions() public {
         prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
@@ -627,6 +655,17 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         icClient.getInterchainFee({
             dstChainId: UNKNOWN_CHAIN_ID,
             srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            messageLen: message.length
+        });
+    }
+
+    function test_getInterchainFee_revert_zeroExecutionService() public {
+        expectRevertZeroExecutionService();
+        icClient.getInterchainFee({
+            dstChainId: REMOTE_CHAIN_ID,
+            srcExecutionService: address(0),
             srcModules: twoModules,
             options: encodedOptions,
             messageLen: message.length
