@@ -178,15 +178,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (uint256 fee)
     {
         _assertLinkedClient(dstChainId);
+        if (srcExecutionService == address(0)) {
+            revert InterchainClientV1__ZeroExecutionService();
+        }
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
         // Verification fee from InterchainDB
         fee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
-        // Add execution fee, if ExecutionService is provided
-        if (srcExecutionService != address(0)) {
-            uint256 payloadSize = InterchainTransactionLib.payloadSize(options.length, messageLen);
-            fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, payloadSize, options);
-        }
+        // Add execution fee from ExecutionService
+        uint256 payloadSize = InterchainTransactionLib.payloadSize(options.length, messageLen);
+        fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, payloadSize, options);
     }
 
     /// @inheritdoc IInterchainClientV1
@@ -250,6 +251,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         _assertLinkedClient(dstChainId);
         if (receiver == 0) revert InterchainClientV1__ZeroReceiver();
+        if (srcExecutionService == address(0)) revert InterchainClientV1__ZeroExecutionService();
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
