@@ -165,7 +165,28 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         view
         returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg)
     {
-        // TODO: implement
+        bytes memory encodedTx = encodeTransaction(icTx);
+        try this.isExecutable(encodedTx, proof) returns (bool) {
+            return (TxReadiness.Ready, 0, 0);
+        } catch (bytes memory errorData) {
+            bytes4 selector;
+            (selector, firstArg, secondArg) = _decodeRevertData(errorData);
+            if (selector == InterchainClientV1__TxAlreadyExecuted.selector) {
+                status = TxReadiness.AlreadyExecuted;
+            } else if (selector == InterchainClientV1__BatchConflict.selector) {
+                status = TxReadiness.BatchConflict;
+            } else if (selector == InterchainClientV1__IncorrectDstChainId.selector) {
+                status = TxReadiness.IncorrectDstChainId;
+            } else if (selector == InterchainClientV1__NotEnoughResponses.selector) {
+                status = TxReadiness.NotEnoughResponses;
+            } else if (selector == InterchainClientV1__ZeroRequiredResponses.selector) {
+                status = TxReadiness.ZeroRequiredResponses;
+            } else {
+                status = TxReadiness.UndeterminedRevert;
+                firstArg = 0;
+                secondArg = 0;
+            }
+        }
     }
 
     // @inheritdoc IInterchainClientV1
@@ -432,5 +453,38 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             revert InterchainClientV1__InvalidTransactionVersion(version);
         }
         icTx = InterchainTransactionLib.decodeTransaction(versionedTx.getPayload());
+    }
+
+    /// @dev Decodes the revert data into a selector and two arguments.
+    /// Zero values are returned if the revert data is not long enough.
+    /// Note: this is only used in `getTxReadinessV1` to decode the revert data, so usage of assembly is not a security risk.
+    function _decodeRevertData(bytes memory revertData)
+        internal
+        pure
+        returns (bytes4 selector, bytes32 firstArg, bytes32 secondArg)
+    {
+        // The easiest way to load the bytes chunks onto the stack is to use assembly.
+        // Each time we try to load a value, we check if the revert data is long enough.
+        // We add 0x20 to skip the length field of the revert data.
+        if (revertData.length >= 4) {
+            // Load the first 32 bytes, then apply the mask that has only the 4 highest bytes set.
+            // There is no need to shift, as `bytesN` variables are right-aligned.
+            assembly {
+                selector :=
+                    and(mload(add(revertData, 0x20)), 0xFFFFFFFF00000000000000000000000000000000000000000000000000000000)
+            }
+        }
+        if (revertData.length >= 36) {
+            // Skip the length field + selector to get the 32 bytes of the first argument.
+            assembly {
+                firstArg := mload(add(revertData, 0x24))
+            }
+        }
+        if (revertData.length >= 68) {
+            // Skip the length field + selector + first argument to get the 32 bytes of the second argument.
+            assembly {
+                secondArg := mload(add(revertData, 0x44))
+            }
+        }
     }
 }
