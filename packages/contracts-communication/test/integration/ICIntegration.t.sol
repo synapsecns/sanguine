@@ -43,14 +43,9 @@ abstract contract ICIntegrationTest is
         assertEq(entry.dataHash, expected.dataHash);
     }
 
-    function expectFeesEventExecutionFeeAdded(bytes32 transactionId, uint256 totalFee) internal {
-        vm.expectEmit(address(executionFees));
-        emit ExecutionFeeAdded({dstChainId: remoteChainId(), transactionId: transactionId, totalFee: totalFee});
-    }
-
-    function expectServiceEventExecutionRequested(bytes32 transactionId) internal {
+    function expectServiceEventExecutionRequested(bytes32 transactionId, uint256 executionFee) internal {
         vm.expectEmit(address(executionService));
-        emit ExecutionRequested({transactionId: transactionId, client: address(icClient)});
+        emit ExecutionRequested({transactionId: transactionId, client: address(icClient), executionFee: executionFee});
     }
 
     function expectClientEventInterchainTransactionSent(
@@ -165,8 +160,7 @@ abstract contract ICIntegrationTest is
         expectDatabaseEventInterchainBatchFinalized(batch);
         expectModuleEventBatchVerificationRequested(batch);
         expectDatabaseEventInterchainBatchVerificationRequested(batch);
-        expectFeesEventExecutionFeeAdded(desc.transactionId, executionFee);
-        expectServiceEventExecutionRequested(desc.transactionId);
+        expectServiceEventExecutionRequested(desc.transactionId, executionFee);
         expectClientEventInterchainTransactionSent(icTx, verificationFee, executionFee);
     }
 
