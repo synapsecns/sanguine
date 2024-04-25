@@ -49,9 +49,9 @@ contract SynapseExecutionServiceV1 is
         if (executor == address(0)) {
             revert SynapseExecutionService__ZeroAddress();
         }
+        emit FeesClaimed(executor, amount);
         // TODO: introduce incentives for the caller similar to ones in SynapseModule
         Address.sendValue(payable(executor), amount);
-        emit FeesClaimed(executor, amount);
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
