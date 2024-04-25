@@ -17,16 +17,6 @@ contract ExecutionServiceMock is IExecutionService {
         payable
     {}
 
-    function requestExecution(
-        uint64 dstChainId,
-        uint256 txPayloadSize,
-        bytes32 transactionId,
-        uint256 executionFee,
-        bytes memory options
-    )
-        external
-    {}
-
     function getExecutionFee(
         uint64 dstChainId,
         uint256 txPayloadSize,

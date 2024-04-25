@@ -22,11 +22,6 @@ abstract contract SynapseExecutionServiceEvents {
     /// @notice Emitted when the execution of a transaction is requested.
     /// @param transactionId The unique identifier of the transaction.
     /// @param client        The address of the Interchain Client that requested the execution.
-    event ExecutionRequested(bytes32 indexed transactionId, address client);
-
-    /// @notice Emitted when the execution of a transaction is requested.
-    /// @param transactionId The unique identifier of the transaction.
-    /// @param client        The address of the Interchain Client that requested the execution.
     /// @param executionFee  The fee paid for the execution.
     event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee);
 

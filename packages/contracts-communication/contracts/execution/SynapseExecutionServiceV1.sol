@@ -101,25 +101,6 @@ contract SynapseExecutionServiceV1 is
     }
 
     /// @inheritdoc IExecutionService
-    function requestExecution(
-        uint64 dstChainId,
-        uint256 txPayloadSize,
-        bytes32 transactionId,
-        uint256 executionFee,
-        bytes calldata options
-    )
-        external
-        virtual
-        onlyRole(IC_CLIENT_ROLE)
-    {
-        uint256 requiredFee = getExecutionFee(dstChainId, txPayloadSize, options);
-        if (executionFee < requiredFee) {
-            revert SynapseExecutionService__FeeAmountTooLow({actual: executionFee, required: requiredFee});
-        }
-        emit ExecutionRequested({transactionId: transactionId, client: msg.sender});
-    }
-
-    /// @inheritdoc IExecutionService
     function getExecutionFee(
         uint64 dstChainId,
         uint256 txPayloadSize,
