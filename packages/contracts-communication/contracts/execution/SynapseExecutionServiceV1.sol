@@ -7,6 +7,7 @@ import {IGasOracle} from "../interfaces/IGasOracle.sol";
 import {OptionsLib, OptionsV1} from "../libs/Options.sol";
 import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
 
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 contract SynapseExecutionServiceV1 is
@@ -40,7 +41,17 @@ contract SynapseExecutionServiceV1 is
 
     /// @inheritdoc ISynapseExecutionServiceV1
     function claimFees() external {
-        // TODO: implement
+        uint256 amount = address(this).balance;
+        if (amount == 0) {
+            revert SynapseExecutionService__ZeroAmount();
+        }
+        address executor = executorEOA();
+        if (executor == address(0)) {
+            revert SynapseExecutionService__ZeroAddress();
+        }
+        // TODO: introduce incentives for the caller similar to ones in SynapseModule
+        Address.sendValue(payable(executor), amount);
+        emit FeesClaimed(executor, amount);
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
