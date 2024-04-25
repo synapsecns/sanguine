@@ -255,76 +255,6 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSend_noExecService_icFeeNonZero_execFeeNonZero() public {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
-            prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
-        expectAddExecutionFeeCall(icTx, desc, MOCK_EXECUTION_FEE);
-        expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, MOCK_EXECUTION_FEE);
-        vm.prank(srcSender);
-        icClient.interchainSend{value: MOCK_EXECUTION_FEE + MOCK_INTERCHAIN_FEE}({
-            dstChainId: REMOTE_CHAIN_ID,
-            receiver: dstReceiver,
-            srcExecutionService: address(0),
-            srcModules: twoModules,
-            options: encodedOptions,
-            message: message
-        });
-    }
-
-    function test_interchainSend_noExecService_icFeeNonZero_execFeeZero() public {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
-            prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
-        expectNoAddExecutionFeeCall();
-        expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, 0);
-        vm.prank(srcSender);
-        icClient.interchainSend{value: MOCK_INTERCHAIN_FEE}({
-            dstChainId: REMOTE_CHAIN_ID,
-            receiver: dstReceiver,
-            srcExecutionService: address(0),
-            srcModules: twoModules,
-            options: encodedOptions,
-            message: message
-        });
-    }
-
-    function test_interchainSend_noExecService_icFeeZero_execFeeNonZero() public {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
-            prepareSendTest({receiver: dstReceiver, interchainFee: 0, srcModules: twoModules});
-        // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
-        expectAddExecutionFeeCall(icTx, desc, MOCK_EXECUTION_FEE);
-        expectEventInterchainTransactionSent(icTx, desc, 0, MOCK_EXECUTION_FEE);
-        vm.prank(srcSender);
-        icClient.interchainSend{value: MOCK_EXECUTION_FEE}({
-            dstChainId: REMOTE_CHAIN_ID,
-            receiver: dstReceiver,
-            srcExecutionService: address(0),
-            srcModules: twoModules,
-            options: encodedOptions,
-            message: message
-        });
-    }
-
-    function test_interchainSend_noExecService_icFeeZero_execFeeZero() public {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
-            prepareSendTest({receiver: dstReceiver, interchainFee: 0, srcModules: twoModules});
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
-        expectNoAddExecutionFeeCall();
-        expectEventInterchainTransactionSent(icTx, desc, 0, 0);
-        vm.prank(srcSender);
-        icClient.interchainSend({
-            dstChainId: REMOTE_CHAIN_ID,
-            receiver: dstReceiver,
-            srcExecutionService: address(0),
-            srcModules: twoModules,
-            options: encodedOptions,
-            message: message
-        });
-    }
-
     // ═════════════════════════════════════════ INTERCHAIN SEND: REVERTS ══════════════════════════════════════════════
 
     // Pay 1 wei less than required and expect a revert with the correct fee amount.
@@ -511,82 +441,6 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSendEVM_noExecService_icFeeNonZero_execFeeNonZero() public {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) = prepareSendTest({
-            receiver: dstReceiverEVMBytes32,
-            interchainFee: MOCK_INTERCHAIN_FEE,
-            srcModules: twoModules
-        });
-        // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
-        expectAddExecutionFeeCall(icTx, desc, MOCK_EXECUTION_FEE);
-        expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, MOCK_EXECUTION_FEE);
-        vm.prank(srcSender);
-        icClient.interchainSendEVM{value: MOCK_EXECUTION_FEE + MOCK_INTERCHAIN_FEE}({
-            dstChainId: REMOTE_CHAIN_ID,
-            receiver: dstReceiverEVM,
-            srcExecutionService: address(0),
-            srcModules: twoModules,
-            options: encodedOptions,
-            message: message
-        });
-    }
-
-    function test_interchainSendEVM_noExecService_icFeeNonZero_execFeeZero() public {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) = prepareSendTest({
-            receiver: dstReceiverEVMBytes32,
-            interchainFee: MOCK_INTERCHAIN_FEE,
-            srcModules: twoModules
-        });
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
-        expectNoAddExecutionFeeCall();
-        expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, 0);
-        vm.prank(srcSender);
-        icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE}({
-            dstChainId: REMOTE_CHAIN_ID,
-            receiver: dstReceiverEVM,
-            srcExecutionService: address(0),
-            srcModules: twoModules,
-            options: encodedOptions,
-            message: message
-        });
-    }
-
-    function test_interchainSendEVM_noExecService_icFeeZero_execFeeNonZero() public {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
-            prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: 0, srcModules: twoModules});
-        // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
-        expectAddExecutionFeeCall(icTx, desc, MOCK_EXECUTION_FEE);
-        expectEventInterchainTransactionSent(icTx, desc, 0, MOCK_EXECUTION_FEE);
-        vm.prank(srcSender);
-        icClient.interchainSendEVM{value: MOCK_EXECUTION_FEE}({
-            dstChainId: REMOTE_CHAIN_ID,
-            receiver: dstReceiverEVM,
-            srcExecutionService: address(0),
-            srcModules: twoModules,
-            options: encodedOptions,
-            message: message
-        });
-    }
-
-    function test_interchainSendEVM_noExecService_icFeeZero_execFeeZero() public {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
-            prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: 0, srcModules: twoModules});
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
-        expectNoAddExecutionFeeCall();
-        expectEventInterchainTransactionSent(icTx, desc, 0, 0);
-        vm.prank(srcSender);
-        icClient.interchainSendEVM({
-            dstChainId: REMOTE_CHAIN_ID,
-            receiver: dstReceiverEVM,
-            srcExecutionService: address(0),
-            srcModules: twoModules,
-            options: encodedOptions,
-            message: message
-        });
-    }
-
     // ═══════════════════════════════════════ INTERCHAIN SEND EVM: REVERTS ════════════════════════════════════════════
 
     // Pay 1 wei less than required and expect a revert with the correct fee amount.
@@ -749,34 +603,6 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             icClient.getInterchainFee({
                 dstChainId: REMOTE_CHAIN_ID,
                 srcExecutionService: execService,
-                srcModules: twoModules,
-                options: encodedOptions,
-                messageLen: message.length
-            }),
-            0
-        );
-    }
-
-    function test_getInterchainFee_noExecService_icFeeNonZero() public {
-        mockInterchainFee(REMOTE_CHAIN_ID, twoModules, MOCK_INTERCHAIN_FEE);
-        assertEq(
-            icClient.getInterchainFee({
-                dstChainId: REMOTE_CHAIN_ID,
-                srcExecutionService: address(0),
-                srcModules: twoModules,
-                options: encodedOptions,
-                messageLen: message.length
-            }),
-            MOCK_INTERCHAIN_FEE
-        );
-    }
-
-    function test_getInterchainFee_noExecService_icFeeZero() public {
-        mockInterchainFee(REMOTE_CHAIN_ID, twoModules, 0);
-        assertEq(
-            icClient.getInterchainFee({
-                dstChainId: REMOTE_CHAIN_ID,
-                srcExecutionService: address(0),
                 srcModules: twoModules,
                 options: encodedOptions,
                 messageLen: message.length
