@@ -41,9 +41,9 @@ contract SynapseExecutionServiceV1Test is ProxyTest, SynapseExecutionServiceEven
         emit GlobalMarkupSet(globalMarkup);
     }
 
-    function expectEventExecutionRequested(bytes32 transactionId, address client) internal {
+    function expectEventExecutionRequested(bytes32 transactionId, address client, uint256 executionFee) internal {
         vm.expectEmit(address(service));
-        emit ExecutionRequested(transactionId, client);
+        emit ExecutionRequested(transactionId, client, executionFee);
     }
 
     function expectRevertGasOracleNotSet() internal {
