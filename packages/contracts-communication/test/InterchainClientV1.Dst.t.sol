@@ -12,6 +12,7 @@ import {
     InterchainClientV1BaseTest, InterchainTransaction, InterchainTxDescriptor
 } from "./InterchainClientV1.Base.t.sol";
 
+import {NoOpHarness} from "./harnesses/NoOpHarness.sol";
 import {InterchainAppMock} from "./mocks/InterchainAppMock.sol";
 import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 
@@ -53,6 +54,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     address public dstReceiver;
     bytes32 public dstReceiverBytes32;
 
+    address public receiverEOA = makeAddr("Receiver EOA");
+    address public receiverNotICApp;
+
     bytes32[] public emptyProof;
 
     address[] public oneModuleA;
@@ -78,6 +82,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
         dstReceiver = address(new InterchainAppMock());
         dstReceiverBytes32 = bytes32(uint256(uint160(dstReceiver)));
+        receiverNotICApp = address(new NoOpHarness());
         oneModuleA.push(icModuleA);
         twoModules.push(icModuleA);
         twoModules.push(icModuleB);
@@ -625,6 +630,26 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         vm.expectRevert();
         icClient.isExecutable(encodedTx, emptyProof);
         vm.expectRevert();
+        executeTransaction(encodedTx, emptyProof);
+    }
+
+    function test_execute_revert_receiverEOA() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx();
+        icTx.dstReceiver = bytes32(uint256(uint160(receiverEOA)));
+        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        expectRevertReceiverNotICApp(receiverEOA);
+        icClient.isExecutable(encodedTx, emptyProof);
+        expectRevertReceiverNotICApp(receiverEOA);
+        executeTransaction(encodedTx, emptyProof);
+    }
+
+    function test_execute_revert_receiverNotICApp() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx();
+        icTx.dstReceiver = bytes32(uint256(uint160(receiverNotICApp)));
+        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        expectRevertReceiverNotICApp(receiverNotICApp);
+        icClient.isExecutable(encodedTx, emptyProof);
+        expectRevertReceiverNotICApp(receiverNotICApp);
         executeTransaction(encodedTx, emptyProof);
     }
 

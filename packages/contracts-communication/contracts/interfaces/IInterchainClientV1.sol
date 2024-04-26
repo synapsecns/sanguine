@@ -26,6 +26,7 @@ interface IInterchainClientV1 {
     error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
     error InterchainClientV1__NotEVMClient(bytes32 client);
     error InterchainClientV1__NotRemoteChainId(uint64 chainId);
+    error InterchainClientV1__ReceiverNotICApp(address receiver);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
     error InterchainClientV1__ZeroAddress();
