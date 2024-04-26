@@ -487,6 +487,7 @@ func (i *inventoryManagerImpl) registerPendingRebalance(ctx context.Context, reb
 		attribute.Int(metrics.Origin, int(rebalance.Origin)),
 		attribute.Int(metrics.Destination, int(rebalance.Destination)),
 		attribute.String("status", rebalance.Status.String()),
+		attribute.String("relayer", i.relayerAddress.Hex()),
 	)
 	tokenMetadata, err := i.GetTokenMetadata(int(rebalance.Origin), rebalance.OriginTokenAddr)
 	if err != nil {
@@ -820,6 +821,7 @@ func (i *inventoryManagerImpl) registerBalance(ctx context.Context, meter metric
 		attribute.Int("decimals", int(tokenData.Decimals)),
 		attribute.String("token_address", token.String()),
 		attribute.String("raw_balance", tokenData.Balance.String()),
+		attribute.String("relayer", i.relayerAddress.Hex()),
 	)
 
 	balanceHist.Record(ctx, core.BigToDecimals(tokenData.Balance, tokenData.Decimals), metric.WithAttributeSet(attributes))

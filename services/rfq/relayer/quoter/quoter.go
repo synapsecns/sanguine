@@ -404,6 +404,7 @@ func (m *Manager) registerQuote(ctx context.Context, quote *model.PutQuoteReques
 		attribute.String("dest_token_name", destMetadata.Name),
 		attribute.String("max_origin_amount", quote.MaxOriginAmount),
 		attribute.String("fixed_fee", quote.FixedFee),
+		attribute.String("relayer", m.relayerSigner.Address().Hex()),
 	)
 	quoteAmountHist.Record(ctx, core.BigToDecimals(destAmount, destMetadata.Decimals), metric.WithAttributeSet(attributes))
 	return nil
