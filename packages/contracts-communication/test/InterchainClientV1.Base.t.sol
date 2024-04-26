@@ -2,8 +2,10 @@
 pragma solidity 0.8.20;
 
 import {InterchainClientV1, InterchainClientV1Events, IInterchainClientV1} from "../contracts/InterchainClientV1.sol";
-import {InterchainTxDescriptor, InterchainTransaction} from "../contracts/libs/InterchainTransaction.sol";
+import {IInterchainApp} from "../contracts/interfaces/IInterchainApp.sol";
+import {AppConfigV1} from "../contracts/libs/AppConfig.sol";
 import {BatchingV1Lib} from "../contracts/libs/BatchingV1.sol";
+import {InterchainTxDescriptor, InterchainTransaction} from "../contracts/libs/InterchainTransaction.sol";
 import {OptionsLib} from "../contracts/libs/Options.sol";
 
 import {InterchainTransactionLibHarness} from "./harnesses/InterchainTransactionLibHarness.sol";
@@ -59,6 +61,17 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     function setLinkedClient(uint64 chainId, bytes32 client) public {
         vm.prank(owner);
         icClient.setLinkedClient(chainId, client);
+    }
+
+    // ══════════════════════════════════════════════════ MOCKING ══════════════════════════════════════════════════════
+
+    function mockReceivingConfig(address receiver, AppConfigV1 memory appConfig, address[] memory modules) internal {
+        bytes memory encodedConfig = appConfig.encodeAppConfigV1();
+        vm.mockCall({
+            callee: receiver,
+            data: abi.encodeCall(IInterchainApp.getReceivingConfig, ()),
+            returnData: abi.encode(encodedConfig, modules)
+        });
     }
 
     // ═════════════════════════════════════════════ EXPECT (REVERTS) ══════════════════════════════════════════════════

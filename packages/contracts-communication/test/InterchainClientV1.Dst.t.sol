@@ -93,10 +93,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     /// @dev Override the InterchainApp's receiving config to return the given appConfig and two modules.
     function mockReceivingConfig(uint256 requiredResponses, uint256 guardFlag) internal {
         AppConfigV1 memory appConfig = getAppConfig(requiredResponses, guardFlag);
-        bytes memory encodedConfig = appConfig.encodeAppConfigV1();
-        vm.mockCall(
-            dstReceiver, abi.encodeCall(InterchainAppMock.getReceivingConfig, ()), abi.encode(encodedConfig, twoModules)
-        );
+        mockReceivingConfig(dstReceiver, appConfig, twoModules);
     }
 
     /// @dev Override the InterchainDB's verification check to return the given verifiedAt timestamp

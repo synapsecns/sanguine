@@ -3,7 +3,10 @@ pragma solidity 0.8.20;
 
 import {OptionsV1} from "../contracts/libs/Options.sol";
 
-import {InterchainClientV1BaseTest, InterchainTransaction} from "./InterchainClientV1.Base.t.sol";
+import {InterchainAppMock} from "./mocks/InterchainAppMock.sol";
+import {NoOpHarness} from "./harnesses/NoOpHarness.sol";
+
+import {AppConfigV1, InterchainClientV1BaseTest, InterchainTransaction} from "./InterchainClientV1.Base.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
@@ -58,5 +61,34 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
         OptionsV1 memory decoded = icClient.decodeOptions(encoded);
         assertEq(decoded.gasLimit, options.gasLimit, "!gasLimit");
         assertEq(decoded.gasAirdrop, options.gasAirdrop, "!gasAirdrop");
+    }
+
+    function test_getAppReceivingConfigV1() public {
+        AppConfigV1 memory appConfig =
+            AppConfigV1({requiredResponses: 1, optimisticPeriod: 2, guardFlag: 3, guard: address(4)});
+        address[] memory modules = new address[](2);
+        modules[0] = address(5);
+        modules[1] = address(6);
+        address app = address(new InterchainAppMock());
+        mockReceivingConfig(app, appConfig, modules);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        assertEq(fetchedConfig.requiredResponses, appConfig.requiredResponses);
+        assertEq(fetchedConfig.optimisticPeriod, appConfig.optimisticPeriod);
+        assertEq(fetchedConfig.guardFlag, appConfig.guardFlag);
+        assertEq(fetchedConfig.guard, appConfig.guard);
+        assertEq(abi.encode(fetchedConfig), abi.encode(appConfig));
+        assertEq(fetchedModules, modules);
+    }
+
+    function test_getAppReceivingConfigV1_revert_receiverEOA() public {
+        address app = makeAddr("EOA");
+        expectRevertReceiverNotICApp(app);
+        icClient.getAppReceivingConfigV1(app);
+    }
+
+    function test_getAppReceivingConfigV1_revert_receiverNotICApp() public {
+        address app = address(new NoOpHarness());
+        expectRevertReceiverNotICApp(app);
+        icClient.getAppReceivingConfigV1(app);
     }
 }
