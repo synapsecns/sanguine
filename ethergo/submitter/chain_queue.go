@@ -66,7 +66,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		return fmt.Errorf("could not get nonce: %w", err)
 	}
 	span.SetAttributes(attribute.Int("nonce", int(currentNonce)))
-	registerErr := t.registerCurrentNonce(currentNonce, int(chainID.Int64()))
+	registerErr := t.registerCurrentNonce(ctx, currentNonce, int(chainID.Int64()))
 	if registerErr != nil {
 		span.AddEvent("could not register nonce", trace.WithAttributes(attribute.String("error", registerErr.Error())))
 	}
@@ -115,7 +115,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 
 	cq.storeAndSubmit(ctx, calls, span)
 
-	registerErr = cq.registerNumPendingTXes(len(cq.reprocessQueue), int(chainID.Int64()))
+	registerErr = cq.registerNumPendingTXes(ctx, len(cq.reprocessQueue), int(chainID.Int64()))
 	if registerErr != nil {
 		span.AddEvent("could not register pending txes", trace.WithAttributes(attribute.String("error", registerErr.Error())))
 	}
@@ -123,22 +123,25 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	return nil
 }
 
-func (t *txSubmitterImpl) registerCurrentNonce(nonce uint64, chainID int) (err error) {
-	meter := t.metrics.Meter(meterName)
-	nonceGauge, err := meter.Int64ObservableGauge("current_nonce")
-	if err != nil {
-		return fmt.Errorf("error creating nonce gauge: %w", err)
+var meter metric.Meter
+
+func getMeter(handler metrics.Handler) metric.Meter {
+	if meter == nil {
+		meter = handler.Meter(meterName)
 	}
-	_, err = meter.RegisterCallback(func(ctx context.Context, o metric.Observer) (err error) {
-		attributes := attribute.NewSet(
-			attribute.Int(metrics.ChainID, chainID),
-		)
-		o.ObserveInt64(nonceGauge, int64(nonce), metric.WithAttributeSet(attributes))
-		return nil
-	})
+	return meter
+}
+
+func (t *txSubmitterImpl) registerCurrentNonce(ctx context.Context, nonce uint64, chainID int) (err error) {
+	meter := getMeter(t.metrics)
+	nonceHist, err := meter.Int64Histogram("current_nonce")
 	if err != nil {
-		return fmt.Errorf("error registering nonce callback: %w", err)
+		return fmt.Errorf("error creating nonce histogram: %w", err)
 	}
+	attributes := attribute.NewSet(
+		attribute.Int(metrics.ChainID, chainID),
+	)
+	nonceHist.Record(ctx, int64(nonce), metric.WithAttributeSet(attributes))
 	return nil
 }
 
@@ -179,19 +182,16 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 
 const meterName = "github.com/synapsecns/sanguine/ethergo/submitter"
 
-func (c *chainQueue) registerNumPendingTXes(num, chainID int) (err error) {
-	meter := c.metrics.Meter(meterName)
-	numPendingGauge, err := meter.Int64ObservableGauge("num_pending_txes")
+func (c *chainQueue) registerNumPendingTXes(ctx context.Context, num, chainID int) (err error) {
+	meter := getMeter(c.metrics)
+	numPendingHist, err := meter.Int64Histogram("num_pending_txes")
 	if err != nil {
-		return fmt.Errorf("error creating num pending txes gauge: %w", err)
+		return fmt.Errorf("error creating num pending txes histogram: %w", err)
 	}
-	_, err = meter.RegisterCallback(func(ctx context.Context, o metric.Observer) (err error) {
-		attributes := attribute.NewSet(
-			attribute.Int(metrics.ChainID, chainID),
-		)
-		o.ObserveInt64(numPendingGauge, int64(num), metric.WithAttributeSet(attributes))
-		return nil
-	})
+	attributes := attribute.NewSet(
+		attribute.Int(metrics.ChainID, chainID),
+	)
+	numPendingHist.Record(ctx, int64(num), metric.WithAttributeSet(attributes))
 	return nil
 }
 
@@ -298,7 +298,7 @@ func (c *chainQueue) isBumpIntervalElapsed(tx db.TX) bool {
 }
 
 func (c *chainQueue) registerBumpTx(ctx context.Context, tx *types.Transaction, uuid string) (err error) {
-	meter := c.metrics.Meter(meterName)
+	meter := getMeter(c.metrics)
 	gaugeName := fmt.Sprintf("bump_count:%d-%d", tx.ChainId().Int64(), tx.Nonce())
 	bumpCountGauge, err := meter.Int64Counter(gaugeName)
 	if err != nil {
