@@ -99,7 +99,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return _interchainSend(dstChainId, receiverBytes32, srcExecutionService, srcModules, options, message);
     }
 
-    // TODO: Handle the case where receiver does not implement the IInterchainApp interface (or does not exist at all)
     // @inheritdoc IInterchainClientV1
     function interchainExecute(
         uint256 gasLimit,
@@ -262,8 +261,18 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         view
         returns (AppConfigV1 memory config, address[] memory modules)
     {
+        // First, check that receiver is a contract
+        if (receiver.code.length == 0) {
+            revert InterchainClientV1__ReceiverNotICApp(receiver);
+        }
+        // Then, use a low-level static call to get the config and modules
+        (bool success, bytes memory returnData) =
+            receiver.staticcall(abi.encodeCall(IInterchainApp.getReceivingConfig, ()));
+        if (!success || returnData.length == 0) {
+            revert InterchainClientV1__ReceiverNotICApp(receiver);
+        }
         bytes memory encodedConfig;
-        (encodedConfig, modules) = IInterchainApp(receiver).getReceivingConfig();
+        (encodedConfig, modules) = abi.decode(returnData, (bytes, address[]));
         config = encodedConfig.decodeAppConfigV1();
     }
 
