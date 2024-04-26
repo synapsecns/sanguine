@@ -299,12 +299,14 @@ func (c *chainQueue) isBumpIntervalElapsed(tx db.TX) bool {
 
 func (c *chainQueue) registerBumpTx(ctx context.Context, tx *types.Transaction, uuid string) (err error) {
 	meter := getMeter(c.metrics)
-	gaugeName := fmt.Sprintf("bump_count:%d-%d", tx.ChainId().Int64(), tx.Nonce())
-	bumpCountGauge, err := meter.Int64Counter(gaugeName)
+	bumpCountGauge, err := meter.Int64Counter("bump_count")
 	if err != nil {
 		return fmt.Errorf("error creating bump count gauge: %w", err)
 	}
-	attributes := attribute.NewSet(txToAttributes(tx, uuid)...)
+	attributes := attribute.NewSet(
+		attribute.Int64(metrics.ChainID, tx.ChainId().Int64()),
+		attribute.Int64(metrics.Nonce, int64(tx.Nonce())),
+	)
 	bumpCountGauge.Add(ctx, 1, metric.WithAttributeSet(attributes))
 	return nil
 }
