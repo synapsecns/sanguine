@@ -699,6 +699,7 @@ export const ETH = new Token({
     [CHAINS.ARBITRUM.id]: zeroAddress,
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
     [CHAINS.BLAST.id]: zeroAddress,
+    [CHAINS.SCROLL.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'ETH',
