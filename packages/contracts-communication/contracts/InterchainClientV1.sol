@@ -27,6 +27,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainClientV1 {
     using AppConfigLib for bytes;
     using OptionsLib for bytes;
+    using TypeCasts for address;
+    using TypeCasts for bytes32;
     using VersionedPayloadLib for bytes;
 
     /// @notice Version of the InterchainClient contract. Sent and received transactions must have the same version.
@@ -93,7 +95,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         payable
         returns (InterchainTxDescriptor memory desc)
     {
-        bytes32 receiverBytes32 = TypeCasts.addressToBytes32(receiver);
+        bytes32 receiverBytes32 = receiver.addressToBytes32();
         return _interchainSend(dstChainId, receiverBytes32, srcExecutionService, srcModules, options, message);
     }
 
@@ -124,7 +126,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             revert InterchainClientV1__NotEnoughGasSupplied();
         }
         // Pass the full msg.value to the app: we have already checked that it matches the requested gas airdrop.
-        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
+        IInterchainApp(icTx.dstReceiver.bytes32ToAddress()).appReceive{gas: gasLimit, value: msg.value}({
             srcChainId: icTx.srcChainId,
             sender: icTx.srcSender,
             dbNonce: icTx.dbNonce,
@@ -242,9 +244,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             revert InterchainClientV1__NotRemoteChainId(chainId);
         }
         bytes32 linkedClient = _linkedClient[chainId];
-        linkedClientEVM = TypeCasts.bytes32ToAddress(linkedClient);
+        linkedClientEVM = linkedClient.bytes32ToAddress();
         // Check that the linked client address fits into the EVM address space
-        if (TypeCasts.addressToBytes32(linkedClientEVM) != linkedClient) {
+        if (linkedClientEVM.addressToBytes32() != linkedClient) {
             revert InterchainClientV1__NotEVMClient(linkedClient);
         }
     }
@@ -369,7 +371,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             })
         });
         (AppConfigV1 memory appConfig, address[] memory approvedModules) =
-            getAppReceivingConfigV1(TypeCasts.bytes32ToAddress(icTx.dstReceiver));
+            getAppReceivingConfigV1(icTx.dstReceiver.bytes32ToAddress());
         if (appConfig.requiredResponses == 0) {
             revert InterchainClientV1__ZeroRequiredResponses();
         }
