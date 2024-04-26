@@ -7,7 +7,6 @@ export type Chain = {
   chainSymbol: string
   name: string
   altName?: string
-  codeName: string
   chainImg: any
   layer: number
   rpcUrls: { primary: string; fallback: string }

@@ -17,6 +17,7 @@ import {
   moonriver,
   optimism,
   polygon,
+  scroll,
 } from '@wagmi/core/chains'
 
 import { dfk, dogechain } from '@/constants/chains/extraWagmiChains'
@@ -43,6 +44,7 @@ export const supportedChains = [
   dfk,
   dogechain,
   boba,
+  scroll,
 ].map((chain) => {
   return {
     ...chain,
