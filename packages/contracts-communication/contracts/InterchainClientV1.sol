@@ -249,20 +249,20 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
     }
 
+    /// @notice Decodes the encoded options data into a OptionsV1 struct.
+    function decodeOptions(bytes memory encodedOptions) external view returns (OptionsV1 memory) {
+        return encodedOptions.decodeOptionsV1();
+    }
+
     /// @notice Gets the V1 app config and trusted modules for the receiving app.
     function getAppReceivingConfigV1(address receiver)
-        external
+        public
         view
         returns (AppConfigV1 memory config, address[] memory modules)
     {
         bytes memory encodedConfig;
         (encodedConfig, modules) = IInterchainApp(receiver).getReceivingConfig();
         config = encodedConfig.decodeAppConfigV1();
-    }
-
-    /// @notice Decodes the encoded options data into a OptionsV1 struct.
-    function decodeOptions(bytes memory encodedOptions) external view returns (OptionsV1 memory) {
-        return encodedOptions.decodeOptionsV1();
     }
 
     /// @notice Encodes the transaction data into a bytes format.
@@ -368,9 +368,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 proof: proof
             })
         });
-        (bytes memory encodedAppConfig, address[] memory approvedModules) =
-            IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
-        AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
+        (AppConfigV1 memory appConfig, address[] memory approvedModules) =
+            getAppReceivingConfigV1(TypeCasts.bytes32ToAddress(icTx.dstReceiver));
         if (appConfig.requiredResponses == 0) {
             revert InterchainClientV1__ZeroRequiredResponses();
         }
