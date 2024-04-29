@@ -8,6 +8,10 @@ abstract contract ClaimableFeesEvents {
     /// @param claimerFraction  The fraction of the fees to be paid to the claimer (100% = 1e18)
     event ClaimerFractionSet(uint256 claimerFraction);
 
+    /// @notice Emitted when a fee recipient is set. The fee recipient receives the claimed fees.
+    /// @param feeRecipient     The address of the fee recipient.
+    event FeeRecipientSet(address feeRecipient);
+
     /// @notice Emitted when fees are claimed to the fee recipient address.
     /// @param feeRecipient     The address that receives the claimed fees.
     /// @param claimedFees      The amount of fees claimed, after the claimer reward is deducted.
