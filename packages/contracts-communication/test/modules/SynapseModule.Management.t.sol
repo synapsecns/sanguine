@@ -235,6 +235,12 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
         module.setFeeRecipient(feeRecipient);
     }
 
+    function test_setFeeRecipient_revert_zeroAddress() public {
+        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__ZeroAddress.selector));
+        vm.prank(owner);
+        module.setFeeRecipient(address(0));
+    }
+
     function test_setFeeRecipient_revert_notOwner(address notOwner) public {
         vm.assume(notOwner != owner);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));

@@ -161,12 +161,11 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
     }
 
     function test_claimFees_zeroClaimFee_revert_feeRecipientNotSet() public {
-        deal(address(module), 5 ether);
-        vm.prank(owner);
-        module.setFeeRecipient(address(0));
+        SynapseModule freshModule = new SynapseModule(interchainDB, address(this));
+        deal(address(freshModule), 5 ether);
         vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__FeeRecipientNotSet.selector));
         vm.prank(claimer);
-        module.claimFees();
+        freshModule.claimFees();
     }
 
     function test_claimFees_zeroClaimFee_revert_noFeesToClaim() public {
@@ -215,15 +214,13 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
     }
 
     function test_claimFees_nonZeroClaimFee_revert_feeRecipientNotSet() public {
+        SynapseModule freshModule = new SynapseModule(interchainDB, address(this));
         // Set claim fee to 0.1%
-        vm.startPrank(owner);
-        module.setFeeRecipient(address(0));
-        module.setClaimerFraction(0.001e18);
-        vm.stopPrank();
-        deal(address(module), 5 ether);
+        freshModule.setClaimerFraction(0.001e18);
+        deal(address(freshModule), 5 ether);
         vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__FeeRecipientNotSet.selector));
         vm.prank(claimer);
-        module.claimFees();
+        freshModule.claimFees();
     }
 
     function test_claimFees_nonZeroClaimFee_revert_noFeesToClaim() public {
