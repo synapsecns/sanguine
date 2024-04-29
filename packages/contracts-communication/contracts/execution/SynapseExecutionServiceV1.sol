@@ -60,6 +60,7 @@ contract SynapseExecutionServiceV1 is
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         $.executorEOA = executorEOA_;
         emit ExecutorEOASet(executorEOA_);
+        emit FeeRecipientSet(executorEOA_);
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
