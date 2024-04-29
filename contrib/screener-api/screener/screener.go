@@ -37,7 +37,8 @@ type Screener interface {
 type screenerImpl struct {
 	rulesManager internal.RulesetManager
 	thresholds   []config.VolumeThreshold
-	db           db.RuleDB
+	rdb          db.RuleDB
+	bdb          db.BlacklistedAddressDB
 	router       *gin.Engine
 	metrics      metrics.Handler
 	cfg          config.Config
@@ -76,7 +77,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 		return nil, fmt.Errorf("could not get db type: %w", err)
 	}
 
-	screener.db, err = sql.Connect(ctx, dbType, cfg.Database.DSN, metricHandler)
+	screener.rdb, err = sql.Connect(ctx, dbType, cfg.Database.DSN, metricHandler)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to db: %w", err)
 	}
@@ -146,6 +147,15 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		// add the user
 		// update the new table `blacklisted_users`
 		// return the status
+		s.bdb.PutBlacklistedAddress(c, db.BlacklistedAddress{
+			Id:      id,
+			TypeReq: type_req,
+			Data:    data,
+			Address: address,
+			Network: network,
+			Tag:     tag,
+			Remark:  remark,
+		})
 
 	case "update":
 		// update the user
@@ -248,7 +258,7 @@ func (s *screenerImpl) getIndicators(parentCtx context.Context, address string, 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	riskIndicators, err := s.db.GetAddressIndicators(ctx, address, goodUntil)
+	riskIndicators, err := s.rdb.GetAddressIndicators(ctx, address, goodUntil)
 	if err == nil {
 		return riskIndicators, nil
 	}
@@ -266,7 +276,7 @@ func (s *screenerImpl) getIndicators(parentCtx context.Context, address string, 
 		riskIndicators = append(riskIndicators, ri.AddressRiskIndicators...)
 	}
 
-	err = s.db.PutAddressIndicators(ctx, address, riskIndicators)
+	err = s.rdb.PutAddressIndicators(ctx, address, riskIndicators)
 	if err != nil {
 		return nil, fmt.Errorf("could not put address indicators: %w", err)
 	}
