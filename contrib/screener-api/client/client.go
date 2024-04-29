@@ -4,6 +4,7 @@ package client
 import (
 	"context"
 	"fmt"
+
 	"github.com/dubonzi/otelresty"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
@@ -14,6 +15,7 @@ import (
 // ScreenerClient is an interface for the Screener API.
 type ScreenerClient interface {
 	ScreenAddress(ctx context.Context, ruleset, address string) (blocked bool, err error)
+	BlacklistAddress(ctx context.Context, body BlackListBody) (string, error)
 }
 
 type clientImpl struct {
@@ -54,6 +56,40 @@ func (c clientImpl) ScreenAddress(ctx context.Context, ruleset, address string) 
 	return blockedRes.Blocked, nil
 }
 
+type BlackListBody struct {
+	TypeReq string      `json:"type" binding:"required"`
+	Id      string      `json:"id" binding:"required"`
+	Data    interface{} `json:"data"`
+	Address string      `json:"address"`
+	Network string      `json:"network"`
+	Tag     string      `json:"tag"`
+	Remark  string      `json:"remark"`
+}
+
+type blacklistResponse struct {
+	Status string `json:"status"`
+}
+
+func (c clientImpl) BlacklistAddress(ctx context.Context, body BlackListBody) (string, error) {
+	var blacklistRes blacklistResponse
+
+	resp, err := c.rClient.R().
+		SetContext(ctx).
+		SetResult(&blacklistRes).
+		SetBody(body).
+		Post("/api/data/sync/")
+
+	if err != nil {
+		return "", fmt.Errorf("error from server: %s: %w", resp.Status(), err)
+	}
+
+	if resp.IsError() {
+		return "", fmt.Errorf("error from server: %s", resp.Status())
+	}
+
+	return blacklistRes.Status, nil
+}
+
 // NewNoOpClient creates a new no-op client for the Screener API.
 // it returns false for every address.
 func NewNoOpClient() (ScreenerClient, error) {
@@ -64,6 +100,10 @@ type noOpClient struct{}
 
 func (n noOpClient) ScreenAddress(_ context.Context, _, _ string) (bool, error) {
 	return false, nil
+}
+
+func (n noOpClient) BlacklistAddress(_ context.Context, _ BlackListBody) (string, error) {
+	return "", nil
 }
 
 var _ ScreenerClient = noOpClient{}

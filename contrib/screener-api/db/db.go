@@ -4,9 +4,24 @@ package db
 import (
 	"context"
 	"errors"
-	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
 	"time"
+
+	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
 )
+
+// TODO: make a general db interface.
+type BlacklistedAddressWriterDB interface {
+	PutBlacklistedAddress(ctx context.Context, body BlacklistedAddress) error
+}
+
+type BlacklistedAddressReaderDB interface {
+	GetBlacklistedAddress(ctx context.Context, address string) (blacklisted bool, err error)
+}
+
+type BlacklistedAddressDB interface {
+	BlacklistedAddressWriterDB
+	BlacklistedAddressReaderDB
+}
 
 // RuleWriterDB is the interface for writing rules to the database.
 type RuleWriterDB interface {
