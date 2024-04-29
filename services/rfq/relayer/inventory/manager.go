@@ -790,7 +790,7 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 			if !token.IsGasToken {
 				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.Balance))
 				deferredRegisters = append(deferredRegisters, func() error {
-					//nolint:wrapcheck
+					//nolint:wrapcheck,scopelint
 					return i.registerBalance(ctx, chainID, tokenAddress)
 				})
 			}
