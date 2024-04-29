@@ -37,8 +37,8 @@ interface ISynapseModule is IInterchainModule {
 
     /// @notice Sets the address of the fee collector, which will have the verification fees forwarded to it.
     /// @dev Could be only called by the owner.
-    /// @param feeRecipient_   The address of the fee collector
-    function setFeeRecipient(address feeRecipient_) external;
+    /// @param feeRecipient     The address of the fee collector
+    function setFeeRecipient(address feeRecipient) external;
 
     /// @notice Sets the fraction of the accumulated fees to be paid to caller of `claimFees`.
     /// This encourages rational actors to call the function as soon as claim fee is higher than the gas cost.

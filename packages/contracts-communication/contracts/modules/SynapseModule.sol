@@ -76,6 +76,9 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
 
     /// @inheritdoc ISynapseModule
     function setFeeRecipient(address feeRecipient) external onlyOwner {
+        if (feeRecipient == address(0)) {
+            revert SynapseModule__ZeroAddress();
+        }
         _feeRecipient = feeRecipient;
         emit FeeRecipientSet(feeRecipient);
     }
