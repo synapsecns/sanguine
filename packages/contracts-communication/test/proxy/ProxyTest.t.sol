@@ -27,6 +27,11 @@ abstract contract ProxyTest is Test {
         assertEq(actual, expectedBytes32);
     }
 
+    function assertStorageUint(address target, bytes32 slot, uint256 expected) internal {
+        bytes32 actual = vm.load(target, slot);
+        assertEq(uint256(actual), expected);
+    }
+
     /// @dev Function to use in the fuzz tests to assume that the caller is not the proxy admin
     /// Calls from the proxy admin are not directed to the implementation contract, so they should be
     /// treated differently in the tests.
