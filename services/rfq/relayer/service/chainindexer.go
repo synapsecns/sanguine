@@ -162,7 +162,7 @@ func (r *Relayer) getDecimalsFromBridgeTx(parentCtx context.Context, bridgeTx fa
 func (r *Relayer) getDecimals(ctx context.Context, addr common.Address, chainID uint32) (decimals *uint8, err error) {
 	// attempt to load decimal from cache
 	key := getDecimalsKey(addr, chainID)
-	decimals, ok := r.decimalsCache[key]
+	decimals, ok := r.decimalsCache.Load(key)
 	if ok {
 		return decimals, nil
 	}
@@ -186,7 +186,7 @@ func (r *Relayer) getDecimals(ctx context.Context, addr common.Address, chainID 
 	}
 
 	// update the cache
-	r.decimalsCache[key] = &dec
+	r.decimalsCache.Store(key, &dec)
 	return &dec, nil
 }
 
