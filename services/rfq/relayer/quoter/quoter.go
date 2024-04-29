@@ -110,10 +110,14 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		}
 	}
 
-	meter := metricsHandler.Meter(meterName)
-	quoteAmountHist, err := meter.Float64Histogram("quote_amount")
-	if err != nil {
-		return nil, fmt.Errorf("error creating quote amount hist: %w", err)
+	var meter metric.Meter
+	var quoteAmountHist metric.Float64Histogram
+	if metricsHandler.Type() != metrics.Null {
+		meter := metricsHandler.Meter(meterName)
+		quoteAmountHist, err = meter.Float64Histogram("quote_amount")
+		if err != nil {
+			return nil, fmt.Errorf("error creating quote amount hist: %w", err)
+		}
 	}
 
 	return &Manager{
