@@ -300,3 +300,82 @@ func TestGetters(t *testing.T) {
 		assert.Equal(t, chainVal.String(), "1000000000")
 	})
 }
+
+func TestValidation(t *testing.T) {
+	t.Run("Valid", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 25,
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 25,
+						},
+					},
+				},
+			},
+		}
+		err := cfg.Validate()
+		assert.Nil(t, err)
+	})
+
+	t.Run("InvalidInitialPct", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     51,
+							MaintenanceBalancePct: 50,
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 50,
+						},
+					},
+				},
+			},
+		}
+		err := cfg.Validate()
+		assert.NotNil(t, err)
+		assert.Equal(t, "total initial percent does not total 100 for USDC: 101.000000", err.Error())
+	})
+
+	t.Run("InvalidMaintenancePct", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 50,
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 50.1,
+						},
+					},
+				},
+			},
+		}
+		err := cfg.Validate()
+		assert.NotNil(t, err)
+		assert.Equal(t, "total maintenance percent exceeds 100 for USDC: 100.100000", err.Error())
+	})
+}

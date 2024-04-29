@@ -182,7 +182,7 @@ func (c Config) Validate() (err error) {
 	}
 	for token, sum := range initialPctSums {
 		if math.Round(sum) != 100 {
-			return fmt.Errorf("initial maintenance percent does not total 100 for %s: %f", token, sum)
+			return fmt.Errorf("total initial percent does not total 100 for %s: %f", token, sum)
 		}
 	}
 	return nil
