@@ -50,7 +50,7 @@ abstract contract ICSetup is ProxyTest {
     address public dstApp;
 
     address public executor = makeAddr("Executor");
-    address public feeCollector = makeAddr("FeeCollector");
+    address public feeRecipient = makeAddr("FeeRecipient");
     // Signer public keys, sorted by their address:
     // 2000 -> 0x5793e629c061e7FD642ab6A1b4d552CeC0e2D606
     // 1000 -> 0x7F1d642DbfD62aD4A8fA9810eA619707d09825D0
@@ -111,8 +111,8 @@ abstract contract ICSetup is ProxyTest {
     }
 
     function configureSynapseModule() internal virtual {
-        module.setClaimFeeFraction(0.01e18); // 1%
-        module.setFeeCollector(feeCollector);
+        module.setClaimerFraction(0.01e18); // 1%
+        module.setFeeRecipient(feeRecipient);
         module.setGasOracle(address(gasOracle));
         module.setThreshold(signerPKs.length);
         for (uint256 i = 0; i < signerPKs.length; i++) {
