@@ -150,6 +150,39 @@ func (s *ScreenerSuite) TestScreener() {
 	out, err = apiClient.ScreenAddress(s.GetTestContext(), "testrule", "0x00")
 	Nil(s.T(), err)
 	False(s.T(), out)
+
+	// now test crud screener
+	blacklistBody := client.BlackListBody{
+		TypeReq: "create",
+		Id:      "1",
+		Data:    "",
+		Address: "0x123",
+		Network: "eth",
+		Tag:     "tag",
+		Remark:  "remark",
+	}
+
+	// post to the blacklist
+	status, err := apiClient.BlacklistAddress(s.GetTestContext(), blacklistBody)
+	Equal(s.T(), "success", status)
+	Nil(s.T(), err)
+
+	// update an address on the blacklist
+	blacklistBody.TypeReq = "update"
+	blacklistBody.Remark = "new remark"
+
+	status, err = apiClient.BlacklistAddress(s.GetTestContext(), blacklistBody)
+	Equal(s.T(), "success", status)
+	Nil(s.T(), err)
+
+	// delete the address on the blacklist
+	blacklistBody.TypeReq = "delete"
+	blacklistBody.Id = "1"
+
+	status, err = apiClient.BlacklistAddress(s.GetTestContext(), blacklistBody)
+	Equal(s.T(), "success", status)
+	Nil(s.T(), err)
+
 }
 
 type mockClient struct {

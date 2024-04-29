@@ -140,8 +140,24 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	address = strings.ToLower(address)
 
 	switch type_req {
-	case "create", "update":
+	case "create":
 		if err := s.db.PutBlacklistedAddress(c, db.BlacklistedAddress{
+			Id:      id,
+			TypeReq: type_req,
+			Data:    data,
+			Address: address,
+			Network: network,
+			Tag:     tag,
+			Remark:  remark,
+		}); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": "success"})
+		return
+
+	case "update":
+		if err := s.db.UpdateBlacklistedAddress(c, id, db.BlacklistedAddress{
 			Id:      id,
 			TypeReq: type_req,
 			Data:    data,
