@@ -17,7 +17,7 @@ interface ChainPause {
   endTimePauseChain: Date | null // If null, pause indefinitely
   startTimeBanner: Date
   endTimeBanner: Date | null // If null, pause indefinitely
-  warningMessage: JSX.Element
+  inputWarningMessage: JSX.Element
   bannerMessage: JSX.Element
   progressBarMessage: JSX.Element
   disableBanner: boolean
@@ -34,7 +34,7 @@ const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
       : null,
     startTimeBanner: new Date(pause.startTimeBanner),
     endTimeBanner: pause.endTimeBanner ? new Date(pause.endTimeBanner) : null,
-    warningMessage: <p>{pause.warningMessage}</p>,
+    inputWarningMessage: <p>{pause.inputWarningMessage}</p>,
     bannerMessage: <p className="text-left">{pause.bannerMessage}</p>,
     progressBarMessage: <p>{pause.progressBarMessage}</p>,
   }
@@ -79,7 +79,7 @@ export const MaintenanceWarningMessages = ({
               endDate={event.endTimePauseChain}
               pausedFromChains={event.pausedFromChains}
               pausedToChains={event.pausedToChains}
-              warningMessage={event.warningMessage}
+              warningMessage={event.inputWarningMessage}
               disabled={event.disableWarning || !event.pauseBridge}
             />
           )
@@ -98,7 +98,7 @@ export const MaintenanceWarningMessages = ({
               endDate={event.endTimePauseChain}
               pausedFromChains={event.pausedFromChains}
               pausedToChains={event.pausedToChains}
-              warningMessage={event.warningMessage}
+              warningMessage={event.inputWarningMessage}
               disabled={event.disableWarning || !event.pauseSwap}
             />
           )

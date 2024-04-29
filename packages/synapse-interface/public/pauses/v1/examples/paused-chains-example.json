@@ -9,7 +9,7 @@
     "endTimePauseChain": null,
     "startTimeBanner": "2024-04-12T04:40:00Z",
     "endTimeBanner": null,
-    "warningMessage": "Base bridging is paused until maintenance is complete.",
+    "inputWarningMessage": "Base bridging is paused until maintenance is complete.",
     "bannerMessage": "Base bridging is paused until maintenance is complete.",
     "progressBarMessage": "Base maintenance in progress",
     "disableBanner": false,
