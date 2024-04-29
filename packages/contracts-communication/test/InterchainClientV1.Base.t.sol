@@ -2,16 +2,12 @@
 pragma solidity 0.8.20;
 
 import {InterchainClientV1, InterchainClientV1Events, IInterchainClientV1} from "../contracts/InterchainClientV1.sol";
-import {
-    InterchainTxDescriptor,
-    InterchainTransaction,
-    InterchainTransactionLib
-} from "../contracts/libs/InterchainTransaction.sol";
+import {InterchainTxDescriptor, InterchainTransaction} from "../contracts/libs/InterchainTransaction.sol";
+import {BatchingV1Lib} from "../contracts/libs/BatchingV1.sol";
 import {OptionsLib} from "../contracts/libs/Options.sol";
 
 import {InterchainTransactionLibHarness} from "./harnesses/InterchainTransactionLibHarness.sol";
 import {VersionedPayloadLibHarness} from "./harnesses/VersionedPayloadLibHarness.sol";
-import {ExecutionFeesMock} from "./mocks/ExecutionFeesMock.sol";
 import {ExecutionServiceMock} from "./mocks/ExecutionServiceMock.sol";
 import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
@@ -39,7 +35,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     address public icModuleA;
     address public icModuleB;
 
-    address public execFees;
     address public execService;
 
     address public owner = makeAddr("Owner");
@@ -48,17 +43,11 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         vm.chainId(LOCAL_CHAIN_ID);
         icDB = address(new InterchainDBMock());
         icClient = new InterchainClientV1(icDB, owner);
-        execFees = address(new ExecutionFeesMock());
         execService = address(new ExecutionServiceMock());
         icModuleA = address(new InterchainModuleMock());
         icModuleB = address(new InterchainModuleMock());
         txLibHarness = new InterchainTransactionLibHarness();
         payloadLibHarness = new VersionedPayloadLibHarness();
-    }
-
-    function setExecutionFees(address executionFees) public {
-        vm.prank(owner);
-        icClient.setExecutionFees(executionFees);
     }
 
     function setLinkedClient(uint64 chainId, bytes32 client) public {
@@ -67,6 +56,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     }
 
     // ═════════════════════════════════════════════ EXPECT (REVERTS) ══════════════════════════════════════════════════
+
+    function expectRevertBatchConflict(address module) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__BatchConflict.selector, module));
+    }
 
     function expectRevertFeeAmountTooLow(uint256 actual, uint256 required) internal {
         vm.expectRevert(
@@ -80,10 +73,18 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
+    function expectRevertIncorrectEntryIndex(uint64 entryIndex) internal {
+        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__IncorrectEntryIndex.selector, entryIndex));
+    }
+
     function expectRevertIncorrectMsgValue(uint256 actual, uint256 required) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__IncorrectMsgValue.selector, actual, required)
         );
+    }
+
+    function expectRevertIncorrectProof() internal {
+        vm.expectRevert(BatchingV1Lib.BatchingV1__IncorrectProof.selector);
     }
 
     function expectRevertInvalidTransactionVersion(uint16 version) internal {
@@ -132,6 +133,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
+    function expectRevertZeroExecutionService() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroExecutionService.selector);
+    }
+
     function expectRevertZeroReceiver() internal {
         vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroReceiver.selector);
     }
@@ -149,11 +154,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     }
 
     // ══════════════════════════════════════════════ EXPECT (EVENTS) ══════════════════════════════════════════════════
-
-    function expectEventExecutionFeesSet(address executionFees) internal {
-        vm.expectEmit(address(icClient));
-        emit ExecutionFeesSet(executionFees);
-    }
 
     function expectEventLinkedClientSet(uint64 chainId, bytes32 client) internal {
         vm.expectEmit(address(icClient));

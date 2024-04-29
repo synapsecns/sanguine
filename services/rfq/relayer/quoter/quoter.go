@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 
@@ -67,7 +68,7 @@ type Manager struct {
 	screener client.ScreenerClient
 	// relayPaused is set when the RFQ API is found to be offline, which
 	// lets the quoter indicate that quotes should not be relayed.
-	relayPaused bool
+	relayPaused atomic.Bool
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -128,7 +129,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	if m.relayPaused {
+	if m.relayPaused.Load() {
 		span.AddEvent("relayPaused is set due to RFQ API being offline")
 		return false, nil
 	}
@@ -213,13 +214,18 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("error getting committable balances: %w", err)
 	}
-	return m.prepareAndSubmitQuotes(ctx, inv)
+
+	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
+	defer quoteCancel()
+
+	return m.prepareAndSubmitQuotes(quoteCtx, inv)
 }
 
 // Prepares and submits quotes based on inventory.
 func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[common.Address]*big.Int) (err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "prepareAndSubmitQuotes")
 	defer func() {
+		span.SetAttributes(attribute.Bool("relay_paused", m.relayPaused.Load()))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
@@ -236,9 +242,11 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 		}
 	}
 
+	span.SetAttributes(attribute.Int("num_quotes", len(allQuotes)))
+
 	// Now, submit all the generated quotes
 	for _, quote := range allQuotes {
-		if err := m.submitQuote(quote); err != nil {
+		if err := m.submitQuote(ctx, quote); err != nil {
 			span.AddEvent("error submitting quote; setting relayPaused to true", trace.WithAttributes(
 				attribute.String("error", err.Error()),
 				attribute.Int(metrics.Origin, quote.OriginChainID),
@@ -248,7 +256,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 				attribute.String("max_origin_amount", quote.MaxOriginAmount),
 				attribute.String("dest_amount", quote.DestAmount),
 			))
-			m.relayPaused = true
+			m.relayPaused.Store(true)
 
 			// Suppress error so that we can continue submitting quotes
 			return nil
@@ -256,7 +264,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	}
 
 	// We successfully submitted all quotes, so we can set relayPaused to false
-	m.relayPaused = false
+	m.relayPaused.Store(false)
 
 	return nil
 }
@@ -469,8 +477,8 @@ func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int,
 }
 
 // Submits a single quote.
-func (m *Manager) submitQuote(quote model.PutQuoteRequest) error {
-	err := m.rfqClient.PutQuote(&quote)
+func (m *Manager) submitQuote(ctx context.Context, quote model.PutQuoteRequest) error {
+	err := m.rfqClient.PutQuote(ctx, &quote)
 	if err != nil {
 		return fmt.Errorf("error submitting quote: %w", err)
 	}
