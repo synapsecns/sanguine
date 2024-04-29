@@ -57,13 +57,13 @@ func (c clientImpl) ScreenAddress(ctx context.Context, ruleset, address string) 
 }
 
 type BlackListBody struct {
-	TypeReq string      `json:"type" binding:"required"`
-	Id      string      `json:"id" binding:"required"`
-	Data    interface{} `json:"data"`
-	Address string      `json:"address"`
-	Network string      `json:"network"`
-	Tag     string      `json:"tag"`
-	Remark  string      `json:"remark"`
+	TypeReq string `json:"type" binding:"required"`
+	Id      string `json:"id" binding:"required"`
+	Data    string `json:"data"`
+	Address string `json:"address"`
+	Network string `json:"network"`
+	Tag     string `json:"tag"`
+	Remark  string `json:"remark"`
 }
 
 type blacklistResponse struct {
