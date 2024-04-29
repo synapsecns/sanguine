@@ -140,6 +140,7 @@ func (t *txSubmitterImpl) registerCurrentNonce(ctx context.Context, nonce uint64
 	}
 	attributes := attribute.NewSet(
 		attribute.Int(metrics.ChainID, chainID),
+		attribute.String("wallet", t.signer.Address().Hex()),
 	)
 	nonceHist.Record(ctx, int64(nonce), metric.WithAttributeSet(attributes))
 	return nil
@@ -190,6 +191,7 @@ func (c *chainQueue) registerNumPendingTXes(ctx context.Context, num, chainID in
 	}
 	attributes := attribute.NewSet(
 		attribute.Int(metrics.ChainID, chainID),
+		attribute.String("wallet", c.signer.Address().Hex()),
 	)
 	numPendingHist.Record(ctx, int64(num), metric.WithAttributeSet(attributes))
 	return nil
@@ -306,6 +308,7 @@ func (c *chainQueue) registerBumpTx(ctx context.Context, tx *types.Transaction, 
 	attributes := attribute.NewSet(
 		attribute.Int64(metrics.ChainID, tx.ChainId().Int64()),
 		attribute.Int64(metrics.Nonce, int64(tx.Nonce())),
+		attribute.String("wallet", c.signer.Address().Hex()),
 	)
 	bumpCountGauge.Add(ctx, 1, metric.WithAttributeSet(attributes))
 	return nil
