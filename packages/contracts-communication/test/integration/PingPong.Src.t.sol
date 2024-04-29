@@ -47,10 +47,9 @@ contract PingPongSrcIntegrationTest is PingPongIntegrationTest {
         checkDatabaseStateMsgSent(entry, SRC_INITIAL_DB_NONCE);
     }
 
-    function test_startPingPong_state_execFees() public {
+    function test_startPingPong_state_execService() public {
         srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
-        assertEq(address(executionFees).balance, executionFee);
-        assertEq(executionFees.executionFee(DST_CHAIN_ID, desc.transactionId), executionFee);
+        assertEq(address(executionService).balance, executionFee);
     }
 
     function test_startPingPong_state_pingPongApp() public {
@@ -63,11 +62,11 @@ contract PingPongSrcIntegrationTest is PingPongIntegrationTest {
         assertEq(address(module).balance, verificationFee);
     }
 
-    function localChainId() internal pure override returns (uint256) {
+    function localChainId() internal pure override returns (uint64) {
         return SRC_CHAIN_ID;
     }
 
-    function remoteChainId() internal pure override returns (uint256) {
+    function remoteChainId() internal pure override returns (uint64) {
         return DST_CHAIN_ID;
     }
 }

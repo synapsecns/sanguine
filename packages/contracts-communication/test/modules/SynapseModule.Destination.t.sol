@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
 import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
-import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
@@ -29,8 +29,8 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
     address public feeCollector = makeAddr("FeeCollector");
     address public owner = makeAddr("Owner");
 
-    uint256 public constant SRC_CHAIN_ID = 1337;
-    uint256 public constant DST_CHAIN_ID = 7331;
+    uint64 public constant SRC_CHAIN_ID = 1337;
+    uint64 public constant DST_CHAIN_ID = 7331;
 
     uint16 public constant MOCK_DB_VERSION = 42;
 
@@ -161,7 +161,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__RecoveredSignersNotSorted.selector);
     }
 
-    function expectRevertSameChainId(uint256 chainId) internal {
+    function expectRevertSameChainId(uint64 chainId) internal {
         vm.expectRevert(abi.encodeWithSelector(IInterchainModule.InterchainModule__SameChainId.selector, chainId));
     }
 

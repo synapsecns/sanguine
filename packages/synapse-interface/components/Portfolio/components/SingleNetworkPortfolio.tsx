@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Address } from 'viem'
 import { useDispatch } from 'react-redux'
-import _ from 'lodash'
+import _, { isArray } from 'lodash'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
   TokenAndBalance,
@@ -13,12 +13,13 @@ import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { EmptyPortfolioContent } from './EmptyPortfolioContent'
 import { FetchState } from '@/slices/portfolio/actions'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
-import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { WarningMessage } from '../../Warning'
 import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import { PortfolioTokenVisualizer } from './PortfolioTokenVisualizer'
 import { PortfolioNetwork } from './PortfolioNetwork'
+import { NON_BRIDGEABLE_GAS_TOKENS } from '@/constants/tokens'
+import { GasTokenAsset } from './GasTokenAsset'
 
 type SingleNetworkPortfolioProps = {
   connectedAddress: Address
@@ -47,6 +48,10 @@ export const SingleNetworkPortfolio = ({
   const isUnsupportedChain: boolean = !chain
 
   const sortedTokens = sortTokensByBalanceDescending(portfolioTokens)
+
+  const [nonBridgeableGasTokens, bridgeableTokens] =
+    filterOutNonBridgeableGasTokens(sortedTokens, portfolioChainId)
+
   const hasNoTokenBalance: boolean =
     _.isNull(portfolioTokens) || _.isEmpty(portfolioTokens)
 
@@ -110,9 +115,14 @@ export const SingleNetworkPortfolio = ({
             connectedChain={chain}
           />
         )}
-        {sortedTokens &&
-          sortedTokens.length > 0 &&
-          sortedTokens.map(({ token, balance }: TokenAndBalance) => (
+        {nonBridgeableGasTokens &&
+          nonBridgeableGasTokens.length > 0 &&
+          nonBridgeableGasTokens.map(({ token, balance }: TokenAndBalance) => (
+            <GasTokenAsset key={token.symbol} token={token} balance={balance} />
+          ))}
+        {bridgeableTokens &&
+          bridgeableTokens.length > 0 &&
+          bridgeableTokens.map(({ token, balance }: TokenAndBalance) => (
             <PortfolioTokenAsset
               key={token.symbol}
               token={token}
@@ -124,4 +134,35 @@ export const SingleNetworkPortfolio = ({
       </PortfolioAccordion>
     </div>
   )
+}
+
+const filterOutNonBridgeableGasTokens = (
+  tokens: TokenAndBalance[],
+  chainId: number
+): [TokenAndBalance[], TokenAndBalance[]] => {
+  const nonBridgableGasTokens = NON_BRIDGEABLE_GAS_TOKENS[chainId]
+
+  let filteredNonBridgeableGasTokens: TokenAndBalance[] = []
+  let remainingTokens: TokenAndBalance[] = []
+
+  if (!nonBridgableGasTokens && !isArray(tokens)) {
+    return [filteredNonBridgeableGasTokens, remainingTokens]
+  }
+
+  if (!nonBridgableGasTokens && isArray(tokens)) {
+    remainingTokens = [...tokens]
+  } else {
+    const gasTokenAddresses = nonBridgableGasTokens?.flatMap(
+      (token) => token.address
+    )
+    tokens?.forEach((token) => {
+      if (gasTokenAddresses?.includes(token.tokenAddress)) {
+        filteredNonBridgeableGasTokens.push(token)
+      } else {
+        remainingTokens.push(token)
+      }
+    })
+  }
+
+  return [filteredNonBridgeableGasTokens, remainingTokens]
 }

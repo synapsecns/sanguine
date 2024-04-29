@@ -7,6 +7,7 @@ import {IGasOracle} from "../interfaces/IGasOracle.sol";
 import {OptionsLib, OptionsV1} from "../libs/Options.sol";
 import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
 
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 contract SynapseExecutionServiceV1 is
@@ -39,6 +40,21 @@ contract SynapseExecutionServiceV1 is
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
+    function claimFees() external {
+        uint256 amount = address(this).balance;
+        if (amount == 0) {
+            revert SynapseExecutionService__ZeroAmount();
+        }
+        address executor = executorEOA();
+        if (executor == address(0)) {
+            revert SynapseExecutionService__ZeroAddress();
+        }
+        emit FeesClaimed(executor, amount);
+        // TODO: introduce incentives for the caller similar to ones in SynapseModule
+        Address.sendValue(payable(executor), amount);
+    }
+
+    /// @inheritdoc ISynapseExecutionServiceV1
     function setExecutorEOA(address executorEOA_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (executorEOA_ == address(0)) {
             revert SynapseExecutionService__ZeroAddress();
@@ -66,27 +82,27 @@ contract SynapseExecutionServiceV1 is
     }
 
     /// @inheritdoc IExecutionService
-    function requestExecution(
-        uint256 dstChainId,
+    function requestTxExecution(
+        uint64 dstChainId,
         uint256 txPayloadSize,
         bytes32 transactionId,
-        uint256 executionFee,
         bytes calldata options
     )
         external
+        payable
         virtual
         onlyRole(IC_CLIENT_ROLE)
     {
         uint256 requiredFee = getExecutionFee(dstChainId, txPayloadSize, options);
-        if (executionFee < requiredFee) {
-            revert SynapseExecutionService__FeeAmountTooLow({actual: executionFee, required: requiredFee});
+        if (msg.value < requiredFee) {
+            revert SynapseExecutionService__FeeAmountTooLow({actual: msg.value, required: requiredFee});
         }
-        emit ExecutionRequested({transactionId: transactionId, client: msg.sender});
+        emit ExecutionRequested({transactionId: transactionId, client: msg.sender, executionFee: msg.value});
     }
 
     /// @inheritdoc IExecutionService
     function getExecutionFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 txPayloadSize,
         bytes calldata options
     )

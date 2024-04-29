@@ -5,12 +5,12 @@ import {ISynapseGasOracle} from "../../contracts/interfaces/ISynapseGasOracle.so
 
 // solhint-disable no-empty-blocks
 contract SynapseGasOracleMock is ISynapseGasOracle {
-    function receiveRemoteGasData(uint256 srcChainId, bytes calldata data) external {}
+    function receiveRemoteGasData(uint64 srcChainId, bytes calldata data) external {}
 
     function getLocalGasData() external view returns (bytes memory) {}
 
     function convertRemoteValueToLocalUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 value
     )
         external
@@ -20,7 +20,7 @@ contract SynapseGasOracleMock is ISynapseGasOracle {
     {}
 
     function estimateTxCostInLocalUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 gasLimit,
         uint256 calldataSize
     )
@@ -31,7 +31,7 @@ contract SynapseGasOracleMock is ISynapseGasOracle {
     {}
 
     function estimateTxCostInRemoteUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 gasLimit,
         uint256 calldataSize
     )

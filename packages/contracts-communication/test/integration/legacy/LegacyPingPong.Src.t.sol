@@ -44,10 +44,9 @@ contract LegacyPingPongSrcIntegrationTest is LegacyPingPongIntegrationTest {
         checkDatabaseStateMsgSent(entry, SRC_INITIAL_DB_NONCE);
     }
 
-    function test_startPingPong_state_execFees() public {
+    function test_startPingPong_state_execService() public {
         srcLegacyPingPong().startPingPong(DST_CHAIN_ID, COUNTER);
-        assertEq(address(executionFees).balance, executionFee);
-        assertEq(executionFees.executionFee(DST_CHAIN_ID, desc.transactionId), executionFee);
+        assertEq(address(executionService).balance, executionFee);
     }
 
     function test_startPingPong_state_legacyPingPong() public {
@@ -60,11 +59,11 @@ contract LegacyPingPongSrcIntegrationTest is LegacyPingPongIntegrationTest {
         assertEq(address(module).balance, verificationFee);
     }
 
-    function localChainId() internal pure override returns (uint256) {
+    function localChainId() internal pure override returns (uint64) {
         return SRC_CHAIN_ID;
     }
 
-    function remoteChainId() internal pure override returns (uint256) {
+    function remoteChainId() internal pure override returns (uint64) {
         return DST_CHAIN_ID;
     }
 }

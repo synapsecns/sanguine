@@ -5,12 +5,10 @@ import {IInterchainClientV1, InterchainTxDescriptor} from "../../contracts/inter
 
 // solhint-disable no-empty-blocks
 contract InterchainClientV1Mock is IInterchainClientV1 {
-    function setExecutionFees(address executionFees_) external {}
-
-    function setLinkedClient(uint256 chainId, bytes32 client) external {}
+    function setLinkedClient(uint64 chainId, bytes32 client) external {}
 
     function interchainSend(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 receiver,
         address srcExecutionService,
         address[] calldata srcModules,
@@ -23,7 +21,7 @@ contract InterchainClientV1Mock is IInterchainClientV1 {
     {}
 
     function interchainSendEVM(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address receiver,
         address srcExecutionService,
         address[] calldata srcModules,
@@ -44,12 +42,12 @@ contract InterchainClientV1Mock is IInterchainClientV1 {
         payable
     {}
 
-    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce, uint64 entryIndex) {}
+    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex) {}
 
     function isExecutable(bytes calldata transaction, bytes32[] calldata proof) external view returns (bool) {}
 
     function getInterchainFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address srcExecutionService,
         address[] calldata srcModules,
         bytes calldata options,
@@ -64,7 +62,7 @@ contract InterchainClientV1Mock is IInterchainClientV1 {
 
     function getExecutorById(bytes32 transactionId) external view returns (address) {}
 
-    function getLinkedClient(uint256 chainId) external view returns (bytes32) {}
+    function getLinkedClient(uint64 chainId) external view returns (bytes32) {}
 
-    function getLinkedClientEVM(uint256 chainId) external view returns (address) {}
+    function getLinkedClientEVM(uint64 chainId) external view returns (address) {}
 }

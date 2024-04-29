@@ -84,7 +84,7 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     function test_verifyRemoteBatch_state_db() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
         skip(LONG_PERIOD);
-        assertEq(icDB.checkVerification(address(module), srcEntry, new bytes32[](0)), INITIAL_TS);
+        assertEq(icDB.checkBatchVerification(address(module), srcBatch), INITIAL_TS);
     }
 
     function test_interchainExecute_callMessageBusAndLegacyPP() public {
@@ -145,12 +145,11 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
         checkDatabaseStateMsgSent(dstEntry, DST_INITIAL_DB_NONCE);
     }
 
-    function test_interchainExecute_state_execFees() public {
+    function test_interchainExecute_state_execService() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         executeTx(icOptions);
-        assertEq(address(executionFees).balance, dstExecutionFee);
-        assertEq(executionFees.executionFee(SRC_CHAIN_ID, dstDesc.transactionId), dstExecutionFee);
+        assertEq(address(executionService).balance, dstExecutionFee);
     }
 
     function test_interchainExecute_state_legacyPingPong() public {
@@ -226,11 +225,11 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
         icClient.isExecutable(encodedSrcTx, new bytes32[](0));
     }
 
-    function localChainId() internal pure override returns (uint256) {
+    function localChainId() internal pure override returns (uint64) {
         return DST_CHAIN_ID;
     }
 
-    function remoteChainId() internal pure override returns (uint256) {
+    function remoteChainId() internal pure override returns (uint64) {
         return SRC_CHAIN_ID;
     }
 }

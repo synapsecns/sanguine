@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
 import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
-import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
 import {InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
@@ -27,8 +27,8 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
     address public owner = makeAddr("Owner");
     address public claimer = makeAddr("Claimer");
 
-    uint256 public constant SRC_CHAIN_ID = 1337;
-    uint256 public constant DST_CHAIN_ID = 7331;
+    uint64 public constant SRC_CHAIN_ID = 1337;
+    uint64 public constant DST_CHAIN_ID = 7331;
 
     uint16 public constant MOCK_DB_VERSION = 42;
 

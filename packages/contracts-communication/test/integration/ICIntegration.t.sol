@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {ExecutionFeesEvents} from "../../contracts/events/ExecutionFeesEvents.sol";
 import {SynapseExecutionServiceEvents} from "../../contracts/events/SynapseExecutionServiceEvents.sol";
 import {InterchainClientV1Events} from "../../contracts/events/InterchainClientV1Events.sol";
 import {InterchainDBEvents} from "../../contracts/events/InterchainDBEvents.sol";
@@ -12,7 +11,6 @@ import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV
 import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
-import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 import {ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
@@ -22,7 +20,6 @@ import {ICSetup, TypeCasts} from "./ICSetup.t.sol";
 // solhint-disable ordering
 abstract contract ICIntegrationTest is
     ICSetup,
-    ExecutionFeesEvents,
     SynapseExecutionServiceEvents,
     InterchainClientV1Events,
     InterchainDBEvents,
@@ -44,14 +41,9 @@ abstract contract ICIntegrationTest is
         assertEq(entry.dataHash, expected.dataHash);
     }
 
-    function expectFeesEventExecutionFeeAdded(bytes32 transactionId, uint256 totalFee) internal {
-        vm.expectEmit(address(executionFees));
-        emit ExecutionFeeAdded({dstChainId: remoteChainId(), transactionId: transactionId, totalFee: totalFee});
-    }
-
-    function expectServiceEventExecutionRequested(bytes32 transactionId) internal {
+    function expectServiceEventExecutionRequested(bytes32 transactionId, uint256 executionFee) internal {
         vm.expectEmit(address(executionService));
-        emit ExecutionRequested({transactionId: transactionId, client: address(icClient)});
+        emit ExecutionRequested({transactionId: transactionId, client: address(icClient), executionFee: executionFee});
     }
 
     function expectClientEventInterchainTransactionSent(
@@ -91,11 +83,16 @@ abstract contract ICIntegrationTest is
     function expectDatabaseEventInterchainEntryWritten(InterchainEntry memory entry) internal {
         vm.expectEmit(address(icDB));
         emit InterchainEntryWritten({
-            srcChainId: entry.srcChainId,
             dbNonce: entry.dbNonce,
+            entryIndex: entry.entryIndex,
             srcWriter: entry.srcWriter,
             dataHash: entry.dataHash
         });
+    }
+
+    function expectDatabaseEventInterchainBatchFinalized(InterchainBatch memory batch) internal {
+        vm.expectEmit(address(icDB));
+        emit InterchainBatchFinalized({dbNonce: batch.dbNonce, batchRoot: batch.batchRoot});
     }
 
     function expectDatabaseEventInterchainBatchVerified(InterchainBatch memory batch) internal {
@@ -158,10 +155,10 @@ abstract contract ICIntegrationTest is
         InterchainBatch memory batch = getInterchainBatch(entry);
         InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
         expectDatabaseEventInterchainEntryWritten(entry);
+        expectDatabaseEventInterchainBatchFinalized(batch);
         expectModuleEventBatchVerificationRequested(batch);
         expectDatabaseEventInterchainBatchVerificationRequested(batch);
-        expectFeesEventExecutionFeeAdded(desc.transactionId, executionFee);
-        expectServiceEventExecutionRequested(desc.transactionId);
+        expectServiceEventExecutionRequested(desc.transactionId, executionFee);
         expectClientEventInterchainTransactionSent(icTx, verificationFee, executionFee);
     }
 
@@ -188,7 +185,7 @@ abstract contract ICIntegrationTest is
         assertEq(leafs[0], batch.batchRoot);
     }
 
-    function checkDatabaseStateMsgSent(InterchainEntry memory entry, uint256 initialDBNonce) internal {
+    function checkDatabaseStateMsgSent(InterchainEntry memory entry, uint64 initialDBNonce) internal {
         InterchainBatch memory batch = getInterchainBatch(entry);
         InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
         assertEq(desc.dbNonce, initialDBNonce);
@@ -201,7 +198,7 @@ abstract contract ICIntegrationTest is
         assertEq(icDB.getEntryProof(desc.dbNonce, 0).length, 0);
         // Check getters related to the next dbNonce
         assertEq(icDB.getDBNonce(), desc.dbNonce + 1);
-        (uint256 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
+        (uint64 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
         assertEq(dbNonce, desc.dbNonce + 1);
         assertEq(entryIndex, 0);
     }
@@ -268,12 +265,12 @@ abstract contract ICIntegrationTest is
         });
     }
 
-    function getTxId(InterchainTransaction memory icTx) internal pure returns (bytes32) {
+    function getTxId(InterchainTransaction memory icTx) internal view returns (bytes32) {
         return keccak256(getEncodedTx(icTx));
     }
 
-    function getEncodedTx(InterchainTransaction memory icTx) internal pure returns (bytes memory) {
-        return VersionedPayloadLib.encodeVersionedPayload(CLIENT_VERSION, abi.encode(icTx));
+    function getEncodedTx(InterchainTransaction memory icTx) internal view returns (bytes memory) {
+        return payloadLibHarness.encodeVersionedPayload(CLIENT_VERSION, txLibHarness.encodeTransaction(icTx));
     }
 
     function getSrcTransaction() internal view returns (InterchainTransaction memory) {

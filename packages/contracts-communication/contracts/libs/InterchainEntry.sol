@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import {TypeCasts} from "./TypeCasts.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+
 /// @notice Struct representing an entry in the Interchain DataBase.
 /// Entry has a globally unique identifier (key) and a value.
 /// - key: srcChainId + dbNonce + entryIndex
@@ -13,9 +15,8 @@ import {TypeCasts} from "./TypeCasts.sol";
 /// @param srcWriter    The address of the writer on the source chain
 /// @param dataHash     The hash of the data written on the source chain
 struct InterchainEntry {
-    // TODO: can we use uint64 for chain id?
-    uint256 srcChainId;
-    uint256 dbNonce;
+    uint64 srcChainId;
+    uint64 dbNonce;
     uint64 entryIndex;
     bytes32 srcWriter;
     bytes32 dataHash;
@@ -30,7 +31,7 @@ library InterchainEntryLib {
     /// @param dataHash     The hash of the data written on the local chain
     /// @return entry       The constructed InterchainEntry struct
     function constructLocalEntry(
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         address writer,
         bytes32 dataHash
@@ -40,7 +41,7 @@ library InterchainEntryLib {
         returns (InterchainEntry memory entry)
     {
         return InterchainEntry({
-            srcChainId: block.chainid,
+            srcChainId: SafeCast.toUint64(block.chainid),
             dbNonce: dbNonce,
             entryIndex: entryIndex,
             srcWriter: TypeCasts.addressToBytes32(writer),
@@ -48,18 +49,13 @@ library InterchainEntryLib {
         });
     }
 
-    /// @notice Returns the globally unique identifier of the entry
-    function entryKey(InterchainEntry memory entry) internal pure returns (bytes32) {
-        return keccak256(abi.encode(entry.srcChainId, entry.dbNonce, entry.entryIndex));
+    /// @notice Returns the value of the entry: writer + dataHash hashed together
+    function entryValue(InterchainEntry memory entry) internal pure returns (bytes32) {
+        return getEntryValue(entry.srcWriter, entry.dataHash);
     }
 
     /// @notice Returns the value of the entry: writer + dataHash hashed together
-    function entryValue(InterchainEntry memory entry) internal pure returns (bytes32) {
-        return keccak256(abi.encode(entry.srcWriter, entry.dataHash));
-    }
-
-    /// @notice Returns the globally unique identifier of the batch containing the entry
-    function batchKey(InterchainEntry memory entry) internal pure returns (bytes32) {
-        return keccak256(abi.encode(entry.srcChainId, entry.dbNonce));
+    function getEntryValue(bytes32 srcWriter, bytes32 dataHash) internal pure returns (bytes32) {
+        return keccak256(abi.encode(srcWriter, dataHash));
     }
 }

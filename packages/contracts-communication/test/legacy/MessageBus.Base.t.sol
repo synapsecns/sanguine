@@ -22,17 +22,19 @@ import {Test} from "forge-std/Test.sol";
 abstract contract MessageBusBaseTest is MessageBusEvents, Test {
     bytes32 public constant IC_GOVERNOR_ROLE = keccak256("IC_GOVERNOR_ROLE");
 
-    uint256 public constant LOCAL_CHAIN_ID = 1337;
-    uint256 public constant REMOTE_CHAIN_ID = 7331;
+    uint64 public constant LOCAL_CHAIN_ID = 1337;
+    uint64 public constant REMOTE_CHAIN_ID = 7331;
     uint256 public constant BUS_OPTIMISTIC_PERIOD = 1 minutes;
     uint256 public constant MOCK_FEE = 0.001 ether;
     uint256 public constant MOCK_GAS_LIMIT = 400_000;
+    uint256 public constant GAS_BUFFER = 20_000;
+    uint256 public constant IC_GAS_LIMIT = MOCK_GAS_LIMIT + GAS_BUFFER;
 
     uint64 public constant MOCK_NONCE = 42;
     bytes public constant MESSAGE = "One small step for man, one giant leap for mankind.";
 
     bytes public legacyOptions = LegacyOptionsLib.encodeLegacyOptions(MOCK_GAS_LIMIT);
-    bytes public icOptions = OptionsV1({gasLimit: MOCK_GAS_LIMIT, gasAirdrop: 0}).encodeOptionsV1();
+    bytes public icOptions = OptionsV1({gasLimit: IC_GAS_LIMIT, gasAirdrop: 0}).encodeOptionsV1();
 
     MessageBus public messageBus;
     address public remoteMessageBus = makeAddr("RemoteMessageBus");
@@ -110,6 +112,11 @@ abstract contract MessageBusBaseTest is MessageBusEvents, Test {
             fee: MOCK_FEE,
             messageId: messageId
         });
+    }
+
+    function expectEventGasBufferSet(uint64 gasBuffer) internal {
+        vm.expectEmit(address(messageBus));
+        emit GasBufferSet(gasBuffer);
     }
 
     function expectEventMessageLengthEstimateSet(uint256 length) internal {

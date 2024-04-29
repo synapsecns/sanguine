@@ -31,7 +31,7 @@ contract InterchainEntryLibTest is Test {
 
     function test_constructLocalEntry() public {
         vm.chainId(1);
-        uint256 dbNonce = 2;
+        uint64 dbNonce = 2;
         uint64 entryIndex = 3;
         address srcWriter = address(4);
         bytes32 dataHash = bytes32(uint256(5));
@@ -41,7 +41,7 @@ contract InterchainEntryLibTest is Test {
 
     function test_constructLocalEntry(
         uint64 chainId,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         address srcWriter,
         bytes32 dataHash
@@ -60,16 +60,6 @@ contract InterchainEntryLibTest is Test {
         assertEq(actual, expected);
     }
 
-    function test_entryKey() public {
-        bytes32 expected = keccak256(abi.encode(1, 2, 3));
-        assertEq(libHarness.entryKey(mockEntry), expected);
-    }
-
-    function test_entryKey(InterchainEntry memory entry) public {
-        bytes32 expected = keccak256(abi.encode(entry.srcChainId, entry.dbNonce, entry.entryIndex));
-        assertEq(libHarness.entryKey(entry), expected);
-    }
-
     function test_entryValue() public {
         bytes32 expected = keccak256(abi.encode(4, 5));
         assertEq(libHarness.entryValue(mockEntry), expected);
@@ -80,13 +70,15 @@ contract InterchainEntryLibTest is Test {
         assertEq(libHarness.entryValue(entry), expected);
     }
 
-    function test_batchKey() public {
-        bytes32 expected = keccak256(abi.encode(1, 2));
-        assertEq(libHarness.batchKey(mockEntry), expected);
+    function test_getEntryValue() public {
+        bytes32 srcWriter = bytes32(uint256(4));
+        bytes32 dataHash = bytes32(uint256(5));
+        bytes32 expected = keccak256(abi.encode(srcWriter, dataHash));
+        assertEq(libHarness.getEntryValue(srcWriter, dataHash), expected);
     }
 
-    function test_batchKey(InterchainEntry memory entry) public {
-        bytes32 expected = keccak256(abi.encode(entry.srcChainId, entry.dbNonce));
-        assertEq(libHarness.batchKey(entry), expected);
+    function test_getEntryValue(bytes32 srcWriter, bytes32 dataHash) public {
+        bytes32 expected = keccak256(abi.encode(srcWriter, dataHash));
+        assertEq(libHarness.getEntryValue(srcWriter, dataHash), expected);
     }
 }

@@ -10,8 +10,8 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
-    uint256 public constant LOCAL_CHAIN_ID = 1337;
-    uint256 public constant REMOTE_CHAIN_ID = 7331;
+    uint64 public constant LOCAL_CHAIN_ID = 1337;
+    uint64 public constant REMOTE_CHAIN_ID = 7331;
 
     uint256 public constant MOCK_CALLDATA_PRICE = 1000;
     uint256 public constant MOCK_GAS_PRICE = 2000;
@@ -55,17 +55,17 @@ contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
         assertEq(a.nativePrice, b.nativePrice);
     }
 
-    function expectEventCalldataPriceSet(uint256 chainId, uint256 calldataPrice) internal {
+    function expectEventCalldataPriceSet(uint64 chainId, uint256 calldataPrice) internal {
         vm.expectEmit(address(oracle));
         emit CalldataPriceSet(chainId, calldataPrice);
     }
 
-    function expectEventGasPriceSet(uint256 chainId, uint256 gasPrice) internal {
+    function expectEventGasPriceSet(uint64 chainId, uint256 gasPrice) internal {
         vm.expectEmit(address(oracle));
         emit GasPriceSet(chainId, gasPrice);
     }
 
-    function expectEventNativePriceSet(uint256 chainId, uint256 nativePrice) internal {
+    function expectEventNativePriceSet(uint64 chainId, uint256 nativePrice) internal {
         vm.expectEmit(address(oracle));
         emit NativePriceSet(chainId, nativePrice);
     }
@@ -74,13 +74,13 @@ contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, caller));
     }
 
-    function expectRevertNotRemoteChainId(uint256 chainId) internal {
+    function expectRevertNotRemoteChainId(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(ISynapseGasOracleV1.SynapseGasOracleV1__NotRemoteChainId.selector, chainId)
         );
     }
 
-    function expectRevertNativePriceNotSet(uint256 chainId) internal {
+    function expectRevertNativePriceNotSet(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(ISynapseGasOracleV1.SynapseGasOracleV1__NativePriceNotSet.selector, chainId)
         );
