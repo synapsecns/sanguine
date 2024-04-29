@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {IExecutionService, ISynapseExecutionServiceV1} from "../interfaces/ISynapseExecutionServiceV1.sol";
 import {SynapseExecutionServiceEvents} from "../events/SynapseExecutionServiceEvents.sol";
+import {ClaimableFees} from "../fees/ClaimableFees.sol";
+import {IExecutionService, ISynapseExecutionServiceV1} from "../interfaces/ISynapseExecutionServiceV1.sol";
 import {IGasOracle} from "../interfaces/IGasOracle.sol";
 import {OptionsLib, OptionsV1} from "../libs/Options.sol";
 import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
@@ -12,6 +13,7 @@ import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/acce
 
 contract SynapseExecutionServiceV1 is
     AccessControlUpgradeable,
+    ClaimableFees,
     SynapseExecutionServiceEvents,
     ISynapseExecutionServiceV1
 {
@@ -20,6 +22,7 @@ contract SynapseExecutionServiceV1 is
         address executorEOA;
         address gasOracle;
         uint256 globalMarkup;
+        uint256 claimerFraction;
     }
 
     // keccak256(abi.encode(uint256(keccak256("Synapse.ExecutionService.V1")) - 1)) & ~bytes32(uint256(0xff));
@@ -40,18 +43,13 @@ contract SynapseExecutionServiceV1 is
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
-    function claimFees() external {
-        uint256 amount = address(this).balance;
-        if (amount == 0) {
-            revert SynapseExecutionService__ZeroAmount();
+    function setClaimerFraction(uint256 claimerFraction_) external virtual onlyRole(GOVERNOR_ROLE) {
+        if (claimerFraction_ > MAX_CLAIMER_FRACTION) {
+            revert ClaimableFees__ClaimerFractionExceedsMax(claimerFraction_);
         }
-        address executor = executorEOA();
-        if (executor == address(0)) {
-            revert SynapseExecutionService__ZeroAddress();
-        }
-        emit FeesClaimed(executor, amount);
-        // TODO: introduce incentives for the caller similar to ones in SynapseModule
-        Address.sendValue(payable(executor), amount);
+        SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
+        $.claimerFraction = claimerFraction_;
+        emit ClaimerFractionSet(claimerFraction_);
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
@@ -152,6 +150,30 @@ contract SynapseExecutionServiceV1 is
     function globalMarkup() public view virtual returns (uint256) {
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         return $.globalMarkup;
+    }
+
+    /// @notice Returns the amount of fees that can be claimed.
+    function getClaimableAmount() public view virtual override returns (uint256) {
+        return address(this).balance;
+    }
+
+    /// @notice Returns the fraction of the fees that the claimer will receive.
+    /// The result is in the range [0, 1e18], where 1e18 is 100%.
+    function getClaimerFraction() public view virtual override returns (uint256) {
+        SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
+        return $.claimerFraction;
+    }
+
+    /// @notice Returns the address that will receive the claimed fees.
+    function getFeeRecipient() public view virtual override returns (address) {
+        return executorEOA();
+    }
+
+    /// @dev Hook that is called before the fees are claimed.
+    /// Useful if the inheriting contract needs to manage the state when the fees are claimed.
+    // solhint-disable-next-line no-empty-blocks
+    function _beforeFeesClaimed(uint256, uint256) internal override {
+        // No op, as the claimable amount is tracked as the contract balance
     }
 
     /// @dev ERC-7201 slot accessor
