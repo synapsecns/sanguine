@@ -19,6 +19,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
@@ -65,6 +66,10 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		return fmt.Errorf("could not get nonce: %w", err)
 	}
 	span.SetAttributes(attribute.Int("nonce", int(currentNonce)))
+	registerErr := t.registerCurrentNonce(ctx, currentNonce, int(chainID.Int64()))
+	if registerErr != nil {
+		span.AddEvent("could not register nonce", trace.WithAttributes(attribute.String("error", registerErr.Error())))
+	}
 
 	g, gCtx := errgroup.WithContext(ctx)
 
@@ -110,6 +115,34 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 
 	cq.storeAndSubmit(ctx, calls, span)
 
+	registerErr = cq.registerNumPendingTXes(ctx, len(cq.reprocessQueue), int(chainID.Int64()))
+	if registerErr != nil {
+		span.AddEvent("could not register pending txes", trace.WithAttributes(attribute.String("error", registerErr.Error())))
+	}
+
+	return nil
+}
+
+var meter metric.Meter
+
+func getMeter(handler metrics.Handler) metric.Meter {
+	if meter == nil {
+		meter = handler.Meter(meterName)
+	}
+	return meter
+}
+
+func (t *txSubmitterImpl) registerCurrentNonce(ctx context.Context, nonce uint64, chainID int) (err error) {
+	meter := getMeter(t.metrics)
+	nonceHist, err := meter.Int64Histogram("current_nonce")
+	if err != nil {
+		return fmt.Errorf("error creating nonce histogram: %w", err)
+	}
+	attributes := attribute.NewSet(
+		attribute.Int(metrics.ChainID, chainID),
+		attribute.String("wallet", t.signer.Address().Hex()),
+	)
+	nonceHist.Record(ctx, int64(nonce), metric.WithAttributeSet(attributes))
 	return nil
 }
 
@@ -146,6 +179,22 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 		}
 	}()
 	wg.Wait()
+}
+
+const meterName = "github.com/synapsecns/sanguine/ethergo/submitter"
+
+func (c *chainQueue) registerNumPendingTXes(ctx context.Context, num, chainID int) (err error) {
+	meter := getMeter(c.metrics)
+	numPendingHist, err := meter.Int64Histogram("num_pending_txes")
+	if err != nil {
+		return fmt.Errorf("error creating num pending txes histogram: %w", err)
+	}
+	attributes := attribute.NewSet(
+		attribute.Int(metrics.ChainID, chainID),
+		attribute.String("wallet", c.signer.Address().Hex()),
+	)
+	numPendingHist.Record(ctx, int64(num), metric.WithAttributeSet(attributes))
+	return nil
 }
 
 // nolint: cyclop
@@ -225,6 +274,11 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			Status:      db.Stored,
 		})
 
+		registerErr := c.registerBumpTx(ctx, tx, ogTx.UUID)
+		if registerErr != nil {
+			span.AddEvent("could not register bump tx", trace.WithAttributes(attribute.String("error", registerErr.Error())))
+		}
+
 		return nil
 	})
 }
@@ -243,6 +297,21 @@ func (c *chainQueue) isBumpIntervalElapsed(tx db.TX) bool {
 	elapsedSeconds := time.Since(tx.CreationTime().Add(bumpInterval)).Seconds()
 
 	return elapsedSeconds >= 0
+}
+
+func (c *chainQueue) registerBumpTx(ctx context.Context, tx *types.Transaction, uuid string) (err error) {
+	meter := getMeter(c.metrics)
+	bumpCountGauge, err := meter.Int64Counter("bump_count")
+	if err != nil {
+		return fmt.Errorf("error creating bump count gauge: %w", err)
+	}
+	attributes := attribute.NewSet(
+		attribute.Int64(metrics.ChainID, tx.ChainId().Int64()),
+		attribute.Int64(metrics.Nonce, int64(tx.Nonce())),
+		attribute.String("wallet", c.signer.Address().Hex()),
+	)
+	bumpCountGauge.Add(ctx, 1, metric.WithAttributeSet(attributes))
+	return nil
 }
 
 // updateOldTxStatuses updates the status of txes that are before the current nonce
