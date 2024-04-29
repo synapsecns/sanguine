@@ -49,6 +49,8 @@ type Config struct {
 	DBSelectorInterval time.Duration `yaml:"db_selector_interval"`
 	// RebalanceInterval is the interval for rebalancing.
 	RebalanceInterval time.Duration `yaml:"rebalance_interval"`
+	// QuoteSubmissionTimeout is the timeout for submitting a quote.
+	QuoteSubmissionTimeout time.Duration `yaml:"quote_submission_timeout"`
 	// CCTPRelayerConfig is the embedded cctp relayer config (optional).
 	CCTPRelayerConfig *cctpConfig.Config `yaml:"cctp_relayer_config"`
 }
