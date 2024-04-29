@@ -228,7 +228,7 @@ export const DFK: Chain = {
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
-    fallback: 'https://dfkchain.api.onfinality.io/public',
+    fallback: 'https://dfkchain.rpc.defikingdoms.com/api=654302102',
   },
   nativeCurrency: {
     name: 'Jewel',
@@ -254,7 +254,7 @@ export const KLAYTN: Chain = {
   blockTime: 1000,
   rpcUrls: {
     primary: 'https://klaytn.blockpi.network/v1/rpc/public',
-    fallback: 'https://klaytn.api.onfinality.io/public',
+    fallback: 'https://internal.klaytn.rpc.defikingdoms.com/api=654302102',
   },
   nativeCurrency: {
     name: 'Klaytn',

@@ -41,9 +41,9 @@ contract SynapseExecutionServiceV1Test is ProxyTest, SynapseExecutionServiceEven
         emit GlobalMarkupSet(globalMarkup);
     }
 
-    function expectEventExecutionRequested(bytes32 transactionId, address client) internal {
+    function expectEventExecutionRequested(bytes32 transactionId, address client, uint256 executionFee) internal {
         vm.expectEmit(address(service));
-        emit ExecutionRequested(transactionId, client);
+        emit ExecutionRequested(transactionId, client, executionFee);
     }
 
     function expectRevertGasOracleNotSet() internal {
@@ -68,6 +68,10 @@ contract SynapseExecutionServiceV1Test is ProxyTest, SynapseExecutionServiceEven
 
     function expectRevertZeroAddress() internal {
         vm.expectRevert(ISynapseExecutionServiceV1.SynapseExecutionService__ZeroAddress.selector);
+    }
+
+    function expectRevertZeroAmount() internal {
+        vm.expectRevert(ISynapseExecutionServiceV1.SynapseExecutionService__ZeroAmount.selector);
     }
 
     function expectRevertNotGovernor(address caller) internal {

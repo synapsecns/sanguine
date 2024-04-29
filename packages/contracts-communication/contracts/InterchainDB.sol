@@ -5,6 +5,7 @@ import {InterchainDBEvents} from "./events/InterchainDBEvents.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
+import {BatchingV1Lib} from "./libs/BatchingV1.sol";
 import {InterchainBatch, InterchainBatchLib, BatchKey} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {VersionedPayloadLib} from "./libs/VersionedPayload.sol";
@@ -12,6 +13,15 @@ import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
     using VersionedPayloadLib for bytes;
+
+    /// @notice Struct representing a batch of entries from the remote Interchain DataBase,
+    /// verified by the Interchain Module.
+    /// @param verifiedAt   The block timestamp at which the entry was verified by the module
+    /// @param batchRoot    The Merkle root of the batch
+    struct RemoteBatch {
+        uint256 verifiedAt;
+        bytes32 batchRoot;
+    }
 
     uint16 public constant DB_VERSION = 1;
 
@@ -132,31 +142,33 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
-    function checkVerification(
+    function checkBatchVerification(
         address dstModule,
-        InterchainEntry memory entry,
-        bytes32[] calldata proof
+        InterchainBatch memory batch
     )
         external
         view
-        onlyRemoteChainId(entry.srcChainId)
+        onlyRemoteChainId(batch.srcChainId)
         returns (uint256 moduleVerifiedAt)
     {
-        // In "no batching" mode: the batch root is the same as the entry value, hence the proof is empty
-        if (proof.length != 0) {
-            // If proof is not empty, the batch root is not verified
-            return 0;
-        }
-        // In "no batching" mode: entry index is 0, batch size is 1
-        if (entry.entryIndex != 0) {
-            // If entry index is not 0, it does not belong to the batch
-            return 0;
-        }
-        BatchKey batchKey = InterchainBatchLib.encodeBatchKey({srcChainId: entry.srcChainId, dbNonce: entry.dbNonce});
+        BatchKey batchKey = InterchainBatchLib.encodeBatchKey({srcChainId: batch.srcChainId, dbNonce: batch.dbNonce});
         RemoteBatch memory remoteBatch = _remoteBatches[dstModule][batchKey];
-        bytes32 entryValue = InterchainEntryLib.entryValue(entry);
-        // Check entry value against the batch root verified by the module
-        return remoteBatch.batchRoot == entryValue ? remoteBatch.verifiedAt : 0;
+        // Check if module verified anything for this batch key first
+        if (remoteBatch.verifiedAt == 0) {
+            return InterchainBatchLib.UNVERIFIED;
+        }
+        // Check if the batch root matches the one verified by the module
+        return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : InterchainBatchLib.CONFLICT;
+    }
+
+    /// @inheritdoc IInterchainDB
+    function getBatchRoot(InterchainEntry memory entry, bytes32[] calldata proof) external pure returns (bytes32) {
+        return BatchingV1Lib.getBatchRoot({
+            srcWriter: entry.srcWriter,
+            dataHash: entry.dataHash,
+            entryIndex: entry.entryIndex,
+            proof: proof
+        });
     }
 
     /// @inheritdoc IInterchainDB

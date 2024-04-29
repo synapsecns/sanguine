@@ -11,23 +11,6 @@ contract InterchainClientV1ManagementTest is InterchainClientV1BaseTest {
         assertEq(icClient.owner(), owner);
     }
 
-    function test_setExecutionFees_emitsEvent() public {
-        expectEventExecutionFeesSet(execFees);
-        setExecutionFees(execFees);
-    }
-
-    function test_setExecutionFees_setsExecutionFees() public {
-        setExecutionFees(execFees);
-        assertEq(icClient.executionFees(), execFees);
-    }
-
-    function test_setExecutionFees_revert_notOwner(address caller) public {
-        vm.assume(caller != owner);
-        expectRevertOwnableUnauthorizedAccount(caller);
-        vm.prank(caller);
-        icClient.setExecutionFees(execFees);
-    }
-
     function test_setLinkedClient_emitsEvent() public {
         expectEventLinkedClientSet(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
