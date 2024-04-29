@@ -103,7 +103,6 @@ export function BridgeTransactionTable({ queryResult }) {
         {ellipsizeString({ string: txn.kappa, limiter: 4 })}
       </a>,
     ]
-
     const row = {
       items,
       key: kappa,
