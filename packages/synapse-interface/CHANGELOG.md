@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.20.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.19.1...@synapsecns/synapse-interface@0.20.0) (2024-04-29)
+
+
+### Features
+
+* **synapse-interface:** unpause optimism ([#2508](https://github.com/synapsecns/sanguine/issues/2508)) ([4dda636](https://github.com/synapsecns/sanguine/commit/4dda636f21c70bb4f58e94616afc23b9ab9bdb12))
+
+
+
+
+
 ## [0.19.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.19.0...@synapsecns/synapse-interface@0.19.1) (2024-04-22)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
