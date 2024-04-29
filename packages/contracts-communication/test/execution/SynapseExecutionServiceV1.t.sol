@@ -33,6 +33,11 @@ contract SynapseExecutionServiceV1Test is ProxyTest, ClaimableFeesEvents, Synaps
         emit ClaimerFractionSet(claimerFraction);
     }
 
+    function expectEventFeeRecipientSet(address feeRecipient) internal {
+        vm.expectEmit(address(service));
+        emit FeeRecipientSet(feeRecipient);
+    }
+
     function expectEventExecutorEOASet(address executor) internal {
         vm.expectEmit(address(service));
         emit ExecutorEOASet(executor);

@@ -18,6 +18,7 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
 
     function test_setExecutorEOA() public {
         expectEventExecutorEOASet(executorEOA);
+        expectEventFeeRecipientSet(executorEOA);
         vm.prank(governor);
         service.setExecutorEOA(executorEOA);
         assertEq(service.executorEOA(), executorEOA);
