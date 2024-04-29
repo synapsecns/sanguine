@@ -274,7 +274,7 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			Status:      db.Stored,
 		})
 
-		registerErr := c.registerBumpTx(ctx, tx, ogTx.UUID)
+		registerErr := c.registerBumpTx(ctx, tx)
 		if registerErr != nil {
 			span.AddEvent("could not register bump tx", trace.WithAttributes(attribute.String("error", registerErr.Error())))
 		}
@@ -299,7 +299,7 @@ func (c *chainQueue) isBumpIntervalElapsed(tx db.TX) bool {
 	return elapsedSeconds >= 0
 }
 
-func (c *chainQueue) registerBumpTx(ctx context.Context, tx *types.Transaction, uuid string) (err error) {
+func (c *chainQueue) registerBumpTx(ctx context.Context, tx *types.Transaction) (err error) {
 	meter := getMeter(c.metrics)
 	bumpCountGauge, err := meter.Int64Counter("bump_count")
 	if err != nil {

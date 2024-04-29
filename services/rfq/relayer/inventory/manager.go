@@ -709,7 +709,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 			chainID := chainID // capture func literal
 			deferredRegisters = append(deferredRegisters, func() error {
-				//nolint:wrapcheck
+				//nolint:wrapcheck,scopelint
 				return i.registerBalance(ctx, chainID, token)
 			})
 		}
@@ -780,7 +780,7 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 			eth.Balance(i.relayerAddress, nil).Returns(i.gasBalances[chainID]),
 		}
 		deferredRegisters = append(deferredRegisters, func() error {
-			//nolint:wrapcheck
+			//nolint:wrapcheck,scopelint
 			return i.registerBalance(ctx, chainID, chain.EthAddress)
 		})
 
