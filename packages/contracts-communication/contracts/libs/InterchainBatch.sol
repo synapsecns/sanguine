@@ -24,6 +24,11 @@ struct InterchainBatch {
 library InterchainBatchLib {
     using VersionedPayloadLib for bytes;
 
+    /// @dev Signals that the module has not verified any batch with the given key.
+    uint256 internal constant UNVERIFIED = 0;
+    /// @dev Signals that the module has verified a conflicting batch with the given key.
+    uint256 internal constant CONFLICT = type(uint256).max;
+
     /// @notice Constructs an InterchainBatch struct to be saved on the local chain.
     /// @param dbNonce      The database nonce of the batch
     /// @param batchRoot    The root of the Merkle tree containing the batched entries

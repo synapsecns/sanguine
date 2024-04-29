@@ -153,8 +153,12 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         BatchKey batchKey = InterchainBatchLib.encodeBatchKey({srcChainId: batch.srcChainId, dbNonce: batch.dbNonce});
         RemoteBatch memory remoteBatch = _remoteBatches[dstModule][batchKey];
-        // Check batch root against the batch root verified by the module
-        return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : 0;
+        // Check if module verified anything for this batch key first
+        if (remoteBatch.verifiedAt == 0) {
+            return InterchainBatchLib.UNVERIFIED;
+        }
+        // Check if the batch root matches the one verified by the module
+        return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : InterchainBatchLib.CONFLICT;
     }
 
     /// @inheritdoc IInterchainDB

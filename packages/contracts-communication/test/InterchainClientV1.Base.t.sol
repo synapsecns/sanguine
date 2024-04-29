@@ -65,6 +65,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
 
     // ═════════════════════════════════════════════ EXPECT (REVERTS) ══════════════════════════════════════════════════
 
+    function expectRevertBatchConflict(address module) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__BatchConflict.selector, module));
+    }
+
     function expectRevertFeeAmountTooLow(uint256 actual, uint256 required) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__FeeAmountTooLow.selector, actual, required)
