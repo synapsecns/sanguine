@@ -31,7 +31,7 @@ abstract contract ClaimableFees is ClaimableFeesEvents, IClaimableFees {
             revert ClaimableFees__FeeRecipientNotSet();
         }
         // Subtract the claimer reward from the total amount
-        uint256 reward = getClaimerReward();
+        uint256 reward = _getClaimerReward(amount);
         _beforeFeesClaimed(amount, reward);
         // We can do unchecked subtraction because `getClaimerReward` ensures that `reward <= amount * 0.01`
         unchecked {
@@ -45,13 +45,9 @@ abstract contract ClaimableFees is ClaimableFeesEvents, IClaimableFees {
 
     /// @notice Returns the amount of native chain token that the claimer will receive
     /// after calling the `claimFees` function.
-    function getClaimerReward() public view returns (uint256) {
-        uint256 fraction = getClaimerFraction();
-        if (fraction > MAX_CLAIMER_FRACTION) {
-            revert ClaimableFees__ClaimerFractionExceedsMax(fraction);
-        }
-        // The returned value is in the range [0, _getClaimableAmount() * 0.01]
-        return (getClaimableAmount() * fraction) / FEE_PRECISION;
+    function getClaimerReward() external view returns (uint256) {
+        uint256 amount = getClaimableAmount();
+        return _getClaimerReward(amount);
     }
 
     /// @notice Returns the amount of fees that can be claimed.
@@ -67,4 +63,14 @@ abstract contract ClaimableFees is ClaimableFeesEvents, IClaimableFees {
     /// @dev Hook that is called before the fees are claimed.
     /// Useful if the inheriting contract needs to manage the state when the fees are claimed.
     function _beforeFeesClaimed(uint256 fullAmount, uint256 reward) internal virtual;
+
+    /// @dev Returns the claimer reward for the given amount.
+    function _getClaimerReward(uint256 amount) internal view returns (uint256) {
+        uint256 fraction = getClaimerFraction();
+        if (fraction > MAX_CLAIMER_FRACTION) {
+            revert ClaimableFees__ClaimerFractionExceedsMax(fraction);
+        }
+        // The returned value is in the range [0, amount * 0.01]
+        return (amount * fraction) / FEE_PRECISION;
+    }
 }
