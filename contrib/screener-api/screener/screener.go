@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
+	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"github.com/synapsecns/sanguine/contrib/screener-api/config"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql"
@@ -83,6 +84,8 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router = ginhelper.New(logger)
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
 
+	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.blacklistAddress)
+
 	return &screener, nil
 }
 
@@ -118,6 +121,49 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 	}
 }
 
+func (s *screenerImpl) blacklistAddress(c *gin.Context) {
+	var blacklistBody client.BlackListBody
+
+	if err := c.ShouldBindJSON(&blacklistBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// update DB at this point
+
+	type_req := blacklistBody.TypeReq
+	id := blacklistBody.Id
+	data := blacklistBody.Data
+	address := blacklistBody.Address
+	network := blacklistBody.Network
+	tag := blacklistBody.Tag
+	remark := blacklistBody.Remark
+
+	address = strings.ToLower(address)
+
+	switch type_req {
+	case "create":
+		// add the user
+		// update the new table `blacklisted_users`
+		// return the status
+
+	case "update":
+		// update the user
+		// update the new table `blacklisted_users`
+		// return the status
+
+	case "delete":
+		// delete the user
+		// update the new table `blacklisted_users`
+		// return the status
+
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
+		return
+	}
+
+}
+
 func (s *screenerImpl) Start(ctx context.Context) error {
 	// TODO: potential race condition here, if the blacklist is not fetched before the first request
 	// in practice trm will catch
@@ -137,6 +183,7 @@ func (s *screenerImpl) Start(ctx context.Context) error {
 	return nil
 }
 
+// screenAddress returns whether an address is risky or not given a ruleset.
 func (s *screenerImpl) screenAddress(c *gin.Context) {
 	var err error
 
