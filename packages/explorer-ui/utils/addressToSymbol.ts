@@ -7,9 +7,13 @@ export function addressToSymbol({ tokenAddress, chainId }) {
   ) {
     return 'AVWETH'
   }
+  if (
+    tokenAddress.toLowerCase() === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+  ) {
+    return 'ETH'
+  }
 
   const symbol =
     tokenAddress && chainId && TOKEN_HASH_MAP[chainId][tokenAddress]?.symbol
-
   return symbol
 }

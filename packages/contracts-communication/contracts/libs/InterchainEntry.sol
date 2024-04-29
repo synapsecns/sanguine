@@ -51,6 +51,11 @@ library InterchainEntryLib {
 
     /// @notice Returns the value of the entry: writer + dataHash hashed together
     function entryValue(InterchainEntry memory entry) internal pure returns (bytes32) {
-        return keccak256(abi.encode(entry.srcWriter, entry.dataHash));
+        return getEntryValue(entry.srcWriter, entry.dataHash);
+    }
+
+    /// @notice Returns the value of the entry: writer + dataHash hashed together
+    function getEntryValue(bytes32 srcWriter, bytes32 dataHash) internal pure returns (bytes32) {
+        return keccak256(abi.encode(srcWriter, dataHash));
     }
 }

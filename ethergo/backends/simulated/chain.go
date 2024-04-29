@@ -19,8 +19,14 @@ type Client struct {
 	*multibackend.SimulatedBackend
 }
 
+// Web3Version is not implemented on this backend.
+func (s Client) Web3Version(_ context.Context) (version string, err error) {
+	// TODO implement me
+	panic("cannot implement on this backend")
+}
+
 // FeeHistory is not implemented on this backend.
-func (s Client) FeeHistory(ctx context.Context, blockCount uint64, lastBlock *big.Int, rewardPercentiles []float64) (*ethereum.FeeHistory, error) {
+func (s Client) FeeHistory(_ context.Context, _ uint64, _ *big.Int, _ []float64) (*ethereum.FeeHistory, error) {
 	// TODO implement me
 	panic("cannot implement on this backend")
 }

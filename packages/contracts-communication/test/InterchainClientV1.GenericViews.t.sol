@@ -12,7 +12,6 @@ import {VersionedPayloadLibHarness} from "./harnesses/VersionedPayloadLibHarness
 contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
     function setUp() public override {
         super.setUp();
-        setExecutionFees(execFees);
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
     }
 

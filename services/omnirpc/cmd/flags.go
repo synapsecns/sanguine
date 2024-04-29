@@ -17,6 +17,12 @@ var portFlag = &cli.IntFlag{
 	Usage: "port to run the omniproxy on",
 }
 
+var maxSubmitAhead = &cli.IntFlag{
+	Name:  "max-submit-ahead",
+	Usage: "max number of blocks to submit ahead",
+	Value: 0,
+}
+
 // set the default dir to the users home path/omnirpc.yaml.
 func init() {
 	// user must set manually if this errors anyway

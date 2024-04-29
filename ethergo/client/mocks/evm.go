@@ -776,6 +776,27 @@ func (_m *EVM) TransactionReceipt(ctx context.Context, txHash common.Hash) (*typ
 	return r0, r1
 }
 
+// Web3Version provides a mock function with given fields: ctx
+func (_m *EVM) Web3Version(ctx context.Context) (string, error) {
+	ret := _m.Called(ctx)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(context.Context) string); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type mockConstructorTestingTNewEVM interface {
 	mock.TestingT
 	Cleanup(func())
