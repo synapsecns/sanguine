@@ -13,6 +13,7 @@ import (
 type BlacklistedAddressWriterDB interface {
 	PutBlacklistedAddress(ctx context.Context, body BlacklistedAddress) error
 	DeleteBlacklistedAddress(ctx context.Context, address string) error
+	UpdateBlacklistedAddress(ctx context.Context, address string, body BlacklistedAddress) error
 }
 
 type BlacklistedAddressReaderDB interface {

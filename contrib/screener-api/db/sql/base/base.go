@@ -58,10 +58,12 @@ func (s *Store) PutBlacklistedAddress(ctx context.Context, body db.BlacklistedAd
 	dbTx := s.db.WithContext(ctx).Model(&db.BlacklistedAddress{}).
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
-				{Name: "id"},
+				{Name: idName},
 			},
-			DoUpdates: clause.AssignmentColumns([]string{"id", "type", "data", "address", "network", "tag", "remark"}),
-		}).Create(body)
+			DoUpdates: clause.AssignmentColumns([]string{
+				idName, typeReqName, dataName, addressName, networkName, tagName, remarkName},
+			),
+		}).Create(&body)
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to store blacklisted address: %w", dbTx.Error)
 	}
