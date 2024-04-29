@@ -70,6 +70,10 @@ type Manager struct {
 	// relayPaused is set when the RFQ API is found to be offline, which
 	// lets the quoter indicate that quotes should not be relayed.
 	relayPaused bool
+	// meter is the meter used by this package.
+	meter metric.Meter
+	// quoteAmountHist stores a histogram of quote amounts.
+	quoteAmountHist metric.Float64Histogram
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -105,6 +109,12 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		}
 	}
 
+	meter := metricsHandler.Meter(meterName)
+	quoteAmountHist, err := meter.Float64Histogram("quote_amount")
+	if err != nil {
+		return nil, fmt.Errorf("error creating quote amount hist: %w", err)
+	}
+
 	return &Manager{
 		config:           config,
 		inventoryManager: inventoryManager,
@@ -114,6 +124,8 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		metricsHandler:   metricsHandler,
 		feePricer:        feePricer,
 		screener:         ss,
+		meter:            meter,
+		quoteAmountHist:  quoteAmountHist,
 	}, nil
 }
 
@@ -371,20 +383,12 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 	return quote, nil
 }
 
-var meter metric.Meter
-var quoteAmountHist metric.Float64Histogram
-
 // registerQuote registers a quote with the metrics handler.
 func (m *Manager) registerQuote(ctx context.Context, quote *model.PutQuoteRequest) (err error) {
-	if meter == nil {
-		meter = m.metricsHandler.Meter(meterName)
+	if m.meter == nil || m.quoteAmountHist == nil {
+		return nil
 	}
-	if quoteAmountHist == nil {
-		quoteAmountHist, err = meter.Float64Histogram("quote_amount")
-		if err != nil {
-			return fmt.Errorf("error creating quote amount gauge: %w", err)
-		}
-	}
+
 	originMetadata, err := m.inventoryManager.GetTokenMetadata(quote.OriginChainID, common.HexToAddress(quote.OriginTokenAddr))
 	if err != nil {
 		return fmt.Errorf("error getting origin token metadata: %w", err)
@@ -406,7 +410,7 @@ func (m *Manager) registerQuote(ctx context.Context, quote *model.PutQuoteReques
 		attribute.String("fixed_fee", quote.FixedFee),
 		attribute.String("relayer", m.relayerSigner.Address().Hex()),
 	)
-	quoteAmountHist.Record(ctx, core.BigToDecimals(destAmount, destMetadata.Decimals), metric.WithAttributeSet(attributes))
+	m.quoteAmountHist.Record(ctx, core.BigToDecimals(destAmount, destMetadata.Decimals), metric.WithAttributeSet(attributes))
 	return nil
 }
 

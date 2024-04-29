@@ -74,6 +74,12 @@ type inventoryManagerImpl struct {
 	rebalanceManagers map[relconfig.RebalanceMethod]RebalanceManager
 	// db is the database
 	db reldb.Service
+	// meter is the metrics meter for this package
+	meter metric.Meter
+	// balanceHist is the histogram for balance
+	balanceHist metric.Float64Histogram
+	// pendingHist is the histogram for pending rebalances
+	pendingHist metric.Float64Histogram
 }
 
 // GetCommittableBalance gets the committable balances.
@@ -162,6 +168,7 @@ var (
 
 // TODO: replace w/ config.
 const defaultPollPeriod = 5
+const meterName = "github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 
 // NewInventoryManager creates a new inventory manager.
 // TODO: too many args here.
@@ -185,6 +192,16 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 		}
 	}
 
+	meter := handler.Meter(meterName)
+	balanceHist, err := meter.Float64Histogram("inventory_balance")
+	if err != nil {
+		return nil, fmt.Errorf("could not create balance histogram: %w", err)
+	}
+	pendingHist, err := meter.Float64Histogram("pending_rebalance_amount")
+	if err != nil {
+		return nil, fmt.Errorf("could not create pending rebalance histogram: %w", err)
+	}
+
 	i := inventoryManagerImpl{
 		relayerAddress:    relayer,
 		handler:           handler,
@@ -193,6 +210,9 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 		txSubmitter:       txSubmitter,
 		rebalanceManagers: rebalanceManagers,
 		db:                db,
+		meter:             meter,
+		balanceHist:       balanceHist,
+		pendingHist:       pendingHist,
 	}
 
 	err = i.initializeTokens(ctx, cfg)
@@ -468,19 +488,8 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 
 // registerPendingRebalance registers a callback to update the pending rebalance amount gauge.
 func (i *inventoryManagerImpl) registerPendingRebalance(ctx context.Context, rebalance *reldb.Rebalance) (err error) {
-	if rebalance == nil {
+	if rebalance == nil || i.meter == nil || i.pendingHist == nil {
 		return nil
-	}
-
-	if meter == nil {
-		meter = i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
-	}
-
-	if rebalanceHist == nil {
-		rebalanceHist, err = meter.Float64Histogram("pending_rebalance_amount")
-		if err != nil {
-			return fmt.Errorf("could not create gauge: %w", err)
-		}
 	}
 
 	attributes := attribute.NewSet(
@@ -493,7 +502,7 @@ func (i *inventoryManagerImpl) registerPendingRebalance(ctx context.Context, reb
 	if err != nil {
 		return fmt.Errorf("could not get token metadata: %w", err)
 	}
-	rebalanceHist.Record(ctx, core.BigToDecimals(rebalance.OriginAmount, tokenMetadata.Decimals), metric.WithAttributeSet(attributes))
+	i.pendingHist.Record(ctx, core.BigToDecimals(rebalance.OriginAmount, tokenMetadata.Decimals), metric.WithAttributeSet(attributes))
 	return nil
 }
 
@@ -621,8 +630,6 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 		metrics.EndSpanWithErr(span, err)
 	}(err)
 
-	meter := i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
-
 	// TODO: this needs to be a struct bound variable otherwise will be stuck.
 	i.tokens = make(map[int]map[common.Address]*TokenMetadata)
 	i.gasBalances = make(map[int]*big.Int)
@@ -703,7 +710,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 			chainID := chainID // capture func literal
 			deferredRegisters = append(deferredRegisters, func() error {
 				//nolint:wrapcheck
-				return i.registerBalance(ctx, meter, chainID, token)
+				return i.registerBalance(ctx, chainID, token)
 			})
 		}
 	}
@@ -749,9 +756,6 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 }
 
 var logger = log.Logger("inventory")
-var meter metric.Meter
-var balanceHist metric.Float64Histogram
-var rebalanceHist metric.Float64Histogram
 
 // refreshBalances refreshes all the token balances.
 func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
@@ -760,9 +764,6 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	var wg sync.WaitGroup
 	wg.Add(len(i.tokens))
 
-	if meter == nil {
-		meter = i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
-	}
 	type registerCall func() error
 	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
 	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
@@ -780,7 +781,7 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		}
 		deferredRegisters = append(deferredRegisters, func() error {
 			//nolint:wrapcheck
-			return i.registerBalance(ctx, meter, chainID, chain.EthAddress)
+			return i.registerBalance(ctx, chainID, chain.EthAddress)
 		})
 
 		// queue token balance fetches
@@ -790,7 +791,7 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.Balance))
 				deferredRegisters = append(deferredRegisters, func() error {
 					//nolint:wrapcheck
-					return i.registerBalance(ctx, meter, chainID, tokenAddress)
+					return i.registerBalance(ctx, chainID, tokenAddress)
 				})
 			}
 		}
@@ -816,12 +817,9 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	return nil
 }
 
-func (i *inventoryManagerImpl) registerBalance(ctx context.Context, meter metric.Meter, chainID int, token common.Address) (err error) {
-	if balanceHist == nil {
-		balanceHist, err = meter.Float64Histogram("inventory_balance")
-		if err != nil {
-			return fmt.Errorf("could not create gauge: %w", err)
-		}
+func (i *inventoryManagerImpl) registerBalance(ctx context.Context, chainID int, token common.Address) (err error) {
+	if i.meter == nil || i.balanceHist == nil {
+		return nil
 	}
 
 	// TODO: make sure this doesn't get called until we're done
@@ -840,7 +838,7 @@ func (i *inventoryManagerImpl) registerBalance(ctx context.Context, meter metric
 		attribute.String("relayer", i.relayerAddress.Hex()),
 	)
 
-	balanceHist.Record(ctx, core.BigToDecimals(tokenData.Balance, tokenData.Decimals), metric.WithAttributeSet(attributes))
+	i.balanceHist.Record(ctx, core.BigToDecimals(tokenData.Balance, tokenData.Decimals), metric.WithAttributeSet(attributes))
 	return nil
 }
 
