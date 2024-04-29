@@ -12,6 +12,7 @@ import (
 // TODO: make a general db interface.
 type BlacklistedAddressWriterDB interface {
 	PutBlacklistedAddress(ctx context.Context, body BlacklistedAddress) error
+	DeleteBlacklistedAddress(ctx context.Context, address string) error
 }
 
 type BlacklistedAddressReaderDB interface {
@@ -37,6 +38,12 @@ type RuleReaderDB interface {
 type RuleDB interface {
 	RuleWriterDB
 	RuleReaderDB
+}
+
+// DB is the interface for the database.
+type DB interface {
+	BlacklistedAddressDB
+	RuleDB
 }
 
 // ErrNoAddressNotCached is returned when an address is not cached.

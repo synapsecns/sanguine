@@ -37,8 +37,7 @@ type Screener interface {
 type screenerImpl struct {
 	rulesManager internal.RulesetManager
 	thresholds   []config.VolumeThreshold
-	rdb          db.RuleDB
-	bdb          db.BlacklistedAddressDB
+	db           db.DB
 	router       *gin.Engine
 	metrics      metrics.Handler
 	cfg          config.Config
@@ -77,9 +76,9 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 		return nil, fmt.Errorf("could not get db type: %w", err)
 	}
 
-	screener.rdb, err = sql.Connect(ctx, dbType, cfg.Database.DSN, metricHandler)
+	screener.db, err = sql.Connect(ctx, dbType, cfg.Database.DSN, metricHandler)
 	if err != nil {
-		return nil, fmt.Errorf("could not connect to db: %w", err)
+		return nil, fmt.Errorf("could not connect to rules db: %w", err)
 	}
 
 	screener.router = ginhelper.New(logger)
@@ -143,11 +142,8 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	address = strings.ToLower(address)
 
 	switch type_req {
-	case "create":
-		// add the user
-		// update the new table `blacklisted_users`
-		// return the status
-		s.bdb.PutBlacklistedAddress(c, db.BlacklistedAddress{
+	case "create", "update":
+		if err := s.db.PutBlacklistedAddress(c, db.BlacklistedAddress{
 			Id:      id,
 			TypeReq: type_req,
 			Data:    data,
@@ -155,17 +151,21 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			Network: network,
 			Tag:     tag,
 			Remark:  remark,
-		})
+		}); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": "success"})
+		return
 
-	case "update":
-		// update the user
-		// update the new table `blacklisted_users`
-		// return the status
-
+		/// i dont think its right yet
 	case "delete":
-		// delete the user
-		// update the new table `blacklisted_users`
-		// return the status
+		if err := s.db.DeleteBlacklistedAddress(c, address); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": "success"})
+		return
 
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
@@ -258,7 +258,7 @@ func (s *screenerImpl) getIndicators(parentCtx context.Context, address string, 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	riskIndicators, err := s.rdb.GetAddressIndicators(ctx, address, goodUntil)
+	riskIndicators, err := s.db.GetAddressIndicators(ctx, address, goodUntil)
 	if err == nil {
 		return riskIndicators, nil
 	}
@@ -276,7 +276,7 @@ func (s *screenerImpl) getIndicators(parentCtx context.Context, address string, 
 		riskIndicators = append(riskIndicators, ri.AddressRiskIndicators...)
 	}
 
-	err = s.rdb.PutAddressIndicators(ctx, address, riskIndicators)
+	err = s.db.PutAddressIndicators(ctx, address, riskIndicators)
 	if err != nil {
 		return nil, fmt.Errorf("could not put address indicators: %w", err)
 	}

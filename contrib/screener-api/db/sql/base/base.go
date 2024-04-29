@@ -68,6 +68,30 @@ func (s *Store) PutBlacklistedAddress(ctx context.Context, body db.BlacklistedAd
 	return nil
 }
 
+// UpdateBlacklistedAddress updates the blacklisted address in the underlying db.
+func (s *Store) UpdateBlacklistedAddress(ctx context.Context, address string, body db.BlacklistedAddress) error {
+	dbTx := s.db.WithContext(ctx).Model(&db.BlacklistedAddress{}).
+		Where(&db.BlacklistedAddress{
+			Id: address,
+		}).Updates(body)
+	if dbTx.Error != nil {
+		return fmt.Errorf("failed to update blacklisted address: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
+func (s *Store) DeleteBlacklistedAddress(ctx context.Context, address string) error {
+	dbTx := s.db.WithContext(ctx).Where(&db.BlacklistedAddress{
+		Id: address,
+	}).Delete(&db.BlacklistedAddress{})
+	if dbTx.Error != nil {
+		return fmt.Errorf("failed to delete blacklisted address: %w", dbTx.Error)
+	}
+
+	return nil
+}
+
 // GetAddressIndicators gets the address indicators for the given address.
 func (s *Store) GetAddressIndicators(ctx context.Context, address string, since time.Time) ([]trmlabs.AddressRiskIndicator, error) {
 	var addressIndicators db.AddressIndicators
