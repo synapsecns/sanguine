@@ -109,7 +109,7 @@ func (s *ScreenerSuite) TestScreener() {
 
 	realScreener, err := screener.NewTestScreener(s.GetTestContext(), cfg, s.metrics)
 	Nil(s.T(), err)
-
+	NotNil(s.T(), realScreener)
 	go func() {
 		err = realScreener.Start(s.GetTestContext())
 		if !errors.Is(err, context.Canceled) {

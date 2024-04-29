@@ -20,13 +20,13 @@ type BlacklistedAddress struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	Id      string      `json:"id"`
-	TypeReq string      `json:"typereq"`
-	Data    interface{} `json:"data"`
-	Address string      `json:"address"`
-	Network string      `json:"network"`
-	Tag     string      `json:"tag"`
-	Remark  string      `json:"remark"`
+	Id      string      `gorm:"column:id;primary_key"`
+	TypeReq string      `gorm:"column:typereq"`
+	Data    interface{} `gorm:"column:data"`
+	Address string      `gorm:"column:address"`
+	Network string      `gorm:"column:network"`
+	Tag     string      `gorm:"column:tag"`
+	Remark  string      `gorm:"column:remark"`
 }
 
 // AddressIndicators is the address indicators for a given address.

@@ -1,14 +1,15 @@
 package db_test
 
 import (
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db"
 	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
-	"time"
 )
 
 func (d *DBSuite) TestEmpty() {
-	d.RunOnAllDBs(func(testDB db.RuleDB) {
+	d.RunOnAllDBs(func(testDB db.DB) {
 		testAddress := gofakeit.BitcoinAddress()
 
 		// 5 mins ago
@@ -29,7 +30,7 @@ func (d *DBSuite) TestEmpty() {
 }
 
 func (d *DBSuite) TestAdressUpdate() {
-	d.RunOnAllDBs(func(testDB db.RuleDB) {
+	d.RunOnAllDBs(func(testDB db.DB) {
 		testAddress := gofakeit.BitcoinAddress()
 
 		// 5 mins ago
