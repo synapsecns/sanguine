@@ -40,7 +40,7 @@ type RuleDB interface {
 	RuleReaderDB
 }
 
-// DB is the interface for the database.
+// DB is the general database interface for the screener-api
 type DB interface {
 	BlacklistedAddressDB
 	RuleDB

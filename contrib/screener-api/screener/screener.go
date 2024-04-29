@@ -129,8 +129,6 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		return
 	}
 
-	// update DB at this point
-
 	type_req := blacklistBody.TypeReq
 	id := blacklistBody.Id
 	data := blacklistBody.Data
@@ -158,7 +156,6 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
-		/// i dont think its right yet
 	case "delete":
 		if err := s.db.DeleteBlacklistedAddress(c, address); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

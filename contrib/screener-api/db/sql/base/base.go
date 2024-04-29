@@ -37,10 +37,11 @@ func GetAllModels() (allModels []interface{}) {
 
 // GetBlacklistedAddress queries the db for the blacklisted address.
 // Returns true if the address is blacklisted, false otherwise.
-func (s *Store) GetBlacklistedAddress(ctx context.Context, address string) (blacklisted bool, err error) {
+// Not used currently.
+func (s *Store) GetBlacklistedAddress(ctx context.Context, id string) (bool, error) {
 	var blacklistedAddress db.BlacklistedAddress
 	result := s.db.WithContext(ctx).Where(&db.BlacklistedAddress{
-		Id: address,
+		Id: id,
 	}).First(&blacklistedAddress)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -69,10 +70,10 @@ func (s *Store) PutBlacklistedAddress(ctx context.Context, body db.BlacklistedAd
 }
 
 // UpdateBlacklistedAddress updates the blacklisted address in the underlying db.
-func (s *Store) UpdateBlacklistedAddress(ctx context.Context, address string, body db.BlacklistedAddress) error {
+func (s *Store) UpdateBlacklistedAddress(ctx context.Context, id string, body db.BlacklistedAddress) error {
 	dbTx := s.db.WithContext(ctx).Model(&db.BlacklistedAddress{}).
 		Where(&db.BlacklistedAddress{
-			Id: address,
+			Id: id,
 		}).Updates(body)
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to update blacklisted address: %w", dbTx.Error)
@@ -81,9 +82,9 @@ func (s *Store) UpdateBlacklistedAddress(ctx context.Context, address string, bo
 	return nil
 }
 
-func (s *Store) DeleteBlacklistedAddress(ctx context.Context, address string) error {
+func (s *Store) DeleteBlacklistedAddress(ctx context.Context, id string) error {
 	dbTx := s.db.WithContext(ctx).Where(&db.BlacklistedAddress{
-		Id: address,
+		Id: id,
 	}).Delete(&db.BlacklistedAddress{})
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to delete blacklisted address: %w", dbTx.Error)
