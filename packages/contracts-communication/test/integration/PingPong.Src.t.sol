@@ -47,10 +47,9 @@ contract PingPongSrcIntegrationTest is PingPongIntegrationTest {
         checkDatabaseStateMsgSent(entry, SRC_INITIAL_DB_NONCE);
     }
 
-    function test_startPingPong_state_execFees() public {
+    function test_startPingPong_state_execService() public {
         srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
-        assertEq(address(executionFees).balance, executionFee);
-        assertEq(executionFees.executionFee(DST_CHAIN_ID, desc.transactionId), executionFee);
+        assertEq(address(executionService).balance, executionFee);
     }
 
     function test_startPingPong_state_pingPongApp() public {

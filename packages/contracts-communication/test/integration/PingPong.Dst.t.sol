@@ -146,12 +146,11 @@ contract PingPongDstIntegrationTest is PingPongIntegrationTest {
         checkDatabaseStateMsgSent(dstEntry, DST_INITIAL_DB_NONCE);
     }
 
-    function test_interchainExecute_state_execFees() public {
+    function test_interchainExecute_state_execService() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         executeTx(ppOptions);
-        assertEq(address(executionFees).balance, dstExecutionFee);
-        assertEq(executionFees.executionFee(SRC_CHAIN_ID, dstDesc.transactionId), dstExecutionFee);
+        assertEq(address(executionService).balance, dstExecutionFee);
     }
 
     function test_interchainExecute_state_pingPongApp() public {

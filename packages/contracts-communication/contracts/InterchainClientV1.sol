@@ -3,7 +3,6 @@ pragma solidity 0.8.20;
 
 import {InterchainClientV1Events} from "./events/InterchainClientV1Events.sol";
 
-import {IExecutionFees} from "./interfaces/IExecutionFees.sol";
 import {IExecutionService} from "./interfaces/IExecutionService.sol";
 import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
@@ -36,9 +35,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @notice Address of the InterchainDB contract, set at the time of deployment.
     address public immutable INTERCHAIN_DB;
 
-    /// @notice Address of the contract that handles execution fees. Can be updated by the owner.
-    address public executionFees;
-
     /// @dev Address of the InterchainClient contract on the remote chain
     mapping(uint64 chainId => bytes32 remoteClient) internal _linkedClient;
     /// @dev Executor address that completed the transaction. Address(0) if not executed yet.
@@ -46,12 +42,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     constructor(address interchainDB, address owner_) Ownable(owner_) {
         INTERCHAIN_DB = interchainDB;
-    }
-
-    // @inheritdoc IInterchainClientV1
-    function setExecutionFees(address executionFees_) external onlyOwner {
-        executionFees = executionFees_;
-        emit ExecutionFeesSet(executionFees_);
     }
 
     // @inheritdoc IInterchainClientV1
@@ -178,15 +168,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (uint256 fee)
     {
         _assertLinkedClient(dstChainId);
+        if (srcExecutionService == address(0)) {
+            revert InterchainClientV1__ZeroExecutionService();
+        }
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
         // Verification fee from InterchainDB
         fee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
-        // Add execution fee, if ExecutionService is provided
-        if (srcExecutionService != address(0)) {
-            uint256 payloadSize = InterchainTransactionLib.payloadSize(options.length, messageLen);
-            fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, payloadSize, options);
-        }
+        // Add execution fee from ExecutionService
+        uint256 payloadSize = InterchainTransactionLib.payloadSize(options.length, messageLen);
+        fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, payloadSize, options);
     }
 
     /// @inheritdoc IInterchainClientV1
@@ -249,7 +240,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (InterchainTxDescriptor memory desc)
     {
         _assertLinkedClient(dstChainId);
-        if (receiver == 0) revert InterchainClientV1__ZeroReceiver();
+        if (receiver == 0) {
+            revert InterchainClientV1__ZeroReceiver();
+        }
+        if (srcExecutionService == address(0)) {
+            revert InterchainClientV1__ZeroExecutionService();
+        }
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
@@ -278,21 +274,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         unchecked {
             executionFee = msg.value - verificationFee;
         }
-        if (executionFee > 0) {
-            IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, desc.transactionId);
-        }
-        // TODO: consider disallowing the use of empty srcExecutionService
-        if (srcExecutionService != address(0)) {
-            IExecutionService(srcExecutionService).requestExecution({
-                dstChainId: dstChainId,
-                txPayloadSize: InterchainTransactionLib.payloadSize(options.length, message.length),
-                transactionId: desc.transactionId,
-                executionFee: executionFee,
-                options: options
-            });
-            address srcExecutorEOA = IExecutionService(srcExecutionService).executorEOA();
-            IExecutionFees(executionFees).recordExecutor(icTx.dstChainId, desc.transactionId, srcExecutorEOA);
-        }
+        IExecutionService(srcExecutionService).requestTxExecution{value: executionFee}({
+            dstChainId: icTx.dstChainId,
+            txPayloadSize: InterchainTransactionLib.payloadSize(options.length, message.length),
+            transactionId: desc.transactionId,
+            options: options
+        });
         emit InterchainTransactionSent(
             desc.transactionId,
             icTx.dbNonce,
