@@ -42,6 +42,8 @@ export const InputContainer = () => {
 
   const { parsedGasCost, maxBridgeableGas, isLoading } = useGasEstimator()
 
+  console.log('maxBridgeableGas: ', maxBridgeableGas)
+
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
   const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
@@ -93,32 +95,17 @@ export const InputContainer = () => {
     }
   }
 
-  const onMaxBridgeableBalance = useCallback(() => {
-    if (maxBridgeableGas) {
-      if (maxBridgeableGas < 0) {
-        dispatch(
-          updateFromValue(
-            formatBigIntToString(0n, fromToken?.decimals[fromChainId])
-          )
-        )
-      } else {
-        dispatch(updateFromValue(maxBridgeableGas.toString()))
-      }
-    } else {
-      dispatch(
-        updateFromValue(
-          formatBigIntToString(balance, fromToken?.decimals[fromChainId])
-        )
-      )
-    }
-  }, [
-    fromChainId,
-    fromToken,
-    isGasToken,
-    parsedGasCost,
+  const maxBalance = formatBigIntToString(
     balance,
-    parsedBalance,
-  ])
+    fromToken?.decimals[fromChainId]
+  )
+  const maxBalanceBridgeable = maxBridgeableGas
+    ? maxBridgeableGas?.toString()
+    : maxBalance
+
+  const onMaxBalance = useCallback(() => {
+    dispatch(updateFromValue(maxBalanceBridgeable))
+  }, [fromChainId, fromToken, maxBalanceBridgeable])
 
   return (
     <BridgeSectionContainer>
@@ -139,14 +126,14 @@ export const InputContainer = () => {
             fromToken={fromToken}
             balance={balance}
             parsedBalance={parsedBalance}
-            onMaxBalance={onMaxBridgeableBalance}
+            onMaxBalance={onMaxBalance}
             isGasEstimateLoading={isLoading}
           />
         </div>
         {hasMounted && isConnected && (
           <MiniMaxButton
             disabled={!balance || balance === 0n ? true : false}
-            onClickBalance={onMaxBridgeableBalance}
+            onClickBalance={onMaxBalance}
           />
         )}
       </BridgeAmountContainer>

@@ -41,7 +41,7 @@ export const useGasEstimator = () => {
     parsedGasCost: number
   ): number => {
     const maxBridgeable = parsedGasBalance - parsedGasCost
-    return maxBridgeable
+    return maxBridgeable > 0 ? maxBridgeable : 0
   }
 
   const maxBridgeableGas: number | null =
