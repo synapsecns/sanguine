@@ -1,4 +1,5 @@
-import _ from 'lodash'
+import _, { isNumber } from 'lodash'
+import toast from 'react-hot-toast'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { zeroAddress } from 'viem'
@@ -42,7 +43,7 @@ export const InputContainer = () => {
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
-  const { maxBridgeableGas, isLoading } = useGasEstimator()
+  const { parsedGasCost, maxBridgeableGas, isLoading } = useGasEstimator()
 
   const { addresses, decimals } = fromToken || {}
 
@@ -58,13 +59,26 @@ export const InputContainer = () => {
   const parsedBalance = getParsedBalance(balance, tokenDecimals, 4)
 
   const maxBalance = formatBigIntToString(balance, tokenDecimals)
-  const maxBalanceBridgeable = maxBridgeableGas
+  const maxBalanceBridgeable = isNumber(maxBridgeableGas)
     ? maxBridgeableGas?.toString()
     : maxBalance
 
+  const gasFeeExceedsBalance =
+    isGasToken &&
+    parsedGasCost &&
+    parseFloat(parsedGasCost) > parseFloat(maxBalance)
+
   const onMaxBalance = useCallback(() => {
-    dispatch(updateFromValue(maxBalanceBridgeable))
-  }, [fromChainId, fromToken, maxBalanceBridgeable])
+    if (gasFeeExceedsBalance) {
+      toast.error('Gas fees likely exceeds your balance.', {
+        id: 'toast-error-not-enough-gas',
+        duration: 10000,
+      })
+      dispatch(updateFromValue('0.0'))
+    } else {
+      dispatch(updateFromValue(maxBalanceBridgeable))
+    }
+  }, [fromChainId, fromToken, maxBalanceBridgeable, gasFeeExceedsBalance])
 
   useEffect(() => {
     setHasMounted(true)

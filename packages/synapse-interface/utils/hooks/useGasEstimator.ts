@@ -26,9 +26,13 @@ export const useGasEstimator = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
   const { rawGasCost, parsedGasCost } = calculateGasCost(
-    maxFeePerGas,
+    // maxFeePerGas,
+    '100',
     estimatedGasLimit.toString()
   )
+
+  console.log('maxFeePerGas: ', maxFeePerGas)
+  console.log('parsedGasCost: ', parsedGasCost)
 
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
