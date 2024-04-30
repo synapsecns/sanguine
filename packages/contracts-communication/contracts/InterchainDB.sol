@@ -174,7 +174,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function getVersionedBatch(uint64 dbNonce) external view returns (bytes memory versionedBatch) {
-        // TODO: implement
+        InterchainBatch memory batch = getBatch(dbNonce);
+        return VersionedPayloadLib.encodeVersionedPayload({
+            version: DB_VERSION,
+            payload: InterchainBatchLib.encodeBatch(batch)
+        });
     }
 
     /// @inheritdoc IInterchainDB
