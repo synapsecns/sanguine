@@ -154,7 +154,7 @@ func (s *ScreenerSuite) TestScreener() {
 	// now test crud screener
 	blacklistBody := client.BlackListBody{
 		TypeReq: "create",
-		Id:      "1",
+		ID:      "1",
 		Data:    "{\"test\":\"data\"}",
 		Address: "0x123",
 		Network: "eth",
@@ -177,7 +177,7 @@ func (s *ScreenerSuite) TestScreener() {
 
 	// delete the address on the blacklist
 	blacklistBody.TypeReq = "delete"
-	blacklistBody.Id = "1"
+	blacklistBody.ID = "1"
 
 	status, err = apiClient.BlacklistAddress(s.GetTestContext(), blacklistBody)
 	Equal(s.T(), "success", status)

@@ -67,7 +67,7 @@ func (c clientImpl) ScreenAddress(ctx context.Context, ruleset, address string) 
 
 type BlackListBody struct {
 	TypeReq string `json:"typereq"`
-	Id      string `json:"id"`
+	ID      string `json:"id"`
 	Data    string `json:"data"`
 	Address string `json:"address"`
 	Network string `json:"network"`
@@ -88,9 +88,9 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, body BlackListBody) (s
 	appsecret := "appsecret"
 	appid := "appid"
 
-	nonce := strings.Replace(uuid.New().String(), "-", "", -1)[:32]
+	nonce := strings.ReplaceAll(uuid.New().String(), "-", "")[:32]
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
-	queryString := "" // there is no query string in this post request, ask about this
+	queryString := ""
 
 	signature := GenerateSignature(appsecret, appid, timestamp, nonce, queryString, body)
 

@@ -21,7 +21,7 @@ type BlacklistedAddress struct {
 	UpdatedAt time.Time
 
 	TypeReq string `gorm:"column:typereq"`
-	Id      string `gorm:"column:id;primary_key"`
+	ID      string `gorm:"column:id;primary_key"`
 	Data    string `gorm:"column:data"`
 	Address string `gorm:"column:address"`
 	Network string `gorm:"column:network"`
@@ -29,10 +29,12 @@ type BlacklistedAddress struct {
 	Remark  string `gorm:"column:remark"`
 }
 
+// GormDataType returns the data type for the column.
 func (b BlacklistedAddress) GormDataType() string {
 	return "json"
 }
 
+// Value prepares the struct for database storage.
 func (b BlacklistedAddress) Value() (driver.Value, error) {
 	if b == (BlacklistedAddress{}) {
 		return nil, nil
@@ -41,6 +43,7 @@ func (b BlacklistedAddress) Value() (driver.Value, error) {
 	return string(ba), err
 }
 
+// Scan scans the struct from the database.
 func (b *BlacklistedAddress) Scan(val interface{}) error {
 	if val == nil {
 		*b = BlacklistedAddress{}

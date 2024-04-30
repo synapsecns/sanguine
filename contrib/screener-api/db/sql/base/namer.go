@@ -12,7 +12,7 @@ func init() {
 	indicatorName = namer.GetConsistentName("Indicators")
 
 	typeReqName = namer.GetConsistentName("TypeReq")
-	idName = namer.GetConsistentName("Id")
+	idName = namer.GetConsistentName("ID")
 	dataName = namer.GetConsistentName("Data")
 	networkName = namer.GetConsistentName("Network")
 	tagName = namer.GetConsistentName("Tag")

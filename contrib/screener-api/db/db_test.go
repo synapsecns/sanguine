@@ -74,7 +74,7 @@ func (d *DBSuite) TestBlacklist() {
 
 		blacklistBody := db.BlacklistedAddress{
 			TypeReq: "create",
-			Id:      "testId",
+			ID:      "testId",
 			Address: testAddress,
 			Network: "bitcoin",
 			Tag:     "testTag",
@@ -91,7 +91,7 @@ func (d *DBSuite) TestBlacklist() {
 		// update the address
 		blacklistBody.TypeReq = "update"
 		blacklistBody.Remark = "testRemarkUpdated"
-		err = testDB.UpdateBlacklistedAddress(d.GetTestContext(), blacklistBody.Id, blacklistBody)
+		err = testDB.UpdateBlacklistedAddress(d.GetTestContext(), blacklistBody.ID, blacklistBody)
 		d.Require().NoError(err)
 
 		// check to make sure it updated
@@ -106,7 +106,7 @@ func (d *DBSuite) TestBlacklist() {
 		d.Require().Nil(res)
 
 		// delete it
-		err = testDB.DeleteBlacklistedAddress(d.GetTestContext(), blacklistBody.Id)
+		err = testDB.DeleteBlacklistedAddress(d.GetTestContext(), blacklistBody.ID)
 		d.Require().NoError(err)
 
 		// delete nonexistent

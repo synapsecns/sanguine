@@ -134,7 +134,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 	blacklistedAddress := db.BlacklistedAddress{
 		TypeReq: blacklistBody.TypeReq,
-		Id:      blacklistBody.Id,
+		ID:      blacklistBody.ID,
 		Data:    blacklistBody.Data,
 		Network: blacklistBody.Network,
 		Tag:     blacklistBody.Tag,
@@ -153,7 +153,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		return
 
 	case "update":
-		if err := s.db.UpdateBlacklistedAddress(c, blacklistedAddress.Id, blacklistedAddress); err != nil {
+		if err := s.db.UpdateBlacklistedAddress(c, blacklistedAddress.ID, blacklistedAddress); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
