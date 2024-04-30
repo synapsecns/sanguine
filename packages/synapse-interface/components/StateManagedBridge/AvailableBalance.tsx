@@ -7,30 +7,18 @@ import { HoverTooltip } from '../HoverTooltip'
 
 export const AvailableBalance = ({
   fromChainId,
-  fromValue,
   fromToken,
   balance,
   parsedBalance,
-  maxBridgeableBalance,
-  isGasToken = false,
-  parsedGasCost,
   onMaxBalance,
-  hasMounted,
-  isConnected,
-  disabled = false,
+  isGasEstimateLoading,
 }: {
   fromChainId: number | null
-  fromValue: string
   fromToken: Token | null
   balance?: bigint
   parsedBalance?: string
-  maxBridgeableBalance?: string
-  isGasToken?: boolean
-  parsedGasCost?: string
   onMaxBalance?: () => void
-  hasMounted: boolean
-  isConnected: boolean
-  disabled?: boolean
+  isGasEstimateLoading: boolean
 }) => {
   const parsedBalanceFull = formatBigIntToString(
     balance,
@@ -48,7 +36,7 @@ export const AvailableBalance = ({
   const tooltipContent = (
     <div className="flex flex-col space-y-2 whitespace-nowrap">
       <span>
-        {parsedBalanceFull} {fromToken?.symbol}
+        {parsedBalance} {fromToken?.symbol}
       </span>
     </div>
   )
@@ -60,16 +48,26 @@ export const AvailableBalance = ({
     hover: 'hover:opacity-70 cursor-pointer',
   })
 
-  return (
-    <HoverTooltip isActive={true} hoverContent={tooltipContent}>
-      <label
-        onClick={onMaxBalance}
-        className={labelClassName}
-        htmlFor="inputRow"
-      >
-        {isTraceBalance() ? '<0.001' : parsedBalance ?? '0.0'}
-        <span className="text-zinc-500 dark:text-zinc-400"> available</span>
+  if (isGasEstimateLoading) {
+    return (
+      <label className={labelClassName} htmlFor="inputRow">
+        <span className="text-zinc-500 dark:text-zinc-400">
+          calculating gas...
+        </span>
       </label>
-    </HoverTooltip>
-  )
+    )
+  } else {
+    return (
+      <HoverTooltip isActive={true} hoverContent={tooltipContent}>
+        <label
+          onClick={onMaxBalance}
+          className={labelClassName}
+          htmlFor="inputRow"
+        >
+          {isTraceBalance() ? '<0.001' : parsedBalance ?? '0.0'}
+          <span className="text-zinc-500 dark:text-zinc-400"> available</span>
+        </label>
+      </HoverTooltip>
+    )
+  }
 }

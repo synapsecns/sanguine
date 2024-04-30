@@ -139,18 +139,11 @@ export const InputContainer = () => {
           />
           <AvailableBalance
             fromChainId={fromChainId}
-            fromValue={fromValue}
             fromToken={fromToken}
             balance={balance}
             parsedBalance={parsedBalance}
-            maxBridgeableBalance={
-              maxBridgeableGas ? maxBridgeableGas.toString() : parsedBalance
-            }
-            isGasToken={isGasToken}
-            parsedGasCost={parsedGasCost}
             onMaxBalance={onMaxBridgeableBalance}
-            isConnected={isConnected}
-            hasMounted={hasMounted}
+            isGasEstimateLoading={isLoading}
           />
         </div>
         {hasMounted && isConnected && (
