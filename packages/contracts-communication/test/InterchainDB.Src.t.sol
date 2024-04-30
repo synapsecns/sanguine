@@ -293,8 +293,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_writerF_oneModule() public {
         uint64 dbNonce = 0;
         InterchainBatch memory batch = getExpectedBatch(getInitialEntry(dbNonce));
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
     }
@@ -302,8 +301,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_writerF_oneModule_higherFee() public {
         uint64 dbNonce = 0;
         InterchainBatch memory batch = getExpectedBatch(getInitialEntry(dbNonce));
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE * 2, dbNonce, oneModule);
     }
@@ -311,9 +309,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_writerF_twoModules() public {
         uint64 dbNonce = 0;
         InterchainBatch memory batch = getExpectedBatch(getInitialEntry(dbNonce));
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
     }
@@ -322,9 +319,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         // Overpaid fees should be directed to the first module
         uint64 dbNonce = 0;
         InterchainBatch memory batch = getExpectedBatch(getInitialEntry(dbNonce));
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
     }
@@ -332,8 +328,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_writerS_oneModule() public {
         uint64 dbNonce = 2;
         InterchainBatch memory batch = getExpectedBatch(getInitialEntry(dbNonce));
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
     }
@@ -341,8 +336,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_writerS_oneModule_higherFee() public {
         uint64 dbNonce = 2;
         InterchainBatch memory batch = getExpectedBatch(getInitialEntry(dbNonce));
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE * 2, dbNonce, oneModule);
     }
@@ -350,9 +344,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_writerS_twoModules() public {
         uint64 dbNonce = 2;
         InterchainBatch memory batch = getExpectedBatch(getInitialEntry(dbNonce));
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
     }
@@ -361,9 +354,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         // Overpaid fees should be directed to the first module
         uint64 dbNonce = 2;
         InterchainBatch memory batch = getExpectedBatch(getInitialEntry(dbNonce));
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
     }
@@ -371,8 +363,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_nextNonce_oneModule() public {
         uint64 dbNonce = INITIAL_DB_NONCE;
         InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
     }
@@ -380,8 +371,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_nextNonce_oneModule_higherFee() public {
         uint64 dbNonce = INITIAL_DB_NONCE;
         InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE * 2, dbNonce, oneModule);
     }
@@ -389,9 +379,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_nextNonce_twoModules() public {
         uint64 dbNonce = INITIAL_DB_NONCE;
         InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
     }
@@ -400,9 +389,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         // Overpaid fees should be directed to the first module
         uint64 dbNonce = INITIAL_DB_NONCE;
         InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
     }
@@ -410,8 +398,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_hugeNonce_oneModule() public {
         uint64 dbNonce = 2 ** 32;
         InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
     }
@@ -419,8 +406,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_hugeNonce_oneModule_higherFee() public {
         uint64 dbNonce = 2 ** 32;
         InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE * 2, dbNonce, oneModule);
     }
@@ -428,9 +414,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_hugeNonce_twoModules() public {
         uint64 dbNonce = 2 ** 32;
         InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
     }
@@ -439,9 +424,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         // Overpaid fees should be directed to the first module
         uint64 dbNonce = 2 ** 32;
         InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventBatchVerificationRequested(batch, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
     }
@@ -476,7 +460,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerF_oneModule_callsModule() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
         InterchainBatch memory batch = getExpectedBatch(entry);
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
         writeEntryWithVerification(MODULE_A_FEE, writerF, entry.dataHash, oneModule);
     }
 
@@ -509,7 +493,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
         InterchainBatch memory batch = getExpectedBatch(entry);
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
         expectEventInterchainEntryWritten(entry);
         writeEntryWithVerification(MODULE_A_FEE * 2, writerF, dataHash, oneModule);
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
@@ -519,8 +503,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerF_twoModules_callsModules() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
         InterchainBatch memory batch = getExpectedBatch(entry);
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, entry.dataHash, twoModules);
     }
 
@@ -553,8 +537,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
         InterchainBatch memory batch = getExpectedBatch(entry);
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventInterchainEntryWritten(entry);
         writeEntryWithVerification(MODULE_A_FEE * 2 + MODULE_B_FEE, writerF, dataHash, twoModules);
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
@@ -564,7 +548,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerS_oneModule_callsModule() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
         InterchainBatch memory batch = getExpectedBatch(entry);
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
         writeEntryWithVerification(MODULE_A_FEE, writerS, entry.dataHash, oneModule);
     }
 
@@ -597,7 +581,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
         InterchainBatch memory batch = getExpectedBatch(entry);
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
         expectEventInterchainEntryWritten(entry);
         writeEntryWithVerification(MODULE_A_FEE * 2, writerS, dataHash, oneModule);
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
@@ -607,8 +591,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerS_twoModules_callsModules() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
         InterchainBatch memory batch = getExpectedBatch(entry);
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, entry.dataHash, twoModules);
     }
 
@@ -641,8 +625,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
         InterchainBatch memory batch = getExpectedBatch(entry);
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventInterchainEntryWritten(entry);
         writeEntryWithVerification(MODULE_A_FEE * 2 + MODULE_B_FEE, writerS, dataHash, twoModules);
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
