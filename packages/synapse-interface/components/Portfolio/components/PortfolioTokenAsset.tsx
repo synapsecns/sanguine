@@ -16,6 +16,8 @@ import { zeroAddress } from 'viem'
 import GasIcon from '@/components/icons/GasIcon'
 import { HoverTooltip } from '../../HoverTooltip'
 import { getParsedBalance } from '@/utils/getParsedBalance'
+import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()
@@ -35,6 +37,7 @@ export const PortfolioTokenAsset = ({
   connectedChainId,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
+  const { maxBridgeableGas } = useGasEstimator()
   const { fromChainId, fromToken } = useBridgeState()
   const { icon, symbol, decimals, addresses } = token
 
@@ -51,16 +54,16 @@ export const PortfolioTokenAsset = ({
     fromToken === token && fromChainId === portfolioChainId
   const isGasToken = tokenAddress === zeroAddress
 
+  const maxBalance = formatBigIntToString(balance, tokenDecimals)
+  const maxBalanceBridgeable =
+    isGasToken && maxBridgeableGas ? maxBridgeableGas?.toString() : maxBalance
+
   const handleFromSelectionCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
     handleFocusOnBridgeInput()
-    dispatch(
-      updateFromValue(
-        trimTrailingZeroesAfterDecimal(getParsedBalance(balance, tokenDecimals))
-      )
-    )
-  }, [token, balance, portfolioChainId])
+    dispatch(updateFromValue(maxBalanceBridgeable))
+  }, [token, balance, portfolioChainId, maxBalanceBridgeable])
 
   return (
     <div

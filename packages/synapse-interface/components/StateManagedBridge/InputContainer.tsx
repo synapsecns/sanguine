@@ -42,16 +42,18 @@ export const InputContainer = () => {
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
-  const { parsedGasCost, maxBridgeableGas, isLoading } = useGasEstimator()
+  const { maxBridgeableGas, isLoading } = useGasEstimator()
 
-  const { addresses, decimals } = fromToken
+  const { addresses, decimals } = fromToken || {}
 
-  const tokenAddress = addresses[fromChainId]
-  const tokenDecimals = _.isNumber(decimals) ? decimals : decimals[fromChainId]
+  const tokenAddress = addresses?.[fromChainId]
+  const tokenDecimals = _.isNumber(decimals)
+    ? decimals
+    : decimals?.[fromChainId]
   const isGasToken: boolean = tokenAddress === zeroAddress
 
   const balance: bigint = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === addresses[fromChainId]
+    (token) => token.tokenAddress === addresses?.[fromChainId]
   )?.balance
   const parsedBalance = getParsedBalance(balance, tokenDecimals, 4)
 
