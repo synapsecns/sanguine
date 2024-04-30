@@ -91,9 +91,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         RemoteBatch memory existingBatch = _remoteBatches[msg.sender][batchKey];
         // Check if that's the first time module verifies the batch
         if (existingBatch.verifiedAt == 0) {
-            _remoteBatches[msg.sender][batchKey] =
-                RemoteBatch({verifiedAt: block.timestamp, batchRoot: batch.batchRoot});
-            emit InterchainBatchVerified(msg.sender, batch.srcChainId, batch.dbNonce, batch.batchRoot);
+            _saveVerifiedBatch(msg.sender, batchKey, batch);
         } else {
             // If the module has already verified the batch, check that the batch root is the same
             if (existingBatch.batchRoot != batch.batchRoot) {
@@ -253,6 +251,12 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(dstChainId, versionedBatch);
         }
         emit InterchainBatchVerificationRequested(dstChainId, batch.dbNonce, batch.batchRoot, srcModules);
+    }
+
+    /// @dev Save the verified batch to the database and emit the event.
+    function _saveVerifiedBatch(address module, BatchKey batchKey, InterchainBatch memory batch) internal {
+        _remoteBatches[module][batchKey] = RemoteBatch({verifiedAt: block.timestamp, batchRoot: batch.batchRoot});
+        emit InterchainBatchVerified(module, batch.srcChainId, batch.dbNonce, batch.batchRoot);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
