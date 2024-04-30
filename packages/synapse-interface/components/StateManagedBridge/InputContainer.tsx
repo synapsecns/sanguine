@@ -128,7 +128,7 @@ export const InputContainer = () => {
       </div>
       <BridgeAmountContainer>
         <FromTokenSelector />
-        <div>
+        <div className="mr-auto">
           <AmountInput
             inputRef={inputRef}
             showValue={showValue}
