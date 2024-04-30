@@ -161,6 +161,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
+    function getVersionedBatch(uint64 dbNonce) external view returns (bytes memory versionedBatch) {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IInterchainDB
     function getBatchRoot(InterchainEntry memory entry, bytes32[] calldata proof) external pure returns (bytes32) {
         return BatchingV1Lib.getBatchRoot({
             srcWriter: entry.srcWriter,

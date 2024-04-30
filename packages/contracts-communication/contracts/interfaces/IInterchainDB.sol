@@ -112,6 +112,11 @@ interface IInterchainDB {
     /// @param dbNonce      The database nonce of the finalized batch
     function getBatch(uint64 dbNonce) external view returns (InterchainBatch memory);
 
+    /// @notice Get the versioned Interchain Batch with the given nonce.
+    /// Note: will return a batch with an empty root if the batch does not exist, or is not finalized.
+    /// @param dbNonce      The database nonce of the batch
+    function getVersionedBatch(uint64 dbNonce) external view returns (bytes memory);
+
     /// @notice Get the Interchain Entry's value written on the local chain with the given batch nonce and entry index.
     /// Entry value is calculated as the hash of the writer address and the written data hash.
     /// Note: the batch does not have to be finalized to fetch the entry value.
