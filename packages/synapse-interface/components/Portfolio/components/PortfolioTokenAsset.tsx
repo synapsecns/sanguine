@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react'
+import toast from 'react-hot-toast'
 import _ from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import {
@@ -37,7 +38,7 @@ export const PortfolioTokenAsset = ({
   connectedChainId,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
-  const { maxBridgeableGas } = useGasEstimator()
+  const { maxBridgeableGas, gasFeeExceedsBalance } = useGasEstimator()
   const { fromChainId, fromToken } = useBridgeState()
   const { icon, symbol, decimals, addresses } = token
 
@@ -58,11 +59,24 @@ export const PortfolioTokenAsset = ({
   const maxBalanceBridgeable =
     isGasToken && maxBridgeableGas ? maxBridgeableGas?.toString() : maxBalance
 
+  const onMaxBalance = () => {
+    if (gasFeeExceedsBalance) {
+      toast.error('Gas fees likely exceeds your balance.', {
+        id: 'toast-error-not-enough-gas',
+        duration: 10000,
+      })
+      dispatch(updateFromValue('0.0'))
+    } else {
+      dispatch(updateFromValue(maxBalanceBridgeable))
+    }
+  }
+
   const handleFromSelectionCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
     handleFocusOnBridgeInput()
-    dispatch(updateFromValue(maxBalanceBridgeable))
+    // dispatch(updateFromValue(maxBalanceBridgeable))
+    onMaxBalance()
   }, [token, balance, portfolioChainId, maxBalanceBridgeable])
 
   return (

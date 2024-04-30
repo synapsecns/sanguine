@@ -1,3 +1,4 @@
+import { isNumber } from 'lodash'
 import { zeroAddress, Address } from 'viem'
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
@@ -12,6 +13,7 @@ import { calculateGasCost } from '../calculateGasCost'
 import { stringToBigInt } from '../bigint/format'
 import { Token } from '../types'
 import { wagmiConfig } from '@/wagmiConfig'
+import { formatBigIntToString } from '../bigint/format'
 
 export const useGasEstimator = () => {
   const { address } = useAccount()
@@ -31,14 +33,29 @@ export const useGasEstimator = () => {
     estimatedGasLimit.toString()
   )
 
-  console.log('maxFeePerGas: ', maxFeePerGas)
-  console.log('parsedGasCost: ', parsedGasCost)
-
-  const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
+  const { addresses, decimals } = fromToken || {}
+  const tokenAddress = addresses?.[fromChainId]
+  const tokenDecimals = isNumber(decimals) ? decimals : decimals?.[fromChainId]
+  const isGasToken: boolean = tokenAddress === zeroAddress
 
   const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )
+  const parsedBalance = formatBigIntToString(
+    selectedFromToken?.balance,
+    tokenDecimals
+  )
+
+  const maxBalance = formatBigIntToString(
+    selectedFromToken?.balance,
+    tokenDecimals
+  )
+
+  const gasFeeExceedsBalance =
+    isGasToken &&
+    parsedGasCost &&
+    maxBalance &&
+    parseFloat(parsedGasCost) > parseFloat(maxBalance)
 
   const calculateMaxBridgeableGas = (
     parsedGasBalance: number,
@@ -51,7 +68,7 @@ export const useGasEstimator = () => {
   const maxBridgeableGas: number | null =
     isGasToken && parsedGasCost
       ? calculateMaxBridgeableGas(
-          parseFloat(selectedFromToken?.parsedBalance),
+          parseFloat(parsedBalance),
           parseFloat(parsedGasCost)
         )
       : null
@@ -95,7 +112,13 @@ export const useGasEstimator = () => {
     address,
   ])
 
-  return { rawGasCost, parsedGasCost, maxBridgeableGas, isLoading }
+  return {
+    rawGasCost,
+    parsedGasCost,
+    maxBridgeableGas,
+    isLoading,
+    gasFeeExceedsBalance,
+  }
 }
 
 const getBridgeQuote = async (

@@ -43,7 +43,8 @@ export const InputContainer = () => {
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
-  const { parsedGasCost, maxBridgeableGas, isLoading } = useGasEstimator()
+  const { parsedGasCost, maxBridgeableGas, isLoading, gasFeeExceedsBalance } =
+    useGasEstimator()
 
   const { addresses, decimals } = fromToken || {}
 
@@ -62,11 +63,6 @@ export const InputContainer = () => {
   const maxBalanceBridgeable = isNumber(maxBridgeableGas)
     ? maxBridgeableGas?.toString()
     : maxBalance
-
-  const gasFeeExceedsBalance =
-    isGasToken &&
-    parsedGasCost &&
-    parseFloat(parsedGasCost) > parseFloat(maxBalance)
 
   const onMaxBalance = useCallback(() => {
     if (gasFeeExceedsBalance) {
