@@ -23,6 +23,7 @@ export const useGasEstimator = () => {
   const { gasData } = useAppSelector((state) => state.gasData)
   const { maxFeePerGas } = gasData?.formatted
 
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
   const { rawGasCost, parsedGasCost } = calculateGasCost(
     maxFeePerGas,
@@ -65,6 +66,7 @@ export const useGasEstimator = () => {
     if (hasValidGasEstimateInputs()) {
       ;(async () => {
         setEstimatedGasLimit(0n)
+        setIsLoading(true)
         const gasLimit = await queryEstimatedBridgeGasLimit(
           synapseSDK,
           address,
@@ -76,6 +78,7 @@ export const useGasEstimator = () => {
           selectedFromToken?.parsedBalance
         )
         setEstimatedGasLimit(gasLimit ?? 0n)
+        setIsLoading(false)
       })()
     }
   }, [
@@ -88,7 +91,7 @@ export const useGasEstimator = () => {
     address,
   ])
 
-  return { rawGasCost, parsedGasCost, maxBridgeableGas }
+  return { rawGasCost, parsedGasCost, maxBridgeableGas, isLoading }
 }
 
 const getBridgeQuote = async (

@@ -40,7 +40,10 @@ export const InputContainer = () => {
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
-  const { parsedGasCost, maxBridgeableGas } = useGasEstimator()
+  const { parsedGasCost, maxBridgeableGas, isLoading } = useGasEstimator()
+
+  console.log('maxBridgeableGas: ', maxBridgeableGas)
+  console.log('isLoading:', isLoading)
 
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
