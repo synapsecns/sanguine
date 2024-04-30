@@ -20,19 +20,6 @@ export const AvailableBalance = ({
   onMaxBalance?: () => void
   isGasEstimateLoading: boolean
 }) => {
-  const parsedBalanceFull = formatBigIntToString(
-    balance,
-    fromToken?.decimals[fromChainId]
-  )
-
-  const isTraceBalance = () => {
-    return Boolean(
-      balance &&
-        hasOnlyZeroes(parsedBalance) &&
-        !hasOnlyZeroes(parsedBalanceFull)
-    )
-  }
-
   const tooltipContent = (
     <div className="flex flex-col space-y-2 whitespace-nowrap">
       <span>
@@ -64,7 +51,7 @@ export const AvailableBalance = ({
           className={labelClassName}
           htmlFor="inputRow"
         >
-          {isTraceBalance() ? '<0.001' : parsedBalance ?? '0.0'}
+          {parsedBalance}
           <span className="text-zinc-500 dark:text-zinc-400"> available</span>
         </label>
       </HoverTooltip>

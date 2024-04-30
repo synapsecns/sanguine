@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { zeroAddress } from 'viem'
@@ -29,6 +30,7 @@ import { useFromTokenListArray } from './hooks/useFromTokenListArray'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { AvailableBalance } from './AvailableBalance'
 import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
+import { getParsedBalance } from '@/utils/getParsedBalance'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -44,13 +46,25 @@ export const InputContainer = () => {
 
   console.log('maxBridgeableGas: ', maxBridgeableGas)
 
-  const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
+  const { addresses, decimals } = fromToken
 
-  const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )
+  const tokenAddress = addresses[fromChainId]
+  const tokenDecimals = _.isNumber(decimals) ? decimals : decimals[fromChainId]
+  const isGasToken: boolean = tokenAddress === zeroAddress
 
-  const { balance, parsedBalance } = selectedFromToken || {}
+  const balance: bigint = balances[fromChainId]?.find(
+    (token) => token.tokenAddress === addresses[fromChainId]
+  )?.balance
+  const parsedBalance = getParsedBalance(balance, tokenDecimals, 4)
+
+  const maxBalance = formatBigIntToString(balance, tokenDecimals)
+  const maxBalanceBridgeable = maxBridgeableGas
+    ? maxBridgeableGas?.toString()
+    : maxBalance
+
+  const onMaxBalance = useCallback(() => {
+    dispatch(updateFromValue(maxBalanceBridgeable))
+  }, [fromChainId, fromToken, maxBalanceBridgeable])
 
   useEffect(() => {
     setHasMounted(true)
@@ -94,18 +108,6 @@ export const InputContainer = () => {
       }
     }
   }
-
-  const maxBalance = formatBigIntToString(
-    balance,
-    fromToken?.decimals[fromChainId]
-  )
-  const maxBalanceBridgeable = maxBridgeableGas
-    ? maxBridgeableGas?.toString()
-    : maxBalance
-
-  const onMaxBalance = useCallback(() => {
-    dispatch(updateFromValue(maxBalanceBridgeable))
-  }, [fromChainId, fromToken, maxBalanceBridgeable])
 
   return (
     <BridgeSectionContainer>
