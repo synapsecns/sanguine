@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import toast from 'react-hot-toast'
-import _ from 'lodash'
+import _, { isNumber } from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import {
   setFromChainId,
@@ -56,10 +56,11 @@ export const PortfolioTokenAsset = ({
   const isGasToken = tokenAddress === zeroAddress
 
   const maxBalance = formatBigIntToString(balance, tokenDecimals)
-  const maxBalanceBridgeable =
-    isGasToken && maxBridgeableGas ? maxBridgeableGas?.toString() : maxBalance
+  const maxBalanceBridgeable = isNumber(maxBridgeableGas)
+    ? maxBridgeableGas?.toString()
+    : maxBalance
 
-  const onMaxBalance = () => {
+  const onMaxBalance = useCallback(() => {
     if (gasFeeExceedsBalance) {
       toast.error('Gas fees likely exceeds your balance.', {
         id: 'toast-error-not-enough-gas',
@@ -69,7 +70,7 @@ export const PortfolioTokenAsset = ({
     } else {
       dispatch(updateFromValue(maxBalanceBridgeable))
     }
-  }
+  }, [balance, token, maxBalanceBridgeable, gasFeeExceedsBalance])
 
   const handleFromSelectionCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))

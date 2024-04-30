@@ -24,7 +24,8 @@ export const useGasEstimator = () => {
   const { gasData } = useAppSelector((state) => state.gasData)
   const { maxFeePerGas } = gasData?.formatted
   const { rawGasCost, parsedGasCost } = calculateGasCost(
-    maxFeePerGas,
+    // maxFeePerGas,
+    '150',
     estimatedGasLimit.toString()
   )
 
