@@ -1,4 +1,4 @@
-import _, { isNumber } from 'lodash'
+import { isNumber } from 'lodash'
 import toast from 'react-hot-toast'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useAccount } from 'wagmi'
@@ -49,9 +49,7 @@ export const InputContainer = () => {
   const { addresses, decimals } = fromToken || {}
 
   const tokenAddress = addresses?.[fromChainId]
-  const tokenDecimals = _.isNumber(decimals)
-    ? decimals
-    : decimals?.[fromChainId]
+  const tokenDecimals = isNumber(decimals) ? decimals : decimals?.[fromChainId]
   const isGasToken: boolean = tokenAddress === zeroAddress
 
   const balance: bigint = balances[fromChainId]?.find(
@@ -66,11 +64,11 @@ export const InputContainer = () => {
 
   const onMaxBalance = useCallback(() => {
     if (gasFeeExceedsBalance) {
+      dispatch(updateFromValue('0.0'))
       toast.error('Gas fees likely exceeds your balance.', {
         id: 'toast-error-not-enough-gas',
         duration: 10000,
       })
-      dispatch(updateFromValue('0.0'))
     } else {
       dispatch(updateFromValue(maxBalanceBridgeable))
     }
