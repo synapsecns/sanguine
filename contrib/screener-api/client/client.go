@@ -3,7 +3,12 @@ package client
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/dubonzi/otelresty"
 	"github.com/go-resty/resty/v2"
@@ -73,8 +78,14 @@ type blacklistResponse struct {
 func (c clientImpl) BlacklistAddress(ctx context.Context, body BlackListBody) (string, error) {
 	var blacklistRes blacklistResponse
 
+	// change it later
+	appsecret := "idk_for_now"
+
+	signature := generateSignature(appsecret, body)
+
 	resp, err := c.rClient.R().
 		SetContext(ctx).
+		SetAuthToken(signature).
 		SetResult(&blacklistRes).
 		SetBody(body).
 		Post("/api/data/sync/")
@@ -104,6 +115,29 @@ func (n noOpClient) ScreenAddress(_ context.Context, _, _ string) (bool, error) 
 
 func (n noOpClient) BlacklistAddress(_ context.Context, _ BlackListBody) (string, error) {
 	return "", nil
+}
+
+func generateSignature(secret string, body BlackListBody) string {
+	key := []byte(secret)
+
+	appid := "idk_for_now"
+	nonce := strings.Replace(uuid.New().String(), "-", "", -1)[:32]
+	timestamp := fmt.Sprintf("%d", time.Now().Unix())
+	queryString := "" // there is no query string in this post request
+
+	message := fmt.Sprintf(
+		"%s%s%s%s%s%s%s",
+		appid,
+		timestamp,
+		nonce,
+		"POST",
+		"/api/data/sync",
+		queryString,
+		body,
+	)
+	h := hmac.New(sha256.New, key)
+	h.Write([]byte(message))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 var _ ScreenerClient = noOpClient{}
