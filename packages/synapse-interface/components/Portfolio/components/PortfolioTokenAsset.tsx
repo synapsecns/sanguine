@@ -12,10 +12,9 @@ import { inputRef } from '../../StateManagedBridge/InputContainer'
 import Image from 'next/image'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
-import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { zeroAddress } from 'viem'
 import GasIcon from '@/components/icons/GasIcon'
-import { HoverTooltip } from '../../HoverTooltip'
+import { HoverTooltip } from '@/components/HoverTooltip'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
 import { formatBigIntToString } from '@/utils/bigint/format'
@@ -114,13 +113,13 @@ export const PortfolioTokenAsset = ({
           </div>
         </HoverTooltip>
 
-        {isGasToken ? (
+        {isGasToken && (
           <HoverTooltip
             hoverContent={<div className="whitespace-nowrap">Gas token</div>}
           >
             <GasIcon className="pt-0.5 m-auto fill-secondary" />
           </HoverTooltip>
-        ) : null}
+        )}
       </div>
       <PortfolioAssetActionButton
         selectCallback={handleFromSelectionCallback}

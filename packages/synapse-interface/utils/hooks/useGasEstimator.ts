@@ -77,18 +77,24 @@ export const useGasEstimator = () => {
       ;(async () => {
         setEstimatedGasLimit(0n)
         setIsLoading(true)
-        const gasLimit = await queryEstimatedBridgeGasLimit(
-          synapseSDK,
-          address,
-          address,
-          fromChainId,
-          toChainId,
-          fromToken,
-          toToken,
-          selectedFromToken?.parsedBalance
-        )
-        setEstimatedGasLimit(gasLimit ?? 0n)
-        setIsLoading(false)
+        try {
+          const gasLimit = await queryEstimatedBridgeGasLimit(
+            synapseSDK,
+            address,
+            address,
+            fromChainId,
+            toChainId,
+            fromToken,
+            toToken,
+            selectedFromToken?.parsedBalance
+          )
+          setEstimatedGasLimit(gasLimit ?? 0n)
+        } catch (error) {
+          console.error('Error estimating gas limit:', error)
+          setEstimatedGasLimit(0n)
+        } finally {
+          setIsLoading(false)
+        }
       })()
     }
   }, [
