@@ -84,7 +84,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router = ginhelper.New(logger)
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
 
-	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.blacklistAddress)
+	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware, screener.blacklistAddress)
 
 	return &screener, nil
 }
@@ -124,6 +124,7 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	var blacklistBody client.BlackListBody
 
+	// grab the body
 	if err := c.ShouldBindJSON(&blacklistBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -136,7 +137,6 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	network := blacklistBody.Network
 	tag := blacklistBody.Tag
 	remark := blacklistBody.Remark
-
 	address = strings.ToLower(address)
 
 	switch type_req {
@@ -153,6 +153,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
@@ -169,6 +170,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
@@ -187,6 +189,20 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 }
 
+func (s *screenerImpl) authMiddleware(c *gin.Context) {
+	var blacklistBody client.BlackListBody
+
+	if err := c.ShouldBindJSON(&blacklistBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if c.GetHeader("Authorization") != client.GenerateSignature("appsecret", blacklistBody) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		c.Abort()
+	}
+}
+
 func (s *screenerImpl) Start(ctx context.Context) error {
 	// TODO: potential race condition here, if the blacklist is not fetched before the first request
 	// in practice trm will catch
@@ -201,7 +217,7 @@ func (s *screenerImpl) Start(ctx context.Context) error {
 	connection := baseServer.Server{}
 	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%d", s.cfg.Port), s.router)
 	if err != nil {
-		return fmt.Errorf("could not start gqlServer: %w", err)
+		return fmt.Errorf("could not start server: %w", err)
 	}
 	return nil
 }

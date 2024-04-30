@@ -17,6 +17,10 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 )
 
+var (
+	BlacklistEndpoint = "/api/data/sync/"
+)
+
 // ScreenerClient is an interface for the Screener API.
 type ScreenerClient interface {
 	ScreenAddress(ctx context.Context, ruleset, address string) (blocked bool, err error)
@@ -78,17 +82,17 @@ type blacklistResponse struct {
 func (c clientImpl) BlacklistAddress(ctx context.Context, body BlackListBody) (string, error) {
 	var blacklistRes blacklistResponse
 
-	// change it later
-	appsecret := "idk_for_now"
+	// change/move it later
+	appsecret := "appsecret"
 
-	signature := generateSignature(appsecret, body)
+	signature := GenerateSignature(appsecret, body)
 
 	resp, err := c.rClient.R().
 		SetContext(ctx).
 		SetAuthToken(signature).
 		SetResult(&blacklistRes).
 		SetBody(body).
-		Post("/api/data/sync/")
+		Post(BlacklistEndpoint)
 
 	if err != nil {
 		return "", fmt.Errorf("error from server: %s: %w", resp.Status(), err)
@@ -117,10 +121,10 @@ func (n noOpClient) BlacklistAddress(_ context.Context, _ BlackListBody) (string
 	return "", nil
 }
 
-func generateSignature(secret string, body BlackListBody) string {
+func GenerateSignature(secret string, body BlackListBody) string {
 	key := []byte(secret)
 
-	appid := "idk_for_now"
+	appid := "appid"
 	nonce := strings.Replace(uuid.New().String(), "-", "", -1)[:32]
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
 	queryString := "" // there is no query string in this post request
@@ -131,13 +135,14 @@ func generateSignature(secret string, body BlackListBody) string {
 		timestamp,
 		nonce,
 		"POST",
-		"/api/data/sync",
+		BlacklistEndpoint,
 		queryString,
 		body,
 	)
 	h := hmac.New(sha256.New, key)
 	h.Write([]byte(message))
-	return hex.EncodeToString(h.Sum(nil))
+
+	return strings.ToLower(hex.EncodeToString(h.Sum(nil)))
 }
 
 var _ ScreenerClient = noOpClient{}
