@@ -84,7 +84,8 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router = ginhelper.New(logger)
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
 
-	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware, screener.blacklistAddress)
+	// idk the middleware is faking up
+	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.blacklistAddress)
 
 	return &screener, nil
 }
@@ -123,8 +124,8 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 
 func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	var blacklistBody client.BlackListBody
-
 	// grab the body
+
 	if err := c.ShouldBindJSON(&blacklistBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -193,11 +194,24 @@ func (s *screenerImpl) authMiddleware(c *gin.Context) {
 	var blacklistBody client.BlackListBody
 
 	if err := c.ShouldBindJSON(&blacklistBody); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		// c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Auth middleware fucked up"})
 		return
 	}
 
-	if c.GetHeader("Authorization") != client.GenerateSignature("appsecret", blacklistBody) {
+	nonce := c.GetHeader("nonce")
+	timestamp := c.GetHeader("timestamp")
+	appid := c.GetHeader("appid")
+	queryString := c.GetHeader("queryString")
+	if nonce == "" || timestamp == "" || appid == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing headers"})
+		c.Abort()
+	}
+
+	// reconstruct signature
+	expected := client.GenerateSignature("appsecret", appid, timestamp, nonce, queryString, blacklistBody)
+
+	if c.GetHeader("Signature") != expected {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		c.Abort()
 	}

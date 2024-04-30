@@ -20,8 +20,8 @@ type BlacklistedAddress struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	Id      string `gorm:"column:id;primary_key"`
 	TypeReq string `gorm:"column:typereq"`
+	Id      string `gorm:"column:id;primary_key"`
 	Data    string `gorm:"column:data"`
 	Address string `gorm:"column:address"`
 	Network string `gorm:"column:network"`

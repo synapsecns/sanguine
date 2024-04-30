@@ -66,8 +66,8 @@ func (c clientImpl) ScreenAddress(ctx context.Context, ruleset, address string) 
 }
 
 type BlackListBody struct {
-	TypeReq string `json:"type" binding:"required"`
-	Id      string `json:"id" binding:"required"`
+	TypeReq string `json:"typereq"`
+	Id      string `json:"id"`
 	Data    string `json:"data"`
 	Address string `json:"address"`
 	Network string `json:"network"`
@@ -77,29 +77,41 @@ type BlackListBody struct {
 
 type blacklistResponse struct {
 	Status string `json:"status"`
+	Error  string `json:"error"`
 }
 
 func (c clientImpl) BlacklistAddress(ctx context.Context, body BlackListBody) (string, error) {
 	var blacklistRes blacklistResponse
 
-	// change/move it later
+	// TODO: remove, just for testing purposes
+	// future, take it from some .env or something
 	appsecret := "appsecret"
+	appid := "appid"
 
-	signature := GenerateSignature(appsecret, body)
+	nonce := strings.Replace(uuid.New().String(), "-", "", -1)[:32]
+	timestamp := fmt.Sprintf("%d", time.Now().Unix())
+	queryString := "" // there is no query string in this post request, ask about this
+
+	signature := GenerateSignature(appsecret, appid, timestamp, nonce, queryString, body)
 
 	resp, err := c.rClient.R().
 		SetContext(ctx).
-		SetAuthToken(signature).
+		SetHeader("Content-Type", "application/json").
+		SetHeader("appid", appid).
+		SetHeader("timestamp", timestamp).
+		SetHeader("nonce", nonce).
+		SetHeader("queryString", queryString).
+		SetHeader("signature", signature).
 		SetResult(&blacklistRes).
 		SetBody(body).
 		Post(BlacklistEndpoint)
 
 	if err != nil {
-		return "", fmt.Errorf("error from server: %s: %w", resp.Status(), err)
+		return resp.Status(), fmt.Errorf("error from server: %s: %w", resp.String(), err)
 	}
 
 	if resp.IsError() {
-		return "", fmt.Errorf("error from server: %s", resp.Status())
+		return resp.Status(), fmt.Errorf("error from server: %s", resp.String())
 	}
 
 	return blacklistRes.Status, nil
@@ -121,14 +133,16 @@ func (n noOpClient) BlacklistAddress(_ context.Context, _ BlackListBody) (string
 	return "", nil
 }
 
-func GenerateSignature(secret string, body BlackListBody) string {
+func GenerateSignature(secret string,
+	appid string,
+	timestamp string,
+	nonce string,
+	queryString string,
+	body BlackListBody,
+) string {
 	key := []byte(secret)
 
-	appid := "appid"
-	nonce := strings.Replace(uuid.New().String(), "-", "", -1)[:32]
-	timestamp := fmt.Sprintf("%d", time.Now().Unix())
-	queryString := "" // there is no query string in this post request
-
+	// concatenate the body
 	message := fmt.Sprintf(
 		"%s%s%s%s%s%s%s",
 		appid,
@@ -140,6 +154,7 @@ func GenerateSignature(secret string, body BlackListBody) string {
 		body,
 	)
 	h := hmac.New(sha256.New, key)
+	// hash it
 	h.Write([]byte(message))
 
 	return strings.ToLower(hex.EncodeToString(h.Sum(nil)))

@@ -111,7 +111,7 @@ func (d *DBSuite) TestBlacklist() {
 
 		// delete nonexistent
 		err = testDB.DeleteBlacklistedAddress(d.GetTestContext(), "NonexistentId")
-		d.Require().Error(err)
+		d.Require().NoError(err)
 
 	})
 }

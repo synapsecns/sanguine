@@ -155,7 +155,7 @@ func (s *ScreenerSuite) TestScreener() {
 	blacklistBody := client.BlackListBody{
 		TypeReq: "create",
 		Id:      "1",
-		Data:    "",
+		Data:    "{\"test\":\"data\"}",
 		Address: "0x123",
 		Network: "eth",
 		Tag:     "tag",

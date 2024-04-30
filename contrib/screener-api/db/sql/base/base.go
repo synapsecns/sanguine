@@ -83,8 +83,8 @@ func (s *Store) UpdateBlacklistedAddress(ctx context.Context, id string, body db
 
 func (s *Store) DeleteBlacklistedAddress(ctx context.Context, id string) error {
 	if dbTx := s.db.WithContext(ctx).Where(
-		"id = ?", id).Delete(&db.BlacklistedAddress{}); dbTx.Error != nil || dbTx.RowsAffected == 0 {
-		return fmt.Errorf("failed to delete blacklisted address")
+		"id = ?", id).Delete(&db.BlacklistedAddress{}); dbTx.Error != nil {
+		return fmt.Errorf("failed to delete blacklisted address: %w", dbTx.Error)
 	}
 	return nil
 }
