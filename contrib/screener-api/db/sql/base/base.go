@@ -38,19 +38,19 @@ func GetAllModels() (allModels []interface{}) {
 // GetBlacklistedAddress queries the db for the blacklisted address.
 // Returns true if the address is blacklisted, false otherwise.
 // Not used currently.
-func (s *Store) GetBlacklistedAddress(ctx context.Context, id string) (bool, error) {
+func (s *Store) GetBlacklistedAddress(ctx context.Context, id string) (*db.BlacklistedAddress, error) {
 	var blacklistedAddress db.BlacklistedAddress
-	result := s.db.WithContext(ctx).Where(&db.BlacklistedAddress{
+
+	if err := s.db.WithContext(ctx).Where(&db.BlacklistedAddress{
 		Id: id,
-	}).First(&blacklistedAddress)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return false, nil
+	}).First(&blacklistedAddress).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
 		}
-		return false, result.Error
+		return nil, fmt.Errorf("failed to get blacklisted address: %w", err)
 	}
 
-	return true, nil
+	return &blacklistedAddress, nil
 }
 
 // PutBlacklistedAddress puts the blacklisted address in the underlying db.

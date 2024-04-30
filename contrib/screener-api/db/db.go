@@ -12,12 +12,12 @@ import (
 // TODO: make a general db interface.
 type BlacklistedAddressWriterDB interface {
 	PutBlacklistedAddress(ctx context.Context, body BlacklistedAddress) error
-	DeleteBlacklistedAddress(ctx context.Context, address string) error
-	UpdateBlacklistedAddress(ctx context.Context, address string, body BlacklistedAddress) error
+	DeleteBlacklistedAddress(ctx context.Context, id string) error
+	UpdateBlacklistedAddress(ctx context.Context, id string, body BlacklistedAddress) error
 }
 
 type BlacklistedAddressReaderDB interface {
-	GetBlacklistedAddress(ctx context.Context, address string) (blacklisted bool, err error)
+	GetBlacklistedAddress(ctx context.Context, address string) (*BlacklistedAddress, error)
 }
 
 type BlacklistedAddressDB interface {
