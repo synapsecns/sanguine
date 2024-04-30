@@ -92,13 +92,19 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         // Check if that's the first time module verifies the batch
         if (existingBatch.verifiedAt == 0) {
             _saveVerifiedBatch(msg.sender, batchKey, batch);
-        } else {
-            // If the module has already verified the batch, check that the batch root is the same
-            if (existingBatch.batchRoot != batch.batchRoot) {
-                revert InterchainDB__ConflictingBatches(msg.sender, existingBatch.batchRoot, batch);
-            }
-            // No-op if the batch root is the same
+            return;
         }
+        // No-op if the batch root is the same
+        if (existingBatch.batchRoot == batch.batchRoot) {
+            return;
+        }
+        // Overwriting an empty (non-existent) batch with a different one is allowed
+        if (existingBatch.batchRoot == 0) {
+            _saveVerifiedBatch(msg.sender, batchKey, batch);
+            return;
+        }
+        // Overwriting an existing batch with a different one is not allowed
+        revert InterchainDB__ConflictingBatches(msg.sender, existingBatch.batchRoot, batch);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
