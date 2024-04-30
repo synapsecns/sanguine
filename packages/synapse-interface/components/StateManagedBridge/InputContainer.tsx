@@ -42,9 +42,6 @@ export const InputContainer = () => {
 
   const { parsedGasCost, maxBridgeableGas, isLoading } = useGasEstimator()
 
-  console.log('maxBridgeableGas: ', maxBridgeableGas)
-  console.log('isLoading:', isLoading)
-
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
   const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(

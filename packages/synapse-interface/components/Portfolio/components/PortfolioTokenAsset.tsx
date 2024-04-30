@@ -38,6 +38,7 @@ export const PortfolioTokenAsset = ({
   const { fromChainId, fromToken } = useBridgeState()
   const { icon, symbol, decimals, addresses } = token
 
+  const tokenAddress = addresses[portfolioChainId]
   const tokenDecimals = _.isNumber(decimals)
     ? decimals
     : decimals[portfolioChainId]
@@ -48,6 +49,7 @@ export const PortfolioTokenAsset = ({
   const isDisabled = false
   const isTokenSelected =
     fromToken === token && fromChainId === portfolioChainId
+  const isGasToken = tokenAddress === zeroAddress
 
   const handleFromSelectionCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
@@ -59,8 +61,6 @@ export const PortfolioTokenAsset = ({
       )
     )
   }, [token, balance, portfolioChainId])
-
-  const isBridgeableGasToken = addresses[portfolioChainId] === zeroAddress
 
   return (
     <div
@@ -96,7 +96,7 @@ export const PortfolioTokenAsset = ({
           </div>
         </HoverTooltip>
 
-        {isBridgeableGasToken ? (
+        {isGasToken ? (
           <HoverTooltip
             hoverContent={<div className="whitespace-nowrap">Gas token</div>}
           >
