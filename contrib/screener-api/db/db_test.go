@@ -73,28 +73,32 @@ func (d *DBSuite) TestBlacklist() {
 		testAddress := gofakeit.BitcoinAddress()
 
 		blacklistBody := db.BlacklistedAddress{
-			TypeReq: "test",
-			Id:      "test",
+			TypeReq: "create",
+			Id:      "testId",
 			Address: testAddress,
 			Network: "bitcoin",
-			Tag:     "test",
-			Remark:  "test",
+			Tag:     "testTag",
+			Remark:  "testRemark",
 		}
 
 		// blacklist the address
 		err := testDB.PutBlacklistedAddress(d.GetTestContext(), blacklistBody)
 		d.Require().NoError(err)
+		blacklistedAddress, err := testDB.GetBlacklistedAddress(d.GetTestContext(), blacklistBody.Address)
+		d.Require().NoError(err)
+		d.Require().NotNil(blacklistedAddress)
 
 		// update the address
-		blacklistBody.Remark = "updated"
+		blacklistBody.TypeReq = "update"
+		blacklistBody.Remark = "testRemarkUpdated"
 		err = testDB.UpdateBlacklistedAddress(d.GetTestContext(), blacklistBody.Id, blacklistBody)
 		d.Require().NoError(err)
 
 		// check to make sure it updated
-		blacklistedAddress, err := testDB.GetBlacklistedAddress(d.GetTestContext(), blacklistBody.Id)
+		blacklistedAddress, err = testDB.GetBlacklistedAddress(d.GetTestContext(), blacklistBody.Address)
 		d.Require().NoError(err)
 		d.Require().NotNil(blacklistedAddress)
-		d.Require().Equal("updated", blacklistedAddress.Remark)
+		d.Require().Equal("testRemarkUpdated", blacklistedAddress.Remark)
 
 		// check for non blacklisted address
 		res, err := testDB.GetBlacklistedAddress(d.GetTestContext(), gofakeit.BitcoinAddress())

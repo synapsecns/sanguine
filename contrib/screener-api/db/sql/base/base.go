@@ -38,14 +38,13 @@ func GetAllModels() (allModels []interface{}) {
 // GetBlacklistedAddress queries the db for the blacklisted address.
 // Returns true if the address is blacklisted, false otherwise.
 // Not used currently.
-func (s *Store) GetBlacklistedAddress(ctx context.Context, id string) (*db.BlacklistedAddress, error) {
+func (s *Store) GetBlacklistedAddress(ctx context.Context, address string) (*db.BlacklistedAddress, error) {
 	var blacklistedAddress db.BlacklistedAddress
 
-	if err := s.db.WithContext(ctx).Where(&db.BlacklistedAddress{
-		Id: id,
-	}).First(&blacklistedAddress).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("address = ?", address).
+		First(&blacklistedAddress).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, err
 		}
 		return nil, fmt.Errorf("failed to get blacklisted address: %w", err)
 	}
@@ -74,9 +73,7 @@ func (s *Store) PutBlacklistedAddress(ctx context.Context, body db.BlacklistedAd
 // UpdateBlacklistedAddress updates the blacklisted address in the underlying db.
 func (s *Store) UpdateBlacklistedAddress(ctx context.Context, id string, body db.BlacklistedAddress) error {
 	dbTx := s.db.WithContext(ctx).Model(&db.BlacklistedAddress{}).
-		Where(&db.BlacklistedAddress{
-			Id: id,
-		}).Updates(body)
+		Where("id = ?", id).Updates(body)
 	if dbTx.Error != nil {
 		return fmt.Errorf("failed to update blacklisted address: %w", dbTx.Error)
 	}
@@ -85,13 +82,10 @@ func (s *Store) UpdateBlacklistedAddress(ctx context.Context, id string, body db
 }
 
 func (s *Store) DeleteBlacklistedAddress(ctx context.Context, id string) error {
-	dbTx := s.db.WithContext(ctx).Where(&db.BlacklistedAddress{
-		Id: id,
-	}).Delete(&db.BlacklistedAddress{})
-	if dbTx.Error != nil {
-		return fmt.Errorf("failed to delete blacklisted address: %w", dbTx.Error)
+	if dbTx := s.db.WithContext(ctx).Where(
+		"id = ?", id).Delete(&db.BlacklistedAddress{}); dbTx.Error != nil || dbTx.RowsAffected == 0 {
+		return fmt.Errorf("failed to delete blacklisted address")
 	}
-
 	return nil
 }
 
