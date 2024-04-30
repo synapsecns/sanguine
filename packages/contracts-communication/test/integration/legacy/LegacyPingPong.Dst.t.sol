@@ -145,12 +145,11 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
         checkDatabaseStateMsgSent(dstEntry, DST_INITIAL_DB_NONCE);
     }
 
-    function test_interchainExecute_state_execFees() public {
+    function test_interchainExecute_state_execService() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         executeTx(icOptions);
-        assertEq(address(executionFees).balance, dstExecutionFee);
-        assertEq(executionFees.executionFee(SRC_CHAIN_ID, dstDesc.transactionId), dstExecutionFee);
+        assertEq(address(executionService).balance, dstExecutionFee);
     }
 
     function test_interchainExecute_state_legacyPingPong() public {

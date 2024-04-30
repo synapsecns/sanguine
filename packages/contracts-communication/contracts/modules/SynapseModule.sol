@@ -116,9 +116,9 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         }
         uint256 claimFee = getClaimFeeAmount();
         uint256 collectedFee = address(this).balance - claimFee;
+        emit FeesClaimed(feeCollector, collectedFee, msg.sender, claimFee);
         Address.sendValue(payable(feeCollector), collectedFee);
         Address.sendValue(payable(msg.sender), claimFee);
-        emit FeesClaimed(feeCollector, collectedFee, msg.sender, claimFee);
     }
 
     /// @inheritdoc ISynapseModule

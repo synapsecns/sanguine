@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {ExecutionFeesEvents} from "../../contracts/events/ExecutionFeesEvents.sol";
 import {SynapseExecutionServiceEvents} from "../../contracts/events/SynapseExecutionServiceEvents.sol";
 import {InterchainClientV1Events} from "../../contracts/events/InterchainClientV1Events.sol";
 import {InterchainDBEvents} from "../../contracts/events/InterchainDBEvents.sol";
@@ -21,7 +20,6 @@ import {ICSetup, TypeCasts} from "./ICSetup.t.sol";
 // solhint-disable ordering
 abstract contract ICIntegrationTest is
     ICSetup,
-    ExecutionFeesEvents,
     SynapseExecutionServiceEvents,
     InterchainClientV1Events,
     InterchainDBEvents,
@@ -43,14 +41,9 @@ abstract contract ICIntegrationTest is
         assertEq(entry.dataHash, expected.dataHash);
     }
 
-    function expectFeesEventExecutionFeeAdded(bytes32 transactionId, uint256 totalFee) internal {
-        vm.expectEmit(address(executionFees));
-        emit ExecutionFeeAdded({dstChainId: remoteChainId(), transactionId: transactionId, totalFee: totalFee});
-    }
-
-    function expectServiceEventExecutionRequested(bytes32 transactionId) internal {
+    function expectServiceEventExecutionRequested(bytes32 transactionId, uint256 executionFee) internal {
         vm.expectEmit(address(executionService));
-        emit ExecutionRequested({transactionId: transactionId, client: address(icClient)});
+        emit ExecutionRequested({transactionId: transactionId, client: address(icClient), executionFee: executionFee});
     }
 
     function expectClientEventInterchainTransactionSent(
@@ -165,8 +158,7 @@ abstract contract ICIntegrationTest is
         expectDatabaseEventInterchainBatchFinalized(batch);
         expectModuleEventBatchVerificationRequested(batch);
         expectDatabaseEventInterchainBatchVerificationRequested(batch);
-        expectFeesEventExecutionFeeAdded(desc.transactionId, executionFee);
-        expectServiceEventExecutionRequested(desc.transactionId);
+        expectServiceEventExecutionRequested(desc.transactionId, executionFee);
         expectClientEventInterchainTransactionSent(icTx, verificationFee, executionFee);
     }
 
