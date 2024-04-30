@@ -10,26 +10,21 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { calculateGasCost } from '../calculateGasCost'
-import { stringToBigInt } from '../bigint/format'
+import { stringToBigInt, formatBigIntToString } from '../bigint/format'
 import { Token } from '../types'
 import { wagmiConfig } from '@/wagmiConfig'
-import { formatBigIntToString } from '../bigint/format'
 
 export const useGasEstimator = () => {
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()
-
   const { balances } = usePortfolioState()
   const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
-
-  const { gasData } = useAppSelector((state) => state.gasData)
-  const { maxFeePerGas } = gasData?.formatted
-
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
+  const { gasData } = useAppSelector((state) => state.gasData)
+  const { maxFeePerGas } = gasData?.formatted
   const { rawGasCost, parsedGasCost } = calculateGasCost(
-    // maxFeePerGas,
-    '100',
+    maxFeePerGas,
     estimatedGasLimit.toString()
   )
 
@@ -37,7 +32,6 @@ export const useGasEstimator = () => {
   const tokenAddress = addresses?.[fromChainId]
   const tokenDecimals = isNumber(decimals) ? decimals : decimals?.[fromChainId]
   const isGasToken: boolean = tokenAddress === zeroAddress
-
   const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )
@@ -46,16 +40,11 @@ export const useGasEstimator = () => {
     tokenDecimals
   )
 
-  const maxBalance = formatBigIntToString(
-    selectedFromToken?.balance,
-    tokenDecimals
-  )
-
-  const gasFeeExceedsBalance =
+  const gasFeeExceedsBalance: boolean =
     isGasToken &&
     parsedGasCost &&
-    maxBalance &&
-    parseFloat(parsedGasCost) > parseFloat(maxBalance)
+    parsedBalance &&
+    parseFloat(parsedGasCost) > parseFloat(parsedBalance)
 
   const calculateMaxBridgeableGas = (
     parsedGasBalance: number,
@@ -78,7 +67,7 @@ export const useGasEstimator = () => {
     if (!fromToken || !toToken) return false
     if (!isGasToken) return false
     if (!selectedFromToken) return false
-    if (!selectedFromToken?.parsedBalance) return false
+    if (!parsedBalance) return false
     return true
   }
 
