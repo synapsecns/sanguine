@@ -228,14 +228,18 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     // ═══════════════════════════════════════════════ TESTS: SET UP ═══════════════════════════════════════════════════
 
-    function test_setup_getDBNonce() public view {
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE);
+    function checkCorrectDBNonceEntryIndex(uint64 expectedDBNonce) internal view {
+        assertEq(icDB.getDBNonce(), expectedDBNonce);
+        (uint64 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
+        assertEq(dbNonce, expectedDBNonce);
+        assertEq(entryIndex, 0);
     }
 
-    function test_setup_getEntryValue() public view {
+    function test_setup_getters() public view {
         for (uint64 i = 0; i < INITIAL_DB_NONCE; ++i) {
             assertCorrectValue(icDB.getEntryValue(i, 0), getInitialEntry(i));
         }
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE);
     }
 
     // ══════════════════════════════════════════ TESTS: WRITING AN ENTRY ══════════════════════════════════════════════
@@ -249,7 +253,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntry_writerF_increasesDBNonce() public {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
         writeEntry(writerF, dataHash);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE + 1);
     }
 
     function test_writeEntry_writerF_returnsCorrectNonce() public {
@@ -273,7 +277,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntry_writerS_increasesDBNonce() public {
         bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
         writeEntry(writerS, dataHash);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE + 1);
     }
 
     function test_writeEntry_writerS_returnsCorrectNonce() public {
@@ -474,7 +478,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerF_oneModule_increasesDBNonce() public {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
         writeEntryWithVerification(MODULE_A_FEE, writerF, dataHash, oneModule);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE + 1);
     }
 
     function test_writeEntryWithVerification_writerF_oneModule_returnsCorrectNonce() public {
@@ -496,7 +500,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
         expectEventInterchainEntryWritten(entry);
         writeEntryWithVerification(MODULE_A_FEE * 2, writerF, dataHash, oneModule);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE + 1);
         assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
     }
 
@@ -518,7 +522,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerF_twoModules_increasesDBNonce() public {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, dataHash, twoModules);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE + 1);
     }
 
     function test_writeEntryWithVerification_writerF_twoModules_returnsCorrectNonce() public {
@@ -541,7 +545,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventInterchainEntryWritten(entry);
         writeEntryWithVerification(MODULE_A_FEE * 2 + MODULE_B_FEE, writerF, dataHash, twoModules);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE + 1);
         assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
     }
 
@@ -562,7 +566,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerS_oneModule_increasesDBNonce() public {
         bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
         writeEntryWithVerification(MODULE_A_FEE, writerS, dataHash, oneModule);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE + 1);
     }
 
     function test_writeEntryWithVerification_writerS_oneModule_returnsCorrectNonce() public {
@@ -584,7 +588,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(batch)});
         expectEventInterchainEntryWritten(entry);
         writeEntryWithVerification(MODULE_A_FEE * 2, writerS, dataHash, oneModule);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE + 1);
         assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
     }
 
@@ -606,7 +610,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerS_twoModules_increasesDBNonce() public {
         bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, dataHash, twoModules);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE + 1);
     }
 
     function test_writeEntryWithVerification_writerS_twoModules_returnsCorrectNonce() public {
@@ -629,7 +633,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(batch)});
         expectEventInterchainEntryWritten(entry);
         writeEntryWithVerification(MODULE_A_FEE * 2 + MODULE_B_FEE, writerS, dataHash, twoModules);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkCorrectDBNonceEntryIndex(INITIAL_DB_NONCE + 1);
         assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
     }
 
@@ -824,8 +828,26 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB.getEntryValue(2 ** 32, 0);
     }
 
-    function test_getDBNonce() public view {
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE);
+    function test_getEntryProof_finalized() public view {
+        for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
+            bytes32[] memory proof = icDB.getEntryProof(nonce, 0);
+            assertEq(proof.length, 0, "!proof.length");
+        }
+    }
+
+    function test_getEntryProof_revert_finalizedOutOfRange() public {
+        expectRevertEntryIndexOutOfRange(INITIAL_DB_NONCE - 1, 1, 1);
+        icDB.getEntryProof(INITIAL_DB_NONCE - 1, 1);
+    }
+
+    function test_getEntryProof_revert_nextNonceOutOfRange() public {
+        expectRevertEntryIndexOutOfRange(INITIAL_DB_NONCE, 0, 0);
+        icDB.getEntryProof(INITIAL_DB_NONCE, 0);
+    }
+
+    function test_getEntryProof_revert_hugeNonceOutOfRange() public {
+        expectRevertEntryIndexOutOfRange(2 ** 32, 0, 0);
+        icDB.getEntryProof(2 ** 32, 0);
     }
 
     // ═══════════════════════════════════════════ TESTS: GET BATCH ROOT ═══════════════════════════════════════════════
