@@ -203,7 +203,7 @@ func (s *screenerImpl) authMiddleware() gin.HandlerFunc {
 		expected := client.GenerateSignature("appsecret", appid, timestamp, nonce, queryString, blacklistBody)
 
 		if c.GetHeader("Signature") != expected {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized your mom"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			c.Abort()
 			return
 		}
