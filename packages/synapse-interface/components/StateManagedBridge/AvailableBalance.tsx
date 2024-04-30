@@ -11,6 +11,7 @@ export const AvailableBalance = ({
   balance,
   parsedBalance,
   onMaxBalance,
+  disabled,
   isGasEstimateLoading,
 }: {
   fromChainId: number | null
@@ -18,6 +19,7 @@ export const AvailableBalance = ({
   balance?: bigint
   parsedBalance?: string
   onMaxBalance?: () => void
+  disabled: boolean
   isGasEstimateLoading: boolean
 }) => {
   const tooltipContent = (
@@ -35,7 +37,9 @@ export const AvailableBalance = ({
     hover: 'hover:opacity-70 cursor-pointer',
   })
 
-  if (isGasEstimateLoading) {
+  if (disabled) {
+    return null
+  } else if (isGasEstimateLoading) {
     return (
       <label className={labelClassName} htmlFor="inputRow">
         <span className="text-zinc-500 dark:text-zinc-400">
@@ -51,7 +55,7 @@ export const AvailableBalance = ({
           className={labelClassName}
           htmlFor="inputRow"
         >
-          {parsedBalance}
+          {parsedBalance ?? '0.0'}
           <span className="text-zinc-500 dark:text-zinc-400"> available</span>
         </label>
       </HoverTooltip>

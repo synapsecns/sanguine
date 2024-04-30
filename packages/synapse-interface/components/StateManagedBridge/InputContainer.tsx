@@ -140,6 +140,7 @@ export const InputContainer = () => {
             parsedBalance={parsedBalance}
             onMaxBalance={onMaxBalance}
             isGasEstimateLoading={isLoading}
+            disabled={!isConnected}
           />
         </div>
         {hasMounted && isConnected && (
