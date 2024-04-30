@@ -561,4 +561,5 @@ export const SCROLL: Chain = {
     icon: scrollImg,
   },
   color: 'orange',
+  new: true,
 }
