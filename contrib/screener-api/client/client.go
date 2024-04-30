@@ -18,6 +18,7 @@ import (
 )
 
 var (
+	// BlacklistEndpoint is the endpoint for blacklisting an address.
 	BlacklistEndpoint = "/api/data/sync/"
 )
 
@@ -65,6 +66,7 @@ func (c clientImpl) ScreenAddress(ctx context.Context, ruleset, address string) 
 	return blockedRes.Blocked, nil
 }
 
+// BlackListBody is the json payload that represents a blacklisted address.
 type BlackListBody struct {
 	TypeReq string `json:"typereq"`
 	ID      string `json:"id"`
@@ -133,6 +135,7 @@ func (n noOpClient) BlacklistAddress(_ context.Context, _ BlackListBody) (string
 	return "", nil
 }
 
+// GenerateSignature generates a signature for the request.
 func GenerateSignature(secret string,
 	appid string,
 	timestamp string,
@@ -142,7 +145,7 @@ func GenerateSignature(secret string,
 ) string {
 	key := []byte(secret)
 
-	// concatenate the body
+	// Concatenate the body.
 	message := fmt.Sprintf(
 		"%s%s%s%s%s%s%s",
 		appid,
@@ -154,7 +157,6 @@ func GenerateSignature(secret string,
 		body,
 	)
 	h := hmac.New(sha256.New, key)
-	// hash it
 	h.Write([]byte(message))
 
 	return strings.ToLower(hex.EncodeToString(h.Sum(nil)))

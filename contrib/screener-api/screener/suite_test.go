@@ -182,7 +182,6 @@ func (s *ScreenerSuite) TestScreener() {
 	status, err = apiClient.BlacklistAddress(s.GetTestContext(), blacklistBody)
 	Equal(s.T(), "success", status)
 	Nil(s.T(), err)
-
 }
 
 type mockClient struct {

@@ -174,7 +174,6 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
 		return
 	}
-
 }
 
 // This function takes the HTTP headers and the body of the request and reconstructs the signature to

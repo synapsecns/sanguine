@@ -17,16 +17,16 @@ import (
 
 // BlacklistedAddress is a blacklisted address.
 type BlacklistedAddress struct {
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 
-	TypeReq string `gorm:"column:typereq"`
-	ID      string `gorm:"column:id;primary_key"`
-	Data    string `gorm:"column:data"`
-	Address string `gorm:"column:address"`
-	Network string `gorm:"column:network"`
-	Tag     string `gorm:"column:tag"`
-	Remark  string `gorm:"column:remark"`
+	TypeReq string `gorm:"column:typereq"        json:"typereq"`
+	ID      string `gorm:"column:id;primary_key" json:"id"`
+	Data    string `gorm:"column:data"           json:"data"`
+	Address string `gorm:"column:address"        json:"address"`
+	Network string `gorm:"column:network"        json:"network"`
+	Tag     string `gorm:"column:tag"            json:"tag"`
+	Remark  string `gorm:"column:remark"         json:"remark"`
 }
 
 // GormDataType returns the data type for the column.

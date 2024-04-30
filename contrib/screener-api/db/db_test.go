@@ -69,7 +69,6 @@ func (d *DBSuite) TestAddressUpdate() {
 
 func (d *DBSuite) TestBlacklist() {
 	d.RunOnAllDBs(func(testDB db.DB) {
-
 		testAddress := gofakeit.BitcoinAddress()
 
 		blacklistBody := db.BlacklistedAddress{
@@ -112,6 +111,5 @@ func (d *DBSuite) TestBlacklist() {
 		// delete nonexistent
 		err = testDB.DeleteBlacklistedAddress(d.GetTestContext(), "NonexistentId")
 		d.Require().NoError(err)
-
 	})
 }
