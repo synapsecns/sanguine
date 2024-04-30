@@ -730,6 +730,28 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB.getBatch(INITIAL_DB_NONCE + 1);
     }
 
+    function test_getVersionedBatch_finalized() public view {
+        for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
+            bytes memory versionedBatch = icDB.getVersionedBatch(nonce);
+            InterchainBatch memory expectedBatch = getExpectedBatch(getInitialEntry(nonce));
+            assertEq(versionedBatch, getVersionedBatch(expectedBatch));
+        }
+    }
+
+    function test_getVersionedBatch_nextNonce() public view {
+        bytes memory versionedBatch = icDB.getVersionedBatch(INITIAL_DB_NONCE);
+        InterchainBatch memory expectedBatch =
+            InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: INITIAL_DB_NONCE, batchRoot: 0});
+        assertEq(versionedBatch, getVersionedBatch(expectedBatch));
+    }
+
+    function test_getVersionedBatch_hugeNonce() public view {
+        bytes memory versionedBatch = icDB.getVersionedBatch(2 ** 32);
+        InterchainBatch memory expectedBatch =
+            InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: 2 ** 32, batchRoot: 0});
+        assertEq(versionedBatch, getVersionedBatch(expectedBatch));
+    }
+
     function test_getEntryValue() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             InterchainEntry memory expectedEntry = getInitialEntry(nonce);
