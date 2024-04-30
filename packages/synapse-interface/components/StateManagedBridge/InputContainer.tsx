@@ -44,8 +44,6 @@ export const InputContainer = () => {
 
   const { parsedGasCost, maxBridgeableGas, isLoading } = useGasEstimator()
 
-  console.log('maxBridgeableGas: ', maxBridgeableGas)
-
   const { addresses, decimals } = fromToken
 
   const tokenAddress = addresses[fromChainId]
@@ -81,7 +79,7 @@ export const InputContainer = () => {
   }, [chain, fromChainId, isConnected, hasMounted])
 
   useEffect(() => {
-    if (fromToken && fromToken?.decimals[fromChainId]) {
+    if (fromToken && tokenDecimals) {
       setShowValue(fromValue)
     }
 
