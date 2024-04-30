@@ -2,11 +2,7 @@ import _ from 'lodash'
 import Fuse from 'fuse.js'
 
 import * as ALL_CHAINS from '@/constants/chains/master'
-import {
-  CHAINS_BY_ID,
-  sortChains,
-  PAUSED_TO_CHAIN_IDS,
-} from '@/constants/chains'
+import { CHAINS_BY_ID, sortChains } from '@/constants/chains'
 import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const useToChainListArray = (searchStr: string = '') => {
@@ -16,7 +12,6 @@ export const useToChainListArray = (searchStr: string = '') => {
     .pickBy((value) => _.includes(toChainIds, value.id))
     .values()
     .value()
-    .filter((chain) => !PAUSED_TO_CHAIN_IDS.includes(chain.id))
 
   possibleChains = sortChains(possibleChains)
 
@@ -25,7 +20,7 @@ export const useToChainListArray = (searchStr: string = '') => {
       Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
       toChainIds?.map((id) => CHAINS_BY_ID[id])
     )
-  ).filter((chain) => !PAUSED_TO_CHAIN_IDS.includes(chain.id))
+  )
 
   const possibleChainsWithSource = possibleChains.map((chain) => ({
     ...chain,
