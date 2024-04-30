@@ -190,14 +190,6 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         emit InterchainBatchVerificationRequested(DST_CHAIN_ID, batch.dbNonce, batch.batchRoot, srcModules);
     }
 
-    function expectRevertBatchDoesNotExist(uint64 dbNonce) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__BatchDoesNotExist.selector, dbNonce));
-    }
-
-    function expectRevertBatchNotFinalized(uint64 dbNonce) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__BatchNotFinalized.selector, dbNonce));
-    }
-
     function expectRevertEntryIndexOutOfRange(uint64 dbNonce, uint64 entryIndex, uint64 batchSize) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
@@ -376,31 +368,85 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
     }
 
+    function test_requestVerification_nextNonce_oneModule() public {
+        uint64 dbNonce = INITIAL_DB_NONCE;
+        InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
+        // expectCall(address callee, uint256 msgValue, bytes calldata data)
+        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
+        expectEventBatchVerificationRequested(batch, oneModule);
+        requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
+    }
+
+    function test_requestVerification_nextNonce_oneModule_higherFee() public {
+        uint64 dbNonce = INITIAL_DB_NONCE;
+        InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
+        // expectCall(address callee, uint256 msgValue, bytes calldata data)
+        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
+        expectEventBatchVerificationRequested(batch, oneModule);
+        requestVerification(requestCaller, MODULE_A_FEE * 2, dbNonce, oneModule);
+    }
+
+    function test_requestVerification_nextNonce_twoModules() public {
+        uint64 dbNonce = INITIAL_DB_NONCE;
+        InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
+        // expectCall(address callee, uint256 msgValue, bytes calldata data)
+        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
+        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        expectEventBatchVerificationRequested(batch, twoModules);
+        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
+    }
+
+    function test_requestVerification_nextNonce_twoModules_higherFee() public {
+        // Overpaid fees should be directed to the first module
+        uint64 dbNonce = INITIAL_DB_NONCE;
+        InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
+        // expectCall(address callee, uint256 msgValue, bytes calldata data)
+        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
+        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        expectEventBatchVerificationRequested(batch, twoModules);
+        requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
+    }
+
+    function test_requestVerification_hugeNonce_oneModule() public {
+        uint64 dbNonce = 2 ** 32;
+        InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
+        // expectCall(address callee, uint256 msgValue, bytes calldata data)
+        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
+        expectEventBatchVerificationRequested(batch, oneModule);
+        requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
+    }
+
+    function test_requestVerification_hugeNonce_oneModule_higherFee() public {
+        uint64 dbNonce = 2 ** 32;
+        InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
+        // expectCall(address callee, uint256 msgValue, bytes calldata data)
+        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
+        expectEventBatchVerificationRequested(batch, oneModule);
+        requestVerification(requestCaller, MODULE_A_FEE * 2, dbNonce, oneModule);
+    }
+
+    function test_requestVerification_hugeNonce_twoModules() public {
+        uint64 dbNonce = 2 ** 32;
+        InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
+        // expectCall(address callee, uint256 msgValue, bytes calldata data)
+        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(batch));
+        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        expectEventBatchVerificationRequested(batch, twoModules);
+        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
+    }
+
+    function test_requestVerification_hugeNonce_twoModules_higherFee() public {
+        // Overpaid fees should be directed to the first module
+        uint64 dbNonce = 2 ** 32;
+        InterchainBatch memory batch = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, batchRoot: 0});
+        // expectCall(address callee, uint256 msgValue, bytes calldata data)
+        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(batch));
+        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(batch));
+        expectEventBatchVerificationRequested(batch, twoModules);
+        requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
+    }
+
     // ══════════════════════════════════ TESTS: REQUESTING VALIDATION (REVERTS) ═══════════════════════════════════════
-
-    function test_requestVerification_revert_batchNotFinalized_oneModule_nextNonce() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE);
-        requestVerification(requestCaller, MODULE_A_FEE, INITIAL_DB_NONCE, oneModule);
-    }
-
-    function test_requestVerification_revert_batchNotFinalized_oneModule_hugeNonce() public {
-        expectRevertBatchNotFinalized(2 ** 32);
-        requestVerification(requestCaller, MODULE_A_FEE, 2 ** 32, oneModule);
-        expectRevertBatchNotFinalized(type(uint64).max);
-        requestVerification(requestCaller, MODULE_A_FEE, type(uint64).max, oneModule);
-    }
-
-    function test_requestVerification_revert_batchNotFinalized_twoModules_nextNonce() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE);
-        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, INITIAL_DB_NONCE, twoModules);
-    }
-
-    function test_requestVerification_revert_batchNotFinalized_twoModules_hugeNonce() public {
-        expectRevertBatchNotFinalized(2 ** 32);
-        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, 2 ** 32, twoModules);
-        expectRevertBatchNotFinalized(type(uint64).max);
-        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, type(uint64).max, twoModules);
-    }
 
     function test_requestVerification_revert_incorrectFeeAmount_oneModule_underpaid() public {
         uint256 incorrectFee = MODULE_A_FEE - 1;
@@ -651,7 +697,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     // ════════════════════════════════════════ TESTS: RETRIEVING DB VALUES ════════════════════════════════════════════
 
-    function test_getBatchLeafs() public view {
+    function test_getBatchLeafs_finalized() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             bytes32[] memory leafs = icDB.getBatchLeafs(nonce);
             assertEq(leafs.length, 1, "!leafs.length");
@@ -659,43 +705,61 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         }
     }
 
-    function test_getBatchLeafs_revert_notFinalized() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE);
-        icDB.getBatchLeafs(INITIAL_DB_NONCE);
+    function test_getBatchLeafs_nextNonce() public view {
+        bytes32[] memory leafs = icDB.getBatchLeafs(INITIAL_DB_NONCE);
+        assertEq(leafs.length, 0);
     }
 
-    function test_getBatchLeafs_revert_nonExistent() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE + 1);
-        icDB.getBatchLeafs(INITIAL_DB_NONCE + 1);
+    function test_getBatchLeafs_hugeNonce() public view {
+        bytes32[] memory leafs = icDB.getBatchLeafs(2 ** 32);
+        assertEq(leafs.length, 0);
     }
 
-    function test_getBatchLeafsPaginated() public view {
+    function test_getBatchLeafsPaginated_finalized() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
-            bytes32[] memory leafs = icDB.getBatchLeafsPaginated(nonce, 0, 1);
+            bytes32[] memory leafs = icDB.getBatchLeafsPaginated(nonce, 0, 0);
+            assertEq(leafs.length, 0, "!leafs.length");
+            leafs = icDB.getBatchLeafsPaginated(nonce, 1, 1);
+            assertEq(leafs.length, 0, "!leafs.length");
+            leafs = icDB.getBatchLeafsPaginated(nonce, 0, 1);
             assertEq(leafs.length, 1, "!leafs.length");
             assertEq(leafs[0], getInitialEntry(nonce).entryValue());
         }
     }
 
-    function test_getBatchLeafsPaginated_revert_notFinalized() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE);
-        icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE, 0, 1);
+    function test_getBatchLeafsPaginated_nextNonce() public view {
+        bytes32[] memory leafs = icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE, 0, 0);
+        assertEq(leafs.length, 0);
     }
 
-    function test_getBatchLeafsPaginated_revert_nonExistent() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE + 1);
-        icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE + 1, 0, 1);
+    function test_getBatchLeafsPaginated_hugeNonce() public view {
+        bytes32[] memory leafs = icDB.getBatchLeafsPaginated(2 ** 32, 0, 0);
+        assertEq(leafs.length, 0);
     }
 
-    function test_getBatchLeafsPaginated_revert_invalidRange() public {
-        expectRevertInvalidEntryRange(0, 0, 0);
-        icDB.getBatchLeafsPaginated(0, 0, 0);
+    function test_getBatchLeafsPaginated_revert_invalidRange_finalized() public {
         expectRevertInvalidEntryRange(1, 0, 2);
         icDB.getBatchLeafsPaginated(1, 0, 2);
-        expectRevertInvalidEntryRange(2, 1, 1);
-        icDB.getBatchLeafsPaginated(2, 1, 1);
         expectRevertInvalidEntryRange(3, 1, 0);
         icDB.getBatchLeafsPaginated(3, 1, 0);
+    }
+
+    function test_getBatchLeafsPaginated_revert_invalidRange_nextNonce() public {
+        expectRevertInvalidEntryRange(INITIAL_DB_NONCE, 0, 1);
+        icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE, 0, 1);
+        expectRevertInvalidEntryRange(INITIAL_DB_NONCE, 1, 1);
+        icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE, 1, 1);
+        expectRevertInvalidEntryRange(INITIAL_DB_NONCE, 1, 0);
+        icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE, 1, 0);
+    }
+
+    function test_getBatchLeafsPaginated_revert_invalidRange_hugeNonce() public {
+        expectRevertInvalidEntryRange(2 ** 32, 0, 1);
+        icDB.getBatchLeafsPaginated(2 ** 32, 0, 1);
+        expectRevertInvalidEntryRange(2 ** 32, 1, 1);
+        icDB.getBatchLeafsPaginated(2 ** 32, 1, 1);
+        expectRevertInvalidEntryRange(2 ** 32, 1, 0);
+        icDB.getBatchLeafsPaginated(2 ** 32, 1, 0);
     }
 
     function test_getBatchSize_finalized() public view {
@@ -704,30 +768,32 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         }
     }
 
-    function test_getBatchSize_pending() public view {
+    function test_getBatchSize_nextNonce() public view {
         assertEq(icDB.getBatchSize(INITIAL_DB_NONCE), 0);
     }
 
-    function test_getBatchSize_revert_nonExistent() public {
-        expectRevertBatchDoesNotExist(INITIAL_DB_NONCE + 1);
-        icDB.getBatchSize(INITIAL_DB_NONCE + 1);
+    function test_getBatchSize_hugeNonce() public view {
+        assertEq(icDB.getBatchSize(2 ** 32), 0);
     }
 
-    function test_getBatch() public view {
+    function test_getBatch_finalized() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             InterchainBatch memory batch = icDB.getBatch(nonce);
             assertEq(batch, getExpectedBatch(getInitialEntry(nonce)));
         }
     }
 
-    function test_getBatch_revert_notFinalized() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE);
-        icDB.getBatch(INITIAL_DB_NONCE);
+    function test_getBatch_nextNonce() public view {
+        InterchainBatch memory batch = icDB.getBatch(INITIAL_DB_NONCE);
+        InterchainBatch memory expected =
+            InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: INITIAL_DB_NONCE, batchRoot: 0});
+        assertEq(batch, expected);
     }
 
-    function test_getBatch_revert_nonExistent() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE + 1);
-        icDB.getBatch(INITIAL_DB_NONCE + 1);
+    function test_getBatch_hugeNonce() public view {
+        InterchainBatch memory batch = icDB.getBatch(2 ** 32);
+        InterchainBatch memory expected = InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: 2 ** 32, batchRoot: 0});
+        assertEq(batch, expected);
     }
 
     function test_getVersionedBatch_finalized() public view {
@@ -764,9 +830,14 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB.getEntryValue(INITIAL_DB_NONCE - 1, 1);
     }
 
-    function test_getEntryValue_revert_notFinalizedOutOfRange() public {
+    function test_getEntryValue_revert_nextNonceOutOfRange() public {
         expectRevertEntryIndexOutOfRange(INITIAL_DB_NONCE, 0, 0);
         icDB.getEntryValue(INITIAL_DB_NONCE, 0);
+    }
+
+    function test_getEntryValue_revert_hugeNonceOutOfRange() public {
+        expectRevertEntryIndexOutOfRange(2 ** 32, 0, 0);
+        icDB.getEntryValue(2 ** 32, 0);
     }
 
     function test_getDBNonce() public view {
