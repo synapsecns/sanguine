@@ -37,10 +37,6 @@ export const AvailableBalance = ({
     fromToken?.decimals[fromChainId]
   )
 
-  const isValidUserInput = () => {
-    return Boolean(fromValue && !hasOnlyZeroes(fromValue))
-  }
-
   const isTraceBalance = () => {
     return Boolean(
       balance &&
@@ -49,104 +45,31 @@ export const AvailableBalance = ({
     )
   }
 
-  const isTraceGasCost = () => {
-    return Boolean(
-      parsedGasCost &&
-        hasOnlyZeroes(parseFloat(parsedGasCost).toFixed(4)) &&
-        !hasOnlyZeroes(parsedGasCost)
-    )
-  }
-
-  const hasUserInput = isValidUserInput()
-  const hasBalance = Boolean(balance || isTraceBalance())
-  const hasGasCost = Boolean(parsedGasCost || isTraceGasCost())
-
-  const isUserInputGreaterThanBalanceMinusGasFees = (): boolean => {
-    if (isGasToken && hasUserInput && hasBalance && hasGasCost) {
-      return (
-        parseFloat(fromValue) >
-        parseFloat(parsedBalanceFull) - parseFloat(parsedGasCost)
-      )
-    } else {
-      return false
-    }
-  }
-
-  const isUserBalanceGreaterThanGasFees = (): boolean => {
-    if (isGasToken && hasGasCost && hasBalance) {
-      return parseFloat(parsedGasCost) < parseFloat(parsedBalanceFull)
-    } else {
-      return true
-    }
-  }
-
-  const hasNotEnoughGas =
-    isUserInputGreaterThanBalanceMinusGasFees() ||
-    !isUserBalanceGreaterThanGasFees()
-
-  const showGasReserved =
-    isGasToken && hasGasCost && hasUserInput && hasBalance && hasNotEnoughGas
-
-  let tooltipContent = null
-
-  if (isGasToken && hasGasCost) {
-    tooltipContent = (
-      <div className="flex flex-col space-y-2 whitespace-nowrap">
-        <span>
-          Available balance: {parsedBalanceFull} {fromToken?.symbol}
-        </span>
-        <span>
-          Estimated bridgeable balance:{' '}
-          {Number(maxBridgeableBalance) > 0 ? maxBridgeableBalance : '0.0'}{' '}
-          {fromToken?.symbol}
-        </span>
-        <span>
-          Estimated gas fee: {parsedGasCost} {fromToken?.symbol}
-        </span>
-        {hasNotEnoughGas && (
-          <span>You may not have enough to cover gas fees.</span>
-        )}
-      </div>
-    )
-  }
+  const tooltipContent = (
+    <div className="flex flex-col space-y-2 whitespace-nowrap">
+      <span>
+        {parsedBalanceFull} {fromToken?.symbol}
+      </span>
+    </div>
+  )
 
   const labelClassName = joinClassNames({
     space: 'block',
-    textColor: `text-xxs md:text-xs ${
-      showGasReserved ? '!text-yellowText' : ''
-    }`,
+    textColor: 'text-xxs md:text-xs',
     animation: 'transition-all duration-150 transform-gpu',
     hover: 'hover:opacity-70 cursor-pointer',
   })
 
-  if (showGasReserved) {
-    return (
-      <HoverTooltip isActive={true} hoverContent={tooltipContent}>
-        <label
-          onClick={onMaxBalance}
-          className={labelClassName}
-          htmlFor="inputRow"
-        >
-          <span>Gas est: </span>
-          {isTraceGasCost() ? '<0.001' : Number(parsedGasCost).toFixed(4)}
-          <span> {fromToken?.symbol}</span>
-        </label>
-      </HoverTooltip>
-    )
-  } else if (hasMounted && isConnected && !disabled) {
-    return (
-      <HoverTooltip isActive={true} hoverContent={tooltipContent}>
-        <label
-          onClick={onMaxBalance}
-          className={labelClassName}
-          htmlFor="inputRow"
-        >
-          {isTraceBalance() ? '<0.001' : parsedBalance ?? '0.0'}
-          <span className="text-zinc-500 dark:text-zinc-400"> available</span>
-        </label>
-      </HoverTooltip>
-    )
-  } else {
-    return null
-  }
+  return (
+    <HoverTooltip isActive={true} hoverContent={tooltipContent}>
+      <label
+        onClick={onMaxBalance}
+        className={labelClassName}
+        htmlFor="inputRow"
+      >
+        {isTraceBalance() ? '<0.001' : parsedBalance ?? '0.0'}
+        <span className="text-zinc-500 dark:text-zinc-400"> available</span>
+      </label>
+    </HoverTooltip>
+  )
 }
