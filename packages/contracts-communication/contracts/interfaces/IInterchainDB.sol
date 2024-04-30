@@ -5,8 +5,6 @@ import {InterchainBatch} from "../libs/InterchainBatch.sol";
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 interface IInterchainDB {
-    error InterchainDB__BatchDoesNotExist(uint64 dbNonce);
-    error InterchainDB__BatchNotFinalized(uint64 dbNonce);
     error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
     error InterchainDB__EntryIndexOutOfRange(uint64 dbNonce, uint64 entryIndex, uint64 batchSize);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
