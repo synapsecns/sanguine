@@ -43,8 +43,13 @@ export const InputContainer = () => {
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
-  const { parsedGasCost, maxBridgeableGas, isLoading, gasFeeExceedsBalance } =
-    useGasEstimator()
+  const {
+    parsedGasCost,
+    maxBridgeableGas,
+    isLoading,
+    gasFeeExceedsBalance,
+    estimateGasLimitCallback,
+  } = useGasEstimator()
 
   const { addresses, decimals } = fromToken || {}
 
@@ -72,6 +77,7 @@ export const InputContainer = () => {
     } else {
       dispatch(updateFromValue(maxBalanceBridgeable))
     }
+    estimateGasLimitCallback()
   }, [fromChainId, fromToken, maxBalanceBridgeable, gasFeeExceedsBalance])
 
   useEffect(() => {
