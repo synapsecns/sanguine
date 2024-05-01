@@ -18,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/contrib/screener-api/config"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql"
+	"github.com/synapsecns/sanguine/contrib/screener-api/docs"
 	"github.com/synapsecns/sanguine/contrib/screener-api/screener/internal"
 	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
 	"github.com/synapsecns/sanguine/core"
@@ -28,6 +29,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
+
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // Screener is the interface for the screener.
@@ -57,6 +61,9 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 		cfg:     cfg,
 	}
 
+	docs.SwaggerInfo.Title = "Screener API"
+	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.Port)
+
 	screener.client, err = trmlabs.NewClient(cfg.TRMKey, core.GetEnv("TRM_URL", "https://api.trmlabs.com"))
 	if err != nil {
 		return nil, fmt.Errorf("could not create trm client: %w", err)
@@ -85,8 +92,9 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router = ginhelper.New(logger)
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
 
-	// idk the middleware is faking up
 	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
+
+	screener.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	return &screener, nil
 }
@@ -123,6 +131,13 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 	}
 }
 
+// @dev Protected Method
+// @Summary blacklist an address
+// @Description blacklist an address
+// @Param request body appsecret appid timestamp nonce queryString BlackListBody
+// @Accept json
+// @Produce json
+// @Router /api/data/sync [post]
 func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	var blacklistBody client.BlackListBody
 

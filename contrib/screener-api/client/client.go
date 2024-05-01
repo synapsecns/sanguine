@@ -154,6 +154,7 @@ func GenerateSignature(secret string,
 		queryString,
 		body,
 	)
+
 	h := hmac.New(sha256.New, key)
 	h.Write([]byte(message))
 

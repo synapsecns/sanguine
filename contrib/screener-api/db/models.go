@@ -29,43 +29,6 @@ type BlacklistedAddress struct {
 	Remark  string `gorm:"column:remark"         json:"remark"`
 }
 
-// GormDataType returns the data type for the column.
-func (b BlacklistedAddress) GormDataType() string {
-	return "json"
-}
-
-// Value prepares the struct for database storage.
-func (b BlacklistedAddress) Value() (driver.Value, error) {
-	if b == (BlacklistedAddress{}) {
-		return nil, nil
-	}
-	ba, err := json.Marshal(b)
-	return string(ba), err
-}
-
-// Scan scans the struct from the database.
-func (b *BlacklistedAddress) Scan(val interface{}) error {
-	if val == nil {
-		*b = BlacklistedAddress{}
-		return nil
-	}
-	var ba []byte
-	switch v := val.(type) {
-	case []byte:
-		ba = v
-	case string:
-		ba = []byte(v)
-	default:
-		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", val))
-	}
-	rd := bytes.NewReader(ba)
-	decoder := json.NewDecoder(rd)
-	decoder.UseNumber()
-	err := decoder.Decode(b)
-	//nolint: wrapcheck
-	return err
-}
-
 // AddressIndicators is the address indicators for a given address.
 type AddressIndicators struct {
 	CreatedAt time.Time
@@ -145,7 +108,3 @@ func MakeRecord(address string, records []trmlabs.AddressRiskIndicator) *Address
 var _ schema.GormDataTypeInterface = addressRiskIndicators{}
 var _ driver.Value = addressRiskIndicators{}
 var _ sql.Scanner = &addressRiskIndicators{}
-
-var _ schema.GormDataTypeInterface = BlacklistedAddress{}
-var _ driver.Value = BlacklistedAddress{}
-var _ sql.Scanner = &BlacklistedAddress{}
