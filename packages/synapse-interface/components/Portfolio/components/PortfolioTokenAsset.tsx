@@ -59,24 +59,10 @@ export const PortfolioTokenAsset = ({
     ? maxBridgeableGas?.toString()
     : maxBalance
 
-  const onMaxBalance = useCallback(() => {
-    if (gasFeeExceedsBalance) {
-      toast.error('Gas fees likely exceeds your balance.', {
-        id: 'toast-error-not-enough-gas',
-        duration: 10000,
-      })
-      dispatch(updateFromValue('0.0'))
-    } else {
-      dispatch(updateFromValue(maxBalanceBridgeable))
-    }
-  }, [balance, token, maxBalanceBridgeable, gasFeeExceedsBalance])
-
   const handleFromSelectionCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
     handleFocusOnBridgeInput()
-    // dispatch(updateFromValue(maxBalanceBridgeable))
-    onMaxBalance()
   }, [token, balance, portfolioChainId, maxBalanceBridgeable])
 
   return (
