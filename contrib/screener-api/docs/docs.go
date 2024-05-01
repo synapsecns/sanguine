@@ -60,9 +60,52 @@ const docTemplate = `{
                         "name": "signature",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "description": "Blacklist request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/db.BlacklistedAddress"
+                        }
                     }
                 ],
                 "responses": {}
+            }
+        }
+    },
+    "definitions": {
+        "db.BlacklistedAddress": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "network": {
+                    "type": "string"
+                },
+                "remark": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                },
+                "typereq": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
             }
         }
     }

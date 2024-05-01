@@ -1,3 +1,25 @@
+definitions:
+  db.BlacklistedAddress:
+    properties:
+      address:
+        type: string
+      createdAt:
+        type: string
+      data:
+        type: string
+      id:
+        type: string
+      network:
+        type: string
+      remark:
+        type: string
+      tag:
+        type: string
+      typereq:
+        type: string
+      updatedAt:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -32,6 +54,12 @@ paths:
         name: signature
         required: true
         type: string
+      - description: Blacklist request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/db.BlacklistedAddress'
       produces:
       - application/json
       responses: {}

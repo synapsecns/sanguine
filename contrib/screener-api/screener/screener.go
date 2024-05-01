@@ -139,6 +139,7 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 // @Param nonce header string true "A unique nonce for the request"
 // @Param queryString header string true "Query string parameters included in the request"
 // @Param signature header string true "Signature for request validation"
+// @Param request body db.BlacklistedAddress true "Blacklist request"
 // @Accept json
 // @Produce json
 // @Router /api/data/sync [post].
