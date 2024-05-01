@@ -419,7 +419,6 @@ func (p *BridgeParser) MatureLogs(ctx context.Context, bridgeEvent *model.Bridge
 
 	if tokenData.TokenID() == fetcher.NoTokenID {
 		logger.Errorf("could not get token data token id chain: %d address %s", chainID, bridgeEvent.ContractAddress)
-		// handle an inauthentic token.
 		return bridgeEvent, nil
 	}
 
