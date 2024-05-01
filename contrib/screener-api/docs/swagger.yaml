@@ -1,4 +1,39 @@
 info:
   contact: {}
-paths: {}
+paths:
+  /api/data/sync:
+    post:
+      consumes:
+      - application/json
+      description: blacklist an address
+      parameters:
+      - description: Application ID
+        in: header
+        name: appid
+        required: true
+        type: string
+      - description: Timestamp of the request
+        in: header
+        name: timestamp
+        required: true
+        type: string
+      - description: A unique nonce for the request
+        in: header
+        name: nonce
+        required: true
+        type: string
+      - description: Query string parameters included in the request
+        in: header
+        name: queryString
+        required: true
+        type: string
+      - description: Signature for request validation
+        in: header
+        name: signature
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: blacklist an address
 swagger: "2.0"
