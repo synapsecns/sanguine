@@ -85,6 +85,9 @@ type blacklistResponse struct {
 func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appid string, body BlackListBody) (string, error) {
 	var blacklistRes blacklistResponse
 
+	// TODO: remove, just for testing purposes
+	// future, take it from some .env or something
+
 	nonce := strings.ReplaceAll(uuid.New().String(), "-", "")[:32]
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
 	queryString := ""
