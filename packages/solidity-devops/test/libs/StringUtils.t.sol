@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {StringUtilsHarness, StringUtils} from "../harnesses/StringUtilsHarness.sol";
+import {StringUtilsHarness} from "../harnesses/StringUtilsHarness.sol";
 
 import {Test} from "forge-std/Test.sol";
 

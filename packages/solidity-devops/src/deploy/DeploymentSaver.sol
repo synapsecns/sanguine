@@ -6,7 +6,7 @@ import {StringUtils} from "../libs/StringUtils.sol";
 import {ChainAwareReader} from "../reader/ChainAwareReader.sol";
 import {ChainAwareWriter} from "../writer/ChainAwareWriter.sol";
 
-import {console2, stdJson} from "forge-std/Script.sol";
+import {stdJson} from "forge-std/Script.sol";
 
 abstract contract DeploymentSaver is ChainAwareReader, ChainAwareWriter {
     using stdJson for string;
