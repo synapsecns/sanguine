@@ -32,7 +32,7 @@ abstract contract PathFinder is CommonBase {
     // ═══════════════════════════════════════════════ PATH GETTERS ════════════════════════════════════════════════════
 
     /// @dev Path to the devops.json file. Could be overridden if the location of the file is different.
-    function getDevopsConfigPath() internal pure virtual returns (string memory) {
+    function getDevopsConfigPath() internal view virtual returns (string memory) {
         return DEFAULT_DEVOPS_CONFIG;
     }
 

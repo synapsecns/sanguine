@@ -6,7 +6,7 @@ import {StringUtils} from "../libs/StringUtils.sol";
 import {ChainAwareReader} from "../reader/ChainAwareReader.sol";
 import {ChainAwareWriter} from "../writer/ChainAwareWriter.sol";
 
-import {stdJson} from "forge-std/Script.sol";
+import {console2, stdJson} from "forge-std/Script.sol";
 
 abstract contract DeploymentSaver is ChainAwareReader, ChainAwareWriter {
     using stdJson for string;
@@ -136,8 +136,7 @@ abstract contract DeploymentSaver is ChainAwareReader, ChainAwareWriter {
 
     /// @notice Saves the deployment JSON for a contract on a given chain under the specified alias.
     /// Example: contractName = "LinkedPool", contractAlias = "LinkedPool.USDC"
-    /// Note: writes the JSON file to the FRESH deployments directory. The written file needs to be moved
-    /// to the correct location outside of the deployment script.
+    /// Note: writes to the FRESH deployment path, which is moved to the correct location after the contract is deployed.
     /// Note: will not include the ABI in the output JSON.
     function saveDeployment(
         string memory contractAlias,

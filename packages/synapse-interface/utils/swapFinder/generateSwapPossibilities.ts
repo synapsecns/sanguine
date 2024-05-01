@@ -5,6 +5,7 @@ import { Token } from '../types'
 import { getSwapFromChainIds } from './getSwapFromChainIds'
 import { getSwapFromTokens } from './getSwapFromTokens'
 import { getSwapToTokens } from './getSwapToTokens'
+import { PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 import { findTokenByRouteSymbol } from '../findTokenByRouteSymbol'
 import { getSymbol } from '@/utils/getSymbol'
 
@@ -60,6 +61,9 @@ export const getSwapPossibilities = ({
     })
   )
     .difference(flattenPausedTokens())
+    .filter((token) => {
+      return !PAUSED_TO_CHAIN_IDS.some((value) => token.endsWith(`-${value}`))
+    })
     .map(getSymbol)
     .uniq()
     .map((symbol) => findTokenByRouteSymbol(symbol))

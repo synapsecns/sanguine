@@ -13,7 +13,6 @@ export const SwapTransactionButton = ({
   approveTxn,
   executeSwap,
   isApproved,
-  isSwapPaused,
 }) => {
   const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
@@ -58,8 +57,7 @@ export const SwapTransactionButton = ({
     (isLoading && !isApproved) ||
     (isConnected && !sufficientBalance) ||
     swapQuote === EMPTY_SWAP_QUOTE_ZERO ||
-    swapQuote === EMPTY_SWAP_QUOTE ||
-    isSwapPaused
+    swapQuote === EMPTY_SWAP_QUOTE
 
   let buttonProperties
 
@@ -72,12 +70,7 @@ export const SwapTransactionButton = ({
       : 0
   }, [swapFromValue, fromTokenDecimals, swapChainId, swapFromToken])
 
-  if (isSwapPaused) {
-    buttonProperties = {
-      label: 'Swap paused',
-      onClick: null,
-    }
-  } else if (!swapChainId) {
+  if (!swapChainId) {
     buttonProperties = {
       label: 'Please select Origin network',
       onClick: null,

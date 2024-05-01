@@ -53,11 +53,11 @@ contract FastBridgeTest is Test {
         uint256 protocolFeeRate
     )
         internal
-        view
         returns (bytes memory request, bytes32 transactionId)
     {
         // Define input variables for the bridge transaction
         address to = user;
+        address oldRelayer = relayer;
         uint32 originChainId = uint32(chainId);
         uint32 dstChainId = 1;
         address originToken = address(arbUSDC);
@@ -96,11 +96,11 @@ contract FastBridgeTest is Test {
         uint256 protocolFeeRate
     )
         internal
-        view
         returns (bytes memory request, bytes32 transactionId)
     {
         // Define input variables for the bridge transaction
         address to = user;
+        address oldRelayer = relayer;
         uint32 originChainId = uint32(chainId);
         uint32 dstChainId = 1;
         address originToken = UniversalTokenLib.ETH_ADDRESS;
@@ -139,11 +139,11 @@ contract FastBridgeTest is Test {
         uint256 protocolFeeRate
     )
         internal
-        view
         returns (bytes memory request, bytes32 transactionId)
     {
         // Define input variables for the bridge transaction
         address to = user;
+        address oldRelayer = relayer;
         uint32 originChainId = uint32(chainId);
         uint32 dstChainId = 1;
         address originToken = address(arbUSDC);
@@ -182,11 +182,11 @@ contract FastBridgeTest is Test {
         uint256 protocolFeeRate
     )
         internal
-        view
         returns (bytes memory request, bytes32 transactionId)
     {
         // Define input variables for the bridge transaction
         address to = user;
+        address oldRelayer = relayer;
         uint32 originChainId = uint32(chainId);
         uint32 dstChainId = 1;
         address originToken = UniversalTokenLib.ETH_ADDRESS;
@@ -237,7 +237,7 @@ contract FastBridgeTest is Test {
     }
 
     /// @notice Test to check if the owner is correctly set
-    function test_owner() public view {
+    function test_owner() public {
         assertTrue(fastBridge.hasRole(fastBridge.DEFAULT_ADMIN_ROLE(), owner));
     }
 
@@ -498,7 +498,7 @@ contract FastBridgeTest is Test {
 
         // get expected bridge request and tx id
         uint256 currentNonce = fastBridge.nonce();
-        (, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(block.chainid, currentNonce, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(block.chainid, currentNonce, 0);
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -730,7 +730,8 @@ contract FastBridgeTest is Test {
 
         // get expected bridge request and tx id
         uint256 currentNonce = fastBridge.nonce();
-        (, bytes32 transactionId) = _getBridgeRequestAndIdWithETHAndChainGas(block.chainid, currentNonce, 0);
+        (bytes memory request, bytes32 transactionId) =
+            _getBridgeRequestAndIdWithETHAndChainGas(block.chainid, currentNonce, 0);
 
         // Execute the bridge transaction
         IFastBridge.BridgeParams memory params = IFastBridge.BridgeParams({
@@ -1232,7 +1233,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(42_161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -1254,7 +1255,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(42_161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -1302,7 +1303,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(42_161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Start a prank with the relayer
         vm.startPrank(guard);
@@ -1423,7 +1424,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         // We start a prank with the relayer
         vm.startPrank(relayer);
@@ -1444,7 +1445,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         // We provide the relay proof
         expectUnauthorized(address(this), fastBridge.RELAYER_ROLE());
@@ -1497,7 +1498,7 @@ contract FastBridgeTest is Test {
         test_successfulBridgeWithETH();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndIdWithETH(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(block.chainid, 0, 0);
 
         vm.startPrank(relayer);
         fastBridge.prove(request, bytes32("0x04"));
@@ -1569,7 +1570,7 @@ contract FastBridgeTest is Test {
 
         // get bridge request and tx id
         uint256 protocolFeeRate = fastBridge.protocolFeeRate();
-        (bytes memory request,) = _getBridgeRequestAndIdWithETH(block.chainid, 0, protocolFeeRate);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(block.chainid, 0, protocolFeeRate);
 
         vm.startPrank(relayer);
         fastBridge.prove(request, bytes32("0x04"));
@@ -1629,7 +1630,7 @@ contract FastBridgeTest is Test {
         test_successfulBridge();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.startPrank(relayer);
 
@@ -1642,7 +1643,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    function test_failedClaimNotOldRelayer() public {
+    function test_failedClaimNotoldRelayer() public {
         setUpRoles();
         test_successfulBridge();
 
@@ -1651,7 +1652,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.warp(block.timestamp + 31 minutes);
 
@@ -1667,7 +1668,7 @@ contract FastBridgeTest is Test {
         test_successfulBridge();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.startPrank(relayer);
         fastBridge.prove(request, bytes32("0x04"));
@@ -1684,7 +1685,7 @@ contract FastBridgeTest is Test {
         test_successfulRelayProof();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.warp(block.timestamp + 31 minutes);
 
@@ -1699,7 +1700,7 @@ contract FastBridgeTest is Test {
         test_successfulRelayProof();
 
         // get bridge request and tx id
-        (, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.startPrank(guard);
 
@@ -1726,7 +1727,7 @@ contract FastBridgeTest is Test {
         test_successfulRelayProof();
 
         // get bridge request and tx id
-        (, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.warp(block.timestamp + 25 minutes);
 
@@ -1749,7 +1750,7 @@ contract FastBridgeTest is Test {
         test_successfulBridge();
 
         // get bridge request and tx id
-        (, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.startPrank(guard);
 
@@ -1765,7 +1766,7 @@ contract FastBridgeTest is Test {
         test_successfulRelayProof();
 
         // get bridge request and tx id
-        (, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.startPrank(guard);
 
@@ -1783,7 +1784,7 @@ contract FastBridgeTest is Test {
         test_successfulRelayProof();
 
         // get bridge request and tx id
-        (, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         expectUnauthorized(address(this), fastBridge.GUARD_ROLE());
         fastBridge.dispute(transactionId);
@@ -1829,7 +1830,7 @@ contract FastBridgeTest is Test {
         test_successfulBridgeWithETH();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndIdWithETH(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(block.chainid, 0, 0);
 
         vm.startPrank(refunder);
 
@@ -1891,7 +1892,7 @@ contract FastBridgeTest is Test {
 
         // get bridge request and tx id
         uint256 protocolFeeRate = fastBridge.protocolFeeRate();
-        (bytes memory request,) = _getBridgeRequestAndIdWithETH(block.chainid, 0, protocolFeeRate);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(block.chainid, 0, protocolFeeRate);
 
         vm.startPrank(refunder);
 
@@ -1951,7 +1952,7 @@ contract FastBridgeTest is Test {
         test_successfulBridge();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.startPrank(refunder);
 
@@ -2004,7 +2005,7 @@ contract FastBridgeTest is Test {
         test_successfulBridge();
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.startPrank(user);
 
@@ -2024,7 +2025,7 @@ contract FastBridgeTest is Test {
         vm.startPrank(refunder);
 
         // get bridge request and tx id
-        (bytes memory request,) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         skip(TX_DEADLINE + 1 seconds);
 
@@ -2092,6 +2093,7 @@ contract FastBridgeTest is Test {
 
         vm.startPrank(governor);
 
+        uint256 preSweepProtocolFees = fastBridge.protocolFees(address(arbUSDC));
         uint256 preSweepBalanceUser = arbUSDC.balanceOf(user);
 
         fastBridge.sweepProtocolFees(address(arbUSDC), user);

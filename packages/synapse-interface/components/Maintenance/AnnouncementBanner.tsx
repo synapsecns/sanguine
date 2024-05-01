@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react'
 import { getCountdownTimeStatus } from './EventCountdownProgressBar'
-import { isNull } from 'lodash'
 
 /**
- * Generic Message Banner that appears between defined start and end time.
- * If end date is null, banner will appear indefinitely until removed.
- *
- * @param bannerId Unique ID to prevent conflicts with other banner instances.
- *                 Assign ID $MMDDYYYY-$BANNER_NAME format (e.g 03132024-ETH-DENCUN)
- * @param bannerContents Message to display
- * @param startDate Start time to display banner
- * @param endDate End time to remove banner
+ * Reusable automated Announcement Banner with custom Start/End Time
+ * Will automatically appear after Start time
+ * Will automatically disappear after End time
+ * @param bannerId: store in $MMDDYYYY-$BANNER_NAME format (e.g 03132024-ETH-DENCUN)
+ * @param bannerContents: contents to display in banner
+ * @param startDate: start date to show banner
+ * @param endDate: end date to remove banner
  */
 export const AnnouncementBanner = ({
   bannerId,
@@ -21,12 +19,11 @@ export const AnnouncementBanner = ({
   bannerId: string
   bannerContents: any
   startDate: Date
-  endDate: Date | null
+  endDate: Date
 }) => {
   const { isStarted, isComplete } = getCountdownTimeStatus(startDate, endDate)
-
   const [hasMounted, setHasMounted] = useState(false)
-  const [showBanner, setShowBanner] = useState(false)
+  const [showBanner, setShowBanner] = useState(true)
 
   useEffect(() => {
     setHasMounted(true)
@@ -57,38 +54,26 @@ export const AnnouncementBanner = ({
   if (!showBanner || !hasMounted || !isStarted || isComplete) return null
 
   return (
-    <div
-      className={`
-        flex items-center justify-center mx-auto text-sm
-        text-left lg:flex-row bg-gradient-to-r
-        from-fuchsia-600/25 to-purple-600/25
-      `}
-    >
+    <div className="flex items-center justify-center mx-auto text-sm text-left lg:flex-row bg-gradient-to-r from-fuchsia-600/25 to-purple-600/25">
       <div
-        id={bannerId}
-        className={`
-          flex gap-4 py-1 w-full
-          justify-center leading-normal items-center
-          max-w-[1111px] text-primaryTextColor
-        `}
+        id="banner-default"
+        className="flex items-center gap-4 px-4 py-2 w-full max-w-[1111px] text-primaryTextColor justify-center leading-normal"
         role="alert"
       >
         {bannerContents}
         <button
-          onClick={() => setShowBanner(false)}
-          className="inline-flex items-center justify-center p-3 text-primaryTextColor hover:opacity-70"
+          type="button"
+          className="inline-flex items-center justify-center text-primaryTextColor"
           data-dismiss-target="#banner-default"
           aria-label="Close"
-          type="button"
+          onClick={() => setShowBanner(false)}
         >
           <svg
-            className="m-auto"
-            width={10}
-            height={10}
-            viewBox="0 0 14 14"
-            xmlns="http://www.w3.org/2000/svg"
+            className="w-[9px] h-[9px]"
             aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
             fill="none"
+            viewBox="0 0 14 14"
           >
             <path
               stroke="currentColor"

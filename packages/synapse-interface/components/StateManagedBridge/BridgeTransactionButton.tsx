@@ -11,6 +11,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 import { useAppDispatch } from '@/store/hooks'
 import {
   setIsDestinationWarningAccepted,
@@ -73,6 +74,8 @@ export const BridgeTransactionButton = ({
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||
     (isConnected && !sufficientBalance) ||
+    PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
+    PAUSED_TO_CHAIN_IDS.includes(toChainId) ||
     isBridgePaused
 
   let buttonProperties
@@ -97,6 +100,14 @@ export const BridgeTransactionButton = ({
   } else if (!toChainId) {
     buttonProperties = {
       label: 'Please select Destination network',
+      onClick: null,
+    }
+  } else if (
+    PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
+    PAUSED_TO_CHAIN_IDS.includes(toChainId)
+  ) {
+    buttonProperties = {
+      label: `Bridge unavailable`,
       onClick: null,
     }
   } else if (!fromToken) {

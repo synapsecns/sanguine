@@ -141,7 +141,7 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 // @Param signature header string true "Signature for request validation"
 // @Accept json
 // @Produce json
-// @Router /api/data/sync [post].
+// @Router /api/data/sync [post]
 func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	var blacklistBody client.BlackListBody
 

@@ -23,6 +23,7 @@ import { PageHeader } from '@/components/PageHeader'
 import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
 import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
+import { useMaintenanceCountdownProgress } from '@/components/Maintenance/Events/template/MaintenanceEvent'
 import { BridgeCard } from '@/components/ui/BridgeCard'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
 import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
@@ -65,14 +66,6 @@ import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
-import {
-  MaintenanceWarningMessages,
-  useMaintenanceCountdownProgresses,
-} from '@/components/Maintenance/Maintenance'
-import {
-  PAUSED_MODULES,
-  getBridgeModuleNames,
-} from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
 
 const StateManagedBridge = () => {
@@ -162,22 +155,12 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
-      const pausedBridgeModules = new Set(
-        PAUSED_MODULES.filter((module) =>
-          module.chainId ? module.chainId === fromChainId : true
-        ).flatMap(getBridgeModuleNames)
-      )
-
-      const activeQuotes = allQuotes.filter(
-        (quote) => !pausedBridgeModules.has(quote.bridgeModuleName)
-      )
-
-      if (activeQuotes.length === 0) {
+      if (allQuotes.length === 0) {
         const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         throw new Error(msg)
       }
 
-      const rfqQuote = activeQuotes.find(
+      const rfqQuote = allQuotes.find(
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
@@ -187,7 +170,7 @@ const StateManagedBridge = () => {
         quote = rfqQuote
       } else {
         /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-        quote = activeQuotes[0]
+        quote = allQuotes[0]
       }
 
       const {
@@ -510,12 +493,14 @@ const StateManagedBridge = () => {
     }
   }
 
-  const maintenanceCountdownProgressInstances =
-    useMaintenanceCountdownProgresses({ type: 'Bridge' })
+  const springClass =
+    '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
-  const isBridgePaused = maintenanceCountdownProgressInstances.some(
-    (instance) => instance.isCurrentChainDisabled
-  )
+  const {
+    isMaintenancePending,
+    isCurrentChainDisabled,
+    MaintenanceCountdownProgressBar,
+  } = useMaintenanceCountdownProgress()
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
@@ -548,10 +533,7 @@ const StateManagedBridge = () => {
           </div>
         </div>
         <BridgeCard bridgeRef={bridgeDisplayRef}>
-          {maintenanceCountdownProgressInstances.map((instance) => (
-            <>{instance.MaintenanceCountdownProgressBar}</>
-          ))}
-
+          {MaintenanceCountdownProgressBar}
           {showSettingsSlideOver && (
             <div className="min-h-[472px] ">
               <SettingsSlideOver key="settings" />
@@ -570,14 +552,13 @@ const StateManagedBridge = () => {
               />
               <OutputContainer />
               <Warning />
-              <MaintenanceWarningMessages type="Bridge" />
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />
               <BridgeTransactionButton
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
-                isBridgePaused={isBridgePaused}
+                isBridgePaused={isCurrentChainDisabled}
               />
             </>
           )}

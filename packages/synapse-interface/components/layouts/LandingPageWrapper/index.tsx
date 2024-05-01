@@ -25,7 +25,6 @@ import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 import { joinClassNames } from '@/utils/joinClassNames'
-import { MaintenanceBanners } from '@/components/Maintenance/Maintenance'
 
 const wrapperClassName = joinClassNames({
   textColor: 'text-zinc-800 dark:text-zinc-200',
@@ -49,7 +48,6 @@ export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div className="dark">
       <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
-        <MaintenanceBanners />
         <LandingNav />
         {children}
         <PageFooter />

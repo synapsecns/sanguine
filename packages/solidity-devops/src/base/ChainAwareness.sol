@@ -111,8 +111,6 @@ abstract contract ChainAwareness is PathFinder {
 
     /// @notice Wrapper for block.chainid, which only exists in Solidity 0.8+
     function blockChainId() internal view returns (uint256 chainId) {
-        // silence the state mutability warning
-        this;
         // solhint-disable-next-line no-inline-assembly
         assembly {
             chainId := chainid()
