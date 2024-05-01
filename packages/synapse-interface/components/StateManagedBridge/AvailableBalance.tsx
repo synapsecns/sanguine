@@ -22,14 +22,6 @@ export const AvailableBalance = ({
   disabled: boolean
   isGasEstimateLoading: boolean
 }) => {
-  const tooltipContent = (
-    <div className="flex flex-col space-y-2 whitespace-nowrap">
-      <span>
-        {parsedBalance} {fromToken?.symbol}
-      </span>
-    </div>
-  )
-
   const labelClassName = joinClassNames({
     space: 'block',
     textColor: 'text-xxs md:text-xs',
@@ -49,16 +41,14 @@ export const AvailableBalance = ({
     )
   } else {
     return (
-      <HoverTooltip isActive={true} hoverContent={tooltipContent}>
-        <label
-          onClick={onMaxBalance}
-          className={labelClassName}
-          htmlFor="inputRow"
-        >
-          {parsedBalance ?? '0.0'}
-          <span className="text-zinc-500 dark:text-zinc-400"> available</span>
-        </label>
-      </HoverTooltip>
+      <label
+        onClick={onMaxBalance}
+        className={labelClassName}
+        htmlFor="inputRow"
+      >
+        {parsedBalance ?? '0.0'}
+        <span className="text-zinc-500 dark:text-zinc-400"> available</span>
+      </label>
     )
   }
 }
