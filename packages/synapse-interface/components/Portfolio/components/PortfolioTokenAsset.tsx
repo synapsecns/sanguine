@@ -65,6 +65,28 @@ export const PortfolioTokenAsset = ({
     handleFocusOnBridgeInput()
   }, [token, portfolioChainId])
 
+  const tokenBalanceTooltip =
+    isGasToken && maxBridgeableGas ? (
+      <div className="flex flex-col">
+        <div className="flex justify-between">
+          <pre>Available Balance: </pre>
+          <pre className="whitespace-nowrap">
+            {parsedBalanceLong} {symbol}
+          </pre>
+        </div>
+        <div className="flex justify-between">
+          <pre>Bridgeable Balance: </pre>
+          <pre className="whitespace-nowrap">
+            {maxBridgeableGas.toFixed(8)} {symbol}
+          </pre>
+        </div>
+      </div>
+    ) : (
+      <div className="whitespace-nowrap">
+        {parsedBalanceLong} {symbol}
+      </div>
+    )
+
   return (
     <div
       id="portfolio-token-asset"
@@ -88,11 +110,19 @@ export const PortfolioTokenAsset = ({
           src={icon}
         />
         <HoverTooltip
-          hoverContent={
-            <div className="whitespace-nowrap">
-              {parsedBalanceLong} {symbol}
-            </div>
-          }
+          // hoverContent={
+          //   <>
+          //     <div className="whitespace-nowrap">
+          //       {parsedBalanceLong} {symbol}
+          //     </div>
+          //     {isGasToken && maxBridgeableGas && (
+          //       <div className="whitespace-nowrap">
+          //         bridgeable: {maxBridgeableGas.toFixed(8)} {symbol}
+          //       </div>
+          //     )}
+          //   </>
+          // }
+          hoverContent={tokenBalanceTooltip}
         >
           <div>
             {parsedBalance} {symbol}
