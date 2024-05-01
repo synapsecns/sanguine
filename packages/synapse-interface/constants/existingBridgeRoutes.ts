@@ -1,7 +1,5 @@
-import { RFQ_MAP } from './rfqMap'
-import { transformRFQMap } from './existingRfqRoutes'
-import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
 import { BRIDGE_MAP } from '@/constants/bridgeMap'
+import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
 
 export type BridgeRoutes = Record<string, string[]>
 
@@ -50,30 +48,7 @@ const constructJSON = (swappableMap, exclusionList) => {
 
 const PAUSED_TOKENS = flattenPausedTokens()
 
-const EXISTING_BRIDGE_CCTP_ROUTES: BridgeRoutes = constructJSON(
+export const EXISTING_BRIDGE_ROUTES: BridgeRoutes = constructJSON(
   BRIDGE_MAP,
   PAUSED_TOKENS
-)
-
-const RFQ_ROUTES = transformRFQMap(RFQ_MAP)
-
-const mergeObjectsUnique = (firstObj, secondObj) => {
-  Object.keys(secondObj).forEach((key) => {
-    if (!firstObj[key]) {
-      firstObj[key] = secondObj[key]
-    } else {
-      secondObj[key].forEach((value) => {
-        if (!firstObj[key].includes(value)) {
-          firstObj[key].push(value)
-        }
-      })
-    }
-  })
-
-  return firstObj
-}
-
-export const EXISTING_BRIDGE_ROUTES: BridgeRoutes = mergeObjectsUnique(
-  EXISTING_BRIDGE_CCTP_ROUTES,
-  RFQ_ROUTES
 )
