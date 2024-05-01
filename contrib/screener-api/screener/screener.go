@@ -134,10 +134,14 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 // @dev Protected Method
 // @Summary blacklist an address
 // @Description blacklist an address
-// @Param request body appsecret appid timestamp nonce queryString BlackListBody
+// @Param appid header string true "Application ID"
+// @Param timestamp header string true "Timestamp of the request"
+// @Param nonce header string true "A unique nonce for the request"
+// @Param queryString header string true "Query string parameters included in the request"
+// @Param signature header string true "Signature for request validation"
 // @Accept json
 // @Produce json
-// @Router /api/data/sync [post]
+// @Router /api/data/sync [post].
 func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	var blacklistBody client.BlackListBody
 

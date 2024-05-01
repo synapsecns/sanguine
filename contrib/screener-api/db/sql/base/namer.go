@@ -5,7 +5,6 @@ import (
 )
 
 func init() {
-	// idk what this is
 	namer := dbcommon.NewNamer(GetAllModels())
 
 	addressName = namer.GetConsistentName("Address")
