@@ -1,1 +1,0 @@
-module.exports = [{"type":"category","label":"quotes","items":[{"type":"doc","id":"rfq/api/get-quotes-from-all-relayers","label":"get quotes from all relayers.","className":"api-method get"},{"type":"doc","id":"rfq/api/get-quotes-from-all-relayers","label":"get quotes from all relayers.","className":"api-method put"}]}];
