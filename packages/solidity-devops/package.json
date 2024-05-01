@@ -22,8 +22,8 @@
     "build:go": " ",
     "build:slither": " ",
     "ci:lint": "npm run lint:check",
-    "lint": "forge fmt && eslint . --fix --ext js",
-    "lint:check": "forge fmt --check && eslint . --max-warnings=0 --ext js",
+    "lint": "forge fmt && eslint . --fix --ext js && solhint --fix -c .solhint.json '{src,script,test}/**/*.sol'",
+    "lint:check": "forge fmt --check && eslint . --max-warnings=0 --ext js && solhint -c .solhint.json '{src,script,test}/**/*.sol'",
     "test:coverage": "echo 'TODO: Add test coverage'"
   },
   "dependencies": {
@@ -37,5 +37,8 @@
     "fvc": "js/forgeVerifyContract.js",
     "sd": "js/saveDeployment.js",
     "vp": "js/verifyProxy.js"
+  },
+  "devDependencies": {
+    "solhint": "^4.5.4"
   }
 }
