@@ -23,7 +23,7 @@ export type Chain = {
   }
   priorityRank?: number
   color?: string
-  new?: boolean
+  isNew?: boolean
 }
 export type PoolToken = {
   symbol: string
