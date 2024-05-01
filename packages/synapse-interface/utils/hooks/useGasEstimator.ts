@@ -27,7 +27,8 @@ export const useGasEstimator = () => {
   const { maxFeePerGas } = gasData?.formatted
   const { rawGasCost, parsedGasCost } = calculateGasCost(
     maxFeePerGas,
-    estimatedGasLimit.toString()
+    estimatedGasLimit.toString(),
+    fromChainId
   )
 
   const { addresses, decimals } = fromToken || {}
@@ -81,6 +82,7 @@ export const useGasEstimator = () => {
           toToken,
           selectedFromToken?.parsedBalance
         )
+        console.log('fetched gasLimit: ', gasLimit)
         setEstimatedGasLimit(gasLimit ?? 0n)
       } catch (error) {
         console.error('Error estimating gas limit:', error)
@@ -91,18 +93,10 @@ export const useGasEstimator = () => {
     }
   }
 
-  /** Fetch gasLimit using Wallet's gas balance */
+  // Reset gas limit when chainId changes
   useEffect(() => {
-    estimateGasLimit()
-  }, [
-    fromChainId,
-    toChainId,
-    isGasToken,
-    selectedFromToken,
-    fromToken,
-    toToken,
-    address,
-  ])
+    setEstimatedGasLimit(0n)
+  }, [fromChainId])
 
   return {
     rawGasCost,

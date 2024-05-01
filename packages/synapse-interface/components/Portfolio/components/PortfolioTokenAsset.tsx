@@ -48,8 +48,8 @@ export const PortfolioTokenAsset = ({
   const parsedBalanceLong = getParsedBalance(balance, tokenDecimals, 8)
 
   const isDisabled = false
-  const isTokenSelected =
-    fromToken === token && fromChainId === portfolioChainId
+  const isPortfolioChainSelected = fromChainId === portfolioChainId
+  const isTokenSelected = isPortfolioChainSelected && fromToken === token
   const isGasToken = tokenAddress === zeroAddress
 
   const handleFromSelectionCallback = useCallback(() => {
@@ -82,7 +82,7 @@ export const PortfolioTokenAsset = ({
         />
         <HoverTooltip
           hoverContent={
-            isGasToken && maxBridgeableGas ? (
+            isPortfolioChainSelected && isGasToken && maxBridgeableGas ? (
               <div className="whitespace-nowrap">
                 Available: {maxBridgeableGas.toFixed(4)} {symbol}
               </div>

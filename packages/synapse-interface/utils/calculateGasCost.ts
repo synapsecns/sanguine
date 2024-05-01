@@ -1,5 +1,7 @@
 import { formatGwei } from 'viem'
 
+import { OPTIMISM } from '@/constants/chains/master'
+
 /**
  * Calculates the estimated gas cost for a transaction.
  *
@@ -9,7 +11,8 @@ import { formatGwei } from 'viem'
 
 export const calculateGasCost = (
   gasPrice: string | undefined,
-  gasLimit: string
+  gasLimit: string,
+  chainId: number | null
 ): {
   rawGasCost: string
   parsedGasCost: string
@@ -21,16 +24,30 @@ export const calculateGasCost = (
     }
   }
 
-  const upperLimitBuffer = 1.5
+  let upperLimitBuffer = 1.75
+
+  if (chainId === OPTIMISM.id) {
+    upperLimitBuffer = 3
+  }
+
+  const gasLimitFloat = parseFloat(gasLimit) ? parseFloat(gasLimit) : 1
+  const gasPriceFloat = parseFloat(gasPrice) ? parseFloat(gasPrice) : 1
 
   const estimatedGasCostInGwei =
-    parseFloat(gasLimit) * parseFloat(gasPrice) * upperLimitBuffer
+    gasLimitFloat * gasPriceFloat * upperLimitBuffer
 
   const oneGwei = parseFloat(formatGwei(1n))
 
   const formattedEstimatedGasCost = estimatedGasCostInGwei
     ? estimatedGasCostInGwei * oneGwei
     : null
+
+  // console.log('estimatedGasCostInGwei: ', estimatedGasCostInGwei)
+  console.log('gasLimit: ', gasLimit)
+  console.log('gasPrice: ', gasPrice)
+  console.log('gasLimitFloat: ', gasLimitFloat)
+  console.log('gasPriceFloat: ', gasPriceFloat)
+  console.log('formattedEstimatedGasCost: ', formattedEstimatedGasCost)
 
   return {
     rawGasCost: estimatedGasCostInGwei?.toString(),
