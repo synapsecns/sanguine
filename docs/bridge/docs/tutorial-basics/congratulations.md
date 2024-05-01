@@ -8,7 +8,7 @@ You have just learned the **basics of Docusaurus** and made some changes to the 
 
 Docusaurus has **much more to offer**!
 
-Have **5 more minutes**? Take a look at **[versioning](../rfq/manage-docs-versions.md)** and **[i18n](../rfq/translate-your-site.md)**.
+[//]: # (Have **5 more minutes**? Take a look at **[versioning]&#40;../rfq/manage-docs-versions.md&#41;** and **[i18n]&#40;../rfq/translate-your-site.md&#41;**.)
 
 Anything **unclear** or **buggy** in this tutorial? [Please report it!](https://github.com/facebook/docusaurus/discussions/4610)
 

@@ -2,6 +2,10 @@
 
 This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
 
+## Generating API Docs
+
+`yarn docusaurus gen-api-docs all`: <!--todo: needs to be done from ci to ensure regenration is done-->
+
 ### Installation
 
 ```

@@ -1,0 +1,41 @@
+---
+id: get-quotes-from-all-relayers
+title: "get quotes from all relayers."
+description: "get quotes from all relayers."
+sidebar_label: "get quotes from all relayers."
+hide_title: true
+hide_table_of_contents: true
+api: eJzNVsFu2zAM/RXBpw0I1mLH3LJ1HYZhCDC0p6EIFJuO2cqWK8lpgsD/PlKWG6d20iTLYZfElijy8fHJ5CZKwMYGS4e6iMbRApx4rrQDK1KjcyGVEgaUXIOxn6JRVEojc3D0Fo3/bN4c1gYXWIg4k/SLiXBapKjIuHU5X5MLZNNSuoyeC3L2evArn/txQ8sGnis0kERjZyoYRTbOIJfReBO5dckHsHCwABPV9ejCIO70ExSTJDHHwLDOYLEYQkFvDgvJb2dA4dOXYaOLw3FqQlJuYO1pYC7ESlDS6RjCwZMRPLCxLXVhwfL+5+tr/ttFNf1JPmNNJBaOd2VZKow9Z1ePlk02nRDoIPe+SqNLMA4bz8zSTOa6anzsRrihzYnfE0hZZyByuRKNtdCpUEgJJejW4iXDOBOwQuvoBmqiSixwSWXrFXIkCMASE0gEqYt99mudQIy5VJbye8PMqAHspTnDZBhykGCLudFxg5Df22rS9gsqRX65oH6VHrYxX+UZgqaSfuYGkwXMghKG49+S4RdvNwmCCUha/RB1/MoOReNQcB2NjInWPik+gb1ceMo8oGE0/g60CHbvEheqz8tBUrbBU1xBMksB+mFveesWoI3qTQWZ+oi84u/NMVKgS5YP6oCUOGs+fXvl+0uupt6ip2HMq7yj4/Dt9RFtqIicKxiKG2LuV+C02xTO0SA3sEEVhtBH6bBBcQkldhvTAUIOyXC626L+SYy77GxhhAN7EEx28229N/rz/ltRDvmuykQ6ErscENl9szd5lZfDnH4y6bY+xYu0QjHHVWnp20stoBelfl3R80eIXbRdkMbINVnU3kgueIaJms4TUaeguSbTSTME+VGHOtA4ugoG3JdSzbi5sFRXemQ36BT7pv0lTUVNLhyz1Nbl0jeP0MTem612+NhsO9K7B0N6DlbuqlQsL+baKN+lfBbdNDMCxiubzVxauDeqrnn5uQKzpnV6XEqD/tr6EQ8tPxMvKXUSOADzw+/Qlz+K44awQdxtrQq2WEpVBXafYN2bFP2E8R/i245LZyM8YYA8A2Z3wLwIxGNmyzNxXoDM4+bOM/B159L6gcwzkAk1Gb44jcUkjqF0nbO96bLufnq+f7ujD9RfNDTG/Q==
+sidebar_class_name: "get api-method"
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import Markdown from "@theme/Markdown";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+
+<h1 className={"openapi__heading"}>get quotes from all relayers.</h1>
+
+<MethodEndpoint method={"get"} path={"/quotes"}></MethodEndpoint>
+
+
+
+get quotes from all relayers.
+
+## Request
+
+<details style={{"marginBottom":"1rem"}} className={"openapi-markdown__details"} data-collapsed={false} open={true}><summary style={{}}><h3 className={"openapi-markdown__details-summary-header-params"}>Path Parameters</h3></summary><div><ul><ParamsItem className={"paramsItem"} param={{"description":"origin chain id to filter quotes by","in":"path","name":"originChainID","required":true,"schema":{"type":"integer"}}}></ParamsItem><ParamsItem className={"paramsItem"} param={{"description":"origin chain id to filter quotes by","in":"path","name":"originTokenAddr","required":true,"schema":{"type":"string"}}}></ParamsItem><ParamsItem className={"paramsItem"} param={{"description":"destination chain id to filter quotes by","in":"path","name":"destChainID","required":true,"schema":{"type":"integer"}}}></ParamsItem><ParamsItem className={"paramsItem"} param={{"description":"destination token address to filter quotes by","in":"path","name":"destTokenAddr","required":true,"schema":{"type":"string"}}}></ParamsItem><ParamsItem className={"paramsItem"} param={{"description":"relayer address to filter quotes by","in":"path","name":"relayerAddr","required":true,"schema":{"type":"string"}}}></ParamsItem></ul></div></details><div><div><ApiTabs label={undefined} id={undefined}><TabItem label={"200"} value={"200"}><div>
+
+OK
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><SchemaItem collapsible={false} name={"dest_amount"} required={false} schemaName={"string"} qualifierMessage={undefined} schema={{"description":"DestAmount is the max amount of liquidity which exists for a given destination token, provided in the destination token decimals","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"dest_chain_id"} required={false} schemaName={"integer"} qualifierMessage={undefined} schema={{"description":"DestChainID is the chain which the relayer is willing to relay to","type":"integer"}}></SchemaItem><SchemaItem collapsible={false} name={"dest_fast_bridge_address"} required={false} schemaName={"string"} qualifierMessage={undefined} schema={{"description":"DestFastBridgeAddress is the address of the fast bridge contract on the destination chain","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"dest_token_addr"} required={false} schemaName={"string"} qualifierMessage={undefined} schema={{"description":"DestToken is the token address for which the relayer willing to relay to","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"fixed_fee"} required={false} schemaName={"string"} qualifierMessage={undefined} schema={{"description":"FixedFee is the fixed fee for the quote, provided in the destination token terms","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"max_origin_amount"} required={false} schemaName={"string"} qualifierMessage={undefined} schema={{"description":"MaxOriginAmount is the maximum amount of origin tokens bridgeable","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"origin_chain_id"} required={false} schemaName={"integer"} qualifierMessage={undefined} schema={{"description":"OriginChainID is the chain which the relayer is willing to relay from","type":"integer"}}></SchemaItem><SchemaItem collapsible={false} name={"origin_fast_bridge_address"} required={false} schemaName={"string"} qualifierMessage={undefined} schema={{"description":"OriginFastBridgeAddress is the address of the fast bridge contract on the origin chain","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"origin_token_addr"} required={false} schemaName={"string"} qualifierMessage={undefined} schema={{"description":"OriginTokenAddr is the token address for which the relayer willing to relay from","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"relayer_addr"} required={false} schemaName={"string"} qualifierMessage={undefined} schema={{"description":"Address of the relayer providing the quote","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"updated_at"} required={false} schemaName={"string"} qualifierMessage={undefined} schema={{"description":"UpdatedAt is the time that the quote was last upserted","type":"string"}}></SchemaItem><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></ul></details></TabItem><TabItem label={"Example (from schema)"} value={"Example (from schema)"}><ResponseSamples responseExample={"[\n  {\n    \"dest_amount\": \"string\",\n    \"dest_chain_id\": 0,\n    \"dest_fast_bridge_address\": \"string\",\n    \"dest_token_addr\": \"string\",\n    \"fixed_fee\": \"string\",\n    \"max_origin_amount\": \"string\",\n    \"origin_chain_id\": 0,\n    \"origin_fast_bridge_address\": \"string\",\n    \"origin_token_addr\": \"string\",\n    \"relayer_addr\": \"string\",\n    \"updated_at\": \"string\"\n  }\n]"} language={"json"}></ResponseSamples></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem></ApiTabs></div></div>
+      

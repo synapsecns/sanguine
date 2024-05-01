@@ -14,47 +14,13 @@ Right now, RFQ consists of three-different components, with each of the two off-
 
 - **API -** The RFQ api is an off-chain service ran by Quoters. user-interfaces that allows market makers/solvers to post quotes on different bridge routes. Solvers that have registered with the FastBridge contract can sign messages that post quotes signifying at what price they are willing to bridge tokens on a certain route.
 
-In the canonical implementation, users Solvers authenticated by signing requests with their private key in accordance with [EIP-191](https://eips.ethereum.org/EIPS/eip-191). The canonical implementation can be found [here](https://github.com/synapsecns/sanguine/tree/master/services/rfq)
+  In the canonical implementation, users Solvers authenticated by signing requests with their private key in accordance with [EIP-191](https://eips.ethereum.org/EIPS/eip-191). The canonical implementation can be found [here](https://github.com/synapsecns/sanguine/tree/master/services/rfq).
 - **Fast Bridge Contract -** The fast bridge contract is the core of the RFQ protocol and what allows solvers  to fulfill requests from users. A user deposits their funds into the FastBridge contract along with the lowest price they are willing to accept for a given route (a price they get by reading quotes from the Quoter).
 
-In the unlikely event no Solver is available to fulfill a users request, a user can permissionlessly  claim their funds back after waiting an optimistic period.
+  In the unlikely event no Solver is available to fulfill a users request, a user can permissionlessly  claim their funds back after waiting an optimistic period.
 
-Contract code level documentation can be found [here](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html).
+  Contract code level documentation can be found [here](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html).
 - **Relayer** - The relayer is a service ran by the solvers. The relayer is responsible for posting quotes & fulfilling requests. While the relayer can be implemented in any way, the canonical implementation is a golang based relayer that provides a way to decide what chains/routes to quote on, how much to quote and which addresses not to relay for.
-
-### API
-
-The canonical implementation for the rfq api can be found [here]. Please note that end-users and solvers will not need to run their own version of the API.
-
-<aside>
-💡 TODO: certain pieces of this config (e.g. submitter, database configs, signer config) are going to be shared across bridge/interchain services and as such detailed descriptions belong in the [Contributor Docs](https://www.notion.so/Documentation-96480ce1d1574a438796345d901c53d4?pvs=21))
-
-</aside>
-
-**Configuration:**
-
-The RFQ API takes in a yaml config that allows the user to specify which contracts, chains and interfaces it should run on. The config is structured like this:
-
-```yaml
-database:
-  type: mysql # can be other mysql or sqlite
-  dsn: root:password@hostname:3306)/database?parseTime=true # should be the dsn of your database. If using sqlite, this can be a path
-omnirpc_url: https://route-to-my-omnirpc # omnipc route
-bridges:
-  1: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E' # FastBridge address on ethereum
-  10: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E' # FastBridge address on op
-port: '8081'  # port to run your http server on
-```
-
-**Building From Source:**
-
-1. `git clone [https://github.com/synapsecns/sanguin](https://github.com/synapsecns/sanguine-)e --recursive`
-2. `cd sanguine/services/rfq`
-3. `go run main.go --config /path/to/config.yaml`
-
-**Running with Docker**
-
-1. `docker run  --config /path/to/config`
 
 ### Relayer
 
