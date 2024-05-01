@@ -14,6 +14,7 @@ const SynapseCCTPRouterABI = require('./abi/SynapseCCTPRouter.json')
 const SwapQuoterABI = require('./abi/SwapQuoter.json')
 const ERC20ABI = require('./abi/IERC20Metadata.json')
 const DefaultPoolABI = require('./abi/IDefaultPool.json')
+const rfqResponse = require('./data/rfqResponse.json')
 // ETH address
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
@@ -22,8 +23,6 @@ const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 Object.keys(providers).forEach((chainId) => {
   providers[chainId] = new ethers.providers.JsonRpcProvider(providers[chainId])
 })
-
-const rfqResponse = require('./data/rfqResponse.json')
 
 // Contract addresses
 const SynapseRouterAddress = '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a'
@@ -296,7 +295,7 @@ const printMaps = async () => {
         })
       )
 
-      if (allowedChainIdsForRfq.includes(parseInt(chainId))) {
+      if (allowedChainIdsForRfq.includes(Number(chainId))) {
         await Promise.all(
           rfqResponse.map(async (quote) => {
             const {
@@ -312,7 +311,7 @@ const printMaps = async () => {
             const normalizedDestAddress =
               ethers.utils.getAddress(dest_token_addr)
 
-            if (origin_chain_id === parseInt(chainId)) {
+            if (origin_chain_id === Number(chainId)) {
               const originTokenSymbol = await getTokenSymbol(
                 origin_chain_id,
                 normalizedOriginAddress
