@@ -36,7 +36,7 @@ export const AvailableBalance = ({
   } else if (isGasEstimateLoading) {
     return (
       <label className={labelClassName} htmlFor="inputRow">
-        <span className="text-zinc-500 dark:text-zinc-400">
+        <span className="animate-pulse text-zinc-500 dark:text-zinc-400">
           calculating gas...
         </span>
       </label>
