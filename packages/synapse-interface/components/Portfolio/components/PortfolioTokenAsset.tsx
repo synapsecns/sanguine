@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
-import toast from 'react-hot-toast'
-import _, { isNumber } from 'lodash'
+import { zeroAddress } from 'viem'
+import { isNumber } from 'lodash'
+import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
 import {
   setFromChainId,
@@ -9,15 +10,12 @@ import {
 } from '@/slices/bridge/reducer'
 import { Token } from '@/utils/types'
 import { inputRef } from '../../StateManagedBridge/InputContainer'
-import Image from 'next/image'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
-import { zeroAddress } from 'viem'
-import GasIcon from '@/components/icons/GasIcon'
 import { HoverTooltip } from '@/components/HoverTooltip'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
-import { formatBigIntToString } from '@/utils/bigint/format'
+import GasIcon from '@/components/icons/GasIcon'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()
@@ -37,12 +35,12 @@ export const PortfolioTokenAsset = ({
   connectedChainId,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
-  const { maxBridgeableGas, gasFeeExceedsBalance } = useGasEstimator()
+  const { maxBridgeableGas } = useGasEstimator()
   const { fromChainId, fromToken } = useBridgeState()
   const { icon, symbol, decimals, addresses } = token
 
   const tokenAddress = addresses[portfolioChainId]
-  const tokenDecimals = _.isNumber(decimals)
+  const tokenDecimals = isNumber(decimals)
     ? decimals
     : decimals[portfolioChainId]
 
@@ -53,11 +51,6 @@ export const PortfolioTokenAsset = ({
   const isTokenSelected =
     fromToken === token && fromChainId === portfolioChainId
   const isGasToken = tokenAddress === zeroAddress
-
-  const maxBalance = formatBigIntToString(balance, tokenDecimals)
-  const maxBalanceBridgeable = isNumber(maxBridgeableGas)
-    ? maxBridgeableGas?.toString()
-    : maxBalance
 
   const handleFromSelectionCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
