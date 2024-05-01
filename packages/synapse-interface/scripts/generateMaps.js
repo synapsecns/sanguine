@@ -23,18 +23,29 @@ Object.keys(providers).forEach((chainId) => {
   providers[chainId] = new ethers.providers.JsonRpcProvider(providers[chainId])
 })
 
+const rfqResponse = require('./data/rfqResponse.json')
+
 // Contract addresses
 const SynapseRouterAddress = '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a'
 const SynapseCCTPRouterAddress = '0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48'
 const SynapseCCTPAddress = '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
 
+// Chain IDs where SynapseBridge is allowed
+const allowedChainIdsForSynapseBridge = [
+  1, 10, 25, 56, 137, 250, 288, 1088, 1284, 1285, 2000, 7700, 8217, 8453, 81457,
+  42161, 43114, 53935, 1313161554, 1666600000,
+]
+
 // Chain IDs where SynapseCCTPRouter is allowed
 const allowedChainIdsForSynapseCCTPRouter = [1, 10, 137, 8453, 42161, 43114]
+
+// Chain IDs where RFQ is allowed
+const allowedChainIdsForRfq = [1, 10, 8453, 42161, 534352]
 
 // Get SynapseRouter contract instances for each chain
 const SynapseRouters = {}
 const SwapQuoters = {}
-Object.keys(providers).forEach((chainId) => {
+allowedChainIdsForSynapseBridge.forEach((chainId) => {
   SynapseRouters[chainId] = new ethers.Contract(
     SynapseRouterAddress,
     SynapseRouterABI,
@@ -67,6 +78,13 @@ allowedChainIdsForSynapseCCTPRouter.forEach((chainId) => {
 // Function to get list of tokens that could be swapped
 // into SynapseBridge tokens for a given chain.
 const getBridgeOriginMap = async (chainId) => {
+  if (!SwapQuoters[chainId]) {
+    return {
+      originMap: {},
+      poolSets: [],
+    }
+  }
+
   // Get WETH address
   const weth = await SwapQuoters[chainId].weth()
   // Get list of supported tokens
@@ -252,7 +270,6 @@ const sortMapByKeys = (map) => {
     })
   return sortedMap
 }
-
 const printMaps = async () => {
   const bridgeMap = {}
   const bridgeSymbolsMap = {}
@@ -278,11 +295,69 @@ const printMaps = async () => {
           }
         })
       )
+
+      if (allowedChainIdsForRfq.includes(parseInt(chainId))) {
+        await Promise.all(
+          rfqResponse.map(async (quote) => {
+            const {
+              origin_chain_id,
+              origin_token_addr,
+              dest_chain_id,
+              dest_token_addr,
+            } = quote
+
+            const normalizedOriginAddress =
+              ethers.utils.getAddress(origin_token_addr)
+
+            const normalizedDestAddress =
+              ethers.utils.getAddress(dest_token_addr)
+
+            if (origin_chain_id === parseInt(chainId)) {
+              const originTokenSymbol = await getTokenSymbol(
+                origin_chain_id,
+                normalizedOriginAddress
+              )
+
+              const rfqOriginSymbol = getRFQSymbol(originTokenSymbol)
+
+              if (!tokens[normalizedOriginAddress]) {
+                tokens[normalizedOriginAddress] = {
+                  origin: [],
+                  destination: [],
+                  swappable: [], // poolSets are handled during SynapseBridge portion
+                  symbol: null,
+                  decimals: null,
+                }
+              }
+
+              if (
+                normalizedOriginAddress in tokens &&
+                !tokens[normalizedOriginAddress].origin.includes(
+                  rfqOriginSymbol
+                )
+              ) {
+                tokens[normalizedOriginAddress].origin.push(rfqOriginSymbol)
+                tokens[normalizedOriginAddress].symbol = originTokenSymbol
+                tokens[normalizedOriginAddress].decimals =
+                  await getTokenDecimals(
+                    origin_chain_id,
+                    normalizedOriginAddress
+                  )
+                tokens[normalizedOriginAddress].destination.push(
+                  rfqOriginSymbol
+                )
+              }
+            }
+          })
+        )
+      }
+
       bridgeMap[chainId] = sortMapByKeys(tokens)
       bridgeSymbolsMap[chainId] = sortMapByKeys(extractBridgeSymbolsMap(tokens))
       console.log('Finished chain: ', chainId)
     })
   )
+
   prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/bridgeMap.ts')
 }
 
@@ -320,6 +395,7 @@ const extractBridgeSymbolsMap = (tokens) => {
     ...Object.keys(bridgeSymbolsDestinationSets),
   ])
   const bridgeSymbolsMap = {}
+
   bridgeSymbols.forEach((symbol) => {
     bridgeSymbolsMap[symbol] = {
       origin: Array.from(bridgeSymbolsOriginSets[symbol]).sort(),
@@ -332,6 +408,9 @@ const extractBridgeSymbolsMap = (tokens) => {
 const getTokenSymbol = async (chainId, token) => {
   // Check if token is ETH
   if (token === ETH) {
+    if (!SwapQuoters[chainId]) {
+      return 'ETH'
+    }
     // Get WETH address from SwapQuoter
     const weth = await SwapQuoters[chainId].weth()
     // Return "WETH" symbol without first character
@@ -362,6 +441,10 @@ const getTokenDecimals = async (chainId, token) => {
     providers[chainId]
   ).decimals()
   return decimals
+}
+
+const getRFQSymbol = (symbol) => {
+  return `RFQ.${symbol}`
 }
 
 printMaps()
