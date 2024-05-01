@@ -38,7 +38,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/synapsecns/sanguine/tree/main/docs/bridge/',
+            'https://github.com/synapsecns/sanguine/tree/master/docs/bridge/',
           // docLayoutComponent: "@theme/DocPage",
           docItemComponent: "@theme/ApiItem" // derived from docusaurus-theme-openapi-docs
         },
@@ -134,7 +134,8 @@ const config: Config = {
         config: {
           rfqapi: { // the <id> referenced when running CLI commands
             specPath: "../../services/rfq/api/docs/swagger.yaml", // path to OpenAPI spec, URLs supported
-            outputDir: "docs/rfq/api", // output directory for generated files
+            baseUrl: "https://https://rfq-api.omnirpc.io/",
+            outputDir: "docs/rfq/API", // output directory for generated files
             sidebarOptions: { // optional, instructs plugin to generate sidebar.js
               groupPathsBy: "tag", // group sidebar items by operation "tag"
             },

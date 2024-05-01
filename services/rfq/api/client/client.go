@@ -51,7 +51,7 @@ type clientImpl struct {
 // NewAuthenticatedClient creates a new client for the RFQ quoting API.
 // TODO: @aurelius,  you don't actually need to be authed for GET Requests.
 func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, reqSigner signer.Signer) (AuthenticatedClient, error) {
-	unauthedClient, err := NewUnauthenticaedClient(metrics, rfqURL)
+	unauthedClient, err := NewUnauthenticatedClient(metrics, rfqURL)
 	if err != nil {
 		return nil, fmt.Errorf("could not create unauthenticated client: %w", err)
 	}
@@ -87,8 +87,8 @@ func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, reqSigner si
 	}, nil
 }
 
-// NewUnauthenticaedClient creates a new client for the RFQ quoting API.
-func NewUnauthenticaedClient(metricHandler metrics.Handler, rfqURL string) (UnauthenticatedClient, error) {
+// NewUnauthenticatedClient creates a new client for the RFQ quoting API.
+func NewUnauthenticatedClient(metricHandler metrics.Handler, rfqURL string) (UnauthenticatedClient, error) {
 	client := resty.New().
 		SetBaseURL(rfqURL).
 		OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
