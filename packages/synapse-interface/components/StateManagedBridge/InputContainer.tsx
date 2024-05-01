@@ -136,6 +136,7 @@ export const InputContainer = () => {
             fromToken={fromToken}
             balance={balance}
             parsedBalance={parsedBalance}
+            maxBalanceBridgeable={maxBridgeableGas?.toFixed(4)}
             onMaxBalance={onMaxBalance}
             isGasEstimateLoading={isLoading}
             disabled={!isConnected}

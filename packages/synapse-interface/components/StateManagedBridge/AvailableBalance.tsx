@@ -10,6 +10,7 @@ export const AvailableBalance = ({
   fromToken,
   balance,
   parsedBalance,
+  maxBalanceBridgeable,
   onMaxBalance,
   disabled,
   isGasEstimateLoading,
@@ -18,6 +19,7 @@ export const AvailableBalance = ({
   fromToken: Token | null
   balance?: bigint
   parsedBalance?: string
+  maxBalanceBridgeable?: string
   onMaxBalance?: () => void
   disabled: boolean
   isGasEstimateLoading: boolean
@@ -46,7 +48,7 @@ export const AvailableBalance = ({
         className={labelClassName}
         htmlFor="inputRow"
       >
-        {parsedBalance ?? '0.0'}
+        {maxBalanceBridgeable ?? parsedBalance ?? '0.0'}
         <span className="text-zinc-500 dark:text-zinc-400"> available</span>
       </label>
     )

@@ -63,7 +63,7 @@ export const PortfolioTokenAsset = ({
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
     handleFocusOnBridgeInput()
-  }, [token, balance, portfolioChainId, maxBalanceBridgeable])
+  }, [token, portfolioChainId])
 
   return (
     <div
