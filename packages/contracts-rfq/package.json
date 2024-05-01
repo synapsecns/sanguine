@@ -7,6 +7,9 @@
   "files": [
     "src/*.sol"
   ],
+  "dependencies": {
+    "@openzeppelin/contracts": "5.0.1"
+  },
   "devDependencies": {
     "@synapsecns/solidity-devops": "^0.3.3",
     "prettier": "^2.5.1",
