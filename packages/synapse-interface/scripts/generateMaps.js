@@ -1,6 +1,7 @@
 const { ethers } = require('ethers')
 
 const { prettyPrintTS } = require('./utils/prettyPrintTs')
+const { fetchRfqData } = require('./utils/fetchRfqData')
 // Provider URLs
 const providers = require('./data/providers.json')
 // List of ignored bridge symbols
@@ -14,7 +15,7 @@ const SynapseCCTPRouterABI = require('./abi/SynapseCCTPRouter.json')
 const SwapQuoterABI = require('./abi/SwapQuoter.json')
 const ERC20ABI = require('./abi/IERC20Metadata.json')
 const DefaultPoolABI = require('./abi/IDefaultPool.json')
-const rfqResponse = require('./data/rfqResponse.json')
+// const rfqResponse = require('./data/rfqResponse.json')
 // ETH address
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
@@ -273,6 +274,8 @@ const printMaps = async () => {
   const bridgeMap = {}
   const bridgeSymbolsMap = {}
   console.log('Starting on chains: ', Object.keys(providers))
+
+  const rfqResponse = await fetchRfqData()
   await Promise.all(
     Object.keys(providers).map(async (chainId) => {
       // Get map from token to set of bridge token symbols

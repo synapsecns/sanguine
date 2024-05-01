@@ -80,7 +80,7 @@ function ButtonContent({
           />
           {chain.name}
         </span>
-        {chain.new && <NewTag />}
+        {chain.isNew && <NewTag />}
         {isOrigin && balanceTokens?.length > 0 && (
           <ChainTokens balanceTokens={balanceTokens} />
         )}
