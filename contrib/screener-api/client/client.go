@@ -25,7 +25,7 @@ var (
 // ScreenerClient is an interface for the Screener API.
 type ScreenerClient interface {
 	ScreenAddress(ctx context.Context, ruleset, address string) (blocked bool, err error)
-	BlacklistAddress(ctx context.Context, body BlackListBody) (string, error)
+	BlacklistAddress(ctx context.Context, appsecret string, appid string, body BlackListBody) (string, error)
 }
 
 type clientImpl struct {
@@ -82,13 +82,11 @@ type blacklistResponse struct {
 	Error  string `json:"error"`
 }
 
-func (c clientImpl) BlacklistAddress(ctx context.Context, body BlackListBody) (string, error) {
+func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appid string, body BlackListBody) (string, error) {
 	var blacklistRes blacklistResponse
 
 	// TODO: remove, just for testing purposes
 	// future, take it from some .env or something
-	appsecret := "appsecret"
-	appid := "appid"
 
 	nonce := strings.ReplaceAll(uuid.New().String(), "-", "")[:32]
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
@@ -131,7 +129,7 @@ func (n noOpClient) ScreenAddress(_ context.Context, _, _ string) (bool, error) 
 	return false, nil
 }
 
-func (n noOpClient) BlacklistAddress(_ context.Context, _ BlackListBody) (string, error) {
+func (n noOpClient) BlacklistAddress(_ context.Context, _ string, _ string, _ BlackListBody) (string, error) {
 	return "", nil
 }
 

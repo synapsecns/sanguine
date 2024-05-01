@@ -80,7 +80,9 @@ func (s *ScreenerSuite) TestScreener() {
 	s.T().Setenv("TRM_URL", "")
 
 	cfg := config.Config{
-		TRMKey: "",
+		AppSecret: "appsecret",
+		AppID:     "appid",
+		TRMKey:    "",
 		Rulesets: map[string]config.RulesetConfig{
 			"testrule": {
 				Filename: s.makeTestCSV([]screener.Set{
@@ -163,7 +165,7 @@ func (s *ScreenerSuite) TestScreener() {
 	}
 
 	// post to the blacklist
-	status, err := apiClient.BlacklistAddress(s.GetTestContext(), blacklistBody)
+	status, err := apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
 	Equal(s.T(), "success", status)
 	Nil(s.T(), err)
 
@@ -171,7 +173,7 @@ func (s *ScreenerSuite) TestScreener() {
 	blacklistBody.TypeReq = "update"
 	blacklistBody.Remark = "new remark"
 
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), blacklistBody)
+	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
 	Equal(s.T(), "success", status)
 	Nil(s.T(), err)
 
@@ -179,7 +181,7 @@ func (s *ScreenerSuite) TestScreener() {
 	blacklistBody.TypeReq = "delete"
 	blacklistBody.ID = "1"
 
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), blacklistBody)
+	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
 	Equal(s.T(), "success", status)
 	Nil(s.T(), err)
 }

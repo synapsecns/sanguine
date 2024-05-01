@@ -86,7 +86,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
 
 	// idk the middleware is faking up
-	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware(), screener.blacklistAddress)
+	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
 
 	return &screener, nil
 }
@@ -178,7 +178,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 // This function takes the HTTP headers and the body of the request and reconstructs the signature to
 // compare it with the signature provided. If they match, the request is allowed to pass through.
-func (s *screenerImpl) authMiddleware() gin.HandlerFunc {
+func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var blacklistBody client.BlackListBody
 
@@ -188,9 +188,11 @@ func (s *screenerImpl) authMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		appid := cfg.AppID
+		appsecret := cfg.AppSecret
+
 		nonce := c.GetHeader("nonce")
 		timestamp := c.GetHeader("timestamp")
-		appid := c.GetHeader("appid")
 		queryString := c.GetHeader("queryString")
 		if nonce == "" || timestamp == "" || appid == "" {
 			c.JSON(http.StatusConflict, gin.H{"error": "missing headers"})
@@ -199,7 +201,7 @@ func (s *screenerImpl) authMiddleware() gin.HandlerFunc {
 		}
 
 		// reconstruct signature
-		expected := client.GenerateSignature("appsecret", appid, timestamp, nonce, queryString, blacklistBody)
+		expected := client.GenerateSignature(appsecret, appid, timestamp, nonce, queryString, blacklistBody)
 
 		if c.GetHeader("Signature") != expected {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
