@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { estimateGas } from '@wagmi/core'
 
-import { useAppSelector } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
@@ -13,8 +13,10 @@ import { calculateGasCost } from '../calculateGasCost'
 import { stringToBigInt, formatBigIntToString } from '../bigint/format'
 import { Token } from '../types'
 import { wagmiConfig } from '@/wagmiConfig'
+import { fetchGasData } from '@/slices/gasDataSlice'
 
 export const useGasEstimator = () => {
+  const dispatch = useAppDispatch()
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()
   const { balances } = usePortfolioState()
@@ -68,6 +70,7 @@ export const useGasEstimator = () => {
       setEstimatedGasLimit(0n)
       setIsLoading(true)
       try {
+        await dispatch(fetchGasData(fromChainId))
         const gasLimit = await queryEstimatedBridgeGasLimit(
           synapseSDK,
           address,
@@ -229,7 +232,7 @@ const queryEstimatedBridgeGasLimit = async (
     synapseSDK,
     bridgeQuote,
     address,
-    address,
+    toAddress,
     fromChainId,
     toChainId,
     fromToken,
