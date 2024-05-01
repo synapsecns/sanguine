@@ -26,6 +26,16 @@ func NewHandler(db db.APIDB) *Handler {
 //
 // PUT /quotes
 // @dev Protected Method: Authentication is handled through middleware in server.go.
+// nolint: cyclop
+// @Summary get quotes from all relayers.
+// @Schemes
+// @Description upsert a quote from relayer.
+// @Param request body model.PutQuoteRequest true "query params"
+// @Tags quotes
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /quotes [put].
 func (h *Handler) ModifyQuote(c *gin.Context) {
 	// Retrieve the request from context
 	req, exists := c.Get("putRequest")
@@ -84,6 +94,20 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 // GetQuotes retrieves all quotes from the database.
 // GET /quotes.
 // nolint: cyclop
+// PingExample godoc
+// @Summary get quotes from all relayers.
+// @Schemes
+// @Param   originChainID     path    int     true        "origin chain id to filter quotes by"
+// @Param   originTokenAddr   path    string     true        "origin chain id to filter quotes by"
+// @Param   destChainID     path    int     true        "destination chain id to filter quotes by"
+// @Param   destTokenAddr   path    string     true        "destination token address to filter quotes by"
+// @Param   relayerAddr   path    string     true        "relayer address to filter quotes by"
+// @Description get quotes from all relayers.
+// @Tags quotes
+// @Accept json
+// @Produce json
+// @Success 200 {array} model.GetQuoteResponse
+// @Router /quotes [get].
 func (h *Handler) GetQuotes(c *gin.Context) {
 	originChainIDStr := c.Query("originChainID")
 	originTokenAddr := c.Query("originTokenAddr")
@@ -133,10 +157,4 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 		quotes[i] = model.QuoteResponseFromDbQuote(dbQuote)
 	}
 	c.JSON(http.StatusOK, quotes)
-}
-
-// GetFilteredQuotes retrieves filtered quotes from the database.
-// GET /quotes?destChainId=&destTokenAddr=&destAmount=.
-func (h *Handler) GetFilteredQuotes(c *gin.Context) {
-	// Implement logic to fetch and return filtered quotes
 }

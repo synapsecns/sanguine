@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.2.2...contracts-communication@1.3.0) (2024-04-29)
+
+
+### Features
+
+* simplify payment of execution fees ([#2524](https://github.com/synapsecns/sanguine/issues/2524)) ([ce1b7e7](https://github.com/synapsecns/sanguine/commit/ce1b7e7eb0d17c1ed9512f4c7e248bfd18da80ca))
+
+
+
+
+
 ## [1.2.2](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.2.1...contracts-communication@1.2.2) (2024-04-22)
 
 **Note:** Version bump only for package contracts-communication

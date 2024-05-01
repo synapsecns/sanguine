@@ -11,9 +11,11 @@ import (
 	"sync/atomic"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
+	"github.com/synapsecns/sanguine/core"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/ipfs/go-log"
@@ -69,6 +71,10 @@ type Manager struct {
 	// relayPaused is set when the RFQ API is found to be offline, which
 	// lets the quoter indicate that quotes should not be relayed.
 	relayPaused atomic.Bool
+	// meter is the meter used by this package.
+	meter metric.Meter
+	// quoteAmountHist stores a histogram of quote amounts.
+	quoteAmountHist metric.Float64Histogram
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -104,6 +110,16 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		}
 	}
 
+	var meter metric.Meter
+	var quoteAmountHist metric.Float64Histogram
+	if metricsHandler.Type() != metrics.Null {
+		meter := metricsHandler.Meter(meterName)
+		quoteAmountHist, err = meter.Float64Histogram("quote_amount")
+		if err != nil {
+			return nil, fmt.Errorf("error creating quote amount hist: %w", err)
+		}
+	}
+
 	return &Manager{
 		config:           config,
 		inventoryManager: inventoryManager,
@@ -113,6 +129,8 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		metricsHandler:   metricsHandler,
 		feePricer:        feePricer,
 		screener:         ss,
+		meter:            meter,
+		quoteAmountHist:  quoteAmountHist,
 	}, nil
 }
 
@@ -214,7 +232,11 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("error getting committable balances: %w", err)
 	}
-	return m.prepareAndSubmitQuotes(ctx, inv)
+
+	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
+	defer quoteCancel()
+
+	return m.prepareAndSubmitQuotes(quoteCtx, inv)
 }
 
 // Prepares and submits quotes based on inventory.
@@ -265,6 +287,8 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	return nil
 }
 
+const meterName = "github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
+
 // generateQuotes TODO: THIS LOOP IS BROKEN
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
@@ -295,9 +319,18 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 					// continue generating quotes even if one fails
 					span.AddEvent("error generating quote", trace.WithAttributes(
 						attribute.String("key_token_id", keyTokenID),
+						attribute.String("error", quoteErr.Error()),
 					))
 					continue
 				}
+
+				registerErr := m.registerQuote(ctx, quote)
+				if registerErr != nil {
+					span.AddEvent("error registering quote", trace.WithAttributes(
+						attribute.String("error", registerErr.Error()),
+					))
+				}
+
 				quotes = append(quotes, *quote)
 			}
 		}
@@ -360,6 +393,37 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 		DestFastBridgeAddress:   destRFQAddr,
 	}
 	return quote, nil
+}
+
+// registerQuote registers a quote with the metrics handler.
+func (m *Manager) registerQuote(ctx context.Context, quote *model.PutQuoteRequest) (err error) {
+	if m.meter == nil || m.quoteAmountHist == nil {
+		return nil
+	}
+
+	originMetadata, err := m.inventoryManager.GetTokenMetadata(quote.OriginChainID, common.HexToAddress(quote.OriginTokenAddr))
+	if err != nil {
+		return fmt.Errorf("error getting origin token metadata: %w", err)
+	}
+	destMetadata, err := m.inventoryManager.GetTokenMetadata(quote.DestChainID, common.HexToAddress(quote.DestTokenAddr))
+	if err != nil {
+		return fmt.Errorf("error getting dest token metadata: %w", err)
+	}
+	destAmount, ok := new(big.Int).SetString(quote.DestAmount, 10)
+	if !ok {
+		return fmt.Errorf("error parsing dest amount: %w", err)
+	}
+	attributes := attribute.NewSet(
+		attribute.Int(metrics.Origin, quote.OriginChainID),
+		attribute.Int(metrics.Destination, quote.DestChainID),
+		attribute.String("origin_token_name", originMetadata.Name),
+		attribute.String("dest_token_name", destMetadata.Name),
+		attribute.String("max_origin_amount", quote.MaxOriginAmount),
+		attribute.String("fixed_fee", quote.FixedFee),
+		attribute.String("relayer", m.relayerSigner.Address().Hex()),
+	)
+	m.quoteAmountHist.Record(ctx, core.BigToDecimals(destAmount, destMetadata.Decimals), metric.WithAttributeSet(attributes))
+	return nil
 }
 
 // getQuoteAmount calculates the quote amount for a given route.

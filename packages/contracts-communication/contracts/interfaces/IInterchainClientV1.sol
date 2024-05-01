@@ -5,6 +5,7 @@ import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 
 interface IInterchainClientV1 {
     // TODO: standardize error names across interfaces
+    error InterchainClientV1__BatchConflict(address module);
     error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
     error InterchainClientV1__IncorrectDstChainId(uint64 chainId);
     error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
@@ -16,15 +17,9 @@ interface IInterchainClientV1 {
     error InterchainClientV1__NotRemoteChainId(uint64 chainId);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
+    error InterchainClientV1__ZeroExecutionService();
     error InterchainClientV1__ZeroReceiver();
     error InterchainClientV1__ZeroRequiredResponses();
-
-    /**
-     * @notice Sets the address of the ExecutionFees contract.
-     * @dev Only callable by the contract owner or an authorized account.
-     * @param executionFees_ The address of the ExecutionFees contract.
-     */
-    function setExecutionFees(address executionFees_) external;
 
     /**
      * @notice Sets the linked client for a specific chain ID.

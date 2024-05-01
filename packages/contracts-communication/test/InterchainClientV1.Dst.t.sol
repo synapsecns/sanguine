@@ -299,6 +299,25 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         executeTransaction(encodedTx, options, emptyProof);
     }
 
+    function checkBatchConflictAB(
+        OptionsV1 memory options,
+        AppConfigV1 memory appConfig,
+        uint256 verificationTimeHonest
+    )
+        internal
+    {
+        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
+            constructInterchainTx(options.encodeOptionsV1());
+        mockReceivingConfig(appConfig, twoModules);
+        mockCheckVerification(twoModules[0], desc, verificationTimeHonest);
+        mockCheckVerification(twoModules[1], desc, type(uint256).max);
+        bytes memory encodedTx = getEncodedTx(icTx);
+        expectRevertBatchConflict(twoModules[1]);
+        icClient.isExecutable(encodedTx, emptyProof);
+        expectRevertBatchConflict(twoModules[1]);
+        executeTransaction(encodedTx, options, emptyProof);
+    }
+
     // ══════════════════════════════════════════ REQUIRED: 1, MODULES: A ══════════════════════════════════════════════
 
     function test_interchainExecute_1_A_periodNonZero_notVerifiedA_revert() public {
@@ -465,6 +484,20 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
     }
 
+    // ═════════════════════════════════ REQUIRED: 1, MODULES: A+B, WITH CONFLICT ══════════════════════════════════════
+
+    function test_interchainExecute_1_AB_periodNonZero_conflict_almostVerifiedA_revert() public {
+        checkBatchConflictAB(optionsNoAirdrop, oneConfWithOP, ALMOST_VERIFIED);
+    }
+
+    function test_interchainExecute_1_AB_periodNonZero_conflict_justVerifiedA_revert() public {
+        checkBatchConflictAB(optionsNoAirdrop, oneConfWithOP, JUST_VERIFIED);
+    }
+
+    function test_interchainExecute_1_AB_periodNonZero_conflict_overVerifiedA_revert() public {
+        checkBatchConflictAB(optionsNoAirdrop, oneConfWithOP, OVER_VERIFIED);
+    }
+
     // ══════════════════════════════════ REQUIRED: 1, MODULES: A+B (PERIOD ZERO) ══════════════════════════════════════
 
     function test_interchainExecute_1_AB_periodZero_notVerifiedA_notVerifiedB_revert() public {
@@ -577,6 +610,20 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
 
     function test_interchainExecute_1_AB_periodZero_overVerifiedA_overVerifiedB_withAirdrop_success() public {
         checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
+    }
+
+    // ══════════════════════════ REQUIRED: 1, MODULES: A+B, WITH CONFLICT (PERIOD ZERO) ═══════════════════════════════
+
+    function test_interchainExecute_1_AB_periodZero_conflict_almostVerifiedA_revert() public {
+        checkBatchConflictAB(optionsNoAirdrop, oneConfNoOP, ALMOST_VERIFIED);
+    }
+
+    function test_interchainExecute_1_AB_periodZero_conflict_justVerifiedA_revert() public {
+        checkBatchConflictAB(optionsNoAirdrop, oneConfNoOP, JUST_VERIFIED);
+    }
+
+    function test_interchainExecute_1_AB_periodZero_conflict_overVerifiedA_revert() public {
+        checkBatchConflictAB(optionsNoAirdrop, oneConfNoOP, OVER_VERIFIED);
     }
 
     // ═════════════════════════════════════════ REQUIRED: 2, MODULES: A+B ═════════════════════════════════════════════

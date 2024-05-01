@@ -15,7 +15,8 @@
     "moonbeam": "--skip-simulation --slow",
     "moonriver": "--skip-simulation --slow",
     "optimism": "--with-gas-price 100000000",
-    "polygon": "--slow"
+    "polygon": "--slow",
+    "scroll": "--legacy"
   },
   "deployConfigs": "configs",
   "deployments": "deployments",
