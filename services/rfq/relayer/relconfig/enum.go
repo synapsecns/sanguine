@@ -34,10 +34,10 @@ func RebalanceMethodFromString(str string) (RebalanceMethod, error) {
 	}
 }
 
-// IsRebalanceMethodMismatch returns true if the two rebalance methods are different and both are not None.
-func IsRebalanceMethodMismatch(a, b RebalanceMethod) bool {
-	if a == RebalanceMethodNone || b == RebalanceMethodNone {
-		return false
+// CoalesceRebalanceMethods coalesces two rebalance methods.
+func CoalesceRebalanceMethods(a, b RebalanceMethod) RebalanceMethod {
+	if a == b {
+		return a
 	}
-	return a != b
+	return RebalanceMethodNone
 }
