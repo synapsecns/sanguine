@@ -32,6 +32,7 @@ import MiniMaxButton from '../buttons/MiniMaxButton'
 import { AvailableBalance } from './AvailableBalance'
 import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
+import { fetchGasData } from '@/slices/gasDataSlice'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -85,8 +86,6 @@ export const InputContainer = () => {
     hasValidGasEstimateInputs,
     estimateBridgeableBalanceCallback,
   ])
-
-  console.log('maxBridgeableGas in Input: ', maxBridgeableGas)
 
   useEffect(() => {
     setHasMounted(true)

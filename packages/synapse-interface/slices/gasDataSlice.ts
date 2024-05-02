@@ -16,6 +16,7 @@ export interface GasDataState {
       maxPriorityFeePerGas: string
     }
   }
+  isLoadingGasLimit: boolean
   isLoadingGasData: boolean
 }
 
@@ -49,6 +50,7 @@ const initialState: GasDataState = {
       maxPriorityFeePerGas: null,
     },
   },
+  isLoadingGasLimit: false,
   isLoadingGasData: true,
 }
 
@@ -56,11 +58,16 @@ export const gasDataSlice = createSlice({
   name: 'gasData',
   initialState,
   reducers: {
+    setIsLoadingGasLimit: (state: GasDataState, action) => {
+      state.isLoadingGasLimit = action.payload
+    },
     setGasLimit: (state: GasDataState, action) => {
       state.gasLimit = action.payload
+      state.isLoadingGasLimit = false
     },
     resetGasLimit: (state: GasDataState) => {
       state.gasLimit = initialState.gasLimit
+      state.isLoadingGasLimit = initialState.isLoadingGasLimit
     },
     resetGasData: (state: GasDataState) => {
       state.chainId = initialState.chainId
@@ -85,6 +92,11 @@ export const gasDataSlice = createSlice({
   },
 })
 
-export const { setGasLimit, resetGasLimit, resetGasData } = gasDataSlice.actions
+export const {
+  setGasLimit,
+  resetGasLimit,
+  resetGasData,
+  setIsLoadingGasLimit,
+} = gasDataSlice.actions
 
 export default gasDataSlice.reducer
