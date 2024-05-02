@@ -217,7 +217,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         });
     }
 
-    function assertExecutorSaved(InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) internal {
+    function assertExecutorSaved(InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) internal view {
         assertEq(icClient.getExecutor(getEncodedTx(icTx)), executor, "!getExecutor");
         assertEq(icClient.getExecutorById(desc.transactionId), executor, "!getExecutorById");
     }
@@ -227,6 +227,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         IInterchainClientV1.TxReadiness expected
     )
         internal
+        view
     {
         assertCorrectReadiness(icTx, expected, 0, 0);
     }
@@ -237,6 +238,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         address expectedFirstArg
     )
         internal
+        view
     {
         assertCorrectReadiness(icTx, expected, uint256(uint160(expectedFirstArg)), 0);
     }
@@ -247,6 +249,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         uint256 expectedFirstArg
     )
         internal
+        view
     {
         assertCorrectReadiness(icTx, expected, expectedFirstArg, 0);
     }
@@ -258,6 +261,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         uint256 expectedSecondArg
     )
         internal
+        view
     {
         assertCorrectReadiness(icTx, emptyProof, expected, expectedFirstArg, expectedSecondArg);
     }
@@ -270,6 +274,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         uint256 expectedSecondArg
     )
         internal
+        view
     {
         (IInterchainClientV1.TxReadiness actual, bytes32 firstArg, bytes32 secondArg) =
             icClient.getTxReadinessV1(icTx, proof);

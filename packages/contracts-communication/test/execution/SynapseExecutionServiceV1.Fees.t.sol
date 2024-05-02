@@ -197,7 +197,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         freshService.claimFees();
     }
 
-    function test_getExecutionFee_noAirdrop() public {
+    function test_getExecutionFee_noAirdrop() public view {
         uint256 fee = service.getExecutionFee({
             dstChainId: REMOTE_CHAIN_ID,
             txPayloadSize: MOCK_CALLDATA_SIZE,
@@ -216,7 +216,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         assertEq(fee, MOCK_FEE_NO_AIRDROP_MARKUP);
     }
 
-    function test_getExecutionFee_withAirdrop() public {
+    function test_getExecutionFee_withAirdrop() public view {
         uint256 fee = service.getExecutionFee({
             dstChainId: REMOTE_CHAIN_ID,
             txPayloadSize: MOCK_CALLDATA_SIZE,

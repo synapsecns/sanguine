@@ -46,7 +46,7 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
 
     function configureICAppV1() internal virtual {}
 
-    function assertEq(AppConfigV1 memory config, AppConfigV1 memory expected) internal {
+    function assertEq(AppConfigV1 memory config, AppConfigV1 memory expected) internal pure {
         assertEq(config.requiredResponses, expected.requiredResponses);
         assertEq(config.optimisticPeriod, expected.optimisticPeriod);
     }

@@ -45,7 +45,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
         vm.stopPrank();
     }
 
-    function test_setup() public {
+    function test_setup() public view {
         assertEq(module.owner(), owner);
         assertEq(module.INTERCHAIN_DB(), interchainDB);
         assertEq(module.getThreshold(), 0);

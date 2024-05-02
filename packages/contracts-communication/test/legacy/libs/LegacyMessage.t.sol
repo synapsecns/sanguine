@@ -49,7 +49,7 @@ contract LegacyMessageLibTest is Test {
         assertEq(newMessage, message);
     }
 
-    function test_encodeLegacyMessageRoundtrip(LegacyMessage memory legacyMsg) public {
+    function test_encodeLegacyMessageRoundtrip(LegacyMessage memory legacyMsg) public view {
         bytes memory encoded = libHarness.encodeLegacyMessage(
             legacyMsg.srcSender, legacyMsg.dstReceiver, legacyMsg.srcNonce, legacyMsg.message
         );
@@ -61,7 +61,7 @@ contract LegacyMessageLibTest is Test {
         assertEq(newMessage, legacyMsg.message);
     }
 
-    function test_payloadSize(LegacyMessage memory legacyMsg) public {
+    function test_payloadSize(LegacyMessage memory legacyMsg) public view {
         uint256 size = libHarness.payloadSize(legacyMsg.message.length);
         uint256 expectedSize = libHarness.encodeLegacyMessage(
             legacyMsg.srcSender, legacyMsg.dstReceiver, legacyMsg.srcNonce, legacyMsg.message
@@ -69,7 +69,7 @@ contract LegacyMessageLibTest is Test {
         assertEq(size, expectedSize);
     }
 
-    function test_payloadSize_fuzzBytesOnly(bytes memory message) public {
+    function test_payloadSize_fuzzBytesOnly(bytes memory message) public view {
         LegacyMessage memory legacyMsg;
         legacyMsg.message = message;
         test_payloadSize(legacyMsg);

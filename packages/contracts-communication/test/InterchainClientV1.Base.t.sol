@@ -238,13 +238,19 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
 
     // ════════════════════════════════════════════════ ASSERTIONS ═════════════════════════════════════════════════════
 
-    function assertCorrectDescriptor(InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) internal {
+    function assertCorrectDescriptor(
+        InterchainTransaction memory icTx,
+        InterchainTxDescriptor memory desc
+    )
+        internal
+        view
+    {
         assertEq(desc.dbNonce, icTx.dbNonce, "!desc.dbNonce");
         assertEq(desc.entryIndex, icTx.entryIndex, "!desc.entryIndex");
         assertEq(desc.transactionId, keccak256(getEncodedTx(icTx)), "!desc.transactionId");
     }
 
-    function assertEq(InterchainTransaction memory icTx, InterchainTransaction memory expected) internal {
+    function assertEq(InterchainTransaction memory icTx, InterchainTransaction memory expected) internal pure {
         assertEq(icTx.srcChainId, expected.srcChainId, "!srcChainId");
         assertEq(icTx.srcSender, expected.srcSender, "!srcSender");
         assertEq(icTx.dstChainId, expected.dstChainId, "!dstChainId");

@@ -49,6 +49,7 @@ contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
         ISynapseGasOracleV1.RemoteGasData memory b
     )
         internal
+        pure
     {
         assertEq(a.calldataPrice, b.calldataPrice);
         assertEq(a.gasPrice, b.gasPrice);
@@ -90,7 +91,7 @@ contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
         vm.expectRevert(ISynapseGasOracleV1.SynapseGasOracleV1__NativePriceZero.selector);
     }
 
-    function test_constructor() public {
+    function test_constructor() public view {
         assertEq(oracle.owner(), owner);
     }
 

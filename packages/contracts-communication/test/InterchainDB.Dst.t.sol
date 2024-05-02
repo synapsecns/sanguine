@@ -136,7 +136,13 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
-    function assertCorrectInitialVerificationTime(InterchainModuleMock module, InterchainBatch memory batch) internal {
+    function assertCorrectInitialVerificationTime(
+        InterchainModuleMock module,
+        InterchainBatch memory batch
+    )
+        internal
+        view
+    {
         bytes memory versionedBatch = getVersionedBatch(batch);
         uint256 savedVerificationTime = verifiedAt[address(module)][keccak256(abi.encode(versionedBatch))];
         // We never save 0 as a verification time during initial setup
@@ -150,6 +156,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         uint256 expectedVerificationTime
     )
         internal
+        view
     {
         uint256 timestamp = icDB.checkBatchVerification(address(module), batch);
         assertEq(timestamp, expectedVerificationTime);
@@ -348,14 +355,14 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
 
     // ══════════════════════════════════════════ TESTS: READING BATCHES ═══════════════════════════════════════════════
 
-    function test_checkVerification_existingA_existingB() public {
+    function test_checkVerification_existingA_existingB() public view {
         // {1: 10} was verified by module A and module B
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_1, 10);
         assertCorrectInitialVerificationTime(moduleA, batch);
         assertCorrectInitialVerificationTime(moduleB, batch);
     }
 
-    function test_checkVerification_existingA_unknownB() public {
+    function test_checkVerification_existingA_unknownB() public view {
         // {0: 0} was verified by module A, but not by module B
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
         assertCorrectInitialVerificationTime(moduleA, batch);
@@ -378,21 +385,21 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         checkVerification(moduleB, batch, BATCH_CONFLICT);
     }
 
-    function test_checkVerification_unknownA_existingB() public {
+    function test_checkVerification_unknownA_existingB() public view {
         // {1: 0} was verified by module B, but not by module A
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_1, 0);
         checkVerification(moduleA, batch, 0);
         assertCorrectInitialVerificationTime(moduleB, batch);
     }
 
-    function test_checkVerification_unknownA_unknownB() public {
+    function test_checkVerification_unknownA_unknownB() public view {
         // {0: 20} was not verified by any module
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 20);
         checkVerification(moduleA, batch, 0);
         checkVerification(moduleB, batch, 0);
     }
 
-    function test_checkVerification_unknownA_differentB() public {
+    function test_checkVerification_unknownA_differentB() public view {
         // {1: 0} was verified by module B, but not by module A
         // Check the fake batch that neither module verified
         InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_1, 0);
@@ -417,7 +424,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         assertCorrectInitialVerificationTime(moduleB, fakeBatch);
     }
 
-    function test_checkVerification_differentA_unknownB() public {
+    function test_checkVerification_differentA_unknownB() public view {
         // {0: 10} was verified by module A, but not by module B
         // Check the fake batch that neither module verified
         InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_0, 10);
@@ -425,7 +432,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         checkVerification(moduleB, fakeBatch, 0);
     }
 
-    function test_checkVerification_differentA_differentB() public {
+    function test_checkVerification_differentA_differentB() public view {
         // {1: 10} was verified by module A and module B
         // Check the fake batch that neither module verified
         InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_1, 10);
@@ -473,7 +480,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         assertCorrectInitialVerificationTime(moduleB, emptyBatch);
     }
 
-    function test_checkVerification_modifySrcChainId() public {
+    function test_checkVerification_modifySrcChainId() public view {
         // Valid batch
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
         assertCorrectInitialVerificationTime(moduleA, batch);
@@ -481,7 +488,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         checkVerification(moduleA, batch, 0);
     }
 
-    function test_checkVerification_modifyDbNonce() public {
+    function test_checkVerification_modifyDbNonce() public view {
         // Valid batch
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
         assertCorrectInitialVerificationTime(moduleA, batch);
@@ -489,7 +496,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         checkVerification(moduleA, batch, 0);
     }
 
-    function test_checkVerification_modifyBatchRoot() public {
+    function test_checkVerification_modifyBatchRoot() public view {
         // Valid entry
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
         assertCorrectInitialVerificationTime(moduleA, batch);

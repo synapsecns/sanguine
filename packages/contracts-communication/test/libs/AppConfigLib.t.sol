@@ -8,6 +8,7 @@ import {AppConfigLib, AppConfigV1, AppConfigLibHarness} from "../harnesses/AppCo
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract AppConfigLibTest is Test {
     struct MockAppConfigV2 {
         uint256 requiredResponses;
@@ -23,7 +24,7 @@ contract AppConfigLibTest is Test {
         libHarness = new AppConfigLibHarness();
     }
 
-    function test_encodeAppConfigV1Roundtrip(AppConfigV1 memory appConfig) public {
+    function test_encodeAppConfigV1Roundtrip(AppConfigV1 memory appConfig) public view {
         bytes memory encoded = libHarness.encodeAppConfigV1(appConfig);
         AppConfigV1 memory decoded = libHarness.decodeAppConfigV1(encoded);
         assertEq(decoded.requiredResponses, appConfig.requiredResponses);
@@ -32,7 +33,7 @@ contract AppConfigLibTest is Test {
         assertEq(decoded.guard, appConfig.guard);
     }
 
-    function test_decodeAppConfigV1_decodesV2(MockAppConfigV2 memory appConfig) public {
+    function test_decodeAppConfigV1_decodesV2(MockAppConfigV2 memory appConfig) public view {
         bytes memory encoded =
             VersionedPayloadLib.encodeVersionedPayload(AppConfigLib.APP_CONFIG_V1 + 1, abi.encode(appConfig));
         AppConfigV1 memory decoded = libHarness.decodeAppConfigV1(encoded);

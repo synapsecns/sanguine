@@ -83,7 +83,7 @@ contract ThresholdECDSALibTest is Test {
 
     // ═══════════════════════════════════════════════════ TESTS ═══════════════════════════════════════════════════════
 
-    function test_pks() public {
+    function test_pks() public pure {
         assertEq(SIGNER_0, vm.addr(PK_0));
         assertEq(SIGNER_1, vm.addr(PK_1));
         assertEq(SIGNER_2, vm.addr(PK_2));
@@ -168,17 +168,17 @@ contract ThresholdECDSALibTest is Test {
         assertEq(libHarness.getThreshold(), 3);
     }
 
-    function test_isSigner_existingSigner() public {
+    function test_isSigner_existingSigner() public view {
         assertTrue(libHarness.isSigner(SIGNER_0));
         assertTrue(libHarness.isSigner(SIGNER_1));
         assertTrue(libHarness.isSigner(SIGNER_2));
     }
 
-    function test_isSigner_nonExistentSigner() public {
+    function test_isSigner_nonExistentSigner() public view {
         assertFalse(libHarness.isSigner(SIGNER_3));
     }
 
-    function test_getSigners() public {
+    function test_getSigners() public view {
         address[] memory signers = libHarness.getSigners();
         assertEq(signers.length, 3);
         assertEq(signers[0], SIGNER_0);
@@ -186,7 +186,7 @@ contract ThresholdECDSALibTest is Test {
         assertEq(signers[2], SIGNER_2);
     }
 
-    function test_getThreshold() public {
+    function test_getThreshold() public view {
         assertEq(libHarness.getThreshold(), 2);
     }
 
