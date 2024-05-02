@@ -21,6 +21,11 @@ contract InterchainClientV1ManagementTest is InterchainClientV1BaseTest {
         assertEq(icClient.defaultGuard(), defaultGuard);
     }
 
+    function test_setDefaultGuard_zeroAddress() public {
+        expectRevertZeroAddress();
+        setDefaultGuard(address(0));
+    }
+
     function test_setDefaultGuard_revert_notOwner(address caller) public {
         vm.assume(caller != owner);
         expectRevertOwnableUnauthorizedAccount(caller);

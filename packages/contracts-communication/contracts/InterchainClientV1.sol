@@ -51,6 +51,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // @inheritdoc IInterchainClientV1
     function setDefaultGuard(address guard) external onlyOwner {
+        if (guard == address(0)) {
+            revert InterchainClientV1__ZeroAddress();
+        }
         defaultGuard = guard;
         emit DefaultGuardSet(guard);
     }

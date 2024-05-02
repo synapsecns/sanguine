@@ -139,6 +139,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
+    function expectRevertZeroAddress() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroAddress.selector);
+    }
+
     function expectRevertZeroExecutionService() internal {
         vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroExecutionService.selector);
     }
