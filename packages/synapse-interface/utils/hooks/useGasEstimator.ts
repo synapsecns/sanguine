@@ -21,9 +21,9 @@ export const useGasEstimator = () => {
   const { synapseSDK } = useSynapseContext()
   const { balances } = usePortfolioState()
   const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
+  const { gasData } = useAppSelector((state) => state.gasData)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
-  const { gasData } = useAppSelector((state) => state.gasData)
   const { maxFeePerGas } = gasData?.formatted
   const { rawGasCost, parsedGasCost } = calculateGasCost(
     maxFeePerGas,
@@ -82,8 +82,8 @@ export const useGasEstimator = () => {
           toToken,
           selectedFromToken?.parsedBalance
         )
-        console.log('fetched gasLimit: ', gasLimit)
         setEstimatedGasLimit(gasLimit ?? 0n)
+        return gasLimit
       } catch (error) {
         console.error('Error estimating gas limit:', error)
         setEstimatedGasLimit(0n)
@@ -91,6 +91,24 @@ export const useGasEstimator = () => {
         setIsLoading(false)
       }
     }
+  }
+
+  const estimateBridgeableBalance = async () => {
+    const gasLimit = await estimateGasLimit()
+    const { parsedGasCost } = calculateGasCost(
+      maxFeePerGas,
+      gasLimit?.toString(),
+      fromChainId
+    )
+    const maxBridgeableGas: number | null =
+      isGasToken && parsedGasCost
+        ? calculateMaxBridgeableGas(
+            parseFloat(parsedBalance),
+            parseFloat(parsedGasCost)
+          )
+        : null
+
+    return maxBridgeableGas
   }
 
   // Reset gas limit when chainId changes
@@ -105,6 +123,7 @@ export const useGasEstimator = () => {
     isLoading,
     gasFeeExceedsBalance,
     estimateGasLimitCallback: estimateGasLimit,
+    estimateBridgeableBalanceCallback: estimateBridgeableBalance,
   }
 }
 
@@ -180,7 +199,7 @@ const getBridgePayload = async (
   }
 }
 
-const calculateEstimatedBridgeGasLimit = async (
+const getBridgeGasLimitEstimate = async (
   bridgePayload: any,
   fromChainId: number,
   address: string
@@ -233,7 +252,7 @@ const queryEstimatedBridgeGasLimit = async (
     amount
   )
 
-  const gasLimit = await calculateEstimatedBridgeGasLimit(
+  const gasLimit = await getBridgeGasLimitEstimate(
     bridgePayload,
     fromChainId,
     address

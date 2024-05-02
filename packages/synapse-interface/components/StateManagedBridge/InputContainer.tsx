@@ -49,6 +49,7 @@ export const InputContainer = () => {
     isLoading,
     gasFeeExceedsBalance,
     estimateGasLimitCallback,
+    estimateBridgeableBalanceCallback,
   } = useGasEstimator()
 
   const { addresses, decimals } = fromToken || {}
@@ -67,18 +68,23 @@ export const InputContainer = () => {
     ? maxBridgeableGas?.toString()
     : maxBalance
 
-  const onMaxBalance = useCallback(() => {
-    if (gasFeeExceedsBalance) {
-      dispatch(updateFromValue('0.0'))
-      toast.error('Gas fees likely exceeds your balance.', {
-        id: 'toast-error-not-enough-gas',
-        duration: 10000,
-      })
+  const onMaxBalance = useCallback(async () => {
+    if (isGasToken) {
+      const bridgeableBalance = await estimateBridgeableBalanceCallback()
+
+      if (bridgeableBalance > 0) {
+        dispatch(updateFromValue(bridgeableBalance?.toString()))
+      } else {
+        dispatch(updateFromValue('0.0'))
+        toast.error('Gas fees likely exceeds your balance.', {
+          id: 'toast-error-not-enough-gas',
+          duration: 10000,
+        })
+      }
     } else {
       dispatch(updateFromValue(maxBalanceBridgeable))
     }
-    estimateGasLimitCallback()
-  }, [fromChainId, fromToken, maxBalanceBridgeable, gasFeeExceedsBalance])
+  }, [fromChainId, fromToken, maxBalanceBridgeable])
 
   useEffect(() => {
     setHasMounted(true)
