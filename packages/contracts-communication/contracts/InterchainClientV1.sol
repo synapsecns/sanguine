@@ -160,6 +160,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     // @inheritdoc IInterchainClientV1
+    // solhint-disable-next-line code-complexity
     function getTxReadinessV1(
         InterchainTransaction memory icTx,
         bytes32[] calldata proof
@@ -472,9 +473,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         icTx = InterchainTransactionLib.decodeTransaction(versionedTx.getPayload());
     }
 
+    // solhint-disable no-inline-assembly
     /// @dev Decodes the revert data into a selector and two arguments.
     /// Zero values are returned if the revert data is not long enough.
-    /// Note: this is only used in `getTxReadinessV1` to decode the revert data, so usage of assembly is not a security risk.
+    /// Note: this is only used in `getTxReadinessV1` to decode the revert data,
+    /// so usage of assembly is not a security risk.
     function _decodeRevertData(bytes memory revertData)
         internal
         pure
