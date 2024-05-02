@@ -469,9 +469,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         if (revertData.length >= 4) {
             // Load the first 32 bytes, then apply the mask that has only the 4 highest bytes set.
             // There is no need to shift, as `bytesN` variables are right-aligned.
+            // https://github.com/ProjectOpenSea/seaport/blob/2ff6ea37/contracts/helpers/SeaportRouter.sol#L161-L175
+            selector = bytes4(0xFFFFFFFF);
             assembly {
-                selector :=
-                    and(mload(add(revertData, 0x20)), 0xFFFFFFFF00000000000000000000000000000000000000000000000000000000)
+                selector := and(mload(add(revertData, 0x20)), selector)
             }
         }
         if (revertData.length >= 36) {
