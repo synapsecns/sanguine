@@ -73,6 +73,66 @@ const docTemplate = `{
                 ],
                 "responses": {}
             }
+        },
+        "/screen/{ruleset}/{address}": {
+            "get": {
+                "description": "Assess the risk associated with a given address using specified rulesets.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "address"
+                ],
+                "summary": "Screen address for risk",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Ruleset to use for screening the address",
+                        "name": "ruleset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Address to be screened",
+                        "name": "address",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the risk assessment result",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Returns error if the required parameters are missing or invalid",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Returns error if there are problems processing the indicators",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

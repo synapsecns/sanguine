@@ -252,6 +252,17 @@ func (s *screenerImpl) Start(ctx context.Context) error {
 }
 
 // screenAddress returns whether an address is risky or not given a ruleset.
+// @Summary Screen address for risk
+// @Description Assess the risk associated with a given address using specified rulesets.
+// @Tags address
+// @Accept  json
+// @Produce  json
+// @Param ruleset query string true "Ruleset to use for screening the address"
+// @Param address query string true "Address to be screened"
+// @Success 200 {object} map[string]bool "Returns the risk assessment result"
+// @Failure 400 {object} map[string]string "Returns error if the required parameters are missing or invalid"
+// @Failure 500 {object} map[string]string "Returns error if there are problems processing the indicators"
+// @Router /screen/{ruleset}/{address} [get]
 func (s *screenerImpl) screenAddress(c *gin.Context) {
 	var err error
 

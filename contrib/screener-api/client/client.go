@@ -49,6 +49,7 @@ type blockedResponse struct {
 	Blocked bool `json:"risk"`
 }
 
+// ScreenAddress checks if an address is blocked by the screener.
 func (c clientImpl) ScreenAddress(ctx context.Context, ruleset, address string) (bool, error) {
 	var blockedRes blockedResponse
 	resp, err := c.rClient.R().
@@ -84,9 +85,6 @@ type blacklistResponse struct {
 
 func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appid string, body BlackListBody) (string, error) {
 	var blacklistRes blacklistResponse
-
-	// TODO: remove, just for testing purposes
-	// future, take it from some .env or something
 
 	nonce := strings.ReplaceAll(uuid.New().String(), "-", "")[:32]
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
