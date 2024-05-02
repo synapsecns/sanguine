@@ -2,6 +2,10 @@
 pragma solidity ^0.8.0;
 
 abstract contract InterchainClientV1Events {
+    /// @notice Emitted when the Guard module is set.
+    /// @param guard    The address of the Guard module.
+    event DefaultGuardSet(address guard);
+
     /// @notice Emitted when the InterchainClientV1 deployment on a remote chain is linked.
     /// @param chainId   The chain ID of the remote chain.
     /// @param client    The address of the InterchainClientV1 deployment on the remote chain.

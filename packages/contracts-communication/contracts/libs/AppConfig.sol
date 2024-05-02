@@ -3,12 +3,22 @@ pragma solidity ^0.8.13;
 
 import {VersionedPayloadLib} from "./VersionedPayload.sol";
 
+// TODO: all of these could fit into a single 32 bytes slot
 struct AppConfigV1 {
     uint256 requiredResponses;
     uint256 optimisticPeriod;
+    uint256 guardFlag;
+    address guard;
 }
 
 using AppConfigLib for AppConfigV1 global;
+
+/// @dev Signals that the app opted out of using any Guard module.
+uint8 constant APP_CONFIG_GUARD_DISABLED = 0;
+/// @dev Signals that the app uses the default Guard module provided by InterchainClient contract.
+uint8 constant APP_CONFIG_GUARD_DEFAULT = 1;
+/// @dev Signals that the app uses a custom Guard module.
+uint8 constant APP_CONFIG_GUARD_CUSTOM = 2;
 
 library AppConfigLib {
     using VersionedPayloadLib for bytes;

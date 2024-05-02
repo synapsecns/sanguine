@@ -38,6 +38,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     address public execService;
 
     address public owner = makeAddr("Owner");
+    address public defaultGuard = makeAddr("Default Guard");
 
     function setUp() public virtual {
         vm.chainId(LOCAL_CHAIN_ID);
@@ -48,6 +49,11 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         icModuleB = address(new InterchainModuleMock());
         txLibHarness = new InterchainTransactionLibHarness();
         payloadLibHarness = new VersionedPayloadLibHarness();
+    }
+
+    function setDefaultGuard(address guard) public {
+        vm.prank(owner);
+        icClient.setDefaultGuard(guard);
     }
 
     function setLinkedClient(uint64 chainId, bytes32 client) public {
@@ -133,6 +139,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
+    function expectRevertZeroAddress() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroAddress.selector);
+    }
+
     function expectRevertZeroExecutionService() internal {
         vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroExecutionService.selector);
     }
@@ -154,6 +164,11 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     }
 
     // ══════════════════════════════════════════════ EXPECT (EVENTS) ══════════════════════════════════════════════════
+
+    function expectEventGuardSet(address guard) internal {
+        vm.expectEmit(address(icClient));
+        emit DefaultGuardSet(guard);
+    }
 
     function expectEventLinkedClientSet(uint64 chainId, bytes32 client) internal {
         vm.expectEmit(address(icClient));

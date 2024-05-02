@@ -53,7 +53,7 @@ interface IInterchainAppV1 is IInterchainApp {
     /// @notice Allows the owner to set the app config for the current app. App config includes:
     /// - requiredResponses: the number of module responses required for accepting the message
     /// - optimisticPeriod: the minimum time after which the module responses are considered final
-    function setAppConfigV1(AppConfigV1 memory appConfig) external;
+    function setAppConfigV1(uint256 requiredResponses, uint256 optimisticPeriod) external;
 
     /// @notice Allows the owner to set the address of the Execution Service.
     /// This address will be used to request execution of the messages sent from this chain,

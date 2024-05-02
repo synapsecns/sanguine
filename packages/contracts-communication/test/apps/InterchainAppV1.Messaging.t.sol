@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 import {InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
 
-import {InterchainAppV1Test} from "./InterchainAppV1.t.sol";
+import {InterchainAppV1Test, AppConfigV1} from "./InterchainAppV1.t.sol";
 
 import {InterchainClientV1Mock} from "../mocks/InterchainClientV1Mock.sol";
 
@@ -35,7 +35,7 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         appHarness.addInterchainClient({client: extraClient, updateLatest: false});
         appHarness.linkRemoteApp({chainId: REMOTE_CHAIN_ID, remoteApp: linkedAppMockBytes32});
         appHarness.addTrustedModule(moduleMock);
-        appHarness.setAppConfigV1(appConfig);
+        appHarness.setAppConfigV1({requiredResponses: APP_REQUIRED_RESPONSES, optimisticPeriod: APP_OPTIMISTIC_PERIOD});
         appHarness.setExecutionService(execServiceMock);
     }
 
@@ -138,7 +138,15 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
 
     function test_getReceivingConfig() public {
         (bytes memory encodedConfig, address[] memory modules) = appHarness.getReceivingConfig();
-        assertEq(encodedConfig, appConfig.encodeAppConfigV1());
+        assertEq(
+            encodedConfig,
+            AppConfigV1({
+                requiredResponses: APP_REQUIRED_RESPONSES,
+                optimisticPeriod: APP_OPTIMISTIC_PERIOD,
+                guardFlag: 1,
+                guard: address(0)
+            }).encodeAppConfigV1()
+        );
         assertEq(modules, toArray(moduleMock));
     }
 

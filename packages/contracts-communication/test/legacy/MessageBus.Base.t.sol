@@ -48,8 +48,6 @@ abstract contract MessageBusBaseTest is MessageBusEvents, Test {
     address public icModule;
     address[] public icModules;
 
-    AppConfigV1 public appConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: BUS_OPTIMISTIC_PERIOD});
-
     address public admin = makeAddr("Admin");
     address public governor = makeAddr("Governor");
 
@@ -75,7 +73,7 @@ abstract contract MessageBusBaseTest is MessageBusEvents, Test {
         messageBus.addInterchainClient({client: icClient, updateLatest: true});
         messageBus.linkRemoteAppEVM({chainId: REMOTE_CHAIN_ID, remoteApp: remoteMessageBus});
         messageBus.addTrustedModule(icModule);
-        messageBus.setAppConfigV1(appConfig);
+        messageBus.setAppConfigV1({requiredResponses: 1, optimisticPeriod: BUS_OPTIMISTIC_PERIOD});
         messageBus.setExecutionService(execService);
         vm.stopPrank();
     }

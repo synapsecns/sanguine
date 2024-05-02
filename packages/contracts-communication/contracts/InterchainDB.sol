@@ -6,7 +6,9 @@ import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
 import {BatchingV1Lib} from "./libs/BatchingV1.sol";
-import {InterchainBatch, InterchainBatchLib, BatchKey} from "./libs/InterchainBatch.sol";
+import {
+    InterchainBatch, InterchainBatchLib, BatchKey, BATCH_UNVERIFIED, BATCH_CONFLICT
+} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {VersionedPayloadLib} from "./libs/VersionedPayload.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
@@ -155,10 +157,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         RemoteBatch memory remoteBatch = _remoteBatches[dstModule][batchKey];
         // Check if module verified anything for this batch key first
         if (remoteBatch.verifiedAt == 0) {
-            return InterchainBatchLib.UNVERIFIED;
+            return BATCH_UNVERIFIED;
         }
         // Check if the batch root matches the one verified by the module
-        return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : InterchainBatchLib.CONFLICT;
+        return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : BATCH_CONFLICT;
     }
 
     /// @inheritdoc IInterchainDB

@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import {IInterchainClientV1} from "../contracts/interfaces/IInterchainClientV1.sol";
 import {AppConfigV1} from "../contracts/libs/AppConfig.sol";
 import {InterchainBatch} from "../contracts/libs/InterchainBatch.sol";
+import {InterchainEntryLib} from "../contracts/libs/InterchainEntry.sol";
 import {OptionsV1} from "../contracts/libs/Options.sol";
 import {VersionedPayloadLib} from "../contracts/libs/VersionedPayload.sol";
 
@@ -27,32 +29,23 @@ import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 /// 3d. Check that enough responses have been received for entry constructed in step 3b.
 /// 4. Execute the transaction by passing the message to the recipient.
 /// 5. Mark transaction as executed and emit an event.
-contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
+abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     uint64 public constant MOCK_DB_NONCE = 444;
     uint64 public constant MOCK_ENTRY_INDEX = 0;
 
     uint64 public constant MOCK_LOCAL_DB_NONCE = 123;
     uint64 public constant MOCK_LOCAL_ENTRY_INDEX = 0;
 
-    uint256 public constant MOCK_GAS_LIMIT = 100_000;
-    uint256 public constant MOCK_GAS_AIRDROP = 1 ether;
-
-    uint256 public constant MOCK_OPTIMISTIC_PERIOD = 10 minutes;
     uint256 public constant BIGGER_PERIOD = 7 days;
 
     bytes32 public constant MOCK_SRC_SENDER = keccak256("Sender");
     bytes public constant MOCK_MESSAGE = "Hello, World!";
 
-    OptionsV1 public optionsAirdrop = OptionsV1({gasLimit: MOCK_GAS_LIMIT, gasAirdrop: MOCK_GAS_AIRDROP});
-    OptionsV1 public optionsNoAirdrop = OptionsV1({gasLimit: MOCK_GAS_LIMIT, gasAirdrop: 0});
+    uint256 public constant GUARD_DISABLED = 0;
+    uint256 public constant GUARD_DEFAULT = 1;
+    uint256 public constant GUARD_CUSTOM = 2;
 
-    bytes public invalidOptionsV0 = VersionedPayloadLib.encodeVersionedPayload(0, abi.encode(optionsAirdrop));
-    bytes public invalidOptionsV1 = VersionedPayloadLib.encodeVersionedPayload(1, abi.encode(optionsAirdrop.gasLimit));
-
-    AppConfigV1 public oneConfNoOP = AppConfigV1({requiredResponses: 1, optimisticPeriod: 0});
-    AppConfigV1 public oneConfWithOP = AppConfigV1({requiredResponses: 1, optimisticPeriod: MOCK_OPTIMISTIC_PERIOD});
-    AppConfigV1 public twoConfNoOP = AppConfigV1({requiredResponses: 2, optimisticPeriod: 0});
-    AppConfigV1 public twoConfWithOP = AppConfigV1({requiredResponses: 2, optimisticPeriod: MOCK_OPTIMISTIC_PERIOD});
+    address public customGuard = makeAddr("Custom Guard");
 
     address public executor = makeAddr("Executor");
 
@@ -69,19 +62,18 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     // - Almost verified: verified exactly "optimistic period" ago
     // - Just verified: verified exactly "optimistic period + 1 second" ago
     // - Over verified: verified long ago
+    // - Conflict: module verified a conflicting batch
     // Only "just verified" and "over verified" should be considered as verified.
     uint256 public constant INITIAL_TS = 1_704_067_200; // 2024-01-01 00:00:00 UTC
 
     uint256 public constant NOT_VERIFIED = 0;
-    uint256 public constant ALMOST_VERIFIED = INITIAL_TS - MOCK_OPTIMISTIC_PERIOD;
-    uint256 public constant JUST_VERIFIED = INITIAL_TS - MOCK_OPTIMISTIC_PERIOD - 1;
     uint256 public constant OVER_VERIFIED = INITIAL_TS - BIGGER_PERIOD;
-
-    uint256 public constant JUST_NOW = INITIAL_TS - 1;
+    uint256 public constant CONFLICT = type(uint256).max;
 
     function setUp() public override {
         vm.warp(INITIAL_TS);
         super.setUp();
+        setDefaultGuard(defaultGuard);
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
         dstReceiver = address(new InterchainAppMock());
         dstReceiverBytes32 = bytes32(uint256(uint160(dstReceiver)));
@@ -90,11 +82,14 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         twoModules.push(icModuleB);
     }
 
-    /// @dev Override the InterchainApp's receiving config to return the given appConfig and modules.
-    function mockReceivingConfig(AppConfigV1 memory appConfig, address[] memory modules) internal {
+    // ════════════════════════════════════════════════ MOCK TOOLS ═════════════════════════════════════════════════════
+
+    /// @dev Override the InterchainApp's receiving config to return the given appConfig and two modules.
+    function mockReceivingConfig(uint256 requiredResponses, uint256 guardFlag) internal {
+        AppConfigV1 memory appConfig = getAppConfig(requiredResponses, guardFlag);
         bytes memory encodedConfig = appConfig.encodeAppConfigV1();
         vm.mockCall(
-            dstReceiver, abi.encodeCall(InterchainAppMock.getReceivingConfig, ()), abi.encode(encodedConfig, modules)
+            dstReceiver, abi.encodeCall(InterchainAppMock.getReceivingConfig, ()), abi.encode(encodedConfig, twoModules)
         );
     }
 
@@ -110,7 +105,7 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         InterchainBatch memory batch = InterchainBatch({
             srcChainId: REMOTE_CHAIN_ID,
             dbNonce: desc.dbNonce,
-            batchRoot: keccak256(abi.encode(MOCK_REMOTE_CLIENT, desc.transactionId))
+            batchRoot: InterchainEntryLib.getEntryValue({srcWriter: MOCK_REMOTE_CLIENT, dataHash: desc.transactionId})
         });
         vm.mockCall(
             icDB, abi.encodeCall(InterchainDBMock.checkBatchVerification, (dstModule, batch)), abi.encode(verifiedAt)
@@ -124,6 +119,51 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.getNextEntryIndex.selector), returnData);
         vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.writeEntry.selector), returnData);
         vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.writeEntryWithVerification.selector), returnData);
+    }
+
+    // ═════════════════════════════════════════════════ TEST DATA ═════════════════════════════════════════════════════
+
+    function getOptions() internal view virtual returns (OptionsV1 memory);
+    function getOptimisticPeriod() internal view virtual returns (uint256);
+
+    function getAppConfig(uint256 requiredResponses, uint256 guardFlag) internal view returns (AppConfigV1 memory) {
+        return AppConfigV1({
+            requiredResponses: requiredResponses,
+            optimisticPeriod: getOptimisticPeriod(),
+            guardFlag: guardFlag,
+            guard: guardFlag == GUARD_CUSTOM ? customGuard : address(0)
+        });
+    }
+
+    function almostVerTS() internal view returns (uint256) {
+        return INITIAL_TS - getOptimisticPeriod();
+    }
+
+    function justVerTS() internal view returns (uint256) {
+        return INITIAL_TS - getOptimisticPeriod() - 1;
+    }
+
+    function getTimestampFixture(uint256 index) internal view returns (uint256) {
+        index = index % 5;
+        if (index == 0) {
+            return NOT_VERIFIED;
+        } else if (index == 1) {
+            return almostVerTS();
+        } else if (index == 2) {
+            return justVerTS();
+        } else if (index == 3) {
+            return OVER_VERIFIED;
+        } else {
+            return CONFLICT;
+        }
+    }
+
+    function boundTimestamp(uint256 timestamp) internal view returns (uint256) {
+        if (timestamp == CONFLICT) {
+            return timestamp;
+        } else {
+            return timestamp % block.timestamp;
+        }
     }
 
     /// @dev Constructs an interchain transaction and its descriptor for testing.
@@ -142,14 +182,26 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
             options: encodedOptions,
             message: MOCK_MESSAGE
         });
-        desc = InterchainTxDescriptor({
-            dbNonce: MOCK_DB_NONCE,
-            entryIndex: MOCK_ENTRY_INDEX,
+        desc = getTxDescriptor(icTx);
+    }
+
+    function constructInterchainTx()
+        internal
+        view
+        returns (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc)
+    {
+        return constructInterchainTx(getOptions().encodeOptionsV1());
+    }
+
+    function getTxDescriptor(InterchainTransaction memory icTx) internal view returns (InterchainTxDescriptor memory) {
+        return InterchainTxDescriptor({
+            dbNonce: icTx.dbNonce,
+            entryIndex: icTx.entryIndex,
             transactionId: keccak256(getEncodedTx(icTx))
         });
     }
 
-    // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════ TEST ASSERTIONS ══════════════════════════════════════════════════
 
     function expectAppReceiveCall(OptionsV1 memory options) internal {
         bytes memory expectedCalldata = abi.encodeCall(
@@ -170,940 +222,423 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         assertEq(icClient.getExecutorById(desc.transactionId), executor, "!getExecutorById");
     }
 
-    function executeTransaction(bytes memory encodedTx, OptionsV1 memory options, bytes32[] memory proof) internal {
+    function assertCorrectReadiness(
+        InterchainTransaction memory icTx,
+        IInterchainClientV1.TxReadiness expected
+    )
+        internal
+    {
+        assertCorrectReadiness(icTx, expected, 0, 0);
+    }
+
+    function assertCorrectReadiness(
+        InterchainTransaction memory icTx,
+        IInterchainClientV1.TxReadiness expected,
+        address expectedFirstArg
+    )
+        internal
+    {
+        assertCorrectReadiness(icTx, expected, uint256(uint160(expectedFirstArg)), 0);
+    }
+
+    function assertCorrectReadiness(
+        InterchainTransaction memory icTx,
+        IInterchainClientV1.TxReadiness expected,
+        uint256 expectedFirstArg
+    )
+        internal
+    {
+        assertCorrectReadiness(icTx, expected, expectedFirstArg, 0);
+    }
+
+    function assertCorrectReadiness(
+        InterchainTransaction memory icTx,
+        IInterchainClientV1.TxReadiness expected,
+        uint256 expectedFirstArg,
+        uint256 expectedSecondArg
+    )
+        internal
+    {
+        assertCorrectReadiness(icTx, emptyProof, expected, expectedFirstArg, expectedSecondArg);
+    }
+
+    function assertCorrectReadiness(
+        InterchainTransaction memory icTx,
+        bytes32[] memory proof,
+        IInterchainClientV1.TxReadiness expected,
+        uint256 expectedFirstArg,
+        uint256 expectedSecondArg
+    )
+        internal
+    {
+        (IInterchainClientV1.TxReadiness actual, bytes32 firstArg, bytes32 secondArg) =
+            icClient.getTxReadinessV1(icTx, proof);
+        assertEq(uint256(actual), uint256(expected));
+        assertEq(firstArg, bytes32(expectedFirstArg));
+        assertEq(secondArg, bytes32(expectedSecondArg));
+    }
+
+    // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
+
+    function executeTransaction(bytes memory encodedTx, bytes32[] memory proof) internal {
+        OptionsV1 memory options = getOptions();
         deal(executor, options.gasAirdrop);
         vm.prank(executor);
         icClient.interchainExecute{value: options.gasAirdrop}(options.gasLimit, encodedTx, proof);
     }
 
     function prepareExecuteTest(
-        bytes memory encodedOptions,
-        AppConfigV1 memory appConfig,
-        address[] memory modules,
+        uint256 requiredResponses,
+        uint256 guardFlag,
         uint256[] memory verificationTimes
     )
         internal
         returns (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc)
     {
         // Sanity check
-        assert(modules.length == verificationTimes.length);
-        (icTx, desc) = constructInterchainTx(encodedOptions);
-        mockReceivingConfig(appConfig, modules);
-        for (uint256 i = 0; i < modules.length; i++) {
-            mockCheckVerification(modules[i], desc, verificationTimes[i]);
+        assert(twoModules.length == verificationTimes.length);
+        (icTx, desc) = constructInterchainTx();
+        mockReceivingConfig(requiredResponses, guardFlag);
+        for (uint256 i = 0; i < twoModules.length; i++) {
+            mockCheckVerification(twoModules[i], desc, verificationTimes[i]);
         }
     }
 
-    function prepareAlreadyExecutedTest(OptionsV1 memory options)
+    function prepareAlreadyExecutedTest()
         internal
         returns (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc)
     {
         (icTx, desc) = prepareExecuteTest({
-            encodedOptions: options.encodeOptionsV1(),
-            appConfig: oneConfWithOP,
-            modules: oneModuleA,
-            verificationTimes: toArray(JUST_VERIFIED)
+            requiredResponses: 2,
+            guardFlag: 1,
+            verificationTimes: toArr(OVER_VERIFIED, OVER_VERIFIED)
         });
         bytes memory encodedTx = getEncodedTx(icTx);
-        executeTransaction(encodedTx, options, emptyProof);
+        executeTransaction(encodedTx, emptyProof);
         skip(1 days);
     }
 
-    function checkHappyPathScenario(
-        OptionsV1 memory options,
-        InterchainTransaction memory icTx,
-        InterchainTxDescriptor memory desc,
-        bytes32[] memory proof
-    )
-        internal
-    {
+    function makeTxDescriptorExecutable(InterchainTxDescriptor memory desc) internal {
+        mockReceivingConfig({requiredResponses: 1, guardFlag: 0});
+        mockCheckVerification(icModuleA, desc, justVerTS());
+    }
+
+    function addGuardConflict(address guard) internal {
+        (, InterchainTxDescriptor memory desc) = constructInterchainTx();
+        mockCheckVerification(guard, desc, CONFLICT);
+    }
+
+    /// @dev Assuming the transaction is ready to be executed, check the happy path scenario.
+    function executeAndCheck(InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) internal {
+        OptionsV1 memory options = getOptions();
         expectAppReceiveCall(options);
         expectEventInterchainTransactionReceived(icTx, desc);
         bytes memory encodedTx = getEncodedTx(icTx);
-        assertTrue(icClient.isExecutable(encodedTx, proof));
-        executeTransaction(encodedTx, options, proof);
+        assertTrue(icClient.isExecutable(encodedTx, emptyProof));
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.Ready);
+        executeTransaction(encodedTx, emptyProof);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.AlreadyExecuted, uint256(desc.transactionId));
         assertExecutorSaved(icTx, desc);
+        assertEq(dstReceiver.balance, options.gasAirdrop);
     }
 
-    function checkSuccessA(
-        OptionsV1 memory options,
-        AppConfigV1 memory appConfig,
-        uint256[] memory verificationTimes
-    )
-        internal
-    {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) = prepareExecuteTest({
-            encodedOptions: options.encodeOptionsV1(),
-            appConfig: appConfig,
-            modules: oneModuleA,
-            verificationTimes: verificationTimes
-        });
-        checkHappyPathScenario(options, icTx, desc, emptyProof);
-    }
-
-    function checkSuccessAB(
-        OptionsV1 memory options,
-        AppConfigV1 memory appConfig,
-        uint256[] memory verificationTimes
-    )
-        internal
-    {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) = prepareExecuteTest({
-            encodedOptions: options.encodeOptionsV1(),
-            appConfig: appConfig,
-            modules: twoModules,
-            verificationTimes: verificationTimes
-        });
-        checkHappyPathScenario(options, icTx, desc, emptyProof);
-    }
-
-    function checkNotEnoughConfirmationsA(
-        OptionsV1 memory options,
-        AppConfigV1 memory appConfig,
-        uint256 actualConfirmations,
-        uint256[] memory verificationTimes
-    )
-        internal
-    {
-        (InterchainTransaction memory icTx,) = prepareExecuteTest({
-            encodedOptions: options.encodeOptionsV1(),
-            appConfig: appConfig,
-            modules: oneModuleA,
-            verificationTimes: verificationTimes
-        });
-        bytes memory encodedTx = getEncodedTx(icTx);
-        expectRevertNotEnoughResponses({actual: actualConfirmations, required: appConfig.requiredResponses});
-        icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertNotEnoughResponses({actual: actualConfirmations, required: appConfig.requiredResponses});
-        executeTransaction(encodedTx, options, emptyProof);
-    }
-
-    function checkNotEnoughConfirmationsAB(
-        OptionsV1 memory options,
-        AppConfigV1 memory appConfig,
-        uint256 actualConfirmations,
-        uint256[] memory verificationTimes
-    )
-        internal
-    {
-        (InterchainTransaction memory icTx,) = prepareExecuteTest({
-            encodedOptions: options.encodeOptionsV1(),
-            appConfig: appConfig,
-            modules: twoModules,
-            verificationTimes: verificationTimes
-        });
-        bytes memory encodedTx = getEncodedTx(icTx);
-        expectRevertNotEnoughResponses({actual: actualConfirmations, required: appConfig.requiredResponses});
-        icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertNotEnoughResponses({actual: actualConfirmations, required: appConfig.requiredResponses});
-        executeTransaction(encodedTx, options, emptyProof);
-    }
-
-    function checkBatchConflictAB(
-        OptionsV1 memory options,
-        AppConfigV1 memory appConfig,
-        uint256 verificationTimeHonest
-    )
-        internal
-    {
+    /// @dev Execute the happy path scenario with the given modules and verification times.
+    function checkHappyPath(uint256 required, uint256 guardFlag, uint256[] memory times) internal {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
-            constructInterchainTx(options.encodeOptionsV1());
-        mockReceivingConfig(appConfig, twoModules);
-        mockCheckVerification(twoModules[0], desc, verificationTimeHonest);
-        mockCheckVerification(twoModules[1], desc, type(uint256).max);
+            prepareExecuteTest(required, guardFlag, times);
+        executeAndCheck(icTx, desc);
+    }
+
+    /// @dev Execute the scenario where not enough confirmations have been received.
+    /// Both `isExecutable` and `interchainExecute` should revert.
+    function checkNotEnoughConfirmations(
+        uint256 actual,
+        uint256 required,
+        uint256 guardFlag,
+        uint256[] memory times
+    )
+        internal
+    {
+        (InterchainTransaction memory icTx,) = prepareExecuteTest(required, guardFlag, times);
         bytes memory encodedTx = getEncodedTx(icTx);
-        expectRevertBatchConflict(twoModules[1]);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.NotEnoughResponses, actual, required);
+        expectRevertNotEnoughResponses({actual: actual, required: required});
         icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertBatchConflict(twoModules[1]);
-        executeTransaction(encodedTx, options, emptyProof);
+        expectRevertNotEnoughResponses({actual: actual, required: required});
+        executeTransaction(encodedTx, emptyProof);
     }
 
-    // ══════════════════════════════════════════ REQUIRED: 1, MODULES: A ══════════════════════════════════════════════
-
-    function test_interchainExecute_1_A_periodNonZero_notVerifiedA_revert() public {
-        checkNotEnoughConfirmationsA(optionsNoAirdrop, oneConfWithOP, 0, toArray(NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_A_periodNonZero_almostVerifiedA_revert() public {
-        checkNotEnoughConfirmationsA(optionsNoAirdrop, oneConfWithOP, 0, toArray(ALMOST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_A_periodNonZero_justVerifiedA_noAirdrop_success() public {
-        checkSuccessA(optionsNoAirdrop, oneConfWithOP, toArray(JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_A_periodNonZero_justVerifiedA_withAirdrop_success() public {
-        checkSuccessA(optionsAirdrop, oneConfWithOP, toArray(JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_A_periodNonZero_overVerifiedA_noAirdrop_success() public {
-        checkSuccessA(optionsNoAirdrop, oneConfWithOP, toArray(OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_A_periodNonZero_overVerifiedA_withAirdrop_success() public {
-        checkSuccessA(optionsAirdrop, oneConfWithOP, toArray(OVER_VERIFIED));
-    }
-
-    // ═══════════════════════════════════ REQUIRED: 1, MODULES: A (PERIOD ZERO) ═══════════════════════════════════════
-
-    function test_interchainExecute_1_A_periodZero_notVerifiedA_revert() public {
-        checkNotEnoughConfirmationsA(optionsNoAirdrop, oneConfNoOP, 0, toArray(NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_A_periodZero_almostVerifiedA_revert() public {
-        checkNotEnoughConfirmationsA(optionsNoAirdrop, oneConfNoOP, 0, toArray(INITIAL_TS));
-    }
-
-    function test_interchainExecute_1_A_periodZero_justVerifiedA_noAirdrop_success() public {
-        checkSuccessA(optionsNoAirdrop, oneConfNoOP, toArray(JUST_NOW));
-    }
-
-    function test_interchainExecute_1_A_periodZero_justVerifiedA_withAirdrop_success() public {
-        checkSuccessA(optionsAirdrop, oneConfNoOP, toArray(JUST_NOW));
-    }
-
-    function test_interchainExecute_1_A_periodZero_overVerifiedA_noAirdrop_success() public {
-        checkSuccessA(optionsNoAirdrop, oneConfNoOP, toArray(OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_A_periodZero_overVerifiedA_withAirdrop_success() public {
-        checkSuccessA(optionsAirdrop, oneConfNoOP, toArray(OVER_VERIFIED));
-    }
-
-    // ═════════════════════════════════════════ REQUIRED: 1, MODULES: A+B ═════════════════════════════════════════════
-
-    function test_interchainExecute_1_AB_periodNonZero_notVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, oneConfWithOP, 0, toArr(NOT_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_notVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, oneConfWithOP, 0, toArr(NOT_VERIFIED, ALMOST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_notVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(NOT_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_notVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(NOT_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_notVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(NOT_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_notVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(NOT_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_almostVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, oneConfWithOP, 0, toArr(ALMOST_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_almostVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, oneConfWithOP, 0, toArr(ALMOST_VERIFIED, ALMOST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_almostVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(ALMOST_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_almostVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(ALMOST_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_almostVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(ALMOST_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_almostVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(ALMOST_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_justVerifiedA_notVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(JUST_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_justVerifiedA_notVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(JUST_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_justVerifiedA_almostVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(JUST_VERIFIED, ALMOST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_justVerifiedA_almostVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(JUST_VERIFIED, ALMOST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_justVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(JUST_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_justVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(JUST_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_justVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(JUST_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_justVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(JUST_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_overVerifiedA_notVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(OVER_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_overVerifiedA_notVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(OVER_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_overVerifiedA_almostVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(OVER_VERIFIED, ALMOST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_overVerifiedA_almostVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(OVER_VERIFIED, ALMOST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_overVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(OVER_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_overVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(OVER_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_overVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfWithOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_overVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfWithOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
-    }
-
-    // ═════════════════════════════════ REQUIRED: 1, MODULES: A+B, WITH CONFLICT ══════════════════════════════════════
-
-    function test_interchainExecute_1_AB_periodNonZero_conflict_almostVerifiedA_revert() public {
-        checkBatchConflictAB(optionsNoAirdrop, oneConfWithOP, ALMOST_VERIFIED);
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_conflict_justVerifiedA_revert() public {
-        checkBatchConflictAB(optionsNoAirdrop, oneConfWithOP, JUST_VERIFIED);
-    }
-
-    function test_interchainExecute_1_AB_periodNonZero_conflict_overVerifiedA_revert() public {
-        checkBatchConflictAB(optionsNoAirdrop, oneConfWithOP, OVER_VERIFIED);
-    }
-
-    // ══════════════════════════════════ REQUIRED: 1, MODULES: A+B (PERIOD ZERO) ══════════════════════════════════════
-
-    function test_interchainExecute_1_AB_periodZero_notVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, oneConfNoOP, 0, toArr(NOT_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_notVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, oneConfNoOP, 0, toArr(NOT_VERIFIED, INITIAL_TS));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_notVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(NOT_VERIFIED, JUST_NOW));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_notVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(NOT_VERIFIED, JUST_NOW));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_notVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(NOT_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_notVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(NOT_VERIFIED, OVER_VERIFIED));
+    /// @dev Execute the scenario where a batch conflict has been detected.
+    /// Both `isExecutable` and `interchainExecute` should revert.
+    function checkBatchConflict(address module, uint256 required, uint256 guardFlag, uint256[] memory times) internal {
+        (InterchainTransaction memory icTx,) = prepareExecuteTest(required, guardFlag, times);
+        bytes memory encodedTx = getEncodedTx(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.BatchConflict, module);
+        expectRevertBatchConflict(module);
+        icClient.isExecutable(encodedTx, emptyProof);
+        expectRevertBatchConflict(module);
+        executeTransaction(encodedTx, emptyProof);
     }
 
-    function test_interchainExecute_1_AB_periodZero_almostVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, oneConfNoOP, 0, toArr(INITIAL_TS, NOT_VERIFIED));
+    function checkScenario(uint256 required, uint256 guardFlag, uint256 indexA, uint256 indexB) internal {
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        uint256[] memory times = toArr(timeA, timeB);
+        // Check for conflicts
+        if (timeA == CONFLICT) {
+            checkBatchConflict({module: icModuleA, required: required, guardFlag: guardFlag, times: times});
+            return;
+        }
+        if (timeB == CONFLICT) {
+            checkBatchConflict({module: icModuleB, required: required, guardFlag: guardFlag, times: times});
+            return;
+        }
+        uint256 actual = 0;
+        if (timeA == justVerTS() || timeA == OVER_VERIFIED) {
+            actual++;
+        }
+        if (timeB == justVerTS() || timeB == OVER_VERIFIED) {
+            actual++;
+        }
+        if (actual >= required) {
+            checkHappyPath({required: required, guardFlag: guardFlag, times: times});
+        } else {
+            checkNotEnoughConfirmations({actual: actual, required: required, guardFlag: guardFlag, times: times});
+        }
     }
 
-    function test_interchainExecute_1_AB_periodZero_almostVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, oneConfNoOP, 0, toArr(INITIAL_TS, INITIAL_TS));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_almostVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(INITIAL_TS, JUST_NOW));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_almostVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(INITIAL_TS, JUST_NOW));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_almostVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(INITIAL_TS, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_almostVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(INITIAL_TS, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_justVerifiedA_notVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(JUST_NOW, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_justVerifiedA_notVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(JUST_NOW, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_justVerifiedA_almostVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(JUST_NOW, INITIAL_TS));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_justVerifiedA_almostVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(JUST_NOW, INITIAL_TS));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_justVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(JUST_NOW, JUST_NOW));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_justVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(JUST_NOW, JUST_NOW));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_justVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(JUST_NOW, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_justVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(JUST_NOW, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_overVerifiedA_notVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(OVER_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_overVerifiedA_notVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(OVER_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_overVerifiedA_almostVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(OVER_VERIFIED, INITIAL_TS));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_overVerifiedA_almostVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(OVER_VERIFIED, INITIAL_TS));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_overVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(OVER_VERIFIED, JUST_NOW));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_overVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(OVER_VERIFIED, JUST_NOW));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_overVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, oneConfNoOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_1_AB_periodZero_overVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, oneConfNoOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
-    }
-
-    // ══════════════════════════ REQUIRED: 1, MODULES: A+B, WITH CONFLICT (PERIOD ZERO) ═══════════════════════════════
-
-    function test_interchainExecute_1_AB_periodZero_conflict_almostVerifiedA_revert() public {
-        checkBatchConflictAB(optionsNoAirdrop, oneConfNoOP, ALMOST_VERIFIED);
-    }
-
-    function test_interchainExecute_1_AB_periodZero_conflict_justVerifiedA_revert() public {
-        checkBatchConflictAB(optionsNoAirdrop, oneConfNoOP, JUST_VERIFIED);
-    }
-
-    function test_interchainExecute_1_AB_periodZero_conflict_overVerifiedA_revert() public {
-        checkBatchConflictAB(optionsNoAirdrop, oneConfNoOP, OVER_VERIFIED);
-    }
-
-    // ═════════════════════════════════════════ REQUIRED: 2, MODULES: A+B ═════════════════════════════════════════════
-
-    function test_interchainExecute_2_AB_periodNonZero_notVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 0, toArr(NOT_VERIFIED, NOT_VERIFIED));
-    }
+    // ═════════════════════════════════════ APP CONFIG: 1 OUT OF 2 RESPONSES ══════════════════════════════════════════
 
-    function test_interchainExecute_2_AB_periodNonZero_notVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 0, toArr(NOT_VERIFIED, ALMOST_VERIFIED));
+    function test_execute_1_2_noGuard(uint256 indexA, uint256 indexB) public {
+        checkScenario({required: 1, guardFlag: GUARD_DISABLED, indexA: indexA, indexB: indexB});
     }
 
-    function test_interchainExecute_2_AB_periodNonZero_notVerifiedA_justVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 1, toArr(NOT_VERIFIED, JUST_VERIFIED));
+    /// @dev Guard conflict should not affect the behavior if the app didn't opt-in for the guard.
+    function test_execute_1_2_noGuard_guardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        test_execute_1_2_noGuard(indexA, indexB);
     }
 
-    function test_interchainExecute_2_AB_periodNonZero_notVerifiedA_overVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 1, toArr(NOT_VERIFIED, OVER_VERIFIED));
+    function test_execute_1_2_defaultGuard(uint256 indexA, uint256 indexB) public {
+        checkScenario({required: 1, guardFlag: GUARD_DEFAULT, indexA: indexA, indexB: indexB});
     }
 
-    function test_interchainExecute_2_AB_periodNonZero_almostVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 0, toArr(ALMOST_VERIFIED, NOT_VERIFIED));
+    /// @dev Guard conflict should always revert the transaction if the app opted-in for the guard.
+    function test_execute_1_2_defaultGuard_guardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        checkBatchConflict({module: defaultGuard, required: 1, guardFlag: GUARD_DEFAULT, times: toArr(timeA, timeB)});
     }
 
-    function test_interchainExecute_2_AB_periodNonZero_almostVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 0, toArr(ALMOST_VERIFIED, ALMOST_VERIFIED));
+    function test_execute_1_2_customGuard(uint256 indexA, uint256 indexB) public {
+        checkScenario({required: 1, guardFlag: 2, indexA: indexA, indexB: indexB});
     }
 
-    function test_interchainExecute_2_AB_periodNonZero_almostVerifiedA_justVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 1, toArr(ALMOST_VERIFIED, JUST_VERIFIED));
+    /// @dev Custom guard conflict should always revert the transaction if the app opted-in for the custom guard.
+    function test_execute_1_2_customGuard_customGuardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(customGuard);
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        checkBatchConflict({module: customGuard, required: 1, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
     }
 
-    function test_interchainExecute_2_AB_periodNonZero_almostVerifiedA_overVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 1, toArr(ALMOST_VERIFIED, OVER_VERIFIED));
+    /// @dev Default guard conflict should not affect the behavior if the app opted-in for a custom guard.
+    function test_execute_1_2_customGuard_defaultGuardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        test_execute_1_2_customGuard(indexA, indexB);
     }
 
-    function test_interchainExecute_2_AB_periodNonZero_justVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 1, toArr(JUST_VERIFIED, NOT_VERIFIED));
+    /// @dev Default Guard conflict should be ignored if the app opted-in for a custom guard,
+    /// but the custom guard conflict should still revert the transaction.
+    function test_execute_1_2_customGuard_bothGuardsConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        addGuardConflict(customGuard);
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        checkBatchConflict({module: customGuard, required: 1, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
     }
 
-    function test_interchainExecute_2_AB_periodNonZero_justVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 1, toArr(JUST_VERIFIED, ALMOST_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodNonZero_justVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, twoConfWithOP, toArr(JUST_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodNonZero_justVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, twoConfWithOP, toArr(JUST_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodNonZero_justVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, twoConfWithOP, toArr(JUST_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodNonZero_justVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, twoConfWithOP, toArr(JUST_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodNonZero_overVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 1, toArr(OVER_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodNonZero_overVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfWithOP, 1, toArr(OVER_VERIFIED, ALMOST_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodNonZero_overVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, twoConfWithOP, toArr(OVER_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodNonZero_overVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, twoConfWithOP, toArr(OVER_VERIFIED, JUST_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodNonZero_overVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, twoConfWithOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodNonZero_overVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, twoConfWithOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
-    }
-
-    // ══════════════════════════════════ REQUIRED: 2, MODULES: A+B (PERIOD ZERO) ══════════════════════════════════════
-
-    function test_interchainExecute_2_AB_periodZero_notVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 0, toArr(NOT_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_notVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 0, toArr(NOT_VERIFIED, INITIAL_TS));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_notVerifiedA_justVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 1, toArr(NOT_VERIFIED, JUST_NOW));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_notVerifiedA_overVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 1, toArr(NOT_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_almostVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 0, toArr(INITIAL_TS, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_almostVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 0, toArr(INITIAL_TS, INITIAL_TS));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_almostVerifiedA_justVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 1, toArr(INITIAL_TS, JUST_NOW));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_almostVerifiedA_overVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 1, toArr(INITIAL_TS, OVER_VERIFIED));
-    }
+    // ═════════════════════════════════════ APP CONFIG: 2 OUT OF 2 RESPONSES ══════════════════════════════════════════
 
-    function test_interchainExecute_2_AB_periodZero_justVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 1, toArr(JUST_NOW, NOT_VERIFIED));
+    function test_execute_2_2_noGuard(uint256 indexA, uint256 indexB) public {
+        checkScenario({required: 2, guardFlag: GUARD_DISABLED, indexA: indexA, indexB: indexB});
     }
 
-    function test_interchainExecute_2_AB_periodZero_justVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 1, toArr(JUST_NOW, INITIAL_TS));
+    /// @dev Guard conflict should not affect the behavior if the app didn't opt-in for the guard.
+    function test_execute_2_2_noGuard_guardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        test_execute_2_2_noGuard(indexA, indexB);
     }
 
-    function test_interchainExecute_2_AB_periodZero_justVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, twoConfNoOP, toArr(JUST_NOW, JUST_NOW));
+    function test_execute_2_2_defaultGuard(uint256 indexA, uint256 indexB) public {
+        checkScenario({required: 2, guardFlag: GUARD_DEFAULT, indexA: indexA, indexB: indexB});
     }
 
-    function test_interchainExecute_2_AB_periodZero_justVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, twoConfNoOP, toArr(JUST_NOW, JUST_NOW));
+    /// @dev Guard conflict should always revert the transaction if the app opted-in for the guard.
+    function test_execute_2_2_defaultGuard_guardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        checkBatchConflict({module: defaultGuard, required: 2, guardFlag: GUARD_DEFAULT, times: toArr(timeA, timeB)});
     }
 
-    function test_interchainExecute_2_AB_periodZero_justVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, twoConfNoOP, toArr(JUST_NOW, OVER_VERIFIED));
+    function test_execute_2_2_customGuard(uint256 indexA, uint256 indexB) public {
+        checkScenario({required: 2, guardFlag: GUARD_CUSTOM, indexA: indexA, indexB: indexB});
     }
 
-    function test_interchainExecute_2_AB_periodZero_justVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, twoConfNoOP, toArr(JUST_NOW, OVER_VERIFIED));
+    /// @dev Custom guard conflict should always revert the transaction if the app opted-in for the custom guard.
+    function test_execute_2_2_customGuard_customGuardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(customGuard);
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        checkBatchConflict({module: customGuard, required: 2, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
     }
-
-    function test_interchainExecute_2_AB_periodZero_overVerifiedA_notVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 1, toArr(OVER_VERIFIED, NOT_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_overVerifiedA_almostVerifiedB_revert() public {
-        checkNotEnoughConfirmationsAB(optionsNoAirdrop, twoConfNoOP, 1, toArr(OVER_VERIFIED, INITIAL_TS));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_overVerifiedA_justVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, twoConfNoOP, toArr(OVER_VERIFIED, JUST_NOW));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_overVerifiedA_justVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, twoConfNoOP, toArr(OVER_VERIFIED, JUST_NOW));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_overVerifiedA_overVerifiedB_noAirdrop_success() public {
-        checkSuccessAB(optionsNoAirdrop, twoConfNoOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
-    }
-
-    function test_interchainExecute_2_AB_periodZero_overVerifiedA_overVerifiedB_withAirdrop_success() public {
-        checkSuccessAB(optionsAirdrop, twoConfNoOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
-    }
-
-    // ═══════════════════════════════════════════ TESTS: GET APP CONFIG ═══════════════════════════════════════════════
 
-    function test_getAppReceivingConfigV1_oneModule() public {
-        mockReceivingConfig(oneConfWithOP, oneModuleA);
-        (AppConfigV1 memory config, address[] memory modules) = icClient.getAppReceivingConfigV1(dstReceiver);
-        assertEq(config.requiredResponses, oneConfWithOP.requiredResponses);
-        assertEq(config.optimisticPeriod, oneConfWithOP.optimisticPeriod);
-        assertEq(modules, oneModuleA);
+    /// @dev Default guard conflict should not affect the behavior if the app opted-in for a custom guard.
+    function test_execute_2_2_customGuard_defaultGuardConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        test_execute_2_2_customGuard(indexA, indexB);
     }
 
-    function test_getAppReceivingConfigV1_twoModules() public {
-        mockReceivingConfig(twoConfWithOP, twoModules);
-        (AppConfigV1 memory config, address[] memory modules) = icClient.getAppReceivingConfigV1(dstReceiver);
-        assertEq(config.requiredResponses, twoConfWithOP.requiredResponses);
-        assertEq(config.optimisticPeriod, twoConfWithOP.optimisticPeriod);
-        assertEq(modules, twoModules);
+    /// @dev Default Guard conflict should be ignored if the app opted-in for a custom guard,
+    /// but the custom guard conflict should still revert the transaction.
+    function test_execute_2_2_customGuard_bothGuardsConflict(uint256 indexA, uint256 indexB) public {
+        addGuardConflict(defaultGuard);
+        addGuardConflict(customGuard);
+        uint256 timeA = getTimestampFixture(indexA);
+        uint256 timeB = getTimestampFixture(indexB);
+        checkBatchConflict({module: customGuard, required: 2, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
     }
 
     // ═══════════════════════════════════════════ EXECUTE: MISC REVERTS ═══════════════════════════════════════════════
 
-    function prepareExecutableTx(InterchainTransaction memory icTx) internal {
-        InterchainTxDescriptor memory desc = InterchainTxDescriptor({
-            dbNonce: icTx.dbNonce,
-            entryIndex: icTx.entryIndex,
-            transactionId: keccak256(getEncodedTx(icTx))
-        });
-        mockReceivingConfig(oneConfWithOP, oneModuleA);
-        mockCheckVerification(icModuleA, desc, JUST_VERIFIED);
+    function encodeAndMakeExecutable(InterchainTransaction memory icTx) internal returns (bytes memory) {
+        bytes memory encodedTx = getEncodedTx(icTx);
+        makeTxDescriptorExecutable(getTxDescriptor(icTx));
+        return encodedTx;
     }
 
-    function test_interchainExecute_revert_invalidTransactionVersion(uint16 version) public {
+    function test_execute_revert_invalidTransactionVersion(uint16 version) public {
         vm.assume(version != CLIENT_VERSION);
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
+        (InterchainTransaction memory icTx,) = constructInterchainTx();
         bytes memory invalidVersionTx = VersionedPayloadLib.encodeVersionedPayload(version, abi.encode(icTx));
-        InterchainTxDescriptor memory desc = InterchainTxDescriptor({
-            dbNonce: icTx.dbNonce,
-            entryIndex: icTx.entryIndex,
-            transactionId: keccak256(invalidVersionTx)
-        });
-        mockReceivingConfig(oneConfWithOP, oneModuleA);
-        mockCheckVerification(icModuleA, desc, JUST_VERIFIED);
-        expectRevertInvalidTransactionVersion(version);
-        vm.prank(executor);
-        icClient.interchainExecute(optionsNoAirdrop.gasLimit, invalidVersionTx, new bytes32[](0));
-    }
-
-    function test_interchainExecute_revert_srcChainNotRemote() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        mockReceivingConfig(oneConfWithOP, oneModuleA);
-        icTx.srcChainId = LOCAL_CHAIN_ID;
-        bytes memory encodedTx = getEncodedTx(icTx);
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
-        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_srcChainNotLinked() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        mockReceivingConfig(oneConfWithOP, oneModuleA);
-        icTx.srcChainId = UNKNOWN_CHAIN_ID;
-        bytes memory encodedTx = getEncodedTx(icTx);
-        expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
-        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_dstChainIncorrect() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        mockReceivingConfig(oneConfWithOP, oneModuleA);
-        icTx.dstChainId = UNKNOWN_CHAIN_ID;
-        bytes memory encodedTx = getEncodedTx(icTx);
-        expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
-        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_nonZeroEntryIndex() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        icTx.entryIndex = 1;
-        bytes memory encodedTx = getEncodedTx(icTx);
-        expectRevertIncorrectEntryIndex(icTx.entryIndex);
-        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_nonEmptyProof() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        bytes memory encodedTx = getEncodedTx(icTx);
-        expectRevertIncorrectProof();
-        executeTransaction(encodedTx, optionsNoAirdrop, new bytes32[](1));
-    }
-
-    function test_interchainExecute_revert_emptyOptions() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx("");
-        bytes memory encodedTx = getEncodedTx(icTx);
-        prepareExecutableTx(icTx);
-        // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
-        vm.expectRevert();
-        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_invalidOptionsV0() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV0);
-        bytes memory encodedTx = getEncodedTx(icTx);
-        prepareExecutableTx(icTx);
-        expectRevertIncorrectVersion(0);
-        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_invalidOptionsV1() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV1);
-        bytes memory encodedTx = getEncodedTx(icTx);
-        prepareExecutableTx(icTx);
-        // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
-        vm.expectRevert();
-        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_notEnoughGasSupplied() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        bytes memory encodedTx = getEncodedTx(icTx);
-        prepareExecutableTx(icTx);
-        expectRevertNotEnoughGasSupplied();
-        vm.prank(executor);
-        // Limiting gas for the whole transaction leads to application getting as much gas as it requested.
-        icClient.interchainExecute{gas: MOCK_GAS_LIMIT}(MOCK_GAS_LIMIT, encodedTx, emptyProof);
-    }
-
-    function test_interchainExecute_revert_alreadyExecuted() public {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
-            prepareAlreadyExecutedTest(optionsNoAirdrop);
-        bytes memory encodedTx = getEncodedTx(icTx);
-        expectRevertTxAlreadyExecuted(desc.transactionId);
-        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_withAirdrop_zeroMsgValue() public {
-        (InterchainTransaction memory icTx,) = prepareExecuteTest({
-            encodedOptions: optionsAirdrop.encodeOptionsV1(),
-            appConfig: oneConfWithOP,
-            modules: oneModuleA,
-            verificationTimes: toArray(JUST_VERIFIED)
-        });
-        bytes memory encodedTx = getEncodedTx(icTx);
-        uint256 requiredValue = optionsAirdrop.gasAirdrop;
-        optionsAirdrop.gasAirdrop = 0;
-        expectRevertIncorrectMsgValue({actual: 0, required: requiredValue});
-        executeTransaction(encodedTx, optionsAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_withAirdrop_lowerMsgValue() public {
-        (InterchainTransaction memory icTx,) = prepareExecuteTest({
-            encodedOptions: optionsAirdrop.encodeOptionsV1(),
-            appConfig: oneConfWithOP,
-            modules: oneModuleA,
-            verificationTimes: toArray(JUST_VERIFIED)
-        });
-        bytes memory encodedTx = getEncodedTx(icTx);
-        uint256 requiredValue = optionsAirdrop.gasAirdrop;
-        optionsAirdrop.gasAirdrop = requiredValue - 1;
-        expectRevertIncorrectMsgValue({actual: requiredValue - 1, required: requiredValue});
-        executeTransaction(encodedTx, optionsAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_withAirdrop_higherMsgValue() public {
-        (InterchainTransaction memory icTx,) = prepareExecuteTest({
-            encodedOptions: optionsAirdrop.encodeOptionsV1(),
-            appConfig: oneConfWithOP,
-            modules: oneModuleA,
-            verificationTimes: toArray(JUST_VERIFIED)
-        });
-        bytes memory encodedTx = getEncodedTx(icTx);
-        uint256 requiredValue = optionsAirdrop.gasAirdrop;
-        optionsAirdrop.gasAirdrop = requiredValue + 1;
-        expectRevertIncorrectMsgValue({actual: requiredValue + 1, required: requiredValue});
-        executeTransaction(encodedTx, optionsAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_noAirdrop_nonZeroMsgValue() public {
-        (InterchainTransaction memory icTx,) = prepareExecuteTest({
-            encodedOptions: optionsNoAirdrop.encodeOptionsV1(),
-            appConfig: oneConfWithOP,
-            modules: oneModuleA,
-            verificationTimes: toArray(JUST_VERIFIED)
-        });
-        bytes memory encodedTx = getEncodedTx(icTx);
-        optionsNoAirdrop.gasAirdrop = MOCK_GAS_AIRDROP;
-        expectRevertIncorrectMsgValue({actual: MOCK_GAS_AIRDROP, required: 0});
-        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
-    }
-
-    function test_interchainExecute_revert_zeroRequiredResponses() public {
-        AppConfigV1 memory appConfig = oneConfWithOP;
-        appConfig.requiredResponses = 0;
-        (InterchainTransaction memory icTx,) = prepareExecuteTest({
-            encodedOptions: optionsNoAirdrop.encodeOptionsV1(),
-            appConfig: appConfig,
-            modules: oneModuleA,
-            verificationTimes: toArray(JUST_VERIFIED)
-        });
-        bytes memory encodedTx = getEncodedTx(icTx);
-        expectRevertZeroRequiredResponses();
-        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
-    }
-
-    function test_isExecutable_revert_invalidTransactionVersion(uint16 version) public {
-        vm.assume(version != CLIENT_VERSION);
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        bytes memory invalidVersionTx = VersionedPayloadLib.encodeVersionedPayload(version, abi.encode(icTx));
+        makeTxDescriptorExecutable(getTxDescriptor(icTx));
         expectRevertInvalidTransactionVersion(version);
         icClient.isExecutable(invalidVersionTx, emptyProof);
+        expectRevertInvalidTransactionVersion(version);
+        executeTransaction(invalidVersionTx, emptyProof);
     }
 
-    function test_isExecutable_revert_srcChainNotRemote() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        mockReceivingConfig(oneConfWithOP, oneModuleA);
+    function test_execute_revert_srcChainNotRemote() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.srcChainId = LOCAL_CHAIN_ID;
-        bytes memory encodedTx = getEncodedTx(icTx);
+        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
+        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        executeTransaction(encodedTx, emptyProof);
     }
 
-    function test_isExecutable_revert_srcChainNotLinked() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        mockReceivingConfig(oneConfWithOP, oneModuleA);
+    function test_execute_revert_srcChainNotLinked() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.srcChainId = UNKNOWN_CHAIN_ID;
-        bytes memory encodedTx = getEncodedTx(icTx);
+        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
+        expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
+        executeTransaction(encodedTx, emptyProof);
     }
 
-    function test_isExecutable_revert_dstChainIncorrect() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        mockReceivingConfig(oneConfWithOP, oneModuleA);
+    function test_execute_revert_dstChainIncorrect() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.dstChainId = UNKNOWN_CHAIN_ID;
-        bytes memory encodedTx = getEncodedTx(icTx);
+        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.IncorrectDstChainId, UNKNOWN_CHAIN_ID);
         expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
+        expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
+        executeTransaction(encodedTx, emptyProof);
     }
 
-    function test_isExecutable_revert_nonZeroEntryIndex() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
+    function test_execute_revert_revert_nonZeroEntryIndex() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.entryIndex = 1;
-        bytes memory encodedTx = getEncodedTx(icTx);
+        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertIncorrectEntryIndex(icTx.entryIndex);
         icClient.isExecutable(encodedTx, emptyProof);
+        expectRevertIncorrectEntryIndex(icTx.entryIndex);
+        executeTransaction(encodedTx, emptyProof);
     }
 
-    function test_isExecutable_revert_nonEmptyProof() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
-        bytes memory encodedTx = getEncodedTx(icTx);
+    function test_execute_revert_revert_nonEmptyProof() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx();
+        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        bytes32[] memory proof = new bytes32[](1);
+        assertCorrectReadiness(icTx, proof, IInterchainClientV1.TxReadiness.UndeterminedRevert, 0, 0);
         expectRevertIncorrectProof();
-        icClient.isExecutable(encodedTx, new bytes32[](1));
+        icClient.isExecutable(encodedTx, proof);
+        expectRevertIncorrectProof();
+        executeTransaction(encodedTx, proof);
     }
 
-    function test_isExecutable_revert_emptyOptions() public {
+    function test_execute_revert_emptyOptions() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx("");
-        bytes memory encodedTx = getEncodedTx(icTx);
-        prepareExecutableTx(icTx);
+        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
         vm.expectRevert();
         icClient.isExecutable(encodedTx, emptyProof);
+        vm.expectRevert();
+        executeTransaction(encodedTx, emptyProof);
     }
 
-    function test_isExecutable_revert_invalidOptionsV0() public {
+    function test_execute_revert_invalidOptionsV0() public {
+        bytes memory invalidOptionsV0 = VersionedPayloadLib.encodeVersionedPayload(0, abi.encode(getOptions()));
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV0);
-        bytes memory encodedTx = getEncodedTx(icTx);
-        prepareExecutableTx(icTx);
+        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertIncorrectVersion(0);
         icClient.isExecutable(encodedTx, emptyProof);
+        expectRevertIncorrectVersion(0);
+        executeTransaction(encodedTx, emptyProof);
     }
 
-    function test_isExecutable_revert_invalidOptionsV1() public {
+    function test_execute_revert_invalidOptionsV1() public {
+        // Only include a single field to make the payload invalid.
+        bytes memory invalidOptionsV1 = VersionedPayloadLib.encodeVersionedPayload(1, abi.encode(getOptions().gasLimit));
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV1);
-        bytes memory encodedTx = getEncodedTx(icTx);
-        prepareExecutableTx(icTx);
+        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
         vm.expectRevert();
         icClient.isExecutable(encodedTx, emptyProof);
+        vm.expectRevert();
+        executeTransaction(encodedTx, emptyProof);
     }
 
-    function test_isExecutable_revert_alreadyExecuted() public {
-        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
-            prepareAlreadyExecutedTest(optionsNoAirdrop);
+    function test_execute_revert_alreadyExecuted() public {
+        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) = prepareAlreadyExecutedTest();
         bytes memory encodedTx = getEncodedTx(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.AlreadyExecuted, uint256(desc.transactionId));
         expectRevertTxAlreadyExecuted(desc.transactionId);
         icClient.isExecutable(encodedTx, emptyProof);
+        expectRevertTxAlreadyExecuted(desc.transactionId);
+        executeTransaction(encodedTx, emptyProof);
     }
 
-    function test_isExecutable_revert_zeroRequiredResponses() public {
-        AppConfigV1 memory appConfig = oneConfWithOP;
-        appConfig.requiredResponses = 0;
-        (InterchainTransaction memory icTx,) = prepareExecuteTest({
-            encodedOptions: optionsNoAirdrop.encodeOptionsV1(),
-            appConfig: appConfig,
-            modules: oneModuleA,
-            verificationTimes: toArray(JUST_VERIFIED)
-        });
+    function test_execute_revert_zeroRequiredResponses() public {
+        (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) = constructInterchainTx();
         bytes memory encodedTx = getEncodedTx(icTx);
+        mockReceivingConfig({requiredResponses: 0, guardFlag: 0});
+        mockCheckVerification(icModuleA, desc, justVerTS());
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ZeroRequiredResponses);
         expectRevertZeroRequiredResponses();
         icClient.isExecutable(encodedTx, emptyProof);
-    }
-
-    // ═══════════════════════════════════════ TESTS: WRITE EXECUTION PROOF ════════════════════════════════════════════
-
-    function test_writeExecutionProof() public {
-        (, InterchainTxDescriptor memory desc) = prepareAlreadyExecutedTest(optionsNoAirdrop);
-        bytes32 proofHash = keccak256(abi.encode(desc.transactionId, executor));
-        bytes memory expectedCalldata = abi.encodeCall(InterchainDBMock.writeEntry, (proofHash));
-        mockLocalNextEntryIndex(MOCK_LOCAL_DB_NONCE, MOCK_LOCAL_ENTRY_INDEX);
-        vm.expectCall({callee: icDB, data: expectedCalldata, count: 1});
-        expectEventExecutionProofWritten(desc.transactionId, MOCK_LOCAL_DB_NONCE, MOCK_LOCAL_ENTRY_INDEX, executor);
-        icClient.writeExecutionProof(desc.transactionId);
-    }
-
-    function test_writeExecutionProof_revert_notExecuted() public {
-        bytes32 mockTxId = keccak256("mockTxId");
-        expectRevertTxNotExecuted(mockTxId);
-        icClient.writeExecutionProof(mockTxId);
+        expectRevertZeroRequiredResponses();
+        executeTransaction(encodedTx, emptyProof);
     }
 }
