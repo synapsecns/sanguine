@@ -18,6 +18,7 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
 
     function test_setExecutorEOA() public {
         expectEventExecutorEOASet(executorEOA);
+        expectEventFeeRecipientSet(executorEOA);
         vm.prank(governor);
         service.setExecutorEOA(executorEOA);
         assertEq(service.executorEOA(), executorEOA);
@@ -80,6 +81,14 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
         assertEq(service.globalMarkup(), globalMarkup);
     }
 
+    function test_setGlobalMarkup_correctSlotERC7201() public {
+        uint256 globalMarkup = 100;
+        bytes32 slot = getExpectedLocationERC7201({namespaceId: "Synapse.ExecutionService.V1", stolOffset: 2});
+        vm.prank(governor);
+        service.setGlobalMarkup(globalMarkup);
+        assertStorageUint(address(service), slot, globalMarkup);
+    }
+
     function test_setGlobalMarkup_toZero() public {
         test_setGlobalMarkup();
         expectEventGlobalMarkupSet(0);
@@ -94,6 +103,36 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
         expectRevertNotGovernor(caller);
         vm.prank(caller);
         service.setGlobalMarkup(100);
+    }
+
+    function test_setClaimerFraction() public {
+        uint256 claimerFraction = 1e16;
+        expectEventClaimerFractionSet(claimerFraction);
+        vm.prank(governor);
+        service.setClaimerFraction(claimerFraction);
+        assertEq(service.getClaimerFraction(), claimerFraction);
+    }
+
+    function test_setClaimerFraction_correctSlotERC7201() public {
+        uint256 claimerFraction = 1e16;
+        bytes32 slot = getExpectedLocationERC7201({namespaceId: "Synapse.ExecutionService.V1", stolOffset: 3});
+        vm.prank(governor);
+        service.setClaimerFraction(claimerFraction);
+        assertStorageUint(address(service), slot, claimerFraction);
+    }
+
+    function test_setClaimerFraction_revert_overOnePercent() public {
+        expectRevertClaimerFractionExceedsMax(1e16 + 1);
+        vm.prank(governor);
+        service.setClaimerFraction(1e16 + 1);
+    }
+
+    function test_setClaimerFraction_revert_notGovernor(address caller) public {
+        assumeNotProxyAdmin({target: address(service), caller: caller});
+        vm.assume(caller != governor);
+        expectRevertNotGovernor(caller);
+        vm.prank(caller);
+        service.setClaimerFraction(1e16);
     }
 
     function test_getExecutionFee_revert_gasOracleNotSet() public {

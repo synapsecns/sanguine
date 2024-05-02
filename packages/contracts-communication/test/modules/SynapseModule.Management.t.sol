@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import {ClaimableFeesEvents} from "../../contracts/events/ClaimableFeesEvents.sol";
 import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
+import {IClaimableFees} from "../../contracts/interfaces/IClaimableFees.sol";
 import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
 
@@ -13,13 +15,13 @@ import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
-contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
+contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModuleEvents {
     SynapseModule public module;
     SynapseGasOracleMock public gasOracle;
 
     address public interchainDB = makeAddr("InterchainDB");
     address public owner = makeAddr("Owner");
-    address public feeCollector = makeAddr("FeeCollector");
+    address public feeRecipient = makeAddr("FeeRecipient");
 
     address public constant VERIFIER_1 = address(1);
     address public constant VERIFIER_2 = address(2);
@@ -220,62 +222,68 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         module.setThreshold(3);
     }
 
-    function test_setFeeCollector_setsFeeCollector() public {
+    function test_setFeeRecipient_setsFeeRecipient() public {
         vm.prank(owner);
-        module.setFeeCollector(feeCollector);
-        assertEq(module.feeCollector(), feeCollector);
+        module.setFeeRecipient(feeRecipient);
+        assertEq(module.getFeeRecipient(), feeRecipient);
     }
 
-    function test_setFeeCollector_emitsEvent() public {
+    function test_setFeeRecipient_emitsEvent() public {
         vm.expectEmit(address(module));
-        emit FeeCollectorSet(feeCollector);
+        emit FeeRecipientSet(feeRecipient);
         vm.prank(owner);
-        module.setFeeCollector(feeCollector);
+        module.setFeeRecipient(feeRecipient);
     }
 
-    function test_setFeeCollector_revert_notOwner(address notOwner) public {
+    function test_setFeeRecipient_revert_zeroAddress() public {
+        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__ZeroAddress.selector));
+        vm.prank(owner);
+        module.setFeeRecipient(address(0));
+    }
+
+    function test_setFeeRecipient_revert_notOwner(address notOwner) public {
         vm.assume(notOwner != owner);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
         vm.prank(notOwner);
-        module.setFeeCollector(feeCollector);
+        module.setFeeRecipient(feeRecipient);
     }
 
     function test_setFeeFraction_setsFeeFraction() public {
         vm.prank(owner);
-        module.setClaimFeeFraction(0.001e18);
-        assertEq(module.getClaimFeeFraction(), 0.001e18);
+        module.setClaimerFraction(0.001e18);
+        assertEq(module.getClaimerFraction(), 0.001e18);
     }
 
     function test_setFeeFraction_emitsEvent() public {
         vm.expectEmit(address(module));
-        emit ClaimFeeFractionSet(0.001e18);
+        emit ClaimerFractionSet(0.001e18);
         vm.prank(owner);
-        module.setClaimFeeFraction(0.001e18);
+        module.setClaimerFraction(0.001e18);
     }
 
     function test_setFeeFraction_exactlyMax() public {
         uint256 maxFeeFraction = 0.01e18;
         vm.expectEmit(address(module));
-        emit ClaimFeeFractionSet(maxFeeFraction);
+        emit ClaimerFractionSet(maxFeeFraction);
         vm.prank(owner);
-        module.setClaimFeeFraction(maxFeeFraction);
-        assertEq(module.getClaimFeeFraction(), maxFeeFraction);
+        module.setClaimerFraction(maxFeeFraction);
+        assertEq(module.getClaimerFraction(), maxFeeFraction);
     }
 
     function test_setFeeFraction_revert_exceedsMax() public {
         uint256 fractionTooBig = 0.01e18 + 1;
         vm.expectRevert(
-            abi.encodeWithSelector(ISynapseModule.SynapseModule__ClaimFeeFractionExceedsMax.selector, fractionTooBig)
+            abi.encodeWithSelector(IClaimableFees.ClaimableFees__ClaimerFractionExceedsMax.selector, fractionTooBig)
         );
         vm.prank(owner);
-        module.setClaimFeeFraction(fractionTooBig);
+        module.setClaimerFraction(fractionTooBig);
     }
 
     function test_setFeeFraction_revert_notOwner(address notOwner) public {
         vm.assume(notOwner != owner);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
         vm.prank(notOwner);
-        module.setClaimFeeFraction(0.001e18);
+        module.setClaimerFraction(0.001e18);
     }
 
     function test_setGasOracle_setsGasOracle() public {

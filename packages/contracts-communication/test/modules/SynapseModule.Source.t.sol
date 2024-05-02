@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import {ClaimableFeesEvents} from "../../contracts/events/ClaimableFeesEvents.sol";
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
 import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
+import {IClaimableFees} from "../../contracts/interfaces/IClaimableFees.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
 import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
@@ -15,7 +17,7 @@ import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
-contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleEvents {
+contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleEvents, SynapseModuleEvents {
     InterchainBatchLibHarness public batchLibHarness;
     VersionedPayloadLibHarness public payloadLibHarness;
 
@@ -23,7 +25,7 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
     SynapseGasOracleMock public gasOracle;
 
     address public interchainDB = makeAddr("InterchainDB");
-    address public feeCollector = makeAddr("FeeCollector");
+    address public feeRecipient = makeAddr("FeeRecipient");
     address public owner = makeAddr("Owner");
     address public claimer = makeAddr("Claimer");
 
@@ -48,7 +50,7 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         payloadLibHarness = new VersionedPayloadLibHarness();
         vm.startPrank(owner);
         module.setGasOracle(address(gasOracle));
-        module.setFeeCollector(feeCollector);
+        module.setFeeRecipient(feeRecipient);
         module.addVerifier(address(1));
         module.addVerifier(address(2));
         module.setThreshold(2);
@@ -131,7 +133,7 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
     function test_claimFees_zeroClaimFee_emitsEvent() public {
         deal(address(module), 5 ether);
         vm.expectEmit(address(module));
-        emit FeesClaimed(feeCollector, 5 ether, claimer, 0);
+        emit FeesClaimed(feeRecipient, 5 ether, claimer, 0);
         vm.prank(claimer);
         module.claimFees();
     }
@@ -140,20 +142,34 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         deal(address(module), 5 ether);
         vm.prank(claimer);
         module.claimFees();
-        assertEq(feeCollector.balance, 5 ether);
+        assertEq(feeRecipient.balance, 5 ether);
         assertEq(claimer.balance, 0);
     }
 
-    function test_claimFees_zeroClaimFee_revert_feeCollectorNotSet() public {
-        vm.prank(owner);
-        module.setFeeCollector(address(0));
-        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__FeeCollectorNotSet.selector));
+    function test_claimFees_zeroClaimFee_stateChanges() public {
+        deal(address(module), 5 ether);
+        assertEq(module.getClaimableAmount(), 5 ether);
+        assertEq(module.getClaimerFraction(), 0);
+        assertEq(module.getClaimerReward(), 0);
+        assertEq(module.getFeeRecipient(), feeRecipient);
         vm.prank(claimer);
         module.claimFees();
+        assertEq(module.getClaimableAmount(), 0);
+        assertEq(module.getClaimerFraction(), 0);
+        assertEq(module.getClaimerReward(), 0);
+        assertEq(module.getFeeRecipient(), feeRecipient);
+    }
+
+    function test_claimFees_zeroClaimFee_revert_feeRecipientNotSet() public {
+        SynapseModule freshModule = new SynapseModule(interchainDB, address(this));
+        deal(address(freshModule), 5 ether);
+        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__FeeRecipientNotSet.selector));
+        vm.prank(claimer);
+        freshModule.claimFees();
     }
 
     function test_claimFees_zeroClaimFee_revert_noFeesToClaim() public {
-        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__NoFeesToClaim.selector));
+        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__ZeroAmount.selector));
         vm.prank(claimer);
         module.claimFees();
     }
@@ -161,10 +177,10 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
     function test_claimFees_nonZeroClaimFee_emitsEvent() public {
         // Set claim fee to 0.1%
         vm.prank(owner);
-        module.setClaimFeeFraction(0.001e18);
+        module.setClaimerFraction(0.001e18);
         deal(address(module), 5 ether);
         vm.expectEmit(address(module));
-        emit FeesClaimed(feeCollector, 4.995 ether, claimer, 0.005 ether);
+        emit FeesClaimed(feeRecipient, 4.995 ether, claimer, 0.005 ether);
         vm.prank(claimer);
         module.claimFees();
     }
@@ -172,57 +188,48 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
     function test_claimFees_nonZeroClaimFee_distributesFees() public {
         // Set claim fee to 0.1%
         vm.prank(owner);
-        module.setClaimFeeFraction(0.001e18);
+        module.setClaimerFraction(0.001e18);
         deal(address(module), 5 ether);
         vm.prank(claimer);
         module.claimFees();
-        assertEq(feeCollector.balance, 4.995 ether);
+        assertEq(feeRecipient.balance, 4.995 ether);
         assertEq(claimer.balance, 0.005 ether);
     }
 
-    function test_claimFees_nonZeroClaimFee_revert_feeCollectorNotSet() public {
+    function test_claimFees_nonZeroClaimFee_stateChanges() public {
         // Set claim fee to 0.1%
-        vm.startPrank(owner);
-        module.setFeeCollector(address(0));
-        module.setClaimFeeFraction(0.001e18);
-        vm.stopPrank();
+        vm.prank(owner);
+        module.setClaimerFraction(0.001e18);
         deal(address(module), 5 ether);
-        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__FeeCollectorNotSet.selector));
+        assertEq(module.getClaimableAmount(), 5 ether);
+        assertEq(module.getClaimerFraction(), 0.001e18);
+        assertEq(module.getClaimerReward(), 0.005 ether);
+        assertEq(module.getFeeRecipient(), feeRecipient);
         vm.prank(claimer);
         module.claimFees();
+        assertEq(module.getClaimableAmount(), 0);
+        assertEq(module.getClaimerFraction(), 0.001e18);
+        assertEq(module.getClaimerReward(), 0);
+        assertEq(module.getFeeRecipient(), feeRecipient);
+    }
+
+    function test_claimFees_nonZeroClaimFee_revert_feeRecipientNotSet() public {
+        SynapseModule freshModule = new SynapseModule(interchainDB, address(this));
+        // Set claim fee to 0.1%
+        freshModule.setClaimerFraction(0.001e18);
+        deal(address(freshModule), 5 ether);
+        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__FeeRecipientNotSet.selector));
+        vm.prank(claimer);
+        freshModule.claimFees();
     }
 
     function test_claimFees_nonZeroClaimFee_revert_noFeesToClaim() public {
         // Set claim fee to 0.1%
         vm.prank(owner);
-        module.setClaimFeeFraction(0.001e18);
-        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__NoFeesToClaim.selector));
+        module.setClaimerFraction(0.001e18);
+        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__ZeroAmount.selector));
         vm.prank(claimer);
         module.claimFees();
-    }
-
-    function test_getClaimFeeAmount_zeroFees_zeroClaimFee() public {
-        assertEq(module.getClaimFeeAmount(), 0);
-    }
-
-    function test_getClaimFeeAmount_zeroFees_nonZeroClaimFee() public {
-        // Set claim fee to 0.1%
-        vm.prank(owner);
-        module.setClaimFeeFraction(0.001e18);
-        assertEq(module.getClaimFeeAmount(), 0);
-    }
-
-    function test_getClaimFeeAmount_zeroClaimFee() public {
-        deal(address(module), 5 ether);
-        assertEq(module.getClaimFeeAmount(), 0);
-    }
-
-    function test_getClaimFeeAmount_nonZeroClaimFee() public {
-        // Set claim fee to 0.1%
-        vm.prank(owner);
-        module.setClaimFeeFraction(0.001e18);
-        deal(address(module), 5 ether);
-        assertEq(module.getClaimFeeAmount(), 0.005 ether);
     }
 
     function test_getModuleFee_thresholdTwo() public {

@@ -26,7 +26,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
     SynapseGasOracleMock public gasOracle;
     InterchainDBMock public interchainDB;
 
-    address public feeCollector = makeAddr("FeeCollector");
+    address public feeRecipient = makeAddr("FeeRecipient");
     address public owner = makeAddr("Owner");
 
     uint64 public constant SRC_CHAIN_ID = 1337;
@@ -61,7 +61,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         mockVersionedBatch = getVersionedBatch(mockBatch);
         vm.startPrank(owner);
         module.setGasOracle(address(gasOracle));
-        module.setFeeCollector(feeCollector);
+        module.setFeeRecipient(feeRecipient);
         module.addVerifier(SIGNER_0);
         module.addVerifier(SIGNER_1);
         module.addVerifier(SIGNER_2);

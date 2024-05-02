@@ -8,12 +8,12 @@ interface ISynapseExecutionServiceV1 is IExecutionService {
     error SynapseExecutionService__FeeAmountTooLow(uint256 actual, uint256 required);
     error SynapseExecutionService__OptionsVersionNotSupported(uint16 version);
     error SynapseExecutionService__ZeroAddress();
-    error SynapseExecutionService__ZeroAmount();
 
-    /// @notice Allows anyone to claim the fees accumulated in the contract. The claimed fees are
-    /// transferred to the executor EOA account.
-    /// @dev Will revert if there are no fees to claim, or if executor EOA address is not set.
-    function claimFees() external;
+    /// @notice Sets the fraction of the accumulated fees to be paid to caller of `claimFees`.
+    /// This encourages rational actors to call the function as soon as claim fee is higher than the gas cost.
+    /// @dev Could be only called by the owner. Could not exceed 1%.
+    /// @param claimerFraction  The fraction of the fees to be paid to the claimer (100% = 1e18)
+    function setClaimerFraction(uint256 claimerFraction) external;
 
     /// @notice Allows the contract governor to set the address of the EOA account that will be used
     /// to execute transactions on the remote chains.

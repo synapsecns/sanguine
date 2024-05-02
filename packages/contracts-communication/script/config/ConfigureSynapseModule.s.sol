@@ -19,8 +19,8 @@ contract ConfigureSynapseModule is SynapseScript {
 
     function run(string memory environment) external broadcastWithHooks {
         loadConfig(environment);
-        setClaimFeeFraction();
-        setFeeCollector();
+        setClaimerFraction();
+        setFeeRecipient();
         setGasOracle();
         setThreshold();
         syncVerifiers();
@@ -31,28 +31,28 @@ contract ConfigureSynapseModule is SynapseScript {
         module = SynapseModule(getDeploymentAddress({contractName: NAME, revertIfNotFound: true}));
     }
 
-    function setClaimFeeFraction() internal {
-        printLog("Setting claimFeeFraction");
+    function setClaimerFraction() internal {
+        printLog("Setting claimerFraction");
         uint256 claimFeeBPS = config.readUint(".claimFeeBPS");
         // Convert from basis points to wei
-        uint256 claimFeeFraction = claimFeeBPS * 1e18 / 10_000;
-        string memory desc = string.concat(vm.toString(claimFeeFraction), " [", vm.toString(claimFeeBPS), " BPS]");
-        if (module.getClaimFeeFraction() != claimFeeFraction) {
-            module.setClaimFeeFraction(claimFeeFraction);
-            printSuccessWithIndent(string.concat("Set claimFeeFraction to ", desc));
+        uint256 claimerFraction = claimFeeBPS * 1e18 / 10_000;
+        string memory desc = string.concat(vm.toString(claimerFraction), " [", vm.toString(claimFeeBPS), " BPS]");
+        if (module.getClaimerFraction() != claimerFraction) {
+            module.setClaimerFraction(claimerFraction);
+            printSuccessWithIndent(string.concat("Set claimerFraction to ", desc));
         } else {
             printSkipWithIndent(string.concat("already set to ", desc));
         }
     }
 
-    function setFeeCollector() internal {
-        printLog("Setting feeCollector");
-        address feeCollector = config.readAddress(".feeCollector");
-        if (module.feeCollector() != feeCollector) {
-            module.setFeeCollector(feeCollector);
-            printSuccessWithIndent(string.concat("Set feeCollector to ", vm.toString(feeCollector)));
+    function setFeeRecipient() internal {
+        printLog("Setting feeRecipient");
+        address feeRecipient = config.readAddress(".feeRecipient");
+        if (module.getFeeRecipient() != feeRecipient) {
+            module.setFeeRecipient(feeRecipient);
+            printSuccessWithIndent(string.concat("Set feeRecipient to ", vm.toString(feeRecipient)));
         } else {
-            printSkipWithIndent(string.concat("already set to ", vm.toString(feeCollector)));
+            printSkipWithIndent(string.concat("already set to ", vm.toString(feeRecipient)));
         }
     }
 

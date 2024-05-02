@@ -4,11 +4,9 @@ pragma solidity ^0.8.0;
 import {IInterchainModule} from "./IInterchainModule.sol";
 
 interface ISynapseModule is IInterchainModule {
-    error SynapseModule__ClaimFeeFractionExceedsMax(uint256 claimFeeFraction);
-    error SynapseModule__FeeCollectorNotSet();
     error SynapseModule__GasOracleNotContract(address gasOracle);
     error SynapseModule__GasOracleNotSet();
-    error SynapseModule__NoFeesToClaim();
+    error SynapseModule__ZeroAddress();
 
     // ═══════════════════════════════════════════════ PERMISSIONED ════════════════════════════════════════════════════
 
@@ -39,14 +37,14 @@ interface ISynapseModule is IInterchainModule {
 
     /// @notice Sets the address of the fee collector, which will have the verification fees forwarded to it.
     /// @dev Could be only called by the owner.
-    /// @param feeCollector_   The address of the fee collector
-    function setFeeCollector(address feeCollector_) external;
+    /// @param feeRecipient     The address of the fee collector
+    function setFeeRecipient(address feeRecipient) external;
 
     /// @notice Sets the fraction of the accumulated fees to be paid to caller of `claimFees`.
     /// This encourages rational actors to call the function as soon as claim fee is higher than the gas cost.
     /// @dev Could be only called by the owner. Could not exceed 1%.
-    /// @param claimFeeFraction The fraction of the fees to be paid to the claimer (100% = 1e18)
-    function setClaimFeeFraction(uint256 claimFeeFraction) external;
+    /// @param claimerFraction  The fraction of the fees to be paid to the claimer (100% = 1e18)
+    function setClaimerFraction(uint256 claimerFraction) external;
 
     /// @notice Sets the address of the gas oracle to be used for estimating the verification fees.
     /// @dev Could be only called by the owner. Will revert if the gas oracle is not a contract.
@@ -61,13 +59,6 @@ interface ISynapseModule is IInterchainModule {
 
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
-    /// @notice Transfers the accumulated fees to the fee collector.
-    /// Message caller receives a percentage of the fees, this ensures that the module is self-sustainable.
-    /// The claim fee amount could be retrieved using `getClaimFeeAmount`. The rest of the fees
-    /// will be transferred to the fee collector.
-    /// @dev Will revert if the fee collector is not set.
-    function claimFees() external;
-
     /// @notice Verifies a batch from the remote chain using a set of verifier signatures.
     /// If the threshold is met, the batch will be marked as verified in the Interchain DataBase.
     /// @dev List of recovered signers from the signatures must be sorted in the ascending order.
@@ -76,16 +67,6 @@ interface ISynapseModule is IInterchainModule {
     function verifyRemoteBatch(bytes calldata encodedBatch, bytes calldata signatures) external;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
-
-    /// @notice Returns the address of the fee collector for the module.
-    function feeCollector() external view returns (address);
-
-    /// @notice Returns the current claim fee to be paid to the caller of `claimFees`.
-    function getClaimFeeAmount() external view returns (uint256);
-
-    /// @notice Returns the fraction of the fees to be paid to the caller of `claimFees`.
-    /// The returned value is in the range [0, 1e18], where 1e18 corresponds to 100% of the fees.
-    function getClaimFeeFraction() external view returns (uint256);
 
     /// @notice Returns the address of the gas oracle used for estimating the verification fees.
     function gasOracle() external view returns (address);
