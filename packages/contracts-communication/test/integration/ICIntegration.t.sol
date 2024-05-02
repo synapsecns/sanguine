@@ -8,7 +8,7 @@ import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEve
 
 import {IInterchainApp} from "../../contracts/interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV1.sol";
-import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
 import {ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";

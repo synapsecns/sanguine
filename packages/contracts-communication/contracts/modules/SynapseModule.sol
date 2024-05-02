@@ -11,7 +11,6 @@ import {ThresholdECDSA} from "../libs/ThresholdECDSA.sol";
 import {ClaimableFees} from "../fees/ClaimableFees.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModuleEvents, ISynapseModule {

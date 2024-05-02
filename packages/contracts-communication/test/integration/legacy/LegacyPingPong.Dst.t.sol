@@ -2,15 +2,12 @@
 pragma solidity 0.8.20;
 
 import {IInterchainClientV1} from "../../../contracts/interfaces/IInterchainClientV1.sol";
+import {InterchainBatch} from "../../../contracts/libs/InterchainBatch.sol";
+import {InterchainEntry} from "../../../contracts/libs/InterchainEntry.sol";
+import {InterchainTransaction, InterchainTxDescriptor} from "../../../contracts/libs/InterchainTransaction.sol";
 import {OptionsV1} from "../../../contracts/libs/Options.sol";
 
-import {
-    InterchainBatch,
-    InterchainEntry,
-    InterchainTransaction,
-    InterchainTxDescriptor,
-    LegacyPingPongIntegrationTest
-} from "./LegacyPingPong.t.sol";
+import {LegacyPingPongIntegrationTest} from "./LegacyPingPong.t.sol";
 
 contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     uint256 public constant LONG_PERIOD = 1 weeks;

@@ -8,7 +8,6 @@ import {IGasOracle} from "../interfaces/IGasOracle.sol";
 import {OptionsLib, OptionsV1} from "../libs/Options.sol";
 import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
 
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 contract SynapseExecutionServiceV1 is

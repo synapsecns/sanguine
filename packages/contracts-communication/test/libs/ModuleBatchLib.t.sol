@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainBatch, ModuleBatchLibHarness} from "../harnesses/ModuleBatchLibHarness.sol";
+import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
+
+import {ModuleBatchLibHarness} from "../harnesses/ModuleBatchLibHarness.sol";
 
 import {Test} from "forge-std/Test.sol";
 

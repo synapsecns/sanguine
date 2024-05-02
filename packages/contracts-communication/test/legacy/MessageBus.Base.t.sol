@@ -2,13 +2,13 @@
 pragma solidity 0.8.20;
 
 import {MessageBusEvents} from "../../contracts/legacy/events/MessageBusEvents.sol";
+import {LegacyMessageLib} from "../../contracts/legacy/libs/LegacyMessage.sol";
 import {LegacyOptionsLib} from "../../contracts/legacy/libs/LegacyOptions.sol";
 import {MessageBus, IMessageBus} from "../../contracts/legacy/MessageBus.sol";
-import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 
-import {LegacyMessage, LegacyMessageLib} from "./libs/LegacyMessage.t.sol";
+import {LegacyMessage} from "./libs/LegacyMessage.t.sol";
 import {LegacyReceiverMock} from "./mocks/LegacyReceiverMock.sol";
 import {ExecutionServiceMock} from "../mocks/ExecutionServiceMock.sol";
 import {InterchainClientV1Mock} from "../mocks/InterchainClientV1Mock.sol";

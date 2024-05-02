@@ -7,7 +7,7 @@ import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.so
 import {IClaimableFees} from "../../contracts/interfaces/IClaimableFees.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
 import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
-import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
+import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
 import {InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
 import {VersionedPayloadLibHarness} from "../harnesses/VersionedPayloadLibHarness.sol";

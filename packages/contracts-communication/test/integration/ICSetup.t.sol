@@ -5,7 +5,6 @@ import {InterchainClientV1} from "../../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../../contracts/InterchainDB.sol";
 import {ICAppV1} from "../../contracts/apps/ICAppV1.sol";
 import {SynapseExecutionServiceV1} from "../../contracts/execution/SynapseExecutionServiceV1.sol";
-import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/SynapseGasOracleV1.sol";
 

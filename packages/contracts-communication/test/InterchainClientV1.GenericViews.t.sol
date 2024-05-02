@@ -4,8 +4,6 @@ pragma solidity 0.8.20;
 import {OptionsV1} from "../contracts/libs/Options.sol";
 
 import {InterchainClientV1BaseTest, InterchainTransaction} from "./InterchainClientV1.Base.t.sol";
-import {InterchainTransactionLibHarness} from "./harnesses/InterchainTransactionLibHarness.sol";
-import {VersionedPayloadLibHarness} from "./harnesses/VersionedPayloadLibHarness.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering

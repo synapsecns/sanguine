@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {LegacyMessageLibHarness, LegacyMessageLib} from "../harnesses/LegacyMessageLibHarness.sol";
+import {LegacyMessageLibHarness} from "../harnesses/LegacyMessageLibHarness.sol";
 
 import {Test} from "forge-std/Test.sol";
 
