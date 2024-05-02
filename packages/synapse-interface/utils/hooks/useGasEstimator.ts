@@ -3,6 +3,7 @@ import { zeroAddress, Address } from 'viem'
 import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { estimateGas } from '@wagmi/core'
+import { PayloadAction } from '@reduxjs/toolkit'
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -14,9 +15,11 @@ import { stringToBigInt, formatBigIntToString } from '../bigint/format'
 import { Token } from '../types'
 import { wagmiConfig } from '@/wagmiConfig'
 import {
+  fetchGasData,
   setGasLimit,
   resetGasLimit,
   setIsLoadingGasLimit,
+  GasDataState,
 } from '@/slices/gasDataSlice'
 
 export const useGasEstimator = () => {
@@ -94,6 +97,11 @@ export const useGasEstimator = () => {
   }
 
   const estimateBridgeableBalance = async () => {
+    const gasData = (await dispatch(
+      fetchGasData(fromChainId)
+    )) as PayloadAction<GasDataState>
+    const { maxFeePerGas } = gasData?.payload?.gasData.formatted
+
     const gasLimit = await estimateGasLimit()
     const { parsedGasCost } = calculateGasCost(
       maxFeePerGas,
