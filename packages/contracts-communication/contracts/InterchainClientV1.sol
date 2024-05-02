@@ -178,14 +178,14 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             (selector, firstArg, secondArg) = _decodeRevertData(errorData);
             if (selector == InterchainClientV1__TxAlreadyExecuted.selector) {
                 status = TxReadiness.AlreadyExecuted;
-            } else if (selector == InterchainClientV1__BatchConflict.selector) {
-                status = TxReadiness.BatchConflict;
-            } else if (selector == InterchainClientV1__IncorrectDstChainId.selector) {
-                status = TxReadiness.TxWrongDstChainId;
             } else if (selector == InterchainClientV1__NotEnoughResponses.selector) {
                 status = TxReadiness.BatchAwaitingResponses;
+            } else if (selector == InterchainClientV1__BatchConflict.selector) {
+                status = TxReadiness.BatchConflict;
             } else if (selector == InterchainClientV1__ZeroRequiredResponses.selector) {
                 status = TxReadiness.ReceiverZeroRequiredResponses;
+            } else if (selector == InterchainClientV1__IncorrectDstChainId.selector) {
+                status = TxReadiness.TxWrongDstChainId;
             } else {
                 status = TxReadiness.UndeterminedRevert;
                 firstArg = 0;
