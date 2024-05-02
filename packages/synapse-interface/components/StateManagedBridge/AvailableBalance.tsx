@@ -1,24 +1,14 @@
 import React from 'react'
-import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { joinClassNames } from '@/utils/joinClassNames'
-import { Token } from '@/utils/types'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { HoverTooltip } from '../HoverTooltip'
 
 export const AvailableBalance = ({
-  fromChainId,
-  fromToken,
   balance,
-  parsedBalance,
   maxBalanceBridgeable,
   onMaxBalance,
   disabled,
   isGasEstimateLoading,
 }: {
-  fromChainId: number | null
-  fromToken: Token | null
-  balance?: bigint
-  parsedBalance?: string
+  balance?: string
   maxBalanceBridgeable?: string
   onMaxBalance?: () => void
   disabled: boolean
@@ -48,7 +38,7 @@ export const AvailableBalance = ({
         className={labelClassName}
         htmlFor="inputRow"
       >
-        {maxBalanceBridgeable ?? parsedBalance ?? '0.0'}
+        {maxBalanceBridgeable ?? balance ?? '0.0'}
         <span className="text-zinc-500 dark:text-zinc-400"> available</span>
       </label>
     )

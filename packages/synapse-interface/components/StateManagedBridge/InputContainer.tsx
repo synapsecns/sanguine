@@ -43,36 +43,27 @@ export const InputContainer = () => {
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
-  const {
-    parsedGasCost,
-    maxBridgeableGas,
-    isLoading,
-    hasValidGasEstimateInputs,
-    estimateBridgeableBalanceCallback,
-  } = useGasEstimator()
-
   const { addresses, decimals } = fromToken || {}
-
-  const tokenAddress = addresses?.[fromChainId]
   const tokenDecimals = isNumber(decimals) ? decimals : decimals?.[fromChainId]
-  const isGasToken: boolean = tokenAddress === zeroAddress
-
   const balance: bigint = balances[fromChainId]?.find(
     (token) => token.tokenAddress === addresses?.[fromChainId]
   )?.balance
   const parsedBalance = getParsedBalance(balance, tokenDecimals, 4)
+  const fullParsedBalance = formatBigIntToString(balance, tokenDecimals)
 
-  const maxBalance = formatBigIntToString(balance, tokenDecimals)
-  // const maxBalanceBridgeable = isNumber(maxBridgeableGas)
-  //   ? maxBridgeableGas?.toString()
-  //   : maxBalance
+  const {
+    isLoading,
+    maxBridgeableGas,
+    hasValidGasEstimateInputs,
+    estimateBridgeableBalanceCallback,
+  } = useGasEstimator()
 
   const onMaxBalance = useCallback(async () => {
     if (hasValidGasEstimateInputs()) {
       const bridgeableBalance = await estimateBridgeableBalanceCallback()
 
       if (isNull(bridgeableBalance)) {
-        dispatch(updateFromValue(maxBalance))
+        dispatch(updateFromValue(fullParsedBalance))
       } else if (bridgeableBalance > 0) {
         dispatch(updateFromValue(bridgeableBalance?.toString()))
       } else {
@@ -83,12 +74,12 @@ export const InputContainer = () => {
         })
       }
     } else {
-      dispatch(updateFromValue(maxBalance))
+      dispatch(updateFromValue(fullParsedBalance))
     }
   }, [
     fromChainId,
     fromToken,
-    maxBalance,
+    fullParsedBalance,
     hasValidGasEstimateInputs,
     estimateBridgeableBalanceCallback,
   ])
@@ -151,10 +142,7 @@ export const InputContainer = () => {
             handleFromValueChange={handleFromValueChange}
           />
           <AvailableBalance
-            fromChainId={fromChainId}
-            fromToken={fromToken}
-            balance={balance}
-            parsedBalance={parsedBalance}
+            balance={parsedBalance}
             maxBalanceBridgeable={maxBridgeableGas?.toFixed(4)}
             onMaxBalance={onMaxBalance}
             isGasEstimateLoading={isLoading}
