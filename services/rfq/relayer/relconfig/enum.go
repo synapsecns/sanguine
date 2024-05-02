@@ -3,8 +3,6 @@ package relconfig
 import "fmt"
 
 // RebalanceMethod is the method to rebalance.
-//
-//go:generate go run golang.org/x/tools/cmd/stringer -type=RebalanceMethod
 type RebalanceMethod uint8
 
 const (
@@ -31,6 +29,21 @@ func RebalanceMethodFromString(str string) (RebalanceMethod, error) {
 		return RebalanceMethodNone, nil
 	default:
 		return RebalanceMethodNone, fmt.Errorf("invalid rebalance method: %s", str)
+	}
+}
+
+func (i RebalanceMethod) String() string {
+	switch i {
+	case RebalanceMethodNone:
+		return ""
+	case RebalanceMethodSynapseCCTP:
+		return "synapsecctp"
+	case RebalanceMethodCircleCCTP:
+		return "circlecctp"
+	case RebalanceMethodNative:
+		return "native"
+	default:
+		return ""
 	}
 }
 
