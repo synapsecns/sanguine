@@ -9,6 +9,8 @@ import {OptionsV1} from "../../../contracts/libs/Options.sol";
 
 import {LegacyPingPongIntegrationTest} from "./LegacyPingPong.t.sol";
 
+// solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     uint256 public constant LONG_PERIOD = 1 weeks;
 

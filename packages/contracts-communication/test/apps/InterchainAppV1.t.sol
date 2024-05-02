@@ -13,6 +13,7 @@ import {InterchainClientV1Mock} from "../mocks/InterchainClientV1Mock.sol";
 
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable ordering
 abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAppV1Events {
     bytes32 public constant IC_GOVERNOR_ROLE = keccak256("IC_GOVERNOR_ROLE");
 
@@ -44,6 +45,7 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
     /// privileges to setup its interchain configuration.
     function deployICAppV1() internal virtual returns (IInterchainAppV1Harness app);
 
+    // solhint-disable-next-line no-empty-blocks
     function configureICAppV1() internal virtual {}
 
     function assertEq(AppConfigV1 memory config, AppConfigV1 memory expected) internal pure {

@@ -7,6 +7,7 @@ import {InterchainTransaction, InterchainTxDescriptor} from "../../../contracts/
 
 import {LegacyPingPongIntegrationTest} from "./LegacyPingPong.t.sol";
 
+// solhint-disable func-name-mixedcase
 contract LegacyPingPongSrcIntegrationTest is LegacyPingPongIntegrationTest {
     InterchainBatch public batch;
     InterchainEntry public entry;
