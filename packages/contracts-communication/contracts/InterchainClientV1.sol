@@ -401,24 +401,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         // Verify against the Guard if the app opts in to use it
         _assertNoGuardConflict(_getGuard(appConfig), batch);
-        uint256 finalizedResponses = 0;
-        uint256 optimisticPeriod = appConfig.optimisticPeriod;
-        for (uint256 i = 0; i < approvedModules.length; ++i) {
-            address module = approvedModules[i];
-            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(module, batch);
-            // No-op if the module has not verified anything with the same batch key
-            if (confirmedAt == InterchainBatchLib.UNVERIFIED) {
-                continue;
-            }
-            // Revert if the module has verified a conflicting batch with the same batch key
-            if (confirmedAt == InterchainBatchLib.CONFLICT) {
-                revert InterchainClientV1__BatchConflict(module);
-            }
-            // The module has verified this exact batch, check if optimistic period has passed
-            if (confirmedAt + optimisticPeriod < block.timestamp) {
-                ++finalizedResponses;
-            }
-        }
+        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, batch, appConfig.optimisticPeriod);
         if (finalizedResponses < appConfig.requiredResponses) {
             revert InterchainClientV1__NotEnoughResponses(finalizedResponses, appConfig.requiredResponses);
         }
@@ -443,6 +426,37 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             return defaultGuard;
         }
         return appConfig.guard;
+    }
+
+    /// @dev Counts the number of finalized responses for the given batch.
+    /// Note: Reverts if a conflicting batch has been verified by any of the approved modules.
+    function _getFinalizedResponsesCount(
+        address[] memory approvedModules,
+        InterchainBatch memory batch,
+        uint256 optimisticPeriod
+    )
+        internal
+        view
+        returns (uint256 finalizedResponses)
+    {
+        for (uint256 i = 0; i < approvedModules.length; ++i) {
+            address module = approvedModules[i];
+            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(module, batch);
+            // No-op if the module has not verified anything with the same batch key
+            if (confirmedAt == InterchainBatchLib.UNVERIFIED) {
+                continue;
+            }
+            // Revert if the module has verified a conflicting batch with the same batch key
+            if (confirmedAt == InterchainBatchLib.CONFLICT) {
+                revert InterchainClientV1__BatchConflict(module);
+            }
+            // The module has verified this exact batch, check if optimistic period has passed
+            if (confirmedAt + optimisticPeriod < block.timestamp) {
+                unchecked {
+                    ++finalizedResponses;
+                }
+            }
+        }
     }
 
     /// @dev Asserts that the transaction version is correct. Returns the decoded transaction for chaining purposes.
