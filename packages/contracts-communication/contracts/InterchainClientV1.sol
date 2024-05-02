@@ -182,6 +182,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 status = TxReadiness.BatchAwaitingResponses;
             } else if (selector == InterchainClientV1__BatchConflict.selector) {
                 status = TxReadiness.BatchConflict;
+            } else if (selector == InterchainClientV1__ReceiverNotICApp.selector) {
+                status = TxReadiness.ReceiverNotICApp;
             } else if (selector == InterchainClientV1__ZeroRequiredResponses.selector) {
                 status = TxReadiness.ReceiverZeroRequiredResponses;
             } else if (selector == InterchainClientV1__IncorrectDstChainId.selector) {

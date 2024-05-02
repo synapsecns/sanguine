@@ -140,6 +140,8 @@ interface IInterchainClientV1 {
     /// - BatchConflict: one of the modules have submitted a conflicting batch.
     ///   - `firstArg` is the address of the module.
     ///   - This is either one of the modules that the app trusts, or the Guard module used by the app.
+    /// - ReceiverNotICApp: the receiver is not an Interchain app.
+    ///  - `firstArg` is the receiver address.
     /// - ReceiverZeroRequiredResponses: the app config requires zero responses for the transaction.
     /// - TxWrongDstChainId: the destination chain ID does not match the local chain ID.
     ///   - `firstArg` is the destination chain ID.
