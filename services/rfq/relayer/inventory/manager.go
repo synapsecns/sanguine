@@ -642,7 +642,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 	// iterate through all tokens to get the metadata
 	for cid, chainCfg := range cfg.GetChains() {
-		chainID := cid //capture func literal
+		chainID := cid // capture func literal
 		i.tokens[chainID] = map[common.Address]*TokenMetadata{}
 
 		// set up balance fetching for this chain's gas token
@@ -786,7 +786,8 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		})
 
 		// queue token balance fetches
-		for tokenAddress, token := range tokenMap {
+		for ta, token := range tokenMap {
+			tokenAddress := ta // capture func literal
 			// TODO: make sure Returns does nothing on error
 			if !token.IsGasToken {
 				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.Balance))
