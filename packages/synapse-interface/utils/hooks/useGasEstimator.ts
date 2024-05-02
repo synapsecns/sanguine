@@ -36,7 +36,7 @@ export const useGasEstimator = () => {
   const tokenDecimals = isNumber(decimals) ? decimals : decimals?.[fromChainId]
   const isGasToken: boolean = tokenAddress === zeroAddress
   const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
+    (token) => token.tokenAddress === tokenAddress
   )
   const parsedBalance = formatBigIntToString(
     selectedFromToken?.balance,
@@ -61,8 +61,7 @@ export const useGasEstimator = () => {
     if (!fromChainId || !toChainId) return false
     if (!fromToken || !toToken) return false
     if (!isGasToken) return false
-    if (!selectedFromToken) return false
-    if (!parsedBalance) return false
+    if (!selectedFromToken || !parsedBalance) return false
     return true
   }
 
@@ -80,7 +79,7 @@ export const useGasEstimator = () => {
           toChainId,
           fromToken,
           toToken,
-          selectedFromToken?.parsedBalance
+          parsedBalance
         )
         setEstimatedGasLimit(gasLimit ?? 0n)
         return gasLimit

@@ -47,8 +47,6 @@ export const InputContainer = () => {
     parsedGasCost,
     maxBridgeableGas,
     isLoading,
-    gasFeeExceedsBalance,
-    estimateGasLimitCallback,
     estimateBridgeableBalanceCallback,
   } = useGasEstimator()
 
