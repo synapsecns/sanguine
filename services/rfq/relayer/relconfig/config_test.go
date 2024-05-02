@@ -384,4 +384,29 @@ func TestValidation(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, "total maintenance percent exceeds 100 for USDC: 100.100000", err.Error())
 	})
+
+	t.Run("ValidWithNoRebalanceMethod", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 20,
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 20,
+						},
+					},
+				},
+			},
+		}
+		err := cfg.Validate()
+		assert.Nil(t, err)
+	})
 }
