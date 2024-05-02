@@ -13,7 +13,7 @@ import { calculateGasCost } from '../calculateGasCost'
 import { stringToBigInt, formatBigIntToString } from '../bigint/format'
 import { Token } from '../types'
 import { wagmiConfig } from '@/wagmiConfig'
-import { fetchGasData } from '@/slices/gasDataSlice'
+import { fetchGasData, setGasLimit } from '@/slices/gasDataSlice'
 
 export const useGasEstimator = () => {
   const dispatch = useAppDispatch()

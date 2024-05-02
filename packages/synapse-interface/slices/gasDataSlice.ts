@@ -4,6 +4,8 @@ import { estimateFeesPerGas } from '@wagmi/core'
 import { wagmiConfig } from '@/wagmiConfig'
 
 export interface GasDataState {
+  chainId: number
+  gasLimit: bigint
   gasData: {
     gasPrice?: bigint
     maxFeePerGas: bigint
@@ -30,11 +32,13 @@ export const fetchGasData = createAsyncThunk(
   'gasData/fetchGasData',
   async (chainId: number) => {
     const gasData = await getGasData(chainId)
-    return gasData
+    return { gasData, chainId }
   }
 )
 
 const initialState: GasDataState = {
+  chainId: null,
+  gasLimit: null,
   gasData: {
     gasPrice: null,
     maxFeePerGas: null,
@@ -52,7 +56,14 @@ export const gasDataSlice = createSlice({
   name: 'gasData',
   initialState,
   reducers: {
+    setGasLimit: (state: GasDataState, action) => {
+      state.gasLimit = action.payload
+    },
+    resetGasLimit: (state: GasDataState) => {
+      state.gasLimit = initialState.gasLimit
+    },
     resetGasData: (state: GasDataState) => {
+      state.chainId = initialState.chainId
       state.gasData = initialState.gasData
     },
   },
@@ -62,8 +73,10 @@ export const gasDataSlice = createSlice({
     })
     builder
       .addCase(fetchGasData.fulfilled, (state, action) => {
+        const { chainId, gasData } = action.payload
         state.isLoadingGasData = false
-        state.gasData = action.payload
+        state.chainId = chainId
+        state.gasData = gasData
       })
       .addCase(fetchGasData.rejected, (state) => {
         state.isLoadingGasData = false
@@ -72,6 +85,6 @@ export const gasDataSlice = createSlice({
   },
 })
 
-export const { resetGasData } = gasDataSlice.actions
+export const { setGasLimit, resetGasLimit, resetGasData } = gasDataSlice.actions
 
 export default gasDataSlice.reducer
