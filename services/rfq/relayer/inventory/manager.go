@@ -475,7 +475,7 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	}
 
 	// execute the rebalance
-	manager, ok := i.rebalanceManagers[methodOrigin]
+	manager, ok := i.rebalanceManagers[rebalance.Method]
 	if !ok {
 		return fmt.Errorf("no rebalance manager for method: %s", methodOrigin)
 	}
