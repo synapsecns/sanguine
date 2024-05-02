@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {InterchainBatch} from "./InterchainBatch.sol";
-
 library ModuleBatchLib {
     /// @notice Encodes the versioned batch and the auxiliary module data into a single bytes array
     /// @param versionedBatch       The versioned batch to encode

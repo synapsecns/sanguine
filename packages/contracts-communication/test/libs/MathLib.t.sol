@@ -13,11 +13,11 @@ contract MathLibraryTest is Test {
         libHarness = new MathLibHarness();
     }
 
-    function test_roundUpToWord_zero() public {
+    function test_roundUpToWord_zero() public view {
         assertEq(libHarness.roundUpToWord(0), 0);
     }
 
-    function test_roundUpToWord_nonZero_fitsInUint256(uint256 x) public {
+    function test_roundUpToWord_nonZero_fitsInUint256(uint256 x) public view {
         x = bound(x, 1, type(uint256).max - 31);
         uint256 rounded = libHarness.roundUpToWord(x);
         // rounded is a multiple of 32
@@ -27,7 +27,7 @@ contract MathLibraryTest is Test {
         assertLt(rounded - 32, x);
     }
 
-    function test_roundUpToWord_nonZero_overflows(uint256 x) public {
+    function test_roundUpToWord_nonZero_overflows(uint256 x) public view {
         x = bound(x, type(uint256).max - 30, type(uint256).max);
         assertEq(libHarness.roundUpToWord(x), 0);
     }

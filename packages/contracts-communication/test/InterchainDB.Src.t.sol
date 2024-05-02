@@ -150,7 +150,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
-    function assertCorrectValue(bytes32 entryValue, InterchainEntry memory expected) internal {
+    function assertCorrectValue(bytes32 entryValue, InterchainEntry memory expected) internal pure {
         bytes32 expectedValue = keccak256(abi.encode(expected.srcWriter, expected.dataHash));
         assertEq(entryValue, expectedValue, "!entryValue");
     }
@@ -220,11 +220,11 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     // ═══════════════════════════════════════════════ TESTS: SET UP ═══════════════════════════════════════════════════
 
-    function test_setup_getDBNonce() public {
+    function test_setup_getDBNonce() public view {
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE);
     }
 
-    function test_setup_getEntryValue() public {
+    function test_setup_getEntryValue() public view {
         for (uint64 i = 0; i < INITIAL_DB_NONCE; ++i) {
             assertCorrectValue(icDB.getEntryValue(i, 0), getInitialEntry(i));
         }
@@ -635,30 +635,30 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB.getInterchainFee(DST_CHAIN_ID, new address[](0));
     }
 
-    function test_getInterchainFee_oneModule() public {
+    function test_getInterchainFee_oneModule() public view {
         // [moduleA]
         assertEq(icDB.getInterchainFee(DST_CHAIN_ID, oneModule), MODULE_A_FEE);
     }
 
-    function test_getInterchainFee_twoModules() public {
+    function test_getInterchainFee_twoModules() public view {
         // [moduleA, moduleB]
         assertEq(icDB.getInterchainFee(DST_CHAIN_ID, twoModules), MODULE_A_FEE + MODULE_B_FEE);
     }
 
     // ════════════════════════════════════════ TESTS: RETRIEVING DB VALUES ════════════════════════════════════════════
 
-    function checkBatchRoot(bytes32 batchRoot, InterchainEntry memory expectedEntry) internal {
+    function checkBatchRoot(bytes32 batchRoot, InterchainEntry memory expectedEntry) internal pure {
         bytes32 expectedRoot = InterchainEntryLib.entryValue(expectedEntry);
         assertEq(batchRoot, expectedRoot, "!batchRoot");
     }
 
-    function checkBatch(InterchainBatch memory batch, InterchainEntry memory expectedEntry) internal {
+    function checkBatch(InterchainBatch memory batch, InterchainEntry memory expectedEntry) internal pure {
         assertEq(batch.srcChainId, expectedEntry.srcChainId, "!srcChainId");
         assertEq(batch.dbNonce, expectedEntry.dbNonce, "!dbNonce");
         checkBatchRoot(batch.batchRoot, expectedEntry);
     }
 
-    function test_getBatchLeafs() public {
+    function test_getBatchLeafs() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             bytes32[] memory leafs = icDB.getBatchLeafs(nonce);
             assertEq(leafs.length, 1, "!leafs.length");
@@ -676,7 +676,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB.getBatchLeafs(INITIAL_DB_NONCE + 1);
     }
 
-    function test_getBatchLeafsPaginated() public {
+    function test_getBatchLeafsPaginated() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             bytes32[] memory leafs = icDB.getBatchLeafsPaginated(nonce, 0, 1);
             assertEq(leafs.length, 1, "!leafs.length");
@@ -705,13 +705,13 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB.getBatchLeafsPaginated(3, 1, 0);
     }
 
-    function test_getBatchSize_finalized() public {
+    function test_getBatchSize_finalized() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             assertEq(icDB.getBatchSize(nonce), 1, "!batchSize");
         }
     }
 
-    function test_getBatchSize_pending() public {
+    function test_getBatchSize_pending() public view {
         assertEq(icDB.getBatchSize(INITIAL_DB_NONCE), 0);
     }
 
@@ -720,7 +720,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB.getBatchSize(INITIAL_DB_NONCE + 1);
     }
 
-    function test_getBatch() public {
+    function test_getBatch() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             InterchainBatch memory batch = icDB.getBatch(nonce);
             checkBatch(batch, getInitialEntry(nonce));
@@ -737,7 +737,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB.getBatch(INITIAL_DB_NONCE + 1);
     }
 
-    function test_getEntryValue() public {
+    function test_getEntryValue() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             InterchainEntry memory expectedEntry = getInitialEntry(nonce);
             assertCorrectValue(icDB.getEntryValue(nonce, 0), expectedEntry);
@@ -754,13 +754,13 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB.getEntryValue(INITIAL_DB_NONCE, 0);
     }
 
-    function test_getDBNonce() public {
+    function test_getDBNonce() public view {
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE);
     }
 
     // ═══════════════════════════════════════════ TESTS: GET BATCH ROOT ═══════════════════════════════════════════════
 
-    function test_getBatchRoot(InterchainEntry memory entry) public {
+    function test_getBatchRoot(InterchainEntry memory entry) public view {
         entry.entryIndex = 0;
         bytes32 batchRoot = icDB.getBatchRoot(entry, new bytes32[](0));
         assertEq(batchRoot, InterchainEntryLib.entryValue(entry));

@@ -11,6 +11,7 @@ import {VersionedPayloadLibHarness} from "../harnesses/VersionedPayloadLibHarnes
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract InterchainTransactionLibTest is Test {
     InterchainTransactionLibHarness public libHarness;
     VersionedPayloadLibHarness public payloadLibHarness;
@@ -46,7 +47,7 @@ contract InterchainTransactionLibTest is Test {
         assertEq(icTx.message, message, "!message");
     }
 
-    function test_encodeTransaction_roundTrip(InterchainTransaction memory icTx) public {
+    function test_encodeTransaction_roundTrip(InterchainTransaction memory icTx) public view {
         bytes memory encoded = libHarness.encodeTransaction(icTx);
         InterchainTransaction memory decoded = libHarness.decodeTransaction(encoded);
         assertEq(decoded.srcChainId, icTx.srcChainId, "!srcChainId");
@@ -59,13 +60,13 @@ contract InterchainTransactionLibTest is Test {
         assertEq(decoded.message, icTx.message, "!message");
     }
 
-    function test_payloadSize(InterchainTransaction memory icTx) public {
+    function test_payloadSize(InterchainTransaction memory icTx) public view {
         uint256 size = libHarness.payloadSize(icTx.options.length, icTx.message.length);
         uint256 expectedSize = payloadLibHarness.encodeVersionedPayload(0, libHarness.encodeTransaction(icTx)).length;
         assertEq(size, expectedSize);
     }
 
-    function test_payloadSize_fuzzBytesOnly(bytes memory options, bytes memory message) public {
+    function test_payloadSize_fuzzBytesOnly(bytes memory options, bytes memory message) public view {
         InterchainTransaction memory icTx;
         icTx.options = options;
         icTx.message = message;
@@ -79,6 +80,7 @@ contract InterchainTransactionLibTest is Test {
         uint64 entryIndex
     )
         public
+        view
     {
         ICTxHeader header = libHarness.encodeTxHeader(srcChainId, dstChainId, dbNonce, entryIndex);
         (uint64 decodedSrcChainId, uint64 decodedDstChainId, uint64 decodedDbNonce, uint64 decodedEntryIndex) =

@@ -63,7 +63,7 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         );
     }
 
-    function assertEq(InterchainTxDescriptor memory desc, InterchainTxDescriptor memory expected) internal {
+    function assertEq(InterchainTxDescriptor memory desc, InterchainTxDescriptor memory expected) internal pure {
         assertEq(desc.transactionId, expected.transactionId);
         assertEq(desc.dbNonce, expected.dbNonce);
         assertEq(desc.entryIndex, expected.entryIndex);
@@ -136,7 +136,7 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_getReceivingConfig() public {
+    function test_getReceivingConfig() public view {
         (bytes memory encodedConfig, address[] memory modules) = appHarness.getReceivingConfig();
         assertEq(
             encodedConfig,

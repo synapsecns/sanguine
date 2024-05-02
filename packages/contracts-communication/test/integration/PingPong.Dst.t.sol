@@ -2,17 +2,12 @@
 pragma solidity 0.8.20;
 
 import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV1.sol";
-import {ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
+import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
+import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
-import {
-    PingPongIntegrationTest,
-    InterchainBatch,
-    InterchainEntry,
-    InterchainTransaction,
-    InterchainTxDescriptor,
-    PingPongApp
-} from "./PingPong.t.sol";
+import {PingPongIntegrationTest} from "./PingPong.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering

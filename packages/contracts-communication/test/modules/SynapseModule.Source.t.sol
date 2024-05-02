@@ -7,7 +7,7 @@ import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.so
 import {IClaimableFees} from "../../contracts/interfaces/IClaimableFees.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
 import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
-import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
+import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
 import {InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
 import {VersionedPayloadLibHarness} from "../harnesses/VersionedPayloadLibHarness.sol";
@@ -84,7 +84,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedBatch)));
     }
 
-    function test_setup() public {
+    function test_setup() public view {
         assertEq(module.owner(), owner);
         assertEq(module.INTERCHAIN_DB(), interchainDB);
         assertTrue(module.isVerifier(address(1)));
@@ -232,7 +232,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         module.claimFees();
     }
 
-    function test_getModuleFee_thresholdTwo() public {
+    function test_getModuleFee_thresholdTwo() public view {
         // TODO: dbNonce
         assertEq(module.getModuleFee(DST_CHAIN_ID, 0), FEE);
     }
@@ -291,7 +291,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         module.getModuleFee(DST_CHAIN_ID, 0);
     }
 
-    function test_getVerifyGasLimit_default() public {
+    function test_getVerifyGasLimit_default() public view {
         assertEq(module.getVerifyGasLimit(DST_CHAIN_ID), DEFAULT_GAS_LIMIT);
     }
 }

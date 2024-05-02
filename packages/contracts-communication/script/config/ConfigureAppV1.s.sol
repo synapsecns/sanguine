@@ -9,6 +9,8 @@ import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {stdJson, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
+// solhint-disable code-complexity
+// solhint-disable custom-errors
 abstract contract ConfigureAppV1 is SynapseScript {
     using stdJson for string;
 

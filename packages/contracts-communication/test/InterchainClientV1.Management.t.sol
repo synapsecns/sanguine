@@ -6,7 +6,7 @@ import {InterchainClientV1BaseTest} from "./InterchainClientV1.Base.t.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract InterchainClientV1ManagementTest is InterchainClientV1BaseTest {
-    function test_constructor() public {
+    function test_constructor() public view {
         assertEq(icClient.INTERCHAIN_DB(), icDB);
         assertEq(icClient.owner(), owner);
     }

@@ -25,13 +25,13 @@ contract VersionedPayloadLibraryTest is Test {
         return data[:length];
     }
 
-    function test_encodeVersionedPayload_roundtrip(uint16 version, bytes memory payload) public {
+    function test_encodeVersionedPayload_roundtrip(uint16 version, bytes memory payload) public view {
         bytes memory versionedPayload = libHarness.encodeVersionedPayload(version, payload);
         assertEq(libHarness.getVersion(versionedPayload), version);
         assertEq(libHarness.getPayload(versionedPayload), payload);
     }
 
-    function test_encodeVersionedPayloadFromMemory_roundtrip(uint16 version, bytes memory payload) public {
+    function test_encodeVersionedPayloadFromMemory_roundtrip(uint16 version, bytes memory payload) public view {
         bytes memory versionedPayload = VersionedPayloadLib.encodeVersionedPayload(version, payload);
         assertEq(libHarness.getVersionFromMemory(versionedPayload), version);
         assertEq(libHarness.getPayloadFromMemory(versionedPayload), payload);
@@ -71,6 +71,7 @@ contract VersionedPayloadLibraryTest is Test {
         bytes memory d
     )
         public
+        view
     {
         bytes memory versionedPayload = libHarness.encodeVersionedPayload(version, payload);
         (bytes memory a_, bytes memory b_, uint16 version_, bytes memory payload_, bytes memory c_, bytes memory d_) =
@@ -92,6 +93,7 @@ contract VersionedPayloadLibraryTest is Test {
         bytes memory d
     )
         public
+        view
     {
         bytes memory versionedPayload = libHarness.encodeVersionedPayload(version, payload);
         (bytes memory a_, bytes memory b_, uint16 version_, bytes memory payload_, bytes memory c_, bytes memory d_) =

@@ -107,7 +107,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         external
         payable
     {
-        InterchainTransaction memory icTx = _assertCorrectVersion(transaction);
+        InterchainTransaction memory icTx = _assertCorrectTransaction(transaction);
         bytes32 transactionId = keccak256(transaction);
         _assertExecutable(icTx, transactionId, proof);
         _txExecutor[transactionId] = msg.sender;
@@ -151,7 +151,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // @inheritdoc IInterchainClientV1
     function isExecutable(bytes calldata encodedTx, bytes32[] calldata proof) external view returns (bool) {
-        InterchainTransaction memory icTx = _assertCorrectVersion(encodedTx);
+        InterchainTransaction memory icTx = _assertCorrectTransaction(encodedTx);
         // Check that options could be decoded
         icTx.options.decodeOptionsV1();
         bytes32 transactionId = keccak256(encodedTx);
@@ -354,9 +354,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         view
     {
         bytes32 linkedClient = _assertLinkedClient(icTx.srcChainId);
-        if (icTx.dstChainId != block.chainid) {
-            revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
-        }
         if (_txExecutor[transactionId] != address(0)) {
             revert InterchainClientV1__TxAlreadyExecuted(transactionId);
         }
@@ -371,13 +368,18 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 proof: proof
             })
         });
-        (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
+        (bytes memory encodedAppConfig, address[] memory approvedModules) =
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
         AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
         if (appConfig.requiredResponses == 0) {
             revert InterchainClientV1__ZeroRequiredResponses();
         }
-        _assertEnoughFinalizedResponses(approvedDstModules, batch, appConfig);
+        // Verify against the Guard if the app opts in to use it
+        _assertNoGuardConflict(_getGuard(appConfig), batch);
+        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, batch, appConfig.optimisticPeriod);
+        if (finalizedResponses < appConfig.requiredResponses) {
+            revert InterchainClientV1__NotEnoughResponses(finalizedResponses, appConfig.requiredResponses);
+        }
     }
 
     /// @dev Asserts that the chain is linked and returns the linked client address.
@@ -388,23 +390,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         linkedClient = _linkedClient[chainId];
         if (linkedClient == 0) {
             revert InterchainClientV1__NoLinkedClient(chainId);
-        }
-    }
-
-    /// @dev Asserts that enough finalized responses have been received.
-    function _assertEnoughFinalizedResponses(
-        address[] memory approvedModules,
-        InterchainBatch memory batch,
-        AppConfigV1 memory appConfig
-    )
-        internal
-        view
-    {
-        // Verify against the Guard if the app opts in to use it
-        _assertNoGuardConflict(_getGuard(appConfig), batch);
-        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, batch, appConfig.optimisticPeriod);
-        if (finalizedResponses < appConfig.requiredResponses) {
-            revert InterchainClientV1__NotEnoughResponses(finalizedResponses, appConfig.requiredResponses);
         }
     }
 
@@ -460,10 +445,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
     }
 
-    /// @dev Asserts that the transaction version is correct. Returns the decoded transaction for chaining purposes.
-    function _assertCorrectVersion(bytes calldata versionedTx)
+    /// @dev Asserts that the transaction version is correct and that the transaction is for the current chain.
+    /// Note: returns the decoded transaction for chaining purposes.
+    function _assertCorrectTransaction(bytes calldata versionedTx)
         internal
-        pure
+        view
         returns (InterchainTransaction memory icTx)
     {
         uint16 version = versionedTx.getVersion();
@@ -471,6 +457,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             revert InterchainClientV1__InvalidTransactionVersion(version);
         }
         icTx = InterchainTransactionLib.decodeTransaction(versionedTx.getPayload());
+        if (icTx.dstChainId != block.chainid) {
+            revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
+        }
     }
 
     // solhint-disable no-inline-assembly

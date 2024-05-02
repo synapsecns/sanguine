@@ -69,7 +69,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         vm.stopPrank();
     }
 
-    function test_pks() public {
+    function test_pks() public pure {
         assertEq(SIGNER_0, vm.addr(PK_0));
         assertEq(SIGNER_1, vm.addr(PK_1));
         assertEq(SIGNER_2, vm.addr(PK_2));

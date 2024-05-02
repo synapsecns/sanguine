@@ -15,6 +15,7 @@ import {
 import {InterchainAppMock} from "./mocks/InterchainAppMock.sol";
 import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 
+// solhint-disable code-complexity
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 
@@ -217,7 +218,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         });
     }
 
-    function assertExecutorSaved(InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) internal {
+    function assertExecutorSaved(InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) internal view {
         assertEq(icClient.getExecutor(getEncodedTx(icTx)), executor, "!getExecutor");
         assertEq(icClient.getExecutorById(desc.transactionId), executor, "!getExecutorById");
     }
@@ -227,6 +228,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         IInterchainClientV1.TxReadiness expected
     )
         internal
+        view
     {
         assertCorrectReadiness(icTx, expected, 0, 0);
     }
@@ -237,6 +239,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         address expectedFirstArg
     )
         internal
+        view
     {
         assertCorrectReadiness(icTx, expected, uint256(uint160(expectedFirstArg)), 0);
     }
@@ -247,6 +250,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         uint256 expectedFirstArg
     )
         internal
+        view
     {
         assertCorrectReadiness(icTx, expected, expectedFirstArg, 0);
     }
@@ -258,6 +262,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         uint256 expectedSecondArg
     )
         internal
+        view
     {
         assertCorrectReadiness(icTx, emptyProof, expected, expectedFirstArg, expectedSecondArg);
     }
@@ -270,6 +275,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         uint256 expectedSecondArg
     )
         internal
+        view
     {
         (IInterchainClientV1.TxReadiness actual, bytes32 firstArg, bytes32 secondArg) =
             icClient.getTxReadinessV1(icTx, proof);
@@ -597,7 +603,8 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     }
 
     function test_execute_revert_invalidOptionsV0() public {
-        bytes memory invalidOptionsV0 = VersionedPayloadLib.encodeVersionedPayload(0, abi.encode(getOptions()));
+        bytes memory invalidOptionsV0 =
+            VersionedPayloadLib.encodeVersionedPayload({version: 0, payload: abi.encode(getOptions())});
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV0);
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
@@ -609,7 +616,8 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
 
     function test_execute_revert_invalidOptionsV1() public {
         // Only include a single field to make the payload invalid.
-        bytes memory invalidOptionsV1 = VersionedPayloadLib.encodeVersionedPayload(1, abi.encode(getOptions().gasLimit));
+        bytes memory invalidOptionsV1 =
+            VersionedPayloadLib.encodeVersionedPayload({version: 1, payload: abi.encode(getOptions().gasLimit)});
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV1);
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
