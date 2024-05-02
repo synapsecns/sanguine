@@ -181,11 +181,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             } else if (selector == InterchainClientV1__BatchConflict.selector) {
                 status = TxReadiness.BatchConflict;
             } else if (selector == InterchainClientV1__IncorrectDstChainId.selector) {
-                status = TxReadiness.IncorrectDstChainId;
+                status = TxReadiness.TxWrongDstChainId;
             } else if (selector == InterchainClientV1__NotEnoughResponses.selector) {
-                status = TxReadiness.NotEnoughResponses;
+                status = TxReadiness.BatchAwaitingResponses;
             } else if (selector == InterchainClientV1__ZeroRequiredResponses.selector) {
-                status = TxReadiness.ZeroRequiredResponses;
+                status = TxReadiness.ReceiverZeroRequiredResponses;
             } else {
                 status = TxReadiness.UndeterminedRevert;
                 firstArg = 0;

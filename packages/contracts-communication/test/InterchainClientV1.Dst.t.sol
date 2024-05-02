@@ -369,7 +369,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     {
         (InterchainTransaction memory icTx,) = prepareExecuteTest(required, guardFlag, times);
         bytes memory encodedTx = getEncodedTx(icTx);
-        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.NotEnoughResponses, actual, required);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.BatchAwaitingResponses, actual, required);
         expectRevertNotEnoughResponses({actual: actual, required: required});
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertNotEnoughResponses({actual: actual, required: required});
@@ -564,7 +564,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.dstChainId = UNKNOWN_CHAIN_ID;
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
-        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.IncorrectDstChainId, UNKNOWN_CHAIN_ID);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.TxWrongDstChainId, UNKNOWN_CHAIN_ID);
         expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
@@ -665,7 +665,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = getEncodedTx(icTx);
         mockReceivingConfig({requiredResponses: 0, guardFlag: 0});
         mockCheckVerification(icModuleA, desc, justVerTS());
-        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ZeroRequiredResponses);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ReceiverZeroRequiredResponses);
         expectRevertZeroRequiredResponses();
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertZeroRequiredResponses();
