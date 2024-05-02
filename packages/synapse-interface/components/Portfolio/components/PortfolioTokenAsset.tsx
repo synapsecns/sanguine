@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { zeroAddress } from 'viem'
-import { isNumber } from 'lodash'
+import { isNumber, isNull } from 'lodash'
 import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
 import {
@@ -17,6 +17,8 @@ import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
 import GasIcon from '@/components/icons/GasIcon'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+import toast from 'react-hot-toast'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()
@@ -39,6 +41,12 @@ export const PortfolioTokenAsset = ({
   const { fromChainId, fromToken } = useBridgeState()
   const { icon, symbol, decimals, addresses } = token
 
+  const {
+    maxBridgeableGas,
+    hasValidGasEstimateInputs,
+    estimateBridgeableBalanceCallback,
+  } = useGasEstimator()
+
   const tokenAddress = addresses[portfolioChainId]
   const tokenDecimals = isNumber(decimals)
     ? decimals
@@ -46,15 +54,43 @@ export const PortfolioTokenAsset = ({
 
   const parsedBalance = getParsedBalance(balance, tokenDecimals, 3)
   const parsedBalanceLong = getParsedBalance(balance, tokenDecimals, 8)
+  const fullParsedBalance = formatBigIntToString(balance, tokenDecimals)
 
   const isDisabled = false
   const isPortfolioChainSelected = fromChainId === portfolioChainId
   const isTokenSelected = isPortfolioChainSelected && fromToken === token
   const isGasToken = tokenAddress === zeroAddress
 
+  const onMaxBalance = useCallback(async () => {
+    if (hasValidGasEstimateInputs()) {
+      const bridgeableBalance = await estimateBridgeableBalanceCallback()
+
+      if (isNull(bridgeableBalance)) {
+        dispatch(updateFromValue(fullParsedBalance))
+      } else if (bridgeableBalance > 0) {
+        dispatch(updateFromValue(bridgeableBalance?.toString()))
+      } else {
+        dispatch(updateFromValue('0.0'))
+        toast.error('Gas fees likely exceeds your balance.', {
+          id: 'toast-error-not-enough-gas',
+          duration: 10000,
+        })
+      }
+    } else {
+      dispatch(updateFromValue(fullParsedBalance))
+    }
+  }, [
+    fromChainId,
+    fromToken,
+    fullParsedBalance,
+    hasValidGasEstimateInputs,
+    estimateBridgeableBalanceCallback,
+  ])
+
   const handleFromSelectionCallback = useCallback(() => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
+    onMaxBalance()
     handleFocusOnBridgeInput()
   }, [token, portfolioChainId])
 
@@ -82,9 +118,17 @@ export const PortfolioTokenAsset = ({
         />
         <HoverTooltip
           hoverContent={
-            <div className="whitespace-nowrap">
-              {parsedBalanceLong} {symbol}
-            </div>
+            isPortfolioChainSelected && isGasToken && maxBridgeableGas ? (
+              <div className="whitespace-nowrap">
+                Available:{' '}
+                {trimTrailingZeroesAfterDecimal(maxBridgeableGas.toFixed(8))}{' '}
+                {symbol}
+              </div>
+            ) : (
+              <div className="whitespace-nowrap">
+                {parsedBalanceLong} {symbol}
+              </div>
+            )
           }
         >
           <div>

@@ -10,7 +10,7 @@ export const AvailableBalance = ({
   maxBalanceBridgeable,
   onMaxBalance,
   disabled,
-  estimatedGasLimit,
+  // estimatedGasLimit,
   isGasToken,
   isGasEstimateLoading,
 }: {
@@ -19,7 +19,7 @@ export const AvailableBalance = ({
   maxBalanceBridgeable?: number
   onMaxBalance?: () => void
   disabled: boolean
-  estimatedGasLimit: bigint
+  // estimatedGasLimit: bigint
   isGasToken: boolean
   isGasEstimateLoading: boolean
 }) => {
@@ -51,9 +51,7 @@ export const AvailableBalance = ({
   } else {
     return (
       <HoverTooltip
-        isActive={Boolean(
-          isGasToken && maxBalanceBridgeable && estimatedGasLimit
-        )}
+        isActive={Boolean(isGasToken && maxBalanceBridgeable)}
         hoverContent={tooltipContent}
       >
         <label

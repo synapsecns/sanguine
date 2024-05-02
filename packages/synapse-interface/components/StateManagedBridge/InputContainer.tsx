@@ -56,7 +56,6 @@ export const InputContainer = () => {
     isGasToken,
     parsedGasCost,
     maxBridgeableGas,
-    estimatedGasLimit,
     hasValidGasEstimateInputs,
     estimateBridgeableBalanceCallback,
   } = useGasEstimator()
@@ -87,7 +86,7 @@ export const InputContainer = () => {
     estimateBridgeableBalanceCallback,
   ])
 
-  console.log('maxBridgeableGas: ', maxBridgeableGas)
+  console.log('maxBridgeableGas in Input: ', maxBridgeableGas)
 
   useEffect(() => {
     setHasMounted(true)
@@ -151,7 +150,7 @@ export const InputContainer = () => {
             balance={parsedBalance}
             maxBalanceBridgeable={maxBridgeableGas}
             onMaxBalance={onMaxBalance}
-            estimatedGasLimit={estimatedGasLimit}
+            // estimatedGasLimit={estimatedGasLimit}
             isGasToken={isGasToken}
             isGasEstimateLoading={isLoading}
             disabled={!isConnected}

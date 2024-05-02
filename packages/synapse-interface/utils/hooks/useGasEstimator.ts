@@ -13,7 +13,7 @@ import { calculateGasCost } from '../calculateGasCost'
 import { stringToBigInt, formatBigIntToString } from '../bigint/format'
 import { Token } from '../types'
 import { wagmiConfig } from '@/wagmiConfig'
-import { fetchGasData, setGasLimit } from '@/slices/gasDataSlice'
+import { fetchGasData, setGasLimit, resetGasLimit } from '@/slices/gasDataSlice'
 
 export const useGasEstimator = () => {
   const dispatch = useAppDispatch()
@@ -21,13 +21,13 @@ export const useGasEstimator = () => {
   const { synapseSDK } = useSynapseContext()
   const { balances } = usePortfolioState()
   const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
-  const { gasData } = useAppSelector((state) => state.gasData)
+  const { gasData, gasLimit } = useAppSelector((state) => state.gasData)
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
+  // const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
   const { maxFeePerGas } = gasData?.formatted
   const { rawGasCost, parsedGasCost } = calculateGasCost(
     maxFeePerGas,
-    estimatedGasLimit.toString(),
+    gasLimit?.toString(),
     fromChainId
   )
 
@@ -67,7 +67,9 @@ export const useGasEstimator = () => {
 
   const estimateGasLimit = async () => {
     if (hasValidGasEstimateInputs()) {
-      setEstimatedGasLimit(0n)
+      dispatch(resetGasLimit())
+
+      // setEstimatedGasLimit(0n)
       setIsLoading(true)
       try {
         await dispatch(fetchGasData(fromChainId))
@@ -81,11 +83,15 @@ export const useGasEstimator = () => {
           toToken,
           parsedBalance
         )
-        setEstimatedGasLimit(gasLimit ?? 0n)
+
+        // setEstimatedGasLimit(gasLimit ?? 0n)
+        dispatch(setGasLimit(gasLimit))
         return gasLimit
       } catch (error) {
         console.error('Error estimating gas limit:', error)
-        setEstimatedGasLimit(0n)
+
+        // setEstimatedGasLimit(0n)
+        dispatch(resetGasLimit())
       } finally {
         setIsLoading(false)
       }
@@ -111,9 +117,9 @@ export const useGasEstimator = () => {
   }
 
   // Reset gas limit when chainId changes
-  useEffect(() => {
-    setEstimatedGasLimit(0n)
-  }, [fromChainId])
+  // useEffect(() => {
+  //   setEstimatedGasLimit(0n)
+  // }, [fromChainId])
 
   return {
     isLoading,
@@ -121,7 +127,6 @@ export const useGasEstimator = () => {
     rawGasCost,
     parsedGasCost,
     maxBridgeableGas,
-    estimatedGasLimit,
     gasFeeExceedsBalance,
     hasValidGasEstimateInputs,
     estimateGasLimitCallback: estimateGasLimit,
