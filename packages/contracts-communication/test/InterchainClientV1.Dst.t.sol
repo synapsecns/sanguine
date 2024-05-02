@@ -634,6 +634,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.dstReceiver = bytes32(uint256(uint160(receiverEOA)));
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ReceiverNotICApp, receiverEOA);
         expectRevertReceiverNotICApp(receiverEOA);
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertReceiverNotICApp(receiverEOA);
@@ -644,6 +645,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.dstReceiver = bytes32(uint256(uint160(receiverNotICApp)));
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ReceiverNotICApp, receiverNotICApp);
         expectRevertReceiverNotICApp(receiverNotICApp);
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertReceiverNotICApp(receiverNotICApp);

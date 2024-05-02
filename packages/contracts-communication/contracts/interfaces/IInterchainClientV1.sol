@@ -10,6 +10,7 @@ interface IInterchainClientV1 {
         AlreadyExecuted,
         BatchAwaitingResponses,
         BatchConflict,
+        ReceiverNotICApp,
         ReceiverZeroRequiredResponses,
         TxWrongDstChainId,
         UndeterminedRevert
