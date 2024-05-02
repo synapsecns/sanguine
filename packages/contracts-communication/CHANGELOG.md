@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.3.1...contracts-communication@1.4.0) (2024-05-02)
+
+
+### Features
+
+* allow modules to signal non-existing batches and verify their value later ([#2536](https://github.com/synapsecns/sanguine/issues/2536)) ([be0a79f](https://github.com/synapsecns/sanguine/commit/be0a79f0e464e652c831bfa6422521ee528ba2f4))
+* interchain guard modules ([#2530](https://github.com/synapsecns/sanguine/issues/2530)) ([2fb39be](https://github.com/synapsecns/sanguine/commit/2fb39be99d4fff6c5dd846680a05973751a375d3)), closes [#2531](https://github.com/synapsecns/sanguine/issues/2531)
+* unify claiming in `SynapseModule` and `SynapseExecutionService` ([#2534](https://github.com/synapsecns/sanguine/issues/2534)) ([360c2bd](https://github.com/synapsecns/sanguine/commit/360c2bdb469fe12ee8d3129adb30b397458da149))
+
+
+
+
+
 ## [1.3.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.3.0...contracts-communication@1.3.1) (2024-05-01)
 
 **Note:** Version bump only for package contracts-communication
