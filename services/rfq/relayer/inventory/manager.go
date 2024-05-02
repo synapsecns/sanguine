@@ -552,11 +552,11 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	}
 
 	// validate the rebalance method pair
-	methodOrigin, err := cfg.GetRebalanceMethod(int(rebalance.OriginMetadata.ChainID), rebalance.OriginMetadata.Addr.Hex())
+	methodOrigin, err := cfg.GetRebalanceMethod(int(originTokenData.ChainID), originTokenData.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get origin rebalance method: %w", err)
 	}
-	methodDest, err := cfg.GetRebalanceMethod(int(rebalance.DestMetadata.ChainID), rebalance.DestMetadata.Addr.Hex())
+	methodDest, err := cfg.GetRebalanceMethod(int(destTokenData.ChainID), destTokenData.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get dest rebalance method: %w", err)
 	}

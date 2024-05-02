@@ -88,7 +88,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 			usdcDataDest.Addr: &usdcDataDest,
 		},
 	}
-	getConfig := func(minRebalanceAmount, maxRebalanceAmount string) relconfig.Config {
+	getConfig := func(minRebalanceAmount, maxRebalanceAmount string, originMethod, destMethod relconfig.RebalanceMethod) relconfig.Config {
 		return relconfig.Config{
 			Chains: map[int]relconfig.ChainConfig{
 				origin: {
@@ -100,6 +100,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							InitialBalancePct:     50,
 							MinRebalanceAmount:    minRebalanceAmount,
 							MaxRebalanceAmount:    maxRebalanceAmount,
+							RebalanceMethod:       originMethod.String(),
 						},
 					},
 				},
@@ -112,6 +113,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							InitialBalancePct:     50,
 							MinRebalanceAmount:    minRebalanceAmount,
 							MaxRebalanceAmount:    maxRebalanceAmount,
+							RebalanceMethod:       destMethod.String(),
 						},
 					},
 				},
@@ -124,6 +126,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							InitialBalancePct:     0,
 							MinRebalanceAmount:    minRebalanceAmount,
 							MaxRebalanceAmount:    maxRebalanceAmount,
+							RebalanceMethod:       destMethod.String(),
 						},
 					},
 				},
@@ -132,7 +135,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	}
 
 	// 10 USDC on both chains; no rebalance needed
-	cfg := getConfig("", "")
+	cfg := getConfig("", "", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
 	usdcDataOrigin.Balance = big.NewInt(1e7)
 	usdcDataDest.Balance = big.NewInt(1e7)
 	rebalance, err := inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
@@ -155,23 +158,25 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 		OriginMetadata: &usdcDataOrigin,
 		DestMetadata:   &usdcDataDest,
 		Amount:         big.NewInt(4e6),
+		Method:         relconfig.RebalanceMethodSynapseCCTP,
 	}
 	i.Equal(expected, rebalance)
 
 	// Set min rebalance amount
-	cfgWithMax := getConfig("10", "1000000000")
+	cfgWithMax := getConfig("10", "1000000000", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
 	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, origin, usdcDataOrigin.Addr)
 	i.NoError(err)
 	i.Nil(rebalance)
 
 	// Set max rebalance amount
-	cfgWithMax = getConfig("0", "1.1")
+	cfgWithMax = getConfig("0", "1.1", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
 	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, origin, usdcDataOrigin.Addr)
 	i.NoError(err)
 	expected = &inventory.RebalanceData{
 		OriginMetadata: &usdcDataOrigin,
 		DestMetadata:   &usdcDataDest,
 		Amount:         big.NewInt(1.1e6),
+		Method:         relconfig.RebalanceMethodSynapseCCTP,
 	}
 	i.Equal(expected, rebalance)
 
