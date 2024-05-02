@@ -405,33 +405,17 @@ func (c Config) getTokenConfigByAddr(chainID int, tokenAddr string) (cfg TokenCo
 // GetRebalanceMethod returns the rebalance method for the given chain path and token address.
 // This method will error if there is a rebalance method mismatch, and neither methods correspond to
 // RebalanceMethodNone.
-func (c Config) GetRebalanceMethod(origin, dest int, originAddr string) (method RebalanceMethod, err error) {
-	originTokenCfg, tokenName, err := c.getTokenConfigByAddr(origin, originAddr)
-	if err != nil {
-		return 0, err
-	}
-	destTokenCfg, ok := c.Chains[dest].Tokens[tokenName]
-	if !ok {
-		return 0, fmt.Errorf("could not get dest token config with chain %d and token name %s", dest, tokenName)
-	}
-
-	originMethod, err := RebalanceMethodFromString(originTokenCfg.RebalanceMethod)
-	if err != nil {
-		return 0, err
-	}
-	destMethod, err := RebalanceMethodFromString(destTokenCfg.RebalanceMethod)
+func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method RebalanceMethod, err error) {
+	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, tokenAddr)
 	if err != nil {
 		return 0, err
 	}
 
-	if originMethod == destMethod {
-		return originMethod, nil
+	method, err = RebalanceMethodFromString(tokenCfg.RebalanceMethod)
+	if err != nil {
+		return 0, err
 	}
-	if originMethod == RebalanceMethodNone || destMethod == RebalanceMethodNone {
-		return RebalanceMethodNone, nil
-	}
-
-	return RebalanceMethodNone, fmt.Errorf("rebalance method mismatch for token %s on chains %d and %d", tokenName, origin, dest)
+	return method, nil
 }
 
 // GetRebalanceMethods returns all rebalance methods present in the config.

@@ -33,3 +33,11 @@ func RebalanceMethodFromString(str string) (RebalanceMethod, error) {
 		return RebalanceMethodNone, fmt.Errorf("invalid rebalance method: %s", str)
 	}
 }
+
+// IsRebalanceMethodMismatch returns true if the two rebalance methods are different and both are not None.
+func IsRebalanceMethodMismatch(a, b RebalanceMethod) bool {
+	if a == RebalanceMethodNone || b == RebalanceMethodNone {
+		return false
+	}
+	return a != b
+}

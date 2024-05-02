@@ -426,6 +426,15 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 //
 //nolint:cyclop
 func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) (err error) {
+	// evaluate the rebalance method
+	methodOrigin, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
+	if err != nil {
+		return fmt.Errorf("could not get origin rebalance method: %w", err)
+	}
+	if methodOrigin == relconfig.RebalanceMethodNone {
+		return nil
+	}
+
 	ctx, span := i.handler.Tracer().Start(parentCtx, "Rebalance", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, chainID),
 		attribute.String("token", token.Hex()),
@@ -448,13 +457,18 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 		attribute.String("rebalance_amount", rebalance.Amount.String()),
 	)
 
-	// evaluate the rebalance method
-	method, err := i.cfg.GetRebalanceMethod(chainID, rebalance.DestMetadata.ChainID, token.Hex())
+	// validate the rebalance method pair
+	methodDest, err := i.cfg.GetRebalanceMethod(int(rebalance.DestMetadata.ChainID), rebalance.DestMetadata.Addr.Hex())
 	if err != nil {
-		return fmt.Errorf("could not get rebalance method: %w", err)
+		return fmt.Errorf("could not get dest rebalance method: %w", err)
 	}
-	span.SetAttributes(attribute.String("rebalance_method", method.String()))
-	if method == relconfig.RebalanceMethodNone {
+	mismatch := relconfig.IsRebalanceMethodMismatch(methodOrigin, methodDest)
+	defer func() {
+		span.SetAttributes(attribute.Bool("rebalance_method_mismatch", mismatch))
+		span.SetAttributes(attribute.Int("origin_rebalance_method", int(methodOrigin)))
+		span.SetAttributes(attribute.Int("dest_rebalance_method", int(methodDest)))
+	}()
+	if mismatch {
 		return nil
 	}
 
@@ -476,9 +490,9 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	}
 
 	// execute the rebalance
-	manager, ok := i.rebalanceManagers[method]
+	manager, ok := i.rebalanceManagers[methodOrigin]
 	if !ok {
-		return fmt.Errorf("no rebalance manager for method: %s", method)
+		return fmt.Errorf("no rebalance manager for method: %s", methodOrigin)
 	}
 	err = manager.Execute(ctx, rebalance)
 	if err != nil {
