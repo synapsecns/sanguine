@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import {IInterchainClientV1} from "../contracts/interfaces/IInterchainClientV1.sol";
 import {AppConfigV1} from "../contracts/libs/AppConfig.sol";
 import {InterchainBatch} from "../contracts/libs/InterchainBatch.sol";
 import {InterchainEntryLib} from "../contracts/libs/InterchainEntry.sol";
@@ -221,6 +222,62 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         assertEq(icClient.getExecutorById(desc.transactionId), executor, "!getExecutorById");
     }
 
+    function assertCorrectReadiness(
+        InterchainTransaction memory icTx,
+        IInterchainClientV1.TxReadiness expected
+    )
+        internal
+    {
+        assertCorrectReadiness(icTx, expected, 0, 0);
+    }
+
+    function assertCorrectReadiness(
+        InterchainTransaction memory icTx,
+        IInterchainClientV1.TxReadiness expected,
+        address expectedFirstArg
+    )
+        internal
+    {
+        assertCorrectReadiness(icTx, expected, uint256(uint160(expectedFirstArg)), 0);
+    }
+
+    function assertCorrectReadiness(
+        InterchainTransaction memory icTx,
+        IInterchainClientV1.TxReadiness expected,
+        uint256 expectedFirstArg
+    )
+        internal
+    {
+        assertCorrectReadiness(icTx, expected, expectedFirstArg, 0);
+    }
+
+    function assertCorrectReadiness(
+        InterchainTransaction memory icTx,
+        IInterchainClientV1.TxReadiness expected,
+        uint256 expectedFirstArg,
+        uint256 expectedSecondArg
+    )
+        internal
+    {
+        assertCorrectReadiness(icTx, emptyProof, expected, expectedFirstArg, expectedSecondArg);
+    }
+
+    function assertCorrectReadiness(
+        InterchainTransaction memory icTx,
+        bytes32[] memory proof,
+        IInterchainClientV1.TxReadiness expected,
+        uint256 expectedFirstArg,
+        uint256 expectedSecondArg
+    )
+        internal
+    {
+        (IInterchainClientV1.TxReadiness actual, bytes32 firstArg, bytes32 secondArg) =
+            icClient.getTxReadinessV1(icTx, proof);
+        assertEq(uint256(actual), uint256(expected));
+        assertEq(firstArg, bytes32(expectedFirstArg));
+        assertEq(secondArg, bytes32(expectedSecondArg));
+    }
+
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
     function executeTransaction(bytes memory encodedTx, bytes32[] memory proof) internal {
@@ -278,7 +335,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         expectEventInterchainTransactionReceived(icTx, desc);
         bytes memory encodedTx = getEncodedTx(icTx);
         assertTrue(icClient.isExecutable(encodedTx, emptyProof));
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.Ready);
         executeTransaction(encodedTx, emptyProof);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.AlreadyExecuted, uint256(desc.transactionId));
         assertExecutorSaved(icTx, desc);
         assertEq(dstReceiver.balance, options.gasAirdrop);
     }
@@ -302,6 +361,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     {
         (InterchainTransaction memory icTx,) = prepareExecuteTest(required, guardFlag, times);
         bytes memory encodedTx = getEncodedTx(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.NotEnoughResponses, actual, required);
         expectRevertNotEnoughResponses({actual: actual, required: required});
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertNotEnoughResponses({actual: actual, required: required});
@@ -313,6 +373,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     function checkBatchConflict(address module, uint256 required, uint256 guardFlag, uint256[] memory times) internal {
         (InterchainTransaction memory icTx,) = prepareExecuteTest(required, guardFlag, times);
         bytes memory encodedTx = getEncodedTx(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.BatchConflict, module);
         expectRevertBatchConflict(module);
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertBatchConflict(module);
@@ -473,6 +534,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.srcChainId = LOCAL_CHAIN_ID;
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
@@ -483,6 +545,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.srcChainId = UNKNOWN_CHAIN_ID;
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
@@ -493,6 +556,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.dstChainId = UNKNOWN_CHAIN_ID;
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.IncorrectDstChainId, UNKNOWN_CHAIN_ID);
         expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
@@ -503,6 +567,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = constructInterchainTx();
         icTx.entryIndex = 1;
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertIncorrectEntryIndex(icTx.entryIndex);
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertIncorrectEntryIndex(icTx.entryIndex);
@@ -513,6 +578,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = constructInterchainTx();
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         bytes32[] memory proof = new bytes32[](1);
+        assertCorrectReadiness(icTx, proof, IInterchainClientV1.TxReadiness.UndeterminedRevert, 0, 0);
         expectRevertIncorrectProof();
         icClient.isExecutable(encodedTx, proof);
         expectRevertIncorrectProof();
@@ -522,6 +588,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     function test_execute_revert_emptyOptions() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx("");
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
         vm.expectRevert();
         icClient.isExecutable(encodedTx, emptyProof);
@@ -533,6 +600,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory invalidOptionsV0 = VersionedPayloadLib.encodeVersionedPayload(0, abi.encode(getOptions()));
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV0);
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertIncorrectVersion(0);
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertIncorrectVersion(0);
@@ -544,6 +612,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory invalidOptionsV1 = VersionedPayloadLib.encodeVersionedPayload(1, abi.encode(getOptions().gasLimit));
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV1);
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
         vm.expectRevert();
         icClient.isExecutable(encodedTx, emptyProof);
@@ -554,6 +623,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     function test_execute_revert_alreadyExecuted() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) = prepareAlreadyExecutedTest();
         bytes memory encodedTx = getEncodedTx(icTx);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.AlreadyExecuted, uint256(desc.transactionId));
         expectRevertTxAlreadyExecuted(desc.transactionId);
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertTxAlreadyExecuted(desc.transactionId);
@@ -565,6 +635,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = getEncodedTx(icTx);
         mockReceivingConfig({requiredResponses: 0, guardFlag: 0});
         mockCheckVerification(icModuleA, desc, justVerTS());
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ZeroRequiredResponses);
         expectRevertZeroRequiredResponses();
         icClient.isExecutable(encodedTx, emptyProof);
         expectRevertZeroRequiredResponses();
