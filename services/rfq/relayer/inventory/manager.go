@@ -425,19 +425,10 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 // will be rebalanced.
 //
 //nolint:cyclop
-func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) error {
-	// evaluate the rebalance method
-	method, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
-	if err != nil {
-		return fmt.Errorf("could not get rebalance method: %w", err)
-	}
-	if method == relconfig.RebalanceMethodNone {
-		return nil
-	}
+func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) (err error) {
 	ctx, span := i.handler.Tracer().Start(parentCtx, "Rebalance", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, chainID),
 		attribute.String("token", token.Hex()),
-		attribute.String("rebalance_method", method.String()),
 	))
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
@@ -456,6 +447,16 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 		attribute.String("rebalance_dest", strconv.Itoa(rebalance.DestMetadata.ChainID)),
 		attribute.String("rebalance_amount", rebalance.Amount.String()),
 	)
+
+	// evaluate the rebalance method
+	method, err := i.cfg.GetRebalanceMethod(chainID, rebalance.DestMetadata.ChainID, token.Hex())
+	if err != nil {
+		return fmt.Errorf("could not get rebalance method: %w", err)
+	}
+	span.SetAttributes(attribute.String("rebalance_method", method.String()))
+	if method == relconfig.RebalanceMethodNone {
+		return nil
+	}
 
 	// make sure there are no pending rebalances that touch the given path
 	pendingRebalances, err := i.db.GetPendingRebalances(ctx, uint64(rebalance.OriginMetadata.ChainID), uint64(rebalance.DestMetadata.ChainID))

@@ -402,32 +402,36 @@ func (c Config) getTokenConfigByAddr(chainID int, tokenAddr string) (cfg TokenCo
 	return cfg, name, fmt.Errorf("no token config for chain %d and address %s", chainID, tokenAddr)
 }
 
-// GetRebalanceMethod returns the rebalance method for the given chain and token address.
-func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method RebalanceMethod, err error) {
-	tokenConfig, tokenName, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+// GetRebalanceMethod returns the rebalance method for the given chain path and token address.
+// This method will error if there is a rebalance method mismatch, and neither methods correspond to
+// RebalanceMethodNone.
+func (c Config) GetRebalanceMethod(origin, dest int, originAddr string) (method RebalanceMethod, err error) {
+	originTokenCfg, tokenName, err := c.getTokenConfigByAddr(origin, originAddr)
 	if err != nil {
 		return 0, err
 	}
-	if tokenConfig.RebalanceMethod == "" {
+	destTokenCfg, ok := c.Chains[dest].Tokens[tokenName]
+	if !ok {
+		return 0, fmt.Errorf("could not get dest token config with chain %d and token name %s", dest, tokenName)
+	}
+
+	originMethod, err := RebalanceMethodFromString(originTokenCfg.RebalanceMethod)
+	if err != nil {
+		return 0, err
+	}
+	destMethod, err := RebalanceMethodFromString(destTokenCfg.RebalanceMethod)
+	if err != nil {
+		return 0, err
+	}
+
+	if originMethod == destMethod {
+		return originMethod, nil
+	}
+	if originMethod == RebalanceMethodNone || destMethod == RebalanceMethodNone {
 		return RebalanceMethodNone, nil
 	}
-	for cid, chainCfg := range c.Chains {
-		tokenCfg, ok := chainCfg.Tokens[tokenName]
-		if ok {
-			if tokenConfig.RebalanceMethod != tokenCfg.RebalanceMethod {
-				return RebalanceMethodNone, fmt.Errorf("rebalance method mismatch for token %s on chains %d and %d", tokenName, chainID, cid)
-			}
-		}
-	}
-	switch tokenConfig.RebalanceMethod {
-	case "synapsecctp":
-		return RebalanceMethodSynapseCCTP, nil
-	case "circlecctp":
-		return RebalanceMethodCircleCCTP, nil
-	case "native":
-		return RebalanceMethodNative, nil
-	}
-	return RebalanceMethodNone, nil
+
+	return RebalanceMethodNone, fmt.Errorf("rebalance method mismatch for token %s on chains %d and %d", tokenName, origin, dest)
 }
 
 // GetRebalanceMethods returns all rebalance methods present in the config.

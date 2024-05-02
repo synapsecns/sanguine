@@ -1,5 +1,7 @@
 package relconfig
 
+import "fmt"
+
 // RebalanceMethod is the method to rebalance.
 //
 //go:generate go run golang.org/x/tools/cmd/stringer -type=RebalanceMethod
@@ -15,3 +17,19 @@ const (
 	// RebalanceMethodNative is the rebalance method for native bridge.
 	RebalanceMethodNative
 )
+
+// RebalanceMethodFromString converts a string to a RebalanceMethod.
+func RebalanceMethodFromString(str string) (RebalanceMethod, error) {
+	switch str {
+	case "synapsecctp":
+		return RebalanceMethodSynapseCCTP, nil
+	case "circlecctp":
+		return RebalanceMethodCircleCCTP, nil
+	case "native":
+		return RebalanceMethodNative, nil
+	case "":
+		return RebalanceMethodNone, nil
+	default:
+		return RebalanceMethodNone, fmt.Errorf("invalid rebalance method: %s", str)
+	}
+}
