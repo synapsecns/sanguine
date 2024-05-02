@@ -139,7 +139,7 @@ interface IInterchainClientV1 {
     /// - NotEnoughResponses: not enough responses have been received for the transaction.
     ///   - `firstArg` is the number of responses received.
     ///   - `secondArg` is the number of responses required.
-    /// - ZeroRequiredResponses: teh app config requires zero responses for the transaction.
+    /// - ZeroRequiredResponses: the app config requires zero responses for the transaction.
     /// - UndeterminedRevert: the transaction will revert for another reason.
     ///
     /// Note: the arguments are abi-encoded bytes32 values (as their types could be different).
