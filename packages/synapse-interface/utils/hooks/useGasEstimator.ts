@@ -116,10 +116,12 @@ export const useGasEstimator = () => {
   }, [fromChainId])
 
   return {
+    isLoading,
+    isGasToken,
     rawGasCost,
     parsedGasCost,
     maxBridgeableGas,
-    isLoading,
+    estimatedGasLimit,
     gasFeeExceedsBalance,
     hasValidGasEstimateInputs,
     estimateGasLimitCallback: estimateGasLimit,

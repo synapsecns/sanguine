@@ -36,7 +36,6 @@ export const PortfolioTokenAsset = ({
   connectedChainId,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
-  const { maxBridgeableGas } = useGasEstimator()
   const { fromChainId, fromToken } = useBridgeState()
   const { icon, symbol, decimals, addresses } = token
 
@@ -83,17 +82,9 @@ export const PortfolioTokenAsset = ({
         />
         <HoverTooltip
           hoverContent={
-            isPortfolioChainSelected && isGasToken && maxBridgeableGas ? (
-              <div className="whitespace-nowrap">
-                Available:{' '}
-                {trimTrailingZeroesAfterDecimal(maxBridgeableGas.toFixed(8))}{' '}
-                {symbol}
-              </div>
-            ) : (
-              <div className="whitespace-nowrap">
-                {parsedBalanceLong} {symbol}
-              </div>
-            )
+            <div className="whitespace-nowrap">
+              {parsedBalanceLong} {symbol}
+            </div>
           }
         >
           <div>

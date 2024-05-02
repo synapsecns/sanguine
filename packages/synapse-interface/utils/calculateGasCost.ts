@@ -43,11 +43,11 @@ export const calculateGasCost = (
     : null
 
   // console.log('estimatedGasCostInGwei: ', estimatedGasCostInGwei)
-  console.log('gasLimit: ', gasLimit)
-  console.log('gasPrice: ', gasPrice)
-  console.log('gasLimitFloat: ', gasLimitFloat)
-  console.log('gasPriceFloat: ', gasPriceFloat)
-  console.log('formattedEstimatedGasCost: ', formattedEstimatedGasCost)
+  // console.log('gasLimit: ', gasLimit)
+  // console.log('gasPrice: ', gasPrice)
+  // console.log('gasLimitFloat: ', gasLimitFloat)
+  // console.log('gasPriceFloat: ', gasPriceFloat)
+  // console.log('formattedEstimatedGasCost: ', formattedEstimatedGasCost)
 
   return {
     rawGasCost: estimatedGasCostInGwei?.toString(),

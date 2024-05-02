@@ -1,5 +1,5 @@
 export const trimTrailingZeroesAfterDecimal = (input: string): string => {
-  const parts = input.split('.')
+  const parts = input?.split('.')
 
   if (parts.length === 2) {
     const integerPart = parts[0]
