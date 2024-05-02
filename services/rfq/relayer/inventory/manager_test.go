@@ -162,6 +162,18 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	}
 	i.Equal(expected, rebalance)
 
+	// Set rebalance methods to mismatch
+	cfg = getConfig("", "", relconfig.RebalanceMethodCircleCCTP, relconfig.RebalanceMethodSynapseCCTP)
+	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	i.NoError(err)
+	i.Nil(rebalance)
+
+	// Set one rebalance method to None
+	cfg = getConfig("", "", relconfig.RebalanceMethodNone, relconfig.RebalanceMethodSynapseCCTP)
+	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	i.NoError(err)
+	i.Nil(rebalance)
+
 	// Set min rebalance amount
 	cfgWithMax := getConfig("10", "1000000000", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
 	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, origin, usdcDataOrigin.Addr)
