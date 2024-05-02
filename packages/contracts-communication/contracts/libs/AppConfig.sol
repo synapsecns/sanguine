@@ -13,14 +13,17 @@ struct AppConfigV1 {
 
 using AppConfigLib for AppConfigV1 global;
 
+/// @dev Signals that the app opted out of using any Guard module.
+uint8 constant APP_CONFIG_GUARD_DISABLED = 0;
+/// @dev Signals that the app uses the default Guard module provided by InterchainClient contract.
+uint8 constant APP_CONFIG_GUARD_DEFAULT = 1;
+/// @dev Signals that the app uses a custom Guard module.
+uint8 constant APP_CONFIG_GUARD_CUSTOM = 2;
+
 library AppConfigLib {
     using VersionedPayloadLib for bytes;
 
     uint16 internal constant APP_CONFIG_V1 = 1;
-
-    uint8 internal constant GUARD_DISABLED = 0;
-    uint8 internal constant GUARD_DEFAULT = 1;
-    uint8 internal constant GUARD_CUSTOM = 2;
 
     error AppConfigLib__IncorrectVersion(uint16 version);
 

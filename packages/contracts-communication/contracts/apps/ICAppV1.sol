@@ -5,7 +5,7 @@ import {AbstractICApp, InterchainTxDescriptor} from "./AbstractICApp.sol";
 
 import {InterchainAppV1Events} from "../events/InterchainAppV1Events.sol";
 import {IInterchainAppV1} from "../interfaces/IInterchainAppV1.sol";
-import {AppConfigV1, AppConfigLib} from "../libs/AppConfig.sol";
+import {AppConfigV1, APP_CONFIG_GUARD_DEFAULT} from "../libs/AppConfig.sol";
 import {OptionsV1} from "../libs/Options.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
@@ -228,7 +228,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// @dev Returns the guard flag and address in the app config.
     /// By default, the ICApp is using the Client-provided guard, but it can be overridden in the derived contract.
     function _getGuardConfig() internal view virtual returns (uint8 guardFlag, address guard) {
-        return (AppConfigLib.GUARD_DEFAULT, address(0));
+        return (APP_CONFIG_GUARD_DEFAULT, address(0));
     }
 
     /// @dev Returns the address of the Execution Service to use for sending messages.

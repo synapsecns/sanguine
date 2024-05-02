@@ -8,9 +8,9 @@ import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
-import {AppConfigV1, AppConfigLib} from "./libs/AppConfig.sol";
+import {AppConfigV1, AppConfigLib, APP_CONFIG_GUARD_DISABLED, APP_CONFIG_GUARD_DEFAULT} from "./libs/AppConfig.sol";
 import {BatchingV1Lib} from "./libs/BatchingV1.sol";
-import {InterchainBatch, InterchainBatchLib} from "./libs/InterchainBatch.sol";
+import {InterchainBatch, BATCH_UNVERIFIED, BATCH_CONFLICT} from "./libs/InterchainBatch.sol";
 import {
     InterchainTransaction, InterchainTxDescriptor, InterchainTransactionLib
 } from "./libs/InterchainTransaction.sol";
@@ -411,7 +411,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     function _assertNoGuardConflict(address guard, InterchainBatch memory batch) internal view {
         if (guard != address(0)) {
             uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(guard, batch);
-            if (confirmedAt == InterchainBatchLib.CONFLICT) {
+            if (confirmedAt == BATCH_CONFLICT) {
                 revert InterchainClientV1__BatchConflict(guard);
             }
         }
@@ -419,10 +419,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     /// @dev Returns the Guard address to use for the given app config.
     function _getGuard(AppConfigV1 memory appConfig) internal view returns (address) {
-        if (appConfig.guardFlag == AppConfigLib.GUARD_DISABLED) {
+        if (appConfig.guardFlag == APP_CONFIG_GUARD_DISABLED) {
             return address(0);
         }
-        if (appConfig.guardFlag == AppConfigLib.GUARD_DEFAULT) {
+        if (appConfig.guardFlag == APP_CONFIG_GUARD_DEFAULT) {
             return defaultGuard;
         }
         return appConfig.guard;
@@ -443,11 +443,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             address module = approvedModules[i];
             uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(module, batch);
             // No-op if the module has not verified anything with the same batch key
-            if (confirmedAt == InterchainBatchLib.UNVERIFIED) {
+            if (confirmedAt == BATCH_UNVERIFIED) {
                 continue;
             }
             // Revert if the module has verified a conflicting batch with the same batch key
-            if (confirmedAt == InterchainBatchLib.CONFLICT) {
+            if (confirmedAt == BATCH_CONFLICT) {
                 revert InterchainClientV1__BatchConflict(module);
             }
             // The module has verified this exact batch, check if optimistic period has passed
