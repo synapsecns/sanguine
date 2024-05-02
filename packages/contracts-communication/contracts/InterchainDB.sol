@@ -93,16 +93,20 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         RemoteBatch memory existingBatch = _remoteBatches[msg.sender][batchKey];
         // Check if that's the first time module verifies the batch
         if (existingBatch.verifiedAt == 0) {
-            _remoteBatches[msg.sender][batchKey] =
-                RemoteBatch({verifiedAt: block.timestamp, batchRoot: batch.batchRoot});
-            emit InterchainBatchVerified(msg.sender, batch.srcChainId, batch.dbNonce, batch.batchRoot);
-        } else {
-            // If the module has already verified the batch, check that the batch root is the same
-            if (existingBatch.batchRoot != batch.batchRoot) {
-                revert InterchainDB__ConflictingBatches(msg.sender, existingBatch.batchRoot, batch);
-            }
-            // No-op if the batch root is the same
+            _saveVerifiedBatch(msg.sender, batchKey, batch);
+            return;
         }
+        // No-op if the batch root is the same
+        if (existingBatch.batchRoot == batch.batchRoot) {
+            return;
+        }
+        // Overwriting an empty (non-existent) batch with a different one is allowed
+        if (existingBatch.batchRoot == 0) {
+            _saveVerifiedBatch(msg.sender, batchKey, batch);
+            return;
+        }
+        // Overwriting an existing batch with a different one is not allowed
+        revert InterchainDB__ConflictingBatches(msg.sender, existingBatch.batchRoot, batch);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -255,6 +259,12 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(dstChainId, versionedBatch);
         }
         emit InterchainBatchVerificationRequested(dstChainId, batch.dbNonce, batch.batchRoot, srcModules);
+    }
+
+    /// @dev Save the verified batch to the database and emit the event.
+    function _saveVerifiedBatch(address module, BatchKey batchKey, InterchainBatch memory batch) internal {
+        _remoteBatches[module][batchKey] = RemoteBatch({verifiedAt: block.timestamp, batchRoot: batch.batchRoot});
+        emit InterchainBatchVerified(module, batch.srcChainId, batch.dbNonce, batch.batchRoot);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════

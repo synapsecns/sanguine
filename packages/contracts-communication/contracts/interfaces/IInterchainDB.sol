@@ -60,7 +60,11 @@ interface IInterchainDB {
         returns (uint64 dbNonce, uint64 entryIndex);
 
     /// @notice Allows the Interchain Module to verify the batch coming from the remote chain.
+    /// The module SHOULD verify the exact finalized batch from the remote chain. If the batch with a given nonce
+    /// is not finalized or does not exist, module CAN verify it with an empty root value. Once the batch is
+    /// finalized, the module SHOULD re-verify the batch with the correct root value.
     /// Note: The DB will only accept the batch of the same version as the DB itself.
+    /// @dev Will revert if the batch with the same nonce but a different non-empty root is already verified.
     /// @param versionedBatch   The versioned Interchain Batch to verify
     function verifyRemoteBatch(bytes memory versionedBatch) external;
 
