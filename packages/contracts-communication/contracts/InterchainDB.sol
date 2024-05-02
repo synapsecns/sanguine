@@ -81,14 +81,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function verifyRemoteBatch(bytes calldata versionedBatch) external {
-        uint16 dbVersion = versionedBatch.getVersion();
-        if (dbVersion != DB_VERSION) {
-            revert InterchainDB__InvalidBatchVersion(dbVersion);
-        }
-        InterchainBatch memory batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
-        if (batch.srcChainId == block.chainid) {
-            revert InterchainDB__SameChainId(batch.srcChainId);
-        }
+        InterchainBatch memory batch = _assertCorrectBatch(versionedBatch);
         BatchKey batchKey = InterchainBatchLib.encodeBatchKey({srcChainId: batch.srcChainId, dbNonce: batch.dbNonce});
         RemoteBatch memory existingBatch = _remoteBatches[msg.sender][batchKey];
         // Check if that's the first time module verifies the batch
@@ -268,6 +261,19 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
+
+    /// @dev Asserts that the batch version is correct and that batch originates from a remote chain.
+    /// Note: returns the decoded batch for chaining purposes.
+    function _assertCorrectBatch(bytes calldata versionedBatch) internal view returns (InterchainBatch memory batch) {
+        uint16 dbVersion = versionedBatch.getVersion();
+        if (dbVersion != DB_VERSION) {
+            revert InterchainDB__InvalidBatchVersion(dbVersion);
+        }
+        batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
+        if (batch.srcChainId == block.chainid) {
+            revert InterchainDB__SameChainId(batch.srcChainId);
+        }
+    }
 
     /// @dev Check that the batch with the given nonce exists and return the pending nonce.
     function _assertBatchExists(uint64 dbNonce) internal view returns (uint64 pendingNonce) {
