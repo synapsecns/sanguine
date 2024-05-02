@@ -16,6 +16,7 @@ import { HoverTooltip } from '@/components/HoverTooltip'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
 import GasIcon from '@/components/icons/GasIcon'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()
@@ -84,7 +85,9 @@ export const PortfolioTokenAsset = ({
           hoverContent={
             isPortfolioChainSelected && isGasToken && maxBridgeableGas ? (
               <div className="whitespace-nowrap">
-                Available: {maxBridgeableGas.toFixed(4)} {symbol}
+                Available:{' '}
+                {trimTrailingZeroesAfterDecimal(maxBridgeableGas.toFixed(8))}{' '}
+                {symbol}
               </div>
             ) : (
               <div className="whitespace-nowrap">
