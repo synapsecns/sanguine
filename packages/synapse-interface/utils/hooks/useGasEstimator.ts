@@ -121,6 +121,7 @@ export const useGasEstimator = () => {
     maxBridgeableGas,
     isLoading,
     gasFeeExceedsBalance,
+    hasValidGasEstimateInputs,
     estimateGasLimitCallback: estimateGasLimit,
     estimateBridgeableBalanceCallback: estimateBridgeableBalance,
   }

@@ -1,4 +1,4 @@
-import { isNumber } from 'lodash'
+import { isNull, isNumber } from 'lodash'
 import toast from 'react-hot-toast'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useAccount } from 'wagmi'
@@ -47,6 +47,7 @@ export const InputContainer = () => {
     parsedGasCost,
     maxBridgeableGas,
     isLoading,
+    hasValidGasEstimateInputs,
     estimateBridgeableBalanceCallback,
   } = useGasEstimator()
 
@@ -62,15 +63,17 @@ export const InputContainer = () => {
   const parsedBalance = getParsedBalance(balance, tokenDecimals, 4)
 
   const maxBalance = formatBigIntToString(balance, tokenDecimals)
-  const maxBalanceBridgeable = isNumber(maxBridgeableGas)
-    ? maxBridgeableGas?.toString()
-    : maxBalance
+  // const maxBalanceBridgeable = isNumber(maxBridgeableGas)
+  //   ? maxBridgeableGas?.toString()
+  //   : maxBalance
 
   const onMaxBalance = useCallback(async () => {
-    if (isGasToken) {
+    if (hasValidGasEstimateInputs()) {
       const bridgeableBalance = await estimateBridgeableBalanceCallback()
 
-      if (bridgeableBalance > 0) {
+      if (isNull(bridgeableBalance)) {
+        dispatch(updateFromValue(maxBalance))
+      } else if (bridgeableBalance > 0) {
         dispatch(updateFromValue(bridgeableBalance?.toString()))
       } else {
         dispatch(updateFromValue('0.0'))
@@ -80,9 +83,15 @@ export const InputContainer = () => {
         })
       }
     } else {
-      dispatch(updateFromValue(maxBalanceBridgeable))
+      dispatch(updateFromValue(maxBalance))
     }
-  }, [fromChainId, fromToken, maxBalanceBridgeable])
+  }, [
+    fromChainId,
+    fromToken,
+    maxBalance,
+    hasValidGasEstimateInputs,
+    estimateBridgeableBalanceCallback,
+  ])
 
   useEffect(() => {
     setHasMounted(true)
