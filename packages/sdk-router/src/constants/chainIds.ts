@@ -17,9 +17,15 @@ export enum SupportedChainId {
   AVALANCHE = 43114,
   DFK = 53935,
   BLAST = 81457,
+  SCROLL = 534352,
   AURORA = 1313161554,
   HARMONY = 1666600000,
 }
+
+/**
+ * List of chain ids where SynapseBridge is not deployed
+ */
+const UNSUPPORTED_BRIDGE_CHAIN_IDS: number[] = [SupportedChainId.SCROLL]
 
 /**
  * List of supported chain ids, where SynapseBridge is deployed.
@@ -27,6 +33,7 @@ export enum SupportedChainId {
 export const SUPPORTED_CHAIN_IDS: number[] = Object.values(SupportedChainId)
   .map((chainId) => Number(chainId))
   .filter((chainId) => !isNaN(chainId))
+  .filter((chainId) => !UNSUPPORTED_BRIDGE_CHAIN_IDS.includes(chainId))
 
 /**
  * List of chain ids where SynapseCCTP is deployed, ordered by CCTP's domain:
@@ -54,6 +61,7 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.BASE,
   SupportedChainId.ARBITRUM,
   SupportedChainId.BLAST,
+  SupportedChainId.SCROLL,
 ]
 
 /**
