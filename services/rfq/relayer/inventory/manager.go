@@ -677,7 +677,8 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	deferredCalls := make(map[int][]w3types.Caller)
 
 	// iterate through all tokens to get the metadata
-	for chainID, chainCfg := range cfg.GetChains() {
+	for cid, chainCfg := range cfg.GetChains() {
+		chainID := cid // capture func literal
 		i.tokens[chainID] = map[common.Address]*TokenMetadata{}
 
 		// set up balance fetching for this chain's gas token
@@ -743,9 +744,8 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				}
 			}
 
-			chainID := chainID // capture func literal
 			deferredRegisters = append(deferredRegisters, func() error {
-				//nolint:wrapcheck,scopelint
+				//nolint:wrapcheck
 				return i.registerBalance(ctx, chainID, token)
 			})
 		}
@@ -805,7 +805,8 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
 	var deferredRegisters []registerCall
 
-	for chainID, tokenMap := range i.tokens {
+	for cid, tokenMap := range i.tokens {
+		chainID := cid // capture func literal
 		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
@@ -816,23 +817,23 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 			eth.Balance(i.relayerAddress, nil).Returns(i.gasBalances[chainID]),
 		}
 		deferredRegisters = append(deferredRegisters, func() error {
-			//nolint:wrapcheck,scopelint
+			//nolint:wrapcheck
 			return i.registerBalance(ctx, chainID, chain.EthAddress)
 		})
 
 		// queue token balance fetches
-		for tokenAddress, token := range tokenMap {
+		for ta, token := range tokenMap {
+			tokenAddress := ta // capture func literal
 			// TODO: make sure Returns does nothing on error
 			if !token.IsGasToken {
 				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.Balance))
 				deferredRegisters = append(deferredRegisters, func() error {
-					//nolint:wrapcheck,scopelint
+					//nolint:wrapcheck
 					return i.registerBalance(ctx, chainID, tokenAddress)
 				})
 			}
 		}
 
-		chainID := chainID // capture func literal
 		go func() {
 			defer wg.Done()
 			err = chainClient.BatchWithContext(ctx, deferredCalls...)

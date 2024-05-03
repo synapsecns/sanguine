@@ -7,7 +7,7 @@ library VersionedPayloadLib {
     /// @notice Amount of bytes reserved for the version (uint16) in the versioned payload
     uint256 internal constant VERSION_LENGTH = 2;
 
-    error VersionedPayload__TooShort(bytes versionedPayload);
+    error VersionedPayload__PayloadTooShort(bytes versionedPayload);
     error VersionedPayload__PrecompileFailed();
 
     /// @notice Encodes the versioned payload into a single bytes array.
@@ -21,7 +21,7 @@ library VersionedPayloadLib {
     /// @param versionedPayload     The versioned payload (calldata reference).
     function getVersion(bytes calldata versionedPayload) internal pure returns (uint16 version) {
         if (versionedPayload.length < VERSION_LENGTH) {
-            revert VersionedPayload__TooShort(versionedPayload);
+            revert VersionedPayload__PayloadTooShort(versionedPayload);
         }
         assembly {
             // We are only interested in the highest 16 bits of the loaded full 32 bytes word.
@@ -34,7 +34,7 @@ library VersionedPayloadLib {
     /// @param versionedPayload     The versioned payload.
     function getPayload(bytes calldata versionedPayload) internal pure returns (bytes calldata) {
         if (versionedPayload.length < VERSION_LENGTH) {
-            revert VersionedPayload__TooShort(versionedPayload);
+            revert VersionedPayload__PayloadTooShort(versionedPayload);
         }
         return versionedPayload[VERSION_LENGTH:];
     }
@@ -43,7 +43,7 @@ library VersionedPayloadLib {
     /// @param versionedPayload     The versioned payload (memory reference).
     function getVersionFromMemory(bytes memory versionedPayload) internal pure returns (uint16 version) {
         if (versionedPayload.length < VERSION_LENGTH) {
-            revert VersionedPayload__TooShort(versionedPayload);
+            revert VersionedPayload__PayloadTooShort(versionedPayload);
         }
         assembly {
             // We are only interested in the highest 16 bits of the loaded full 32 bytes word.
@@ -58,7 +58,7 @@ library VersionedPayloadLib {
     /// @param versionedPayload     The versioned payload (memory reference).
     function getPayloadFromMemory(bytes memory versionedPayload) internal view returns (bytes memory payload) {
         if (versionedPayload.length < VERSION_LENGTH) {
-            revert VersionedPayload__TooShort(versionedPayload);
+            revert VersionedPayload__PayloadTooShort(versionedPayload);
         }
         // Figure how many bytes to copy and allocate the memory for the extracted payload.
         uint256 toCopy;

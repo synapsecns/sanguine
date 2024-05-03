@@ -27,6 +27,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainClientV1 {
     using AppConfigLib for bytes;
     using OptionsLib for bytes;
+    using TypeCasts for address;
+    using TypeCasts for bytes32;
     using VersionedPayloadLib for bytes;
 
     /// @notice Version of the InterchainClient contract. Sent and received transactions must have the same version.
@@ -52,7 +54,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // @inheritdoc IInterchainClientV1
     function setDefaultGuard(address guard) external onlyOwner {
         if (guard == address(0)) {
-            revert InterchainClientV1__ZeroAddress();
+            revert InterchainClientV1__GuardZeroAddress();
         }
         defaultGuard = guard;
         emit DefaultGuardSet(guard);
@@ -93,11 +95,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         payable
         returns (InterchainTxDescriptor memory desc)
     {
-        bytes32 receiverBytes32 = TypeCasts.addressToBytes32(receiver);
+        bytes32 receiverBytes32 = receiver.addressToBytes32();
         return _interchainSend(dstChainId, receiverBytes32, srcExecutionService, srcModules, options, message);
     }
 
-    // TODO: Handle the case where receiver does not implement the IInterchainApp interface (or does not exist at all)
     // @inheritdoc IInterchainClientV1
     function interchainExecute(
         uint256 gasLimit,
@@ -114,17 +115,18 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
         if (msg.value != decodedOptions.gasAirdrop) {
-            revert InterchainClientV1__IncorrectMsgValue(msg.value, decodedOptions.gasAirdrop);
+            revert InterchainClientV1__MsgValueMismatch(msg.value, decodedOptions.gasAirdrop);
         }
         // We should always use at least as much as the requested gas limit.
         // The executor can specify a higher gas limit if they wanted.
         if (decodedOptions.gasLimit > gasLimit) gasLimit = decodedOptions.gasLimit;
         // Check the the Executor has provided big enough gas limit for the whole transaction.
-        if (gasleft() <= gasLimit) {
-            revert InterchainClientV1__NotEnoughGasSupplied();
+        uint256 gasLeft = gasleft();
+        if (gasLeft <= gasLimit) {
+            revert InterchainClientV1__GasLeftBelowMin(gasLeft, gasLimit);
         }
         // Pass the full msg.value to the app: we have already checked that it matches the requested gas airdrop.
-        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
+        IInterchainApp(icTx.dstReceiver.bytes32ToAddress()).appReceive{gas: gasLimit, value: msg.value}({
             srcChainId: icTx.srcChainId,
             sender: icTx.srcSender,
             dbNonce: icTx.dbNonce,
@@ -177,14 +179,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             (selector, firstArg, secondArg) = _decodeRevertData(errorData);
             if (selector == InterchainClientV1__TxAlreadyExecuted.selector) {
                 status = TxReadiness.AlreadyExecuted;
+            } else if (selector == InterchainClientV1__ResponsesAmountBelowMin.selector) {
+                status = TxReadiness.BatchAwaitingResponses;
             } else if (selector == InterchainClientV1__BatchConflict.selector) {
                 status = TxReadiness.BatchConflict;
-            } else if (selector == InterchainClientV1__IncorrectDstChainId.selector) {
-                status = TxReadiness.IncorrectDstChainId;
-            } else if (selector == InterchainClientV1__NotEnoughResponses.selector) {
-                status = TxReadiness.NotEnoughResponses;
-            } else if (selector == InterchainClientV1__ZeroRequiredResponses.selector) {
-                status = TxReadiness.ZeroRequiredResponses;
+            } else if (selector == InterchainClientV1__ReceiverNotICApp.selector) {
+                status = TxReadiness.ReceiverNotICApp;
+            } else if (selector == InterchainClientV1__ReceiverZeroRequiredResponses.selector) {
+                status = TxReadiness.ReceiverZeroRequiredResponses;
+            } else if (selector == InterchainClientV1__DstChainIdNotLocal.selector) {
+                status = TxReadiness.TxWrongDstChainId;
             } else {
                 status = TxReadiness.UndeterminedRevert;
                 firstArg = 0;
@@ -217,7 +221,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         _assertLinkedClient(dstChainId);
         if (srcExecutionService == address(0)) {
-            revert InterchainClientV1__ZeroExecutionService();
+            revert InterchainClientV1__ExecutionServiceZeroAddress();
         }
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
@@ -231,7 +235,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @inheritdoc IInterchainClientV1
     function getLinkedClient(uint64 chainId) external view returns (bytes32) {
         if (chainId == block.chainid) {
-            revert InterchainClientV1__NotRemoteChainId(chainId);
+            revert InterchainClientV1__ChainIdNotRemote(chainId);
         }
         return _linkedClient[chainId];
     }
@@ -239,30 +243,40 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @inheritdoc IInterchainClientV1
     function getLinkedClientEVM(uint64 chainId) external view returns (address linkedClientEVM) {
         if (chainId == block.chainid) {
-            revert InterchainClientV1__NotRemoteChainId(chainId);
+            revert InterchainClientV1__ChainIdNotRemote(chainId);
         }
         bytes32 linkedClient = _linkedClient[chainId];
-        linkedClientEVM = TypeCasts.bytes32ToAddress(linkedClient);
+        linkedClientEVM = linkedClient.bytes32ToAddress();
         // Check that the linked client address fits into the EVM address space
-        if (TypeCasts.addressToBytes32(linkedClientEVM) != linkedClient) {
-            revert InterchainClientV1__NotEVMClient(linkedClient);
+        if (linkedClientEVM.addressToBytes32() != linkedClient) {
+            revert InterchainClientV1__LinkedClientNotEVM(linkedClient);
         }
-    }
-
-    /// @notice Gets the V1 app config and trusted modules for the receiving app.
-    function getAppReceivingConfigV1(address receiver)
-        external
-        view
-        returns (AppConfigV1 memory config, address[] memory modules)
-    {
-        bytes memory encodedConfig;
-        (encodedConfig, modules) = IInterchainApp(receiver).getReceivingConfig();
-        config = encodedConfig.decodeAppConfigV1();
     }
 
     /// @notice Decodes the encoded options data into a OptionsV1 struct.
     function decodeOptions(bytes memory encodedOptions) external view returns (OptionsV1 memory) {
         return encodedOptions.decodeOptionsV1();
+    }
+
+    /// @notice Gets the V1 app config and trusted modules for the receiving app.
+    function getAppReceivingConfigV1(address receiver)
+        public
+        view
+        returns (AppConfigV1 memory config, address[] memory modules)
+    {
+        // First, check that receiver is a contract
+        if (receiver.code.length == 0) {
+            revert InterchainClientV1__ReceiverNotICApp(receiver);
+        }
+        // Then, use a low-level static call to get the config and modules
+        (bool success, bytes memory returnData) =
+            receiver.staticcall(abi.encodeCall(IInterchainApp.getReceivingConfig, ()));
+        if (!success || returnData.length == 0) {
+            revert InterchainClientV1__ReceiverNotICApp(receiver);
+        }
+        bytes memory encodedConfig;
+        (encodedConfig, modules) = abi.decode(returnData, (bytes, address[]));
+        config = encodedConfig.decodeAppConfigV1();
     }
 
     /// @notice Encodes the transaction data into a bytes format.
@@ -289,16 +303,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         _assertLinkedClient(dstChainId);
         if (receiver == 0) {
-            revert InterchainClientV1__ZeroReceiver();
+            revert InterchainClientV1__ReceiverZeroAddress();
         }
         if (srcExecutionService == address(0)) {
-            revert InterchainClientV1__ZeroExecutionService();
+            revert InterchainClientV1__ExecutionServiceZeroAddress();
         }
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         if (msg.value < verificationFee) {
-            revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
+            revert InterchainClientV1__FeeAmountBelowMin(msg.value, verificationFee);
         }
         (desc.dbNonce, desc.entryIndex) = IInterchainDB(INTERCHAIN_DB).getNextEntryIndex();
         InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
@@ -368,28 +382,27 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 proof: proof
             })
         });
-        (bytes memory encodedAppConfig, address[] memory approvedModules) =
-            IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
-        AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
+        address receiver = icTx.dstReceiver.bytes32ToAddress();
+        (AppConfigV1 memory appConfig, address[] memory approvedModules) = getAppReceivingConfigV1(receiver);
         if (appConfig.requiredResponses == 0) {
-            revert InterchainClientV1__ZeroRequiredResponses();
+            revert InterchainClientV1__ReceiverZeroRequiredResponses(receiver);
         }
         // Verify against the Guard if the app opts in to use it
         _assertNoGuardConflict(_getGuard(appConfig), batch);
         uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, batch, appConfig.optimisticPeriod);
         if (finalizedResponses < appConfig.requiredResponses) {
-            revert InterchainClientV1__NotEnoughResponses(finalizedResponses, appConfig.requiredResponses);
+            revert InterchainClientV1__ResponsesAmountBelowMin(finalizedResponses, appConfig.requiredResponses);
         }
     }
 
     /// @dev Asserts that the chain is linked and returns the linked client address.
     function _assertLinkedClient(uint64 chainId) internal view returns (bytes32 linkedClient) {
         if (chainId == block.chainid) {
-            revert InterchainClientV1__NotRemoteChainId(chainId);
+            revert InterchainClientV1__ChainIdNotRemote(chainId);
         }
         linkedClient = _linkedClient[chainId];
         if (linkedClient == 0) {
-            revert InterchainClientV1__NoLinkedClient(chainId);
+            revert InterchainClientV1__ChainIdNotLinked(chainId);
         }
     }
 
@@ -454,11 +467,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         uint16 version = versionedTx.getVersion();
         if (version != CLIENT_VERSION) {
-            revert InterchainClientV1__InvalidTransactionVersion(version);
+            revert InterchainClientV1__TxVersionMismatch(version, CLIENT_VERSION);
         }
         icTx = InterchainTransactionLib.decodeTransaction(versionedTx.getPayload());
         if (icTx.dstChainId != block.chainid) {
-            revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
+            revert InterchainClientV1__DstChainIdNotLocal(icTx.dstChainId);
         }
     }
 

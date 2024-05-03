@@ -44,7 +44,7 @@ contract SynapseExecutionServiceV1 is
     /// @inheritdoc ISynapseExecutionServiceV1
     function setClaimerFraction(uint256 claimerFraction_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (claimerFraction_ > MAX_CLAIMER_FRACTION) {
-            revert ClaimableFees__ClaimerFractionExceedsMax(claimerFraction_);
+            revert ClaimableFees__ClaimerFractionAboveMax(claimerFraction_, MAX_CLAIMER_FRACTION);
         }
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         $.claimerFraction = claimerFraction_;
@@ -54,7 +54,7 @@ contract SynapseExecutionServiceV1 is
     /// @inheritdoc ISynapseExecutionServiceV1
     function setExecutorEOA(address executorEOA_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (executorEOA_ == address(0)) {
-            revert SynapseExecutionService__ZeroAddress();
+            revert SynapseExecutionService__ExecutorZeroAddress();
         }
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         $.executorEOA = executorEOA_;
@@ -65,7 +65,7 @@ contract SynapseExecutionServiceV1 is
     /// @inheritdoc ISynapseExecutionServiceV1
     function setGasOracle(address gasOracle_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (gasOracle_ == address(0)) {
-            revert SynapseExecutionService__ZeroAddress();
+            revert SynapseExecutionService__GasOracleZeroAddress();
         }
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         $.gasOracle = gasOracle_;
@@ -93,7 +93,7 @@ contract SynapseExecutionServiceV1 is
     {
         uint256 requiredFee = getExecutionFee(dstChainId, txPayloadSize, options);
         if (msg.value < requiredFee) {
-            revert SynapseExecutionService__FeeAmountTooLow({actual: msg.value, required: requiredFee});
+            revert SynapseExecutionService__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
         }
         emit ExecutionRequested({transactionId: transactionId, client: msg.sender, executionFee: msg.value});
     }
@@ -111,7 +111,7 @@ contract SynapseExecutionServiceV1 is
     {
         address cachedGasOracle = gasOracle();
         if (cachedGasOracle == address(0)) {
-            revert SynapseExecutionService__GasOracleNotSet();
+            revert SynapseExecutionService__GasOracleZeroAddress();
         }
         // ExecutionServiceV1 implementation only supports Options V1.
         // Following versions will be supported by the future implementations.

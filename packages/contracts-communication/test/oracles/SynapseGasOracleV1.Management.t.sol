@@ -75,9 +75,9 @@ contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, caller));
     }
 
-    function expectRevertNotRemoteChainId(uint64 chainId) internal {
+    function expectRevertChainIdNotRemote(uint64 chainId) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(ISynapseGasOracleV1.SynapseGasOracleV1__NotRemoteChainId.selector, chainId)
+            abi.encodeWithSelector(ISynapseGasOracleV1.SynapseGasOracleV1__ChainIdNotRemote.selector, chainId)
         );
     }
 
@@ -155,8 +155,8 @@ contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
         oracle.setRemoteCallDataPrice(REMOTE_CHAIN_ID, MOCK_CALLDATA_PRICE);
     }
 
-    function test_setRemoteCallDataPrice_revert_notRemoteChainId() public withRemoteMockGasData {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+    function test_setRemoteCallDataPrice_revert_ChainIdNotRemote() public withRemoteMockGasData {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         vm.prank(owner);
         oracle.setRemoteCallDataPrice(LOCAL_CHAIN_ID, MOCK_CALLDATA_PRICE);
     }
@@ -195,8 +195,8 @@ contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
         oracle.setRemoteGasPrice(REMOTE_CHAIN_ID, MOCK_GAS_PRICE);
     }
 
-    function test_setRemoteGasPrice_revert_notRemoteChainId() public withRemoteMockGasData {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+    function test_setRemoteGasPrice_revert_ChainIdNotRemote() public withRemoteMockGasData {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         vm.prank(owner);
         oracle.setRemoteGasPrice(LOCAL_CHAIN_ID, MOCK_GAS_PRICE);
     }
@@ -235,8 +235,8 @@ contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
         oracle.setRemoteNativePrice(REMOTE_CHAIN_ID, MOCK_NATIVE_PRICE);
     }
 
-    function test_setRemoteNativePrice_revert_notRemoteChainId() public {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+    function test_setRemoteNativePrice_revert_ChainIdNotRemote() public {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         vm.prank(owner);
         oracle.setRemoteNativePrice(LOCAL_CHAIN_ID, MOCK_NATIVE_PRICE);
     }
@@ -298,8 +298,8 @@ contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
         oracle.setRemoteGasData(REMOTE_CHAIN_ID, mockGasData);
     }
 
-    function test_setRemoteGasData_revert_notRemoteChainId() public {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+    function test_setRemoteGasData_revert_ChainIdNotRemote() public {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         vm.prank(owner);
         oracle.setRemoteGasData(LOCAL_CHAIN_ID, mockGasData);
     }

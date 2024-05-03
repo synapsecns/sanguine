@@ -192,7 +192,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     function test_claimFees_revert_zeroExecutorEOA() public {
         SynapseExecutionServiceV1 freshService = SynapseExecutionServiceV1(deployProxy(address(implementation)));
         deal(address(freshService), 5 ether);
-        expectRevertFeeRecipientNotSet();
+        expectRevertFeeRecipientZeroAddress();
         vm.prank(claimer);
         freshService.claimFees();
     }
@@ -252,7 +252,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     }
 
     function test_requestTxExecution_clientA_noAirdrop_revert_lowerFee() public {
-        expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP - 1, MOCK_FEE_NO_AIRDROP);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_NO_AIRDROP - 1, MOCK_FEE_NO_AIRDROP);
         requestTxExecution(icClientA, MOCK_FEE_NO_AIRDROP - 1, encodedOptionsNoAirdrop);
     }
 
@@ -270,7 +270,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
 
     function test_requestTxExecution_clientA_noAirdrop_withMarkup_revert_lowerFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP_MARKUP - 1, MOCK_FEE_NO_AIRDROP_MARKUP);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_NO_AIRDROP_MARKUP - 1, MOCK_FEE_NO_AIRDROP_MARKUP);
         requestTxExecution(icClientA, MOCK_FEE_NO_AIRDROP_MARKUP - 1, encodedOptionsNoAirdrop);
     }
 
@@ -291,7 +291,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     }
 
     function test_requestTxExecution_clientA_withAirdrop_revert_lowerFee() public {
-        expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
         requestTxExecution(icClientA, MOCK_FEE_WITH_AIRDROP - 1, encodedOptionsWithAirdrop);
     }
 
@@ -309,7 +309,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
 
     function test_requestTxExecution_clientA_withAirdrop_withMarkup_revert_lowerFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP_MARKUP - 1, MOCK_FEE_WITH_AIRDROP_MARKUP);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_WITH_AIRDROP_MARKUP - 1, MOCK_FEE_WITH_AIRDROP_MARKUP);
         requestTxExecution(icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP - 1, encodedOptionsWithAirdrop);
     }
 
@@ -330,7 +330,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     }
 
     function test_requestTxExecution_clientB_noAirdrop_revert_lowerFee() public {
-        expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP - 1, MOCK_FEE_NO_AIRDROP);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_NO_AIRDROP - 1, MOCK_FEE_NO_AIRDROP);
         requestTxExecution(icClientB, MOCK_FEE_NO_AIRDROP - 1, encodedOptionsNoAirdrop);
     }
 
@@ -354,7 +354,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
 
     function test_requestTxExecution_clientB_noAirdrop_withMarkup_revert_lowerFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP_MARKUP - 1, MOCK_FEE_NO_AIRDROP_MARKUP);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_NO_AIRDROP_MARKUP - 1, MOCK_FEE_NO_AIRDROP_MARKUP);
         requestTxExecution(icClientB, MOCK_FEE_NO_AIRDROP_MARKUP - 1, encodedOptionsNoAirdrop);
     }
 
@@ -369,7 +369,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     }
 
     function test_requestTxExecution_clientB_withAirdrop_revert_lowerFee() public {
-        expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
         requestTxExecution(icClientB, MOCK_FEE_WITH_AIRDROP - 1, encodedOptionsWithAirdrop);
     }
 
@@ -393,21 +393,21 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
 
     function test_requestTxExecution_clientB_withAirdrop_withMarkup_revert_lowerFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP_MARKUP - 1, MOCK_FEE_WITH_AIRDROP_MARKUP);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_WITH_AIRDROP_MARKUP - 1, MOCK_FEE_WITH_AIRDROP_MARKUP);
         requestTxExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP - 1, encodedOptionsWithAirdrop);
     }
 
-    function test_requestTxExecution_noAirdrop_revert_notInterchainClient(address caller) public {
+    function test_requestTxExecution_noAirdrop_revert_CallerNotInterchainClient(address caller) public {
         assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != icClientA && caller != icClientB);
-        expectRevertNotInterchainClient(caller);
+        expectRevertCallerNotInterchainClient(caller);
         requestTxExecution(caller, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
     }
 
-    function test_requestTxExecution_withAirdrop_revert_notInterchainClient(address caller) public {
+    function test_requestTxExecution_withAirdrop_revert_CallerNotInterchainClient(address caller) public {
         assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != icClientA && caller != icClientB);
-        expectRevertNotInterchainClient(caller);
+        expectRevertCallerNotInterchainClient(caller);
         requestTxExecution(caller, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
     }
 }

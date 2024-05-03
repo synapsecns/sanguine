@@ -5,8 +5,8 @@ import {IInterchainModule} from "./IInterchainModule.sol";
 
 interface ISynapseModule is IInterchainModule {
     error SynapseModule__GasOracleNotContract(address gasOracle);
-    error SynapseModule__GasOracleNotSet();
-    error SynapseModule__ZeroAddress();
+    error SynapseModule__GasOracleZeroAddress();
+    error SynapseModule__FeeRecipientZeroAddress();
 
     // ═══════════════════════════════════════════════ PERMISSIONED ════════════════════════════════════════════════════
 

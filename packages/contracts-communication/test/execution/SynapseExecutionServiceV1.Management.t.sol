@@ -6,6 +6,8 @@ import {SynapseExecutionServiceV1Test} from "./SynapseExecutionServiceV1.t.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Test {
+    uint256 public constant ONE_PERCENT = 1e16;
+
     address public executorEOA = makeAddr("ExecutorEOA");
     address public gasOracle = makeAddr("GasOracle");
 
@@ -40,7 +42,7 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
     }
 
     function test_setExecutorEOA_revert_zeroAddress() public {
-        expectRevertZeroAddress();
+        expectRevertExecutorZeroAddress();
         vm.prank(governor);
         service.setExecutorEOA(address(0));
     }
@@ -68,7 +70,7 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
     }
 
     function test_setGasOracle_revert_zeroAddress() public {
-        expectRevertZeroAddress();
+        expectRevertGasOracleZeroAddress();
         vm.prank(governor);
         service.setGasOracle(address(0));
     }
@@ -106,7 +108,7 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
     }
 
     function test_setClaimerFraction() public {
-        uint256 claimerFraction = 1e16;
+        uint256 claimerFraction = ONE_PERCENT;
         expectEventClaimerFractionSet(claimerFraction);
         vm.prank(governor);
         service.setClaimerFraction(claimerFraction);
@@ -114,7 +116,7 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
     }
 
     function test_setClaimerFraction_correctSlotERC7201() public {
-        uint256 claimerFraction = 1e16;
+        uint256 claimerFraction = ONE_PERCENT;
         bytes32 slot = getExpectedLocationERC7201({namespaceId: "Synapse.ExecutionService.V1", stolOffset: 3});
         vm.prank(governor);
         service.setClaimerFraction(claimerFraction);
@@ -122,9 +124,9 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
     }
 
     function test_setClaimerFraction_revert_overOnePercent() public {
-        expectRevertClaimerFractionExceedsMax(1e16 + 1);
+        expectRevertClaimerFractionAboveMax(ONE_PERCENT + 1, ONE_PERCENT);
         vm.prank(governor);
-        service.setClaimerFraction(1e16 + 1);
+        service.setClaimerFraction(ONE_PERCENT + 1);
     }
 
     function test_setClaimerFraction_revert_notGovernor(address caller) public {
@@ -135,8 +137,8 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
         service.setClaimerFraction(1e16);
     }
 
-    function test_getExecutionFee_revert_gasOracleNotSet() public {
-        expectRevertGasOracleNotSet();
+    function test_getExecutionFee_revert_GasOracleZeroAddress() public {
+        expectRevertGasOracleZeroAddress();
         service.getExecutionFee(1, 2, "");
     }
 }
