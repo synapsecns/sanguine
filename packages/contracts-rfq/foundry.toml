@@ -18,11 +18,15 @@ number_underscore = 'thousands'
 
 [rpc_endpoints]
 arbitrum = "${ARBITRUM_RPC}"
+base = "${BASE_RPC}"
 mainnet = "${MAINNET_RPC}"
 optimism = "${OPTIMISM_RPC}"
+scroll = "${SCROLL_RPC}"
 
 [etherscan]
 arbitrum = { key = "${ARBITRUM_VERIFIER_KEY}", url = "${ARBITRUM_VERIFIER_URL}" }
+base = { key = "${BASE_VERIFIER_KEY}", url = "${BASE_VERIFIER_URL}" }
 mainnet = { key = "${MAINNET_VERIFIER_KEY}", url = "${MAINNET_VERIFIER_URL}" }
 optimism = { key = "${OPTIMISM_VERIFIER_KEY}", url = "${OPTIMISM_VERIFIER_URL}" }
+scroll = { key = "${SCROLL_VERIFIER_KEY}", url = "${SCROLL_VERIFIER_URL}" }
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

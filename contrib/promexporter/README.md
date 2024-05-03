@@ -10,5 +10,5 @@ Grafana dashbaords are in the `/dashboards` directory.
 
 ## Running Locally
 
-Make sure `METRICS_PROVIDER` is set to `OTLP` otherwise this will no-op
+Make sure `METRICS_HANDLER` is set to `OTLP` otherwise this will no-op
 

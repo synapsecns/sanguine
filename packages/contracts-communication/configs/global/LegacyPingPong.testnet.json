@@ -1,0 +1,4 @@
+{
+  "chains": ["arb_sepolia", "eth_sepolia"],
+  "gasLimit": 500000
+}

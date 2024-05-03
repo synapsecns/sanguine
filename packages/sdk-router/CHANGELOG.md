@@ -3,6 +3,55 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.3...@synapsecns/sdk-router@0.5.0) (2024-05-03)
+
+
+### Features
+
+* **sdk-router:** Adds Scroll to SDK ([#2554](https://github.com/synapsecns/sanguine/issues/2554)) ([ed7f6de](https://github.com/synapsecns/sanguine/commit/ed7f6de23b538a5fb378e6167facfe30b352c703))
+
+
+
+
+
+## [0.4.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.2...@synapsecns/sdk-router@0.4.3) (2024-04-03)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+## [0.4.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.1...@synapsecns/sdk-router@0.4.2) (2024-03-31)
+
+
+### Bug Fixes
+
+* **sdk-router:** Update default dest deadline ([#2407](https://github.com/synapsecns/sanguine/issues/2407)) ([8a9b628](https://github.com/synapsecns/sanguine/commit/8a9b62831beffe7e382332093be12d95b42f4bc2))
+
+
+
+
+
+## [0.4.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.0...@synapsecns/sdk-router@0.4.1) (2024-03-29)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+# [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.3.29...@synapsecns/sdk-router@0.4.0) (2024-03-29)
+
+
+### Features
+
+* **sdk-router:** Add Base to the list of supported RFQ chains ([#2398](https://github.com/synapsecns/sanguine/issues/2398)) ([0425595](https://github.com/synapsecns/sanguine/commit/0425595c026bbc698a5f8a9ffd8f500fd2db1ae9))
+
+
+
+
+
 ## [0.3.29](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.3.28...@synapsecns/sdk-router@0.3.29) (2024-03-21)
 
 **Note:** Version bump only for package @synapsecns/sdk-router

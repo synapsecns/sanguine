@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount, useAccountEffect } from 'wagmi'
 import { Chain } from 'viem'
 import { segmentAnalyticsEvent } from './SegmentAnalyticsProvider'
 import { useRouter } from 'next/router'
@@ -10,20 +10,17 @@ import { useAppDispatch } from '@/store/hooks'
 import { resetPortfolioState } from '@/slices/portfolio/actions'
 import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
-import {
-  fetchArbStipRewards,
-  fetchFeeAndRebate,
-} from '@/slices/feeAndRebateSlice'
 
 const WalletStatusContext = createContext(undefined)
 
 export const UserProvider = ({ children }) => {
   const dispatch = useAppDispatch()
-  const { chain } = useNetwork()
+  const { chain, address, connector } = useAccount()
   const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const { query, pathname } = router
-  const { address, connector } = useAccount({
+
+  useAccountEffect({
     onConnect() {
       segmentAnalyticsEvent(`[Wallet Analytics] connects`, {
         walletId: connector?.id,
@@ -46,12 +43,6 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     setIsClient(true)
   }, [])
-
-  useEffect(() => {
-    if (isClient) {
-      dispatch(fetchFeeAndRebate())
-    }
-  }, [isClient])
 
   useEffect(() => {
     if (chain) {
@@ -78,16 +69,12 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     ;(async () => {
-      if (isClient && address && chain?.id) {
+      if (isClient && address) {
         try {
           await dispatch(fetchAndStorePortfolioBalances(address))
         } catch (error) {
           console.error('Failed to fetch and store portfolio balances:', error)
         }
-      }
-
-      if (address) {
-        dispatch(fetchArbStipRewards(address))
       }
 
       if (!address) {

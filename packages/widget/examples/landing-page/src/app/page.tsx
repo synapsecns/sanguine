@@ -74,6 +74,21 @@ const consumerExamples = {
     targetChainIds: [1088],
     protocolName: 'Hercules',
   },
+  planar: {
+    customTheme: {
+      bgColor: 'dark',
+      '--synapse-text': 'white',
+      '--synapse-secondary': '#ffffffb3',
+      '--synapse-root': '#161616',
+      '--synapse-surface': '#1A1A1A',
+      '--synapse-border': '#242424',
+      '--synapse-select-bg': '#161616',
+      '--synapse-select-border': '#242424',
+      '--synapse-button-bg': '#FCFC03',
+      '--synapse-button-text': '#000000',
+    },
+    protocolName: 'Planar',
+  },
   dfk: {
     customTheme: {
       bgColor: 'light',
@@ -181,6 +196,7 @@ export default function Home() {
                   <option value="dfk">DeFi Kingdoms</option>
                   <option value="gmx">GMX</option>
                   <option value="hercules">Hercules</option>
+                  <option value="planar">Planar</option>
                 </select>
               </div>
               <span className="desktop-only">Drag to resize</span>

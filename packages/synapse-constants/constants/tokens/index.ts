@@ -51,7 +51,6 @@ export const findChainIdsWithPausedToken = (routeSymbol: string) => {
     PAUSED_TOKENS_BY_CHAIN,
     (result, tokens, chainId) => {
       if (_.includes(tokens, routeSymbol)) {
-        const result: string[] = []
         result.push(chainId)
       }
       return result
@@ -114,10 +113,19 @@ export const BRIDGABLE_TOKENS = getBridgeableTokens()
 
 export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   if (chainId) {
-    const token = BRIDGABLE_TOKENS[chainId].find((token) => {
-      return token.symbol === symbol
-    })
-    return token as Token | undefined
+    if (symbol === 'ETH') {
+      return ETH
+    } else if (symbol === 'WETH') {
+      return WETH
+    } else if (symbol === 'USDC') {
+      return USDC
+    } else {
+      const foundToken = BRIDGABLE_TOKENS[chainId]?.find(
+        (token: Token) => token.symbol === symbol
+      )
+      return foundToken
+    }
+    return undefined
   }
 }
 export const tokenAddressToToken = (
@@ -125,13 +133,13 @@ export const tokenAddressToToken = (
   tokenAddress: string
 ): Token | undefined => {
   if (chainId) {
-    if (tokenAddress === WETH.addresses[chainId]) {
+    if (tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
+      return ETH
+    } else if (tokenAddress === WETH.addresses[chainId]) {
       return WETH
     } else {
-      const token = BRIDGABLE_TOKENS[chainId].find((token: Token) => {
-        return token.addresses[chainId] === tokenAddress
-      })
-      return token || undefined
+      const foundToken = TOKEN_HASH_MAP[chainId][tokenAddress]
+      return foundToken || undefined
     }
   }
 }
@@ -236,14 +244,13 @@ const getLegacyTokensByChain = () => {
 }
 
 const getPoolByRouterIndex = () => {
-  const poolTokens: TokenByKey = {}
+  const poolTokensByRouterIndex: TokenByKey = {}
   Object.values(allPool).map((token) => {
-    const poolTokens: { [key: string]: any } = {}
     if (token.routerIndex !== undefined) {
-      poolTokens[token.routerIndex] = token
+      poolTokensByRouterIndex[token.routerIndex] = token
     }
   })
-  return poolTokens
+  return poolTokensByRouterIndex
 }
 
 export const POOL_CHAINS_BY_NAME = getChainsByPoolName()

@@ -3,6 +3,7 @@ package bridge
 import (
 	"database/sql/driver"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
@@ -36,13 +37,18 @@ const (
 	CircleRequestSentEvent // Origin
 	// CircleRequestFulfilledEvent is emitted when the destination bridge event is executed using the cctp contract.
 	CircleRequestFulfilledEvent // Destination
+	// BridgeRequestedEvent is emitted when the origin bridge event is executed using the rfq contract.
+	BridgeRequestedEvent // Origin
+	// BridgeRelayedEvent is emitted when the destination bridge event is executed using the rfq contract.
+	BridgeRelayedEvent // Destination
 )
 
 // AllEventTypes is a list of the event types.
 func AllEventTypes() []EventType {
 	return []EventType{DepositEvent, RedeemEvent, WithdrawEvent, MintEvent,
 		DepositAndSwapEvent, MintAndSwapEvent, RedeemAndSwapEvent, RedeemAndRemoveEvent,
-		WithdrawAndRemoveEvent, RedeemV2Event, CircleRequestSentEvent, CircleRequestFulfilledEvent}
+		WithdrawAndRemoveEvent, RedeemV2Event, CircleRequestSentEvent, CircleRequestFulfilledEvent,
+		BridgeRequestedEvent, BridgeRelayedEvent}
 }
 
 // GetEventType gets the str/clear text event type from EventType.
@@ -74,6 +80,10 @@ func GetEventType(eventType uint8) string {
 		return "CircleRequestSentEvent"
 	case 11:
 		return "CircleRequestFulfilledEvent"
+	case 12:
+		return "BridgeRequestedEvent"
+	case 13:
+		return "BridgeRelayedEvent"
 	default:
 		return "Unknown"
 	}

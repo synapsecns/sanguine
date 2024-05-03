@@ -62,6 +62,36 @@ func (_m *Service) GetAllTXAttemptByStatus(ctx context.Context, fromAddress comm
 	return r0, r1
 }
 
+// GetChainIDsByStatus provides a mock function with given fields: ctx, fromAddress, matchStatuses
+func (_m *Service) GetChainIDsByStatus(ctx context.Context, fromAddress common.Address, matchStatuses ...db.Status) ([]*big.Int, error) {
+	_va := make([]interface{}, len(matchStatuses))
+	for _i := range matchStatuses {
+		_va[_i] = matchStatuses[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, fromAddress)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 []*big.Int
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, ...db.Status) []*big.Int); ok {
+		r0 = rf(ctx, fromAddress, matchStatuses...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, ...db.Status) error); ok {
+		r1 = rf(ctx, fromAddress, matchStatuses...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetNonceAttemptsByStatus provides a mock function with given fields: ctx, fromAddress, chainID, nonce, matchStatuses
 func (_m *Service) GetNonceAttemptsByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64, matchStatuses ...db.Status) ([]db.TX, error) {
 	_va := make([]interface{}, len(matchStatuses))
@@ -164,8 +194,8 @@ func (_m *Service) GetTXS(ctx context.Context, fromAddress common.Address, chain
 	return r0, r1
 }
 
-// MarkAllBeforeOrAtNonceReplacedOrConfirmed provides a mock function with given fields: ctx, signer, chainID, nonce
-func (_m *Service) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error {
+// MarkAllBeforeNonceReplacedOrConfirmed provides a mock function with given fields: ctx, signer, chainID, nonce
+func (_m *Service) MarkAllBeforeNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error {
 	ret := _m.Called(ctx, signer, chainID, nonce)
 
 	var r0 error

@@ -15,12 +15,6 @@ import {
   TokenAndBalance,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
-import {
-  ELIGIBILITY_DEFAULT_TEXT,
-  isChainEligible,
-  useStipEligibility,
-} from '@/utils/hooks/useStipEligibility'
-import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const SelectSpecificNetworkButton = ({
   itemChainId,
@@ -94,7 +88,6 @@ function ButtonContent({
 }) {
   const chain = CHAINS_BY_ID[chainId]
   const { balances } = usePortfolioState()
-  const { fromChainId, fromToken } = useBridgeState()
 
   const balanceTokens =
     balances &&
@@ -102,8 +95,6 @@ function ButtonContent({
     sortTokensByBalanceDescending(
       balances[chainId].filter((bt) => bt.balance > 0n)
     )
-
-  const isEligible = isChainEligible(fromChainId, chain.id, fromToken)
 
   return chain ? (
     <>
@@ -115,11 +106,6 @@ function ButtonContent({
         />
         <div className="flex-col text-left">
           <div className="text-lg font-normal text-white">{chain.name}</div>
-          {!isOrigin && isEligible && (
-            <div className="text-sm text-greenText">
-              {ELIGIBILITY_DEFAULT_TEXT}
-            </div>
-          )}
         </div>
       </div>
       {isOrigin && balanceTokens && balanceTokens.length > 0 ? (

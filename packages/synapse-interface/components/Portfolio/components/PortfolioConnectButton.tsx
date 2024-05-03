@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { switchNetwork } from '@wagmi/core'
+import { switchChain } from '@wagmi/core'
 import { setFromChainId } from '@/slices/bridge/reducer'
+import { wagmiConfig } from '@/wagmiConfig'
 
 type PortfolioConnectButton = {
   portfolioChainId: number
@@ -43,7 +44,7 @@ const ConnectedButton = () => {
         <div
           className={`
             my-auto ml-auto mr-2 w-2 h-2
-            bg-green-500 rounded-full
+            bg-green-400 rounded-full
           `}
         />
         Connected
@@ -63,7 +64,7 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
   const handleConnectNetwork: () => Promise<void> = async () => {
     setIsConnecting(true)
     try {
-      await switchNetwork({ chainId: chainId }).then((success) => {
+      await switchChain(wagmiConfig, { chainId }).then((success) => {
         success && dispatch(setFromChainId(chainId))
         scrollToTop()
       })
@@ -89,7 +90,7 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
           <div
             className={`
               my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-green-300 border-solid rounded-full
+              border border-green-400 border-solid rounded-full
             `}
           />
           Connecting...

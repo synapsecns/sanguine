@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 import { TransactionButton } from '@/components/buttons/TransactionButton'
@@ -13,14 +13,15 @@ export const SwapTransactionButton = ({
   approveTxn,
   executeSwap,
   isApproved,
+  isSwapPaused,
 }) => {
   const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
 
-  const { chain } = useNetwork()
-  const { chains, switchNetwork } = useSwitchNetwork()
+  const { chain, isConnected: isConnectedInit } = useAccount()
+  const { chains, switchChain } = useSwitchChain()
 
-  const { isConnected: isConnectedInit } = useAccount({
+  useAccountEffect({
     onDisconnect() {
       setIsConnected(false)
     },
@@ -57,7 +58,8 @@ export const SwapTransactionButton = ({
     (isLoading && !isApproved) ||
     (isConnected && !sufficientBalance) ||
     swapQuote === EMPTY_SWAP_QUOTE_ZERO ||
-    swapQuote === EMPTY_SWAP_QUOTE
+    swapQuote === EMPTY_SWAP_QUOTE ||
+    isSwapPaused
 
   let buttonProperties
 
@@ -70,7 +72,12 @@ export const SwapTransactionButton = ({
       : 0
   }, [swapFromValue, fromTokenDecimals, swapChainId, swapFromToken])
 
-  if (!swapChainId) {
+  if (isSwapPaused) {
+    buttonProperties = {
+      label: 'Swap paused',
+      onClick: null,
+    }
+  } else if (!swapChainId) {
     buttonProperties = {
       label: 'Please select Origin network',
       onClick: null,
@@ -98,7 +105,7 @@ export const SwapTransactionButton = ({
   } else if (chain?.id != swapChainId && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === swapChainId).name}`,
-      onClick: () => switchNetwork(swapChainId),
+      onClick: () => switchChain({ chainId: swapChainId }),
       pendingLabel: 'Switching chains',
     }
   } else if (

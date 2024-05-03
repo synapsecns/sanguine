@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/ipfs/go-log"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -19,6 +21,7 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
+	"github.com/synapsecns/sanguine/services/rfq/api/docs"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 )
@@ -56,6 +59,8 @@ func NewAPI(
 		return nil, fmt.Errorf("store is nil")
 	}
 
+	docs.SwaggerInfo.Title = "RFQ Quoter API"
+
 	bridges := make(map[uint32]*fastbridge.FastBridge)
 	for chainID, bridge := range cfg.Bridges {
 		chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
@@ -89,6 +94,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
 	h := NewHandler(r.db)
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Apply AuthMiddleware only to the PUT route
 	quotesPut := engine.Group(QuoteRoute)
@@ -97,7 +103,6 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// GET routes without the AuthMiddleware
 	// engine.PUT("/quotes", h.ModifyQuote)
 	engine.GET(QuoteRoute, h.GetQuotes)
-	engine.GET(fmt.Sprintf("%s/filter", QuoteRoute), h.GetFilteredQuotes)
 
 	r.engine = engine
 

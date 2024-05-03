@@ -42,6 +42,7 @@ import { Token } from '../types'
 import * as CHAINS from '../chains/master'
 
 const zeroAddress = '0x0000000000000000000000000000000000000000'
+const nullAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
 export const GOHM = new Token({
   addresses: {
@@ -772,12 +773,12 @@ export const NETH = new Token({
 
 export const ETH = new Token({
   addresses: {
-    [CHAINS.ETH.id]: zeroAddress,
-    [CHAINS.OPTIMISM.id]: zeroAddress,
+    [CHAINS.ETH.id]: nullAddress,
+    [CHAINS.OPTIMISM.id]: nullAddress,
     [CHAINS.BOBA.id]: zeroAddress,
     [CHAINS.CANTO.id]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
-    [CHAINS.BASE.id]: zeroAddress,
-    [CHAINS.ARBITRUM.id]: zeroAddress,
+    [CHAINS.BASE.id]: nullAddress,
+    [CHAINS.ARBITRUM.id]: nullAddress,
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
     [CHAINS.BLAST.id]: zeroAddress,
   },

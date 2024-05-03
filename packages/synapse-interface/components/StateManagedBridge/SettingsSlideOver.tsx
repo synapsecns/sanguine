@@ -1,12 +1,10 @@
 import _ from 'lodash'
 import { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useAppDispatch } from '@/store/hooks'
 import { InformationCircleIcon } from '@heroicons/react/outline'
+import Tooltip from '@tw/Tooltip'
 import { Switch } from '@headlessui/react'
 import { useKeyPress } from '@hooks/useKeyPress'
-import Tooltip from '@tw/Tooltip'
-import Button from '@tw/Button'
-
 import {
   setShowDestinationAddress,
   setShowSettingsSlideOver,
@@ -15,21 +13,19 @@ import {
   setDeadlineMinutes,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
-import { RootState } from '@/store/store'
+import { useBridgeDisplayState } from '@/slices/bridge/hooks'
 
 const SettingsSlideOver = () => {
-  const dispatch = useDispatch()
-  const escPressed = useKeyPress('Escape')
+  const dispatch = useAppDispatch()
+  const { showDestinationAddress } = useBridgeDisplayState()
 
-  const { showDestinationAddress } = useSelector(
-    (state: RootState) => state.bridgeDisplay
-  )
-
-  function onClose() {
+  const onClose = () => {
     dispatch(setShowSettingsSlideOver(false))
   }
 
-  function escFunc() {
+  const escPressed = useKeyPress('Escape', true)
+
+  const escFunc = () => {
     if (escPressed) {
       onClose()
     }
@@ -41,9 +37,8 @@ const SettingsSlideOver = () => {
     <div className="max-h-full pb-4 overflow-auto rounded-lg">
       <div
         className={`
-         px-3 md:px-6 rounded-md text-base focus:outline-none
-          overflow-hidden z-10 w-full
-          space-y-4
+          px-3 rounded-md text-base space-y-4 z-10 w-full
+          overflow-hidden focus:outline-none md:px-6
         `}
       >
         <div className="pt-2"></div>
@@ -62,20 +57,21 @@ const SettingsSlideOver = () => {
               onChange={(selected: boolean) => {
                 if (selected) {
                   dispatch(setShowDestinationAddress(true))
+                  onClose()
                 } else {
                   dispatch(setShowDestinationAddress(false))
                   dispatch(setDestinationAddress(null))
                 }
               }}
               className={`
-                bg-gradient-to-r
+                relative inline-flex items-center h-6 rounded-full w-11
+                transition-colors bg-gradient-to-r focus:outline-none
                 ${
                   showDestinationAddress
                     ? ' from-[#FF00FF] to-[#AC8FFF]'
                     : 'from-gray-900 to-gray-900'
                 }
-                relative inline-flex items-center h-6 rounded-full w-11
-                transition-colors focus:outline-none`}
+              `}
             >
               <span
                 className={`
@@ -86,67 +82,31 @@ const SettingsSlideOver = () => {
             </Switch>
           </div>
         </Switch.Group>
-        {showDestinationAddress && <WithdrawalWarning onClose={onClose} />}
-      </div>
-    </div>
-  )
-}
-
-const WithdrawalWarning = ({ onClose }: { onClose: any }) => {
-  return (
-    <div className="w-full p-4 bg-bgLight rounded-md">
-      <div className="flex items-center justify-between space-x-1">
-        <div className="w-3/4 text-xs text-white md:text-sm">
-          Do not send your funds to a custodial wallet or exchange address!{' '}
-          <span className="text-white text-opacity-50">
-            It may be impossible to recover your funds.
-          </span>
-        </div>
-        <Button
-          className={`
-            p-4 rounded-md
-            text-sm font-medium text-white
-            bg-bgLighter hover:bg-bgLightest active:bg-bgLightest
-          `}
-          onClick={onClose}
-        >
-          Okay!
-        </Button>
       </div>
     </div>
   )
 }
 
 const DeadlineInput = ({ deadlineMinutes }: { deadlineMinutes: number }) => {
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
 
   return (
     <div className="flex h-16 pb-4 space-x-2 text-left">
       <div
         className={`
-          flex flex-grow items-center
-          h-14 w-full
-        bg-bgLight
-          border border-transparent
+          flex flex-grow items-center h-14 w-full pl-1 py-0.5
+          bg-bgLight border border-transparent rounded-md
           hover:border-gradient-br-magenta-melrose-bgLight hover:border-solid
           focus-within:border-gradient-br-magenta-melrose-bgLight focus-within:border-solid
-          pl-1
-          py-0.5 rounded-md
         `}
       >
         <input
           pattern="[0-9.]+"
           className={`
-              ml-4 mr-4
-              focus:outline-none
-              bg-transparent
-              w-[300px]
-              sm:min-w-[300px]
-              max-w-[calc(100%-92px)]
-              sm:w-full
-              text-lg
+              ml-4 mr-4 text-lg text-white text-opacity-80
+              bg-transparent w-[300px] max-w-[calc(100%-92px)]
+              sm:min-w-[300px] sm:w-full focus:outline-none
              placeholder-[#716e74]
-             text-white text-opacity-80
             `}
           placeholder="Custom deadline..."
           onChange={(e) => dispatch(setDeadlineMinutes(Number(e.target.value)))}
