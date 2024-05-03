@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import {InterchainTransaction, InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 
 interface IInterchainClientV1 {
-    // TODO: recheck the explicitness of the TxReadiness enum
     enum TxReadiness {
         Ready,
         AlreadyExecuted,
@@ -16,7 +15,6 @@ interface IInterchainClientV1 {
         UndeterminedRevert
     }
 
-    // TODO: standardize error names across interfaces
     error InterchainClientV1__BatchConflict(address module);
     error InterchainClientV1__ChainIdNotLinked(uint64 chainId);
     error InterchainClientV1__ChainIdNotRemote(uint64 chainId);
