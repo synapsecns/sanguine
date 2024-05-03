@@ -506,7 +506,7 @@ func (i *inventoryManagerImpl) registerPendingRebalance(ctx context.Context, reb
 	return nil
 }
 
-//nolint:cyclop,gocognit
+//nolint:cyclop,gocognit,nilnil
 func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
 	maintenancePct, err := cfg.GetMaintenanceBalancePct(chainID, token.Hex())
 	if err != nil {
@@ -552,11 +552,11 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	}
 
 	// validate the rebalance method pair
-	methodOrigin, err := cfg.GetRebalanceMethod(int(originTokenData.ChainID), originTokenData.Addr.Hex())
+	methodOrigin, err := cfg.GetRebalanceMethod(originTokenData.ChainID, originTokenData.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get origin rebalance method: %w", err)
 	}
-	methodDest, err := cfg.GetRebalanceMethod(int(destTokenData.ChainID), destTokenData.Addr.Hex())
+	methodDest, err := cfg.GetRebalanceMethod(destTokenData.ChainID, destTokenData.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get dest rebalance method: %w", err)
 	}
