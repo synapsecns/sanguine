@@ -69,7 +69,7 @@ export const PortfolioTokenAsset = ({
         ${isTokenSelected ? 'bg-tint border-surface' : 'border-transparent'}
       `}
     >
-      <div className="flex items-center gap-2 py-2 pl-2 pr-4 rounded">
+      <div className="flex items-center gap-2 py-2 pl-2 pr-4 rounded cursor-default">
         <Image
           loading="lazy"
           alt={`${symbol} img`}
