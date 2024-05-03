@@ -325,6 +325,12 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
         module.setGasOracle(notContract);
     }
 
+    function test_setGasOracle_revert_zeroAddress() public {
+        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__GasOracleNotContract.selector, address(0)));
+        vm.prank(owner);
+        module.setGasOracle(address(0));
+    }
+
     function test_setVerifyGasLimit_setsVerifyGasLimit() public {
         vm.prank(owner);
         module.setVerifyGasLimit(1, 1000);

@@ -66,6 +66,14 @@ contract SynapseExecutionServiceV1Test is ProxyTest, ClaimableFeesEvents, Synaps
         );
     }
 
+    function expectRevertGasOracleNotContract(address gasOracle) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                ISynapseExecutionServiceV1.SynapseExecutionService__GasOracleNotContract.selector, gasOracle
+            )
+        );
+    }
+
     function expectRevertGasOracleZeroAddress() internal {
         vm.expectRevert(ISynapseExecutionServiceV1.SynapseExecutionService__GasOracleZeroAddress.selector);
     }
