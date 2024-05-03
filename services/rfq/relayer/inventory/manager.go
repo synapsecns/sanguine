@@ -2,6 +2,7 @@ package inventory
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -82,6 +83,9 @@ type inventoryManagerImpl struct {
 	pendingHist metric.Float64Histogram
 }
 
+// ErrUnsupportedChain is the error for an unsupported chain.
+var ErrUnsupportedChain error = errors.New("could not get gas balance for unsupported chain")
+
 // GetCommittableBalance gets the committable balances.
 func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error) {
 	committableBalances, err := i.GetCommittableBalances(ctx, options...)
@@ -94,7 +98,7 @@ func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainI
 	if balance == nil && token == chain.EthAddress {
 		gasBalance, ok := i.gasBalances[chainID]
 		if !ok || gasBalance == nil {
-			return nil, fmt.Errorf("could not get gas balance for chain %d", chainID)
+			return nil, ErrUnsupportedChain
 		}
 		balance = i.gasBalances[chainID]
 	}
