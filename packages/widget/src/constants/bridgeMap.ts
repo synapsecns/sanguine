@@ -1,3 +1,4 @@
+// TODO: Update with new bridge map post scroll rfq integration
 export const BRIDGE_MAP = {
   '1': {
     '0x0642026E7f0B6cCaC5925b4E7Fa61384250e1701': {
