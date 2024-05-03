@@ -310,6 +310,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 25,
+							RebalanceMethod:       "synapsecctp",
 						},
 					},
 				},
@@ -318,6 +319,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 25,
+							RebalanceMethod:       "synapsecctp",
 						},
 					},
 				},
@@ -335,6 +337,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     51,
 							MaintenanceBalancePct: 50,
+							RebalanceMethod:       "synapsecctp",
 						},
 					},
 				},
@@ -343,6 +346,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 50,
+							RebalanceMethod:       "synapsecctp",
 						},
 					},
 				},
@@ -361,6 +365,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 50,
+							RebalanceMethod:       "synapsecctp",
 						},
 					},
 				},
@@ -369,6 +374,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 50.1,
+							RebalanceMethod:       "synapsecctp",
 						},
 					},
 				},
@@ -377,5 +383,30 @@ func TestValidation(t *testing.T) {
 		err := cfg.Validate()
 		assert.NotNil(t, err)
 		assert.Equal(t, "total maintenance percent exceeds 100 for USDC: 100.100000", err.Error())
+	})
+
+	t.Run("ValidWithNoRebalanceMethod", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 20,
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 20,
+						},
+					},
+				},
+			},
+		}
+		err := cfg.Validate()
+		assert.Nil(t, err)
 	})
 }
