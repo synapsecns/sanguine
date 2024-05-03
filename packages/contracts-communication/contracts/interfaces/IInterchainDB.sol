@@ -5,8 +5,6 @@ import {InterchainBatch} from "../libs/InterchainBatch.sol";
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 interface IInterchainDB {
-    error InterchainDB__BatchDoesNotExist(uint64 dbNonce);
-    error InterchainDB__BatchNotFinalized(uint64 dbNonce);
     error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
     error InterchainDB__EntryIndexOutOfRange(uint64 dbNonce, uint64 entryIndex, uint64 batchSize);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
@@ -111,6 +109,11 @@ interface IInterchainDB {
     /// @dev Will revert if the batch with the given nonce does not exist, or is not finalized.
     /// @param dbNonce      The database nonce of the finalized batch
     function getBatch(uint64 dbNonce) external view returns (InterchainBatch memory);
+
+    /// @notice Get the versioned Interchain Batch with the given nonce.
+    /// Note: will return a batch with an empty root if the batch does not exist, or is not finalized.
+    /// @param dbNonce      The database nonce of the batch
+    function getVersionedBatch(uint64 dbNonce) external view returns (bytes memory);
 
     /// @notice Get the Interchain Entry's value written on the local chain with the given batch nonce and entry index.
     /// Entry value is calculated as the hash of the writer address and the written data hash.
