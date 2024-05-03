@@ -146,6 +146,14 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
+    function expectRevertReceiverZeroRequiredResponses(address receiver) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IInterchainClientV1.InterchainClientV1__ReceiverZeroRequiredResponses.selector, receiver
+            )
+        );
+    }
+
     function expectRevertTxAlreadyExecuted(bytes32 transactionId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__TxAlreadyExecuted.selector, transactionId)
@@ -168,10 +176,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
 
     function expectRevertZeroReceiver() internal {
         vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroReceiver.selector);
-    }
-
-    function expectRevertZeroRequiredResponses() internal {
-        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroRequiredResponses.selector);
     }
 
     function expectRevertIncorrectVersion(uint8 version) internal {

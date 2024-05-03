@@ -667,10 +667,10 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = getEncodedTx(icTx);
         mockReceivingConfig({requiredResponses: 0, guardFlag: 0});
         mockCheckVerification(icModuleA, desc, justVerTS());
-        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ReceiverZeroRequiredResponses);
-        expectRevertZeroRequiredResponses();
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ReceiverZeroRequiredResponses, dstReceiver);
+        expectRevertReceiverZeroRequiredResponses(dstReceiver);
         icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertZeroRequiredResponses();
+        expectRevertReceiverZeroRequiredResponses(dstReceiver);
         executeTransaction(encodedTx, emptyProof);
     }
 }

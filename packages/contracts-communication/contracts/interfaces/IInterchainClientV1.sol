@@ -28,12 +28,12 @@ interface IInterchainClientV1 {
     error InterchainClientV1__NotEVMClient(bytes32 client);
     error InterchainClientV1__NotRemoteChainId(uint64 chainId);
     error InterchainClientV1__ReceiverNotICApp(address receiver);
+    error InterchainClientV1__ReceiverZeroRequiredResponses(address receiver);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
     error InterchainClientV1__ZeroAddress();
     error InterchainClientV1__ZeroExecutionService();
     error InterchainClientV1__ZeroReceiver();
-    error InterchainClientV1__ZeroRequiredResponses();
 
     /// @notice Allows the contract owner to set the address of the Guard module.
     /// Note: batches marked as invalid by the Guard could not be used for message execution,

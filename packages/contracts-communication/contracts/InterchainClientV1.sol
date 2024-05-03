@@ -184,7 +184,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 status = TxReadiness.BatchConflict;
             } else if (selector == InterchainClientV1__ReceiverNotICApp.selector) {
                 status = TxReadiness.ReceiverNotICApp;
-            } else if (selector == InterchainClientV1__ZeroRequiredResponses.selector) {
+            } else if (selector == InterchainClientV1__ReceiverZeroRequiredResponses.selector) {
                 status = TxReadiness.ReceiverZeroRequiredResponses;
             } else if (selector == InterchainClientV1__IncorrectDstChainId.selector) {
                 status = TxReadiness.TxWrongDstChainId;
@@ -381,10 +381,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 proof: proof
             })
         });
-        (AppConfigV1 memory appConfig, address[] memory approvedModules) =
-            getAppReceivingConfigV1(icTx.dstReceiver.bytes32ToAddress());
+        address receiver = icTx.dstReceiver.bytes32ToAddress();
+        (AppConfigV1 memory appConfig, address[] memory approvedModules) = getAppReceivingConfigV1(receiver);
         if (appConfig.requiredResponses == 0) {
-            revert InterchainClientV1__ZeroRequiredResponses();
+            revert InterchainClientV1__ReceiverZeroRequiredResponses(receiver);
         }
         // Verify against the Guard if the app opts in to use it
         _assertNoGuardConflict(_getGuard(appConfig), batch);
