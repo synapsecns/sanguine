@@ -98,9 +98,9 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__IncorrectEntryIndex.selector, entryIndex));
     }
 
-    function expectRevertIncorrectMsgValue(uint256 actual, uint256 required) internal {
+    function expectRevertMsgValueMismatch(uint256 actual, uint256 required) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__IncorrectMsgValue.selector, actual, required)
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__MsgValueMismatch.selector, actual, required)
         );
     }
 
@@ -108,9 +108,11 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         vm.expectRevert(BatchingV1Lib.BatchingV1__IncorrectProof.selector);
     }
 
-    function expectRevertInvalidTransactionVersion(uint16 version) internal {
+    function expectRevertTxVersionMismatch(uint16 version, uint16 required) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__InvalidTransactionVersion.selector, version)
+            abi.encodeWithSelector(
+                IInterchainClientV1.InterchainClientV1__TxVersionMismatch.selector, version, required
+            )
         );
     }
 

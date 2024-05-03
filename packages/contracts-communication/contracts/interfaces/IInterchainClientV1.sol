@@ -23,8 +23,7 @@ interface IInterchainClientV1 {
     error InterchainClientV1__GasLeftBelowMin(uint256 gasLeft, uint256 minRequired);
     error InterchainClientV1__GuardZeroAddress();
     error InterchainClientV1__IncorrectDstChainId(uint64 chainId);
-    error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
-    error InterchainClientV1__InvalidTransactionVersion(uint16 version);
+    error InterchainClientV1__MsgValueMismatch(uint256 msgValue, uint256 required);
     error InterchainClientV1__NoLinkedClient(uint64 chainId);
     error InterchainClientV1__NotEVMClient(bytes32 client);
     error InterchainClientV1__NotRemoteChainId(uint64 chainId);
@@ -34,6 +33,7 @@ interface IInterchainClientV1 {
     error InterchainClientV1__ResponsesAmountBelowMin(uint256 responsesAmount, uint256 minRequired);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
+    error InterchainClientV1__TxVersionMismatch(uint16 txVersion, uint16 required);
 
     /// @notice Allows the contract owner to set the address of the Guard module.
     /// Note: batches marked as invalid by the Guard could not be used for message execution,

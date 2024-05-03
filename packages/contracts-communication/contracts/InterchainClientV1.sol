@@ -115,7 +115,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
         if (msg.value != decodedOptions.gasAirdrop) {
-            revert InterchainClientV1__IncorrectMsgValue(msg.value, decodedOptions.gasAirdrop);
+            revert InterchainClientV1__MsgValueMismatch(msg.value, decodedOptions.gasAirdrop);
         }
         // We should always use at least as much as the requested gas limit.
         // The executor can specify a higher gas limit if they wanted.
@@ -467,7 +467,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         uint16 version = versionedTx.getVersion();
         if (version != CLIENT_VERSION) {
-            revert InterchainClientV1__InvalidTransactionVersion(version);
+            revert InterchainClientV1__TxVersionMismatch(version, CLIENT_VERSION);
         }
         icTx = InterchainTransactionLib.decodeTransaction(versionedTx.getPayload());
         if (icTx.dstChainId != block.chainid) {

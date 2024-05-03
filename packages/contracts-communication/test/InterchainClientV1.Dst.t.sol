@@ -527,14 +527,14 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         return encodedTx;
     }
 
-    function test_execute_revert_invalidTransactionVersion(uint16 version) public {
+    function test_execute_revert_TxVersionMismatch(uint16 version) public {
         vm.assume(version != CLIENT_VERSION);
         (InterchainTransaction memory icTx,) = constructInterchainTx();
         bytes memory invalidVersionTx = VersionedPayloadLib.encodeVersionedPayload(version, abi.encode(icTx));
         makeTxDescriptorExecutable(getTxDescriptor(icTx));
-        expectRevertInvalidTransactionVersion(version);
+        expectRevertTxVersionMismatch(version, CLIENT_VERSION);
         icClient.isExecutable(invalidVersionTx, emptyProof);
-        expectRevertInvalidTransactionVersion(version);
+        expectRevertTxVersionMismatch(version, CLIENT_VERSION);
         executeTransaction(invalidVersionTx, emptyProof);
     }
 

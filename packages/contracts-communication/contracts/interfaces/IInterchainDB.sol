@@ -5,10 +5,10 @@ import {InterchainBatch} from "../libs/InterchainBatch.sol";
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 interface IInterchainDB {
+    error InterchainDB__BatchVersionMismatch(uint16 version, uint16 required);
     error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
     error InterchainDB__EntryIndexOutOfRange(uint64 dbNonce, uint64 entryIndex, uint64 batchSize);
     error InterchainDB__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
-    error InterchainDB__InvalidBatchVersion(uint16 version);
     error InterchainDB__InvalidEntryRange(uint64 dbNonce, uint64 start, uint64 end);
     error InterchainDB__NoModulesSpecified();
     error InterchainDB__SameChainId(uint64 chainId);

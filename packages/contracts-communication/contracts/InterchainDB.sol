@@ -281,7 +281,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     function _assertCorrectBatch(bytes calldata versionedBatch) internal view returns (InterchainBatch memory batch) {
         uint16 dbVersion = versionedBatch.getVersion();
         if (dbVersion != DB_VERSION) {
-            revert InterchainDB__InvalidBatchVersion(dbVersion);
+            revert InterchainDB__BatchVersionMismatch(dbVersion, DB_VERSION);
         }
         batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
         if (batch.srcChainId == block.chainid) {

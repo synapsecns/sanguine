@@ -178,8 +178,10 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         );
     }
 
-    function expectRevertInvalidBatchVersion(uint16 version) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__InvalidBatchVersion.selector, version));
+    function expectRevertBatchVersionMismatch(uint16 version, uint16 required) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainDB.InterchainDB__BatchVersionMismatch.selector, version, required)
+        );
     }
 
     function expectSameChainId(uint64 chainId) internal {
@@ -343,7 +345,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
         bytes memory versionedBatch =
             payloadLibHarness.encodeVersionedPayload(version, batchLibHarness.encodeBatch(batch));
-        expectRevertInvalidBatchVersion(version);
+        expectRevertBatchVersionMismatch(version, DB_VERSION);
         moduleA.mockVerifyRemoteBatch(address(icDB), versionedBatch);
     }
 
