@@ -6,7 +6,6 @@ pragma solidity ^0.8.0;
 interface IInterchainModule {
     error InterchainModule__CallerNotInterchainDB(address caller);
     error InterchainModule__ChainIdNotRemote(uint64 chainId);
-    error InterchainModule__IncorrectSourceChainId(uint64 chainId);
     error InterchainModule__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
 
     /// @notice Request the verification of a batch from the Interchain DataBase by the module.

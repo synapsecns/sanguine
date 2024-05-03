@@ -37,9 +37,6 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         if (dstChainId == block.chainid) {
             revert InterchainModule__ChainIdNotRemote(dstChainId);
         }
-        if (batch.srcChainId != block.chainid) {
-            revert InterchainModule__IncorrectSourceChainId({chainId: batch.srcChainId});
-        }
         uint256 requiredFee = _getModuleFee(dstChainId, batch.dbNonce);
         if (msg.value < requiredFee) {
             revert InterchainModule__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
