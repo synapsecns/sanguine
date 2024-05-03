@@ -94,6 +94,8 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 //
 // This is the second step in the bridge process. It is emitted when the relayer sees the request.
 // We check if we have enough inventory to process the request and mark it as committed pending.
+//
+//nolint:cyclop
 func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	shouldProcess, err := q.Quoter.ShouldProcess(ctx, request)
 	if err != nil {

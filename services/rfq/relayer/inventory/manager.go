@@ -84,7 +84,7 @@ type inventoryManagerImpl struct {
 }
 
 // ErrUnsupportedChain is the error for an unsupported chain.
-var ErrUnsupportedChain error = errors.New("could not get gas balance for unsupported chain")
+var ErrUnsupportedChain = errors.New("could not get gas balance for unsupported chain")
 
 // GetCommittableBalance gets the committable balances.
 func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error) {
