@@ -5,23 +5,20 @@ import { Token } from '@/utils/types'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 export const AvailableBalance = ({
-  fromToken,
   balance,
-  maxBalanceBridgeable,
-  onMaxBalance,
-  disabled,
-  // estimatedGasLimit,
+  maxBridgeableBalance,
   isGasToken,
   isGasEstimateLoading,
+  isDisabled,
+  onMaxBalance,
 }: {
-  fromToken: Token
   balance?: string
-  maxBalanceBridgeable?: number
-  onMaxBalance?: () => void
-  disabled: boolean
-  // estimatedGasLimit: bigint
+  maxBridgeableBalance?: number
+  gasCost?: string
   isGasToken: boolean
   isGasEstimateLoading: boolean
+  isDisabled: boolean
+  onMaxBalance?: () => void
 }) => {
   const labelClassName = joinClassNames({
     space: 'block',
@@ -30,17 +27,9 @@ export const AvailableBalance = ({
     hover: 'hover:opacity-70 cursor-pointer',
   })
 
-  const tooltipContent = (
-    <div className="flex flex-col space-y-2 whitespace-nowrap">
-      <span>
-        Available: {maxBalanceBridgeable?.toString()} {fromToken?.symbol}
-      </span>
-    </div>
-  )
-
-  if (disabled) {
+  if (isDisabled) {
     return null
-  } else if (isGasEstimateLoading) {
+  } else if (isGasToken && isGasEstimateLoading) {
     return (
       <label className={labelClassName} htmlFor="inputRow">
         <span className="animate-pulse text-zinc-500 dark:text-zinc-400">
@@ -50,19 +39,14 @@ export const AvailableBalance = ({
     )
   } else {
     return (
-      <HoverTooltip
-        isActive={Boolean(isGasToken && maxBalanceBridgeable)}
-        hoverContent={tooltipContent}
+      <label
+        onClick={onMaxBalance}
+        className={labelClassName}
+        htmlFor="inputRow"
       >
-        <label
-          onClick={onMaxBalance}
-          className={labelClassName}
-          htmlFor="inputRow"
-        >
-          {maxBalanceBridgeable?.toFixed(4) ?? balance ?? '0.0'}
-          <span className="text-zinc-500 dark:text-zinc-400"> available</span>
-        </label>
-      </HoverTooltip>
+        {maxBridgeableBalance?.toFixed(4) ?? balance ?? '0.0'}
+        <span className="text-zinc-500 dark:text-zinc-400"> available</span>
+      </label>
     )
   }
 }

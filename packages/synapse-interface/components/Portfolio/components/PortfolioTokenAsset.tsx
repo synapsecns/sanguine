@@ -87,7 +87,7 @@ export const PortfolioTokenAsset = ({
     estimateBridgeableBalanceCallback,
   ])
 
-  const handleFromSelectionCallback = useCallback(() => {
+  const handleFromSelectionCallback = useCallback(async () => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
     onMaxBalance()

@@ -145,14 +145,13 @@ export const InputContainer = () => {
             handleFromValueChange={handleFromValueChange}
           />
           <AvailableBalance
-            fromToken={fromToken}
             balance={parsedBalance}
-            maxBalanceBridgeable={maxBridgeableGas}
+            maxBridgeableBalance={maxBridgeableGas}
+            gasCost={parsedGasCost}
             onMaxBalance={onMaxBalance}
-            // estimatedGasLimit={estimatedGasLimit}
             isGasToken={isGasToken}
             isGasEstimateLoading={isLoading}
-            disabled={!isConnected}
+            isDisabled={!isConnected}
           />
         </div>
         {hasMounted && isConnected && (
