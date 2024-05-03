@@ -17,8 +17,15 @@ interface IInterchainModule {
     /// with no guarantee of ordering.
     /// @dev Could be only called by the Interchain DataBase contract.
     /// @param dstChainId       The chain id of the destination chain
+    /// @param batchNonce       The nonce of the batch on the source chain
     /// @param versionedBatch   The versioned batch to verify
-    function requestBatchVerification(uint64 dstChainId, bytes memory versionedBatch) external payable;
+    function requestBatchVerification(
+        uint64 dstChainId,
+        uint64 batchNonce,
+        bytes memory versionedBatch
+    )
+        external
+        payable;
 
     /// @notice Get the Module fee for verifying a batch on the specified destination chain.
     /// @param dstChainId   The chain id of the destination chain

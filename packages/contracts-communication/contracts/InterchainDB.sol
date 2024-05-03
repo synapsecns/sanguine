@@ -263,7 +263,9 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             payload: InterchainBatchLib.encodeBatch(batch)
         });
         for (uint256 i = 0; i < len; ++i) {
-            IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(dstChainId, versionedBatch);
+            IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(
+                dstChainId, batch.dbNonce, versionedBatch
+            );
         }
         emit InterchainBatchVerificationRequested(dstChainId, batch.dbNonce, batch.batchRoot, srcModules);
     }

@@ -22,7 +22,14 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     }
 
     /// @inheritdoc IInterchainModule
-    function requestBatchVerification(uint64 dstChainId, bytes calldata versionedBatch) external payable {
+    function requestBatchVerification(
+        uint64 dstChainId,
+        uint64 batchNonce,
+        bytes calldata versionedBatch
+    )
+        external
+        payable
+    {
         if (msg.sender != INTERCHAIN_DB) {
             revert InterchainModule__CallerNotInterchainDB(msg.sender);
         }
