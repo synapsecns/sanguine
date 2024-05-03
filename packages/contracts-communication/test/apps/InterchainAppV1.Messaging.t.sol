@@ -180,9 +180,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_sendInterchainMessage_revert_balanceTooLow() public {
+    function test_sendInterchainMessage_revert_BalanceBelowMin() public {
         deal(address(appHarness), MOCK_IC_FEE - 1);
-        expectRevertBalanceTooLow({actual: MOCK_IC_FEE - 1, required: MOCK_IC_FEE});
+        expectRevertBalanceBelowMin({actual: MOCK_IC_FEE - 1, required: MOCK_IC_FEE});
         appHarness.exposed__sendInterchainMessage({
             dstChainId: REMOTE_CHAIN_ID,
             receiver: linkedAppMockBytes32,
@@ -244,9 +244,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_sendInterchainMessageEVM_revert_balanceTooLow() public {
+    function test_sendInterchainMessageEVM_revert_BalanceBelowMin() public {
         deal(address(appHarness), MOCK_IC_FEE - 1);
-        expectRevertBalanceTooLow({actual: MOCK_IC_FEE - 1, required: MOCK_IC_FEE});
+        expectRevertBalanceBelowMin({actual: MOCK_IC_FEE - 1, required: MOCK_IC_FEE});
         appHarness.exposed__sendInterchainMessageEVM({
             dstChainId: REMOTE_CHAIN_ID,
             receiver: linkedAppMock,
@@ -306,9 +306,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_sendToLinkedApp_revert_balanceTooLow() public {
+    function test_sendToLinkedApp_revert_BalanceBelowMin() public {
         deal(address(appHarness), MOCK_IC_FEE - 1);
-        expectRevertBalanceTooLow({actual: MOCK_IC_FEE - 1, required: MOCK_IC_FEE});
+        expectRevertBalanceBelowMin({actual: MOCK_IC_FEE - 1, required: MOCK_IC_FEE});
         appHarness.exposed__sendToLinkedApp({
             dstChainId: REMOTE_CHAIN_ID,
             messageFee: MOCK_IC_FEE,

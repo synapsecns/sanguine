@@ -5,7 +5,7 @@ import {IExecutionService} from "./IExecutionService.sol";
 
 interface ISynapseExecutionServiceV1 is IExecutionService {
     error SynapseExecutionService__GasOracleNotSet();
-    error SynapseExecutionService__FeeAmountTooLow(uint256 actual, uint256 required);
+    error SynapseExecutionService__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
     error SynapseExecutionService__OptionsVersionNotSupported(uint16 version);
     error SynapseExecutionService__ZeroAddress();
 

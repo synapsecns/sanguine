@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 interface IClaimableFees {
-    error ClaimableFees__ClaimerFractionExceedsMax(uint256 claimerFraction);
+    error ClaimableFees__ClaimerFractionAboveMax(uint256 claimerFraction, uint256 maxAllowed);
     error ClaimableFees__FeeRecipientNotSet();
     error ClaimableFees__ZeroAmount();
 

@@ -35,7 +35,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         }
         uint256 requiredFee = _getModuleFee(dstChainId, batch.dbNonce);
         if (msg.value < requiredFee) {
-            revert InterchainModule__InsufficientFee({actual: msg.value, required: requiredFee});
+            revert InterchainModule__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
         }
         bytes memory moduleData = _fillModuleData(dstChainId, batch.dbNonce);
         bytes memory encodedBatch = ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, moduleData);

@@ -234,7 +234,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     function test_interchainSend_revert_feeTooLow() public {
         prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
         deal(srcSender, MOCK_INTERCHAIN_FEE - 1);
-        expectRevertFeeAmountTooLow(MOCK_INTERCHAIN_FEE - 1, MOCK_INTERCHAIN_FEE);
+        expectRevertFeeAmountBelowMin(MOCK_INTERCHAIN_FEE - 1, MOCK_INTERCHAIN_FEE);
         vm.prank(srcSender);
         icClient.interchainSend{value: MOCK_INTERCHAIN_FEE - 1}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -430,7 +430,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     function test_interchainSendEVM_revert_feeTooLow() public {
         prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
         deal(srcSender, MOCK_INTERCHAIN_FEE - 1);
-        expectRevertFeeAmountTooLow(MOCK_INTERCHAIN_FEE - 1, MOCK_INTERCHAIN_FEE);
+        expectRevertFeeAmountBelowMin(MOCK_INTERCHAIN_FEE - 1, MOCK_INTERCHAIN_FEE);
         vm.prank(srcSender);
         icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE - 1}({
             dstChainId: REMOTE_CHAIN_ID,

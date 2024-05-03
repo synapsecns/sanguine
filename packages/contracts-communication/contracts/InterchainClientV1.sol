@@ -121,8 +121,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         // The executor can specify a higher gas limit if they wanted.
         if (decodedOptions.gasLimit > gasLimit) gasLimit = decodedOptions.gasLimit;
         // Check the the Executor has provided big enough gas limit for the whole transaction.
-        if (gasleft() <= gasLimit) {
-            revert InterchainClientV1__NotEnoughGasSupplied();
+        uint256 gasLeft = gasleft();
+        if (gasLeft <= gasLimit) {
+            revert InterchainClientV1__GasLeftBelowMin(gasLeft, gasLimit);
         }
         // Pass the full msg.value to the app: we have already checked that it matches the requested gas airdrop.
         IInterchainApp(icTx.dstReceiver.bytes32ToAddress()).appReceive{gas: gasLimit, value: msg.value}({
@@ -178,7 +179,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             (selector, firstArg, secondArg) = _decodeRevertData(errorData);
             if (selector == InterchainClientV1__TxAlreadyExecuted.selector) {
                 status = TxReadiness.AlreadyExecuted;
-            } else if (selector == InterchainClientV1__NotEnoughResponses.selector) {
+            } else if (selector == InterchainClientV1__ResponsesAmountBelowMin.selector) {
                 status = TxReadiness.BatchAwaitingResponses;
             } else if (selector == InterchainClientV1__BatchConflict.selector) {
                 status = TxReadiness.BatchConflict;
@@ -311,7 +312,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         options.decodeOptionsV1();
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         if (msg.value < verificationFee) {
-            revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
+            revert InterchainClientV1__FeeAmountBelowMin(msg.value, verificationFee);
         }
         (desc.dbNonce, desc.entryIndex) = IInterchainDB(INTERCHAIN_DB).getNextEntryIndex();
         InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
@@ -390,7 +391,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         _assertNoGuardConflict(_getGuard(appConfig), batch);
         uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, batch, appConfig.optimisticPeriod);
         if (finalizedResponses < appConfig.requiredResponses) {
-            revert InterchainClientV1__NotEnoughResponses(finalizedResponses, appConfig.requiredResponses);
+            revert InterchainClientV1__ResponsesAmountBelowMin(finalizedResponses, appConfig.requiredResponses);
         }
     }
 

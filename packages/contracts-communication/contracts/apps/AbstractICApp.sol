@@ -13,7 +13,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     using TypeCasts for address;
 
     error InterchainApp__AlreadyLatestClient(address client);
-    error InterchainApp__BalanceTooLow(uint256 actual, uint256 required);
+    error InterchainApp__BalanceBelowMin(uint256 balance, uint256 minRequired);
     error InterchainApp__ClientAlreadyAdded(address client);
     error InterchainApp__InterchainClientZeroAddress();
     error InterchainApp__NotInterchainClient(address account);
@@ -149,7 +149,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
             revert InterchainApp__ReceiverNotSet(dstChainId);
         }
         if (address(this).balance < messageFee) {
-            revert InterchainApp__BalanceTooLow({actual: address(this).balance, required: messageFee});
+            revert InterchainApp__BalanceBelowMin({balance: address(this).balance, minRequired: messageFee});
         }
         return IInterchainClientV1(client).interchainSend{value: messageFee}(
             dstChainId, receiver, _getExecutionService(), _getModules(), options, message

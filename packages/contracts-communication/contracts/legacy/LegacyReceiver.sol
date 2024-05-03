@@ -12,7 +12,7 @@ abstract contract LegacyReceiver is Ownable, LegacyReceiverEvents, ILegacyReceiv
     address public messageBus;
     mapping(uint256 chainId => bytes32 trustedRemote) public trustedRemotes;
 
-    error LegacyReceiver__BalanceTooLow(uint256 actual, uint256 required);
+    error LegacyReceiver__BalanceBelowMin(uint256 actual, uint256 required);
     error LegacyReceiver__NotMessageBus(address caller);
     error LegacyReceiver__NotTrustedRemote(uint256 chainId, bytes32 srcCaller);
     error LegacyReceiver__SameChainId(uint256 chainId);
@@ -67,7 +67,7 @@ abstract contract LegacyReceiver is Ownable, LegacyReceiverEvents, ILegacyReceiv
             revert LegacyReceiver__TrustedRemoteNotSet(dstChainId);
         }
         if (address(this).balance < messageFee) {
-            revert LegacyReceiver__BalanceTooLow(address(this).balance, messageFee);
+            revert LegacyReceiver__BalanceBelowMin(address(this).balance, messageFee);
         }
         bytes memory options = LegacyOptionsLib.encodeLegacyOptions(gasLimit);
         IMessageBus(messageBus).sendMessage{value: messageFee}({

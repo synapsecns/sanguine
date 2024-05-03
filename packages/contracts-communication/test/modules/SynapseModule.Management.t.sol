@@ -16,6 +16,8 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModuleEvents {
+    uint256 public constant ONE_PERCENT = 0.01e18;
+
     SynapseModule public module;
     SynapseGasOracleMock public gasOracle;
 
@@ -262,7 +264,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     }
 
     function test_setFeeFraction_exactlyMax() public {
-        uint256 maxFeeFraction = 0.01e18;
+        uint256 maxFeeFraction = ONE_PERCENT;
         vm.expectEmit(address(module));
         emit ClaimerFractionSet(maxFeeFraction);
         vm.prank(owner);
@@ -271,9 +273,11 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     }
 
     function test_setFeeFraction_revert_exceedsMax() public {
-        uint256 fractionTooBig = 0.01e18 + 1;
+        uint256 fractionTooBig = ONE_PERCENT + 1;
         vm.expectRevert(
-            abi.encodeWithSelector(IClaimableFees.ClaimableFees__ClaimerFractionExceedsMax.selector, fractionTooBig)
+            abi.encodeWithSelector(
+                IClaimableFees.ClaimableFees__ClaimerFractionAboveMax.selector, fractionTooBig, ONE_PERCENT
+            )
         );
         vm.prank(owner);
         module.setClaimerFraction(fractionTooBig);

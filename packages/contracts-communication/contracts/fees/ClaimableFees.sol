@@ -68,7 +68,7 @@ abstract contract ClaimableFees is ClaimableFeesEvents, IClaimableFees {
     function _getClaimerReward(uint256 amount) internal view returns (uint256) {
         uint256 fraction = getClaimerFraction();
         if (fraction > MAX_CLAIMER_FRACTION) {
-            revert ClaimableFees__ClaimerFractionExceedsMax(fraction);
+            revert ClaimableFees__ClaimerFractionAboveMax(fraction, MAX_CLAIMER_FRACTION);
         }
         // The returned value is in the range [0, amount * 0.01]
         return (amount * fraction) / FEE_PRECISION;

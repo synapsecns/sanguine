@@ -370,9 +370,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = prepareExecuteTest(required, guardFlag, times);
         bytes memory encodedTx = getEncodedTx(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.BatchAwaitingResponses, actual, required);
-        expectRevertNotEnoughResponses({actual: actual, required: required});
+        expectRevertResponsesAmountBelowMin({actual: actual, required: required});
         icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertNotEnoughResponses({actual: actual, required: required});
+        expectRevertResponsesAmountBelowMin({actual: actual, required: required});
         executeTransaction(encodedTx, emptyProof);
     }
 

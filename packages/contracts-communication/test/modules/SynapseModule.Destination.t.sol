@@ -151,9 +151,11 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         );
     }
 
-    function expectRevertNotEnoughSignatures(uint256 provided, uint256 threshold) internal {
+    function expectRevertSignaturesAmountBelowThreshold(uint256 signaturesAmount, uint256 threshold) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotEnoughSignatures.selector, provided, threshold)
+            abi.encodeWithSelector(
+                ThresholdECDSALib.ThresholdECDSA__SignaturesAmountBelowThreshold.selector, signaturesAmount, threshold
+            )
         );
     }
 
@@ -172,20 +174,20 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
 
     // Should be verified if the enough valid signatures, which match the signers ascending order
 
-    function test_verifyRemoteBatch_zeroSignatures_revertNotEnoughSignatures() public {
-        expectRevertNotEnoughSignatures(0, 2);
+    function test_verifyRemoteBatch_zeroSignatures_revertSignaturesAmountBelowThreshold() public {
+        expectRevertSignaturesAmountBelowThreshold(0, 2);
         verifyRemoteBatch(mockVersionedBatch, "");
     }
 
-    function test_verifyRemoteBatch_oneSignature_valid_revertNotEnoughSignatures() public {
+    function test_verifyRemoteBatch_oneSignature_valid_revertSignaturesAmountBelowThreshold() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_0));
-        expectRevertNotEnoughSignatures(1, 2);
+        expectRevertSignaturesAmountBelowThreshold(1, 2);
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
-    function test_verifyRemoteBatch_oneSignature_invalid_revertNotEnoughSignatures() public {
+    function test_verifyRemoteBatch_oneSignature_invalid_revertSignaturesAmountBelowThreshold() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_3));
-        expectRevertNotEnoughSignatures(0, 2);
+        expectRevertSignaturesAmountBelowThreshold(0, 2);
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
@@ -208,9 +210,9 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
-    function test_verifyRemoteBatch_twoSignatures_invalidOne_sorted_revertNotEnoughSignatures() public {
+    function test_verifyRemoteBatch_twoSignatures_invalidOne_sorted_revertSignaturesAmountBelowThreshold() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_1, PK_3));
-        expectRevertNotEnoughSignatures(1, 2);
+        expectRevertSignaturesAmountBelowThreshold(1, 2);
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
@@ -220,9 +222,9 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
-    function test_verifyRemoteBatch_twoSignatures_invalidTwo_sorted_revertNotEnoughSignatures() public {
+    function test_verifyRemoteBatch_twoSignatures_invalidTwo_sorted_revertSignaturesAmountBelowThreshold() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_4, PK_3));
-        expectRevertNotEnoughSignatures(0, 2);
+        expectRevertSignaturesAmountBelowThreshold(0, 2);
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
@@ -270,9 +272,9 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
-    function test_verifyRemoteBatch_threeSignatures_invalidTwo_sorted_revertNotEnoughSignatures() public {
+    function test_verifyRemoteBatch_threeSignatures_invalidTwo_sorted_revertSignaturesAmountBelowThreshold() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_4, PK_3, PK_2));
-        expectRevertNotEnoughSignatures(1, 2);
+        expectRevertSignaturesAmountBelowThreshold(1, 2);
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
@@ -288,11 +290,11 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
-    function test_verifyRemoteBatch_threeSignatures_invalidThree_sorted_revertNotEnoughSignatures() public {
+    function test_verifyRemoteBatch_threeSignatures_invalidThree_sorted_revertSignaturesAmountBelowThreshold() public {
         vm.prank(owner);
         module.removeVerifier(SIGNER_0);
         bytes memory signatures = signBatch(mockBatch, toArray(PK_4, PK_0, PK_3));
-        expectRevertNotEnoughSignatures(0, 2);
+        expectRevertSignaturesAmountBelowThreshold(0, 2);
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 

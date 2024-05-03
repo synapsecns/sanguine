@@ -252,7 +252,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, batch.dbNonce, srcModules);
         if (msg.value < totalFee) {
-            revert InterchainDB__IncorrectFeeAmount(msg.value, totalFee);
+            revert InterchainDB__FeeAmountBelowMin(msg.value, totalFee);
         } else if (msg.value > totalFee) {
             // The exceeding amount goes to the first module
             fees[0] += msg.value - totalFee;

@@ -104,7 +104,9 @@ contract ClaimableFeesTest is ClaimableFeesEvents, Test {
         uint256 tooBigFraction = ONE_PERCENT + 1;
         harness.setup({claimableAmount: CLAIMABLE_AMOUNT, feeRecipient: recipient, claimerFraction: tooBigFraction});
         vm.expectRevert(
-            abi.encodeWithSelector(IClaimableFees.ClaimableFees__ClaimerFractionExceedsMax.selector, tooBigFraction)
+            abi.encodeWithSelector(
+                IClaimableFees.ClaimableFees__ClaimerFractionAboveMax.selector, tooBigFraction, ONE_PERCENT
+            )
         );
         vm.prank(claimer);
         harness.claimFees();

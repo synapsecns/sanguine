@@ -125,7 +125,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
     function test_requestVerification_revert_feeBelowRequired() public {
         bytes memory versionedBatch = getVersionedBatch(mockBatch);
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainModule.InterchainModule__InsufficientFee.selector, FEE - 1, FEE)
+            abi.encodeWithSelector(IInterchainModule.InterchainModule__FeeAmountBelowMin.selector, FEE - 1, FEE)
         );
         requestBatchVerification(FEE - 1, versionedBatch);
     }

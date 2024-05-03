@@ -80,9 +80,11 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__BatchConflict.selector, module));
     }
 
-    function expectRevertFeeAmountTooLow(uint256 actual, uint256 required) internal {
+    function expectRevertFeeAmountBelowMin(uint256 feeAmount, uint256 minRequired) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__FeeAmountTooLow.selector, actual, required)
+            abi.encodeWithSelector(
+                IInterchainClientV1.InterchainClientV1__FeeAmountBelowMin.selector, feeAmount, minRequired
+            )
         );
     }
 
@@ -118,14 +120,14 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertNotEnoughGasSupplied() internal {
-        vm.expectRevert(IInterchainClientV1.InterchainClientV1__NotEnoughGasSupplied.selector);
+    function expectRevertGasLeftBelowMin() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__GasLeftBelowMin.selector);
     }
 
-    function expectRevertNotEnoughResponses(uint256 actual, uint256 required) internal {
+    function expectRevertResponsesAmountBelowMin(uint256 actual, uint256 required) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
-                IInterchainClientV1.InterchainClientV1__NotEnoughResponses.selector, actual, required
+                IInterchainClientV1.InterchainClientV1__ResponsesAmountBelowMin.selector, actual, required
             )
         );
     }

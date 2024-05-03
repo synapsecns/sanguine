@@ -20,9 +20,9 @@ library ThresholdECDSALib {
     error ThresholdECDSA__AlreadySigner(address account);
     error ThresholdECDSA__IncorrectSignaturesLength(uint256 length);
     error ThresholdECDSA__InvalidSignature(bytes signature);
-    error ThresholdECDSA__NotEnoughSignatures(uint256 provided, uint256 threshold);
     error ThresholdECDSA__NotSigner(address account);
     error ThresholdECDSA__RecoveredSignersNotSorted();
+    error ThresholdECDSA__SignaturesAmountBelowThreshold(uint256 signaturesAmount, uint256 threshold);
     error ThresholdECDSA__ZeroAddress();
     error ThresholdECDSA__ZeroThreshold();
 
@@ -107,7 +107,7 @@ library ThresholdECDSALib {
             offset += SIGNATURE_LENGTH;
         }
         if (validSignatures < threshold) {
-            revert ThresholdECDSA__NotEnoughSignatures(validSignatures, threshold);
+            revert ThresholdECDSA__SignaturesAmountBelowThreshold(validSignatures, threshold);
         }
     }
 }

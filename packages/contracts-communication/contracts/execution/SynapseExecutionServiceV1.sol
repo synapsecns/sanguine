@@ -44,7 +44,7 @@ contract SynapseExecutionServiceV1 is
     /// @inheritdoc ISynapseExecutionServiceV1
     function setClaimerFraction(uint256 claimerFraction_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (claimerFraction_ > MAX_CLAIMER_FRACTION) {
-            revert ClaimableFees__ClaimerFractionExceedsMax(claimerFraction_);
+            revert ClaimableFees__ClaimerFractionAboveMax(claimerFraction_, MAX_CLAIMER_FRACTION);
         }
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         $.claimerFraction = claimerFraction_;
@@ -93,7 +93,7 @@ contract SynapseExecutionServiceV1 is
     {
         uint256 requiredFee = getExecutionFee(dstChainId, txPayloadSize, options);
         if (msg.value < requiredFee) {
-            revert SynapseExecutionService__FeeAmountTooLow({actual: msg.value, required: requiredFee});
+            revert SynapseExecutionService__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
         }
         emit ExecutionRequested({transactionId: transactionId, client: msg.sender, executionFee: msg.value});
     }

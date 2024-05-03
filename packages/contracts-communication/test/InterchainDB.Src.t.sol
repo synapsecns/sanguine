@@ -202,9 +202,9 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__IncorrectEntryIndex.selector, entryIndex));
     }
 
-    function expectRevertIncorrectFeeAmount(uint256 actualFee, uint256 expectedFee) internal {
+    function expectRevertFeeAmountBelowMin(uint256 feeAmount, uint256 minRequired) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainDB.InterchainDB__IncorrectFeeAmount.selector, actualFee, expectedFee)
+            abi.encodeWithSelector(IInterchainDB.InterchainDB__FeeAmountBelowMin.selector, feeAmount, minRequired)
         );
     }
 
@@ -436,15 +436,15 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     // ══════════════════════════════════ TESTS: REQUESTING VALIDATION (REVERTS) ═══════════════════════════════════════
 
-    function test_requestVerification_revert_incorrectFeeAmount_oneModule_underpaid() public {
+    function test_requestVerification_revert_FeeAmountBelowMin_oneModule_underpaid() public {
         uint256 incorrectFee = MODULE_A_FEE - 1;
-        expectRevertIncorrectFeeAmount(incorrectFee, MODULE_A_FEE);
+        expectRevertFeeAmountBelowMin(incorrectFee, MODULE_A_FEE);
         requestVerification(requestCaller, incorrectFee, 0, oneModule);
     }
 
-    function test_requestVerification_revert_incorrectFeeAmount_twoModules_underpaid() public {
+    function test_requestVerification_revert_FeeAmountBelowMin_twoModules_underpaid() public {
         uint256 incorrectFee = MODULE_A_FEE + MODULE_B_FEE - 1;
-        expectRevertIncorrectFeeAmount(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
+        expectRevertFeeAmountBelowMin(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
         requestVerification(requestCaller, incorrectFee, 0, twoModules);
     }
 
@@ -639,17 +639,17 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     // ════════════════════════════════ TESTS: WRITE + REQUEST VALIDATION (REVERTS) ════════════════════════════════════
 
-    function test_writeEntryWithVerification_revert_incorrectFeeAmount_oneModule_underpaid() public {
+    function test_writeEntryWithVerification_revert_FeeAmountBelowMin_oneModule_underpaid() public {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
         uint256 incorrectFee = MODULE_A_FEE - 1;
-        expectRevertIncorrectFeeAmount(incorrectFee, MODULE_A_FEE);
+        expectRevertFeeAmountBelowMin(incorrectFee, MODULE_A_FEE);
         writeEntryWithVerification(incorrectFee, writerF, dataHash, oneModule);
     }
 
-    function test_writeEntryWithVerification_revert_incorrectFeeAmount_twoModules_underpaid() public {
+    function test_writeEntryWithVerification_revert_FeeAmountBelowMin_twoModules_underpaid() public {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
         uint256 incorrectFee = MODULE_A_FEE + MODULE_B_FEE - 1;
-        expectRevertIncorrectFeeAmount(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
+        expectRevertFeeAmountBelowMin(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
         writeEntryWithVerification(incorrectFee, writerF, dataHash, twoModules);
     }
 

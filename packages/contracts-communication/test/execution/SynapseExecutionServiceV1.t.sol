@@ -58,9 +58,11 @@ contract SynapseExecutionServiceV1Test is ProxyTest, ClaimableFeesEvents, Synaps
         emit ExecutionRequested(transactionId, client, executionFee);
     }
 
-    function expectRevertClaimerFractionExceedsMax(uint256 claimerFraction) internal {
+    function expectRevertClaimerFractionAboveMax(uint256 claimerFraction, uint256 maxAllowed) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IClaimableFees.ClaimableFees__ClaimerFractionExceedsMax.selector, claimerFraction)
+            abi.encodeWithSelector(
+                IClaimableFees.ClaimableFees__ClaimerFractionAboveMax.selector, claimerFraction, maxAllowed
+            )
         );
     }
 
@@ -68,10 +70,10 @@ contract SynapseExecutionServiceV1Test is ProxyTest, ClaimableFeesEvents, Synaps
         vm.expectRevert(ISynapseExecutionServiceV1.SynapseExecutionService__GasOracleNotSet.selector);
     }
 
-    function expectRevertFeeAmountTooLow(uint256 actual, uint256 required) internal {
+    function expectRevertFeeAmountBelowMin(uint256 feeAmount, uint256 minRequired) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
-                ISynapseExecutionServiceV1.SynapseExecutionService__FeeAmountTooLow.selector, actual, required
+                ISynapseExecutionServiceV1.SynapseExecutionService__FeeAmountBelowMin.selector, feeAmount, minRequired
             )
         );
     }

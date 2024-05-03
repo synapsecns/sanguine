@@ -59,9 +59,11 @@ contract ThresholdECDSALibTest is Test {
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__InvalidSignature.selector, signature));
     }
 
-    function expectNotEnoughSignaturesError(uint256 provided, uint256 threshold) internal {
+    function expectSignaturesAmountBelowThresholdError(uint256 provided, uint256 threshold) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotEnoughSignatures.selector, provided, threshold)
+            abi.encodeWithSelector(
+                ThresholdECDSALib.ThresholdECDSA__SignaturesAmountBelowThreshold.selector, provided, threshold
+            )
         );
     }
 
@@ -226,13 +228,13 @@ contract ThresholdECDSALibTest is Test {
 
     function test_verifySignedHash_providedUnderThreshold_revert_sorted_allSigners() public {
         libHarness.modifyThreshold(3);
-        expectNotEnoughSignaturesError(2, 3);
+        expectSignaturesAmountBelowThresholdError(2, 3);
         libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0, sig_2_0));
     }
 
     function test_verifySignedHash_providedUnderThreshold_revert_sorted_hasNonSigners() public {
         libHarness.modifyThreshold(3);
-        expectNotEnoughSignaturesError(1, 3);
+        expectSignaturesAmountBelowThresholdError(1, 3);
         libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0, sig_3_0));
     }
 
@@ -260,7 +262,7 @@ contract ThresholdECDSALibTest is Test {
     }
 
     function test_verifySignedHash_providedExactlyThreshold_revert_sorted_hasNonSigners() public {
-        expectNotEnoughSignaturesError(1, 2);
+        expectSignaturesAmountBelowThresholdError(1, 2);
         libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_3_0));
     }
 
@@ -291,7 +293,7 @@ contract ThresholdECDSALibTest is Test {
 
     function test_verifySignedHash_providedOverThreshold_revert_sorted_hasNonSigners_notEnoughSigners() public {
         libHarness.removeSigner(SIGNER_2);
-        expectNotEnoughSignaturesError(1, 2);
+        expectSignaturesAmountBelowThresholdError(1, 2);
         libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_3_0, sig_2_0));
     }
 
@@ -340,7 +342,7 @@ contract ThresholdECDSALibTest is Test {
     }
 
     function test_verifySignedHash_revert_emptySignatures() public {
-        expectNotEnoughSignaturesError(0, 2);
+        expectSignaturesAmountBelowThresholdError(0, 2);
         libHarness.verifySignedHash(HASH_0, new bytes(0));
     }
 

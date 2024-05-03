@@ -85,7 +85,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     /// @inheritdoc ISynapseModule
     function setClaimerFraction(uint256 claimerFraction) external onlyOwner {
         if (claimerFraction > MAX_CLAIMER_FRACTION) {
-            revert ClaimableFees__ClaimerFractionExceedsMax(claimerFraction);
+            revert ClaimableFees__ClaimerFractionAboveMax(claimerFraction, MAX_CLAIMER_FRACTION);
         }
         _claimerFraction = claimerFraction;
         emit ClaimerFractionSet(claimerFraction);
