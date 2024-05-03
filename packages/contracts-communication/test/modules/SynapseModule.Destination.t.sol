@@ -321,7 +321,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         verifyRemoteBatch(versionedBatch, signatures);
     }
 
-    function test_verifyRemoteBatch_revertZeroThreshold() public {
+    function test_verifyRemoteBatch_revertThresholdZero() public {
         // Deploy a module without setting up the threshold
         module = new SynapseModule(address(interchainDB), owner);
         vm.startPrank(owner);
@@ -329,7 +329,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         module.addVerifier(SIGNER_1);
         vm.stopPrank();
         bytes memory signatures = signBatch(mockBatch, toArray(PK_1, PK_0));
-        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__ZeroThreshold.selector);
+        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__ThresholdZero.selector);
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 

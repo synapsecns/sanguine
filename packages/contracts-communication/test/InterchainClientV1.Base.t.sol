@@ -168,16 +168,16 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertZeroAddress() internal {
-        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroAddress.selector);
+    function expectRevertGuardZeroAddress() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__GuardZeroAddress.selector);
     }
 
-    function expectRevertZeroExecutionService() internal {
-        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroExecutionService.selector);
+    function expectRevertExecutionServiceZeroAddress() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ExecutionServiceZeroAddress.selector);
     }
 
-    function expectRevertZeroReceiver() internal {
-        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroReceiver.selector);
+    function expectRevertReceiverZeroAddress() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ReceiverZeroAddress.selector);
     }
 
     function expectRevertIncorrectVersion(uint8 version) internal {

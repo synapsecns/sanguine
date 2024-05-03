@@ -129,7 +129,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
 
     function test_addVerifiers_revert_containsZeroAddress() public {
         allVerifiers[1] = address(0);
-        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__ZeroAddress.selector);
+        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__SignerZeroAddress.selector);
         vm.prank(owner);
         module.addVerifiers(allVerifiers);
     }
@@ -211,8 +211,8 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
         module.setThreshold(3);
     }
 
-    function test_setThreshold_revert_zeroThreshold() public {
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__ZeroThreshold.selector));
+    function test_setThreshold_revert_ThresholdZero() public {
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__ThresholdZero.selector));
         vm.prank(owner);
         module.setThreshold(0);
     }
@@ -238,7 +238,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     }
 
     function test_setFeeRecipient_revert_zeroAddress() public {
-        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__ZeroAddress.selector));
+        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__FeeRecipientZeroAddress.selector));
         vm.prank(owner);
         module.setFeeRecipient(address(0));
     }

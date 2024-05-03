@@ -93,8 +93,8 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         emit TrustedModuleRemoved(module);
     }
 
-    function expectRevertAppZeroAddress() internal {
-        vm.expectRevert(IInterchainAppV1.InterchainApp__AppZeroAddress.selector);
+    function expectRevertRemoteAppZeroAddress() internal {
+        vm.expectRevert(IInterchainAppV1.InterchainApp__RemoteAppZeroAddress.selector);
     }
 
     function expectRevertInvalidAppConfig(uint256 requiredResponses, uint256 optimisticPeriod) internal {
@@ -141,8 +141,8 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__NotInterchainClient.selector, account));
     }
 
-    function expectRevertReceiverNotSet(uint64 chainId) internal {
-        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__ReceiverNotSet.selector, chainId));
+    function expectRevertReceiverZeroAddress(uint64 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__ReceiverZeroAddress.selector, chainId));
     }
 
     function expectRevertSameChainId(uint64 chainId) internal {

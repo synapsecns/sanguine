@@ -257,7 +257,7 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
     }
 
     function test_linkRemoteApp_revert_zeroAddress() public {
-        expectRevertAppZeroAddress();
+        expectRevertRemoteAppZeroAddress();
         vm.prank(governor);
         appHarness.linkRemoteApp({chainId: REMOTE_CHAIN_ID, remoteApp: 0});
     }
@@ -286,7 +286,7 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
     }
 
     function test_linkRemoteAppEVM_revert_zeroAddress() public {
-        expectRevertAppZeroAddress();
+        expectRevertRemoteAppZeroAddress();
         vm.prank(governor);
         appHarness.linkRemoteAppEVM(REMOTE_CHAIN_ID, address(0));
     }

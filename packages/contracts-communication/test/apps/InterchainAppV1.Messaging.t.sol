@@ -204,9 +204,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_sendInterchainMessage_revert_receiverNotSet() public {
+    function test_sendInterchainMessage_revert_ReceiverZeroAddress() public {
         deal(address(appHarness), MOCK_IC_FEE);
-        expectRevertReceiverNotSet(REMOTE_CHAIN_ID);
+        expectRevertReceiverZeroAddress(REMOTE_CHAIN_ID);
         appHarness.exposed__sendInterchainMessage({
             dstChainId: REMOTE_CHAIN_ID,
             receiver: 0,
@@ -268,9 +268,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_sendInterchainMessageEVM_revert_receiverNotSet() public {
+    function test_sendInterchainMessageEVM_revert_ReceiverZeroAddress() public {
         deal(address(appHarness), MOCK_IC_FEE);
-        expectRevertReceiverNotSet(REMOTE_CHAIN_ID);
+        expectRevertReceiverZeroAddress(REMOTE_CHAIN_ID);
         appHarness.exposed__sendInterchainMessageEVM({
             dstChainId: REMOTE_CHAIN_ID,
             receiver: address(0),
@@ -328,9 +328,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_sendToLinkedApp_revert_receiverNotSet() public {
+    function test_sendToLinkedApp_revert_ReceiverZeroAddress() public {
         deal(address(appHarness), MOCK_IC_FEE);
-        expectRevertReceiverNotSet(UNKNOWN_CHAIN_ID);
+        expectRevertReceiverZeroAddress(UNKNOWN_CHAIN_ID);
         appHarness.exposed__sendToLinkedApp({
             dstChainId: UNKNOWN_CHAIN_ID,
             messageFee: MOCK_IC_FEE,

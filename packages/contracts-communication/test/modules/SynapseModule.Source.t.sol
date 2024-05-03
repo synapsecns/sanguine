@@ -160,16 +160,16 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         assertEq(module.getFeeRecipient(), feeRecipient);
     }
 
-    function test_claimFees_zeroClaimFee_revert_feeRecipientNotSet() public {
+    function test_claimFees_zeroClaimFee_revert_FeeRecipientZeroAddress() public {
         SynapseModule freshModule = new SynapseModule(interchainDB, address(this));
         deal(address(freshModule), 5 ether);
-        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__FeeRecipientNotSet.selector));
+        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__FeeRecipientZeroAddress.selector));
         vm.prank(claimer);
         freshModule.claimFees();
     }
 
     function test_claimFees_zeroClaimFee_revert_noFeesToClaim() public {
-        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__ZeroAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__FeeAmountZero.selector));
         vm.prank(claimer);
         module.claimFees();
     }
@@ -213,12 +213,12 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         assertEq(module.getFeeRecipient(), feeRecipient);
     }
 
-    function test_claimFees_nonZeroClaimFee_revert_feeRecipientNotSet() public {
+    function test_claimFees_nonZeroClaimFee_revert_FeeRecipientZeroAddress() public {
         SynapseModule freshModule = new SynapseModule(interchainDB, address(this));
         // Set claim fee to 0.1%
         freshModule.setClaimerFraction(0.001e18);
         deal(address(freshModule), 5 ether);
-        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__FeeRecipientNotSet.selector));
+        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__FeeRecipientZeroAddress.selector));
         vm.prank(claimer);
         freshModule.claimFees();
     }
@@ -227,7 +227,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         // Set claim fee to 0.1%
         vm.prank(owner);
         module.setClaimerFraction(0.001e18);
-        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__ZeroAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(IClaimableFees.ClaimableFees__FeeAmountZero.selector));
         vm.prank(claimer);
         module.claimFees();
     }

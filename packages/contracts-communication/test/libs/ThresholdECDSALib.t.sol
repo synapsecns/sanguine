@@ -75,12 +75,12 @@ contract ThresholdECDSALibTest is Test {
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__RecoveredSignersNotSorted.selector));
     }
 
-    function expectZeroAddressError() internal {
-        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__ZeroAddress.selector);
+    function expectSignerZeroAddressError() internal {
+        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__SignerZeroAddress.selector);
     }
 
-    function expectZeroThresholdError() internal {
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__ZeroThreshold.selector));
+    function expectThresholdZeroError() internal {
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__ThresholdZero.selector));
     }
 
     // ═══════════════════════════════════════════════════ TESTS ═══════════════════════════════════════════════════════
@@ -204,7 +204,7 @@ contract ThresholdECDSALibTest is Test {
     }
 
     function test_addSigner_revert_zeroAddress() public {
-        expectZeroAddressError();
+        expectSignerZeroAddressError();
         libHarness.addSigner(address(0));
     }
 
@@ -213,8 +213,8 @@ contract ThresholdECDSALibTest is Test {
         libHarness.removeSigner(SIGNER_3);
     }
 
-    function test_modifyThreshold_revert_zeroThreshold() public {
-        expectZeroThresholdError();
+    function test_modifyThreshold_revert_ThresholdZero() public {
+        expectThresholdZeroError();
         libHarness.modifyThreshold(0);
     }
 
@@ -325,19 +325,19 @@ contract ThresholdECDSALibTest is Test {
         libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_1_0, sig_0_0));
     }
 
-    function test_verifySignedHash_revert_zeroThreshold_signerSignature() public {
+    function test_verifySignedHash_revert_ThresholdZero_signerSignature() public {
         // Set up a new harness without setting up the threshold
         libHarness = new ThresholdECDSALibHarness();
         libHarness.addSigner(SIGNER_0);
-        expectZeroThresholdError();
+        expectThresholdZeroError();
         libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0));
     }
 
-    function test_verifySignedHash_revert_zeroThreshold_notSignerSignature() public {
+    function test_verifySignedHash_revert_ThresholdZero_notSignerSignature() public {
         // Set up a new harness without setting up the threshold
         libHarness = new ThresholdECDSALibHarness();
         libHarness.addSigner(SIGNER_0);
-        expectZeroThresholdError();
+        expectThresholdZeroError();
         libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0));
     }
 

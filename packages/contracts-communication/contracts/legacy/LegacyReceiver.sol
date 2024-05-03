@@ -16,7 +16,7 @@ abstract contract LegacyReceiver is Ownable, LegacyReceiverEvents, ILegacyReceiv
     error LegacyReceiver__NotMessageBus(address caller);
     error LegacyReceiver__NotTrustedRemote(uint256 chainId, bytes32 srcCaller);
     error LegacyReceiver__SameChainId(uint256 chainId);
-    error LegacyReceiver__TrustedRemoteNotSet(uint256 chainId);
+    error LegacyReceiver__TrustedRemoteZeroAddress(uint256 chainId);
 
     constructor(address owner_) Ownable(owner_) {}
 
@@ -64,7 +64,7 @@ abstract contract LegacyReceiver is Ownable, LegacyReceiverEvents, ILegacyReceiv
     function _sendMessage(uint256 dstChainId, uint256 messageFee, uint256 gasLimit, bytes memory message) internal {
         bytes32 dstRemote = trustedRemotes[dstChainId];
         if (dstRemote == 0) {
-            revert LegacyReceiver__TrustedRemoteNotSet(dstChainId);
+            revert LegacyReceiver__TrustedRemoteZeroAddress(dstChainId);
         }
         if (address(this).balance < messageFee) {
             revert LegacyReceiver__BalanceBelowMin(address(this).balance, messageFee);

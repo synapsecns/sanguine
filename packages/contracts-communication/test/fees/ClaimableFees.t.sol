@@ -88,14 +88,14 @@ contract ClaimableFeesTest is ClaimableFeesEvents, Test {
 
     function test_claimFees_revert_zeroAmount() public {
         harness.setup({claimableAmount: 0, feeRecipient: recipient, claimerFraction: ONE_PERCENT});
-        vm.expectRevert(IClaimableFees.ClaimableFees__ZeroAmount.selector);
+        vm.expectRevert(IClaimableFees.ClaimableFees__FeeAmountZero.selector);
         vm.prank(claimer);
         harness.claimFees();
     }
 
     function test_claimFees_revert_zeroFeeRecipient() public {
         harness.setup({claimableAmount: CLAIMABLE_AMOUNT, feeRecipient: address(0), claimerFraction: ONE_PERCENT});
-        vm.expectRevert(IClaimableFees.ClaimableFees__FeeRecipientNotSet.selector);
+        vm.expectRevert(IClaimableFees.ClaimableFees__FeeRecipientZeroAddress.selector);
         vm.prank(claimer);
         harness.claimFees();
     }

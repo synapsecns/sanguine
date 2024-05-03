@@ -17,7 +17,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     error InterchainApp__ClientAlreadyAdded(address client);
     error InterchainApp__InterchainClientZeroAddress();
     error InterchainApp__NotInterchainClient(address account);
-    error InterchainApp__ReceiverNotSet(uint64 chainId);
+    error InterchainApp__ReceiverZeroAddress(uint64 chainId);
     error InterchainApp__SameChainId(uint64 chainId);
     error InterchainApp__SenderNotAllowed(uint64 srcChainId, bytes32 sender);
 
@@ -146,7 +146,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
             revert InterchainApp__SameChainId(dstChainId);
         }
         if (receiver == 0) {
-            revert InterchainApp__ReceiverNotSet(dstChainId);
+            revert InterchainApp__ReceiverZeroAddress(dstChainId);
         }
         if (address(this).balance < messageFee) {
             revert InterchainApp__BalanceBelowMin({balance: address(this).balance, minRequired: messageFee});

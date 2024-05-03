@@ -66,8 +66,8 @@ contract SynapseExecutionServiceV1Test is ProxyTest, ClaimableFeesEvents, Synaps
         );
     }
 
-    function expectRevertGasOracleNotSet() internal {
-        vm.expectRevert(ISynapseExecutionServiceV1.SynapseExecutionService__GasOracleNotSet.selector);
+    function expectRevertGasOracleZeroAddress() internal {
+        vm.expectRevert(ISynapseExecutionServiceV1.SynapseExecutionService__GasOracleZeroAddress.selector);
     }
 
     function expectRevertFeeAmountBelowMin(uint256 feeAmount, uint256 minRequired) internal {
@@ -78,8 +78,8 @@ contract SynapseExecutionServiceV1Test is ProxyTest, ClaimableFeesEvents, Synaps
         );
     }
 
-    function expectRevertFeeRecipientNotSet() internal {
-        vm.expectRevert(IClaimableFees.ClaimableFees__FeeRecipientNotSet.selector);
+    function expectRevertFeeRecipientZeroAddress() internal {
+        vm.expectRevert(IClaimableFees.ClaimableFees__FeeRecipientZeroAddress.selector);
     }
 
     function expectRevertOptionsVersionNotSupported(uint256 version) internal {
@@ -90,12 +90,12 @@ contract SynapseExecutionServiceV1Test is ProxyTest, ClaimableFeesEvents, Synaps
         );
     }
 
-    function expectRevertZeroAddress() internal {
-        vm.expectRevert(ISynapseExecutionServiceV1.SynapseExecutionService__ZeroAddress.selector);
+    function expectRevertExecutorZeroAddress() internal {
+        vm.expectRevert(ISynapseExecutionServiceV1.SynapseExecutionService__ExecutorZeroAddress.selector);
     }
 
     function expectRevertZeroAmount() internal {
-        vm.expectRevert(IClaimableFees.ClaimableFees__ZeroAmount.selector);
+        vm.expectRevert(IClaimableFees.ClaimableFees__FeeAmountZero.selector);
     }
 
     function expectRevertNotGovernor(address caller) internal {

@@ -23,13 +23,13 @@ library ThresholdECDSALib {
     error ThresholdECDSA__NotSigner(address account);
     error ThresholdECDSA__RecoveredSignersNotSorted();
     error ThresholdECDSA__SignaturesAmountBelowThreshold(uint256 signaturesAmount, uint256 threshold);
-    error ThresholdECDSA__ZeroAddress();
-    error ThresholdECDSA__ZeroThreshold();
+    error ThresholdECDSA__SignerZeroAddress();
+    error ThresholdECDSA__ThresholdZero();
 
     /// @notice Adds a new signer to the list of signers.
     /// @dev Will revert if the account is already a signer.
     function addSigner(ThresholdECDSA storage self, address account) internal {
-        if (account == address(0)) revert ThresholdECDSA__ZeroAddress();
+        if (account == address(0)) revert ThresholdECDSA__SignerZeroAddress();
         bool added = self._signers.add(account);
         if (!added) {
             revert ThresholdECDSA__AlreadySigner(account);
@@ -48,7 +48,7 @@ library ThresholdECDSALib {
     /// @notice Modifies the threshold of signatures required.
     function modifyThreshold(ThresholdECDSA storage self, uint256 threshold) internal {
         if (threshold == 0) {
-            revert ThresholdECDSA__ZeroThreshold();
+            revert ThresholdECDSA__ThresholdZero();
         }
         self._threshold = threshold;
     }
@@ -84,7 +84,7 @@ library ThresholdECDSALib {
         // First, check that threshold is configured and enough signatures are provided
         uint256 threshold = self._threshold;
         if (threshold == 0) {
-            revert ThresholdECDSA__ZeroThreshold();
+            revert ThresholdECDSA__ThresholdZero();
         }
         uint256 offset = 0;
         uint256 validSignatures = 0;

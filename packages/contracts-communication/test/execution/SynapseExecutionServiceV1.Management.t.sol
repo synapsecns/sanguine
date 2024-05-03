@@ -42,7 +42,7 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
     }
 
     function test_setExecutorEOA_revert_zeroAddress() public {
-        expectRevertZeroAddress();
+        expectRevertExecutorZeroAddress();
         vm.prank(governor);
         service.setExecutorEOA(address(0));
     }
@@ -70,7 +70,7 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
     }
 
     function test_setGasOracle_revert_zeroAddress() public {
-        expectRevertZeroAddress();
+        expectRevertGasOracleZeroAddress();
         vm.prank(governor);
         service.setGasOracle(address(0));
     }
@@ -137,8 +137,8 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
         service.setClaimerFraction(1e16);
     }
 
-    function test_getExecutionFee_revert_gasOracleNotSet() public {
-        expectRevertGasOracleNotSet();
+    function test_getExecutionFee_revert_GasOracleZeroAddress() public {
+        expectRevertGasOracleZeroAddress();
         service.getExecutionFee(1, 2, "");
     }
 }

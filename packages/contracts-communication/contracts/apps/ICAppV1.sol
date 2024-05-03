@@ -161,7 +161,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
             revert InterchainApp__SameChainId(chainId);
         }
         if (remoteApp == 0) {
-            revert InterchainApp__AppZeroAddress();
+            revert InterchainApp__RemoteAppZeroAddress();
         }
         _linkedApp[chainId] = remoteApp;
         emit AppLinked(chainId, remoteApp);

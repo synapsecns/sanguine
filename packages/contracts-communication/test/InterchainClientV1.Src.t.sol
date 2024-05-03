@@ -274,9 +274,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSend_revert_zeroReceiver() public {
+    function test_interchainSend_revert_ReceiverZeroAddress() public {
         prepareSendTest({receiver: 0, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertZeroReceiver();
+        expectRevertReceiverZeroAddress();
         vm.prank(srcSender);
         icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -288,9 +288,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSend_revert_zeroExecutionService() public {
+    function test_interchainSend_revert_ExecutionServiceZeroAddress() public {
         prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertZeroExecutionService();
+        expectRevertExecutionServiceZeroAddress();
         vm.prank(srcSender);
         icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -470,9 +470,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSendEVM_revert_zeroReceiver() public {
+    function test_interchainSendEVM_revert_ReceiverZeroAddress() public {
         prepareSendTest({receiver: 0, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertZeroReceiver();
+        expectRevertReceiverZeroAddress();
         vm.prank(srcSender);
         icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -484,9 +484,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSendEVM_revert_zeroExecutionService() public {
+    function test_interchainSendEVM_revert_ExecutionServiceZeroAddress() public {
         prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertZeroExecutionService();
+        expectRevertExecutionServiceZeroAddress();
         vm.prank(srcSender);
         icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -630,8 +630,8 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_getInterchainFee_revert_zeroExecutionService() public {
-        expectRevertZeroExecutionService();
+    function test_getInterchainFee_revert_ExecutionServiceZeroAddress() public {
+        expectRevertExecutionServiceZeroAddress();
         icClient.getInterchainFee({
             dstChainId: REMOTE_CHAIN_ID,
             srcExecutionService: address(0),

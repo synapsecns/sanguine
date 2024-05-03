@@ -24,11 +24,11 @@ abstract contract ClaimableFees is ClaimableFeesEvents, IClaimableFees {
     function claimFees() external {
         uint256 amount = getClaimableAmount();
         if (amount == 0) {
-            revert ClaimableFees__ZeroAmount();
+            revert ClaimableFees__FeeAmountZero();
         }
         address recipient = getFeeRecipient();
         if (recipient == address(0)) {
-            revert ClaimableFees__FeeRecipientNotSet();
+            revert ClaimableFees__FeeRecipientZeroAddress();
         }
         // Subtract the claimer reward from the total amount
         uint256 reward = _getClaimerReward(amount);

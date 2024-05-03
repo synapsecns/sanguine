@@ -54,7 +54,7 @@ contract SynapseExecutionServiceV1 is
     /// @inheritdoc ISynapseExecutionServiceV1
     function setExecutorEOA(address executorEOA_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (executorEOA_ == address(0)) {
-            revert SynapseExecutionService__ZeroAddress();
+            revert SynapseExecutionService__ExecutorZeroAddress();
         }
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         $.executorEOA = executorEOA_;
@@ -65,7 +65,7 @@ contract SynapseExecutionServiceV1 is
     /// @inheritdoc ISynapseExecutionServiceV1
     function setGasOracle(address gasOracle_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (gasOracle_ == address(0)) {
-            revert SynapseExecutionService__ZeroAddress();
+            revert SynapseExecutionService__GasOracleZeroAddress();
         }
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         $.gasOracle = gasOracle_;
@@ -111,7 +111,7 @@ contract SynapseExecutionServiceV1 is
     {
         address cachedGasOracle = gasOracle();
         if (cachedGasOracle == address(0)) {
-            revert SynapseExecutionService__GasOracleNotSet();
+            revert SynapseExecutionService__GasOracleZeroAddress();
         }
         // ExecutionServiceV1 implementation only supports Options V1.
         // Following versions will be supported by the future implementations.

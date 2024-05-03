@@ -192,7 +192,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     function test_claimFees_revert_zeroExecutorEOA() public {
         SynapseExecutionServiceV1 freshService = SynapseExecutionServiceV1(deployProxy(address(implementation)));
         deal(address(freshService), 5 ether);
-        expectRevertFeeRecipientNotSet();
+        expectRevertFeeRecipientZeroAddress();
         vm.prank(claimer);
         freshService.claimFees();
     }

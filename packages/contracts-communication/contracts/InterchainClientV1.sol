@@ -54,7 +54,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // @inheritdoc IInterchainClientV1
     function setDefaultGuard(address guard) external onlyOwner {
         if (guard == address(0)) {
-            revert InterchainClientV1__ZeroAddress();
+            revert InterchainClientV1__GuardZeroAddress();
         }
         defaultGuard = guard;
         emit DefaultGuardSet(guard);
@@ -221,7 +221,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         _assertLinkedClient(dstChainId);
         if (srcExecutionService == address(0)) {
-            revert InterchainClientV1__ZeroExecutionService();
+            revert InterchainClientV1__ExecutionServiceZeroAddress();
         }
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
@@ -303,10 +303,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         _assertLinkedClient(dstChainId);
         if (receiver == 0) {
-            revert InterchainClientV1__ZeroReceiver();
+            revert InterchainClientV1__ReceiverZeroAddress();
         }
         if (srcExecutionService == address(0)) {
-            revert InterchainClientV1__ZeroExecutionService();
+            revert InterchainClientV1__ExecutionServiceZeroAddress();
         }
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
