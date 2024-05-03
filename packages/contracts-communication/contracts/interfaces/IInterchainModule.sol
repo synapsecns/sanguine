@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 /// @notice Every Module may opt a different method to confirm the verified entries on destination chain,
 /// therefore this is not a part of a common interface.
 interface IInterchainModule {
-    error InterchainModule__NotInterchainDB(address caller);
+    error InterchainModule__CallerNotInterchainDB(address caller);
+    error InterchainModule__ChainIdNotRemote(uint64 chainId);
     error InterchainModule__IncorrectSourceChainId(uint64 chainId);
-    error InterchainModule__InsufficientFee(uint256 actual, uint256 required);
-    error InterchainModule__SameChainId(uint64 chainId);
+    error InterchainModule__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
 
     /// @notice Request the verification of a batch from the Interchain DataBase by the module.
     /// If the batch is not yet finalized, the verification on destination chain will be delayed until

@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 import {IExecutionService} from "./IExecutionService.sol";
 
 interface ISynapseExecutionServiceV1 is IExecutionService {
-    error SynapseExecutionService__GasOracleNotSet();
-    error SynapseExecutionService__FeeAmountTooLow(uint256 actual, uint256 required);
+    error SynapseExecutionService__ExecutorZeroAddress();
+    error SynapseExecutionService__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
+    error SynapseExecutionService__GasOracleZeroAddress();
     error SynapseExecutionService__OptionsVersionNotSupported(uint16 version);
-    error SynapseExecutionService__ZeroAddress();
 
     /// @notice Sets the fraction of the accumulated fees to be paid to caller of `claimFees`.
     /// This encourages rational actors to call the function as soon as claim fee is higher than the gas cost.

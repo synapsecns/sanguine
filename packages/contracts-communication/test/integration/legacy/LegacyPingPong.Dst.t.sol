@@ -167,7 +167,7 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
 
     function test_interchainExecute_revert_notConfirmed() public {
         // No module signatures
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
         executeTx(icOptions);
     }
 
@@ -179,7 +179,7 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
 
     function test_interchainExecute_revert_confirmed_sameBlock() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
         executeTx(icOptions);
     }
 
@@ -193,7 +193,7 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     function test_interchainExecute_revert_confirmed_periodMinusOneSecond() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD);
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
         executeTx(icOptions);
     }
 
@@ -220,7 +220,7 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     }
 
     function test_isExecutable_revert_notConfirmed() public {
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
         icClient.isExecutable(encodedSrcTx, new bytes32[](0));
     }
 
@@ -232,7 +232,7 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
 
     function test_isExecutable_revert_confirmed_sameBlock() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
         icClient.isExecutable(encodedSrcTx, new bytes32[](0));
     }
 
@@ -246,7 +246,7 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     function test_isExecutable_revert_confirmed_periodMinusOneSecond() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD);
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
         icClient.isExecutable(encodedSrcTx, new bytes32[](0));
     }
 

@@ -122,12 +122,12 @@ abstract contract MessageBusBaseTest is MessageBusEvents, Test {
         emit MessageLengthEstimateSet(length);
     }
 
-    function expectRevertNotEVMReceiver(bytes32 receiver) internal {
-        vm.expectRevert(abi.encodeWithSelector(IMessageBus.MessageBus__NotEVMReceiver.selector, receiver));
+    function expectRevertReceiverNotEVM(bytes32 receiver) internal {
+        vm.expectRevert(abi.encodeWithSelector(IMessageBus.MessageBus__ReceiverNotEVM.selector, receiver));
     }
 
-    function expectRevertInvalidOptions(bytes memory legacyOpts) internal {
-        vm.expectRevert(abi.encodeWithSelector(LegacyOptionsLib.LegacyOptionsLib__InvalidOptions.selector, legacyOpts));
+    function expectRevertPayloadInvalid(bytes memory legacyOpts) internal {
+        vm.expectRevert(abi.encodeWithSelector(LegacyOptionsLib.LegacyOptionsLib__PayloadInvalid.selector, legacyOpts));
     }
 
     function expectRevertUnauthorizedGovernor(address caller) internal {

@@ -653,7 +653,7 @@ func (c Config) GetRebalanceInterval() time.Duration {
 	return interval
 }
 
-const defaultQuoteSubmissionTimeoutSeconds = 10
+const defaultQuoteSubmissionTimeoutSeconds = 30
 
 // GetQuoteSubmissionTimeout returns the timeout for submitting quotes.
 func (c Config) GetQuoteSubmissionTimeout() time.Duration {

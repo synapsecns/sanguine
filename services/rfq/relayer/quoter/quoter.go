@@ -233,10 +233,7 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 		return fmt.Errorf("error getting committable balances: %w", err)
 	}
 
-	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
-	defer quoteCancel()
-
-	return m.prepareAndSubmitQuotes(quoteCtx, inv)
+	return m.prepareAndSubmitQuotes(ctx, inv)
 }
 
 // Prepares and submits quotes based on inventory.
@@ -587,7 +584,10 @@ func (m *Manager) applyOffset(parentCtx context.Context, offsetBps float64, targ
 
 // Submits a single quote.
 func (m *Manager) submitQuote(ctx context.Context, quote model.PutQuoteRequest) error {
-	err := m.rfqClient.PutQuote(ctx, &quote)
+	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
+	defer quoteCancel()
+
+	err := m.rfqClient.PutQuote(quoteCtx, &quote)
 	if err != nil {
 		return fmt.Errorf("error submitting quote: %w", err)
 	}

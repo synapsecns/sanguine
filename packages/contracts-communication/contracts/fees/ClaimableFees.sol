@@ -24,11 +24,11 @@ abstract contract ClaimableFees is ClaimableFeesEvents, IClaimableFees {
     function claimFees() external {
         uint256 amount = getClaimableAmount();
         if (amount == 0) {
-            revert ClaimableFees__ZeroAmount();
+            revert ClaimableFees__FeeAmountZero();
         }
         address recipient = getFeeRecipient();
         if (recipient == address(0)) {
-            revert ClaimableFees__FeeRecipientNotSet();
+            revert ClaimableFees__FeeRecipientZeroAddress();
         }
         // Subtract the claimer reward from the total amount
         uint256 reward = _getClaimerReward(amount);
@@ -68,7 +68,7 @@ abstract contract ClaimableFees is ClaimableFeesEvents, IClaimableFees {
     function _getClaimerReward(uint256 amount) internal view returns (uint256) {
         uint256 fraction = getClaimerFraction();
         if (fraction > MAX_CLAIMER_FRACTION) {
-            revert ClaimableFees__ClaimerFractionExceedsMax(fraction);
+            revert ClaimableFees__ClaimerFractionAboveMax(fraction, MAX_CLAIMER_FRACTION);
         }
         // The returned value is in the range [0, amount * 0.01]
         return (amount * fraction) / FEE_PRECISION;

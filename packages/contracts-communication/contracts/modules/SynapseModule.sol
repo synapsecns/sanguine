@@ -76,7 +76,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     /// @inheritdoc ISynapseModule
     function setFeeRecipient(address feeRecipient) external onlyOwner {
         if (feeRecipient == address(0)) {
-            revert SynapseModule__ZeroAddress();
+            revert SynapseModule__FeeRecipientZeroAddress();
         }
         _feeRecipient = feeRecipient;
         emit FeeRecipientSet(feeRecipient);
@@ -85,7 +85,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     /// @inheritdoc ISynapseModule
     function setClaimerFraction(uint256 claimerFraction) external onlyOwner {
         if (claimerFraction > MAX_CLAIMER_FRACTION) {
-            revert ClaimableFees__ClaimerFractionExceedsMax(claimerFraction);
+            revert ClaimableFees__ClaimerFractionAboveMax(claimerFraction, MAX_CLAIMER_FRACTION);
         }
         _claimerFraction = claimerFraction;
         emit ClaimerFractionSet(claimerFraction);
@@ -245,7 +245,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     function _getSynapseGasOracle() internal view returns (ISynapseGasOracle synapseGasOracle) {
         synapseGasOracle = ISynapseGasOracle(gasOracle);
         if (address(synapseGasOracle) == address(0)) {
-            revert SynapseModule__GasOracleNotSet();
+            revert SynapseModule__GasOracleZeroAddress();
         }
     }
 }
