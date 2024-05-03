@@ -22,7 +22,13 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
 
     constructor(address admin) ICAppV1(admin) {}
 
-    /// @inheritdoc IMessageBus
+    /// @notice Sends a message to a receiving contract address on another chain.
+    /// Sender must make sure that the message is unique and not a duplicate message.
+    /// @dev Legacy MessageBus only supports V1 of the options format, which specifies only the gas limit.
+    /// @param receiver     The bytes32 address of the destination contract to be called
+    /// @param dstChainId   The destination chain ID - typically, standard EVM chain ID, but differs on nonEVM chains
+    /// @param message      The arbitrary payload to pass to the destination chain receiver
+    /// @param options      Versioned struct used to instruct relayer on how to proceed with gas limits
     function sendMessage(
         bytes32 receiver,
         uint256 dstChainId,
@@ -68,24 +74,35 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         });
     }
 
-    /// @inheritdoc IMessageBus
+    /// @notice Allows the Interchain Governor to set the gas buffer for sending the interchain messages.
+    /// Note: The gas buffer is added to the gas limit requested by the sending app to cover the gas usage
+    /// of the MessageBus contract on the destination chain.
     function setGasBuffer(uint64 gasBuffer_) external onlyRole(IC_GOVERNOR_ROLE) {
         gasBuffer = gasBuffer_;
         emit GasBufferSet(gasBuffer_);
     }
 
-    /// @inheritdoc IMessageBus
+    /// @notice Allows the Interchain Governor to set the message length in bytes to be used for fee estimation.
+    /// This does not affect the sendMessage function, but only the fee estimation.
     function setMessageLengthEstimate(uint256 length) external onlyRole(IC_GOVERNOR_ROLE) {
         messageLengthEstimate = length;
         emit MessageLengthEstimateSet(length);
     }
 
-    /// @inheritdoc IMessageBus
+    /// @notice Returns srcGasToken fee to charge in wei for the cross-chain message based on the gas limit.
+    /// @dev This function is using the preset message length to estimate the gas fee. This should cover most cases,
+    /// if the message length is lower than the preset value. For more accurate fee estimation, use estimateFeeExact.
+    /// @param dstChainId   The destination chain ID - typically, standard EVM chain ID, but differs on nonEVM chains
+    /// @param options      Versioned struct used to instruct relayer on how to proceed with gas limits
     function estimateFee(uint256 dstChainId, bytes calldata options) external view returns (uint256) {
         return estimateFeeExact(dstChainId, options, messageLengthEstimate);
     }
 
-    /// @inheritdoc IMessageBus
+    /// @notice Returns srcGasToken fee to charge in wei for the cross-chain message based on the message length
+    /// and the gas limit.
+    /// @param dstChainId   The destination chain ID - typically, standard EVM chain ID, but differs on nonEVM chains
+    /// @param options      Versioned struct used to instruct relayer on how to proceed with gas limits
+    /// @param messageLen   The length of the message to be sent in bytes
     function estimateFeeExact(
         uint256 dstChainId,
         bytes calldata options,
