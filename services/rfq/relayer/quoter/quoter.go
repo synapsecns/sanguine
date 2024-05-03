@@ -537,6 +537,7 @@ func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int,
 func (m *Manager) submitQuote(ctx context.Context, quote model.PutQuoteRequest) error {
 	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
 	defer quoteCancel()
+
 	err := m.rfqClient.PutQuote(quoteCtx, &quote)
 	if err != nil {
 		return fmt.Errorf("error submitting quote: %w", err)
