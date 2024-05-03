@@ -6,11 +6,11 @@ import {AppConfigV1} from "../libs/AppConfig.sol";
 import {IInterchainApp} from "./IInterchainApp.sol";
 
 interface IInterchainAppV1 is IInterchainApp {
-    error InterchainApp__InvalidAppConfig(uint256 requiredResponses, uint256 optimisticPeriod);
+    error InterchainApp__AppConfigInvalid(uint256 requiredResponses, uint256 optimisticPeriod);
+    error InterchainApp__LinkedAppNotEVM(bytes32 linkedApp);
     error InterchainApp__ModuleAlreadyAdded(address module);
     error InterchainApp__ModuleNotAdded(address module);
     error InterchainApp__ModuleZeroAddress();
-    error InterchainApp__NotEVMLinkedApp(bytes32 linkedApp);
     error InterchainApp__RemoteAppZeroAddress();
 
     /// @notice Allows the owner to add the interchain client to the allowed clients set,

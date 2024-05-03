@@ -99,7 +99,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             return;
         }
         // Overwriting an existing batch with a different one is not allowed
-        revert InterchainDB__ConflictingBatches(msg.sender, existingBatch.batchRoot, batch);
+        revert InterchainDB__BatchConflict(msg.sender, existingBatch.batchRoot, batch);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -125,7 +125,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         uint256 size = getBatchSize(dbNonce);
         if (start > end || end > size) {
-            revert InterchainDB__InvalidEntryRange(dbNonce, start, end);
+            revert InterchainDB__EntryRangeInvalid(dbNonce, start, end);
         }
         leafs = new bytes32[](end - start);
         for (uint64 i = start; i < end; ++i) {
@@ -310,7 +310,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         uint256 len = srcModules.length;
         if (len == 0) {
-            revert InterchainDB__NoModulesSpecified();
+            revert InterchainDB__ModulesNotProvided();
         }
         fees = new uint256[](len);
         for (uint256 i = 0; i < len; ++i) {

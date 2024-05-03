@@ -161,7 +161,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         emit InterchainBatchVerified(address(module), batch.srcChainId, batch.dbNonce, batch.batchRoot);
     }
 
-    function expectRevertConflictingBatches(
+    function expectRevertBatchConflict(
         InterchainModuleMock module,
         InterchainBatch memory existingBatch,
         InterchainBatch memory newBatch
@@ -170,10 +170,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
     {
         vm.expectRevert(
             abi.encodeWithSelector(
-                IInterchainDB.InterchainDB__ConflictingBatches.selector,
-                address(module),
-                existingBatch.batchRoot,
-                newBatch
+                IInterchainDB.InterchainDB__BatchConflict.selector, address(module), existingBatch.batchRoot, newBatch
             )
         );
     }
@@ -319,7 +316,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         InterchainBatch memory existingBatch = getMockBatch(SRC_CHAIN_ID_0, 0);
         InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 0);
         bytes memory versionedEmptyBatch = getVersionedBatch(emptyBatch);
-        expectRevertConflictingBatches(moduleA, existingBatch, emptyBatch);
+        expectRevertBatchConflict(moduleA, existingBatch, emptyBatch);
         verifyBatch(moduleA, versionedEmptyBatch);
     }
 
@@ -328,7 +325,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         InterchainBatch memory existingBatch = getMockBatch(SRC_CHAIN_ID_0, 0);
         InterchainBatch memory conflictingBatch = getFakeBatch(SRC_CHAIN_ID_0, 0);
         bytes memory versionedConflictingBatch = getVersionedBatch(conflictingBatch);
-        expectRevertConflictingBatches(moduleA, existingBatch, conflictingBatch);
+        expectRevertBatchConflict(moduleA, existingBatch, conflictingBatch);
         verifyBatch(moduleA, versionedConflictingBatch);
     }
 

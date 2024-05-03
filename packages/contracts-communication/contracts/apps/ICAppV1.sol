@@ -90,7 +90,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// @inheritdoc IInterchainAppV1
     function setAppConfigV1(uint256 requiredResponses, uint256 optimisticPeriod) external onlyRole(IC_GOVERNOR_ROLE) {
         if (requiredResponses == 0 || optimisticPeriod == 0) {
-            revert InterchainApp__InvalidAppConfig(requiredResponses, optimisticPeriod);
+            revert InterchainApp__AppConfigInvalid(requiredResponses, optimisticPeriod);
         }
         _requiredResponses = SafeCast.toUint16(requiredResponses);
         _optimisticPeriod = SafeCast.toUint48(optimisticPeriod);
@@ -142,7 +142,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
         bytes32 linkedApp = _linkedApp[chainId];
         linkedAppEVM = linkedApp.bytes32ToAddress();
         if (linkedAppEVM.addressToBytes32() != linkedApp) {
-            revert InterchainApp__NotEVMLinkedApp(linkedApp);
+            revert InterchainApp__LinkedAppNotEVM(linkedApp);
         }
     }
 

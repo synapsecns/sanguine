@@ -58,7 +58,7 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
 
     function test_addInterchainClient_dontUpdateLatest_hasClients_revert_sameClient() public {
         addInterchainClient({client: icClient, updateLatest: true});
-        expectRevertClientAlreadyAdded(icClient);
+        expectRevertInterchainClientAlreadyAdded(icClient);
         addInterchainClient({client: icClient, updateLatest: false});
     }
 
@@ -194,7 +194,7 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
     function test_setLatestInterchainClient_noLatestSet_revert_alreadyLatest() public {
         addInterchainClient({client: icClient, updateLatest: false});
         addInterchainClient({client: newClient, updateLatest: false});
-        expectRevertAlreadyLatestClient(address(0));
+        expectRevertInterchainClientAlreadyLatest(address(0));
         setLatestInterchainClient(address(0));
     }
 
@@ -222,7 +222,7 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
 
     function test_setLatestInterchainClient_revert_alreadyLatest() public {
         addInterchainClient({client: icClient, updateLatest: true});
-        expectRevertAlreadyLatestClient(icClient);
+        expectRevertInterchainClientAlreadyLatest(icClient);
         setLatestInterchainClient(icClient);
     }
 
@@ -302,7 +302,7 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
         bytes32 nonEVM = keccak256("nonEVM");
         vm.prank(governor);
         appHarness.linkRemoteApp({chainId: REMOTE_CHAIN_ID, remoteApp: nonEVM});
-        expectRevertNotEVMLinkedApp(nonEVM);
+        expectRevertLinkedAppNotEVM(nonEVM);
         appHarness.getLinkedAppEVM(REMOTE_CHAIN_ID);
     }
 
@@ -418,19 +418,19 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
     }
 
     function test_setAppConfigV1_revert_zeroConfirmations() public {
-        expectRevertInvalidAppConfig(0, APP_OPTIMISTIC_PERIOD);
+        expectRevertAppConfigInvalid(0, APP_OPTIMISTIC_PERIOD);
         vm.prank(governor);
         appHarness.setAppConfigV1(0, APP_OPTIMISTIC_PERIOD);
     }
 
     function test_setAppConfigV1_revert_zeroOptimisticPeriod() public {
-        expectRevertInvalidAppConfig(APP_REQUIRED_RESPONSES, 0);
+        expectRevertAppConfigInvalid(APP_REQUIRED_RESPONSES, 0);
         vm.prank(governor);
         appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES, 0);
     }
 
     function test_setAppConfigV1_revert_zeroedAppConfig() public {
-        expectRevertInvalidAppConfig(0, 0);
+        expectRevertAppConfigInvalid(0, 0);
         vm.prank(governor);
         appHarness.setAppConfigV1(0, 0);
     }

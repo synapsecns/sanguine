@@ -34,7 +34,7 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
     {
         address dstReceiver = TypeCasts.bytes32ToAddress(receiver);
         if (TypeCasts.addressToBytes32(dstReceiver) != receiver) {
-            revert MessageBus__NotEVMReceiver(receiver);
+            revert MessageBus__ReceiverNotEVM(receiver);
         }
         // Read the nonce and gas buffer from the same storage slot.
         (uint64 cachedNonce, uint64 cachedGasBuffer) = (nonce, gasBuffer);

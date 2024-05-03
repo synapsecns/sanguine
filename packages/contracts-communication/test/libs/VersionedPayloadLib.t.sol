@@ -14,9 +14,9 @@ contract VersionedPayloadLibraryTest is Test {
         libHarness = new VersionedPayloadLibHarness();
     }
 
-    function expectRevertTooShort(bytes memory versionedPayload) internal {
+    function expectRevertPayloadTooShort(bytes memory versionedPayload) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(VersionedPayloadLib.VersionedPayload__TooShort.selector, versionedPayload)
+            abi.encodeWithSelector(VersionedPayloadLib.VersionedPayload__PayloadTooShort.selector, versionedPayload)
         );
     }
 
@@ -37,27 +37,27 @@ contract VersionedPayloadLibraryTest is Test {
         assertEq(libHarness.getPayloadFromMemory(versionedPayload), payload);
     }
 
-    function test_getVersion_revert_tooShort(bytes calldata data) public {
+    function test_getVersion_revert_PayloadTooShort(bytes calldata data) public {
         bytes memory invalidPayload = makeInvalid(data);
-        expectRevertTooShort(invalidPayload);
+        expectRevertPayloadTooShort(invalidPayload);
         libHarness.getVersion(invalidPayload);
     }
 
-    function test_getPayload_revert_tooShort(bytes calldata data) public {
+    function test_getPayload_revert_PayloadTooShort(bytes calldata data) public {
         bytes memory invalidPayload = makeInvalid(data);
-        expectRevertTooShort(invalidPayload);
+        expectRevertPayloadTooShort(invalidPayload);
         libHarness.getPayload(invalidPayload);
     }
 
-    function test_getVersionFromMemory_revert_tooShort(bytes calldata data) public {
+    function test_getVersionFromMemory_revert_PayloadTooShort(bytes calldata data) public {
         bytes memory invalidPayload = makeInvalid(data);
-        expectRevertTooShort(invalidPayload);
+        expectRevertPayloadTooShort(invalidPayload);
         libHarness.getVersionFromMemory(invalidPayload);
     }
 
-    function test_getPayloadFromMemory_revert_tooShort(bytes calldata data) public {
+    function test_getPayloadFromMemory_revert_PayloadTooShort(bytes calldata data) public {
         bytes memory invalidPayload = makeInvalid(data);
-        expectRevertTooShort(invalidPayload);
+        expectRevertPayloadTooShort(invalidPayload);
         libHarness.getPayloadFromMemory(invalidPayload);
     }
 

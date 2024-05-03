@@ -25,14 +25,14 @@ library AppConfigLib {
 
     uint16 internal constant APP_CONFIG_V1 = 1;
 
-    error AppConfigLib__IncorrectVersion(uint16 version);
+    error AppConfigLib__VersionInvalid(uint16 version);
 
     /// @notice Decodes app config (V1 or higher) from a bytes format back into an AppConfigV1 struct.
     /// @param data         The app config data in bytes format.
     function decodeAppConfigV1(bytes memory data) internal view returns (AppConfigV1 memory) {
         uint16 version = data.getVersionFromMemory();
         if (version < APP_CONFIG_V1) {
-            revert AppConfigLib__IncorrectVersion(version);
+            revert AppConfigLib__VersionInvalid(version);
         }
         // Structs of the same version will always be decoded correctly.
         // Following versions will be decoded correctly if they have the same fields as the previous version,

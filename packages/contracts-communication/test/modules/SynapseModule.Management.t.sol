@@ -81,7 +81,9 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
 
     function test_addVerifier_revert_alreadyAdded() public {
         basicSetup();
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__AlreadySigner.selector, VERIFIER_1));
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerAlreadyAdded.selector, VERIFIER_1)
+        );
         vm.prank(owner);
         module.addVerifier(VERIFIER_1);
     }
@@ -115,7 +117,9 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     function test_addVerifiers_revert_alreadyAdded() public {
         vm.prank(owner);
         module.addVerifier(VERIFIER_2);
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__AlreadySigner.selector, VERIFIER_2));
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerAlreadyAdded.selector, VERIFIER_2)
+        );
         vm.prank(owner);
         module.addVerifiers(allVerifiers);
     }
@@ -150,7 +154,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     }
 
     function test_removeVerifier_revert_notAdded() public {
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotSigner.selector, VERIFIER_1));
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerNotAdded.selector, VERIFIER_1));
         vm.prank(owner);
         module.removeVerifier(VERIFIER_1);
     }
@@ -186,7 +190,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     function test_removeVerifiers_revert_notAdded() public {
         vm.prank(owner);
         module.addVerifier(VERIFIER_2);
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotSigner.selector, VERIFIER_1));
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerNotAdded.selector, VERIFIER_1));
         vm.prank(owner);
         module.removeVerifiers(allVerifiers);
     }

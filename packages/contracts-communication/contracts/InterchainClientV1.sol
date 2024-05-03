@@ -249,7 +249,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         linkedClientEVM = linkedClient.bytes32ToAddress();
         // Check that the linked client address fits into the EVM address space
         if (linkedClientEVM.addressToBytes32() != linkedClient) {
-            revert InterchainClientV1__NotEVMClient(linkedClient);
+            revert InterchainClientV1__LinkedClientNotEVM(linkedClient);
         }
     }
 

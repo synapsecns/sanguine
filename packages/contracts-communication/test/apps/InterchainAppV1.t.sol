@@ -97,10 +97,10 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         vm.expectRevert(IInterchainAppV1.InterchainApp__RemoteAppZeroAddress.selector);
     }
 
-    function expectRevertInvalidAppConfig(uint256 requiredResponses, uint256 optimisticPeriod) internal {
+    function expectRevertAppConfigInvalid(uint256 requiredResponses, uint256 optimisticPeriod) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
-                IInterchainAppV1.InterchainApp__InvalidAppConfig.selector, requiredResponses, optimisticPeriod
+                IInterchainAppV1.InterchainApp__AppConfigInvalid.selector, requiredResponses, optimisticPeriod
             )
         );
     }
@@ -117,20 +117,24 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         vm.expectRevert(IInterchainAppV1.InterchainApp__ModuleZeroAddress.selector);
     }
 
-    function expectRevertNotEVMLinkedApp(bytes32 linkedApp) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainAppV1.InterchainApp__NotEVMLinkedApp.selector, linkedApp));
+    function expectRevertLinkedAppNotEVM(bytes32 linkedApp) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainAppV1.InterchainApp__LinkedAppNotEVM.selector, linkedApp));
     }
 
-    function expectRevertAlreadyLatestClient(address client) internal {
-        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__AlreadyLatestClient.selector, client));
+    function expectRevertInterchainClientAlreadyLatest(address client) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(AbstractICApp.InterchainApp__InterchainClientAlreadyLatest.selector, client)
+        );
     }
 
     function expectRevertBalanceBelowMin(uint256 actual, uint256 required) internal {
         vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__BalanceBelowMin.selector, actual, required));
     }
 
-    function expectRevertClientAlreadyAdded(address client) internal {
-        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__ClientAlreadyAdded.selector, client));
+    function expectRevertInterchainClientAlreadyAdded(address client) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(AbstractICApp.InterchainApp__InterchainClientAlreadyAdded.selector, client)
+        );
     }
 
     function expectRevertInterchainClientZeroAddress() internal {

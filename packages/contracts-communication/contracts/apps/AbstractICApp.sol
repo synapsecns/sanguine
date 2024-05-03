@@ -12,11 +12,11 @@ import {TypeCasts} from "../libs/TypeCasts.sol";
 abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     using TypeCasts for address;
 
-    error InterchainApp__AlreadyLatestClient(address client);
     error InterchainApp__BalanceBelowMin(uint256 balance, uint256 minRequired);
     error InterchainApp__CallerNotInterchainClient(address caller);
     error InterchainApp__ChainIdNotRemote(uint64 chainId);
-    error InterchainApp__ClientAlreadyAdded(address client);
+    error InterchainApp__InterchainClientAlreadyAdded(address client);
+    error InterchainApp__InterchainClientAlreadyLatest(address client);
     error InterchainApp__InterchainClientZeroAddress();
     error InterchainApp__ReceiverZeroAddress(uint64 chainId);
     error InterchainApp__SrcSenderNotAllowed(uint64 srcChainId, bytes32 sender);
@@ -60,7 +60,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
             revert InterchainApp__InterchainClientZeroAddress();
         }
         if (_isInterchainClient(client)) {
-            revert InterchainApp__ClientAlreadyAdded(client);
+            revert InterchainApp__InterchainClientAlreadyAdded(client);
         }
         _toggleClientState(client, true);
         emit InterchainClientAdded(client);
@@ -92,7 +92,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
             revert InterchainApp__CallerNotInterchainClient(client);
         }
         if (client == _getLatestClient()) {
-            revert InterchainApp__AlreadyLatestClient(client);
+            revert InterchainApp__InterchainClientAlreadyLatest(client);
         }
         _storeLatestClient(client);
         emit LatestClientSet(client);

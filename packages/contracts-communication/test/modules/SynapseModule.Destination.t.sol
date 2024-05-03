@@ -145,9 +145,9 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         emit BatchVerified(batch.srcChainId, encodedBatch, ethSignedHash);
     }
 
-    function expectRevertIncorrectSignaturesLength(uint256 length) internal {
+    function expectRevertSignaturesPayloadLengthInvalid(uint256 length) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__IncorrectSignaturesLength.selector, length)
+            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignaturesPayloadLengthInvalid.selector, length)
         );
     }
 
@@ -333,20 +333,20 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
-    function test_verifyRemoteBatch_revertIncorrectSignaturesLengthTooShort() public {
+    function test_verifyRemoteBatch_revertSignaturesPayloadLengthInvalidTooShort() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_1, PK_0));
         bytes memory signaturesShort = new bytes(signatures.length - 1);
         for (uint256 i = 0; i < signaturesShort.length; ++i) {
             signaturesShort[i] = signatures[i];
         }
-        expectRevertIncorrectSignaturesLength(signaturesShort.length);
+        expectRevertSignaturesPayloadLengthInvalid(signaturesShort.length);
         verifyRemoteBatch(mockVersionedBatch, signaturesShort);
     }
 
-    function test_verifyRemoteBatch_revertIncorrectSignaturesLengthTooLong() public {
+    function test_verifyRemoteBatch_revertSignaturesPayloadLengthInvalidTooLong() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_1, PK_0));
         bytes memory signaturesLong = bytes.concat(signatures, bytes1(0x2A));
-        expectRevertIncorrectSignaturesLength(signaturesLong.length);
+        expectRevertSignaturesPayloadLengthInvalid(signaturesLong.length);
         verifyRemoteBatch(mockVersionedBatch, signaturesLong);
     }
 }

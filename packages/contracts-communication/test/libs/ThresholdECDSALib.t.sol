@@ -45,18 +45,20 @@ contract ThresholdECDSALibTest is Test {
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
-    function expectAlreadySignerError(address account) internal {
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__AlreadySigner.selector, account));
+    function expectSignerAlreadyAddedError(address account) internal {
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerAlreadyAdded.selector, account));
     }
 
-    function expectIncorrectSignaturesLengthError(uint256 length) internal {
+    function expectSignaturesPayloadLengthInvalidError(uint256 length) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__IncorrectSignaturesLength.selector, length)
+            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignaturesPayloadLengthInvalid.selector, length)
         );
     }
 
-    function expectInvalidSignatureError(bytes memory signature) internal {
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__InvalidSignature.selector, signature));
+    function expectSignerRecoveryFailedError(bytes memory signature) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerRecoveryFailed.selector, signature)
+        );
     }
 
     function expectSignaturesAmountBelowThresholdError(uint256 provided, uint256 threshold) internal {
@@ -67,8 +69,8 @@ contract ThresholdECDSALibTest is Test {
         );
     }
 
-    function expectNotSignerError(address account) internal {
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotSigner.selector, account));
+    function expectSignerNotAddedError(address account) internal {
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerNotAdded.selector, account));
     }
 
     function expectRecoveredSignersNotSortedError() internal {
@@ -194,12 +196,12 @@ contract ThresholdECDSALibTest is Test {
 
     // ══════════════════════════════════════════════ TESTS: REVERTS ═══════════════════════════════════════════════════
 
-    function test_addSigner_revert_alreadySigner() public {
-        expectAlreadySignerError(SIGNER_0);
+    function test_addSigner_revert_SignerAlreadyAdded() public {
+        expectSignerAlreadyAddedError(SIGNER_0);
         libHarness.addSigner(SIGNER_0);
-        expectAlreadySignerError(SIGNER_1);
+        expectSignerAlreadyAddedError(SIGNER_1);
         libHarness.addSigner(SIGNER_1);
-        expectAlreadySignerError(SIGNER_2);
+        expectSignerAlreadyAddedError(SIGNER_2);
         libHarness.addSigner(SIGNER_2);
     }
 
@@ -208,8 +210,8 @@ contract ThresholdECDSALibTest is Test {
         libHarness.addSigner(address(0));
     }
 
-    function test_removeSigner_revert_notSigner() public {
-        expectNotSignerError(SIGNER_3);
+    function test_removeSigner_revert_SignerNotAdded() public {
+        expectSignerNotAddedError(SIGNER_3);
         libHarness.removeSigner(SIGNER_3);
     }
 
@@ -333,7 +335,7 @@ contract ThresholdECDSALibTest is Test {
         libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0));
     }
 
-    function test_verifySignedHash_revert_ThresholdZero_notSignerSignature() public {
+    function test_verifySignedHash_revert_ThresholdZero_SignerNotAddedSignature() public {
         // Set up a new harness without setting up the threshold
         libHarness = new ThresholdECDSALibHarness();
         libHarness.addSigner(SIGNER_0);
@@ -346,17 +348,17 @@ contract ThresholdECDSALibTest is Test {
         libHarness.verifySignedHash(HASH_0, new bytes(0));
     }
 
-    function test_verifySignedHash_revert_incorrectSignaturesLength(uint256 length) public {
+    function test_verifySignedHash_revert_SignaturesPayloadLengthInvalid(uint256 length) public {
         length = bound(length, 0, 1000);
         vm.assume(length % 65 != 0);
-        expectIncorrectSignaturesLengthError(length);
+        expectSignaturesPayloadLengthInvalidError(length);
         libHarness.verifySignedHash(HASH_0, new bytes(length));
     }
 
-    function test_verifySignedHash_revert_invalidSignature() public {
+    function test_verifySignedHash_revert_SignerRecoveryFailed() public {
         bytes memory corruptSig0 = sig_0_0;
         corruptSig0[64] = 0xFF;
-        expectInvalidSignatureError(corruptSig0);
+        expectSignerRecoveryFailedError(corruptSig0);
         libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, corruptSig0));
     }
 }

@@ -198,8 +198,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         );
     }
 
-    function expectRevertIncorrectEntryIndex(uint64 entryIndex) internal {
-        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__IncorrectEntryIndex.selector, entryIndex));
+    function expectRevertEntryIndexNotZero(uint64 entryIndex) internal {
+        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__EntryIndexNotZero.selector, entryIndex));
     }
 
     function expectRevertFeeAmountBelowMin(uint256 feeAmount, uint256 minRequired) internal {
@@ -208,18 +208,18 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         );
     }
 
-    function expectRevertIncorrectProof() internal {
-        vm.expectRevert(BatchingV1Lib.BatchingV1__IncorrectProof.selector);
+    function expectRevertProofNotEmpty() internal {
+        vm.expectRevert(BatchingV1Lib.BatchingV1__ProofNotEmpty.selector);
     }
 
-    function expectRevertInvalidEntryRange(uint64 dbNonce, uint64 start, uint64 end) internal {
+    function expectRevertEntryRangeInvalid(uint64 dbNonce, uint64 start, uint64 end) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainDB.InterchainDB__InvalidEntryRange.selector, dbNonce, start, end)
+            abi.encodeWithSelector(IInterchainDB.InterchainDB__EntryRangeInvalid.selector, dbNonce, start, end)
         );
     }
 
-    function expectRevertNoModulesSpecified() internal {
-        vm.expectRevert(IInterchainDB.InterchainDB__NoModulesSpecified.selector);
+    function expectRevertModulesNotProvided() internal {
+        vm.expectRevert(IInterchainDB.InterchainDB__ModulesNotProvided.selector);
     }
 
     function expectRevertChainIdNotRemote(uint64 chainId) internal {
@@ -448,8 +448,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         requestVerification(requestCaller, incorrectFee, 0, twoModules);
     }
 
-    function test_requestVerification_revert_noModulesSpecified() public {
-        expectRevertNoModulesSpecified();
+    function test_requestVerification_revert_ModulesNotProvided() public {
+        expectRevertModulesNotProvided();
         requestVerification(requestCaller, MODULE_A_FEE, 0, new address[](0));
     }
 
@@ -653,9 +653,9 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         writeEntryWithVerification(incorrectFee, writerF, dataHash, twoModules);
     }
 
-    function test_writeEntryWithVerification_revert_noModulesSpecified() public {
+    function test_writeEntryWithVerification_revert_ModulesNotProvided() public {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        expectRevertNoModulesSpecified();
+        expectRevertModulesNotProvided();
         writeEntryWithVerification(0, writerF, dataHash, new address[](0));
     }
 
@@ -669,7 +669,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     // ═════════════════════════════════════════ TESTS: GET INTERCHAIN FEE ═════════════════════════════════════════════
 
     function test_getInterchainFee_noModules() public {
-        expectRevertNoModulesSpecified();
+        expectRevertModulesNotProvided();
         icDB.getInterchainFee(DST_CHAIN_ID, new address[](0));
     }
 
@@ -726,27 +726,27 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     }
 
     function test_getBatchLeafsPaginated_revert_invalidRange_finalized() public {
-        expectRevertInvalidEntryRange(1, 0, 2);
+        expectRevertEntryRangeInvalid(1, 0, 2);
         icDB.getBatchLeafsPaginated(1, 0, 2);
-        expectRevertInvalidEntryRange(3, 1, 0);
+        expectRevertEntryRangeInvalid(3, 1, 0);
         icDB.getBatchLeafsPaginated(3, 1, 0);
     }
 
     function test_getBatchLeafsPaginated_revert_invalidRange_nextNonce() public {
-        expectRevertInvalidEntryRange(INITIAL_DB_NONCE, 0, 1);
+        expectRevertEntryRangeInvalid(INITIAL_DB_NONCE, 0, 1);
         icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE, 0, 1);
-        expectRevertInvalidEntryRange(INITIAL_DB_NONCE, 1, 1);
+        expectRevertEntryRangeInvalid(INITIAL_DB_NONCE, 1, 1);
         icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE, 1, 1);
-        expectRevertInvalidEntryRange(INITIAL_DB_NONCE, 1, 0);
+        expectRevertEntryRangeInvalid(INITIAL_DB_NONCE, 1, 0);
         icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE, 1, 0);
     }
 
     function test_getBatchLeafsPaginated_revert_invalidRange_hugeNonce() public {
-        expectRevertInvalidEntryRange(2 ** 32, 0, 1);
+        expectRevertEntryRangeInvalid(2 ** 32, 0, 1);
         icDB.getBatchLeafsPaginated(2 ** 32, 0, 1);
-        expectRevertInvalidEntryRange(2 ** 32, 1, 1);
+        expectRevertEntryRangeInvalid(2 ** 32, 1, 1);
         icDB.getBatchLeafsPaginated(2 ** 32, 1, 1);
-        expectRevertInvalidEntryRange(2 ** 32, 1, 0);
+        expectRevertEntryRangeInvalid(2 ** 32, 1, 0);
         icDB.getBatchLeafsPaginated(2 ** 32, 1, 0);
     }
 
@@ -861,13 +861,13 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_getBatchRoot_revert_nonZeroEntryIndex() public {
         InterchainEntry memory entry = getInitialEntry(0);
         entry.entryIndex = 1;
-        expectRevertIncorrectEntryIndex(1);
+        expectRevertEntryIndexNotZero(1);
         icDB.getBatchRoot(entry, new bytes32[](0));
     }
 
     function test_getBatchRoot_revert_nonEmptyProof() public {
         InterchainEntry memory entry = getInitialEntry(0);
-        expectRevertIncorrectProof();
+        expectRevertProofNotEmpty();
         icDB.getBatchRoot(entry, new bytes32[](1));
     }
 }

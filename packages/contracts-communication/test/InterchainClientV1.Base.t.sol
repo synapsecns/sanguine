@@ -94,8 +94,8 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertIncorrectEntryIndex(uint64 entryIndex) internal {
-        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__IncorrectEntryIndex.selector, entryIndex));
+    function expectRevertEntryIndexNotZero(uint64 entryIndex) internal {
+        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__EntryIndexNotZero.selector, entryIndex));
     }
 
     function expectRevertMsgValueMismatch(uint256 actual, uint256 required) internal {
@@ -104,8 +104,8 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertIncorrectProof() internal {
-        vm.expectRevert(BatchingV1Lib.BatchingV1__IncorrectProof.selector);
+    function expectRevertProofNotEmpty() internal {
+        vm.expectRevert(BatchingV1Lib.BatchingV1__ProofNotEmpty.selector);
     }
 
     function expectRevertTxVersionMismatch(uint16 version, uint16 required) internal {
@@ -134,8 +134,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertNotEVMClient(bytes32 client) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotEVMClient.selector, client));
+    function expectRevertLinkedClientNotEVM(bytes32 client) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__LinkedClientNotEVM.selector, client)
+        );
     }
 
     function expectRevertChainIdNotRemote(uint64 chainId) internal {
@@ -182,8 +184,8 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         vm.expectRevert(IInterchainClientV1.InterchainClientV1__ReceiverZeroAddress.selector);
     }
 
-    function expectRevertIncorrectVersion(uint8 version) internal {
-        vm.expectRevert(abi.encodeWithSelector(OptionsLib.OptionsLib__IncorrectVersion.selector, version));
+    function expectRevertVersionInvalid(uint8 version) internal {
+        vm.expectRevert(abi.encodeWithSelector(OptionsLib.OptionsLib__VersionInvalid.selector, version));
     }
 
     function expectRevertOwnableUnauthorizedAccount(address account) internal {

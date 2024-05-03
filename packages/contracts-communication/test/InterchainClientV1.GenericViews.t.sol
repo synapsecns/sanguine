@@ -44,7 +44,7 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
     }
 
     function test_getLinkedClientEVM_revert_clientNotEVM() public {
-        expectRevertNotEVMClient(MOCK_REMOTE_CLIENT);
+        expectRevertLinkedClientNotEVM(MOCK_REMOTE_CLIENT);
         icClient.getLinkedClientEVM(REMOTE_CHAIN_ID);
     }
 
