@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.4.1...contracts-communication@1.5.0) (2024-05-03)
+
+
+### Features
+
+* **contracts-communication:** expose batch getter in `InterchainDB` ([#2552](https://github.com/synapsecns/sanguine/issues/2552)) ([3659073](https://github.com/synapsecns/sanguine/commit/3659073c8cfe3e3ed09d742b3bcc61db3dc81046))
+
+
+
+
+
 ## [1.4.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.4.0...contracts-communication@1.4.1) (2024-05-03)
 
 
