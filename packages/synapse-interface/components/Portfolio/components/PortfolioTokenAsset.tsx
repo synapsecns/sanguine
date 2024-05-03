@@ -40,13 +40,6 @@ export const PortfolioTokenAsset = ({
   const dispatch = useAppDispatch()
   const { fromChainId, fromToken } = useBridgeState()
   const { icon, symbol, decimals, addresses } = token
-
-  const {
-    maxBridgeableGas,
-    hasValidGasEstimateInputs,
-    estimateBridgeableBalanceCallback,
-  } = useGasEstimator()
-
   const tokenAddress = addresses[portfolioChainId]
   const tokenDecimals = isNumber(decimals)
     ? decimals
@@ -54,43 +47,17 @@ export const PortfolioTokenAsset = ({
 
   const parsedBalance = getParsedBalance(balance, tokenDecimals, 3)
   const parsedBalanceLong = getParsedBalance(balance, tokenDecimals, 8)
-  const fullParsedBalance = formatBigIntToString(balance, tokenDecimals)
 
   const isDisabled = false
   const isPortfolioChainSelected = fromChainId === portfolioChainId
   const isTokenSelected = isPortfolioChainSelected && fromToken === token
   const isGasToken = tokenAddress === zeroAddress
 
-  const onMaxBalance = useCallback(async () => {
-    if (hasValidGasEstimateInputs()) {
-      const bridgeableBalance = await estimateBridgeableBalanceCallback()
-
-      if (isNull(bridgeableBalance)) {
-        dispatch(updateFromValue(fullParsedBalance))
-      } else if (bridgeableBalance > 0) {
-        dispatch(updateFromValue(bridgeableBalance?.toString()))
-      } else {
-        dispatch(updateFromValue('0.0'))
-        toast.error('Gas fees likely exceeds your balance.', {
-          id: 'toast-error-not-enough-gas',
-          duration: 10000,
-        })
-      }
-    } else {
-      dispatch(updateFromValue(fullParsedBalance))
-    }
-  }, [
-    fromChainId,
-    fromToken,
-    fullParsedBalance,
-    hasValidGasEstimateInputs,
-    estimateBridgeableBalanceCallback,
-  ])
+  const { maxBridgeableGas } = useGasEstimator()
 
   const handleFromSelectionCallback = useCallback(async () => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
-    onMaxBalance()
     handleFocusOnBridgeInput()
   }, [token, portfolioChainId])
 
@@ -102,14 +69,7 @@ export const PortfolioTokenAsset = ({
         ${isTokenSelected ? 'bg-tint border-surface' : 'border-transparent'}
       `}
     >
-      <div
-        onClick={handleFromSelectionCallback}
-        className={`
-          flex items-center gap-2
-          pl-2 pr-4 py-2 cursor-pointer rounded
-          hover:bg-surface active:opacity-70
-        `}
-      >
+      <div className="flex items-center gap-2 py-2 pl-2 pr-4 rounded">
         <Image
           loading="lazy"
           alt={`${symbol} img`}
