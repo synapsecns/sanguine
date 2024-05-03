@@ -33,15 +33,14 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         if (msg.sender != INTERCHAIN_DB) {
             revert InterchainModule__CallerNotInterchainDB(msg.sender);
         }
-        InterchainBatch memory batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
         if (dstChainId == block.chainid) {
             revert InterchainModule__ChainIdNotRemote(dstChainId);
         }
-        uint256 requiredFee = _getModuleFee(dstChainId, batch.dbNonce);
+        uint256 requiredFee = _getModuleFee(dstChainId, batchNonce);
         if (msg.value < requiredFee) {
             revert InterchainModule__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
         }
-        bytes memory moduleData = _fillModuleData(dstChainId, batch.dbNonce);
+        bytes memory moduleData = _fillModuleData(dstChainId, batchNonce);
         bytes memory encodedBatch = ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, moduleData);
         bytes32 ethSignedBatchHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch));
         _requestVerification(dstChainId, encodedBatch);
