@@ -22,7 +22,7 @@ contract InterchainClientV1ManagementTest is InterchainClientV1BaseTest {
     }
 
     function test_setDefaultGuard_zeroAddress() public {
-        expectRevertZeroAddress();
+        expectRevertGuardZeroAddress();
         setDefaultGuard(address(0));
     }
 

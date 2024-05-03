@@ -25,7 +25,7 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
     }
 
     function test_getLinkedClient_revert_chainIdLocal() public {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         icClient.getLinkedClient(LOCAL_CHAIN_ID);
     }
 
@@ -39,12 +39,12 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
     }
 
     function test_getLinkedClientEVM_revert_chainIdLocal() public {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         icClient.getLinkedClientEVM(LOCAL_CHAIN_ID);
     }
 
     function test_getLinkedClientEVM_revert_clientNotEVM() public {
-        expectRevertNotEVMClient(MOCK_REMOTE_CLIENT);
+        expectRevertLinkedClientNotEVM(MOCK_REMOTE_CLIENT);
         icClient.getLinkedClientEVM(REMOTE_CHAIN_ID);
     }
 

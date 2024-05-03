@@ -168,10 +168,10 @@ abstract contract ICIntegrationTest is
         vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__BatchConflict.selector, module));
     }
 
-    function expectClientRevertNotEnoughResponses(uint256 actual, uint256 required) internal {
+    function expectClientRevertResponsesAmountBelowMin(uint256 actual, uint256 required) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
-                IInterchainClientV1.InterchainClientV1__NotEnoughResponses.selector, actual, required
+                IInterchainClientV1.InterchainClientV1__ResponsesAmountBelowMin.selector, actual, required
             )
         );
     }

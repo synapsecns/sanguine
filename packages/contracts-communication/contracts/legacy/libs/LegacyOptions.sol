@@ -9,7 +9,7 @@ library LegacyOptionsLib {
     /// @dev The offset of the gas limit in the legacy options format.
     uint256 private constant GAS_LIMIT_OFFSET = 2;
 
-    error LegacyOptionsLib__InvalidOptions(bytes legacyOpts);
+    error LegacyOptionsLib__PayloadInvalid(bytes legacyOpts);
 
     /// @notice Encodes the gas limit into a legacy options format.
     /// @param gasLimit     The gas limit to encode.
@@ -23,11 +23,11 @@ library LegacyOptionsLib {
     /// @return gasLimit    The gas limit
     function decodeLegacyOptions(bytes calldata legacyOpts) internal pure returns (uint256 gasLimit) {
         if (legacyOpts.length != LEGACY_OPTIONS_LENGTH) {
-            revert LegacyOptionsLib__InvalidOptions(legacyOpts);
+            revert LegacyOptionsLib__PayloadInvalid(legacyOpts);
         }
         uint16 version = uint16(bytes2(legacyOpts[:GAS_LIMIT_OFFSET]));
         if (version != LEGACY_OPTIONS_VERSION) {
-            revert LegacyOptionsLib__InvalidOptions(legacyOpts);
+            revert LegacyOptionsLib__PayloadInvalid(legacyOpts);
         }
         gasLimit = uint256(bytes32(legacyOpts[GAS_LIMIT_OFFSET:]));
     }

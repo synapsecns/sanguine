@@ -24,18 +24,18 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     /// @inheritdoc IInterchainModule
     function requestBatchVerification(uint64 dstChainId, bytes calldata versionedBatch) external payable {
         if (msg.sender != INTERCHAIN_DB) {
-            revert InterchainModule__NotInterchainDB(msg.sender);
+            revert InterchainModule__CallerNotInterchainDB(msg.sender);
         }
         InterchainBatch memory batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
         if (dstChainId == block.chainid) {
-            revert InterchainModule__SameChainId(dstChainId);
+            revert InterchainModule__ChainIdNotRemote(dstChainId);
         }
         if (batch.srcChainId != block.chainid) {
             revert InterchainModule__IncorrectSourceChainId({chainId: batch.srcChainId});
         }
         uint256 requiredFee = _getModuleFee(dstChainId, batch.dbNonce);
         if (msg.value < requiredFee) {
-            revert InterchainModule__InsufficientFee({actual: msg.value, required: requiredFee});
+            revert InterchainModule__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
         }
         bytes memory moduleData = _fillModuleData(dstChainId, batch.dbNonce);
         bytes memory encodedBatch = ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, moduleData);
@@ -56,7 +56,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
             ModuleBatchLib.decodeVersionedModuleBatch(encodedModuleBatch);
         InterchainBatch memory batch = InterchainBatchLib.decodeBatchFromMemory(versionedBatch.getPayloadFromMemory());
         if (batch.srcChainId == block.chainid) {
-            revert InterchainModule__SameChainId(batch.srcChainId);
+            revert InterchainModule__ChainIdNotRemote(batch.srcChainId);
         }
         IInterchainDB(INTERCHAIN_DB).verifyRemoteBatch(versionedBatch);
         _receiveModuleData(batch.srcChainId, batch.dbNonce, moduleData);

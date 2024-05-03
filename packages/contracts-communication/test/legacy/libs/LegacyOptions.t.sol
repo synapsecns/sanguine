@@ -18,8 +18,8 @@ contract LegacyOptionsLibTest is Test {
         libHarness = new LegacyOptionsLibHarness();
     }
 
-    function expectRevertInvalidOptions(bytes memory legacyOpts) internal {
-        vm.expectRevert(abi.encodeWithSelector(LegacyOptionsLib.LegacyOptionsLib__InvalidOptions.selector, legacyOpts));
+    function expectRevertPayloadInvalid(bytes memory legacyOpts) internal {
+        vm.expectRevert(abi.encodeWithSelector(LegacyOptionsLib.LegacyOptionsLib__PayloadInvalid.selector, legacyOpts));
     }
 
     function test_encodeLegacyOptions() public view {
@@ -41,13 +41,13 @@ contract LegacyOptionsLibTest is Test {
     function test_decodeLegacyOptions_revert_invalidVersion(uint16 version) public {
         vm.assume(version != LegacyOptionsLib.LEGACY_OPTIONS_VERSION);
         bytes memory invalidOpts = abi.encodePacked(version, uint256(1));
-        expectRevertInvalidOptions(invalidOpts);
+        expectRevertPayloadInvalid(invalidOpts);
         libHarness.decodeLegacyOptions(invalidOpts);
     }
 
     function test_decodeLegacyOptions_revert_incorrectLength(bytes memory invalidOpts) public {
         vm.assume(invalidOpts.length != LEGACY_OPTIONS_FIXTURE.length);
-        expectRevertInvalidOptions(invalidOpts);
+        expectRevertPayloadInvalid(invalidOpts);
         libHarness.decodeLegacyOptions(invalidOpts);
     }
 }

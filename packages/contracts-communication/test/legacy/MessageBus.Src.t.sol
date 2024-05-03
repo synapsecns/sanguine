@@ -55,48 +55,48 @@ contract MessageBusSrcTest is MessageBusBaseTest {
         assertEq(messageBus.nonce(), MOCK_NONCE + 1);
     }
 
-    function test_sendMessage_revert_notEVMReceiver() public {
+    function test_sendMessage_revert_ReceiverNotEVM() public {
         bytes32 receiver = keccak256("GM");
-        expectRevertNotEVMReceiver(receiver);
+        expectRevertReceiverNotEVM(receiver);
         messageBusSendMessage(receiver, legacyOptions);
     }
 
     function test_sendMessage_revert_incorrectOptionsVersion(uint16 version) public {
         vm.assume(version != LegacyOptionsLib.LEGACY_OPTIONS_VERSION);
         bytes memory invalidOpts = abi.encodePacked(version, uint256(1));
-        expectRevertInvalidOptions(invalidOpts);
+        expectRevertPayloadInvalid(invalidOpts);
         messageBusSendMessage(dstReceiverBytes32, invalidOpts);
     }
 
     function test_sendMessage_revert_incorrectOptionsLength(bytes memory invalidOpts) public {
         vm.assume(invalidOpts.length != legacyOptions.length);
-        expectRevertInvalidOptions(invalidOpts);
+        expectRevertPayloadInvalid(invalidOpts);
         messageBusSendMessage(dstReceiverBytes32, invalidOpts);
     }
 
     function test_estimateFee_revert_incorrectOptionsVersion(uint16 version) public {
         vm.assume(version != LegacyOptionsLib.LEGACY_OPTIONS_VERSION);
         bytes memory invalidOpts = abi.encodePacked(version, uint256(1));
-        expectRevertInvalidOptions(invalidOpts);
+        expectRevertPayloadInvalid(invalidOpts);
         messageBus.estimateFee(REMOTE_CHAIN_ID, invalidOpts);
     }
 
     function test_estimateFee_revert_incorrectOptionsLength(bytes memory invalidOpts) public {
         vm.assume(invalidOpts.length != legacyOptions.length);
-        expectRevertInvalidOptions(invalidOpts);
+        expectRevertPayloadInvalid(invalidOpts);
         messageBus.estimateFee(REMOTE_CHAIN_ID, invalidOpts);
     }
 
     function test_estimateFeeExact_revert_incorrectOptionsVersion(uint16 version) public {
         vm.assume(version != LegacyOptionsLib.LEGACY_OPTIONS_VERSION);
         bytes memory invalidOpts = abi.encodePacked(version, uint256(1));
-        expectRevertInvalidOptions(invalidOpts);
+        expectRevertPayloadInvalid(invalidOpts);
         messageBus.estimateFeeExact(REMOTE_CHAIN_ID, invalidOpts, MESSAGE.length);
     }
 
     function test_estimateFeeExact_revert_incorrectOptionsLength(bytes memory invalidOpts) public {
         vm.assume(invalidOpts.length != legacyOptions.length);
-        expectRevertInvalidOptions(invalidOpts);
+        expectRevertPayloadInvalid(invalidOpts);
         messageBus.estimateFeeExact(REMOTE_CHAIN_ID, invalidOpts, MESSAGE.length);
     }
 }

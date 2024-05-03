@@ -161,7 +161,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         emit InterchainBatchVerified(address(module), batch.srcChainId, batch.dbNonce, batch.batchRoot);
     }
 
-    function expectRevertConflictingBatches(
+    function expectRevertBatchConflict(
         InterchainModuleMock module,
         InterchainBatch memory existingBatch,
         InterchainBatch memory newBatch
@@ -170,20 +170,19 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
     {
         vm.expectRevert(
             abi.encodeWithSelector(
-                IInterchainDB.InterchainDB__ConflictingBatches.selector,
-                address(module),
-                existingBatch.batchRoot,
-                newBatch
+                IInterchainDB.InterchainDB__BatchConflict.selector, address(module), existingBatch.batchRoot, newBatch
             )
         );
     }
 
-    function expectRevertInvalidBatchVersion(uint16 version) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__InvalidBatchVersion.selector, version));
+    function expectRevertBatchVersionMismatch(uint16 version, uint16 required) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainDB.InterchainDB__BatchVersionMismatch.selector, version, required)
+        );
     }
 
-    function expectSameChainId(uint64 chainId) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector, chainId));
+    function expectChainIdNotRemote(uint64 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__ChainIdNotRemote.selector, chainId));
     }
 
     // ═════════════════════════════════════════ TESTS: VERIFYING BATCHES ══════════════════════════════════════════════
@@ -317,7 +316,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         InterchainBatch memory existingBatch = getMockBatch(SRC_CHAIN_ID_0, 0);
         InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 0);
         bytes memory versionedEmptyBatch = getVersionedBatch(emptyBatch);
-        expectRevertConflictingBatches(moduleA, existingBatch, emptyBatch);
+        expectRevertBatchConflict(moduleA, existingBatch, emptyBatch);
         verifyBatch(moduleA, versionedEmptyBatch);
     }
 
@@ -326,15 +325,15 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         InterchainBatch memory existingBatch = getMockBatch(SRC_CHAIN_ID_0, 0);
         InterchainBatch memory conflictingBatch = getFakeBatch(SRC_CHAIN_ID_0, 0);
         bytes memory versionedConflictingBatch = getVersionedBatch(conflictingBatch);
-        expectRevertConflictingBatches(moduleA, existingBatch, conflictingBatch);
+        expectRevertBatchConflict(moduleA, existingBatch, conflictingBatch);
         verifyBatch(moduleA, versionedConflictingBatch);
     }
 
-    function test_verifyBatch_revert_sameChainId() public {
+    function test_verifyBatch_revert_ChainIdNotRemote() public {
         // Try to verify batch coming from the same chain
         InterchainBatch memory batch = getMockBatch(DST_CHAIN_ID, 0);
         bytes memory versionedBatch = getVersionedBatch(batch);
-        expectSameChainId(DST_CHAIN_ID);
+        expectChainIdNotRemote(DST_CHAIN_ID);
         verifyBatch(moduleA, versionedBatch);
     }
 
@@ -343,7 +342,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
         bytes memory versionedBatch =
             payloadLibHarness.encodeVersionedPayload(version, batchLibHarness.encodeBatch(batch));
-        expectRevertInvalidBatchVersion(version);
+        expectRevertBatchVersionMismatch(version, DB_VERSION);
         moduleA.mockVerifyRemoteBatch(address(icDB), versionedBatch);
     }
 
@@ -500,9 +499,9 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
 
     // ═════════════════════════════════════ TESTS: READING BATCHES (REVERTS) ══════════════════════════════════════════
 
-    function test_checkVerification_revert_sameChainId() public {
+    function test_checkVerification_revert_ChainIdNotRemote() public {
         InterchainBatch memory batch = getMockBatch(DST_CHAIN_ID, 0);
-        expectSameChainId(DST_CHAIN_ID);
+        expectChainIdNotRemote(DST_CHAIN_ID);
         icDB.checkBatchVerification(address(moduleA), batch);
     }
 }

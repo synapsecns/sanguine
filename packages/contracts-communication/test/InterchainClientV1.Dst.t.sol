@@ -370,9 +370,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = prepareExecuteTest(required, guardFlag, times);
         bytes memory encodedTx = getEncodedTx(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.BatchAwaitingResponses, actual, required);
-        expectRevertNotEnoughResponses({actual: actual, required: required});
+        expectRevertResponsesAmountBelowMin({actual: actual, required: required});
         icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertNotEnoughResponses({actual: actual, required: required});
+        expectRevertResponsesAmountBelowMin({actual: actual, required: required});
         executeTransaction(encodedTx, emptyProof);
     }
 
@@ -527,14 +527,14 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         return encodedTx;
     }
 
-    function test_execute_revert_invalidTransactionVersion(uint16 version) public {
+    function test_execute_revert_TxVersionMismatch(uint16 version) public {
         vm.assume(version != CLIENT_VERSION);
         (InterchainTransaction memory icTx,) = constructInterchainTx();
         bytes memory invalidVersionTx = VersionedPayloadLib.encodeVersionedPayload(version, abi.encode(icTx));
         makeTxDescriptorExecutable(getTxDescriptor(icTx));
-        expectRevertInvalidTransactionVersion(version);
+        expectRevertTxVersionMismatch(version, CLIENT_VERSION);
         icClient.isExecutable(invalidVersionTx, emptyProof);
-        expectRevertInvalidTransactionVersion(version);
+        expectRevertTxVersionMismatch(version, CLIENT_VERSION);
         executeTransaction(invalidVersionTx, emptyProof);
     }
 
@@ -543,9 +543,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         icTx.srcChainId = LOCAL_CHAIN_ID;
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         executeTransaction(encodedTx, emptyProof);
     }
 
@@ -554,9 +554,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         icTx.srcChainId = UNKNOWN_CHAIN_ID;
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
-        expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
+        expectRevertChainIdNotLinked(UNKNOWN_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
+        expectRevertChainIdNotLinked(UNKNOWN_CHAIN_ID);
         executeTransaction(encodedTx, emptyProof);
     }
 
@@ -565,9 +565,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         icTx.dstChainId = UNKNOWN_CHAIN_ID;
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.TxWrongDstChainId, UNKNOWN_CHAIN_ID);
-        expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
+        expectRevertDstChainIdNotLocal(UNKNOWN_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
+        expectRevertDstChainIdNotLocal(UNKNOWN_CHAIN_ID);
         executeTransaction(encodedTx, emptyProof);
     }
 
@@ -576,9 +576,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         icTx.entryIndex = 1;
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
-        expectRevertIncorrectEntryIndex(icTx.entryIndex);
+        expectRevertEntryIndexNotZero(icTx.entryIndex);
         icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertIncorrectEntryIndex(icTx.entryIndex);
+        expectRevertEntryIndexNotZero(icTx.entryIndex);
         executeTransaction(encodedTx, emptyProof);
     }
 
@@ -587,9 +587,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         bytes32[] memory proof = new bytes32[](1);
         assertCorrectReadiness(icTx, proof, IInterchainClientV1.TxReadiness.UndeterminedRevert, 0, 0);
-        expectRevertIncorrectProof();
+        expectRevertProofNotEmpty();
         icClient.isExecutable(encodedTx, proof);
-        expectRevertIncorrectProof();
+        expectRevertProofNotEmpty();
         executeTransaction(encodedTx, proof);
     }
 
@@ -610,9 +610,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV0);
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
-        expectRevertIncorrectVersion(0);
+        expectRevertVersionInvalid(0);
         icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertIncorrectVersion(0);
+        expectRevertVersionInvalid(0);
         executeTransaction(encodedTx, emptyProof);
     }
 

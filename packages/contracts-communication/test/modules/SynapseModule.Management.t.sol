@@ -16,6 +16,8 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModuleEvents {
+    uint256 public constant ONE_PERCENT = 0.01e18;
+
     SynapseModule public module;
     SynapseGasOracleMock public gasOracle;
 
@@ -79,7 +81,9 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
 
     function test_addVerifier_revert_alreadyAdded() public {
         basicSetup();
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__AlreadySigner.selector, VERIFIER_1));
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerAlreadyAdded.selector, VERIFIER_1)
+        );
         vm.prank(owner);
         module.addVerifier(VERIFIER_1);
     }
@@ -113,7 +117,9 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     function test_addVerifiers_revert_alreadyAdded() public {
         vm.prank(owner);
         module.addVerifier(VERIFIER_2);
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__AlreadySigner.selector, VERIFIER_2));
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerAlreadyAdded.selector, VERIFIER_2)
+        );
         vm.prank(owner);
         module.addVerifiers(allVerifiers);
     }
@@ -127,7 +133,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
 
     function test_addVerifiers_revert_containsZeroAddress() public {
         allVerifiers[1] = address(0);
-        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__ZeroAddress.selector);
+        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__SignerZeroAddress.selector);
         vm.prank(owner);
         module.addVerifiers(allVerifiers);
     }
@@ -148,7 +154,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     }
 
     function test_removeVerifier_revert_notAdded() public {
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotSigner.selector, VERIFIER_1));
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerNotAdded.selector, VERIFIER_1));
         vm.prank(owner);
         module.removeVerifier(VERIFIER_1);
     }
@@ -184,7 +190,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     function test_removeVerifiers_revert_notAdded() public {
         vm.prank(owner);
         module.addVerifier(VERIFIER_2);
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotSigner.selector, VERIFIER_1));
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__SignerNotAdded.selector, VERIFIER_1));
         vm.prank(owner);
         module.removeVerifiers(allVerifiers);
     }
@@ -209,8 +215,8 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
         module.setThreshold(3);
     }
 
-    function test_setThreshold_revert_zeroThreshold() public {
-        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__ZeroThreshold.selector));
+    function test_setThreshold_revert_ThresholdZero() public {
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__ThresholdZero.selector));
         vm.prank(owner);
         module.setThreshold(0);
     }
@@ -236,7 +242,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     }
 
     function test_setFeeRecipient_revert_zeroAddress() public {
-        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__ZeroAddress.selector));
+        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__FeeRecipientZeroAddress.selector));
         vm.prank(owner);
         module.setFeeRecipient(address(0));
     }
@@ -262,7 +268,7 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     }
 
     function test_setFeeFraction_exactlyMax() public {
-        uint256 maxFeeFraction = 0.01e18;
+        uint256 maxFeeFraction = ONE_PERCENT;
         vm.expectEmit(address(module));
         emit ClaimerFractionSet(maxFeeFraction);
         vm.prank(owner);
@@ -271,9 +277,11 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     }
 
     function test_setFeeFraction_revert_exceedsMax() public {
-        uint256 fractionTooBig = 0.01e18 + 1;
+        uint256 fractionTooBig = ONE_PERCENT + 1;
         vm.expectRevert(
-            abi.encodeWithSelector(IClaimableFees.ClaimableFees__ClaimerFractionExceedsMax.selector, fractionTooBig)
+            abi.encodeWithSelector(
+                IClaimableFees.ClaimableFees__ClaimerFractionAboveMax.selector, fractionTooBig, ONE_PERCENT
+            )
         );
         vm.prank(owner);
         module.setClaimerFraction(fractionTooBig);

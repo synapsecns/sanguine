@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import {InterchainTransaction, InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 
 interface IInterchainClientV1 {
-    // TODO: recheck the explicitness of the TxReadiness enum
     enum TxReadiness {
         Ready,
         AlreadyExecuted,
@@ -16,24 +15,23 @@ interface IInterchainClientV1 {
         UndeterminedRevert
     }
 
-    // TODO: standardize error names across interfaces
     error InterchainClientV1__BatchConflict(address module);
-    error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
-    error InterchainClientV1__IncorrectDstChainId(uint64 chainId);
-    error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
-    error InterchainClientV1__InvalidTransactionVersion(uint16 version);
-    error InterchainClientV1__NoLinkedClient(uint64 chainId);
-    error InterchainClientV1__NotEnoughGasSupplied();
-    error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
-    error InterchainClientV1__NotEVMClient(bytes32 client);
-    error InterchainClientV1__NotRemoteChainId(uint64 chainId);
+    error InterchainClientV1__ChainIdNotLinked(uint64 chainId);
+    error InterchainClientV1__ChainIdNotRemote(uint64 chainId);
+    error InterchainClientV1__DstChainIdNotLocal(uint64 chainId);
+    error InterchainClientV1__ExecutionServiceZeroAddress();
+    error InterchainClientV1__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
+    error InterchainClientV1__GasLeftBelowMin(uint256 gasLeft, uint256 minRequired);
+    error InterchainClientV1__GuardZeroAddress();
+    error InterchainClientV1__LinkedClientNotEVM(bytes32 client);
+    error InterchainClientV1__MsgValueMismatch(uint256 msgValue, uint256 required);
     error InterchainClientV1__ReceiverNotICApp(address receiver);
+    error InterchainClientV1__ReceiverZeroAddress();
     error InterchainClientV1__ReceiverZeroRequiredResponses(address receiver);
+    error InterchainClientV1__ResponsesAmountBelowMin(uint256 responsesAmount, uint256 minRequired);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
-    error InterchainClientV1__ZeroAddress();
-    error InterchainClientV1__ZeroExecutionService();
-    error InterchainClientV1__ZeroReceiver();
+    error InterchainClientV1__TxVersionMismatch(uint16 txVersion, uint16 required);
 
     /// @notice Allows the contract owner to set the address of the Guard module.
     /// Note: batches marked as invalid by the Guard could not be used for message execution,

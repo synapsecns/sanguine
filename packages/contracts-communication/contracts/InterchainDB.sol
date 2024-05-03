@@ -32,7 +32,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     modifier onlyRemoteChainId(uint64 chainId) {
         if (chainId == block.chainid) {
-            revert InterchainDB__SameChainId(chainId);
+            revert InterchainDB__ChainIdNotRemote(chainId);
         }
         _;
     }
@@ -99,7 +99,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             return;
         }
         // Overwriting an existing batch with a different one is not allowed
-        revert InterchainDB__ConflictingBatches(msg.sender, existingBatch.batchRoot, batch);
+        revert InterchainDB__BatchConflict(msg.sender, existingBatch.batchRoot, batch);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -125,7 +125,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         uint256 size = getBatchSize(dbNonce);
         if (start > end || end > size) {
-            revert InterchainDB__InvalidEntryRange(dbNonce, start, end);
+            revert InterchainDB__EntryRangeInvalid(dbNonce, start, end);
         }
         leafs = new bytes32[](end - start);
         for (uint64 i = start; i < end; ++i) {
@@ -252,7 +252,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, batch.dbNonce, srcModules);
         if (msg.value < totalFee) {
-            revert InterchainDB__IncorrectFeeAmount(msg.value, totalFee);
+            revert InterchainDB__FeeAmountBelowMin(msg.value, totalFee);
         } else if (msg.value > totalFee) {
             // The exceeding amount goes to the first module
             fees[0] += msg.value - totalFee;
@@ -281,11 +281,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     function _assertCorrectBatch(bytes calldata versionedBatch) internal view returns (InterchainBatch memory batch) {
         uint16 dbVersion = versionedBatch.getVersion();
         if (dbVersion != DB_VERSION) {
-            revert InterchainDB__InvalidBatchVersion(dbVersion);
+            revert InterchainDB__BatchVersionMismatch(dbVersion, DB_VERSION);
         }
         batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
         if (batch.srcChainId == block.chainid) {
-            revert InterchainDB__SameChainId(batch.srcChainId);
+            revert InterchainDB__ChainIdNotRemote(batch.srcChainId);
         }
     }
 
@@ -310,7 +310,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         uint256 len = srcModules.length;
         if (len == 0) {
-            revert InterchainDB__NoModulesSpecified();
+            revert InterchainDB__ModulesNotProvided();
         }
         fees = new uint256[](len);
         for (uint256 i = 0; i < len; ++i) {
