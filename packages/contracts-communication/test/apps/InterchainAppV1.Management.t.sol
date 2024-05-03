@@ -250,8 +250,8 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
         assertEq(appHarness.getLinkedAppEVM(REMOTE_CHAIN_ID), linkedAppMock);
     }
 
-    function test_linkRemoteApp_revert_sameChainId() public {
-        expectRevertSameChainId(LOCAL_CHAIN_ID);
+    function test_linkRemoteApp_revert_ChainIdNotRemote() public {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         vm.prank(governor);
         appHarness.linkRemoteApp({chainId: LOCAL_CHAIN_ID, remoteApp: linkedAppMockBytes32});
     }
@@ -279,8 +279,8 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
         assertEq(appHarness.getLinkedAppEVM(REMOTE_CHAIN_ID), linkedAppMock);
     }
 
-    function test_linkRemoteAppEVM_revert_sameChainId() public {
-        expectRevertSameChainId(LOCAL_CHAIN_ID);
+    function test_linkRemoteAppEVM_revert_ChainIdNotRemote() public {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         vm.prank(governor);
         appHarness.linkRemoteAppEVM(LOCAL_CHAIN_ID, linkedAppMock);
     }

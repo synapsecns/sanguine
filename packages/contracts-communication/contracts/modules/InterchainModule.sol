@@ -28,7 +28,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         }
         InterchainBatch memory batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
         if (dstChainId == block.chainid) {
-            revert InterchainModule__SameChainId(dstChainId);
+            revert InterchainModule__ChainIdNotRemote(dstChainId);
         }
         if (batch.srcChainId != block.chainid) {
             revert InterchainModule__IncorrectSourceChainId({chainId: batch.srcChainId});
@@ -56,7 +56,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
             ModuleBatchLib.decodeVersionedModuleBatch(encodedModuleBatch);
         InterchainBatch memory batch = InterchainBatchLib.decodeBatchFromMemory(versionedBatch.getPayloadFromMemory());
         if (batch.srcChainId == block.chainid) {
-            revert InterchainModule__SameChainId(batch.srcChainId);
+            revert InterchainModule__ChainIdNotRemote(batch.srcChainId);
         }
         IInterchainDB(INTERCHAIN_DB).verifyRemoteBatch(versionedBatch);
         _receiveModuleData(batch.srcChainId, batch.dbNonce, moduleData);

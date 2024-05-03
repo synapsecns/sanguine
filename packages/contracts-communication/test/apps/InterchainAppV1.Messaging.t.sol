@@ -111,8 +111,8 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_appReceive_revert_sameChainId() public {
-        expectRevertSameChainId(LOCAL_CHAIN_ID);
+    function test_appReceive_revert_ChainIdNotRemote() public {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         vm.prank(icClient);
         appHarness.appReceive({
             srcChainId: LOCAL_CHAIN_ID,
@@ -192,9 +192,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_sendInterchainMessage_revert_sameChainId() public {
+    function test_sendInterchainMessage_revert_ChainIdNotRemote() public {
         deal(address(appHarness), MOCK_IC_FEE);
-        expectRevertSameChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         appHarness.exposed__sendInterchainMessage({
             dstChainId: LOCAL_CHAIN_ID,
             receiver: linkedAppMockBytes32,
@@ -256,9 +256,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_sendInterchainMessageEVM_revert_sameChainId() public {
+    function test_sendInterchainMessageEVM_revert_ChainIdNotRemote() public {
         deal(address(appHarness), MOCK_IC_FEE);
-        expectRevertSameChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         appHarness.exposed__sendInterchainMessageEVM({
             dstChainId: LOCAL_CHAIN_ID,
             receiver: linkedAppMock,
@@ -317,9 +317,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_sendToLinkedApp_revert_sameChainId() public {
+    function test_sendToLinkedApp_revert_ChainIdNotRemote() public {
         deal(address(appHarness), MOCK_IC_FEE);
-        expectRevertSameChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         appHarness.exposed__sendToLinkedApp({
             dstChainId: LOCAL_CHAIN_ID,
             messageFee: MOCK_IC_FEE,

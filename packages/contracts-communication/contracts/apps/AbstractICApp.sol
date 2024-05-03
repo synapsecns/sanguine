@@ -14,11 +14,11 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
 
     error InterchainApp__AlreadyLatestClient(address client);
     error InterchainApp__BalanceBelowMin(uint256 balance, uint256 minRequired);
+    error InterchainApp__ChainIdNotRemote(uint64 chainId);
     error InterchainApp__ClientAlreadyAdded(address client);
     error InterchainApp__InterchainClientZeroAddress();
     error InterchainApp__NotInterchainClient(address account);
     error InterchainApp__ReceiverZeroAddress(uint64 chainId);
-    error InterchainApp__SameChainId(uint64 chainId);
     error InterchainApp__SenderNotAllowed(uint64 srcChainId, bytes32 sender);
 
     /// @inheritdoc IInterchainApp
@@ -36,7 +36,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
             revert InterchainApp__NotInterchainClient(msg.sender);
         }
         if (srcChainId == block.chainid) {
-            revert InterchainApp__SameChainId(srcChainId);
+            revert InterchainApp__ChainIdNotRemote(srcChainId);
         }
         if (!_isAllowedSender(srcChainId, sender)) {
             revert InterchainApp__SenderNotAllowed(srcChainId, sender);
@@ -143,7 +143,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
             revert InterchainApp__InterchainClientZeroAddress();
         }
         if (dstChainId == block.chainid) {
-            revert InterchainApp__SameChainId(dstChainId);
+            revert InterchainApp__ChainIdNotRemote(dstChainId);
         }
         if (receiver == 0) {
             revert InterchainApp__ReceiverZeroAddress(dstChainId);

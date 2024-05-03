@@ -13,9 +13,9 @@ abstract contract LegacyReceiver is Ownable, LegacyReceiverEvents, ILegacyReceiv
     mapping(uint256 chainId => bytes32 trustedRemote) public trustedRemotes;
 
     error LegacyReceiver__BalanceBelowMin(uint256 actual, uint256 required);
+    error LegacyReceiver__ChainIdNotRemote(uint256 chainId);
     error LegacyReceiver__NotMessageBus(address caller);
     error LegacyReceiver__NotTrustedRemote(uint256 chainId, bytes32 srcCaller);
-    error LegacyReceiver__SameChainId(uint256 chainId);
     error LegacyReceiver__TrustedRemoteZeroAddress(uint256 chainId);
 
     constructor(address owner_) Ownable(owner_) {}
@@ -27,7 +27,7 @@ abstract contract LegacyReceiver is Ownable, LegacyReceiverEvents, ILegacyReceiv
 
     function setTrustedRemote(uint256 remoteChainId, bytes32 remoteApp) external onlyOwner {
         if (remoteChainId == block.chainid) {
-            revert LegacyReceiver__SameChainId(remoteChainId);
+            revert LegacyReceiver__ChainIdNotRemote(remoteChainId);
         }
         trustedRemotes[remoteChainId] = remoteApp;
         emit TrustedRemoteSet(remoteChainId, remoteApp);

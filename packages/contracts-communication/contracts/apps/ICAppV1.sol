@@ -158,7 +158,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// Note: Should be guarded with permissions check.
     function _linkRemoteApp(uint64 chainId, bytes32 remoteApp) internal {
         if (chainId == block.chainid) {
-            revert InterchainApp__SameChainId(chainId);
+            revert InterchainApp__ChainIdNotRemote(chainId);
         }
         if (remoteApp == 0) {
             revert InterchainApp__RemoteAppZeroAddress();

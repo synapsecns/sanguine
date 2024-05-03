@@ -187,7 +187,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 status = TxReadiness.ReceiverNotICApp;
             } else if (selector == InterchainClientV1__ReceiverZeroRequiredResponses.selector) {
                 status = TxReadiness.ReceiverZeroRequiredResponses;
-            } else if (selector == InterchainClientV1__IncorrectDstChainId.selector) {
+            } else if (selector == InterchainClientV1__DstChainIdNotLocal.selector) {
                 status = TxReadiness.TxWrongDstChainId;
             } else {
                 status = TxReadiness.UndeterminedRevert;
@@ -235,7 +235,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @inheritdoc IInterchainClientV1
     function getLinkedClient(uint64 chainId) external view returns (bytes32) {
         if (chainId == block.chainid) {
-            revert InterchainClientV1__NotRemoteChainId(chainId);
+            revert InterchainClientV1__ChainIdNotRemote(chainId);
         }
         return _linkedClient[chainId];
     }
@@ -243,7 +243,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @inheritdoc IInterchainClientV1
     function getLinkedClientEVM(uint64 chainId) external view returns (address linkedClientEVM) {
         if (chainId == block.chainid) {
-            revert InterchainClientV1__NotRemoteChainId(chainId);
+            revert InterchainClientV1__ChainIdNotRemote(chainId);
         }
         bytes32 linkedClient = _linkedClient[chainId];
         linkedClientEVM = linkedClient.bytes32ToAddress();
@@ -398,11 +398,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @dev Asserts that the chain is linked and returns the linked client address.
     function _assertLinkedClient(uint64 chainId) internal view returns (bytes32 linkedClient) {
         if (chainId == block.chainid) {
-            revert InterchainClientV1__NotRemoteChainId(chainId);
+            revert InterchainClientV1__ChainIdNotRemote(chainId);
         }
         linkedClient = _linkedClient[chainId];
         if (linkedClient == 0) {
-            revert InterchainClientV1__NoLinkedClient(chainId);
+            revert InterchainClientV1__ChainIdNotLinked(chainId);
         }
     }
 
@@ -471,7 +471,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
         icTx = InterchainTransactionLib.decodeTransaction(versionedTx.getPayload());
         if (icTx.dstChainId != block.chainid) {
-            revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
+            revert InterchainClientV1__DstChainIdNotLocal(icTx.dstChainId);
         }
     }
 

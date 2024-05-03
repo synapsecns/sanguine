@@ -32,7 +32,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     modifier onlyRemoteChainId(uint64 chainId) {
         if (chainId == block.chainid) {
-            revert InterchainDB__SameChainId(chainId);
+            revert InterchainDB__ChainIdNotRemote(chainId);
         }
         _;
     }
@@ -285,7 +285,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         }
         batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
         if (batch.srcChainId == block.chainid) {
-            revert InterchainDB__SameChainId(batch.srcChainId);
+            revert InterchainDB__ChainIdNotRemote(batch.srcChainId);
         }
     }
 

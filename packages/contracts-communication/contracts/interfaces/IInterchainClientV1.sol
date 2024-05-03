@@ -18,15 +18,15 @@ interface IInterchainClientV1 {
 
     // TODO: standardize error names across interfaces
     error InterchainClientV1__BatchConflict(address module);
+    error InterchainClientV1__ChainIdNotLinked(uint64 chainId);
+    error InterchainClientV1__ChainIdNotRemote(uint64 chainId);
+    error InterchainClientV1__DstChainIdNotLocal(uint64 chainId);
     error InterchainClientV1__ExecutionServiceZeroAddress();
     error InterchainClientV1__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
     error InterchainClientV1__GasLeftBelowMin(uint256 gasLeft, uint256 minRequired);
     error InterchainClientV1__GuardZeroAddress();
-    error InterchainClientV1__IncorrectDstChainId(uint64 chainId);
     error InterchainClientV1__MsgValueMismatch(uint256 msgValue, uint256 required);
-    error InterchainClientV1__NoLinkedClient(uint64 chainId);
     error InterchainClientV1__NotEVMClient(bytes32 client);
-    error InterchainClientV1__NotRemoteChainId(uint64 chainId);
     error InterchainClientV1__ReceiverNotICApp(address receiver);
     error InterchainClientV1__ReceiverZeroAddress();
     error InterchainClientV1__ReceiverZeroRequiredResponses(address receiver);

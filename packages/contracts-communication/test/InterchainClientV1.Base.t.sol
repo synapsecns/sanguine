@@ -88,9 +88,9 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertIncorrectDstChainId(uint64 chainId) internal {
+    function expectRevertDstChainIdNotLocal(uint64 chainId) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__IncorrectDstChainId.selector, chainId)
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__DstChainIdNotLocal.selector, chainId)
         );
     }
 
@@ -116,9 +116,9 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertNoLinkedClient(uint64 chainId) internal {
+    function expectRevertChainIdNotLinked(uint64 chainId) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NoLinkedClient.selector, chainId)
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__ChainIdNotLinked.selector, chainId)
         );
     }
 
@@ -138,9 +138,9 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotEVMClient.selector, client));
     }
 
-    function expectRevertNotRemoteChainId(uint64 chainId) internal {
+    function expectRevertChainIdNotRemote(uint64 chainId) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotRemoteChainId.selector, chainId)
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__ChainIdNotRemote.selector, chainId)
         );
     }
 

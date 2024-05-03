@@ -184,8 +184,8 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         );
     }
 
-    function expectSameChainId(uint64 chainId) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector, chainId));
+    function expectChainIdNotRemote(uint64 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__ChainIdNotRemote.selector, chainId));
     }
 
     // ═════════════════════════════════════════ TESTS: VERIFYING BATCHES ══════════════════════════════════════════════
@@ -332,11 +332,11 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         verifyBatch(moduleA, versionedConflictingBatch);
     }
 
-    function test_verifyBatch_revert_sameChainId() public {
+    function test_verifyBatch_revert_ChainIdNotRemote() public {
         // Try to verify batch coming from the same chain
         InterchainBatch memory batch = getMockBatch(DST_CHAIN_ID, 0);
         bytes memory versionedBatch = getVersionedBatch(batch);
-        expectSameChainId(DST_CHAIN_ID);
+        expectChainIdNotRemote(DST_CHAIN_ID);
         verifyBatch(moduleA, versionedBatch);
     }
 
@@ -502,9 +502,9 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
 
     // ═════════════════════════════════════ TESTS: READING BATCHES (REVERTS) ══════════════════════════════════════════
 
-    function test_checkVerification_revert_sameChainId() public {
+    function test_checkVerification_revert_ChainIdNotRemote() public {
         InterchainBatch memory batch = getMockBatch(DST_CHAIN_ID, 0);
-        expectSameChainId(DST_CHAIN_ID);
+        expectChainIdNotRemote(DST_CHAIN_ID);
         icDB.checkBatchVerification(address(moduleA), batch);
     }
 }

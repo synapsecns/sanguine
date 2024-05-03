@@ -163,8 +163,8 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__RecoveredSignersNotSorted.selector);
     }
 
-    function expectRevertSameChainId(uint64 chainId) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainModule.InterchainModule__SameChainId.selector, chainId));
+    function expectRevertChainIdNotRemote(uint64 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainModule.InterchainModule__ChainIdNotRemote.selector, chainId));
     }
 
     // ════════════════════════════════════════════ TESTS: VERIFY BATCH ════════════════════════════════════════════════
@@ -312,12 +312,12 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         verifyRemoteBatch(mockVersionedBatch, signatures);
     }
 
-    function test_verifyRemoteBatch_revertSameChainId() public {
+    function test_verifyRemoteBatch_revertChainIdNotRemote() public {
         InterchainBatch memory batch = mockBatch;
         batch.srcChainId = DST_CHAIN_ID;
         bytes memory versionedBatch = getVersionedBatch(batch);
         bytes memory signatures = signBatch(batch, toArray(PK_1, PK_0));
-        expectRevertSameChainId(DST_CHAIN_ID);
+        expectRevertChainIdNotRemote(DST_CHAIN_ID);
         verifyRemoteBatch(versionedBatch, signatures);
     }
 

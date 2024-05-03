@@ -222,8 +222,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.expectRevert(IInterchainDB.InterchainDB__NoModulesSpecified.selector);
     }
 
-    function expectRevertSameChainId(uint64 chainId) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector, chainId));
+    function expectRevertChainIdNotRemote(uint64 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__ChainIdNotRemote.selector, chainId));
     }
 
     // ═══════════════════════════════════════════════ TESTS: SET UP ═══════════════════════════════════════════════════
@@ -453,8 +453,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         requestVerification(requestCaller, MODULE_A_FEE, 0, new address[](0));
     }
 
-    function test_requestVerification_revert_sameChainId() public {
-        expectRevertSameChainId(SRC_CHAIN_ID);
+    function test_requestVerification_revert_ChainIdNotRemote() public {
+        expectRevertChainIdNotRemote(SRC_CHAIN_ID);
         vm.prank(requestCaller);
         icDB.requestBatchVerification(SRC_CHAIN_ID, 0, oneModule);
     }
@@ -659,9 +659,9 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         writeEntryWithVerification(0, writerF, dataHash, new address[](0));
     }
 
-    function test_writeEntryWithVerification_revert_sameChainId() public {
+    function test_writeEntryWithVerification_revert_ChainIdNotRemote() public {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        expectRevertSameChainId(SRC_CHAIN_ID);
+        expectRevertChainIdNotRemote(SRC_CHAIN_ID);
         vm.prank(writerF);
         icDB.writeEntryWithVerification(SRC_CHAIN_ID, dataHash, oneModule);
     }
