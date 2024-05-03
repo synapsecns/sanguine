@@ -14,12 +14,12 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
 
     error InterchainApp__AlreadyLatestClient(address client);
     error InterchainApp__BalanceBelowMin(uint256 balance, uint256 minRequired);
+    error InterchainApp__CallerNotInterchainClient(address caller);
     error InterchainApp__ChainIdNotRemote(uint64 chainId);
     error InterchainApp__ClientAlreadyAdded(address client);
     error InterchainApp__InterchainClientZeroAddress();
-    error InterchainApp__NotInterchainClient(address account);
     error InterchainApp__ReceiverZeroAddress(uint64 chainId);
-    error InterchainApp__SenderNotAllowed(uint64 srcChainId, bytes32 sender);
+    error InterchainApp__SrcSenderNotAllowed(uint64 srcChainId, bytes32 sender);
 
     /// @inheritdoc IInterchainApp
     function appReceive(
@@ -33,13 +33,13 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
         payable
     {
         if (!_isInterchainClient(msg.sender)) {
-            revert InterchainApp__NotInterchainClient(msg.sender);
+            revert InterchainApp__CallerNotInterchainClient(msg.sender);
         }
         if (srcChainId == block.chainid) {
             revert InterchainApp__ChainIdNotRemote(srcChainId);
         }
         if (!_isAllowedSender(srcChainId, sender)) {
-            revert InterchainApp__SenderNotAllowed(srcChainId, sender);
+            revert InterchainApp__SrcSenderNotAllowed(srcChainId, sender);
         }
         _receiveMessage(srcChainId, sender, dbNonce, entryIndex, message);
     }
@@ -74,7 +74,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     /// Note: should be guarded with permission checks in the derived contracts.
     function _removeClient(address client) internal {
         if (!_isInterchainClient(client)) {
-            revert InterchainApp__NotInterchainClient(client);
+            revert InterchainApp__CallerNotInterchainClient(client);
         }
         _toggleClientState(client, false);
         emit InterchainClientRemoved(client);
@@ -89,7 +89,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     function _setLatestClient(address client) internal {
         // New latest client must be an allowed client or zero address.
         if (!_isInterchainClient(client) && client != address(0)) {
-            revert InterchainApp__NotInterchainClient(client);
+            revert InterchainApp__CallerNotInterchainClient(client);
         }
         if (client == _getLatestClient()) {
             revert InterchainApp__AlreadyLatestClient(client);

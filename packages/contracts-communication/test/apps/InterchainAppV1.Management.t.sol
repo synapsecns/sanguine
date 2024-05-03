@@ -168,7 +168,7 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
 
     function test_removeInterchainClient_revert_clientNotAdded() public {
         addInterchainClient({client: icClient, updateLatest: true});
-        expectRevertNotInterchainClient(newClient);
+        expectRevertCallerNotInterchainClient(newClient);
         removeInterchainClient(newClient);
     }
 
@@ -226,9 +226,9 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
         setLatestInterchainClient(icClient);
     }
 
-    function test_setLatestInterchainClient_revert_notInterchainClient() public {
+    function test_setLatestInterchainClient_revert_CallerNotInterchainClient() public {
         addInterchainClient({client: icClient, updateLatest: true});
-        expectRevertNotInterchainClient(newClient);
+        expectRevertCallerNotInterchainClient(newClient);
         setLatestInterchainClient(newClient);
     }
 

@@ -397,17 +397,17 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         requestTxExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP - 1, encodedOptionsWithAirdrop);
     }
 
-    function test_requestTxExecution_noAirdrop_revert_notInterchainClient(address caller) public {
+    function test_requestTxExecution_noAirdrop_revert_CallerNotInterchainClient(address caller) public {
         assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != icClientA && caller != icClientB);
-        expectRevertNotInterchainClient(caller);
+        expectRevertCallerNotInterchainClient(caller);
         requestTxExecution(caller, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
     }
 
-    function test_requestTxExecution_withAirdrop_revert_notInterchainClient(address caller) public {
+    function test_requestTxExecution_withAirdrop_revert_CallerNotInterchainClient(address caller) public {
         assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != icClientA && caller != icClientB);
-        expectRevertNotInterchainClient(caller);
+        expectRevertCallerNotInterchainClient(caller);
         requestTxExecution(caller, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
     }
 }

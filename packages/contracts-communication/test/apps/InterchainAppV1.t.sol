@@ -137,8 +137,10 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         vm.expectRevert(AbstractICApp.InterchainApp__InterchainClientZeroAddress.selector);
     }
 
-    function expectRevertNotInterchainClient(address account) internal {
-        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__NotInterchainClient.selector, account));
+    function expectRevertCallerNotInterchainClient(address account) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(AbstractICApp.InterchainApp__CallerNotInterchainClient.selector, account)
+        );
     }
 
     function expectRevertReceiverZeroAddress(uint64 chainId) internal {
@@ -149,9 +151,9 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__ChainIdNotRemote.selector, chainId));
     }
 
-    function expectRevertSenderNotAllowed(uint64 srcChainId, bytes32 sender) internal {
+    function expectRevertSrcSenderNotAllowed(uint64 srcChainId, bytes32 sender) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(AbstractICApp.InterchainApp__SenderNotAllowed.selector, srcChainId, sender)
+            abi.encodeWithSelector(AbstractICApp.InterchainApp__SrcSenderNotAllowed.selector, srcChainId, sender)
         );
     }
 

@@ -98,9 +98,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_appReceive_revert_notInterchainClients(address caller) public {
+    function test_appReceive_revert_CallerNotInterchainClients(address caller) public {
         vm.assume(caller != icClient && caller != extraClient);
-        expectRevertNotInterchainClient(caller);
+        expectRevertCallerNotInterchainClient(caller);
         vm.prank(caller);
         appHarness.appReceive({
             srcChainId: REMOTE_CHAIN_ID,
@@ -123,9 +123,9 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_appReceive_revert_senderNotAllowed(bytes32 sender) public {
+    function test_appReceive_revert_SrcSenderNotAllowed(bytes32 sender) public {
         vm.assume(sender != linkedAppMockBytes32);
-        expectRevertSenderNotAllowed(REMOTE_CHAIN_ID, sender);
+        expectRevertSrcSenderNotAllowed(REMOTE_CHAIN_ID, sender);
         vm.prank(icClient);
         appHarness.appReceive({
             srcChainId: REMOTE_CHAIN_ID,

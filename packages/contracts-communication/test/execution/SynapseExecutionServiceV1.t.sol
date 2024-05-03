@@ -104,7 +104,7 @@ contract SynapseExecutionServiceV1Test is ProxyTest, ClaimableFeesEvents, Synaps
         );
     }
 
-    function expectRevertNotInterchainClient(address caller) internal {
+    function expectRevertCallerNotInterchainClient(address caller) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, caller, IC_CLIENT_ROLE)
         );

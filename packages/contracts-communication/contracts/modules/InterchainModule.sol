@@ -24,7 +24,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     /// @inheritdoc IInterchainModule
     function requestBatchVerification(uint64 dstChainId, bytes calldata versionedBatch) external payable {
         if (msg.sender != INTERCHAIN_DB) {
-            revert InterchainModule__NotInterchainDB(msg.sender);
+            revert InterchainModule__CallerNotInterchainDB(msg.sender);
         }
         InterchainBatch memory batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
         if (dstChainId == block.chainid) {
