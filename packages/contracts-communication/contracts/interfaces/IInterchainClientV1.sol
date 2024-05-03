@@ -8,10 +8,11 @@ interface IInterchainClientV1 {
     enum TxReadiness {
         Ready,
         AlreadyExecuted,
+        BatchAwaitingResponses,
         BatchConflict,
-        IncorrectDstChainId,
-        NotEnoughResponses,
-        ZeroRequiredResponses,
+        ReceiverNotICApp,
+        ReceiverZeroRequiredResponses,
+        TxWrongDstChainId,
         UndeterminedRevert
     }
 
@@ -26,12 +27,13 @@ interface IInterchainClientV1 {
     error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
     error InterchainClientV1__NotEVMClient(bytes32 client);
     error InterchainClientV1__NotRemoteChainId(uint64 chainId);
+    error InterchainClientV1__ReceiverNotICApp(address receiver);
+    error InterchainClientV1__ReceiverZeroRequiredResponses(address receiver);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
     error InterchainClientV1__ZeroAddress();
     error InterchainClientV1__ZeroExecutionService();
     error InterchainClientV1__ZeroReceiver();
-    error InterchainClientV1__ZeroRequiredResponses();
 
     /// @notice Allows the contract owner to set the address of the Guard module.
     /// Note: batches marked as invalid by the Guard could not be used for message execution,
@@ -132,15 +134,17 @@ interface IInterchainClientV1 {
     /// - Ready: the transaction is ready to be executed.
     /// - AlreadyExecuted: the transaction has already been executed.
     ///   - `firstArg` is the transaction ID.
+    /// - BatchAwaitingResponses: not enough responses have been received for the transaction.
+    ///   - `firstArg` is the number of responses received.
+    ///   - `secondArg` is the number of responses required.
     /// - BatchConflict: one of the modules have submitted a conflicting batch.
     ///   - `firstArg` is the address of the module.
     ///   - This is either one of the modules that the app trusts, or the Guard module used by the app.
-    /// - IncorrectDstChainId: the destination chain ID does not match the local chain ID.
+    /// - ReceiverNotICApp: the receiver is not an Interchain app.
+    ///  - `firstArg` is the receiver address.
+    /// - ReceiverZeroRequiredResponses: the app config requires zero responses for the transaction.
+    /// - TxWrongDstChainId: the destination chain ID does not match the local chain ID.
     ///   - `firstArg` is the destination chain ID.
-    /// - NotEnoughResponses: not enough responses have been received for the transaction.
-    ///   - `firstArg` is the number of responses received.
-    ///   - `secondArg` is the number of responses required.
-    /// - ZeroRequiredResponses: the app config requires zero responses for the transaction.
     /// - UndeterminedRevert: the transaction will revert for another reason.
     ///
     /// Note: the arguments are abi-encoded bytes32 values (as their types could be different).
