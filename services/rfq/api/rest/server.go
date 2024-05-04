@@ -79,23 +79,17 @@ func NewAPI(
 		roles[chainID] = ttlcache.New[string, bool](
 			ttlcache.WithTTL[string, bool](cacheInterval),
 		)
-		// purge periodically
-		const cachePurgeInterval = 5 * time.Second
-		cacheTimer := time.NewTimer(cachePurgeInterval)
-
 		roleCache := roles[chainID]
 
-		go func() {
-			select {
-			case <-ctx.Done():
-				cacheTimer.Stop()
-			case <-cacheTimer.C:
-				cacheTimer.Reset(cachePurgeInterval)
-				roleCache.DeleteExpired()
-			}
-		}()
-
+		roleCache.Start()
 	}
+
+	go func() {
+		<-ctx.Done()
+		for _, roleCache := range roles {
+			roleCache.Stop()
+		}
+	}()
 
 	return &QuoterAPIServer{
 		cfg:                 cfg,
