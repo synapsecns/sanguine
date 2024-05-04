@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.2](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.5.1...contracts-communication@1.5.2) (2024-05-04)
+
+
+### Bug Fixes
+
+* **contracts-communication:** gasOracle check in ExecutionService, remove batch decoding in Module ([#2560](https://github.com/synapsecns/sanguine/issues/2560)) ([5340c8c](https://github.com/synapsecns/sanguine/commit/5340c8c8e639cb34a77476047baf6ba39097563f))
+
+
+
+
+
 ## [1.5.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.5.0...contracts-communication@1.5.1) (2024-05-03)
 
 **Note:** Version bump only for package contracts-communication
