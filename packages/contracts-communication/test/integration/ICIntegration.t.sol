@@ -8,7 +8,7 @@ import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEve
 
 import {IInterchainApp} from "../../contracts/interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV1.sol";
-import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
 import {ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
@@ -27,13 +27,13 @@ abstract contract ICIntegrationTest is
 {
     using TypeCasts for address;
 
-    function assertEq(InterchainBatch memory batch, InterchainBatch memory expected) internal {
+    function assertEq(InterchainBatch memory batch, InterchainBatch memory expected) internal pure {
         assertEq(batch.srcChainId, expected.srcChainId);
         assertEq(batch.dbNonce, expected.dbNonce);
         assertEq(batch.batchRoot, expected.batchRoot);
     }
 
-    function assertEq(InterchainEntry memory entry, InterchainEntry memory expected) internal {
+    function assertEq(InterchainEntry memory entry, InterchainEntry memory expected) internal pure {
         assertEq(entry.srcChainId, expected.srcChainId);
         assertEq(entry.dbNonce, expected.dbNonce);
         assertEq(entry.entryIndex, expected.entryIndex);
@@ -164,10 +164,14 @@ abstract contract ICIntegrationTest is
 
     // ══════════════════════════════════════════════ EXPECT REVERTS ═══════════════════════════════════════════════════
 
-    function expectClientRevertNotEnoughResponses(uint256 actual, uint256 required) internal {
+    function expectClientRevertBatchConflict(address module) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__BatchConflict.selector, module));
+    }
+
+    function expectClientRevertResponsesAmountBelowMin(uint256 actual, uint256 required) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
-                IInterchainClientV1.InterchainClientV1__NotEnoughResponses.selector, actual, required
+                IInterchainClientV1.InterchainClientV1__ResponsesAmountBelowMin.selector, actual, required
             )
         );
     }
@@ -180,12 +184,12 @@ abstract contract ICIntegrationTest is
         );
     }
 
-    function checkBatchLeafs(InterchainBatch memory batch, bytes32[] memory leafs) internal {
+    function checkBatchLeafs(InterchainBatch memory batch, bytes32[] memory leafs) internal pure {
         assertEq(leafs.length, 1);
         assertEq(leafs[0], batch.batchRoot);
     }
 
-    function checkDatabaseStateMsgSent(InterchainEntry memory entry, uint64 initialDBNonce) internal {
+    function checkDatabaseStateMsgSent(InterchainEntry memory entry, uint64 initialDBNonce) internal view {
         InterchainBatch memory batch = getInterchainBatch(entry);
         InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
         assertEq(desc.dbNonce, initialDBNonce);
@@ -201,6 +205,18 @@ abstract contract ICIntegrationTest is
         (uint64 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
         assertEq(dbNonce, desc.dbNonce + 1);
         assertEq(entryIndex, 0);
+    }
+
+    function markInvalidByGuard(InterchainBatch memory batch) internal {
+        InterchainBatch memory conflictingBatch = InterchainBatch({
+            srcChainId: batch.srcChainId,
+            dbNonce: batch.dbNonce,
+            batchRoot: keccak256("Some other data")
+        });
+        bytes memory encodedBatch =
+            payloadLibHarness.encodeVersionedPayload(DB_VERSION, batchLibHarness.encodeBatch(conflictingBatch));
+        vm.prank(guard);
+        icDB.verifyRemoteBatch(encodedBatch);
     }
 
     // ═══════════════════════════════════════════════ DATA HELPERS ════════════════════════════════════════════════════

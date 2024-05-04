@@ -5,7 +5,7 @@ import {AbstractICApp, InterchainTxDescriptor} from "./AbstractICApp.sol";
 
 import {InterchainAppV1Events} from "../events/InterchainAppV1Events.sol";
 import {IInterchainAppV1} from "../interfaces/IInterchainAppV1.sol";
-import {AppConfigV1} from "../libs/AppConfig.sol";
+import {AppConfigV1, APP_CONFIG_GUARD_DEFAULT} from "../libs/AppConfig.sol";
 import {OptionsV1} from "../libs/Options.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
@@ -88,13 +88,13 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     }
 
     /// @inheritdoc IInterchainAppV1
-    function setAppConfigV1(AppConfigV1 memory appConfig) external onlyRole(IC_GOVERNOR_ROLE) {
-        if (appConfig.requiredResponses == 0 || appConfig.optimisticPeriod == 0) {
-            revert InterchainApp__InvalidAppConfig(appConfig.requiredResponses, appConfig.optimisticPeriod);
+    function setAppConfigV1(uint256 requiredResponses, uint256 optimisticPeriod) external onlyRole(IC_GOVERNOR_ROLE) {
+        if (requiredResponses == 0 || optimisticPeriod == 0) {
+            revert InterchainApp__AppConfigInvalid(requiredResponses, optimisticPeriod);
         }
-        _requiredResponses = SafeCast.toUint16(appConfig.requiredResponses);
-        _optimisticPeriod = SafeCast.toUint48(appConfig.optimisticPeriod);
-        emit AppConfigV1Set(appConfig.requiredResponses, appConfig.optimisticPeriod);
+        _requiredResponses = SafeCast.toUint16(requiredResponses);
+        _optimisticPeriod = SafeCast.toUint48(optimisticPeriod);
+        emit AppConfigV1Set(requiredResponses, optimisticPeriod);
     }
 
     /// @inheritdoc IInterchainAppV1
@@ -107,7 +107,13 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     /// @inheritdoc IInterchainAppV1
     function getAppConfigV1() public view returns (AppConfigV1 memory) {
-        return AppConfigV1({requiredResponses: _requiredResponses, optimisticPeriod: _optimisticPeriod});
+        (uint8 guardFlag, address guard) = _getGuardConfig();
+        return AppConfigV1({
+            requiredResponses: _requiredResponses,
+            optimisticPeriod: _optimisticPeriod,
+            guardFlag: guardFlag,
+            guard: guard
+        });
     }
 
     /// @inheritdoc IInterchainAppV1
@@ -136,7 +142,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
         bytes32 linkedApp = _linkedApp[chainId];
         linkedAppEVM = linkedApp.bytes32ToAddress();
         if (linkedAppEVM.addressToBytes32() != linkedApp) {
-            revert InterchainApp__NotEVMLinkedApp(linkedApp);
+            revert InterchainApp__LinkedAppNotEVM(linkedApp);
         }
     }
 
@@ -152,10 +158,10 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// Note: Should be guarded with permissions check.
     function _linkRemoteApp(uint64 chainId, bytes32 remoteApp) internal {
         if (chainId == block.chainid) {
-            revert InterchainApp__SameChainId(chainId);
+            revert InterchainApp__ChainIdNotRemote(chainId);
         }
         if (remoteApp == 0) {
-            revert InterchainApp__AppZeroAddress();
+            revert InterchainApp__RemoteAppZeroAddress();
         }
         _linkedApp[chainId] = remoteApp;
         emit AppLinked(chainId, remoteApp);
@@ -217,6 +223,12 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// @dev Returns the configuration of the app for validating the received messages.
     function _getAppConfig() internal view override returns (bytes memory) {
         return getAppConfigV1().encodeAppConfigV1();
+    }
+
+    /// @dev Returns the guard flag and address in the app config.
+    /// By default, the ICApp is using the Client-provided guard, but it can be overridden in the derived contract.
+    function _getGuardConfig() internal view virtual returns (uint8 guardFlag, address guard) {
+        return (APP_CONFIG_GUARD_DEFAULT, address(0));
     }
 
     /// @dev Returns the address of the Execution Service to use for sending messages.

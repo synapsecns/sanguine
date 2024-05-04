@@ -6,7 +6,9 @@ import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
 import {BatchingV1Lib} from "./libs/BatchingV1.sol";
-import {InterchainBatch, InterchainBatchLib, BatchKey} from "./libs/InterchainBatch.sol";
+import {
+    InterchainBatch, InterchainBatchLib, BatchKey, BATCH_UNVERIFIED, BATCH_CONFLICT
+} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {VersionedPayloadLib} from "./libs/VersionedPayload.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
@@ -30,7 +32,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     modifier onlyRemoteChainId(uint64 chainId) {
         if (chainId == block.chainid) {
-            revert InterchainDB__SameChainId(chainId);
+            revert InterchainDB__ChainIdNotRemote(chainId);
         }
         _;
     }
@@ -79,31 +81,37 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function verifyRemoteBatch(bytes calldata versionedBatch) external {
-        uint16 dbVersion = versionedBatch.getVersion();
-        if (dbVersion != DB_VERSION) {
-            revert InterchainDB__InvalidBatchVersion(dbVersion);
-        }
-        InterchainBatch memory batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
-        if (batch.srcChainId == block.chainid) {
-            revert InterchainDB__SameChainId(batch.srcChainId);
-        }
+        InterchainBatch memory batch = _assertCorrectBatch(versionedBatch);
         BatchKey batchKey = InterchainBatchLib.encodeBatchKey({srcChainId: batch.srcChainId, dbNonce: batch.dbNonce});
         RemoteBatch memory existingBatch = _remoteBatches[msg.sender][batchKey];
         // Check if that's the first time module verifies the batch
         if (existingBatch.verifiedAt == 0) {
-            _remoteBatches[msg.sender][batchKey] =
-                RemoteBatch({verifiedAt: block.timestamp, batchRoot: batch.batchRoot});
-            emit InterchainBatchVerified(msg.sender, batch.srcChainId, batch.dbNonce, batch.batchRoot);
-        } else {
-            // If the module has already verified the batch, check that the batch root is the same
-            if (existingBatch.batchRoot != batch.batchRoot) {
-                revert InterchainDB__ConflictingBatches(msg.sender, existingBatch.batchRoot, batch);
-            }
-            // No-op if the batch root is the same
+            _saveVerifiedBatch(msg.sender, batchKey, batch);
+            return;
         }
+        // No-op if the batch root is the same
+        if (existingBatch.batchRoot == batch.batchRoot) {
+            return;
+        }
+        // Overwriting an empty (non-existent) batch with a different one is allowed
+        if (existingBatch.batchRoot == 0) {
+            _saveVerifiedBatch(msg.sender, batchKey, batch);
+            return;
+        }
+        // Overwriting an existing batch with a different one is not allowed
+        revert InterchainDB__BatchConflict(msg.sender, existingBatch.batchRoot, batch);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc IInterchainDB
+    function getBatchLeafs(uint64 dbNonce) external view returns (bytes32[] memory leafs) {
+        uint256 batchSize = getBatchSize(dbNonce);
+        leafs = new bytes32[](batchSize);
+        for (uint64 i = 0; i < batchSize; ++i) {
+            leafs[i] = getEntryValue(dbNonce, i);
+        }
+    }
 
     /// @inheritdoc IInterchainDB
     function getBatchLeafsPaginated(
@@ -115,16 +123,19 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         view
         returns (bytes32[] memory leafs)
     {
-        if (start != 0 || end != 1) {
-            revert InterchainDB__InvalidEntryRange(dbNonce, start, end);
+        uint256 size = getBatchSize(dbNonce);
+        if (start > end || end > size) {
+            revert InterchainDB__EntryRangeInvalid(dbNonce, start, end);
         }
-        return getBatchLeafs(dbNonce);
+        leafs = new bytes32[](end - start);
+        for (uint64 i = start; i < end; ++i) {
+            leafs[i - start] = getEntryValue(dbNonce, i);
+        }
     }
 
     /// @inheritdoc IInterchainDB
     function getEntryProof(uint64 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof) {
         // In "no batching" mode: the batch root is the same as the entry value, hence the proof is empty
-        _assertBatchFinalized(dbNonce);
         _assertEntryExists(dbNonce, entryIndex);
         return new bytes32[](0);
     }
@@ -155,10 +166,19 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         RemoteBatch memory remoteBatch = _remoteBatches[dstModule][batchKey];
         // Check if module verified anything for this batch key first
         if (remoteBatch.verifiedAt == 0) {
-            return InterchainBatchLib.UNVERIFIED;
+            return BATCH_UNVERIFIED;
         }
         // Check if the batch root matches the one verified by the module
-        return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : InterchainBatchLib.CONFLICT;
+        return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : BATCH_CONFLICT;
+    }
+
+    /// @inheritdoc IInterchainDB
+    function getVersionedBatch(uint64 dbNonce) external view returns (bytes memory versionedBatch) {
+        InterchainBatch memory batch = getBatch(dbNonce);
+        return VersionedPayloadLib.encodeVersionedPayload({
+            version: DB_VERSION,
+            payload: InterchainBatchLib.encodeBatch(batch)
+        });
     }
 
     /// @inheritdoc IInterchainDB
@@ -172,25 +192,18 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
-    function getBatchLeafs(uint64 dbNonce) public view returns (bytes32[] memory leafs) {
-        // In "no batching" mode: the finalized batch size is 1
-        _assertBatchFinalized(dbNonce);
-        leafs = new bytes32[](1);
-        leafs[0] = getEntryValue(dbNonce, 0);
-    }
-
-    /// @inheritdoc IInterchainDB
     function getBatchSize(uint64 dbNonce) public view returns (uint64) {
         // In "no batching" mode: the finalized batch size is 1, the pending batch size is 0
-        uint64 pendingNonce = _assertBatchExists(dbNonce);
-        return dbNonce < pendingNonce ? 1 : 0;
+        // We also return 0 for non-existent batches
+        return dbNonce < getDBNonce() ? 1 : 0;
     }
 
     /// @inheritdoc IInterchainDB
     function getBatch(uint64 dbNonce) public view returns (InterchainBatch memory) {
-        _assertBatchFinalized(dbNonce);
-        // In "no batching" mode: the batch root is the same as the entry hash
-        return InterchainBatchLib.constructLocalBatch(dbNonce, getEntryValue(dbNonce, 0));
+        // In "no batching" mode: the batch root is the same as the entry hash.
+        // For non-finalized or non-existent batches, the batch root is 0.
+        bytes32 batchRoot = dbNonce < getDBNonce() ? getEntryValue(dbNonce, 0) : bytes32(0);
+        return InterchainBatchLib.constructLocalBatch(dbNonce, batchRoot);
     }
 
     /// @inheritdoc IInterchainDB
@@ -239,7 +252,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, batch.dbNonce, srcModules);
         if (msg.value < totalFee) {
-            revert InterchainDB__IncorrectFeeAmount(msg.value, totalFee);
+            revert InterchainDB__FeeAmountBelowMin(msg.value, totalFee);
         } else if (msg.value > totalFee) {
             // The exceeding amount goes to the first module
             fees[0] += msg.value - totalFee;
@@ -250,26 +263,31 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             payload: InterchainBatchLib.encodeBatch(batch)
         });
         for (uint256 i = 0; i < len; ++i) {
-            IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(dstChainId, versionedBatch);
+            IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(
+                dstChainId, batch.dbNonce, versionedBatch
+            );
         }
         emit InterchainBatchVerificationRequested(dstChainId, batch.dbNonce, batch.batchRoot, srcModules);
     }
 
-    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
-
-    /// @dev Check that the batch with the given nonce exists and return the pending nonce.
-    function _assertBatchExists(uint64 dbNonce) internal view returns (uint64 pendingNonce) {
-        pendingNonce = getDBNonce();
-        if (dbNonce > pendingNonce) {
-            revert InterchainDB__BatchDoesNotExist(dbNonce);
-        }
+    /// @dev Save the verified batch to the database and emit the event.
+    function _saveVerifiedBatch(address module, BatchKey batchKey, InterchainBatch memory batch) internal {
+        _remoteBatches[module][batchKey] = RemoteBatch({verifiedAt: block.timestamp, batchRoot: batch.batchRoot});
+        emit InterchainBatchVerified(module, batch.srcChainId, batch.dbNonce, batch.batchRoot);
     }
 
-    /// @dev Check that the batch with the given nonce is finalized and return the pending nonce.
-    function _assertBatchFinalized(uint64 dbNonce) internal view returns (uint64 pendingNonce) {
-        pendingNonce = getDBNonce();
-        if (dbNonce >= pendingNonce) {
-            revert InterchainDB__BatchNotFinalized(dbNonce);
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
+
+    /// @dev Asserts that the batch version is correct and that batch originates from a remote chain.
+    /// Note: returns the decoded batch for chaining purposes.
+    function _assertCorrectBatch(bytes calldata versionedBatch) internal view returns (InterchainBatch memory batch) {
+        uint16 dbVersion = versionedBatch.getVersion();
+        if (dbVersion != DB_VERSION) {
+            revert InterchainDB__BatchVersionMismatch(dbVersion, DB_VERSION);
+        }
+        batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
+        if (batch.srcChainId == block.chainid) {
+            revert InterchainDB__ChainIdNotRemote(batch.srcChainId);
         }
     }
 
@@ -294,7 +312,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         uint256 len = srcModules.length;
         if (len == 0) {
-            revert InterchainDB__NoModulesSpecified();
+            revert InterchainDB__ModulesNotProvided();
         }
         fees = new uint256[](len);
         for (uint256 i = 0; i < len; ++i) {

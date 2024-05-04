@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.3...@synapsecns/sdk-router@0.5.0) (2024-05-03)
+
+
+### Features
+
+* **sdk-router:** Adds Scroll to SDK ([#2554](https://github.com/synapsecns/sanguine/issues/2554)) ([ed7f6de](https://github.com/synapsecns/sanguine/commit/ed7f6de23b538a5fb378e6167facfe30b352c703))
+
+
+
+
+
 ## [0.4.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.2...@synapsecns/sdk-router@0.4.3) (2024-04-03)
 
 **Note:** Version bump only for package @synapsecns/sdk-router

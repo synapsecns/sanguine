@@ -15,7 +15,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     /// @dev Checks that the chain ID is not the local chain ID.
     modifier onlyRemoteChainId(uint64 chainId) {
         if (block.chainid == chainId) {
-            revert SynapseGasOracleV1__NotRemoteChainId(chainId);
+            revert SynapseGasOracleV1__ChainIdNotRemote(chainId);
         }
         _;
     }

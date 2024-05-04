@@ -3,6 +3,68 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.2](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.5.1...contracts-communication@1.5.2) (2024-05-04)
+
+
+### Bug Fixes
+
+* **contracts-communication:** gasOracle check in ExecutionService, remove batch decoding in Module ([#2560](https://github.com/synapsecns/sanguine/issues/2560)) ([5340c8c](https://github.com/synapsecns/sanguine/commit/5340c8c8e639cb34a77476047baf6ba39097563f))
+
+
+
+
+
+## [1.5.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.5.0...contracts-communication@1.5.1) (2024-05-03)
+
+**Note:** Version bump only for package contracts-communication
+
+
+
+
+
+# [1.5.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.4.1...contracts-communication@1.5.0) (2024-05-03)
+
+
+### Features
+
+* **contracts-communication:** expose batch getter in `InterchainDB` ([#2552](https://github.com/synapsecns/sanguine/issues/2552)) ([3659073](https://github.com/synapsecns/sanguine/commit/3659073c8cfe3e3ed09d742b3bcc61db3dc81046))
+
+
+
+
+
+## [1.4.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.4.0...contracts-communication@1.4.1) (2024-05-03)
+
+
+### Bug Fixes
+
+* **contracts-communication:** check interchain receiver interface ([#2553](https://github.com/synapsecns/sanguine/issues/2553)) ([4b92bdc](https://github.com/synapsecns/sanguine/commit/4b92bdcf95e23b2cad24f935d44bc0b25200a7ae))
+
+
+
+
+
+# [1.4.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.3.1...contracts-communication@1.4.0) (2024-05-02)
+
+
+### Features
+
+* allow modules to signal non-existing batches and verify their value later ([#2536](https://github.com/synapsecns/sanguine/issues/2536)) ([be0a79f](https://github.com/synapsecns/sanguine/commit/be0a79f0e464e652c831bfa6422521ee528ba2f4))
+* interchain guard modules ([#2530](https://github.com/synapsecns/sanguine/issues/2530)) ([2fb39be](https://github.com/synapsecns/sanguine/commit/2fb39be99d4fff6c5dd846680a05973751a375d3)), closes [#2531](https://github.com/synapsecns/sanguine/issues/2531)
+* unify claiming in `SynapseModule` and `SynapseExecutionService` ([#2534](https://github.com/synapsecns/sanguine/issues/2534)) ([360c2bd](https://github.com/synapsecns/sanguine/commit/360c2bdb469fe12ee8d3129adb30b397458da149))
+
+
+
+
+
+## [1.3.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.3.0...contracts-communication@1.3.1) (2024-05-01)
+
+**Note:** Version bump only for package contracts-communication
+
+
+
+
+
 # [1.3.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.2.2...contracts-communication@1.3.0) (2024-04-29)
 
 

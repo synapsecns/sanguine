@@ -2,13 +2,13 @@
 pragma solidity 0.8.20;
 
 import {MessageBusEvents} from "../../contracts/legacy/events/MessageBusEvents.sol";
+import {LegacyMessageLib} from "../../contracts/legacy/libs/LegacyMessage.sol";
 import {LegacyOptionsLib} from "../../contracts/legacy/libs/LegacyOptions.sol";
 import {MessageBus, IMessageBus} from "../../contracts/legacy/MessageBus.sol";
-import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 
-import {LegacyMessage, LegacyMessageLib} from "./libs/LegacyMessage.t.sol";
+import {LegacyMessage} from "./libs/LegacyMessage.t.sol";
 import {LegacyReceiverMock} from "./mocks/LegacyReceiverMock.sol";
 import {ExecutionServiceMock} from "../mocks/ExecutionServiceMock.sol";
 import {InterchainClientV1Mock} from "../mocks/InterchainClientV1Mock.sol";
@@ -48,8 +48,6 @@ abstract contract MessageBusBaseTest is MessageBusEvents, Test {
     address public icModule;
     address[] public icModules;
 
-    AppConfigV1 public appConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: BUS_OPTIMISTIC_PERIOD});
-
     address public admin = makeAddr("Admin");
     address public governor = makeAddr("Governor");
 
@@ -75,7 +73,7 @@ abstract contract MessageBusBaseTest is MessageBusEvents, Test {
         messageBus.addInterchainClient({client: icClient, updateLatest: true});
         messageBus.linkRemoteAppEVM({chainId: REMOTE_CHAIN_ID, remoteApp: remoteMessageBus});
         messageBus.addTrustedModule(icModule);
-        messageBus.setAppConfigV1(appConfig);
+        messageBus.setAppConfigV1({requiredResponses: 1, optimisticPeriod: BUS_OPTIMISTIC_PERIOD});
         messageBus.setExecutionService(execService);
         vm.stopPrank();
     }
@@ -124,12 +122,12 @@ abstract contract MessageBusBaseTest is MessageBusEvents, Test {
         emit MessageLengthEstimateSet(length);
     }
 
-    function expectRevertNotEVMReceiver(bytes32 receiver) internal {
-        vm.expectRevert(abi.encodeWithSelector(IMessageBus.MessageBus__NotEVMReceiver.selector, receiver));
+    function expectRevertReceiverNotEVM(bytes32 receiver) internal {
+        vm.expectRevert(abi.encodeWithSelector(IMessageBus.MessageBus__ReceiverNotEVM.selector, receiver));
     }
 
-    function expectRevertInvalidOptions(bytes memory legacyOpts) internal {
-        vm.expectRevert(abi.encodeWithSelector(LegacyOptionsLib.LegacyOptionsLib__InvalidOptions.selector, legacyOpts));
+    function expectRevertPayloadInvalid(bytes memory legacyOpts) internal {
+        vm.expectRevert(abi.encodeWithSelector(LegacyOptionsLib.LegacyOptionsLib__PayloadInvalid.selector, legacyOpts));
     }
 
     function expectRevertUnauthorizedGovernor(address caller) internal {

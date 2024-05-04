@@ -1,25 +1,43 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
+import {InterchainTransaction, InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 
 interface IInterchainClientV1 {
-    // TODO: standardize error names across interfaces
+    enum TxReadiness {
+        Ready,
+        AlreadyExecuted,
+        BatchAwaitingResponses,
+        BatchConflict,
+        ReceiverNotICApp,
+        ReceiverZeroRequiredResponses,
+        TxWrongDstChainId,
+        UndeterminedRevert
+    }
+
     error InterchainClientV1__BatchConflict(address module);
-    error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
-    error InterchainClientV1__IncorrectDstChainId(uint64 chainId);
-    error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
-    error InterchainClientV1__InvalidTransactionVersion(uint16 version);
-    error InterchainClientV1__NoLinkedClient(uint64 chainId);
-    error InterchainClientV1__NotEnoughGasSupplied();
-    error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
-    error InterchainClientV1__NotEVMClient(bytes32 client);
-    error InterchainClientV1__NotRemoteChainId(uint64 chainId);
+    error InterchainClientV1__ChainIdNotLinked(uint64 chainId);
+    error InterchainClientV1__ChainIdNotRemote(uint64 chainId);
+    error InterchainClientV1__DstChainIdNotLocal(uint64 chainId);
+    error InterchainClientV1__ExecutionServiceZeroAddress();
+    error InterchainClientV1__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
+    error InterchainClientV1__GasLeftBelowMin(uint256 gasLeft, uint256 minRequired);
+    error InterchainClientV1__GuardZeroAddress();
+    error InterchainClientV1__LinkedClientNotEVM(bytes32 client);
+    error InterchainClientV1__MsgValueMismatch(uint256 msgValue, uint256 required);
+    error InterchainClientV1__ReceiverNotICApp(address receiver);
+    error InterchainClientV1__ReceiverZeroAddress();
+    error InterchainClientV1__ReceiverZeroRequiredResponses(address receiver);
+    error InterchainClientV1__ResponsesAmountBelowMin(uint256 responsesAmount, uint256 minRequired);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
-    error InterchainClientV1__ZeroExecutionService();
-    error InterchainClientV1__ZeroReceiver();
-    error InterchainClientV1__ZeroRequiredResponses();
+    error InterchainClientV1__TxVersionMismatch(uint16 txVersion, uint16 required);
+
+    /// @notice Allows the contract owner to set the address of the Guard module.
+    /// Note: batches marked as invalid by the Guard could not be used for message execution,
+    /// if the app opts in to use the Guard.
+    /// @param guard_       The address of the Guard module.
+    function setDefaultGuard(address guard_) external;
 
     /**
      * @notice Sets the linked client for a specific chain ID.
@@ -108,6 +126,33 @@ interface IInterchainClientV1 {
      * @return bool Returns true if the transaction is executable, false otherwise.
      */
     function isExecutable(bytes calldata transaction, bytes32[] calldata proof) external view returns (bool);
+
+    /// @notice Returns the readiness status of a transaction to be executed.
+    /// @dev Some of the possible statuses have additional arguments that are returned:
+    /// - Ready: the transaction is ready to be executed.
+    /// - AlreadyExecuted: the transaction has already been executed.
+    ///   - `firstArg` is the transaction ID.
+    /// - BatchAwaitingResponses: not enough responses have been received for the transaction.
+    ///   - `firstArg` is the number of responses received.
+    ///   - `secondArg` is the number of responses required.
+    /// - BatchConflict: one of the modules have submitted a conflicting batch.
+    ///   - `firstArg` is the address of the module.
+    ///   - This is either one of the modules that the app trusts, or the Guard module used by the app.
+    /// - ReceiverNotICApp: the receiver is not an Interchain app.
+    ///  - `firstArg` is the receiver address.
+    /// - ReceiverZeroRequiredResponses: the app config requires zero responses for the transaction.
+    /// - TxWrongDstChainId: the destination chain ID does not match the local chain ID.
+    ///   - `firstArg` is the destination chain ID.
+    /// - UndeterminedRevert: the transaction will revert for another reason.
+    ///
+    /// Note: the arguments are abi-encoded bytes32 values (as their types could be different).
+    function getTxReadinessV1(
+        InterchainTransaction memory icTx,
+        bytes32[] calldata proof
+    )
+        external
+        view
+        returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg);
 
     /// @notice Returns the fee for sending an Interchain message.
     /// @param dstChainId           The chain ID of the destination chain.

@@ -14,7 +14,7 @@ interface ISynapseGasOracleV1 is ISynapseGasOracle {
         uint256 nativePrice;
     }
 
-    error SynapseGasOracleV1__NotRemoteChainId(uint64 chainId);
+    error SynapseGasOracleV1__ChainIdNotRemote(uint64 chainId);
     error SynapseGasOracleV1__NativePriceNotSet(uint64 chainId);
     error SynapseGasOracleV1__NativePriceZero();
 

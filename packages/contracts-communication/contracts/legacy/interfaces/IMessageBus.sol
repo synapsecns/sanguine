@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 interface IMessageBus {
-    error MessageBus__NotEVMReceiver(bytes32 receiver);
+    error MessageBus__ReceiverNotEVM(bytes32 receiver);
 
     /// @notice Sends a message to a receiving contract address on another chain.
     /// Sender must make sure that the message is unique and not a duplicate message.

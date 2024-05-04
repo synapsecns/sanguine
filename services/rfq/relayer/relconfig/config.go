@@ -85,8 +85,9 @@ type ChainConfig struct {
 	MinGasToken string `yaml:"min_gas_token"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
-	// QuoteOffsetBps is the number of basis points to deduct from the dest amount.
-	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
+	// QuoteWidthBps is the number of basis points to deduct from the dest amount.
+	// Note that this parameter is applied on a chain level and must be positive.
+	QuoteWidthBps float64 `yaml:"quote_width_bps"`
 	// FixedFeeMultiplier is the multiplier for the fixed fee.
 	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
 	// CCTP start block is the block at which the chain listener will listen for CCTP events.
@@ -114,6 +115,11 @@ type TokenConfig struct {
 	MinRebalanceAmount string `yaml:"min_rebalance_amount"`
 	// MaxRebalanceAmount is the maximum amount to rebalance in human-readable units.
 	MaxRebalanceAmount string `yaml:"max_rebalance_amount"`
+	// QuoteOffsetBps is the number of basis points to deduct from the dest amount,
+	// and add to the origin amount for a given token,
+	// Note that this value can be positive or negative; if positive it effectively increases the quoted price
+	// of the given token, and vice versa.
+	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
 }
 
 // DatabaseConfig represents the configuration for the database.
@@ -173,8 +179,10 @@ func (c Config) Validate() (err error) {
 	initialPctSums := map[string]float64{}
 	for _, chainCfg := range c.Chains {
 		for tokenName, tokenCfg := range chainCfg.Tokens {
-			maintenancePctSums[tokenName] += tokenCfg.MaintenanceBalancePct
-			initialPctSums[tokenName] += tokenCfg.InitialBalancePct
+			if tokenCfg.RebalanceMethod != "" {
+				maintenancePctSums[tokenName] += tokenCfg.MaintenanceBalancePct
+				initialPctSums[tokenName] += tokenCfg.InitialBalancePct
+			}
 		}
 	}
 	for token, sum := range maintenancePctSums {

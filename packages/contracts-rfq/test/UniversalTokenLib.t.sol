@@ -122,7 +122,7 @@ contract UniversalTokenLibraryTest is Test {
         libHarness.universalApproveInfinity(libHarness.ethAddress(), recipient, amount);
     }
 
-    function testEthAddress() public {
+    function testEthAddress() public view {
         // ETH address should have all bytes set to 0xEE
         address ethAddress = libHarness.ethAddress();
         for (uint256 i = 0; i < 20; i++) {

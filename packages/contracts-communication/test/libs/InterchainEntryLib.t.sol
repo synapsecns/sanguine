@@ -6,6 +6,7 @@ import {InterchainEntry, InterchainEntryLibHarness} from "../harnesses/Interchai
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract InterchainEntryLibTest is Test {
     InterchainEntryLibHarness public libHarness;
 
@@ -21,7 +22,7 @@ contract InterchainEntryLibTest is Test {
         libHarness = new InterchainEntryLibHarness();
     }
 
-    function assertEq(InterchainEntry memory actual, InterchainEntry memory expected) public {
+    function assertEq(InterchainEntry memory actual, InterchainEntry memory expected) public pure {
         assertEq(actual.srcChainId, expected.srcChainId, "!srcChainId");
         assertEq(actual.dbNonce, expected.dbNonce, "!dbNonce");
         assertEq(actual.entryIndex, expected.entryIndex, "!entryIndex");
@@ -60,24 +61,24 @@ contract InterchainEntryLibTest is Test {
         assertEq(actual, expected);
     }
 
-    function test_entryValue() public {
+    function test_entryValue() public view {
         bytes32 expected = keccak256(abi.encode(4, 5));
         assertEq(libHarness.entryValue(mockEntry), expected);
     }
 
-    function test_entryValue(InterchainEntry memory entry) public {
+    function test_entryValue(InterchainEntry memory entry) public view {
         bytes32 expected = keccak256(abi.encode(entry.srcWriter, entry.dataHash));
         assertEq(libHarness.entryValue(entry), expected);
     }
 
-    function test_getEntryValue() public {
+    function test_getEntryValue() public view {
         bytes32 srcWriter = bytes32(uint256(4));
         bytes32 dataHash = bytes32(uint256(5));
         bytes32 expected = keccak256(abi.encode(srcWriter, dataHash));
         assertEq(libHarness.getEntryValue(srcWriter, dataHash), expected);
     }
 
-    function test_getEntryValue(bytes32 srcWriter, bytes32 dataHash) public {
+    function test_getEntryValue(bytes32 srcWriter, bytes32 dataHash) public view {
         bytes32 expected = keccak256(abi.encode(srcWriter, dataHash));
         assertEq(libHarness.getEntryValue(srcWriter, dataHash), expected);
     }

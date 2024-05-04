@@ -6,6 +6,7 @@ import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transpa
 import {Test} from "forge-std/Test.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+// solhint-disable ordering
 abstract contract ProxyTest is Test {
     bytes32 public constant ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1);
 
@@ -21,10 +22,15 @@ abstract contract ProxyTest is Test {
         vm.expectRevert(Initializable.InvalidInitialization.selector);
     }
 
-    function assertStorageAddress(address target, bytes32 slot, address expected) internal {
+    function assertStorageAddress(address target, bytes32 slot, address expected) internal view {
         bytes32 actual = vm.load(target, slot);
         bytes32 expectedBytes32 = bytes32(uint256(uint160(expected)));
         assertEq(actual, expectedBytes32);
+    }
+
+    function assertStorageUint(address target, bytes32 slot, uint256 expected) internal view {
+        bytes32 actual = vm.load(target, slot);
+        assertEq(uint256(actual), expected);
     }
 
     /// @dev Function to use in the fuzz tests to assume that the caller is not the proxy admin

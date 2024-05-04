@@ -9,7 +9,14 @@ import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 // solhint-disable ordering
 // solhint-disable no-empty-blocks
 contract InterchainModuleMock is IInterchainModule {
-    function requestBatchVerification(uint64 dstChainId, bytes calldata versionedBatch) external payable {}
+    function requestBatchVerification(
+        uint64 dstChainId,
+        uint64 batchNonce,
+        bytes calldata versionedBatch
+    )
+        external
+        payable
+    {}
 
     function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256) {}
 
