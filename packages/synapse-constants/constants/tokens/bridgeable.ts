@@ -1295,9 +1295,11 @@ export const USDB = new Token({
 export const SPECTRAL = new Token({
   priorityRank: 6,
   addresses: {
+    [CHAINS.ETH.id]: '0xAdF7C35560035944e805D98fF17d58CDe2449389',
     [CHAINS.BASE.id]: '0x96419929d7949D6A801A6909c145C8EEf6A40431',
   },
   decimals: {
+    [CHAINS.ETH.id]: 18,
     [CHAINS.BASE.id]: 18,
   },
   symbol: 'SPEC',
