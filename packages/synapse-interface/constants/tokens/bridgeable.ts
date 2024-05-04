@@ -33,6 +33,7 @@ import sfiLogo from '@assets/icons/sfi.svg'
 import solarbeamLogo from '@assets/icons/solar.svg'
 import susdLogo from '@assets/icons/susd.svg'
 import synapseLogo from '@assets/icons/syn.svg'
+import spectralLogo from '@assets/icons/spectral.svg'
 import unidexLogo from '@assets/icons/unidex.svg'
 import usdbLogo from '@assets/icons/usdb.svg'
 import usdcLogo from '@assets/icons/usdc.svg'
@@ -1182,4 +1183,22 @@ export const USDB = new Token({
   color: 'yellow',
   priorityRank: 103,
   routeSymbol: 'USDB',
+})
+
+export const SPECTRAL = new Token({
+  priorityRank: 600,
+  addresses: {
+    [CHAINS.ETH.id]: '0xAdF7C35560035944e805D98fF17d58CDe2449389',
+    [CHAINS.BASE.id]: '0x96419929d7949D6A801A6909c145C8EEf6A40431',
+  },
+  decimals: {
+    [CHAINS.ETH.id]: 18,
+    [CHAINS.BASE.id]: 18,
+  },
+  symbol: 'SPEC',
+  name: 'Spectral Token',
+  logo: spectralLogo,
+  swapableType: 'SPEC',
+  color: 'blue',
+  routeSymbol: 'SPEC',
 })
