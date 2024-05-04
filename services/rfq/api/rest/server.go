@@ -82,14 +82,11 @@ func NewAPI(
 		roleCache := roles[chainID]
 
 		roleCache.Start()
-	}
-
-	go func() {
-		<-ctx.Done()
-		for _, roleCache := range roles {
+		go func() {
+			<-ctx.Done()
 			roleCache.Stop()
-		}
-	}()
+		}()
+	}
 
 	return &QuoterAPIServer{
 		cfg:                 cfg,
