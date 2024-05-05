@@ -277,6 +277,9 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 			return nil, err
 		}
 		gasPrice, err = client.SuggestGasPrice(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to suggest gas price on chain %d: %w", chainID, err)
+		}
 		if gasPrice == nil {
 			return nil, fmt.Errorf("gas price is nil on chain %d", chainID)
 		}
