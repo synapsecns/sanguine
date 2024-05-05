@@ -127,6 +127,7 @@ type GetDailyStatisticsByChain struct {
 		Dogechain *float64 "json:\"dogechain\" graphql:\"dogechain\""
 		Base      *float64 "json:\"base\" graphql:\"base\""
 		Blast     *float64 "json:\"blast\" graphql:\"blast\""
+		Scroll    *float64 "json:\"scroll\" graphql:\"scroll\""
 		Total     *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
@@ -498,6 +499,7 @@ const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($cha
 		dogechain
 		base
 		blast
+		scroll
 		total
 	}
 }
