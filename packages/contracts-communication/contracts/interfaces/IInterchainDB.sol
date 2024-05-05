@@ -5,15 +5,13 @@ import {InterchainBatch} from "../libs/InterchainBatch.sol";
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 interface IInterchainDB {
-    error InterchainDB__BatchDoesNotExist(uint64 dbNonce);
-    error InterchainDB__BatchNotFinalized(uint64 dbNonce);
-    error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
+    error InterchainDB__BatchConflict(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
+    error InterchainDB__BatchVersionMismatch(uint16 version, uint16 required);
+    error InterchainDB__ChainIdNotRemote(uint64 chainId);
     error InterchainDB__EntryIndexOutOfRange(uint64 dbNonce, uint64 entryIndex, uint64 batchSize);
-    error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
-    error InterchainDB__InvalidBatchVersion(uint16 version);
-    error InterchainDB__InvalidEntryRange(uint64 dbNonce, uint64 start, uint64 end);
-    error InterchainDB__NoModulesSpecified();
-    error InterchainDB__SameChainId(uint64 chainId);
+    error InterchainDB__EntryRangeInvalid(uint64 dbNonce, uint64 start, uint64 end);
+    error InterchainDB__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
+    error InterchainDB__ModulesNotProvided();
 
     /// @notice Write data to the Interchain DataBase as a new entry in the current batch.
     /// Note: there are no guarantees that this entry will be available for reading on any of the remote chains.
@@ -60,7 +58,11 @@ interface IInterchainDB {
         returns (uint64 dbNonce, uint64 entryIndex);
 
     /// @notice Allows the Interchain Module to verify the batch coming from the remote chain.
+    /// The module SHOULD verify the exact finalized batch from the remote chain. If the batch with a given nonce
+    /// is not finalized or does not exist, module CAN verify it with an empty root value. Once the batch is
+    /// finalized, the module SHOULD re-verify the batch with the correct root value.
     /// Note: The DB will only accept the batch of the same version as the DB itself.
+    /// @dev Will revert if the batch with the same nonce but a different non-empty root is already verified.
     /// @param versionedBatch   The versioned Interchain Batch to verify
     function verifyRemoteBatch(bytes memory versionedBatch) external;
 
@@ -107,6 +109,11 @@ interface IInterchainDB {
     /// @dev Will revert if the batch with the given nonce does not exist, or is not finalized.
     /// @param dbNonce      The database nonce of the finalized batch
     function getBatch(uint64 dbNonce) external view returns (InterchainBatch memory);
+
+    /// @notice Get the versioned Interchain Batch with the given nonce.
+    /// Note: will return a batch with an empty root if the batch does not exist, or is not finalized.
+    /// @param dbNonce      The database nonce of the batch
+    function getVersionedBatch(uint64 dbNonce) external view returns (bytes memory);
 
     /// @notice Get the Interchain Entry's value written on the local chain with the given batch nonce and entry index.
     /// Entry value is calculated as the hash of the writer address and the written data hash.

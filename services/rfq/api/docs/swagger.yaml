@@ -1,0 +1,132 @@
+definitions:
+  model.GetQuoteResponse:
+    properties:
+      dest_amount:
+        description: DestAmount is the max amount of liquidity which exists for a
+          given destination token, provided in the destination token decimals
+        type: string
+      dest_chain_id:
+        description: DestChainID is the chain which the relayer is willing to relay
+          to
+        type: integer
+      dest_fast_bridge_address:
+        description: DestFastBridgeAddress is the address of the fast bridge contract
+          on the destination chain
+        type: string
+      dest_token_addr:
+        description: DestToken is the token address for which the relayer willing
+          to relay to
+        type: string
+      fixed_fee:
+        description: FixedFee is the fixed fee for the quote, provided in the destination
+          token terms
+        type: string
+      max_origin_amount:
+        description: MaxOriginAmount is the maximum amount of origin tokens bridgeable
+        type: string
+      origin_chain_id:
+        description: OriginChainID is the chain which the relayer is willing to relay
+          from
+        type: integer
+      origin_fast_bridge_address:
+        description: OriginFastBridgeAddress is the address of the fast bridge contract
+          on the origin chain
+        type: string
+      origin_token_addr:
+        description: OriginTokenAddr is the token address for which the relayer willing
+          to relay from
+        type: string
+      relayer_addr:
+        description: Address of the relayer providing the quote
+        type: string
+      updated_at:
+        description: UpdatedAt is the time that the quote was last upserted
+        type: string
+    type: object
+  model.PutQuoteRequest:
+    properties:
+      dest_amount:
+        type: string
+      dest_chain_id:
+        type: integer
+      dest_fast_bridge_address:
+        type: string
+      dest_token_addr:
+        type: string
+      fixed_fee:
+        type: string
+      max_origin_amount:
+        type: string
+      origin_chain_id:
+        type: integer
+      origin_fast_bridge_address:
+        type: string
+      origin_token_addr:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /quotes:
+    get:
+      consumes:
+      - application/json
+      description: get quotes from all relayers.
+      parameters:
+      - description: origin chain id to filter quotes by
+        in: path
+        name: originChainID
+        required: true
+        type: integer
+      - description: origin chain id to filter quotes by
+        in: path
+        name: originTokenAddr
+        required: true
+        type: string
+      - description: destination chain id to filter quotes by
+        in: path
+        name: destChainID
+        required: true
+        type: integer
+      - description: destination token address to filter quotes by
+        in: path
+        name: destTokenAddr
+        required: true
+        type: string
+      - description: relayer address to filter quotes by
+        in: path
+        name: relayerAddr
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.GetQuoteResponse'
+            type: array
+      summary: get quotes from all relayers.
+      tags:
+      - quotes
+    put:
+      consumes:
+      - application/json
+      description: upsert a quote from relayer.
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PutQuoteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: get quotes from all relayers.
+      tags:
+      - quotes
+swagger: "2.0"

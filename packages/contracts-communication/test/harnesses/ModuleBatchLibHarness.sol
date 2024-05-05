@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainBatch, ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
+import {ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
 
 contract ModuleBatchLibHarness {
     function encodeVersionedModuleBatch(

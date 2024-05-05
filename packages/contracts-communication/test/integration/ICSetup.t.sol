@@ -5,7 +5,6 @@ import {InterchainClientV1} from "../../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../../contracts/InterchainDB.sol";
 import {ICAppV1} from "../../contracts/apps/ICAppV1.sol";
 import {SynapseExecutionServiceV1} from "../../contracts/execution/SynapseExecutionServiceV1.sol";
-import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/SynapseGasOracleV1.sol";
 
@@ -49,8 +48,9 @@ abstract contract ICSetup is ProxyTest {
     address public srcApp;
     address public dstApp;
 
+    address public guard = makeAddr("Guard");
     address public executor = makeAddr("Executor");
-    address public feeCollector = makeAddr("FeeCollector");
+    address public feeRecipient = makeAddr("FeeRecipient");
     // Signer public keys, sorted by their address:
     // 2000 -> 0x5793e629c061e7FD642ab6A1b4d552CeC0e2D606
     // 1000 -> 0x7F1d642DbfD62aD4A8fA9810eA619707d09825D0
@@ -108,11 +108,12 @@ abstract contract ICSetup is ProxyTest {
         // For simplicity, we assume that the clients are deployed to the same address on both chains.
         bytes32 linkedClient = address(icClient).addressToBytes32();
         icClient.setLinkedClient(remoteChainId(), linkedClient);
+        icClient.setDefaultGuard(guard);
     }
 
     function configureSynapseModule() internal virtual {
-        module.setClaimFeeFraction(0.01e18); // 1%
-        module.setFeeCollector(feeCollector);
+        module.setClaimerFraction(0.01e18); // 1%
+        module.setFeeRecipient(feeRecipient);
         module.setGasOracle(address(gasOracle));
         module.setThreshold(signerPKs.length);
         for (uint256 i = 0; i < signerPKs.length; i++) {
@@ -130,7 +131,7 @@ abstract contract ICSetup is ProxyTest {
         // For simplicity, we assume that the apps are deployed to the same address on both chains.
         ICAppV1(app).linkRemoteAppEVM(remoteChainId(), remoteApp());
         ICAppV1(app).addTrustedModule(address(module));
-        ICAppV1(app).setAppConfigV1(AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD}));
+        ICAppV1(app).setAppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD});
         ICAppV1(app).setExecutionService(address(executionService));
         ICAppV1(app).addInterchainClient({client: address(icClient), updateLatest: true});
     }

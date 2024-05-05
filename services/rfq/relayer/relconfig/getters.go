@@ -18,7 +18,7 @@ var DefaultChainConfig = ChainConfig{
 	DestGasEstimate:       100000,
 	MinGasToken:           "100000000000000000", // 1 ETH
 	QuotePct:              100,
-	QuoteOffsetBps:        0,
+	QuoteWidthBps:         0,
 	FixedFeeMultiplier:    1,
 }
 
@@ -276,19 +276,40 @@ func (c Config) GetQuotePct(chainID int) (value float64, err error) {
 	return value, nil
 }
 
-// GetQuoteOffsetBps returns the QuoteOffsetBps for the given chainID.
-func (c Config) GetQuoteOffsetBps(chainID int) (value float64, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "QuoteOffsetBps")
+// GetQuoteOffsetBps returns the QuoteOffsetBps for the given chainID and tokenAddr.
+// If the chainID corresponds to the origin of a quote, we flip the sign.
+func (c Config) GetQuoteOffsetBps(chainID int, tokenName string, isOrigin bool) (value float64, err error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return 0, fmt.Errorf("no chain config for chain %d", chainID)
+	}
+
+	tokenCfg, ok := chainCfg.Tokens[tokenName]
+	if !ok {
+		return 0, fmt.Errorf("no token config for chain %d and token %s", chainID, tokenName)
+	}
+
+	offset := tokenCfg.QuoteOffsetBps
+	if isOrigin {
+		offset *= -1
+	}
+
+	return offset, nil
+}
+
+// GetQuoteWidthBps returns the QuoteWidthBps for the given chainID.
+func (c Config) GetQuoteWidthBps(chainID int) (value float64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "QuoteWidthBps")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(float64)
 	if !ok {
-		return value, fmt.Errorf("failed to cast QuoteOffsetBps to int")
+		return value, fmt.Errorf("failed to cast QuoteWidthBps to float")
 	}
 	if value <= 0 {
-		value = DefaultChainConfig.QuoteOffsetBps
+		value = DefaultChainConfig.QuoteWidthBps
 	}
 	return value, nil
 }
@@ -630,4 +651,15 @@ func (c Config) GetRebalanceInterval() time.Duration {
 		interval = time.Duration(defaultRebalanceIntervalSeconds) * time.Second
 	}
 	return interval
+}
+
+const defaultQuoteSubmissionTimeoutSeconds = 30
+
+// GetQuoteSubmissionTimeout returns the timeout for submitting quotes.
+func (c Config) GetQuoteSubmissionTimeout() time.Duration {
+	timeout := c.QuoteSubmissionTimeout
+	if timeout == 0 {
+		timeout = time.Duration(defaultQuoteSubmissionTimeoutSeconds) * time.Second
+	}
+	return timeout
 }

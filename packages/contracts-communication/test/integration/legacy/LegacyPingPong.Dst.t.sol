@@ -2,16 +2,15 @@
 pragma solidity 0.8.20;
 
 import {IInterchainClientV1} from "../../../contracts/interfaces/IInterchainClientV1.sol";
+import {InterchainBatch} from "../../../contracts/libs/InterchainBatch.sol";
+import {InterchainEntry} from "../../../contracts/libs/InterchainEntry.sol";
+import {InterchainTransaction, InterchainTxDescriptor} from "../../../contracts/libs/InterchainTransaction.sol";
 import {OptionsV1} from "../../../contracts/libs/Options.sol";
 
-import {
-    InterchainBatch,
-    InterchainEntry,
-    InterchainTransaction,
-    InterchainTxDescriptor,
-    LegacyPingPongIntegrationTest
-} from "./LegacyPingPong.t.sol";
+import {LegacyPingPongIntegrationTest} from "./LegacyPingPong.t.sol";
 
+// solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     uint256 public constant LONG_PERIOD = 1 weeks;
 
@@ -168,20 +167,41 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
 
     function test_interchainExecute_revert_notConfirmed() public {
         // No module signatures
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
+        executeTx(icOptions);
+    }
+
+    function test_interchainExecute_revert_notConfirmed_guardMarked() public {
+        markInvalidByGuard(srcBatch);
+        expectClientRevertBatchConflict(guard);
         executeTx(icOptions);
     }
 
     function test_interchainExecute_revert_confirmed_sameBlock() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
+        executeTx(icOptions);
+    }
+
+    function test_interchainExecute_revert_confirmed_sameBlock_guardMarked() public {
+        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        markInvalidByGuard(srcBatch);
+        expectClientRevertBatchConflict(guard);
         executeTx(icOptions);
     }
 
     function test_interchainExecute_revert_confirmed_periodMinusOneSecond() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD);
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
+        executeTx(icOptions);
+    }
+
+    function test_interchainExecute_revert_confirmed_periodMinusOneSecond_guardMarked() public {
+        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        skip(APP_OPTIMISTIC_PERIOD);
+        markInvalidByGuard(srcBatch);
+        expectClientRevertBatchConflict(guard);
         executeTx(icOptions);
     }
 
@@ -200,20 +220,41 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     }
 
     function test_isExecutable_revert_notConfirmed() public {
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
+        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+    }
+
+    function test_isExecutable_revert_notConfirmed_guardMarked() public {
+        markInvalidByGuard(srcBatch);
+        expectClientRevertBatchConflict(guard);
         icClient.isExecutable(encodedSrcTx, new bytes32[](0));
     }
 
     function test_isExecutable_revert_confirmed_sameBlock() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
+        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+    }
+
+    function test_isExecutable_revert_confirmed_sameBlock_guardMarked() public {
+        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        markInvalidByGuard(srcBatch);
+        expectClientRevertBatchConflict(guard);
         icClient.isExecutable(encodedSrcTx, new bytes32[](0));
     }
 
     function test_isExecutable_revert_confirmed_periodMinusOneSecond() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD);
-        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
+        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+    }
+
+    function test_isExecutable_revert_confirmed_periodMinusOneSecond_guardMarked() public {
+        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        skip(APP_OPTIMISTIC_PERIOD);
+        markInvalidByGuard(srcBatch);
+        expectClientRevertBatchConflict(guard);
         icClient.isExecutable(encodedSrcTx, new bytes32[](0));
     }
 

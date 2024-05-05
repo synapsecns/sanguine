@@ -92,15 +92,16 @@ type RequestForQuote struct {
 
 // Rebalance is the event model for a rebalance action.
 type Rebalance struct {
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	RebalanceID  sql.NullString
-	Origin       uint64
-	Destination  uint64
-	OriginAmount string
-	Status       reldb.RebalanceStatus
-	OriginTxHash sql.NullString
-	DestTxHash   sql.NullString
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	RebalanceID     sql.NullString
+	Origin          uint64
+	Destination     uint64
+	OriginAmount    string
+	OriginTokenAddr sql.NullString
+	Status          reldb.RebalanceStatus
+	OriginTxHash    sql.NullString
+	DestTxHash      sql.NullString
 }
 
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
@@ -141,13 +142,14 @@ func FromRebalance(rebalance reldb.Rebalance) Rebalance {
 		id = sql.NullString{String: *rebalance.RebalanceID, Valid: true}
 	}
 	return Rebalance{
-		RebalanceID:  id,
-		Origin:       rebalance.Origin,
-		Destination:  rebalance.Destination,
-		OriginAmount: rebalance.OriginAmount.String(),
-		Status:       rebalance.Status,
-		OriginTxHash: hashToNullString(rebalance.OriginTxHash),
-		DestTxHash:   hashToNullString(rebalance.DestTxHash),
+		RebalanceID:     id,
+		Origin:          rebalance.Origin,
+		Destination:     rebalance.Destination,
+		OriginAmount:    rebalance.OriginAmount.String(),
+		OriginTokenAddr: stringToNullString(rebalance.OriginTokenAddr.String()),
+		Status:          rebalance.Status,
+		OriginTxHash:    hashToNullString(rebalance.OriginTxHash),
+		DestTxHash:      hashToNullString(rebalance.DestTxHash),
 	}
 }
 
@@ -224,13 +226,14 @@ func (r Rebalance) ToRebalance() (*reldb.Rebalance, error) {
 		return nil, errors.New("could not convert origin amount")
 	}
 	return &reldb.Rebalance{
-		RebalanceID:  &r.RebalanceID.String,
-		Origin:       r.Origin,
-		Destination:  r.Destination,
-		OriginAmount: originAmount,
-		Status:       r.Status,
-		OriginTxHash: common.HexToHash(r.OriginTxHash.String),
-		DestTxHash:   common.HexToHash(r.DestTxHash.String),
+		RebalanceID:     &r.RebalanceID.String,
+		Origin:          r.Origin,
+		Destination:     r.Destination,
+		OriginAmount:    originAmount,
+		OriginTokenAddr: common.HexToAddress(r.OriginTokenAddr.String),
+		Status:          r.Status,
+		OriginTxHash:    common.HexToHash(r.OriginTxHash.String),
+		DestTxHash:      common.HexToHash(r.DestTxHash.String),
 	}, nil
 }
 
