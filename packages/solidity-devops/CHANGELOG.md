@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.3...@synapsecns/solidity-devops@0.3.4) (2024-05-06)
+
+
+### Bug Fixes
+
+* **solidity-devops:** use case insensitive check for address equality ([#2566](https://github.com/synapsecns/sanguine/issues/2566)) ([1575e0d](https://github.com/synapsecns/sanguine/commit/1575e0de4654b9ca69456de8135dec87cd589289))
+
+
+
+
+
 ## [0.3.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.2...@synapsecns/solidity-devops@0.3.3) (2024-05-01)
 
 
