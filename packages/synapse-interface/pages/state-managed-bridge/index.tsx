@@ -74,6 +74,7 @@ import {
   getBridgeModuleNames,
 } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
+import { ETH } from '@/constants/chains/master'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -513,9 +514,12 @@ const StateManagedBridge = () => {
   const maintenanceCountdownProgressInstances =
     useMaintenanceCountdownProgresses({ type: 'Bridge' })
 
-  const isBridgePaused = maintenanceCountdownProgressInstances.some(
-    (instance) => instance.isCurrentChainDisabled
-  )
+  const isBridgePaused =
+    maintenanceCountdownProgressInstances.some(
+      (instance) => instance.isCurrentChainDisabled
+    ) ||
+    (fromToken?.routeSymbol === 'SPEC' && toChainId === ETH.id)
+  // TODO: Remove SPEC pause when available
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">

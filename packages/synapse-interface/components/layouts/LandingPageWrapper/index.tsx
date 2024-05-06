@@ -26,6 +26,7 @@ import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 import { joinClassNames } from '@/utils/joinClassNames'
 import { MaintenanceBanners } from '@/components/Maintenance/Maintenance'
+import { AnnouncementBanner } from '@/components/Maintenance/components/AnnouncementBanner'
 
 const wrapperClassName = joinClassNames({
   textColor: 'text-zinc-800 dark:text-zinc-200',
@@ -49,6 +50,12 @@ export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div className="dark">
       <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
+        <AnnouncementBanner
+          bannerId="2024-05-06-pause-spec"
+          bannerContents="Bridging SPEC to Ethereum paused"
+          startDate={new Date('2024-05-05T18:45:09+00:00')}
+          endDate={new Date('2024-05-10T18:45:09+00:00')}
+        />
         <MaintenanceBanners />
         <LandingNav />
         {children}
