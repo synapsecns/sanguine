@@ -2,7 +2,6 @@ import { isNull, isNumber } from 'lodash'
 import toast from 'react-hot-toast'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useAccount } from 'wagmi'
-import { zeroAddress } from 'viem'
 import { useAppDispatch } from '@/store/hooks'
 import {
   initialState,
@@ -24,7 +23,6 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { useFromChainListArray } from './hooks/useFromChainListArray'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { useFromTokenListArray } from './hooks/useFromTokenListArray'
@@ -32,7 +30,6 @@ import MiniMaxButton from '../buttons/MiniMaxButton'
 import { AvailableBalance } from './AvailableBalance'
 import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
-import { fetchGasData } from '@/slices/gasDataSlice'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -162,7 +159,7 @@ export const InputContainer = () => {
         {hasMounted && isConnected && (
           <MiniMaxButton
             onClickBalance={onMaxBalance}
-            isDisabled={!balance || balance === 0n ? true : false}
+            isDisabled={!balance || balance === 0n}
             isHidden={!isConnected || !hasValidSelections}
           />
         )}

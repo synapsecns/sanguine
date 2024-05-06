@@ -1,13 +1,9 @@
 import React, { useCallback } from 'react'
 import { zeroAddress } from 'viem'
-import { isNumber, isNull } from 'lodash'
+import { isNumber } from 'lodash'
 import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
-import {
-  setFromChainId,
-  setFromToken,
-  updateFromValue,
-} from '@/slices/bridge/reducer'
+import { setFromChainId, setFromToken } from '@/slices/bridge/reducer'
 import { Token } from '@/utils/types'
 import { inputRef } from '../../StateManagedBridge/InputContainer'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -17,8 +13,6 @@ import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
 import GasIcon from '@/components/icons/GasIcon'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
-import toast from 'react-hot-toast'
-import { formatBigIntToString } from '@/utils/bigint/format'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()

@@ -147,7 +147,7 @@ export const SwapInputContainer = () => {
         {hasMounted && isConnected && (
           <MiniMaxButton
             onClickBalance={onMaxBalance}
-            isDisabled={!balance || balance === 0n ? true : false}
+            isDisabled={!balance || balance === 0n}
             isHidden={false}
           />
         )}
