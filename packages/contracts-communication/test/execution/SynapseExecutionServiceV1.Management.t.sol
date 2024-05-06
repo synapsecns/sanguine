@@ -3,16 +3,19 @@ pragma solidity 0.8.20;
 
 import {SynapseExecutionServiceV1Test} from "./SynapseExecutionServiceV1.t.sol";
 
+import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
+
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Test {
     uint256 public constant ONE_PERCENT = 1e16;
 
     address public executorEOA = makeAddr("ExecutorEOA");
-    address public gasOracle = makeAddr("GasOracle");
+    address public gasOracle;
 
     function setUp() public override {
         super.setUp();
+        gasOracle = address(new SynapseGasOracleMock());
         service.initialize(admin);
         vm.prank(admin);
         service.grantRole(GOVERNOR_ROLE, governor);
@@ -69,8 +72,17 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
         service.setGasOracle(gasOracle);
     }
 
+    function test_setGasOracle_revert_notContract() public {
+        address notContract = makeAddr("NotContract");
+        // Sanity check
+        assert(notContract.code.length == 0);
+        expectRevertGasOracleNotContract(notContract);
+        vm.prank(governor);
+        service.setGasOracle(notContract);
+    }
+
     function test_setGasOracle_revert_zeroAddress() public {
-        expectRevertGasOracleZeroAddress();
+        expectRevertGasOracleNotContract(address(0));
         vm.prank(governor);
         service.setGasOracle(address(0));
     }

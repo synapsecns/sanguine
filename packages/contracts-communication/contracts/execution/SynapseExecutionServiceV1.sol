@@ -64,8 +64,8 @@ contract SynapseExecutionServiceV1 is
 
     /// @inheritdoc ISynapseExecutionServiceV1
     function setGasOracle(address gasOracle_) external virtual onlyRole(GOVERNOR_ROLE) {
-        if (gasOracle_ == address(0)) {
-            revert SynapseExecutionService__GasOracleZeroAddress();
+        if (gasOracle_.code.length == 0) {
+            revert SynapseExecutionService__GasOracleNotContract(gasOracle_);
         }
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         $.gasOracle = gasOracle_;

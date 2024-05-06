@@ -14,13 +14,12 @@ func _() {
 	_ = x[InterchainApp-4]
 	_ = x[OptionsLib-5]
 	_ = x[ExecutionService-6]
-	_ = x[ExecutionFeesMock-7]
-	_ = x[GasOracleMock-8]
+	_ = x[GasOracleMock-7]
 }
 
-const _contractTypeImpl_name = "InterchainClientInterchainDBInterchainModuleMockInterchainAppOptionsLibExecutionServiceExecutionFeesMockGasOracleMock"
+const _contractTypeImpl_name = "InterchainClientInterchainDBInterchainModuleMockInterchainAppOptionsLibExecutionServiceGasOracleMock"
 
-var _contractTypeImpl_index = [...]uint8{0, 16, 28, 48, 61, 71, 87, 104, 117}
+var _contractTypeImpl_index = [...]uint8{0, 16, 28, 48, 61, 71, 87, 100}
 
 func (i contractTypeImpl) String() string {
 	i -= 1

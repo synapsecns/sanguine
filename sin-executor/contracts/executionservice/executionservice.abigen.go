@@ -1000,6 +1000,1447 @@ func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) ParseRoleRevo
 	return event, nil
 }
 
+// AddressMetaData contains all meta data concerning the Address contract.
+var AddressMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"}]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220792fe26a604cfce1c4fb18c500672e03a11f5808a3a595a460a409f4e1b2821364736f6c63430008140033",
+}
+
+// AddressABI is the input ABI used to generate the binding from.
+// Deprecated: Use AddressMetaData.ABI instead.
+var AddressABI = AddressMetaData.ABI
+
+// AddressBin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use AddressMetaData.Bin instead.
+var AddressBin = AddressMetaData.Bin
+
+// DeployAddress deploys a new Ethereum contract, binding an instance of Address to it.
+func DeployAddress(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *Address, error) {
+	parsed, err := AddressMetaData.GetAbi()
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	if parsed == nil {
+		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
+	}
+
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(AddressBin), backend)
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	return address, tx, &Address{AddressCaller: AddressCaller{contract: contract}, AddressTransactor: AddressTransactor{contract: contract}, AddressFilterer: AddressFilterer{contract: contract}}, nil
+}
+
+// Address is an auto generated Go binding around an Ethereum contract.
+type Address struct {
+	AddressCaller     // Read-only binding to the contract
+	AddressTransactor // Write-only binding to the contract
+	AddressFilterer   // Log filterer for contract events
+}
+
+// AddressCaller is an auto generated read-only Go binding around an Ethereum contract.
+type AddressCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// AddressTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type AddressTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// AddressFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type AddressFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// AddressSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type AddressSession struct {
+	Contract     *Address          // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// AddressCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type AddressCallerSession struct {
+	Contract *AddressCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts  // Call options to use throughout this session
+}
+
+// AddressTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type AddressTransactorSession struct {
+	Contract     *AddressTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts  // Transaction auth options to use throughout this session
+}
+
+// AddressRaw is an auto generated low-level Go binding around an Ethereum contract.
+type AddressRaw struct {
+	Contract *Address // Generic contract binding to access the raw methods on
+}
+
+// AddressCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type AddressCallerRaw struct {
+	Contract *AddressCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// AddressTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type AddressTransactorRaw struct {
+	Contract *AddressTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewAddress creates a new instance of Address, bound to a specific deployed contract.
+func NewAddress(address common.Address, backend bind.ContractBackend) (*Address, error) {
+	contract, err := bindAddress(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &Address{AddressCaller: AddressCaller{contract: contract}, AddressTransactor: AddressTransactor{contract: contract}, AddressFilterer: AddressFilterer{contract: contract}}, nil
+}
+
+// NewAddressCaller creates a new read-only instance of Address, bound to a specific deployed contract.
+func NewAddressCaller(address common.Address, caller bind.ContractCaller) (*AddressCaller, error) {
+	contract, err := bindAddress(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &AddressCaller{contract: contract}, nil
+}
+
+// NewAddressTransactor creates a new write-only instance of Address, bound to a specific deployed contract.
+func NewAddressTransactor(address common.Address, transactor bind.ContractTransactor) (*AddressTransactor, error) {
+	contract, err := bindAddress(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &AddressTransactor{contract: contract}, nil
+}
+
+// NewAddressFilterer creates a new log filterer instance of Address, bound to a specific deployed contract.
+func NewAddressFilterer(address common.Address, filterer bind.ContractFilterer) (*AddressFilterer, error) {
+	contract, err := bindAddress(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &AddressFilterer{contract: contract}, nil
+}
+
+// bindAddress binds a generic wrapper to an already deployed contract.
+func bindAddress(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := AddressMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Address *AddressRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Address.Contract.AddressCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Address *AddressRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Address.Contract.AddressTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Address *AddressRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Address.Contract.AddressTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Address *AddressCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Address.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Address *AddressTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Address.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Address *AddressTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Address.Contract.contract.Transact(opts, method, params...)
+}
+
+// ClaimableFeesMetaData contains all meta data concerning the ClaimableFees contract.
+var ClaimableFeesMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxAllowed\",\"type\":\"uint256\"}],\"name\":\"ClaimableFees__ClaimerFractionAboveMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeAmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeRecipientZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimerFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"}],\"name\":\"FeeRecipientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerReward\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimableAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getFeeRecipient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"d294f093": "claimFees()",
+		"c354bd6e": "getClaimableAmount()",
+		"4f199114": "getClaimerFraction()",
+		"26533fe9": "getClaimerReward()",
+		"4ccb20c0": "getFeeRecipient()",
+	},
+}
+
+// ClaimableFeesABI is the input ABI used to generate the binding from.
+// Deprecated: Use ClaimableFeesMetaData.ABI instead.
+var ClaimableFeesABI = ClaimableFeesMetaData.ABI
+
+// Deprecated: Use ClaimableFeesMetaData.Sigs instead.
+// ClaimableFeesFuncSigs maps the 4-byte function signature to its string representation.
+var ClaimableFeesFuncSigs = ClaimableFeesMetaData.Sigs
+
+// ClaimableFees is an auto generated Go binding around an Ethereum contract.
+type ClaimableFees struct {
+	ClaimableFeesCaller     // Read-only binding to the contract
+	ClaimableFeesTransactor // Write-only binding to the contract
+	ClaimableFeesFilterer   // Log filterer for contract events
+}
+
+// ClaimableFeesCaller is an auto generated read-only Go binding around an Ethereum contract.
+type ClaimableFeesCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type ClaimableFeesTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ClaimableFeesFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type ClaimableFeesSession struct {
+	Contract     *ClaimableFees    // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// ClaimableFeesCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type ClaimableFeesCallerSession struct {
+	Contract *ClaimableFeesCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts        // Call options to use throughout this session
+}
+
+// ClaimableFeesTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type ClaimableFeesTransactorSession struct {
+	Contract     *ClaimableFeesTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts        // Transaction auth options to use throughout this session
+}
+
+// ClaimableFeesRaw is an auto generated low-level Go binding around an Ethereum contract.
+type ClaimableFeesRaw struct {
+	Contract *ClaimableFees // Generic contract binding to access the raw methods on
+}
+
+// ClaimableFeesCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ClaimableFeesCallerRaw struct {
+	Contract *ClaimableFeesCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// ClaimableFeesTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ClaimableFeesTransactorRaw struct {
+	Contract *ClaimableFeesTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewClaimableFees creates a new instance of ClaimableFees, bound to a specific deployed contract.
+func NewClaimableFees(address common.Address, backend bind.ContractBackend) (*ClaimableFees, error) {
+	contract, err := bindClaimableFees(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFees{ClaimableFeesCaller: ClaimableFeesCaller{contract: contract}, ClaimableFeesTransactor: ClaimableFeesTransactor{contract: contract}, ClaimableFeesFilterer: ClaimableFeesFilterer{contract: contract}}, nil
+}
+
+// NewClaimableFeesCaller creates a new read-only instance of ClaimableFees, bound to a specific deployed contract.
+func NewClaimableFeesCaller(address common.Address, caller bind.ContractCaller) (*ClaimableFeesCaller, error) {
+	contract, err := bindClaimableFees(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesCaller{contract: contract}, nil
+}
+
+// NewClaimableFeesTransactor creates a new write-only instance of ClaimableFees, bound to a specific deployed contract.
+func NewClaimableFeesTransactor(address common.Address, transactor bind.ContractTransactor) (*ClaimableFeesTransactor, error) {
+	contract, err := bindClaimableFees(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesTransactor{contract: contract}, nil
+}
+
+// NewClaimableFeesFilterer creates a new log filterer instance of ClaimableFees, bound to a specific deployed contract.
+func NewClaimableFeesFilterer(address common.Address, filterer bind.ContractFilterer) (*ClaimableFeesFilterer, error) {
+	contract, err := bindClaimableFees(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesFilterer{contract: contract}, nil
+}
+
+// bindClaimableFees binds a generic wrapper to an already deployed contract.
+func bindClaimableFees(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := ClaimableFeesMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ClaimableFees *ClaimableFeesRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ClaimableFees.Contract.ClaimableFeesCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ClaimableFees *ClaimableFeesRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimableFees.Contract.ClaimableFeesTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ClaimableFees *ClaimableFeesRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ClaimableFees.Contract.ClaimableFeesTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ClaimableFees *ClaimableFeesCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ClaimableFees.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ClaimableFees *ClaimableFeesTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimableFees.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ClaimableFees *ClaimableFeesTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ClaimableFees.Contract.contract.Transact(opts, method, params...)
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCaller) GetClaimableAmount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _ClaimableFees.contract.Call(opts, &out, "getClaimableAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesSession) GetClaimableAmount() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimableAmount(&_ClaimableFees.CallOpts)
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCallerSession) GetClaimableAmount() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimableAmount(&_ClaimableFees.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCaller) GetClaimerFraction(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _ClaimableFees.contract.Call(opts, &out, "getClaimerFraction")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesSession) GetClaimerFraction() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimerFraction(&_ClaimableFees.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCallerSession) GetClaimerFraction() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimerFraction(&_ClaimableFees.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCaller) GetClaimerReward(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _ClaimableFees.contract.Call(opts, &out, "getClaimerReward")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesSession) GetClaimerReward() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimerReward(&_ClaimableFees.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCallerSession) GetClaimerReward() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimerReward(&_ClaimableFees.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_ClaimableFees *ClaimableFeesCaller) GetFeeRecipient(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _ClaimableFees.contract.Call(opts, &out, "getFeeRecipient")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_ClaimableFees *ClaimableFeesSession) GetFeeRecipient() (common.Address, error) {
+	return _ClaimableFees.Contract.GetFeeRecipient(&_ClaimableFees.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_ClaimableFees *ClaimableFeesCallerSession) GetFeeRecipient() (common.Address, error) {
+	return _ClaimableFees.Contract.GetFeeRecipient(&_ClaimableFees.CallOpts)
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_ClaimableFees *ClaimableFeesTransactor) ClaimFees(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimableFees.contract.Transact(opts, "claimFees")
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_ClaimableFees *ClaimableFeesSession) ClaimFees() (*types.Transaction, error) {
+	return _ClaimableFees.Contract.ClaimFees(&_ClaimableFees.TransactOpts)
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_ClaimableFees *ClaimableFeesTransactorSession) ClaimFees() (*types.Transaction, error) {
+	return _ClaimableFees.Contract.ClaimFees(&_ClaimableFees.TransactOpts)
+}
+
+// ClaimableFeesClaimerFractionSetIterator is returned from FilterClaimerFractionSet and is used to iterate over the raw logs and unpacked data for ClaimerFractionSet events raised by the ClaimableFees contract.
+type ClaimableFeesClaimerFractionSetIterator struct {
+	Event *ClaimableFeesClaimerFractionSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesClaimerFractionSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesClaimerFractionSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesClaimerFractionSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesClaimerFractionSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesClaimerFractionSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesClaimerFractionSet represents a ClaimerFractionSet event raised by the ClaimableFees contract.
+type ClaimableFeesClaimerFractionSet struct {
+	ClaimerFraction *big.Int
+	Raw             types.Log // Blockchain specific contextual infos
+}
+
+// FilterClaimerFractionSet is a free log retrieval operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFees *ClaimableFeesFilterer) FilterClaimerFractionSet(opts *bind.FilterOpts) (*ClaimableFeesClaimerFractionSetIterator, error) {
+
+	logs, sub, err := _ClaimableFees.contract.FilterLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesClaimerFractionSetIterator{contract: _ClaimableFees.contract, event: "ClaimerFractionSet", logs: logs, sub: sub}, nil
+}
+
+// WatchClaimerFractionSet is a free log subscription operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFees *ClaimableFeesFilterer) WatchClaimerFractionSet(opts *bind.WatchOpts, sink chan<- *ClaimableFeesClaimerFractionSet) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFees.contract.WatchLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesClaimerFractionSet)
+				if err := _ClaimableFees.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseClaimerFractionSet is a log parse operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFees *ClaimableFeesFilterer) ParseClaimerFractionSet(log types.Log) (*ClaimableFeesClaimerFractionSet, error) {
+	event := new(ClaimableFeesClaimerFractionSet)
+	if err := _ClaimableFees.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ClaimableFeesFeeRecipientSetIterator is returned from FilterFeeRecipientSet and is used to iterate over the raw logs and unpacked data for FeeRecipientSet events raised by the ClaimableFees contract.
+type ClaimableFeesFeeRecipientSetIterator struct {
+	Event *ClaimableFeesFeeRecipientSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesFeeRecipientSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesFeeRecipientSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesFeeRecipientSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesFeeRecipientSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesFeeRecipientSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesFeeRecipientSet represents a FeeRecipientSet event raised by the ClaimableFees contract.
+type ClaimableFeesFeeRecipientSet struct {
+	FeeRecipient common.Address
+	Raw          types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeeRecipientSet is a free log retrieval operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFees *ClaimableFeesFilterer) FilterFeeRecipientSet(opts *bind.FilterOpts) (*ClaimableFeesFeeRecipientSetIterator, error) {
+
+	logs, sub, err := _ClaimableFees.contract.FilterLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesFeeRecipientSetIterator{contract: _ClaimableFees.contract, event: "FeeRecipientSet", logs: logs, sub: sub}, nil
+}
+
+// WatchFeeRecipientSet is a free log subscription operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFees *ClaimableFeesFilterer) WatchFeeRecipientSet(opts *bind.WatchOpts, sink chan<- *ClaimableFeesFeeRecipientSet) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFees.contract.WatchLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesFeeRecipientSet)
+				if err := _ClaimableFees.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeeRecipientSet is a log parse operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFees *ClaimableFeesFilterer) ParseFeeRecipientSet(log types.Log) (*ClaimableFeesFeeRecipientSet, error) {
+	event := new(ClaimableFeesFeeRecipientSet)
+	if err := _ClaimableFees.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ClaimableFeesFeesClaimedIterator is returned from FilterFeesClaimed and is used to iterate over the raw logs and unpacked data for FeesClaimed events raised by the ClaimableFees contract.
+type ClaimableFeesFeesClaimedIterator struct {
+	Event *ClaimableFeesFeesClaimed // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesFeesClaimedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesFeesClaimed)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesFeesClaimed)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesFeesClaimedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesFeesClaimedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesFeesClaimed represents a FeesClaimed event raised by the ClaimableFees contract.
+type ClaimableFeesFeesClaimed struct {
+	FeeRecipient  common.Address
+	ClaimedFees   *big.Int
+	Claimer       common.Address
+	ClaimerReward *big.Int
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeesClaimed is a free log retrieval operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFees *ClaimableFeesFilterer) FilterFeesClaimed(opts *bind.FilterOpts) (*ClaimableFeesFeesClaimedIterator, error) {
+
+	logs, sub, err := _ClaimableFees.contract.FilterLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesFeesClaimedIterator{contract: _ClaimableFees.contract, event: "FeesClaimed", logs: logs, sub: sub}, nil
+}
+
+// WatchFeesClaimed is a free log subscription operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFees *ClaimableFeesFilterer) WatchFeesClaimed(opts *bind.WatchOpts, sink chan<- *ClaimableFeesFeesClaimed) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFees.contract.WatchLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesFeesClaimed)
+				if err := _ClaimableFees.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeesClaimed is a log parse operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFees *ClaimableFeesFilterer) ParseFeesClaimed(log types.Log) (*ClaimableFeesFeesClaimed, error) {
+	event := new(ClaimableFeesFeesClaimed)
+	if err := _ClaimableFees.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ClaimableFeesEventsMetaData contains all meta data concerning the ClaimableFeesEvents contract.
+var ClaimableFeesEventsMetaData = &bind.MetaData{
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimerFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"}],\"name\":\"FeeRecipientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerReward\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"}]",
+}
+
+// ClaimableFeesEventsABI is the input ABI used to generate the binding from.
+// Deprecated: Use ClaimableFeesEventsMetaData.ABI instead.
+var ClaimableFeesEventsABI = ClaimableFeesEventsMetaData.ABI
+
+// ClaimableFeesEvents is an auto generated Go binding around an Ethereum contract.
+type ClaimableFeesEvents struct {
+	ClaimableFeesEventsCaller     // Read-only binding to the contract
+	ClaimableFeesEventsTransactor // Write-only binding to the contract
+	ClaimableFeesEventsFilterer   // Log filterer for contract events
+}
+
+// ClaimableFeesEventsCaller is an auto generated read-only Go binding around an Ethereum contract.
+type ClaimableFeesEventsCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesEventsTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type ClaimableFeesEventsTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesEventsFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ClaimableFeesEventsFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesEventsSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type ClaimableFeesEventsSession struct {
+	Contract     *ClaimableFeesEvents // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts        // Call options to use throughout this session
+	TransactOpts bind.TransactOpts    // Transaction auth options to use throughout this session
+}
+
+// ClaimableFeesEventsCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type ClaimableFeesEventsCallerSession struct {
+	Contract *ClaimableFeesEventsCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts              // Call options to use throughout this session
+}
+
+// ClaimableFeesEventsTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type ClaimableFeesEventsTransactorSession struct {
+	Contract     *ClaimableFeesEventsTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts              // Transaction auth options to use throughout this session
+}
+
+// ClaimableFeesEventsRaw is an auto generated low-level Go binding around an Ethereum contract.
+type ClaimableFeesEventsRaw struct {
+	Contract *ClaimableFeesEvents // Generic contract binding to access the raw methods on
+}
+
+// ClaimableFeesEventsCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ClaimableFeesEventsCallerRaw struct {
+	Contract *ClaimableFeesEventsCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// ClaimableFeesEventsTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ClaimableFeesEventsTransactorRaw struct {
+	Contract *ClaimableFeesEventsTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewClaimableFeesEvents creates a new instance of ClaimableFeesEvents, bound to a specific deployed contract.
+func NewClaimableFeesEvents(address common.Address, backend bind.ContractBackend) (*ClaimableFeesEvents, error) {
+	contract, err := bindClaimableFeesEvents(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEvents{ClaimableFeesEventsCaller: ClaimableFeesEventsCaller{contract: contract}, ClaimableFeesEventsTransactor: ClaimableFeesEventsTransactor{contract: contract}, ClaimableFeesEventsFilterer: ClaimableFeesEventsFilterer{contract: contract}}, nil
+}
+
+// NewClaimableFeesEventsCaller creates a new read-only instance of ClaimableFeesEvents, bound to a specific deployed contract.
+func NewClaimableFeesEventsCaller(address common.Address, caller bind.ContractCaller) (*ClaimableFeesEventsCaller, error) {
+	contract, err := bindClaimableFeesEvents(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsCaller{contract: contract}, nil
+}
+
+// NewClaimableFeesEventsTransactor creates a new write-only instance of ClaimableFeesEvents, bound to a specific deployed contract.
+func NewClaimableFeesEventsTransactor(address common.Address, transactor bind.ContractTransactor) (*ClaimableFeesEventsTransactor, error) {
+	contract, err := bindClaimableFeesEvents(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsTransactor{contract: contract}, nil
+}
+
+// NewClaimableFeesEventsFilterer creates a new log filterer instance of ClaimableFeesEvents, bound to a specific deployed contract.
+func NewClaimableFeesEventsFilterer(address common.Address, filterer bind.ContractFilterer) (*ClaimableFeesEventsFilterer, error) {
+	contract, err := bindClaimableFeesEvents(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsFilterer{contract: contract}, nil
+}
+
+// bindClaimableFeesEvents binds a generic wrapper to an already deployed contract.
+func bindClaimableFeesEvents(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := ClaimableFeesEventsMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ClaimableFeesEvents *ClaimableFeesEventsRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ClaimableFeesEvents.Contract.ClaimableFeesEventsCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ClaimableFeesEvents *ClaimableFeesEventsRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimableFeesEvents.Contract.ClaimableFeesEventsTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ClaimableFeesEvents *ClaimableFeesEventsRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ClaimableFeesEvents.Contract.ClaimableFeesEventsTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ClaimableFeesEvents *ClaimableFeesEventsCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ClaimableFeesEvents.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ClaimableFeesEvents *ClaimableFeesEventsTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimableFeesEvents.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ClaimableFeesEvents *ClaimableFeesEventsTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ClaimableFeesEvents.Contract.contract.Transact(opts, method, params...)
+}
+
+// ClaimableFeesEventsClaimerFractionSetIterator is returned from FilterClaimerFractionSet and is used to iterate over the raw logs and unpacked data for ClaimerFractionSet events raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsClaimerFractionSetIterator struct {
+	Event *ClaimableFeesEventsClaimerFractionSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesEventsClaimerFractionSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesEventsClaimerFractionSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesEventsClaimerFractionSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesEventsClaimerFractionSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesEventsClaimerFractionSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesEventsClaimerFractionSet represents a ClaimerFractionSet event raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsClaimerFractionSet struct {
+	ClaimerFraction *big.Int
+	Raw             types.Log // Blockchain specific contextual infos
+}
+
+// FilterClaimerFractionSet is a free log retrieval operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) FilterClaimerFractionSet(opts *bind.FilterOpts) (*ClaimableFeesEventsClaimerFractionSetIterator, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.FilterLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsClaimerFractionSetIterator{contract: _ClaimableFeesEvents.contract, event: "ClaimerFractionSet", logs: logs, sub: sub}, nil
+}
+
+// WatchClaimerFractionSet is a free log subscription operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) WatchClaimerFractionSet(opts *bind.WatchOpts, sink chan<- *ClaimableFeesEventsClaimerFractionSet) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.WatchLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesEventsClaimerFractionSet)
+				if err := _ClaimableFeesEvents.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseClaimerFractionSet is a log parse operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) ParseClaimerFractionSet(log types.Log) (*ClaimableFeesEventsClaimerFractionSet, error) {
+	event := new(ClaimableFeesEventsClaimerFractionSet)
+	if err := _ClaimableFeesEvents.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ClaimableFeesEventsFeeRecipientSetIterator is returned from FilterFeeRecipientSet and is used to iterate over the raw logs and unpacked data for FeeRecipientSet events raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsFeeRecipientSetIterator struct {
+	Event *ClaimableFeesEventsFeeRecipientSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesEventsFeeRecipientSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesEventsFeeRecipientSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesEventsFeeRecipientSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesEventsFeeRecipientSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesEventsFeeRecipientSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesEventsFeeRecipientSet represents a FeeRecipientSet event raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsFeeRecipientSet struct {
+	FeeRecipient common.Address
+	Raw          types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeeRecipientSet is a free log retrieval operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) FilterFeeRecipientSet(opts *bind.FilterOpts) (*ClaimableFeesEventsFeeRecipientSetIterator, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.FilterLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsFeeRecipientSetIterator{contract: _ClaimableFeesEvents.contract, event: "FeeRecipientSet", logs: logs, sub: sub}, nil
+}
+
+// WatchFeeRecipientSet is a free log subscription operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) WatchFeeRecipientSet(opts *bind.WatchOpts, sink chan<- *ClaimableFeesEventsFeeRecipientSet) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.WatchLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesEventsFeeRecipientSet)
+				if err := _ClaimableFeesEvents.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeeRecipientSet is a log parse operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) ParseFeeRecipientSet(log types.Log) (*ClaimableFeesEventsFeeRecipientSet, error) {
+	event := new(ClaimableFeesEventsFeeRecipientSet)
+	if err := _ClaimableFeesEvents.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ClaimableFeesEventsFeesClaimedIterator is returned from FilterFeesClaimed and is used to iterate over the raw logs and unpacked data for FeesClaimed events raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsFeesClaimedIterator struct {
+	Event *ClaimableFeesEventsFeesClaimed // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesEventsFeesClaimedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesEventsFeesClaimed)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesEventsFeesClaimed)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesEventsFeesClaimedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesEventsFeesClaimedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesEventsFeesClaimed represents a FeesClaimed event raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsFeesClaimed struct {
+	FeeRecipient  common.Address
+	ClaimedFees   *big.Int
+	Claimer       common.Address
+	ClaimerReward *big.Int
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeesClaimed is a free log retrieval operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) FilterFeesClaimed(opts *bind.FilterOpts) (*ClaimableFeesEventsFeesClaimedIterator, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.FilterLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsFeesClaimedIterator{contract: _ClaimableFeesEvents.contract, event: "FeesClaimed", logs: logs, sub: sub}, nil
+}
+
+// WatchFeesClaimed is a free log subscription operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) WatchFeesClaimed(opts *bind.WatchOpts, sink chan<- *ClaimableFeesEventsFeesClaimed) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.WatchLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesEventsFeesClaimed)
+				if err := _ClaimableFeesEvents.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeesClaimed is a log parse operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) ParseFeesClaimed(log types.Log) (*ClaimableFeesEventsFeesClaimed, error) {
+	event := new(ClaimableFeesEventsFeesClaimed)
+	if err := _ClaimableFeesEvents.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
 // ContextUpgradeableMetaData contains all meta data concerning the ContextUpgradeable contract.
 var ContextUpgradeableMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"}]",
@@ -2381,6 +3822,313 @@ func (_IAccessControl *IAccessControlFilterer) ParseRoleRevoked(log types.Log) (
 	return event, nil
 }
 
+// IClaimableFeesMetaData contains all meta data concerning the IClaimableFees contract.
+var IClaimableFeesMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxAllowed\",\"type\":\"uint256\"}],\"name\":\"ClaimableFees__ClaimerFractionAboveMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeAmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeRecipientZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimableAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getFeeRecipient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"d294f093": "claimFees()",
+		"c354bd6e": "getClaimableAmount()",
+		"4f199114": "getClaimerFraction()",
+		"26533fe9": "getClaimerReward()",
+		"4ccb20c0": "getFeeRecipient()",
+	},
+}
+
+// IClaimableFeesABI is the input ABI used to generate the binding from.
+// Deprecated: Use IClaimableFeesMetaData.ABI instead.
+var IClaimableFeesABI = IClaimableFeesMetaData.ABI
+
+// Deprecated: Use IClaimableFeesMetaData.Sigs instead.
+// IClaimableFeesFuncSigs maps the 4-byte function signature to its string representation.
+var IClaimableFeesFuncSigs = IClaimableFeesMetaData.Sigs
+
+// IClaimableFees is an auto generated Go binding around an Ethereum contract.
+type IClaimableFees struct {
+	IClaimableFeesCaller     // Read-only binding to the contract
+	IClaimableFeesTransactor // Write-only binding to the contract
+	IClaimableFeesFilterer   // Log filterer for contract events
+}
+
+// IClaimableFeesCaller is an auto generated read-only Go binding around an Ethereum contract.
+type IClaimableFeesCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// IClaimableFeesTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type IClaimableFeesTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// IClaimableFeesFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type IClaimableFeesFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// IClaimableFeesSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type IClaimableFeesSession struct {
+	Contract     *IClaimableFees   // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// IClaimableFeesCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type IClaimableFeesCallerSession struct {
+	Contract *IClaimableFeesCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts         // Call options to use throughout this session
+}
+
+// IClaimableFeesTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type IClaimableFeesTransactorSession struct {
+	Contract     *IClaimableFeesTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts         // Transaction auth options to use throughout this session
+}
+
+// IClaimableFeesRaw is an auto generated low-level Go binding around an Ethereum contract.
+type IClaimableFeesRaw struct {
+	Contract *IClaimableFees // Generic contract binding to access the raw methods on
+}
+
+// IClaimableFeesCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type IClaimableFeesCallerRaw struct {
+	Contract *IClaimableFeesCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// IClaimableFeesTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type IClaimableFeesTransactorRaw struct {
+	Contract *IClaimableFeesTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewIClaimableFees creates a new instance of IClaimableFees, bound to a specific deployed contract.
+func NewIClaimableFees(address common.Address, backend bind.ContractBackend) (*IClaimableFees, error) {
+	contract, err := bindIClaimableFees(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &IClaimableFees{IClaimableFeesCaller: IClaimableFeesCaller{contract: contract}, IClaimableFeesTransactor: IClaimableFeesTransactor{contract: contract}, IClaimableFeesFilterer: IClaimableFeesFilterer{contract: contract}}, nil
+}
+
+// NewIClaimableFeesCaller creates a new read-only instance of IClaimableFees, bound to a specific deployed contract.
+func NewIClaimableFeesCaller(address common.Address, caller bind.ContractCaller) (*IClaimableFeesCaller, error) {
+	contract, err := bindIClaimableFees(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &IClaimableFeesCaller{contract: contract}, nil
+}
+
+// NewIClaimableFeesTransactor creates a new write-only instance of IClaimableFees, bound to a specific deployed contract.
+func NewIClaimableFeesTransactor(address common.Address, transactor bind.ContractTransactor) (*IClaimableFeesTransactor, error) {
+	contract, err := bindIClaimableFees(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &IClaimableFeesTransactor{contract: contract}, nil
+}
+
+// NewIClaimableFeesFilterer creates a new log filterer instance of IClaimableFees, bound to a specific deployed contract.
+func NewIClaimableFeesFilterer(address common.Address, filterer bind.ContractFilterer) (*IClaimableFeesFilterer, error) {
+	contract, err := bindIClaimableFees(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &IClaimableFeesFilterer{contract: contract}, nil
+}
+
+// bindIClaimableFees binds a generic wrapper to an already deployed contract.
+func bindIClaimableFees(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := IClaimableFeesMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_IClaimableFees *IClaimableFeesRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _IClaimableFees.Contract.IClaimableFeesCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_IClaimableFees *IClaimableFeesRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IClaimableFees.Contract.IClaimableFeesTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_IClaimableFees *IClaimableFeesRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IClaimableFees.Contract.IClaimableFeesTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_IClaimableFees *IClaimableFeesCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _IClaimableFees.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_IClaimableFees *IClaimableFeesTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IClaimableFees.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_IClaimableFees *IClaimableFeesTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IClaimableFees.Contract.contract.Transact(opts, method, params...)
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCaller) GetClaimableAmount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _IClaimableFees.contract.Call(opts, &out, "getClaimableAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesSession) GetClaimableAmount() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimableAmount(&_IClaimableFees.CallOpts)
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCallerSession) GetClaimableAmount() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimableAmount(&_IClaimableFees.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCaller) GetClaimerFraction(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _IClaimableFees.contract.Call(opts, &out, "getClaimerFraction")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesSession) GetClaimerFraction() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimerFraction(&_IClaimableFees.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCallerSession) GetClaimerFraction() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimerFraction(&_IClaimableFees.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCaller) GetClaimerReward(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _IClaimableFees.contract.Call(opts, &out, "getClaimerReward")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesSession) GetClaimerReward() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimerReward(&_IClaimableFees.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCallerSession) GetClaimerReward() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimerReward(&_IClaimableFees.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_IClaimableFees *IClaimableFeesCaller) GetFeeRecipient(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _IClaimableFees.contract.Call(opts, &out, "getFeeRecipient")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_IClaimableFees *IClaimableFeesSession) GetFeeRecipient() (common.Address, error) {
+	return _IClaimableFees.Contract.GetFeeRecipient(&_IClaimableFees.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_IClaimableFees *IClaimableFeesCallerSession) GetFeeRecipient() (common.Address, error) {
+	return _IClaimableFees.Contract.GetFeeRecipient(&_IClaimableFees.CallOpts)
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_IClaimableFees *IClaimableFeesTransactor) ClaimFees(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IClaimableFees.contract.Transact(opts, "claimFees")
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_IClaimableFees *IClaimableFeesSession) ClaimFees() (*types.Transaction, error) {
+	return _IClaimableFees.Contract.ClaimFees(&_IClaimableFees.TransactOpts)
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_IClaimableFees *IClaimableFeesTransactorSession) ClaimFees() (*types.Transaction, error) {
+	return _IClaimableFees.Contract.ClaimFees(&_IClaimableFees.TransactOpts)
+}
+
 // IERC165MetaData contains all meta data concerning the IERC165 contract.
 var IERC165MetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
@@ -2572,11 +4320,11 @@ func (_IERC165 *IERC165CallerSession) SupportsInterface(interfaceId [4]byte) (bo
 
 // IExecutionServiceMetaData contains all meta data concerning the IExecutionService contract.
 var IExecutionServiceMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestTxExecution\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"62014bad": "executorEOA()",
 		"96fda4da": "getExecutionFee(uint64,uint256,bytes)",
-		"592a8799": "requestExecution(uint64,uint256,bytes32,uint256,bytes)",
+		"58efb47d": "requestTxExecution(uint64,uint256,bytes32,bytes)",
 	},
 }
 
@@ -2792,25 +4540,25 @@ func (_IExecutionService *IExecutionServiceCallerSession) GetExecutionFee(dstCha
 	return _IExecutionService.Contract.GetExecutionFee(&_IExecutionService.CallOpts, dstChainId, txPayloadSize, options)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_IExecutionService *IExecutionServiceTransactor) RequestExecution(opts *bind.TransactOpts, dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _IExecutionService.contract.Transact(opts, "requestExecution", dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_IExecutionService *IExecutionServiceTransactor) RequestTxExecution(opts *bind.TransactOpts, dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _IExecutionService.contract.Transact(opts, "requestTxExecution", dstChainId, txPayloadSize, transactionId, options)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_IExecutionService *IExecutionServiceSession) RequestExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _IExecutionService.Contract.RequestExecution(&_IExecutionService.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_IExecutionService *IExecutionServiceSession) RequestTxExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _IExecutionService.Contract.RequestTxExecution(&_IExecutionService.TransactOpts, dstChainId, txPayloadSize, transactionId, options)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_IExecutionService *IExecutionServiceTransactorSession) RequestExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _IExecutionService.Contract.RequestExecution(&_IExecutionService.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_IExecutionService *IExecutionServiceTransactorSession) RequestTxExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _IExecutionService.Contract.RequestTxExecution(&_IExecutionService.TransactOpts, dstChainId, txPayloadSize, transactionId, options)
 }
 
 // IGasOracleMetaData contains all meta data concerning the IGasOracle contract.
@@ -3068,13 +4816,14 @@ func (_IGasOracle *IGasOracleCallerSession) EstimateTxCostInRemoteUnits(remoteCh
 
 // ISynapseExecutionServiceV1MetaData contains all meta data concerning the ISynapseExecutionServiceV1 contract.
 var ISynapseExecutionServiceV1MetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalMarkup\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"globalMarkup_\",\"type\":\"uint256\"}],\"name\":\"setGlobalMarkup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"SynapseExecutionService__ExecutorZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minRequired\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountBelowMin\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"SynapseExecutionService__GasOracleNotContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalMarkup\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestTxExecution\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"}],\"name\":\"setClaimerFraction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"globalMarkup_\",\"type\":\"uint256\"}],\"name\":\"setGlobalMarkup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"62014bad": "executorEOA()",
 		"5d62a8dd": "gasOracle()",
 		"96fda4da": "getExecutionFee(uint64,uint256,bytes)",
 		"efd07ec2": "globalMarkup()",
-		"592a8799": "requestExecution(uint64,uint256,bytes32,uint256,bytes)",
+		"58efb47d": "requestTxExecution(uint64,uint256,bytes32,bytes)",
+		"a9bc769b": "setClaimerFraction(uint256)",
 		"2d54566c": "setExecutorEOA(address)",
 		"a87b8152": "setGasOracle(address)",
 		"cf4f578f": "setGlobalMarkup(uint256)",
@@ -3355,25 +5104,46 @@ func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1CallerSession) Glob
 	return _ISynapseExecutionServiceV1.Contract.GlobalMarkup(&_ISynapseExecutionServiceV1.CallOpts)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Transactor) RequestExecution(opts *bind.TransactOpts, dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _ISynapseExecutionServiceV1.contract.Transact(opts, "requestExecution", dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Transactor) RequestTxExecution(opts *bind.TransactOpts, dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.contract.Transact(opts, "requestTxExecution", dstChainId, txPayloadSize, transactionId, options)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) RequestExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _ISynapseExecutionServiceV1.Contract.RequestExecution(&_ISynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) RequestTxExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.RequestTxExecution(&_ISynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, options)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1TransactorSession) RequestExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _ISynapseExecutionServiceV1.Contract.RequestExecution(&_ISynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1TransactorSession) RequestTxExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.RequestTxExecution(&_ISynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, options)
+}
+
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
+//
+// Solidity: function setClaimerFraction(uint256 claimerFraction) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Transactor) SetClaimerFraction(opts *bind.TransactOpts, claimerFraction *big.Int) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.contract.Transact(opts, "setClaimerFraction", claimerFraction)
+}
+
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
+//
+// Solidity: function setClaimerFraction(uint256 claimerFraction) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) SetClaimerFraction(claimerFraction *big.Int) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.SetClaimerFraction(&_ISynapseExecutionServiceV1.TransactOpts, claimerFraction)
+}
+
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
+//
+// Solidity: function setClaimerFraction(uint256 claimerFraction) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1TransactorSession) SetClaimerFraction(claimerFraction *big.Int) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.SetClaimerFraction(&_ISynapseExecutionServiceV1.TransactOpts, claimerFraction)
 }
 
 // SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
@@ -3726,8 +5496,8 @@ func (_Initializable *InitializableFilterer) ParseInitialized(log types.Log) (*I
 
 // OptionsLibMetaData contains all meta data concerning the OptionsLib contract.
 var OptionsLibMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220898e8401812e125d8c78c47878a6f937c2d38816a10e0ab5f2e16ec6d708195364736f6c63430008140033",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"OptionsLib__VersionInvalid\",\"type\":\"error\"}]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220f4b64ded52ede86acf8f97962c12b08467036aea41170f2556e0b6c071b6188364736f6c63430008140033",
 }
 
 // OptionsLibABI is the input ABI used to generate the binding from.
@@ -3899,7 +5669,7 @@ func (_OptionsLib *OptionsLibTransactorRaw) Transact(opts *bind.TransactOpts, me
 
 // SynapseExecutionServiceEventsMetaData contains all meta data concerning the SynapseExecutionServiceEvents contract.
 var SynapseExecutionServiceEventsMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"globalMarkup\",\"type\":\"uint256\"}],\"name\":\"GlobalMarkupSet\",\"type\":\"event\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"globalMarkup\",\"type\":\"uint256\"}],\"name\":\"GlobalMarkupSet\",\"type\":\"event\"}]",
 }
 
 // SynapseExecutionServiceEventsABI is the input ABI used to generate the binding from.
@@ -4119,12 +5889,13 @@ func (it *SynapseExecutionServiceEventsExecutionRequestedIterator) Close() error
 type SynapseExecutionServiceEventsExecutionRequested struct {
 	TransactionId [32]byte
 	Client        common.Address
+	ExecutionFee  *big.Int
 	Raw           types.Log // Blockchain specific contextual infos
 }
 
-// FilterExecutionRequested is a free log retrieval operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// FilterExecutionRequested is a free log retrieval operation binding the contract event 0xc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee)
 func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) FilterExecutionRequested(opts *bind.FilterOpts, transactionId [][32]byte) (*SynapseExecutionServiceEventsExecutionRequestedIterator, error) {
 
 	var transactionIdRule []interface{}
@@ -4139,9 +5910,9 @@ func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) Fil
 	return &SynapseExecutionServiceEventsExecutionRequestedIterator{contract: _SynapseExecutionServiceEvents.contract, event: "ExecutionRequested", logs: logs, sub: sub}, nil
 }
 
-// WatchExecutionRequested is a free log subscription operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// WatchExecutionRequested is a free log subscription operation binding the contract event 0xc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee)
 func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) WatchExecutionRequested(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceEventsExecutionRequested, transactionId [][32]byte) (event.Subscription, error) {
 
 	var transactionIdRule []interface{}
@@ -4181,9 +5952,9 @@ func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) Wat
 	}), nil
 }
 
-// ParseExecutionRequested is a log parse operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// ParseExecutionRequested is a log parse operation binding the contract event 0xc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee)
 func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) ParseExecutionRequested(log types.Log) (*SynapseExecutionServiceEventsExecutionRequested, error) {
 	event := new(SynapseExecutionServiceEventsExecutionRequested)
 	if err := _SynapseExecutionServiceEvents.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
@@ -4597,28 +6368,34 @@ func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) Par
 
 // SynapseExecutionServiceV1MetaData contains all meta data concerning the SynapseExecutionServiceV1 contract.
 var SynapseExecutionServiceV1MetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__TooShort\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"globalMarkup\",\"type\":\"uint256\"}],\"name\":\"GlobalMarkupSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_CLIENT_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalMarkup\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"globalMarkup_\",\"type\":\"uint256\"}],\"name\":\"setGlobalMarkup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxAllowed\",\"type\":\"uint256\"}],\"name\":\"ClaimableFees__ClaimerFractionAboveMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeAmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeRecipientZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"OptionsLib__VersionInvalid\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ExecutorZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minRequired\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountBelowMin\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"SynapseExecutionService__GasOracleNotContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__PayloadTooShort\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimerFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"}],\"name\":\"FeeRecipientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerReward\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"globalMarkup\",\"type\":\"uint256\"}],\"name\":\"GlobalMarkupSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_CLIENT_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimableAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getFeeRecipient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalMarkup\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestTxExecution\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction_\",\"type\":\"uint256\"}],\"name\":\"setClaimerFraction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"globalMarkup_\",\"type\":\"uint256\"}],\"name\":\"setGlobalMarkup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"a217fddf": "DEFAULT_ADMIN_ROLE()",
 		"ccc57490": "GOVERNOR_ROLE()",
 		"08c5c0db": "IC_CLIENT_ROLE()",
+		"d294f093": "claimFees()",
 		"62014bad": "executorEOA()",
 		"5d62a8dd": "gasOracle()",
+		"c354bd6e": "getClaimableAmount()",
+		"4f199114": "getClaimerFraction()",
+		"26533fe9": "getClaimerReward()",
 		"96fda4da": "getExecutionFee(uint64,uint256,bytes)",
+		"4ccb20c0": "getFeeRecipient()",
 		"248a9ca3": "getRoleAdmin(bytes32)",
 		"efd07ec2": "globalMarkup()",
 		"2f2ff15d": "grantRole(bytes32,address)",
 		"91d14854": "hasRole(bytes32,address)",
 		"c4d66de8": "initialize(address)",
 		"36568abe": "renounceRole(bytes32,address)",
-		"592a8799": "requestExecution(uint64,uint256,bytes32,uint256,bytes)",
+		"58efb47d": "requestTxExecution(uint64,uint256,bytes32,bytes)",
 		"d547741f": "revokeRole(bytes32,address)",
+		"a9bc769b": "setClaimerFraction(uint256)",
 		"2d54566c": "setExecutorEOA(address)",
 		"a87b8152": "setGasOracle(address)",
 		"cf4f578f": "setGlobalMarkup(uint256)",
 		"01ffc9a7": "supportsInterface(bytes4)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b5061001961001e565b6100d0565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000900460ff161561006e5760405163f92ee8a960e01b815260040160405180910390fd5b80546001600160401b03908116146100cd5780546001600160401b0319166001600160401b0390811782556040519081527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b50565b611674806100df6000396000f3fe608060405234801561001057600080fd5b50600436106101365760003560e01c806391d14854116100b2578063c4d66de811610081578063cf4f578f11610066578063cf4f578f14610390578063d547741f146103a3578063efd07ec2146103b657600080fd5b8063c4d66de814610356578063ccc574901461036957600080fd5b806391d14854146102c357806396fda4da14610328578063a217fddf1461033b578063a87b81521461034357600080fd5b80632f2ff15d11610109578063592a8799116100ee578063592a8799146102155780635d62a8dd1461022857806362014bad1461028657600080fd5b80632f2ff15d146101ef57806336568abe1461020257600080fd5b806301ffc9a71461013b57806308c5c0db14610163578063248a9ca3146101985780632d54566c146101da575b600080fd5b61014e61014936600461123c565b6103dd565b60405190151581526020015b60405180910390f35b61018a7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb81565b60405190815260200161015a565b61018a6101a636600461127e565b60009081527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015490565b6101ed6101e83660046112c0565b610476565b005b6101ed6101fd3660046112db565b610587565b6101ed6102103660046112db565b6105d1565b6101ed610223366004611368565b61062f565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200161015a565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff16610261565b61014e6102d13660046112db565b60009182527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080842073ffffffffffffffffffffffffffffffffffffffff93909316845291905290205460ff1690565b61018a6103363660046113d9565b6106f1565b61018a600081565b6101ed6103513660046112c0565b6109db565b6101ed6103643660046112c0565b610b06565b61018a7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5581565b6101ed61039e36600461127e565b610c89565b6101ed6103b13660046112db565b610d29565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31025461018a565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061047057507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000008316145b92915050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f556104a081610d6d565b73ffffffffffffffffffffffffffffffffffffffff82166104ed576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff841690811782556040519081527f4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71906020015b60405180910390a1505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b62680060205260409020600101546105c181610d6d565b6105cb8383610d7a565b50505050565b73ffffffffffffffffffffffffffffffffffffffff81163314610620576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61062a8282610e9b565b505050565b7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb61065981610d6d565b6000610667888886866106f1565b9050808510156106b2576040517f4641246a00000000000000000000000000000000000000000000000000000000815260048101869052602481018290526044015b60405180910390fd5b60405133815286907f507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd13829060200160405180910390a25050505050505050565b6000806107327fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff8116610781576040517f38d2192500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600061078d8585610f79565b9050600161ffff821611156107d4576040517f05e98f3a00000000000000000000000000000000000000000000000000000000815261ffff821660048201526024016106a9565b600061081586868080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250610fc392505050565b80516040517fbf495c8800000000000000000000000000000000000000000000000000000000815267ffffffffffffffff8b16600482015260248101919091526044810189905290915073ffffffffffffffffffffffffffffffffffffffff84169063bf495c8890606401602060405180830381865afa15801561089d573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108c19190611433565b6020820151909450156109805760208101516040517f40658a7400000000000000000000000000000000000000000000000000000000815267ffffffffffffffff8a166004820152602481019190915273ffffffffffffffffffffffffffffffffffffffff8416906340658a7490604401602060405180830381865afa15801561094f573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906109739190611433565b61097d908561147b565b93505b670de0b6b3a76400006109b17fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31025490565b6109bb908661148e565b6109c591906114a5565b6109cf908561147b565b98975050505050505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55610a0581610d6d565b73ffffffffffffffffffffffffffffffffffffffff8216610a52576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff84169081179091556040519081527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa9060200161057a565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000810460ff16159067ffffffffffffffff16600081158015610b515750825b905060008267ffffffffffffffff166001148015610b6e5750303b155b905081158015610b7c575080155b15610bb3576040517ff92ee8a900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b84547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001660011785558315610c145784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff16680100000000000000001785555b610c1f600087610d7a565b508315610c815784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff168555604051600181527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b505050505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55610cb381610d6d565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31028290556040518281527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d9060200161057a565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020526040902060010154610d6381610d6d565b6105cb8383610e9b565b610d77813361104c565b50565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff16610e915760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff87168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001179055610e2d3390565b73ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610470565b6000915050610470565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff1615610e915760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff8716808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339287917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a46001915050610470565b60006002821015610fba5782826040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016106a99291906114e0565b50503560f01c90565b60408051808201909152600080825260208201526000610fe2836110f7565b9050600161ffff82161015611029576040517fb94fa72500000000000000000000000000000000000000000000000000000000815261ffff821660048201526024016106a9565b61103283611142565b806020019051810190611045919061155c565b9392505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915290205460ff166110f3576040517fe2517d3f00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff82166004820152602481018390526044016106a9565b5050565b600060028251101561113757816040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016106a991906115d2565b506020015160f01c90565b606060028251101561118257816040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016106a991906115d2565b81517ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe018067ffffffffffffffff8111156111bf576111bf61152d565b6040519080825280601f01601f1916602001820160405280156111e9576020820181803683370190505b50915060008160208401836022870160045afa905080611235576040517f101e44fa00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050919050565b60006020828403121561124e57600080fd5b81357fffffffff000000000000000000000000000000000000000000000000000000008116811461104557600080fd5b60006020828403121561129057600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff811681146112bb57600080fd5b919050565b6000602082840312156112d257600080fd5b61104582611297565b600080604083850312156112ee57600080fd5b823591506112fe60208401611297565b90509250929050565b803567ffffffffffffffff811681146112bb57600080fd5b60008083601f84011261133157600080fd5b50813567ffffffffffffffff81111561134957600080fd5b60208301915083602082850101111561136157600080fd5b9250929050565b60008060008060008060a0878903121561138157600080fd5b61138a87611307565b9550602087013594506040870135935060608701359250608087013567ffffffffffffffff8111156113bb57600080fd5b6113c789828a0161131f565b979a9699509497509295939492505050565b600080600080606085870312156113ef57600080fd5b6113f885611307565b935060208501359250604085013567ffffffffffffffff81111561141b57600080fd5b6114278782880161131f565b95989497509550505050565b60006020828403121561144557600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b808201808211156104705761047061144c565b80820281158282048414176104705761047061144c565b6000826114db577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b60208152816020820152818360408301376000818301604090810191909152601f9092017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0160101919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60006040828403121561156e57600080fd5b6040516040810181811067ffffffffffffffff821117156115b8577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604052825181526020928301519281019290925250919050565b600060208083528351808285015260005b818110156115ff578581018301518582016040015282016115e3565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f830116850101925050509291505056fea264697066735822122020b0455ba9894e2ed7fe06e5a2a0d7663e67974c01754bba232f53d13ed35cd164736f6c63430008140033",
+	Bin: "0x608060405234801561001057600080fd5b5061001961001e565b6100d0565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000900460ff161561006e5760405163f92ee8a960e01b815260040160405180910390fd5b80546001600160401b03908116146100cd5780546001600160401b0319166001600160401b0390811782556040519081527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b50565b611c81806100df6000396000f3fe60806040526004361061018b5760003560e01c806391d14854116100d6578063c4d66de81161007f578063d294f09311610059578063d294f09314610550578063d547741f14610565578063efd07ec21461058557600080fd5b8063c4d66de8146104dc578063ccc57490146104fc578063cf4f578f1461053057600080fd5b8063a87b8152116100b0578063a87b815214610489578063a9bc769b146104a9578063c354bd6e146104c957600080fd5b806391d14854146103e257806396fda4da14610454578063a217fddf1461047457600080fd5b806336568abe1161013857806358efb47d1161011257806358efb47d1461033b5780635d62a8dd1461034e57806362014bad1461039857600080fd5b806336568abe146102ad5780634ccb20c0146102cd5780634f1991141461030757600080fd5b806326533fe91161016957806326533fe9146102565780632d54566c1461026b5780632f2ff15d1461028d57600080fd5b806301ffc9a71461019057806308c5c0db146101c5578063248a9ca314610207575b600080fd5b34801561019c57600080fd5b506101b06101ab366004611852565b6105b9565b60405190151581526020015b60405180910390f35b3480156101d157600080fd5b506101f97f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb81565b6040519081526020016101bc565b34801561021357600080fd5b506101f9610222366004611894565b60009081527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015490565b34801561026257600080fd5b506101f9610652565b34801561027757600080fd5b5061028b6102863660046118d6565b610664565b005b34801561029957600080fd5b5061028b6102a83660046118f1565b6107be565b3480156102b957600080fd5b5061028b6102c83660046118f1565b610808565b3480156102d957600080fd5b506102e2610866565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016101bc565b34801561031357600080fd5b507fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3103546101f9565b61028b61034936600461197e565b6108ab565b34801561035a57600080fd5b507fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff166102e2565b3480156103a457600080fd5b507fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff166102e2565b3480156103ee57600080fd5b506101b06103fd3660046118f1565b60009182527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080842073ffffffffffffffffffffffffffffffffffffffff93909316845291905290205460ff1690565b34801561046057600080fd5b506101f961046f3660046119e6565b610970565b34801561048057600080fd5b506101f9600081565b34801561049557600080fd5b5061028b6104a43660046118d6565b610c5a565b3480156104b557600080fd5b5061028b6104c4366004611894565b610da1565b3480156104d557600080fd5b50476101f9565b3480156104e857600080fd5b5061028b6104f73660046118d6565b610e92565b34801561050857600080fd5b506101f97f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5581565b34801561053c57600080fd5b5061028b61054b366004611894565b611015565b34801561055c57600080fd5b5061028b6110b5565b34801561057157600080fd5b5061028b6105803660046118f1565b6111ce565b34801561059157600080fd5b507fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3102546101f9565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061064c57507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000008316145b92915050565b60004761065e81611212565b91505090565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5561068e816112b4565b73ffffffffffffffffffffffffffffffffffffffff82166106db576040517f9e3a01ec00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100805473ffffffffffffffffffffffffffffffffffffffff84167fffffffffffffffffffffffff00000000000000000000000000000000000000009091168117825560408051918252517f4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f719181900360200190a160405173ffffffffffffffffffffffffffffffffffffffff841681527fbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323906020015b60405180910390a1505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b62680060205260409020600101546107f8816112b4565b61080283836112c1565b50505050565b73ffffffffffffffffffffffffffffffffffffffff81163314610857576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61086182826113e2565b505050565b60006108a67fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff1690565b905090565b7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb6108d5816112b4565b60006108e387878686610970565b90508034101561092d576040517f28c6ec70000000000000000000000000000000000000000000000000000000008152346004820152602481018290526044015b60405180910390fd5b6040805133815234602082015286917fc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c910160405180910390a250505050505050565b6000806109b17fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff8116610a00576040517f668604bd00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000610a0c85856114c0565b9050600161ffff82161115610a53576040517f05e98f3a00000000000000000000000000000000000000000000000000000000815261ffff82166004820152602401610924565b6000610a9486868080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525061150a92505050565b80516040517fbf495c8800000000000000000000000000000000000000000000000000000000815267ffffffffffffffff8b16600482015260248101919091526044810189905290915073ffffffffffffffffffffffffffffffffffffffff84169063bf495c8890606401602060405180830381865afa158015610b1c573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610b409190611a40565b602082015190945015610bff5760208101516040517f40658a7400000000000000000000000000000000000000000000000000000000815267ffffffffffffffff8a166004820152602481019190915273ffffffffffffffffffffffffffffffffffffffff8416906340658a7490604401602060405180830381865afa158015610bce573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610bf29190611a40565b610bfc9085611a88565b93505b670de0b6b3a7640000610c307fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31025490565b610c3a9086611a9b565b610c449190611ab2565b610c4e9085611a88565b98975050505050505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55610c84816112b4565b8173ffffffffffffffffffffffffffffffffffffffff163b600003610ced576040517fd7c25e1d00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff83166004820152602401610924565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff84169081179091556040519081527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa906020016107b1565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55610dcb816112b4565b662386f26fc10000821115610e1c576040517f0ae993dd00000000000000000000000000000000000000000000000000000000815260048101839052662386f26fc100006024820152604401610924565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31038290556040518281527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9906020016107b1565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000810460ff16159067ffffffffffffffff16600081158015610edd5750825b905060008267ffffffffffffffff166001148015610efa5750303b155b905081158015610f08575080155b15610f3f576040517ff92ee8a900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b84547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001660011785558315610fa05784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff16680100000000000000001785555b610fab6000876112c1565b50831561100d5784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff168555604051600181527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b505050505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5561103f816112b4565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31028290556040518281527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d906020016107b1565b4760008190036110f1576040517f6e95c0a700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006110fb610866565b905073ffffffffffffffffffffffffffffffffffffffff811661114a576040517f3c73eece00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600061115583611212565b6040805173ffffffffffffffffffffffffffffffffffffffff851681529482900360208601819052338683015260608601839052905190949192507ff4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b19181900360800190a16111c48284611590565b6108613382611590565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020526040902060010154611208816112b4565b61080283836113e2565b60008061123d7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31035490565b9050662386f26fc10000811115611290576040517f0ae993dd00000000000000000000000000000000000000000000000000000000815260048101829052662386f26fc100006024820152604401610924565b670de0b6b3a76400006112a38285611a9b565b6112ad9190611ab2565b9392505050565b6112be8133611666565b50565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff166113d85760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff87168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff001660011790556113743390565b73ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a4600191505061064c565b600091505061064c565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff16156113d85760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff8716808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339287917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a4600191505061064c565b600060028210156115015782826040517fb0818b62000000000000000000000000000000000000000000000000000000008152600401610924929190611aed565b50503560f01c90565b604080518082019091526000808252602082015260006115298361170d565b9050600161ffff82161015611570576040517f2b346f3700000000000000000000000000000000000000000000000000000000815261ffff82166004820152602401610924565b61157983611758565b8060200190518101906112ad9190611b69565b5050565b804710156115cc576040517fcd786059000000000000000000000000000000000000000000000000000000008152306004820152602401610924565b60008273ffffffffffffffffffffffffffffffffffffffff168260405160006040518083038185875af1925050503d8060008114611626576040519150601f19603f3d011682016040523d82523d6000602084013e61162b565b606091505b5050905080610861576040517f1425ea4200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915290205460ff1661158c576040517fe2517d3f00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8216600482015260248101839052604401610924565b600060028251101561174d57816040517fb0818b620000000000000000000000000000000000000000000000000000000081526004016109249190611bdf565b506020015160f01c90565b606060028251101561179857816040517fb0818b620000000000000000000000000000000000000000000000000000000081526004016109249190611bdf565b81517ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe018067ffffffffffffffff8111156117d5576117d5611b3a565b6040519080825280601f01601f1916602001820160405280156117ff576020820181803683370190505b50915060008160208401836022870160045afa90508061184b576040517f101e44fa00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050919050565b60006020828403121561186457600080fd5b81357fffffffff00000000000000000000000000000000000000000000000000000000811681146112ad57600080fd5b6000602082840312156118a657600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff811681146118d157600080fd5b919050565b6000602082840312156118e857600080fd5b6112ad826118ad565b6000806040838503121561190457600080fd5b82359150611914602084016118ad565b90509250929050565b803567ffffffffffffffff811681146118d157600080fd5b60008083601f84011261194757600080fd5b50813567ffffffffffffffff81111561195f57600080fd5b60208301915083602082850101111561197757600080fd5b9250929050565b60008060008060006080868803121561199657600080fd5b61199f8661191d565b94506020860135935060408601359250606086013567ffffffffffffffff8111156119c957600080fd5b6119d588828901611935565b969995985093965092949392505050565b600080600080606085870312156119fc57600080fd5b611a058561191d565b935060208501359250604085013567ffffffffffffffff811115611a2857600080fd5b611a3487828801611935565b95989497509550505050565b600060208284031215611a5257600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b8082018082111561064c5761064c611a59565b808202811582820484141761064c5761064c611a59565b600082611ae8577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b60208152816020820152818360408301376000818301604090810191909152601f9092017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0160101919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600060408284031215611b7b57600080fd5b6040516040810181811067ffffffffffffffff82111715611bc5577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604052825181526020928301519281019290925250919050565b600060208083528351808285015260005b81811015611c0c57858101830151858201604001528201611bf0565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f830116850101925050509291505056fea2646970667358221220f3b002ae15f7157e92b25dff0688b2db2fd2e13ab3a6d7c94ce030be0b3c70ad64736f6c63430008140033",
 }
 
 // SynapseExecutionServiceV1ABI is the input ABI used to generate the binding from.
@@ -4947,6 +6724,99 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GasOra
 	return _SynapseExecutionServiceV1.Contract.GasOracle(&_SynapseExecutionServiceV1.CallOpts)
 }
 
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) GetClaimableAmount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "getClaimableAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GetClaimableAmount() (*big.Int, error) {
+	return _SynapseExecutionServiceV1.Contract.GetClaimableAmount(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GetClaimableAmount() (*big.Int, error) {
+	return _SynapseExecutionServiceV1.Contract.GetClaimableAmount(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) GetClaimerFraction(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "getClaimerFraction")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GetClaimerFraction() (*big.Int, error) {
+	return _SynapseExecutionServiceV1.Contract.GetClaimerFraction(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GetClaimerFraction() (*big.Int, error) {
+	return _SynapseExecutionServiceV1.Contract.GetClaimerFraction(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) GetClaimerReward(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "getClaimerReward")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GetClaimerReward() (*big.Int, error) {
+	return _SynapseExecutionServiceV1.Contract.GetClaimerReward(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GetClaimerReward() (*big.Int, error) {
+	return _SynapseExecutionServiceV1.Contract.GetClaimerReward(&_SynapseExecutionServiceV1.CallOpts)
+}
+
 // GetExecutionFee is a free data retrieval call binding the contract method 0x96fda4da.
 //
 // Solidity: function getExecutionFee(uint64 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256 executionFee)
@@ -4976,6 +6846,37 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GetExecution
 // Solidity: function getExecutionFee(uint64 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256 executionFee)
 func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GetExecutionFee(dstChainId uint64, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
 	return _SynapseExecutionServiceV1.Contract.GetExecutionFee(&_SynapseExecutionServiceV1.CallOpts, dstChainId, txPayloadSize, options)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) GetFeeRecipient(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "getFeeRecipient")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GetFeeRecipient() (common.Address, error) {
+	return _SynapseExecutionServiceV1.Contract.GetFeeRecipient(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GetFeeRecipient() (common.Address, error) {
+	return _SynapseExecutionServiceV1.Contract.GetFeeRecipient(&_SynapseExecutionServiceV1.CallOpts)
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
@@ -5102,6 +7003,27 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) Suppor
 	return _SynapseExecutionServiceV1.Contract.SupportsInterface(&_SynapseExecutionServiceV1.CallOpts, interfaceId)
 }
 
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) ClaimFees(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "claimFees")
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) ClaimFees() (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.ClaimFees(&_SynapseExecutionServiceV1.TransactOpts)
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) ClaimFees() (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.ClaimFees(&_SynapseExecutionServiceV1.TransactOpts)
+}
+
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
 //
 // Solidity: function grantRole(bytes32 role, address account) returns()
@@ -5165,25 +7087,25 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) Re
 	return _SynapseExecutionServiceV1.Contract.RenounceRole(&_SynapseExecutionServiceV1.TransactOpts, role, callerConfirmation)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) RequestExecution(opts *bind.TransactOpts, dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _SynapseExecutionServiceV1.contract.Transact(opts, "requestExecution", dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) RequestTxExecution(opts *bind.TransactOpts, dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "requestTxExecution", dstChainId, txPayloadSize, transactionId, options)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) RequestExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _SynapseExecutionServiceV1.Contract.RequestExecution(&_SynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) RequestTxExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.RequestTxExecution(&_SynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, options)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) RequestExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _SynapseExecutionServiceV1.Contract.RequestExecution(&_SynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) RequestTxExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.RequestTxExecution(&_SynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, options)
 }
 
 // RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
@@ -5205,6 +7127,27 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) RevokeRole(r
 // Solidity: function revokeRole(bytes32 role, address account) returns()
 func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
 	return _SynapseExecutionServiceV1.Contract.RevokeRole(&_SynapseExecutionServiceV1.TransactOpts, role, account)
+}
+
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
+//
+// Solidity: function setClaimerFraction(uint256 claimerFraction_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) SetClaimerFraction(opts *bind.TransactOpts, claimerFraction_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "setClaimerFraction", claimerFraction_)
+}
+
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
+//
+// Solidity: function setClaimerFraction(uint256 claimerFraction_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) SetClaimerFraction(claimerFraction_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.SetClaimerFraction(&_SynapseExecutionServiceV1.TransactOpts, claimerFraction_)
+}
+
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
+//
+// Solidity: function setClaimerFraction(uint256 claimerFraction_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) SetClaimerFraction(claimerFraction_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.SetClaimerFraction(&_SynapseExecutionServiceV1.TransactOpts, claimerFraction_)
 }
 
 // SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
@@ -5268,6 +7211,140 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) SetGlobalMar
 // Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
 func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) SetGlobalMarkup(globalMarkup_ *big.Int) (*types.Transaction, error) {
 	return _SynapseExecutionServiceV1.Contract.SetGlobalMarkup(&_SynapseExecutionServiceV1.TransactOpts, globalMarkup_)
+}
+
+// SynapseExecutionServiceV1ClaimerFractionSetIterator is returned from FilterClaimerFractionSet and is used to iterate over the raw logs and unpacked data for ClaimerFractionSet events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1ClaimerFractionSetIterator struct {
+	Event *SynapseExecutionServiceV1ClaimerFractionSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1ClaimerFractionSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1ClaimerFractionSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1ClaimerFractionSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1ClaimerFractionSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1ClaimerFractionSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1ClaimerFractionSet represents a ClaimerFractionSet event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1ClaimerFractionSet struct {
+	ClaimerFraction *big.Int
+	Raw             types.Log // Blockchain specific contextual infos
+}
+
+// FilterClaimerFractionSet is a free log retrieval operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterClaimerFractionSet(opts *bind.FilterOpts) (*SynapseExecutionServiceV1ClaimerFractionSetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1ClaimerFractionSetIterator{contract: _SynapseExecutionServiceV1.contract, event: "ClaimerFractionSet", logs: logs, sub: sub}, nil
+}
+
+// WatchClaimerFractionSet is a free log subscription operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchClaimerFractionSet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1ClaimerFractionSet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1ClaimerFractionSet)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseClaimerFractionSet is a log parse operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseClaimerFractionSet(log types.Log) (*SynapseExecutionServiceV1ClaimerFractionSet, error) {
+	event := new(SynapseExecutionServiceV1ClaimerFractionSet)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
 }
 
 // SynapseExecutionServiceV1ExecutionRequestedIterator is returned from FilterExecutionRequested and is used to iterate over the raw logs and unpacked data for ExecutionRequested events raised by the SynapseExecutionServiceV1 contract.
@@ -5341,12 +7418,13 @@ func (it *SynapseExecutionServiceV1ExecutionRequestedIterator) Close() error {
 type SynapseExecutionServiceV1ExecutionRequested struct {
 	TransactionId [32]byte
 	Client        common.Address
+	ExecutionFee  *big.Int
 	Raw           types.Log // Blockchain specific contextual infos
 }
 
-// FilterExecutionRequested is a free log retrieval operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// FilterExecutionRequested is a free log retrieval operation binding the contract event 0xc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee)
 func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterExecutionRequested(opts *bind.FilterOpts, transactionId [][32]byte) (*SynapseExecutionServiceV1ExecutionRequestedIterator, error) {
 
 	var transactionIdRule []interface{}
@@ -5361,9 +7439,9 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterExecu
 	return &SynapseExecutionServiceV1ExecutionRequestedIterator{contract: _SynapseExecutionServiceV1.contract, event: "ExecutionRequested", logs: logs, sub: sub}, nil
 }
 
-// WatchExecutionRequested is a free log subscription operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// WatchExecutionRequested is a free log subscription operation binding the contract event 0xc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee)
 func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchExecutionRequested(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1ExecutionRequested, transactionId [][32]byte) (event.Subscription, error) {
 
 	var transactionIdRule []interface{}
@@ -5403,9 +7481,9 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchExecut
 	}), nil
 }
 
-// ParseExecutionRequested is a log parse operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// ParseExecutionRequested is a log parse operation binding the contract event 0xc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee)
 func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseExecutionRequested(log types.Log) (*SynapseExecutionServiceV1ExecutionRequested, error) {
 	event := new(SynapseExecutionServiceV1ExecutionRequested)
 	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
@@ -5543,6 +7621,277 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchExecut
 func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseExecutorEOASet(log types.Log) (*SynapseExecutionServiceV1ExecutorEOASet, error) {
 	event := new(SynapseExecutionServiceV1ExecutorEOASet)
 	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "ExecutorEOASet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1FeeRecipientSetIterator is returned from FilterFeeRecipientSet and is used to iterate over the raw logs and unpacked data for FeeRecipientSet events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1FeeRecipientSetIterator struct {
+	Event *SynapseExecutionServiceV1FeeRecipientSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1FeeRecipientSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1FeeRecipientSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1FeeRecipientSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1FeeRecipientSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1FeeRecipientSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1FeeRecipientSet represents a FeeRecipientSet event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1FeeRecipientSet struct {
+	FeeRecipient common.Address
+	Raw          types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeeRecipientSet is a free log retrieval operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterFeeRecipientSet(opts *bind.FilterOpts) (*SynapseExecutionServiceV1FeeRecipientSetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1FeeRecipientSetIterator{contract: _SynapseExecutionServiceV1.contract, event: "FeeRecipientSet", logs: logs, sub: sub}, nil
+}
+
+// WatchFeeRecipientSet is a free log subscription operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchFeeRecipientSet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1FeeRecipientSet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1FeeRecipientSet)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeeRecipientSet is a log parse operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseFeeRecipientSet(log types.Log) (*SynapseExecutionServiceV1FeeRecipientSet, error) {
+	event := new(SynapseExecutionServiceV1FeeRecipientSet)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1FeesClaimedIterator is returned from FilterFeesClaimed and is used to iterate over the raw logs and unpacked data for FeesClaimed events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1FeesClaimedIterator struct {
+	Event *SynapseExecutionServiceV1FeesClaimed // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1FeesClaimedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1FeesClaimed)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1FeesClaimed)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1FeesClaimedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1FeesClaimedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1FeesClaimed represents a FeesClaimed event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1FeesClaimed struct {
+	FeeRecipient  common.Address
+	ClaimedFees   *big.Int
+	Claimer       common.Address
+	ClaimerReward *big.Int
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeesClaimed is a free log retrieval operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterFeesClaimed(opts *bind.FilterOpts) (*SynapseExecutionServiceV1FeesClaimedIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1FeesClaimedIterator{contract: _SynapseExecutionServiceV1.contract, event: "FeesClaimed", logs: logs, sub: sub}, nil
+}
+
+// WatchFeesClaimed is a free log subscription operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchFeesClaimed(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1FeesClaimed) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1FeesClaimed)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeesClaimed is a log parse operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseFeesClaimed(log types.Log) (*SynapseExecutionServiceV1FeesClaimed, error) {
+	event := new(SynapseExecutionServiceV1FeesClaimed)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -6439,28 +8788,34 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseRoleRe
 
 // SynapseExecutionServiceV1HarnessMetaData contains all meta data concerning the SynapseExecutionServiceV1Harness contract.
 var SynapseExecutionServiceV1HarnessMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__TooShort\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"globalMarkup\",\"type\":\"uint256\"}],\"name\":\"GlobalMarkupSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_CLIENT_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalMarkup\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"globalMarkup_\",\"type\":\"uint256\"}],\"name\":\"setGlobalMarkup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxAllowed\",\"type\":\"uint256\"}],\"name\":\"ClaimableFees__ClaimerFractionAboveMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeAmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeRecipientZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"OptionsLib__VersionInvalid\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ExecutorZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minRequired\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountBelowMin\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"SynapseExecutionService__GasOracleNotContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__PayloadTooShort\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimerFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"}],\"name\":\"FeeRecipientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerReward\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"globalMarkup\",\"type\":\"uint256\"}],\"name\":\"GlobalMarkupSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_CLIENT_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimableAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getFeeRecipient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalMarkup\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestTxExecution\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction_\",\"type\":\"uint256\"}],\"name\":\"setClaimerFraction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"globalMarkup_\",\"type\":\"uint256\"}],\"name\":\"setGlobalMarkup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"a217fddf": "DEFAULT_ADMIN_ROLE()",
 		"ccc57490": "GOVERNOR_ROLE()",
 		"08c5c0db": "IC_CLIENT_ROLE()",
+		"d294f093": "claimFees()",
 		"62014bad": "executorEOA()",
 		"5d62a8dd": "gasOracle()",
+		"c354bd6e": "getClaimableAmount()",
+		"4f199114": "getClaimerFraction()",
+		"26533fe9": "getClaimerReward()",
 		"96fda4da": "getExecutionFee(uint64,uint256,bytes)",
+		"4ccb20c0": "getFeeRecipient()",
 		"248a9ca3": "getRoleAdmin(bytes32)",
 		"efd07ec2": "globalMarkup()",
 		"2f2ff15d": "grantRole(bytes32,address)",
 		"91d14854": "hasRole(bytes32,address)",
 		"c4d66de8": "initialize(address)",
 		"36568abe": "renounceRole(bytes32,address)",
-		"592a8799": "requestExecution(uint64,uint256,bytes32,uint256,bytes)",
+		"58efb47d": "requestTxExecution(uint64,uint256,bytes32,bytes)",
 		"d547741f": "revokeRole(bytes32,address)",
+		"a9bc769b": "setClaimerFraction(uint256)",
 		"2d54566c": "setExecutorEOA(address)",
 		"a87b8152": "setGasOracle(address)",
 		"cf4f578f": "setGlobalMarkup(uint256)",
 		"01ffc9a7": "supportsInterface(bytes4)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b5061001c60003361004d565b506100477f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f553361004d565b5061011e565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602081815260408084206001600160a01b038616855290915282205460ff16610112576000848152602082815260408083206001600160a01b03871684529091529020805460ff191660011790556100c83390565b6001600160a01b0316836001600160a01b0316857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610118565b60009150505b92915050565b6116748061012d6000396000f3fe608060405234801561001057600080fd5b50600436106101365760003560e01c806391d14854116100b2578063c4d66de811610081578063cf4f578f11610066578063cf4f578f14610390578063d547741f146103a3578063efd07ec2146103b657600080fd5b8063c4d66de814610356578063ccc574901461036957600080fd5b806391d14854146102c357806396fda4da14610328578063a217fddf1461033b578063a87b81521461034357600080fd5b80632f2ff15d11610109578063592a8799116100ee578063592a8799146102155780635d62a8dd1461022857806362014bad1461028657600080fd5b80632f2ff15d146101ef57806336568abe1461020257600080fd5b806301ffc9a71461013b57806308c5c0db14610163578063248a9ca3146101985780632d54566c146101da575b600080fd5b61014e61014936600461123c565b6103dd565b60405190151581526020015b60405180910390f35b61018a7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb81565b60405190815260200161015a565b61018a6101a636600461127e565b60009081527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015490565b6101ed6101e83660046112c0565b610476565b005b6101ed6101fd3660046112db565b610587565b6101ed6102103660046112db565b6105d1565b6101ed610223366004611368565b61062f565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200161015a565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff16610261565b61014e6102d13660046112db565b60009182527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080842073ffffffffffffffffffffffffffffffffffffffff93909316845291905290205460ff1690565b61018a6103363660046113d9565b6106f1565b61018a600081565b6101ed6103513660046112c0565b6109db565b6101ed6103643660046112c0565b610b06565b61018a7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5581565b6101ed61039e36600461127e565b610c89565b6101ed6103b13660046112db565b610d29565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31025461018a565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061047057507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000008316145b92915050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f556104a081610d6d565b73ffffffffffffffffffffffffffffffffffffffff82166104ed576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff841690811782556040519081527f4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71906020015b60405180910390a1505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b62680060205260409020600101546105c181610d6d565b6105cb8383610d7a565b50505050565b73ffffffffffffffffffffffffffffffffffffffff81163314610620576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61062a8282610e9b565b505050565b7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb61065981610d6d565b6000610667888886866106f1565b9050808510156106b2576040517f4641246a00000000000000000000000000000000000000000000000000000000815260048101869052602481018290526044015b60405180910390fd5b60405133815286907f507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd13829060200160405180910390a25050505050505050565b6000806107327fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff8116610781576040517f38d2192500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600061078d8585610f79565b9050600161ffff821611156107d4576040517f05e98f3a00000000000000000000000000000000000000000000000000000000815261ffff821660048201526024016106a9565b600061081586868080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250610fc392505050565b80516040517fbf495c8800000000000000000000000000000000000000000000000000000000815267ffffffffffffffff8b16600482015260248101919091526044810189905290915073ffffffffffffffffffffffffffffffffffffffff84169063bf495c8890606401602060405180830381865afa15801561089d573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108c19190611433565b6020820151909450156109805760208101516040517f40658a7400000000000000000000000000000000000000000000000000000000815267ffffffffffffffff8a166004820152602481019190915273ffffffffffffffffffffffffffffffffffffffff8416906340658a7490604401602060405180830381865afa15801561094f573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906109739190611433565b61097d908561147b565b93505b670de0b6b3a76400006109b17fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31025490565b6109bb908661148e565b6109c591906114a5565b6109cf908561147b565b98975050505050505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55610a0581610d6d565b73ffffffffffffffffffffffffffffffffffffffff8216610a52576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff84169081179091556040519081527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa9060200161057a565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000810460ff16159067ffffffffffffffff16600081158015610b515750825b905060008267ffffffffffffffff166001148015610b6e5750303b155b905081158015610b7c575080155b15610bb3576040517ff92ee8a900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b84547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001660011785558315610c145784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff16680100000000000000001785555b610c1f600087610d7a565b508315610c815784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff168555604051600181527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b505050505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55610cb381610d6d565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31028290556040518281527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d9060200161057a565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020526040902060010154610d6381610d6d565b6105cb8383610e9b565b610d77813361104c565b50565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff16610e915760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff87168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001179055610e2d3390565b73ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610470565b6000915050610470565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff1615610e915760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff8716808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339287917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a46001915050610470565b60006002821015610fba5782826040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016106a99291906114e0565b50503560f01c90565b60408051808201909152600080825260208201526000610fe2836110f7565b9050600161ffff82161015611029576040517fb94fa72500000000000000000000000000000000000000000000000000000000815261ffff821660048201526024016106a9565b61103283611142565b806020019051810190611045919061155c565b9392505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915290205460ff166110f3576040517fe2517d3f00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff82166004820152602481018390526044016106a9565b5050565b600060028251101561113757816040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016106a991906115d2565b506020015160f01c90565b606060028251101561118257816040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016106a991906115d2565b81517ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe018067ffffffffffffffff8111156111bf576111bf61152d565b6040519080825280601f01601f1916602001820160405280156111e9576020820181803683370190505b50915060008160208401836022870160045afa905080611235576040517f101e44fa00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050919050565b60006020828403121561124e57600080fd5b81357fffffffff000000000000000000000000000000000000000000000000000000008116811461104557600080fd5b60006020828403121561129057600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff811681146112bb57600080fd5b919050565b6000602082840312156112d257600080fd5b61104582611297565b600080604083850312156112ee57600080fd5b823591506112fe60208401611297565b90509250929050565b803567ffffffffffffffff811681146112bb57600080fd5b60008083601f84011261133157600080fd5b50813567ffffffffffffffff81111561134957600080fd5b60208301915083602082850101111561136157600080fd5b9250929050565b60008060008060008060a0878903121561138157600080fd5b61138a87611307565b9550602087013594506040870135935060608701359250608087013567ffffffffffffffff8111156113bb57600080fd5b6113c789828a0161131f565b979a9699509497509295939492505050565b600080600080606085870312156113ef57600080fd5b6113f885611307565b935060208501359250604085013567ffffffffffffffff81111561141b57600080fd5b6114278782880161131f565b95989497509550505050565b60006020828403121561144557600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b808201808211156104705761047061144c565b80820281158282048414176104705761047061144c565b6000826114db577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b60208152816020820152818360408301376000818301604090810191909152601f9092017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0160101919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60006040828403121561156e57600080fd5b6040516040810181811067ffffffffffffffff821117156115b8577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604052825181526020928301519281019290925250919050565b600060208083528351808285015260005b818110156115ff578581018301518582016040015282016115e3565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f830116850101925050509291505056fea2646970667358221220941363e9701c581011781ea9bccd0947e514a06a32e1843eee9827d098d9502564736f6c63430008140033",
+	Bin: "0x60806040523480156200001157600080fd5b506200001f60003362000053565b506200004c7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f553362000053565b5062000127565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602081815260408084206001600160a01b038616855290915282205460ff166200011b576000848152602082815260408083206001600160a01b03871684529091529020805460ff19166001179055620000d03390565b6001600160a01b0316836001600160a01b0316857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a4600191505062000121565b60009150505b92915050565b611c8180620001376000396000f3fe60806040526004361061018b5760003560e01c806391d14854116100d6578063c4d66de81161007f578063d294f09311610059578063d294f09314610550578063d547741f14610565578063efd07ec21461058557600080fd5b8063c4d66de8146104dc578063ccc57490146104fc578063cf4f578f1461053057600080fd5b8063a87b8152116100b0578063a87b815214610489578063a9bc769b146104a9578063c354bd6e146104c957600080fd5b806391d14854146103e257806396fda4da14610454578063a217fddf1461047457600080fd5b806336568abe1161013857806358efb47d1161011257806358efb47d1461033b5780635d62a8dd1461034e57806362014bad1461039857600080fd5b806336568abe146102ad5780634ccb20c0146102cd5780634f1991141461030757600080fd5b806326533fe91161016957806326533fe9146102565780632d54566c1461026b5780632f2ff15d1461028d57600080fd5b806301ffc9a71461019057806308c5c0db146101c5578063248a9ca314610207575b600080fd5b34801561019c57600080fd5b506101b06101ab366004611852565b6105b9565b60405190151581526020015b60405180910390f35b3480156101d157600080fd5b506101f97f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb81565b6040519081526020016101bc565b34801561021357600080fd5b506101f9610222366004611894565b60009081527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015490565b34801561026257600080fd5b506101f9610652565b34801561027757600080fd5b5061028b6102863660046118d6565b610664565b005b34801561029957600080fd5b5061028b6102a83660046118f1565b6107be565b3480156102b957600080fd5b5061028b6102c83660046118f1565b610808565b3480156102d957600080fd5b506102e2610866565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016101bc565b34801561031357600080fd5b507fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3103546101f9565b61028b61034936600461197e565b6108ab565b34801561035a57600080fd5b507fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff166102e2565b3480156103a457600080fd5b507fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff166102e2565b3480156103ee57600080fd5b506101b06103fd3660046118f1565b60009182527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080842073ffffffffffffffffffffffffffffffffffffffff93909316845291905290205460ff1690565b34801561046057600080fd5b506101f961046f3660046119e6565b610970565b34801561048057600080fd5b506101f9600081565b34801561049557600080fd5b5061028b6104a43660046118d6565b610c5a565b3480156104b557600080fd5b5061028b6104c4366004611894565b610da1565b3480156104d557600080fd5b50476101f9565b3480156104e857600080fd5b5061028b6104f73660046118d6565b610e92565b34801561050857600080fd5b506101f97f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5581565b34801561053c57600080fd5b5061028b61054b366004611894565b611015565b34801561055c57600080fd5b5061028b6110b5565b34801561057157600080fd5b5061028b6105803660046118f1565b6111ce565b34801561059157600080fd5b507fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3102546101f9565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061064c57507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000008316145b92915050565b60004761065e81611212565b91505090565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5561068e816112b4565b73ffffffffffffffffffffffffffffffffffffffff82166106db576040517f9e3a01ec00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100805473ffffffffffffffffffffffffffffffffffffffff84167fffffffffffffffffffffffff00000000000000000000000000000000000000009091168117825560408051918252517f4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f719181900360200190a160405173ffffffffffffffffffffffffffffffffffffffff841681527fbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323906020015b60405180910390a1505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b62680060205260409020600101546107f8816112b4565b61080283836112c1565b50505050565b73ffffffffffffffffffffffffffffffffffffffff81163314610857576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61086182826113e2565b505050565b60006108a67fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff1690565b905090565b7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb6108d5816112b4565b60006108e387878686610970565b90508034101561092d576040517f28c6ec70000000000000000000000000000000000000000000000000000000008152346004820152602481018290526044015b60405180910390fd5b6040805133815234602082015286917fc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c910160405180910390a250505050505050565b6000806109b17fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff8116610a00576040517f668604bd00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000610a0c85856114c0565b9050600161ffff82161115610a53576040517f05e98f3a00000000000000000000000000000000000000000000000000000000815261ffff82166004820152602401610924565b6000610a9486868080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525061150a92505050565b80516040517fbf495c8800000000000000000000000000000000000000000000000000000000815267ffffffffffffffff8b16600482015260248101919091526044810189905290915073ffffffffffffffffffffffffffffffffffffffff84169063bf495c8890606401602060405180830381865afa158015610b1c573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610b409190611a40565b602082015190945015610bff5760208101516040517f40658a7400000000000000000000000000000000000000000000000000000000815267ffffffffffffffff8a166004820152602481019190915273ffffffffffffffffffffffffffffffffffffffff8416906340658a7490604401602060405180830381865afa158015610bce573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610bf29190611a40565b610bfc9085611a88565b93505b670de0b6b3a7640000610c307fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31025490565b610c3a9086611a9b565b610c449190611ab2565b610c4e9085611a88565b98975050505050505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55610c84816112b4565b8173ffffffffffffffffffffffffffffffffffffffff163b600003610ced576040517fd7c25e1d00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff83166004820152602401610924565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff84169081179091556040519081527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa906020016107b1565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55610dcb816112b4565b662386f26fc10000821115610e1c576040517f0ae993dd00000000000000000000000000000000000000000000000000000000815260048101839052662386f26fc100006024820152604401610924565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31038290556040518281527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9906020016107b1565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000810460ff16159067ffffffffffffffff16600081158015610edd5750825b905060008267ffffffffffffffff166001148015610efa5750303b155b905081158015610f08575080155b15610f3f576040517ff92ee8a900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b84547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001660011785558315610fa05784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff16680100000000000000001785555b610fab6000876112c1565b50831561100d5784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff168555604051600181527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b505050505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5561103f816112b4565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31028290556040518281527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d906020016107b1565b4760008190036110f1576040517f6e95c0a700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006110fb610866565b905073ffffffffffffffffffffffffffffffffffffffff811661114a576040517f3c73eece00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600061115583611212565b6040805173ffffffffffffffffffffffffffffffffffffffff851681529482900360208601819052338683015260608601839052905190949192507ff4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b19181900360800190a16111c48284611590565b6108613382611590565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020526040902060010154611208816112b4565b61080283836113e2565b60008061123d7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31035490565b9050662386f26fc10000811115611290576040517f0ae993dd00000000000000000000000000000000000000000000000000000000815260048101829052662386f26fc100006024820152604401610924565b670de0b6b3a76400006112a38285611a9b565b6112ad9190611ab2565b9392505050565b6112be8133611666565b50565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff166113d85760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff87168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff001660011790556113743390565b73ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a4600191505061064c565b600091505061064c565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff16156113d85760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff8716808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339287917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a4600191505061064c565b600060028210156115015782826040517fb0818b62000000000000000000000000000000000000000000000000000000008152600401610924929190611aed565b50503560f01c90565b604080518082019091526000808252602082015260006115298361170d565b9050600161ffff82161015611570576040517f2b346f3700000000000000000000000000000000000000000000000000000000815261ffff82166004820152602401610924565b61157983611758565b8060200190518101906112ad9190611b69565b5050565b804710156115cc576040517fcd786059000000000000000000000000000000000000000000000000000000008152306004820152602401610924565b60008273ffffffffffffffffffffffffffffffffffffffff168260405160006040518083038185875af1925050503d8060008114611626576040519150601f19603f3d011682016040523d82523d6000602084013e61162b565b606091505b5050905080610861576040517f1425ea4200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915290205460ff1661158c576040517fe2517d3f00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8216600482015260248101839052604401610924565b600060028251101561174d57816040517fb0818b620000000000000000000000000000000000000000000000000000000081526004016109249190611bdf565b506020015160f01c90565b606060028251101561179857816040517fb0818b620000000000000000000000000000000000000000000000000000000081526004016109249190611bdf565b81517ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe018067ffffffffffffffff8111156117d5576117d5611b3a565b6040519080825280601f01601f1916602001820160405280156117ff576020820181803683370190505b50915060008160208401836022870160045afa90508061184b576040517f101e44fa00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050919050565b60006020828403121561186457600080fd5b81357fffffffff00000000000000000000000000000000000000000000000000000000811681146112ad57600080fd5b6000602082840312156118a657600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff811681146118d157600080fd5b919050565b6000602082840312156118e857600080fd5b6112ad826118ad565b6000806040838503121561190457600080fd5b82359150611914602084016118ad565b90509250929050565b803567ffffffffffffffff811681146118d157600080fd5b60008083601f84011261194757600080fd5b50813567ffffffffffffffff81111561195f57600080fd5b60208301915083602082850101111561197757600080fd5b9250929050565b60008060008060006080868803121561199657600080fd5b61199f8661191d565b94506020860135935060408601359250606086013567ffffffffffffffff8111156119c957600080fd5b6119d588828901611935565b969995985093965092949392505050565b600080600080606085870312156119fc57600080fd5b611a058561191d565b935060208501359250604085013567ffffffffffffffff811115611a2857600080fd5b611a3487828801611935565b95989497509550505050565b600060208284031215611a5257600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b8082018082111561064c5761064c611a59565b808202811582820484141761064c5761064c611a59565b600082611ae8577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b60208152816020820152818360408301376000818301604090810191909152601f9092017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0160101919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600060408284031215611b7b57600080fd5b6040516040810181811067ffffffffffffffff82111715611bc5577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604052825181526020928301519281019290925250919050565b600060208083528351808285015260005b81811015611c0c57858101830151858201604001528201611bf0565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f830116850101925050509291505056fea2646970667358221220acc2a0fe7a2421f9293a36bd64e53e90660f4fc44511dc190483da941e09590764736f6c63430008140033",
 }
 
 // SynapseExecutionServiceV1HarnessABI is the input ABI used to generate the binding from.
@@ -6789,6 +9144,99 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerS
 	return _SynapseExecutionServiceV1Harness.Contract.GasOracle(&_SynapseExecutionServiceV1Harness.CallOpts)
 }
 
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) GetClaimableAmount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "getClaimableAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) GetClaimableAmount() (*big.Int, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetClaimableAmount(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) GetClaimableAmount() (*big.Int, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetClaimableAmount(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) GetClaimerFraction(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "getClaimerFraction")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) GetClaimerFraction() (*big.Int, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetClaimerFraction(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) GetClaimerFraction() (*big.Int, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetClaimerFraction(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) GetClaimerReward(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "getClaimerReward")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) GetClaimerReward() (*big.Int, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetClaimerReward(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) GetClaimerReward() (*big.Int, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetClaimerReward(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
 // GetExecutionFee is a free data retrieval call binding the contract method 0x96fda4da.
 //
 // Solidity: function getExecutionFee(uint64 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256 executionFee)
@@ -6818,6 +9266,37 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession
 // Solidity: function getExecutionFee(uint64 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256 executionFee)
 func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) GetExecutionFee(dstChainId uint64, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
 	return _SynapseExecutionServiceV1Harness.Contract.GetExecutionFee(&_SynapseExecutionServiceV1Harness.CallOpts, dstChainId, txPayloadSize, options)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) GetFeeRecipient(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "getFeeRecipient")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) GetFeeRecipient() (common.Address, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetFeeRecipient(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) GetFeeRecipient() (common.Address, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetFeeRecipient(&_SynapseExecutionServiceV1Harness.CallOpts)
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
@@ -6944,6 +9423,27 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerS
 	return _SynapseExecutionServiceV1Harness.Contract.SupportsInterface(&_SynapseExecutionServiceV1Harness.CallOpts, interfaceId)
 }
 
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) ClaimFees(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "claimFees")
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) ClaimFees() (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.ClaimFees(&_SynapseExecutionServiceV1Harness.TransactOpts)
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) ClaimFees() (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.ClaimFees(&_SynapseExecutionServiceV1Harness.TransactOpts)
+}
+
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
 //
 // Solidity: function grantRole(bytes32 role, address account) returns()
@@ -7007,25 +9507,25 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransac
 	return _SynapseExecutionServiceV1Harness.Contract.RenounceRole(&_SynapseExecutionServiceV1Harness.TransactOpts, role, callerConfirmation)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) RequestExecution(opts *bind.TransactOpts, dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "requestExecution", dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) RequestTxExecution(opts *bind.TransactOpts, dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "requestTxExecution", dstChainId, txPayloadSize, transactionId, options)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) RequestExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _SynapseExecutionServiceV1Harness.Contract.RequestExecution(&_SynapseExecutionServiceV1Harness.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) RequestTxExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.RequestTxExecution(&_SynapseExecutionServiceV1Harness.TransactOpts, dstChainId, txPayloadSize, transactionId, options)
 }
 
-// RequestExecution is a paid mutator transaction binding the contract method 0x592a8799.
+// RequestTxExecution is a paid mutator transaction binding the contract method 0x58efb47d.
 //
-// Solidity: function requestExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) RequestExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _SynapseExecutionServiceV1Harness.Contract.RequestExecution(&_SynapseExecutionServiceV1Harness.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+// Solidity: function requestTxExecution(uint64 dstChainId, uint256 txPayloadSize, bytes32 transactionId, bytes options) payable returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) RequestTxExecution(dstChainId uint64, txPayloadSize *big.Int, transactionId [32]byte, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.RequestTxExecution(&_SynapseExecutionServiceV1Harness.TransactOpts, dstChainId, txPayloadSize, transactionId, options)
 }
 
 // RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
@@ -7047,6 +9547,27 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession
 // Solidity: function revokeRole(bytes32 role, address account) returns()
 func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
 	return _SynapseExecutionServiceV1Harness.Contract.RevokeRole(&_SynapseExecutionServiceV1Harness.TransactOpts, role, account)
+}
+
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
+//
+// Solidity: function setClaimerFraction(uint256 claimerFraction_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) SetClaimerFraction(opts *bind.TransactOpts, claimerFraction_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "setClaimerFraction", claimerFraction_)
+}
+
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
+//
+// Solidity: function setClaimerFraction(uint256 claimerFraction_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) SetClaimerFraction(claimerFraction_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SetClaimerFraction(&_SynapseExecutionServiceV1Harness.TransactOpts, claimerFraction_)
+}
+
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
+//
+// Solidity: function setClaimerFraction(uint256 claimerFraction_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) SetClaimerFraction(claimerFraction_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SetClaimerFraction(&_SynapseExecutionServiceV1Harness.TransactOpts, claimerFraction_)
 }
 
 // SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
@@ -7110,6 +9631,140 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession
 // Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
 func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) SetGlobalMarkup(globalMarkup_ *big.Int) (*types.Transaction, error) {
 	return _SynapseExecutionServiceV1Harness.Contract.SetGlobalMarkup(&_SynapseExecutionServiceV1Harness.TransactOpts, globalMarkup_)
+}
+
+// SynapseExecutionServiceV1HarnessClaimerFractionSetIterator is returned from FilterClaimerFractionSet and is used to iterate over the raw logs and unpacked data for ClaimerFractionSet events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessClaimerFractionSetIterator struct {
+	Event *SynapseExecutionServiceV1HarnessClaimerFractionSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessClaimerFractionSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessClaimerFractionSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessClaimerFractionSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessClaimerFractionSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessClaimerFractionSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessClaimerFractionSet represents a ClaimerFractionSet event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessClaimerFractionSet struct {
+	ClaimerFraction *big.Int
+	Raw             types.Log // Blockchain specific contextual infos
+}
+
+// FilterClaimerFractionSet is a free log retrieval operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterClaimerFractionSet(opts *bind.FilterOpts) (*SynapseExecutionServiceV1HarnessClaimerFractionSetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessClaimerFractionSetIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "ClaimerFractionSet", logs: logs, sub: sub}, nil
+}
+
+// WatchClaimerFractionSet is a free log subscription operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchClaimerFractionSet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessClaimerFractionSet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessClaimerFractionSet)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseClaimerFractionSet is a log parse operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseClaimerFractionSet(log types.Log) (*SynapseExecutionServiceV1HarnessClaimerFractionSet, error) {
+	event := new(SynapseExecutionServiceV1HarnessClaimerFractionSet)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
 }
 
 // SynapseExecutionServiceV1HarnessExecutionRequestedIterator is returned from FilterExecutionRequested and is used to iterate over the raw logs and unpacked data for ExecutionRequested events raised by the SynapseExecutionServiceV1Harness contract.
@@ -7183,12 +9838,13 @@ func (it *SynapseExecutionServiceV1HarnessExecutionRequestedIterator) Close() er
 type SynapseExecutionServiceV1HarnessExecutionRequested struct {
 	TransactionId [32]byte
 	Client        common.Address
+	ExecutionFee  *big.Int
 	Raw           types.Log // Blockchain specific contextual infos
 }
 
-// FilterExecutionRequested is a free log retrieval operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// FilterExecutionRequested is a free log retrieval operation binding the contract event 0xc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee)
 func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterExecutionRequested(opts *bind.FilterOpts, transactionId [][32]byte) (*SynapseExecutionServiceV1HarnessExecutionRequestedIterator, error) {
 
 	var transactionIdRule []interface{}
@@ -7203,9 +9859,9 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFiltere
 	return &SynapseExecutionServiceV1HarnessExecutionRequestedIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "ExecutionRequested", logs: logs, sub: sub}, nil
 }
 
-// WatchExecutionRequested is a free log subscription operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// WatchExecutionRequested is a free log subscription operation binding the contract event 0xc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee)
 func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchExecutionRequested(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessExecutionRequested, transactionId [][32]byte) (event.Subscription, error) {
 
 	var transactionIdRule []interface{}
@@ -7245,9 +9901,9 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFiltere
 	}), nil
 }
 
-// ParseExecutionRequested is a log parse operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// ParseExecutionRequested is a log parse operation binding the contract event 0xc3afeef9d037dcadfc927cf1a2c10a5dccba06a26bac58e0e2adf916407f2a7c.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee)
 func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseExecutionRequested(log types.Log) (*SynapseExecutionServiceV1HarnessExecutionRequested, error) {
 	event := new(SynapseExecutionServiceV1HarnessExecutionRequested)
 	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
@@ -7385,6 +10041,277 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFiltere
 func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseExecutorEOASet(log types.Log) (*SynapseExecutionServiceV1HarnessExecutorEOASet, error) {
 	event := new(SynapseExecutionServiceV1HarnessExecutorEOASet)
 	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "ExecutorEOASet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1HarnessFeeRecipientSetIterator is returned from FilterFeeRecipientSet and is used to iterate over the raw logs and unpacked data for FeeRecipientSet events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessFeeRecipientSetIterator struct {
+	Event *SynapseExecutionServiceV1HarnessFeeRecipientSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessFeeRecipientSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessFeeRecipientSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessFeeRecipientSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessFeeRecipientSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessFeeRecipientSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessFeeRecipientSet represents a FeeRecipientSet event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessFeeRecipientSet struct {
+	FeeRecipient common.Address
+	Raw          types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeeRecipientSet is a free log retrieval operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterFeeRecipientSet(opts *bind.FilterOpts) (*SynapseExecutionServiceV1HarnessFeeRecipientSetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessFeeRecipientSetIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "FeeRecipientSet", logs: logs, sub: sub}, nil
+}
+
+// WatchFeeRecipientSet is a free log subscription operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchFeeRecipientSet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessFeeRecipientSet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessFeeRecipientSet)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeeRecipientSet is a log parse operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseFeeRecipientSet(log types.Log) (*SynapseExecutionServiceV1HarnessFeeRecipientSet, error) {
+	event := new(SynapseExecutionServiceV1HarnessFeeRecipientSet)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1HarnessFeesClaimedIterator is returned from FilterFeesClaimed and is used to iterate over the raw logs and unpacked data for FeesClaimed events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessFeesClaimedIterator struct {
+	Event *SynapseExecutionServiceV1HarnessFeesClaimed // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessFeesClaimedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessFeesClaimed)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessFeesClaimed)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessFeesClaimedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessFeesClaimedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessFeesClaimed represents a FeesClaimed event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessFeesClaimed struct {
+	FeeRecipient  common.Address
+	ClaimedFees   *big.Int
+	Claimer       common.Address
+	ClaimerReward *big.Int
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeesClaimed is a free log retrieval operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterFeesClaimed(opts *bind.FilterOpts) (*SynapseExecutionServiceV1HarnessFeesClaimedIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessFeesClaimedIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "FeesClaimed", logs: logs, sub: sub}, nil
+}
+
+// WatchFeesClaimed is a free log subscription operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchFeesClaimed(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessFeesClaimed) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessFeesClaimed)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeesClaimed is a log parse operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseFeesClaimed(log types.Log) (*SynapseExecutionServiceV1HarnessFeesClaimed, error) {
+	event := new(SynapseExecutionServiceV1HarnessFeesClaimed)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -8281,8 +11208,8 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFiltere
 
 // VersionedPayloadLibMetaData contains all meta data concerning the VersionedPayloadLib contract.
 var VersionedPayloadLibMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__TooShort\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220237193667f7d4d23ebb256765070f12280bf6f69875bbcddc4c4ce24b20dea7d64736f6c63430008140033",
+	ABI: "[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__PayloadTooShort\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"}]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205eb466bd41aa7b3b5a63b41d48a30506484be9f3e77d3812cc55bd6c4214620164736f6c63430008140033",
 }
 
 // VersionedPayloadLibABI is the input ABI used to generate the binding from.
