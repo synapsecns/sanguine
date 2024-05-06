@@ -14,6 +14,7 @@ import poolDeposit from '@/slices/poolDepositSlice'
 import poolUserData from '@/slices/poolUserDataSlice'
 import poolWithdraw from '@/slices/poolWithdrawSlice'
 import priceData from '@/slices/priceDataSlice'
+import gasAirdrop from '@/slices/gasAirdropSlice'
 import { api } from '@/slices/api/slice'
 import { RootActions } from '@/slices/application/actions'
 
@@ -42,6 +43,7 @@ export const appReducer = combineReducers({
   poolUserData,
   poolWithdraw,
   priceData,
+  gasAirdrop,
   [api.reducerPath]: api.reducer,
   ...persistedReducers,
 })

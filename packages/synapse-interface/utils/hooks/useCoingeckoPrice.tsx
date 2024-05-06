@@ -1,28 +1,9 @@
-import { useSwr } from '@hooks/useSwr'
-
-const ID_MAP = {
-  ETH: 'ethereum',
-  AVAX: 'avalanche-2',
-  JEWEL: 'defi-kingdoms',
-  MOVR: 'moonriver',
-  GLMR: 'moonbeam',
-  CANTO: 'canto',
-  FTM: 'fantom',
-  METIS: 'metis-token',
-  BNB: 'binancecoin',
-  MATIC: 'matic-network',
-  KLAY: 'klay-token',
-}
+import { useAppSelector } from '@/store/hooks'
 
 export const useCoingeckoPrice = (symbol: string) => {
-  const id = ID_MAP[symbol]
+  const { prices } = useAppSelector((state) => state.gasAirdrop)
 
-  const apiUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${id}`
+  const data = prices.find((price) => price.symbol === symbol)
 
-  const { data } = useSwr(apiUrl)
-
-  if (data) {
-    const coin = data[0]
-    return coin?.current_price
-  }
+  return data?.price
 }

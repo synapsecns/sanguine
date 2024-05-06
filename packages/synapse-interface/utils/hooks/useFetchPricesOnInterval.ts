@@ -8,6 +8,7 @@ import {
   fetchMetisPrice,
   fetchSynPrices,
 } from '@/slices/priceDataSlice'
+import { fetchGasAirdropPrices } from '@/slices/gasAirdropSlice'
 
 export const useFetchPricesOnInterval = () => {
   const dispatch = useAppDispatch()
@@ -19,6 +20,7 @@ export const useFetchPricesOnInterval = () => {
       dispatch(fetchAvaxPrice())
       dispatch(fetchMetisPrice())
       dispatch(fetchGmxPrice())
+      dispatch(fetchGasAirdropPrices())
     }
 
     // Fetch on mount
