@@ -17,6 +17,7 @@ import { TransactionSupport } from './components/TransactionSupport'
 import { RightArrow } from '@/components/icons/RightArrow'
 import { Address } from 'viem'
 import { useIsTxReverted } from './helpers/useIsTxReverted'
+import { ETH } from '@/constants/chains/master'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -67,6 +68,12 @@ export const _Transaction = ({
     destinationAddress ?? connectedAddress
   )
 
+  let adjustedEstimatedTime = estimatedTime
+
+  if (originToken.routeSymbol === 'SPEC' && destinationChain.id === ETH.id) {
+    adjustedEstimatedTime = 3 * 60 * 60
+  }
+
   const {
     remainingTime,
     delayedTime,
@@ -74,7 +81,7 @@ export const _Transaction = ({
     isEstimatedTimeReached,
     isCheckTxStatus,
     isCheckTxForRevert,
-  } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
+  } = getEstimatedTimeStatus(currentTime, timestamp, adjustedEstimatedTime)
 
   const [isTxCompleted, _kappa] = useBridgeTxStatus({
     originChainId: originChain?.id,
@@ -189,7 +196,7 @@ export const _Transaction = ({
         <AnimatedProgressBar
           id={originTxHash}
           startTime={timestamp}
-          estDuration={estimatedTime * 2} // 2x buffer
+          estDuration={adjustedEstimatedTime * 2} // 2x buffer
           status={status}
         />
       </div>
