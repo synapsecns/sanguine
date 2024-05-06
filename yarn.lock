@@ -2858,6 +2858,36 @@
   resolved "https://registry.yarnpkg.com/@emotion/weak-memoize/-/weak-memoize-0.3.1.tgz#d0fce5d07b0620caa282b5131c297bb60f9d87e6"
   integrity sha512-EsBwpc7hBUJWAsNPBmJy4hxWx12v6bshQsldrVmjxJoc3isbxhOrF2IcCpaXxfvq03NwkI7sbsOLXbYuqF/8Ww==
 
+"@envelop/core@^4.0.0":
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/@envelop/core/-/core-4.0.3.tgz#6bc3e1ed3b31aa41d81106eb5071a9b8eec188d0"
+  integrity sha512-O0Vz8E0TObT6ijAob8jYFVJavcGywKThM3UAsxUIBBVPYZTMiqI9lo2gmAnbMUnrDcAYkUTZEW9FDYPRdF5l6g==
+  dependencies:
+    "@envelop/types" "4.0.1"
+    tslib "^2.5.0"
+
+"@envelop/core@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@envelop/core/-/core-5.0.0.tgz#131616ad9685599e501b14fdf1a983cfd3b72020"
+  integrity sha512-aJdnH/ptv+cvwfvciCBe7TSvccBwo9g0S5f6u35TBVzRVqIGkK03lFlIL+x1cnfZgN9EfR2b1PH2galrT1CdCQ==
+  dependencies:
+    "@envelop/types" "5.0.0"
+    tslib "^2.5.0"
+
+"@envelop/types@4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@envelop/types/-/types-4.0.1.tgz#145690d8266a003cdb06dd58fa1236e3c80050a9"
+  integrity sha512-ULo27/doEsP7uUhm2iTnElx13qTO6I5FKvmLoX41cpfuw8x6e0NUFknoqhEsLzAbgz8xVS5mjwcxGCXh4lDYzg==
+  dependencies:
+    tslib "^2.5.0"
+
+"@envelop/types@5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@envelop/types/-/types-5.0.0.tgz#3ae59b50ec31d4bdcc7bd0b47e9c8cf2ac44b0ff"
+  integrity sha512-IPjmgSc4KpQRlO4qbEDnBEixvtb06WDmjKfi/7fkZaryh5HuOmTtixe1EupQI5XfXO8joc3d27uUZ0QdC++euA==
+  dependencies:
+    tslib "^2.5.0"
+
 "@es-joy/jsdoccomment@0.9.0-alpha.1":
   version "0.9.0-alpha.1"
   resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.9.0-alpha.1.tgz#f48bd162e185ec7f9f222273a282d10e52fe52f7"
@@ -2991,6 +3021,33 @@
   version "0.20.2"
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.20.2.tgz#9c907b21e30a52db959ba4f80bb01a0cc403d5cc"
   integrity sha512-N49X4lJX27+l9jbLKSqZ6bKNjzQvHaT8IIFUy+YIqmXQdjYCToGWwOItDrfby14c78aDd5NHQl29xingXfCdLQ==
+
+"@escape.tech/graphql-armor-max-aliases@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-max-aliases/-/graphql-armor-max-aliases-2.3.0.tgz#063fd35345316ca9e4a37461a8307d3001ed7a01"
+  integrity sha512-h0AfPx929MWBnDlWnn/hcLHHNIAnUjws30OmyPLj9GqVmsBpj3338LELvORuuf3N1ciWI0xgkQd3NRSrmgr3ig==
+  dependencies:
+    graphql "^16.0.0"
+  optionalDependencies:
+    "@envelop/core" "^5.0.0"
+    "@escape.tech/graphql-armor-types" "0.5.0"
+
+"@escape.tech/graphql-armor-max-depth@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-max-depth/-/graphql-armor-max-depth-2.2.0.tgz#415402a72c714b960106655be12fd5dc568f2805"
+  integrity sha512-v0z2yelQL614mYFpYL/iRkieq/7H2XKbvJ6RvbGMFFSqo3eSIz8fyX0f6pyswR7myQxki4ur0MFxSn8S5jjfqw==
+  dependencies:
+    graphql "^16.0.0"
+  optionalDependencies:
+    "@envelop/core" "^4.0.0"
+    "@escape.tech/graphql-armor-types" "0.5.0"
+
+"@escape.tech/graphql-armor-types@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-types/-/graphql-armor-types-0.5.0.tgz#bc8452443fef533b118a9e807782f5da95780148"
+  integrity sha512-a7KMhb1qVHFFWw4bvGYQI637YaIZRozbfc+Fj1Vv/pwnTCJOzOgnvKO8+WBXJsFFGJ2Kj+fRORmSpz7J+lJF1w==
+  dependencies:
+    graphql "^16.0.0"
 
 "@eslint-community/eslint-utils@^4.2.0":
   version "4.4.0"
@@ -6278,13 +6335,15 @@
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.25.tgz#f077fdc0b5d0078d30893396ff4827a13f99e817"
   integrity sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==
 
-"@ponder/core@^0.4.14":
-  version "0.4.14"
-  resolved "https://registry.yarnpkg.com/@ponder/core/-/core-0.4.14.tgz#0d0dd4618ddff9afea646a2bac9fc7df86bf7a96"
-  integrity sha512-glNx0Oo04vhPT+QLaTrn8i+U7yM0oWweqLfCFy79PRFjXDsrdrEE1wwcxSE3qYFMkU3eTnOojpBrXUVu50PDuQ==
+"@ponder/core@^0.4.19":
+  version "0.4.19"
+  resolved "https://registry.yarnpkg.com/@ponder/core/-/core-0.4.19.tgz#ee233de0d868d815e31e3b425cd7b507d0c2436a"
+  integrity sha512-tp+fB30NV46Qzjg5QJGgvn3y1frRAGETIX2n54DsowEPPbZ/lpJ5eRYD2Z1UJhW9vCVplrxKvdXm4X4Zk7tkhg==
   dependencies:
     "@babel/code-frame" "^7.23.4"
     "@commander-js/extra-typings" "^12.0.1"
+    "@escape.tech/graphql-armor-max-aliases" "^2.3.0"
+    "@escape.tech/graphql-armor-max-depth" "^2.2.0"
     "@hono/graphql-server" "^0.4.3"
     "@hono/node-server" "^1.8.2"
     "@ponder/utils" "0.1.4"
@@ -19776,7 +19835,7 @@ graphql-ws@^5.14.0:
   resolved "https://registry.yarnpkg.com/graphql-ws/-/graphql-ws-5.15.0.tgz#2db79e1b42468a8363bf5ca6168d076e2f8fdebc"
   integrity sha512-xWGAtm3fig9TIhSaNsg0FaDZ8Pyn/3re3RFlP4rhQcmjRDIPpk1EhRuNB+YSJtLzttyuToaDiNhwT1OMoGnJnw==
 
-graphql@^16.5.0, graphql@^16.7.1, graphql@^16.8.1:
+graphql@^16.0.0, graphql@^16.5.0, graphql@^16.7.1, graphql@^16.8.1:
   version "16.8.1"
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-16.8.1.tgz#1930a965bef1170603702acdb68aedd3f3cf6f07"
   integrity sha512-59LZHPdGZVh695Ud9lRzPBVTtlX9ZCV150Er2W43ro37wVof0ctenSaskPPjN7lVTIN8mSZt8PHUNKZuNQUuxw==
