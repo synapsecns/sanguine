@@ -3,7 +3,6 @@ package executor_test
 import (
 	"context"
 	"errors"
-	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainapp"
 	"math/big"
 	"sync"
 	"testing"
@@ -116,10 +115,8 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
 
-	tx, err = appMock.SetAppConfigV1(appAuth.TransactOpts, interchainapp.AppConfigV1{
-		RequiredResponses: big.NewInt(1),
-		OptimisticPeriod:  big.NewInt(1), // no need to worry about mocking period
-	})
+	// requiredResponses, optimisticPeriod
+	tx, err = appMock.SetAppConfigV1(appAuth.TransactOpts, big.NewInt(1), big.NewInt(1))
 
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)

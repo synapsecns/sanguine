@@ -2,6 +2,8 @@ package api_test
 
 import (
 	gosql "database/sql"
+	"testing"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -9,7 +11,6 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	gqlClient "github.com/synapsecns/sanguine/services/explorer/graphql/client"
-	"testing"
 
 	"math/big"
 )
@@ -55,6 +56,7 @@ func TestHandleJSONDailyStat(t *testing.T) {
 			Dogechain *float64 "json:\"dogechain\" graphql:\"dogechain\""
 			Base      *float64 "json:\"base\" graphql:\"base\""
 			Blast     *float64 "json:\"blast\" graphql:\"blast\""
+			Scroll    *float64 "json:\"scroll\" graphql:\"scroll\""
 			Total     *float64 "json:\"total\" graphql:\"total\""
 		}{
 			{
