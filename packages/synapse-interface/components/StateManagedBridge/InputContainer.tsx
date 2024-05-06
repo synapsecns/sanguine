@@ -40,7 +40,8 @@ export const InputContainer = () => {
   const dispatch = useAppDispatch()
   const { chain, isConnected } = useAccount()
   const { balances } = usePortfolioState()
-  const { fromChainId, fromToken, fromValue } = useBridgeState()
+  const { fromChainId, toChainId, fromToken, toToken, fromValue } =
+    useBridgeState()
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
@@ -51,6 +52,10 @@ export const InputContainer = () => {
   )?.balance
   const parsedBalance = getParsedBalance(balance, tokenDecimals, 4)
   const fullParsedBalance = formatBigIntToString(balance, tokenDecimals)
+
+  const hasValidSelections: boolean = useMemo(() => {
+    return Boolean(fromChainId && toChainId && fromToken && toToken)
+  }, [fromChainId, toChainId, fromToken, toToken])
 
   const {
     isLoading,
@@ -151,13 +156,13 @@ export const InputContainer = () => {
             onMaxBalance={onMaxBalance}
             isGasToken={isGasToken}
             isGasEstimateLoading={isLoading}
-            isDisabled={!isConnected}
+            isDisabled={!isConnected || !hasValidSelections}
           />
         </div>
         {hasMounted && isConnected && (
           <MiniMaxButton
-            disabled={!balance || balance === 0n ? true : false}
             onClickBalance={onMaxBalance}
+            isDisabled={!isConnected || !hasValidSelections}
           />
         )}
       </BridgeAmountContainer>
