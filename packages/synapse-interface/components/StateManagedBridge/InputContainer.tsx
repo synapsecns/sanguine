@@ -162,7 +162,8 @@ export const InputContainer = () => {
         {hasMounted && isConnected && (
           <MiniMaxButton
             onClickBalance={onMaxBalance}
-            isDisabled={!isConnected || !hasValidSelections}
+            isDisabled={!balance || balance === 0n ? true : false}
+            isHidden={!isConnected || !hasValidSelections}
           />
         )}
       </BridgeAmountContainer>

@@ -3,11 +3,13 @@ import { joinClassNames } from '@/utils/joinClassNames'
 type MaxButtonTypes = {
   onClickBalance: () => void
   isDisabled: boolean
+  isHidden: boolean
 }
 
 export default function MaxButton({
   onClickBalance,
   isDisabled,
+  isHidden,
 }: MaxButtonTypes) {
   const className = joinClassNames({
     space: 'px-4 py-1 -ml-1 mr-1 rounded',
@@ -17,11 +19,15 @@ export default function MaxButton({
     disabled: 'disabled:opacity-60 disabled:cursor-default',
   })
 
-  if (isDisabled) {
+  if (isHidden) {
     return null
   } else {
     return (
-      <button className={className} onClick={onClickBalance}>
+      <button
+        className={className}
+        onClick={onClickBalance}
+        disabled={isDisabled}
+      >
         Max
       </button>
     )

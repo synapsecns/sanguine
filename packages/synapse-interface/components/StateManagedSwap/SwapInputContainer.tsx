@@ -26,6 +26,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { useSwapChainListArray } from '@/components/StateManagedSwap//hooks/useSwapChainListArray'
 import { useSwapFromTokenListArray } from '@/components/StateManagedSwap/hooks/useSwapFromTokenListOverlay'
 import { AmountInput } from '@/components/ui/AmountInput'
+import { joinClassNames } from '@/utils/joinClassNames'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -107,6 +108,13 @@ export const SwapInputContainer = () => {
     }
   }, [chain, swapChainId, isConnected, hasMounted])
 
+  const labelClassName = joinClassNames({
+    space: 'block',
+    textColor: 'text-xxs md:text-xs',
+    animation: 'transition-all duration-150 transform-gpu',
+    hover: 'hover:opacity-70 cursor-pointer',
+  })
+
   return (
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
@@ -115,16 +123,32 @@ export const SwapInputContainer = () => {
       </div>
       <BridgeAmountContainer>
         <SwapFromTokenSelector />
-        <AmountInput
-          inputRef={inputRef}
-          showValue={showValue}
-          handleFromValueChange={handleFromValueChange}
-        />
+        <div>
+          <AmountInput
+            inputRef={inputRef}
+            showValue={showValue}
+            handleFromValueChange={handleFromValueChange}
+          />
+          {hasMounted && isConnected && (
+            <label
+              htmlFor="inputRow"
+              className={labelClassName}
+              onClick={onMaxBalance}
+            >
+              {parsedBalance ?? '0.0'}
+              <span className="text-zinc-500 dark:text-zinc-400">
+                {' '}
+                available
+              </span>
+            </label>
+          )}
+        </div>
 
         {hasMounted && isConnected && (
           <MiniMaxButton
-            disabled={!balance || balance === 0n ? true : false}
             onClickBalance={onMaxBalance}
+            isDisabled={!balance || balance === 0n ? true : false}
+            isHidden={false}
           />
         )}
       </BridgeAmountContainer>
