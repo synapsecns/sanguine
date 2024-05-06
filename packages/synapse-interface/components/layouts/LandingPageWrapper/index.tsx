@@ -52,7 +52,7 @@ export function LandingPageWrapper({ children }: { children: any }) {
       <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
         <AnnouncementBanner
           bannerId="2024-05-06-pause-spec"
-          bannerContents="SPEC bridging paused"
+          bannerContents="Bridging SPEC to Ethereum paused"
           startDate={new Date('2024-05-05T18:45:09+00:00')}
           endDate={new Date('2024-05-10T18:45:09+00:00')}
         />
