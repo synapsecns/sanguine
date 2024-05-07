@@ -20,7 +20,6 @@ func (n *NodeSuite) TestNodeSuite() {
 		n.destChain.GetBigChainID().Uint64(),
 		[]common.Address{n.originModule.Address()},
 	)
-
 	n.Require().NoError(err)
 	auth.TransactOpts.Value = core.CopyBigInt(fee)
 
@@ -48,4 +47,8 @@ func (n *NodeSuite) TestNodeSuite() {
 
 		return len(resStatus) > 0
 	})
+}
+
+func (n *NodeSuite) TestVerification() {
+
 }

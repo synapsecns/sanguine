@@ -353,10 +353,13 @@ func (n *Node) signAndBroadcast(ctx context.Context, request db.SignRequest) err
 	}
 
 	// broadcast the transaction.
-	tweakedSig := signer.NewSignature(new(big.Int).Add(big.NewInt(27), signedTx.V()), signedTx.R(), signedTx.S())
-
+	tweakedSig := signer.NewSignature(
+		new(big.Int).Add(big.NewInt(27), signedTx.V()), signedTx.R(), signedTx.S(),
+	)
 	// TODO: WriterNonce deprecated in favor of DBNonce Global
-	err = n.peerManager.PutSignature(ctx, int(request.OriginChainID.Int64()), request.SignedEntryHash, signer.Encode(tweakedSig))
+	err = n.peerManager.PutSignature(
+		ctx, int(request.OriginChainID.Int64()), request.SignedEntryHash, signer.Encode(tweakedSig),
+	)
 	if err != nil {
 		return fmt.Errorf("could not broadcast: %w", err)
 	}
