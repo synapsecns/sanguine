@@ -204,8 +204,8 @@ func (s *CCTPRelayerSuite) GetTestConfig() config.Config {
 	for _, backend := range s.testBackends {
 		_, handle := s.deployManager.GetSynapseCCTP(s.GetTestContext(), backend)
 		chains = append(chains, config.ChainConfig{
-			ChainID:            uint32(backend.GetChainID()),
-			SynapseCCTPAddress: handle.Address().String(),
+			ChainID:     uint32(backend.GetChainID()),
+			CCTPAddress: handle.Address().String(),
 		})
 	}
 	cfg.Chains = chains

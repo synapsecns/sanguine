@@ -32,8 +32,8 @@ type CCTPRelayerDBWriter interface {
 
 // CCTPRelayerDB is the interface for the database service.
 type CCTPRelayerDB interface {
-	listenerDB.ChainListenerDB
 	CCTPRelayerDBReader
 	CCTPRelayerDBWriter
 	SubmitterDB() submitterDB.Service
+	listenerDB.ChainListenerDB
 }

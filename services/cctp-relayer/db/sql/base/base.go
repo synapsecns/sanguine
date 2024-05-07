@@ -2,6 +2,7 @@ package base
 
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
+	listenerDB "github.com/synapsecns/sanguine/ethergo/listener/db"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db"
@@ -11,6 +12,7 @@ import (
 
 // Store is a store that implements an underlying gorm db.
 type Store struct {
+	listenerDB.ChainListenerDB
 	db             *gorm.DB
 	metrics        metrics.Handler
 	submitterStore submitterDB.Service
