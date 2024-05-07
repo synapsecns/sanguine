@@ -30,7 +30,7 @@ import MiniMaxButton from '../buttons/MiniMaxButton'
 import { AvailableBalance } from './AvailableBalance'
 import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
-import { joinClassNames } from '@/utils/joinClassNames'
+import { MaxButton } from './MaxButton'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -162,7 +162,7 @@ export const InputContainer = () => {
               isDisabled={!isConnected || !hasValidSelections}
             />
             <MaxButton
-              onMaxBalance={onMaxBalance}
+              onClick={onMaxBalance}
               isHidden={isLoading || isInputMax}
             />
           </div>
@@ -172,20 +172,6 @@ export const InputContainer = () => {
   )
 }
 
-const MaxButton = ({ onMaxBalance, isHidden }) => {
-  const buttonClassName = joinClassNames({
-    display: `${isHidden ? 'hidden' : 'block'}`,
-    text: 'text-synapsePurple text-xs',
-    animation: 'transition-all duration-150 transform-gpu',
-    hover: 'hover:opacity-70 cursor-pointer',
-  })
-
-  return (
-    <div onClick={onMaxBalance} className={buttonClassName}>
-      Max
-    </div>
-  )
-}
 const FromChainSelector = () => {
   const { fromChainId } = useBridgeState()
 

@@ -27,6 +27,8 @@ import { useSwapChainListArray } from '@/components/StateManagedSwap//hooks/useS
 import { useSwapFromTokenListArray } from '@/components/StateManagedSwap/hooks/useSwapFromTokenListOverlay'
 import { AmountInput } from '@/components/ui/AmountInput'
 import { joinClassNames } from '@/utils/joinClassNames'
+import { MaxButton } from '../StateManagedBridge/MaxButton'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -54,6 +56,8 @@ export const SwapInputContainer = () => {
   const parsedBalance = tokenData?.parsedBalance
 
   const balance = tokenData?.balance
+
+  const isInputMax = parsedBalance === swapFromValue
 
   useEffect(() => {
     if (
@@ -91,7 +95,9 @@ export const SwapInputContainer = () => {
   const onMaxBalance = useCallback(() => {
     dispatch(
       updateSwapFromValue(
-        formatBigIntToString(balance, swapFromToken.decimals[swapChainId])
+        trimTrailingZeroesAfterDecimal(
+          formatBigIntToString(balance, swapFromToken.decimals[swapChainId])
+        )
       )
     )
   }, [balance, swapChainId, swapFromToken])
@@ -130,27 +136,21 @@ export const SwapInputContainer = () => {
             handleFromValueChange={handleFromValueChange}
           />
           {hasMounted && isConnected && (
-            <label
-              htmlFor="inputRow"
-              className={labelClassName}
-              onClick={onMaxBalance}
-            >
-              {parsedBalance ?? '0.0'}
-              <span className="text-zinc-500 dark:text-zinc-400">
-                {' '}
-                available
-              </span>
-            </label>
+            <div className="flex space-x-1">
+              <label
+                htmlFor="inputRow"
+                className={labelClassName}
+                onClick={onMaxBalance}
+              >
+                <span className="text-zinc-500 dark:text-zinc-400">
+                  Available:{' '}
+                </span>
+                {parsedBalance ?? '0.0'}
+              </label>
+              <MaxButton onClick={onMaxBalance} isHidden={isInputMax} />
+            </div>
           )}
         </div>
-
-        {hasMounted && isConnected && (
-          <MiniMaxButton
-            onClickBalance={onMaxBalance}
-            isDisabled={!balance || balance === 0n}
-            isHidden={false}
-          />
-        )}
       </BridgeAmountContainer>
     </BridgeSectionContainer>
   )
