@@ -163,7 +163,7 @@ export const InputContainer = () => {
             />
             <MaxButton
               onClick={onMaxBalance}
-              isHidden={isLoading || isInputMax}
+              isHidden={!isConnected || isLoading || isInputMax}
             />
           </div>
         </div>

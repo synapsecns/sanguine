@@ -147,7 +147,10 @@ export const SwapInputContainer = () => {
                 </span>
                 {parsedBalance ?? '0.0'}
               </label>
-              <MaxButton onClick={onMaxBalance} isHidden={isInputMax} />
+              <MaxButton
+                onClick={onMaxBalance}
+                isHidden={!isConnected || isInputMax}
+              />
             </div>
           )}
         </div>
