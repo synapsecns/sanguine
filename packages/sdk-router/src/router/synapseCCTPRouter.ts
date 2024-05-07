@@ -58,7 +58,7 @@ export class SynapseCCTPRouter extends Router {
       try {
         await Promise.all([this.chainGasAmount()])
       } catch (e) {
-        console.error('synapseCCTPRouter: Error hydrating cache', e)
+        console.error('[SynapseCCTPRouter] Error hydrating cache: ', e)
       }
     }
   }

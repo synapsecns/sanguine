@@ -57,8 +57,7 @@ export const RouterCache = (maxAge: number) => {
             return res
           })
           .catch((e) => {
-            console.error('RouterCache error', e)
-            console.log(this.chainId)
+            console.error(`[RouterCache] Error on ChainID ${this.chainId}: `, e)
           })
         return result
       }
