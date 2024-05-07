@@ -51,8 +51,12 @@ export const InputContainer = () => {
   const parsedBalance = getParsedBalance(balance, tokenDecimals, 4)
   const fullParsedBalance = formatBigIntToString(balance, tokenDecimals)
 
-  const hasValidSelections: boolean = useMemo(() => {
+  const hasValidFromSelections: boolean = useMemo(() => {
     return Boolean(fromChainId && fromToken)
+  }, [fromChainId, fromToken])
+
+  const hasValidInputSelections: boolean = useMemo(() => {
+    return Boolean(fromChainId && fromToken && toChainId && toToken)
   }, [fromChainId, toChainId, fromToken, toToken])
 
   const {
@@ -159,12 +163,15 @@ export const InputContainer = () => {
               onMaxBalance={onMaxBalance}
               isGasToken={isGasToken}
               isGasEstimateLoading={isLoading}
-              isDisabled={!isConnected || !hasValidSelections}
+              isDisabled={!isConnected || !hasValidFromSelections}
             />
             <MaxButton
               onClick={onMaxBalance}
               isHidden={
-                !isConnected || !hasValidSelections || isLoading || isInputMax
+                !isConnected ||
+                !hasValidInputSelections ||
+                isLoading ||
+                isInputMax
               }
             />
           </div>
