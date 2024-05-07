@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Update these to postgres when ready
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../db/public.db"
+}
+
+model AppConfigV1 {
+  id                  String   @id @default(cuid()) // assuming hex is a string, cuid is a unique ID generator
+  requiredResponses   Int
+  optimisticPeriod    Int
+  // modules             String[] // lists are represented as arrays (can only add after postgres in place)
+  InterchainBatches   InterchainBatch[]
+}
+
+model InterchainBatch {
+  id                        String  @id @default(cuid()) // assuming hex is a string
+  batchRoot                 String  // assuming hex is a string
+  srcDbNonce                BigInt
+  srcChainId                Int?
+  dstDbNonce                BigInt?
+  dstChainId                Int?
+  interchainTransactions    InterchainTransaction[]
+  status                    String
+  verifiedAt                BigInt?
+  appConfigId               String? // Foreign key field
+  appConfig                 AppConfigV1? @relation(fields: [appConfigId], references: [id])
+}
+
+model InterchainTransactionSent {
+  id                String   @id @default(cuid())
+  srcChainId        Int
+  name              String
+  transactionId     String
+  dbNonce           BigInt
+  entryIndex        BigInt
+  dstChainId        Int
+  srcSender         String
+  dstReceiver       String
+  verificationFee   BigInt
+  executionFee      BigInt
+  options           String
+  message           String
+  address           String
+  blockNumber       BigInt
+  transactionHash   String
+  timestamp         BigInt
+  count             Int
+  interchainTransaction InterchainTransaction[]
+}
+
+model InterchainTransactionReceived {
+  id                String   @id @default(cuid())
+  dstChainId        Int
+  name              String
+  transactionId     String
+  dbNonce           BigInt
+  entryIndex        BigInt
+  srcChainId        Int
+  srcSender         String
+  dstReceiver       String
+  address           String
+  blockNumber       BigInt
+  transactionHash   String
+  timestamp         BigInt
+  count             Int
+  interchainTransaction InterchainTransaction[]
+}
+
+model InterchainTransaction {
+  id                          String   @id @default(cuid())
+  srcChainId                  Int
+  dstChainId                  Int
+  srcSender                   String
+  dstReceiver                 String
+  sentAt                      BigInt?
+  receivedAt                  BigInt?
+  createdAt                   BigInt?
+  updatedAt                   BigInt?
+  interchainTransactionSentId String? // Foreign key field
+  interchainTransactionSent   InterchainTransactionSent? @relation(fields: [interchainTransactionSentId], references: [id])
+  interchainTransactionReceivedId String? // Foreign key field
+  interchainTransactionReceived InterchainTransactionReceived? @relation(fields: [interchainTransactionReceivedId], references: [id])
+  status                      String?
+  interchainBatchId           String? // Foreign key field
+  interchainBatch             InterchainBatch? @relation(fields: [interchainBatchId], references: [id])
+}
