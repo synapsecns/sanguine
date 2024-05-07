@@ -22,7 +22,6 @@ import (
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/scribe/client"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
@@ -43,7 +42,7 @@ type CCTPRelayer struct {
 	db             db2.CCTPRelayerDB
 	grpcConn       *grpc.ClientConn
 	omnirpcClient  omniClient.RPCClient
-	chainListeners map[int][]listener.ContractListener
+	chainListeners map[uint32][]listener.ContractListener
 	// cctpHandler interacts with CCTP contracts.
 	cctpHandler CCTPHandler
 	// handler is the metrics handler.
@@ -67,15 +66,16 @@ type CCTPRelayer struct {
 
 // NewCCTPRelayer creates a new CCTPRelayer.
 // nolint: cyclop
-func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI attestation.CCTPAPI, rawOpts ...OptionsArgsOption) (*CCTPRelayer, error) {
+func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI attestation.CCTPAPI, rawOpts ...OptionsArgsOption) (*CCTPRelayer, error) {
 	opts := makeOptions(rawOpts)
 
 	omniClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, handler, omniClient.WithCaptureReqRes())
 
 	// setup chain listeners
-	chainListeners := make(map[int][]listener.ContractListener)
-	for chainID, chainCfg := range cfg.Chains {
-		chainClient, err := omniClient.GetChainClient(ctx, chainID)
+	chainListeners := make(map[uint32][]listener.ContractListener)
+	for _, chainCfg := range cfg.Chains {
+		chainID := chainCfg.ChainID
+		chainClient, err := omniClient.GetChainClient(ctx, int(chainID))
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
@@ -290,8 +290,10 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
 	// listen for contract events
-	for chainID, listeners := range c.chainListeners {
-		for _, listener := range listeners {
+	for cid, listeners := range c.chainListeners {
+		for _, l := range listeners {
+			listener := l
+			chainID := cid
 			g.Go(func() error {
 				return listener.Listen(ctx, func(ctx context.Context, log types.Log) error {
 					return c.handleLog(ctx, log, uint32(chainID))

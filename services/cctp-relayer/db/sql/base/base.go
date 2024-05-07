@@ -21,7 +21,7 @@ type Store struct {
 // NewStore creates a new store.
 func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
 	txDB := txdb.NewTXStore(db, metrics)
-	return &Store{db: db, metrics: metrics, submitterStore: txDB}
+	return &Store{ChainListenerDB: listenerDB.NewChainListenerStore(db, metrics), db: db, metrics: metrics, submitterStore: txDB}
 }
 
 // DB gets the database object for mutation outside of the lib.
@@ -38,6 +38,7 @@ func (s Store) SubmitterDB() submitterDB.Service {
 // see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels, txdb.GetAllModels()...)
+	allModels = append(allModels, listenerDB.GetAllModels()...)
 	allModels = append(allModels, &types.Message{})
 	return allModels
 }

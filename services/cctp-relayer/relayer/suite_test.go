@@ -4,8 +4,6 @@ package relayer_test
 import (
 	"fmt"
 	"math/big"
-	"net/url"
-	"strconv"
 	"testing"
 
 	"github.com/synapsecns/sanguine/core"
@@ -27,8 +25,6 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/metadata"
 	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	scribeClient "github.com/synapsecns/sanguine/services/scribe/client"
-	scribeHelper "github.com/synapsecns/sanguine/services/scribe/testhelper"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -39,8 +35,6 @@ type CCTPRelayerSuite struct {
 	testBackends []backends.SimulatedTestBackend
 	// we'll use this later
 	deployManager *cctpTest.DeployManager
-	// testScribeURL setup in SetupTest
-	testScribe string
 	// testOmnirpc setup in SetupTest
 	testOmnirpc string
 	// metricsHandler is the metrics handler for the test
@@ -159,8 +153,6 @@ func (s *CCTPRelayerSuite) SetupTest() {
 
 	s.deployManager = cctpTest.NewDeployManager(s.T())
 
-	// create the test scribe backend
-	s.testScribe = scribeHelper.NewTestScribe(s.GetTestContext(), s.T(), s.deployManager.GetDeployedContracts(), s.testBackends...)
 	// create the test omnirpc backend
 	s.testOmnirpc = omnirpcHelper.NewOmnirpcServer(s.GetTestContext(), s.T(), s.testBackends...)
 
@@ -193,7 +185,8 @@ func (s *CCTPRelayerSuite) SetupTest() {
 
 func (s *CCTPRelayerSuite) GetTestConfig() config.Config {
 	cfg := config.Config{
-		BaseOmnirpcURL: s.testBackends[0].RPCAddress(),
+		BaseOmnirpcURL: s.testOmnirpc,
+		// BaseOmnirpcURL: s.testBackends[0].RPCAddress(),
 		Signer: signerConfig.SignerConfig{
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(s.T(), "", s.testWallet.PrivateKeyHex()).Name(),
@@ -210,16 +203,6 @@ func (s *CCTPRelayerSuite) GetTestConfig() config.Config {
 	}
 	cfg.Chains = chains
 	return cfg
-}
-
-func (s *CCTPRelayerSuite) GetTestScribe() scribeClient.ScribeClient {
-	parsedScribe, err := url.Parse(s.testScribe)
-	s.Nil(err)
-	port, err := strconv.Atoi(parsedScribe.Opaque)
-	s.Nil(err)
-
-	sc := scribeClient.NewRemoteScribe(uint16(port), parsedScribe.Host, s.metricsHandler)
-	return sc.ScribeClient
 }
 
 func TestCCTPRelayerSuite(t *testing.T) {
