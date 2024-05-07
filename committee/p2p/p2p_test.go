@@ -2,6 +2,11 @@ package p2p_test
 
 import (
 	"fmt"
+	"math/big"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,10 +19,6 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"math/big"
-	"sync"
-	"testing"
-	"time"
 )
 
 type P2PTestSuite struct {
@@ -46,8 +47,11 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	m1 := s.makeManager()
 	m2 := s.makeManager()
 	m3 := s.makeManager()
+	m4 := s.makeManager()
+	m5 := s.makeManager()
+	m6 := s.makeManager()
 
-	managers := []p2p.LibP2PManager{m1, m2, m3}
+	managers := []p2p.LibP2PManager{m1, m2, m3, m4, m5, m6}
 	peers := combineHostAddresses(managers...)
 	addresses := managersToValidators(managers...)
 
@@ -77,17 +81,29 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	nonce := common.BigToHash(big.NewInt(2))
 	signature := []byte(gofakeit.Word())
 
-	// m1.DoSomething()
+	// m1 signs and broadcasts the signature
 	err := m1.PutSignature(s.GetTestContext(), chainID, nonce, signature)
 	s.Require().NoError(err)
-
 	time.Sleep(time.Second * 1)
+
 	for {
 		time.Sleep(time.Second)
 		if realSig, err := m2.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
 			s.Require().Equal(signature, realSig)
-			break
 		}
+		if realSig, err := m3.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
+			s.Require().Equal(signature, realSig)
+		}
+		if realSig, err := m4.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
+			s.Require().Equal(signature, realSig)
+		}
+		if realSig, err := m5.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
+			s.Require().Equal(signature, realSig)
+		}
+		if realSig, err := m6.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
+			s.Require().Equal(signature, realSig)
+		}
+
 	}
 }
 

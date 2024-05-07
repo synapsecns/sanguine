@@ -92,6 +92,7 @@ func (n *NodeSuite) SetupTest() {
 	time.Sleep(time.Second * 10)
 }
 
+// adds commmittee validators to the SynapseModule contract
 func (n *NodeSuite) setValidators(validators []common.Address, backend backends.SimulatedTestBackend, info contracts.DeployedContract, contract *synapsemodule.SynapseModuleRef) {
 	transactOpts := backend.GetTxContext(n.GetTestContext(), info.OwnerPtr())
 
