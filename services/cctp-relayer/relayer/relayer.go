@@ -30,10 +30,11 @@ import (
 // fetches attestations from Circle's API, and posts the necessary data
 // on the destination chain to complete the USDC bridging process.
 type CCTPRelayer struct {
-	cfg            config.Config
-	db             db2.CCTPRelayerDB
-	grpcConn       *grpc.ClientConn
-	omnirpcClient  omniClient.RPCClient
+	cfg           config.Config
+	db            db2.CCTPRelayerDB
+	grpcConn      *grpc.ClientConn
+	omnirpcClient omniClient.RPCClient
+	// chainListeners contains a set of contract listeners for each chain.
 	chainListeners map[uint32][]listener.ContractListener
 	// cctpHandler interacts with CCTP contracts.
 	cctpHandler CCTPHandler
@@ -75,11 +76,11 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
+		listeners := []listener.ContractListener{chainListener}
 		cctpType, err := cfg.GetCCTPType()
 		if err != nil {
 			return nil, fmt.Errorf("could not get cctp type: %w", err)
 		}
-		listeners := []listener.ContractListener{chainListener}
 		if cctpType == relayTypes.CircleMessageType {
 			// fetch the MessageTransmitter address from TokenMessenger contract and create a new listener
 			transmitterAddr, err := GetMessageTransmitterAddress(ctx, chainCfg.GetCCTPAddress(), chainClient)
