@@ -110,7 +110,7 @@ export class SynapseRouter extends Router {
       try {
         await Promise.all([this.chainGasAmount()])
       } catch (e) {
-        console.error('synapseRouter: Error hydrating cache', e)
+        console.error('[SynapseSDK: SynapseRouter] Error hydrating cache: ', e)
       }
     }
   }
