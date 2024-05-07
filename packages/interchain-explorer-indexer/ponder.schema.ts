@@ -2,15 +2,15 @@ import { createSchema } from '@ponder/core'
 
 export default createSchema((p) => ({
   AppConfigV1: p.createTable({
-    id: p.hex(),
+    id: p.string(),
     requiredResponses: p.int(),
     optimisticPeriod: p.int(),
-    modules: p.hex().list(),
+    modules: p.string().list(),
   }),
 
   InterchainBatch: p.createTable({
-    id: p.hex(),
-    batchRoot: p.hex(),
+    id: p.string(),
+    batchRoot: p.string(),
     srcDbNonce: p.bigint(),
     srcChainId: p.int().optional(),
     dstDbNonce: p.bigint().optional(),
@@ -18,7 +18,7 @@ export default createSchema((p) => ({
     interchainTransactions: p.many('InterchainTransaction.interchainBatchId'),
     status: p.string(),
     verifiedAt: p.bigint().optional(),
-    appConfigId: p.hex().references('AppConfigV1.id').optional(),
+    appConfigId: p.string().references('AppConfigV1.id').optional(),
     appConfig: p.one('appConfigId'),
   }),
 
@@ -81,7 +81,7 @@ export default createSchema((p) => ({
       .optional(),
     interchainTransactionReceived: p.one('interchainTransactionReceivedId'),
     status: p.string().optional(),
-    interchainBatchId: p.hex().references('InterchainBatch.id').optional(),
+    interchainBatchId: p.string().references('InterchainBatch.id').optional(),
     interchainBatch: p.one('interchainBatchId'),
   }),
 }))

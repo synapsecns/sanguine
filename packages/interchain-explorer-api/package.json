@@ -1,28 +1,23 @@
 {
   "name": "interchain-explorer-api",
   "version": "0.0.1",
+  "license": "MIT",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "ponder dev",
-    "start": "ponder start",
-    "codegen": "ponder codegen",
-    "lint": "eslint .",
-    "ci:lint": "eslint .",
-    "typecheck": "tsc",
-    "test:coverage": "echo 'No tests defined.'"
+    "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
-    "@ponder/core": "^0.4.21",
-    "viem": "^1.19.3"
+    "@prisma/client": "^5.13.0",
+    "express": "^4.19.2",
+    "graphql": "^16.8.1",
+    "graphql-yoga": "^5.3.0"
   },
   "devDependencies": {
-    "@types/node": "^20.9.0",
-    "eslint": "^8.53.0",
-    "eslint-config-ponder": "^0.3.11",
-    "typescript": "^5.2.2"
+    "@types/node": "^20.11.17",
+    "prisma": "^5.13.0",
+    "tsx": "^4.7.1"
   },
   "engines": {
-    "node": ">=18.14"
+    "node": ">=18.17"
   }
 }
