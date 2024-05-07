@@ -64,8 +64,9 @@ export const InputContainer = () => {
     estimateBridgeableBalanceCallback,
   } = useGasEstimator()
 
-  console.log('isLoading: ', isLoading)
-  console.log('maxBridgeableGas: ', maxBridgeableGas)
+  const isInputMax =
+    maxBridgeableGas?.toString() === fromValue ||
+    fullParsedBalance === fromValue
 
   const onMaxBalance = useCallback(async () => {
     if (hasValidGasEstimateInputs()) {
@@ -160,7 +161,10 @@ export const InputContainer = () => {
               isGasEstimateLoading={isLoading}
               isDisabled={!isConnected || !hasValidSelections}
             />
-            <MaxButton onMaxBalance={onMaxBalance} isHidden={isLoading} />
+            <MaxButton
+              onMaxBalance={onMaxBalance}
+              isHidden={isLoading || isInputMax}
+            />
           </div>
         </div>
       </BridgeAmountContainer>
