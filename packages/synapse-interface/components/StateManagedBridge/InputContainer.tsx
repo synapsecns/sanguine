@@ -154,7 +154,7 @@ export const InputContainer = () => {
             showValue={showValue}
             handleFromValueChange={handleFromValueChange}
           />
-          <div className="flex space-x-1">
+          <div className="flex items-center">
             <AvailableBalance
               balance={parsedBalance}
               maxBridgeableBalance={maxBridgeableGas}
