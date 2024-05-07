@@ -288,9 +288,13 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 			listener := l
 			chainID := cid
 			g.Go(func() error {
-				return listener.Listen(ctx, func(ctx context.Context, log types.Log) error {
-					return c.handleLog(ctx, log, uint32(chainID))
+				err := listener.Listen(ctx, func(ctx context.Context, log types.Log) error {
+					return c.handleLog(ctx, log, chainID)
 				})
+				if err != nil {
+					return fmt.Errorf("could not listen: %w", err)
+				}
+				return nil
 			})
 		}
 	}
