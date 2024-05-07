@@ -26,7 +26,6 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { useFromTokenListArray } from './hooks/useFromTokenListArray'
-import MiniMaxButton from '../buttons/MiniMaxButton'
 import { AvailableBalance } from './AvailableBalance'
 import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
@@ -160,7 +159,6 @@ export const InputContainer = () => {
               balance={parsedBalance}
               maxBridgeableBalance={maxBridgeableGas}
               gasCost={parsedGasCost}
-              onMaxBalance={onMaxBalance}
               isGasToken={isGasToken}
               isGasEstimateLoading={isLoading}
               isDisabled={!isConnected || !hasValidFromSelections}

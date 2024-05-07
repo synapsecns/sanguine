@@ -1,8 +1,5 @@
 import React from 'react'
 import { joinClassNames } from '@/utils/joinClassNames'
-import { HoverTooltip } from '../HoverTooltip'
-import { Token } from '@/utils/types'
-import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 export const AvailableBalance = ({
   balance,
@@ -10,7 +7,6 @@ export const AvailableBalance = ({
   isGasToken,
   isGasEstimateLoading,
   isDisabled,
-  onMaxBalance,
 }: {
   balance?: string
   maxBridgeableBalance?: number
@@ -18,13 +14,11 @@ export const AvailableBalance = ({
   isGasToken: boolean
   isGasEstimateLoading: boolean
   isDisabled: boolean
-  onMaxBalance?: () => void
 }) => {
   const labelClassName = joinClassNames({
     space: 'block',
     textColor: 'text-xxs md:text-xs',
-    animation: 'transition-all duration-150 transform-gpu',
-    hover: 'hover:opacity-70 cursor-pointer',
+    cursor: 'cursor-default',
   })
 
   if (isDisabled) {
@@ -39,11 +33,7 @@ export const AvailableBalance = ({
     )
   } else {
     return (
-      <label
-        onClick={onMaxBalance}
-        className={labelClassName}
-        htmlFor="inputRow"
-      >
+      <label className={labelClassName} htmlFor="inputRow">
         <span className="text-zinc-500 dark:text-zinc-400">Available: </span>
         {maxBridgeableBalance?.toFixed(4) ?? balance ?? '0.0'}
       </label>

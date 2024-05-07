@@ -120,8 +120,7 @@ export const SwapInputContainer = () => {
   const labelClassName = joinClassNames({
     space: 'block',
     textColor: 'text-xxs md:text-xs',
-    animation: 'transition-all duration-150 transform-gpu',
-    hover: 'hover:opacity-70 cursor-pointer',
+    cursor: 'cursor-default',
   })
 
   return (
@@ -140,11 +139,7 @@ export const SwapInputContainer = () => {
           />
           {hasMounted && isConnected && (
             <div className="flex items-center space-x-1">
-              <label
-                htmlFor="inputRow"
-                className={labelClassName}
-                onClick={onMaxBalance}
-              >
+              <label htmlFor="inputRow" className={labelClassName}>
                 <span className="text-zinc-500 dark:text-zinc-400">
                   Available:{' '}
                 </span>
