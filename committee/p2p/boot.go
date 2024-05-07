@@ -3,13 +3,14 @@ package p2p
 import (
 	"context"
 	"fmt"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/ipfs/go-datastore/query"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"golang.org/x/exp/slices"
-	"strings"
-	"sync"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	ipfslite "github.com/hsanjuan/ipfs-lite"
@@ -177,10 +178,6 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 		l.host.ConnManager().TagPeer(p.ID, "keep", 100)
 	}
 
-	if err != nil {
-		return fmt.Errorf("could not create pubsub: %w", err)
-	}
-
 	err = l.setupPeerTable(ctx)
 	if err != nil {
 		return fmt.Errorf("could not setup peer table: %w", err)
@@ -201,7 +198,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 			fmt.Println("eth address:")
 			fmt.Println(l.address)
 			fmt.Println("all reported peers:")
-			memberRes, err := l.peerstore.Query(ctx, query.Query{Prefix: "/members/", Limit: 100})
+			memberRes, err := l.peerstore.Query(ctx, query.Query{Prefix: MemberPrefix, Limit: 100})
 			if err != nil {
 				fmt.Println("could not query members: ", err)
 			}
@@ -217,7 +214,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	time.Sleep(time.Second * 10)
 
 	// peers self report here
-	err = l.peerstore.Put(ctx, datastore.NewKey("/members/"+l.address.String()), l.address.Bytes())
+	err = l.peerstore.Put(ctx, datastore.NewKey(MemberPrefix+l.address.String()), l.address.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not put datastore: %w", err)
 	}
@@ -258,7 +255,7 @@ func (l *libP2PManagerImpl) setupPeerTable(ctx context.Context) error {
 		return fmt.Errorf("could not create crdt: %w", err)
 	}
 
-	err = l.peerstore.Sync(ctx, datastore.NewKey("/"))
+	err = l.peerstore.Sync(ctx, datastore.NewKey(SignaturePrefix))
 	if err != nil {
 		return fmt.Errorf("could not sync: %w", err)
 	}
@@ -289,7 +286,7 @@ func (l *libP2PManagerImpl) PutSignature(ctx context.Context, chainID int, entry
 		return fmt.Errorf("could not put signature: %w", err)
 	}
 
-	err = myStore.Sync(ctx, datastore.NewKey("/"))
+	err = myStore.Sync(ctx, datastore.NewKey(SignaturePrefix))
 	if err != nil {
 		return fmt.Errorf("could not sync: %w", err)
 	}
@@ -387,7 +384,7 @@ func (l *libP2PManagerImpl) addValidator(ctx context.Context, addr common.Addres
 		return fmt.Errorf("could not create crdt: %w", err)
 	}
 
-	err = l.datastores[addr].Sync(ctx, datastore.NewKey("/"))
+	err = l.datastores[addr].Sync(ctx, datastore.NewKey(SignaturePrefix))
 	if err != nil {
 		return fmt.Errorf("could not sync: %w", err)
 	}

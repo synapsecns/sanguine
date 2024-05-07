@@ -2,11 +2,20 @@ package p2p
 
 import (
 	"fmt"
+
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/pkg/errors"
+)
+
+const (
+	// Prefixes for the different types of messages
+	// SignaturePrefix is the prefix for publishing signatures to the other validators
+	SignaturePrefix = "/"
+	// MemberPrefix is the prefix for member topics, used when a Host joins the network
+	MemberPrefix = "/members/"
 )
 
 func ethAddrFromPeer(p peer.ID) (common.Address, error) {
