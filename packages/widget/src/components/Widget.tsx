@@ -339,7 +339,7 @@ export const Widget = ({
         }
       }
     } catch (error) {
-      console.log('[Synapse Widget] Error bridging: ', error)
+      console.error('[Synapse Widget] Error bridging: ', error)
     }
   }
 
