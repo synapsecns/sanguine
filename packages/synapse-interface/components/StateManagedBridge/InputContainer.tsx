@@ -52,7 +52,7 @@ export const InputContainer = () => {
   const fullParsedBalance = formatBigIntToString(balance, tokenDecimals)
 
   const hasValidSelections: boolean = useMemo(() => {
-    return Boolean(fromChainId && toChainId && fromToken && toToken)
+    return Boolean(fromChainId && fromToken)
   }, [fromChainId, toChainId, fromToken, toToken])
 
   const {
@@ -145,7 +145,7 @@ export const InputContainer = () => {
       </div>
       <BridgeAmountContainer>
         <FromTokenSelector />
-        <div>
+        <div className="w-full">
           <AmountInput
             inputRef={inputRef}
             showValue={showValue}
@@ -163,7 +163,9 @@ export const InputContainer = () => {
             />
             <MaxButton
               onClick={onMaxBalance}
-              isHidden={!isConnected || isLoading || isInputMax}
+              isHidden={
+                !isConnected || !hasValidSelections || isLoading || isInputMax
+              }
             />
           </div>
         </div>

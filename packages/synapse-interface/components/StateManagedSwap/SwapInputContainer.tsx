@@ -54,10 +54,13 @@ export const SwapInputContainer = () => {
   )
 
   const parsedBalance = tokenData?.parsedBalance
-
   const balance = tokenData?.balance
+  const parsedFullBalance = formatBigIntToString(
+    balance,
+    tokenData?.token?.decimals[swapChainId]
+  )
 
-  const isInputMax = parsedBalance === swapFromValue
+  const isInputMax = parsedFullBalance === swapFromValue
 
   useEffect(() => {
     if (
@@ -136,7 +139,7 @@ export const SwapInputContainer = () => {
             handleFromValueChange={handleFromValueChange}
           />
           {hasMounted && isConnected && (
-            <div className="flex space-x-1">
+            <div className="flex items-center space-x-1">
               <label
                 htmlFor="inputRow"
                 className={labelClassName}
@@ -149,7 +152,7 @@ export const SwapInputContainer = () => {
               </label>
               <MaxButton
                 onClick={onMaxBalance}
-                isHidden={!isConnected || isInputMax}
+                isHidden={!isConnected || !balance || isInputMax}
               />
             </div>
           )}
