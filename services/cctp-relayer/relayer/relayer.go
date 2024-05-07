@@ -3,11 +3,11 @@ package relayer
 import (
 	"context"
 	"fmt"
-	"math/big"
-	"strconv"
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/ethergo/listener"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/api"
@@ -23,35 +23,27 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/scribe/client"
-	pbscribe "github.com/synapsecns/sanguine/services/scribe/grpc/types/types/v1"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
-// chainListener is a struct that contains the necessary information for each chain level relayer.
-type chainListener struct {
-	// chainID is the chain ID of the chain that this relayer is responsible for.
-	chainID uint32
-	// closeConnection is a channel that is used to close the connection.
-	closeConnection chan bool
-	// stopListenChan is a channel that is used to stop listening to the log channel.
-	stopListenChan chan bool
-}
+type cctpContractType uint8
+
+const (
+	synapseCCTP cctpContractType = iota + 1
+	tokenMessenger
+	messageTransmitter
+)
 
 // CCTPRelayer listens for USDC burn events on origin chains,
 // fetches attestations from Circle's API, and posts the necessary data
 // on the destination chain to complete the USDC bridging process.
 type CCTPRelayer struct {
-	cfg           config.Config
-	db            db2.CCTPRelayerDB
-	scribeClient  client.ScribeClient
-	grpcClient    pbscribe.ScribeServiceClient
-	grpcConn      *grpc.ClientConn
-	omnirpcClient omniClient.RPCClient
-	// chainListeners is a map from chain ID -> chain relayer.
-	chainListeners map[uint32]*chainListener
+	cfg            config.Config
+	db             db2.CCTPRelayerDB
+	grpcConn       *grpc.ClientConn
+	omnirpcClient  omniClient.RPCClient
+	chainListeners map[int][]listener.ContractListener
 	// cctpHandler interacts with CCTP contracts.
 	cctpHandler CCTPHandler
 	// handler is the metrics handler.
@@ -78,35 +70,37 @@ type CCTPRelayer struct {
 func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI attestation.CCTPAPI, rawOpts ...OptionsArgsOption) (*CCTPRelayer, error) {
 	opts := makeOptions(rawOpts)
 
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
-		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("could not dial grpc: %w", err)
-	}
+	omniClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, handler, omniClient.WithCaptureReqRes())
 
-	grpcClient := pbscribe.NewScribeServiceClient(conn)
-
-	// Ensure that gRPC is up and running.
-	healthCheck, err := grpcClient.Check(ctx, &pbscribe.HealthCheckRequest{}, grpc.WaitForReady(true))
-	if err != nil {
-		return nil, fmt.Errorf("could not check: %w", err)
-	}
-	if healthCheck.Status != pbscribe.HealthCheckResponse_SERVING {
-		return nil, fmt.Errorf("not serving: %s", healthCheck.Status)
-	}
-
-	// Build chainListeners.
-	chainListeners := make(map[uint32]*chainListener)
-	for _, chain := range cfg.Chains {
-		chainListeners[chain.ChainID] = &chainListener{
-			chainID:         chain.ChainID,
-			closeConnection: make(chan bool, 1),
-			stopListenChan:  make(chan bool, 1),
-			// processChan is buffered to prevent blocking.
+	// setup chain listeners
+	chainListeners := make(map[int][]listener.ContractListener)
+	for chainID, chainCfg := range cfg.Chains {
+		chainClient, err := omniClient.GetChainClient(ctx, chainID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
+		chainListener, err := listener.NewChainListener(chainClient, store, chainCfg.GetCCTPAddress(), chainCfg.CCTPStartBlock, handler)
+		if err != nil {
+			return nil, fmt.Errorf("could not get chain listener: %w", err)
+		}
+		cctpType, err := cfg.GetCCTPType()
+		if err != nil {
+			return nil, fmt.Errorf("could not get cctp type: %w", err)
+		}
+		listeners := []listener.ContractListener{chainListener}
+		if cctpType == relayTypes.CircleMessageType {
+			// fetch the MessageTransmitter address from TokenMessenger contract and create a new listener
+			transmitterAddr, err := GetMessageTransmitterAddress(ctx, chainCfg.GetCCTPAddress(), chainClient)
+			if err != nil {
+				return nil, fmt.Errorf("could not get message transmitter address: %w", err)
+			}
+			transmitterListener, err := listener.NewChainListener(chainClient, store, transmitterAddr, chainCfg.CCTPStartBlock, handler)
+			if err != nil {
+				return nil, fmt.Errorf("could not get chain listener: %w", err)
+			}
+			listeners = append(listeners, transmitterListener)
+		}
+		chainListeners[chainID] = listeners
 	}
 
 	signer, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
@@ -147,9 +141,6 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 		omnirpcClient:    omniRPCClient,
 		chainListeners:   chainListeners,
 		cctpHandler:      cctpHandler,
-		scribeClient:     scribeClient,
-		grpcClient:       grpcClient,
-		grpcConn:         conn,
 		relayerAPI:       relayerAPI,
 		relayRequestChan: relayerRequestChan,
 		retryNow:         make(chan bool, 1),
@@ -298,35 +289,14 @@ func (c *CCTPRelayer) processMessage(parentCtx context.Context, msg *relayTypes.
 func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 	g, ctx := errgroup.WithContext(parentCtx)
 
-	// Listen for USDC burn events on origin chains.
-	for _, chain := range c.cfg.Chains {
-		chain := chain
-		cctpType, _ := c.cfg.GetCCTPType()
-		switch cctpType {
-		case relayTypes.SynapseMessageType:
+	// listen for contract events
+	for chainID, listeners := range c.chainListeners {
+		for _, listener := range listeners {
 			g.Go(func() error {
-				// listen for CircleRequestSentEvent,CircleRequestFulfilledEvent
-				return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.GetSynapseCCTPAddress().Hex(), nil)
+				return listener.Listen(ctx, func(ctx context.Context, log types.Log) error {
+					return c.handleLog(ctx, log, uint32(chainID))
+				})
 			})
-		case relayTypes.CircleMessageType:
-			g.Go(func() error {
-				// listen for DepositForBurnEvent
-				return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.GetTokenMessengerAddress().Hex(), nil)
-			})
-			g.Go(func() error {
-				// listen for MessageReceivedEvent
-				ethClient, err := c.omnirpcClient.GetClient(ctx, big.NewInt(int64(chain.ChainID)))
-				if err != nil {
-					return fmt.Errorf("could not get eth client: %w", err)
-				}
-				transmitterAddr, err := GetMessageTransmitterAddress(ctx, chain.GetTokenMessengerAddress(), ethClient)
-				if err != nil {
-					return fmt.Errorf("could not get message transmitter address: %w", err)
-				}
-				return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, transmitterAddr.Hex(), nil)
-			})
-		default:
-			return fmt.Errorf("invalid cctp type: %s", cctpType.String())
 		}
 	}
 
@@ -365,77 +335,15 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 	return nil
 }
 
-// Stop stops the CCTPRelayer.
-func (c *CCTPRelayer) Stop(chainID uint32) {
-	c.chainListeners[chainID].closeConnection <- true
-	c.chainListeners[chainID].stopListenChan <- true
-}
-
-// Listens for USDC send events on origin chain, and registers relayTypes.Messages to be signed.
-//
-//nolint:cyclop
-func (c *CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64) (err error) {
-	if address == "" {
-		return fmt.Errorf("address cannot be empty")
-	}
-
-	lastStoredBlock, err := c.db.GetLastBlockNumber(ctx, chainID)
+func (c *CCTPRelayer) handleLog(ctx context.Context, log types.Log, chainID uint32) (err error) {
+	shouldProcess, err := c.cctpHandler.HandleLog(ctx, &log, chainID)
 	if err != nil {
-		return fmt.Errorf("could not get last stored block: %w", err)
+		logger.Warn("error handling log: ", err)
 	}
-
-	fromBlock := strconv.FormatUint(lastStoredBlock, 16)
-
-	toBlock := "latest"
-	if toBlockNumber != nil {
-		toBlock = strconv.FormatUint(*toBlockNumber, 16)
+	if shouldProcess {
+		c.triggerProcessQueue(ctx)
 	}
-
-	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
-		Filter: &pbscribe.LogFilter{
-			ContractAddress: &pbscribe.NullableString{Kind: &pbscribe.NullableString_Data{Data: address}},
-			ChainId:         chainID,
-		},
-		FromBlock: fromBlock,
-		ToBlock:   toBlock,
-	})
-	if err != nil {
-		return fmt.Errorf("could not stream logs: %w", err)
-	}
-
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("context done: %w", ctx.Err())
-		case <-c.chainListeners[chainID].closeConnection:
-			err := stream.CloseSend()
-			if err != nil {
-				return fmt.Errorf("could not close stream: %w", err)
-			}
-
-			err = conn.Close()
-			if err != nil {
-				return fmt.Errorf("could not close connection: %w", err)
-			}
-
-			return nil
-		default:
-			response, err := stream.Recv()
-			if err != nil {
-				return fmt.Errorf("could not receive: %w", err)
-			}
-
-			shouldProcess, err := c.cctpHandler.HandleLog(ctx, response.GetLog().ToLog(), chainID)
-			if err != nil {
-				// TODO should return error here
-				// return err
-				logger.Warn("error handling log: ", err)
-			}
-			if shouldProcess {
-				c.triggerProcessQueue(ctx)
-			}
-		}
-	}
+	return nil
 }
 
 // processAPIRequests processes requests from the API.
