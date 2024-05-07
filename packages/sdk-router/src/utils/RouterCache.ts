@@ -57,7 +57,10 @@ export const RouterCache = (maxAge: number) => {
             return res
           })
           .catch((e) => {
-            console.error(`[RouterCache] Error on ChainID ${this.chainId}: `, e)
+            console.error(
+              `[SynapseSDK: RouterCache] Error on ChainID ${this.chainId}: `,
+              e
+            )
           })
         return result
       }
