@@ -26,14 +26,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-type cctpContractType uint8
-
-const (
-	synapseCCTP cctpContractType = iota + 1
-	tokenMessenger
-	messageTransmitter
-)
-
 // CCTPRelayer listens for USDC burn events on origin chains,
 // fetches attestations from Circle's API, and posts the necessary data
 // on the destination chain to complete the USDC bridging process.
