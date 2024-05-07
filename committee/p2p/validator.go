@@ -11,10 +11,7 @@ import (
 )
 
 const (
-	// Prefixes for the different types of messages
-	// SignaturePrefix is the prefix for publishing signatures to the other validators
-	SignaturePrefix = "/"
-	// MemberPrefix is the prefix for member topics, used when a Host joins the network
+	// MemberPrefix is the prefix for member topics, used when a Host joins the network.
 	MemberPrefix = "/members/"
 )
 

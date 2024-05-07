@@ -255,7 +255,7 @@ func (l *libP2PManagerImpl) setupPeerTable(ctx context.Context) error {
 		return fmt.Errorf("could not create crdt: %w", err)
 	}
 
-	err = l.peerstore.Sync(ctx, datastore.NewKey(SignaturePrefix))
+	err = l.peerstore.Sync(ctx, datastore.NewKey("/"))
 	if err != nil {
 		return fmt.Errorf("could not sync: %w", err)
 	}
@@ -286,7 +286,7 @@ func (l *libP2PManagerImpl) PutSignature(ctx context.Context, chainID int, entry
 		return fmt.Errorf("could not put signature: %w", err)
 	}
 
-	err = myStore.Sync(ctx, datastore.NewKey(SignaturePrefix))
+	err = myStore.Sync(ctx, datastore.NewKey("/"))
 	if err != nil {
 		return fmt.Errorf("could not sync: %w", err)
 	}
@@ -384,7 +384,7 @@ func (l *libP2PManagerImpl) addValidator(ctx context.Context, addr common.Addres
 		return fmt.Errorf("could not create crdt: %w", err)
 	}
 
-	err = l.datastores[addr].Sync(ctx, datastore.NewKey(SignaturePrefix))
+	err = l.datastores[addr].Sync(ctx, datastore.NewKey("/"))
 	if err != nil {
 		return fmt.Errorf("could not sync: %w", err)
 	}

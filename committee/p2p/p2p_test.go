@@ -44,14 +44,12 @@ func (s *P2PTestSuite) SetupSuite() {
 }
 
 func (s *P2PTestSuite) TestLibP2PManager() {
-	m1 := s.makeManager()
-	m2 := s.makeManager()
-	m3 := s.makeManager()
-	m4 := s.makeManager()
-	m5 := s.makeManager()
-	m6 := s.makeManager()
+	var managers []p2p.LibP2PManager
 
-	managers := []p2p.LibP2PManager{m1, m2, m3, m4, m5, m6}
+	// make 10 Hosts
+	for i := 0; i < 10; i++ {
+		managers = append(managers, s.makeManager())
+	}
 	peers := combineHostAddresses(managers...)
 	addresses := managersToValidators(managers...)
 
@@ -82,28 +80,19 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	signature := []byte(gofakeit.Word())
 
 	// m1 signs and broadcasts the signature
+	m1 := managers[0]
+
 	err := m1.PutSignature(s.GetTestContext(), chainID, nonce, signature)
 	s.Require().NoError(err)
 	time.Sleep(time.Second * 1)
 
 	for {
 		time.Sleep(time.Second)
-		if realSig, err := m2.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
-			s.Require().Equal(signature, realSig)
+		for _, manager := range managers {
+			sig, err := manager.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce)
+			s.Require().NoError(err)
+			s.Require().Equal(signature, sig)
 		}
-		if realSig, err := m3.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
-			s.Require().Equal(signature, realSig)
-		}
-		if realSig, err := m4.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
-			s.Require().Equal(signature, realSig)
-		}
-		if realSig, err := m5.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
-			s.Require().Equal(signature, realSig)
-		}
-		if realSig, err := m6.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
-			s.Require().Equal(signature, realSig)
-		}
-
 	}
 }
 
