@@ -1,6 +1,7 @@
 package p2p_test
 
 import (
+	"bytes"
 	"fmt"
 	"math/big"
 	"sync"
@@ -88,10 +89,19 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 
 	for {
 		time.Sleep(time.Second)
-		for _, manager := range managers {
+		allPeersMatched := 0
+		for i := 1; i < len(managers); i++ {
+			manager := managers[i]
 			sig, err := manager.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce)
 			s.Require().NoError(err)
 			s.Require().Equal(signature, sig)
+			if bytes.Equal(signature, sig) {
+				allPeersMatched++
+			}
+		}
+		// - 1 because we don't want to count the manager that signed the message
+		if allPeersMatched == len(managers)-1 {
+			break
 		}
 	}
 }
