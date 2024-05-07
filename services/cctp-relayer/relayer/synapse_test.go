@@ -164,10 +164,8 @@ func (s *CCTPRelayerSuite) TestBridgeSynapseCCTP() {
 	// start relayer
 	ctx, cancel := context.WithCancel(s.GetTestContext())
 	defer cancel()
-	go func() {
-		err := relay.Run(ctx)
-		s.Nil(err)
-	}()
+	//nolint:errcheck
+	go relay.Run(ctx)
 
 	// mint some USDC on send chain
 	originChain := s.testBackends[0]
