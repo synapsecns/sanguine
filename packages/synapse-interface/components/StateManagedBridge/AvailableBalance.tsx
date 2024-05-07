@@ -45,7 +45,10 @@ export const AvailableBalance = ({
         htmlFor="inputRow"
       >
         {maxBridgeableBalance?.toFixed(4) ?? balance ?? '0.0'}
-        <span className="text-zinc-500 dark:text-zinc-400"> available</span>
+        <span className="text-zinc-500 dark:text-zinc-400">
+          {' '}
+          available
+        </span>{' '}
       </label>
     )
   }

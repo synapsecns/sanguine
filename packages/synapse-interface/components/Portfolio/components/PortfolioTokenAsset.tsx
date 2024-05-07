@@ -39,7 +39,7 @@ export const PortfolioTokenAsset = ({
     ? decimals
     : decimals[portfolioChainId]
 
-  const parsedBalance = getParsedBalance(balance, tokenDecimals, 3)
+  const parsedBalance = getParsedBalance(balance, tokenDecimals, 4)
   const parsedBalanceLong = getParsedBalance(balance, tokenDecimals, 8)
 
   const isDisabled = false
