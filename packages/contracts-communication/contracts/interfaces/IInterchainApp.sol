@@ -13,5 +13,7 @@ interface IInterchainApp {
         external
         payable;
 
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
     function getReceivingConfig() external view returns (bytes memory appConfig, address[] memory modules);
 }

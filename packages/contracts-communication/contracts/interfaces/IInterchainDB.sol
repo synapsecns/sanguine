@@ -14,6 +14,7 @@ interface IInterchainDB {
     error InterchainDB__ModulesNotProvided();
 
     function writeEntry(bytes32 dataHash) external returns (uint64 dbNonce, uint64 entryIndex);
+
     function requestBatchVerification(
         uint64 dstChainId,
         uint64 dbNonce,
@@ -21,6 +22,7 @@ interface IInterchainDB {
     )
         external
         payable;
+
     function writeEntryWithVerification(
         uint64 dstChainId,
         bytes32 dataHash,
@@ -45,6 +47,7 @@ interface IInterchainDB {
         external
         view
         returns (bytes32[] memory);
+
     function getBatchSize(uint64 dbNonce) external view returns (uint64);
     function getBatch(uint64 dbNonce) external view returns (InterchainBatch memory);
     function getVersionedBatch(uint64 dbNonce) external view returns (bytes memory);

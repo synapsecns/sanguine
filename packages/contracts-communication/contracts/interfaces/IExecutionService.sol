@@ -11,7 +11,10 @@ interface IExecutionService {
         external
         payable;
 
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
     function executorEOA() external view returns (address);
+
     function getExecutionFee(
         uint64 dstChainId,
         uint256 txPayloadSize,

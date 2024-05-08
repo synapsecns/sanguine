@@ -16,5 +16,7 @@ interface IInterchainModule {
         external
         payable;
 
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
     function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256);
 }

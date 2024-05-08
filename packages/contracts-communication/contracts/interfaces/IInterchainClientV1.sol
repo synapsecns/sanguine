@@ -47,6 +47,7 @@ interface IInterchainClientV1 {
         external
         payable
         returns (InterchainTxDescriptor memory desc);
+
     function interchainSendEVM(
         uint64 dstChainId,
         address receiver,
@@ -58,6 +59,7 @@ interface IInterchainClientV1 {
         external
         payable
         returns (InterchainTxDescriptor memory desc);
+
     function interchainExecute(
         uint256 gasLimit,
         bytes calldata transaction,
@@ -65,6 +67,7 @@ interface IInterchainClientV1 {
     )
         external
         payable;
+
     function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex);
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════

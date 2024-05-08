@@ -15,6 +15,8 @@ interface ISynapseExecutionServiceV1 is IExecutionService {
     function setGasOracle(address gasOracle_) external;
     function setGlobalMarkup(uint256 globalMarkup_) external;
 
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
     function gasOracle() external view returns (address);
     function globalMarkup() external view returns (uint256);
 }

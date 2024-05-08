@@ -24,6 +24,8 @@ interface ISynapseGasOracleV1 is ISynapseGasOracle {
     function setRemoteGasPrice(uint64 chainId, uint256 gasPrice) external;
     function setRemoteNativePrice(uint64 chainId, uint256 nativePrice) external;
 
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
     function getLocalNativePrice() external view returns (uint256);
     function getRemoteGasData(uint64 chainId) external view returns (RemoteGasData memory);
 }

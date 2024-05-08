@@ -2,6 +2,8 @@
 pragma solidity ^0.8.0;
 
 interface IGasOracle {
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
     function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) external view returns (uint256);
 
     function estimateTxCostInLocalUnits(
@@ -12,6 +14,7 @@ interface IGasOracle {
         external
         view
         returns (uint256);
+
     function estimateTxCostInRemoteUnits(
         uint64 remoteChainId,
         uint256 gasLimit,
