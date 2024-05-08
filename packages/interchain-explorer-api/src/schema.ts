@@ -23,7 +23,7 @@ const typeDefs = `
     dstChainId: Int
     status: String!
     verifiedAt: BigInt
-    appConfigId: String
+    appConfigV1Id: String
     appConfigV1: AppConfigV1
     interchainTransactions: [InterchainTransaction!]!
   }
@@ -224,7 +224,7 @@ const resolvers = {
     },
     appConfigV1: async (parent: InterchainBatch) => {
       const appConfig = await prisma.appConfigV1.findUnique({
-        where: { id: parent.appConfigId },
+        where: { id: parent.appConfigV1Id },
       })
 
       if (appConfig && typeof appConfig.modules === 'string') {

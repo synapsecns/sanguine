@@ -7,7 +7,7 @@ export interface InterchainBatch {
   dstChainId?: number
   status: string
   verifiedAt?: bigint
-  appConfigId?: string
+  appConfigV1Id?: string
 }
 
 export interface InterchainTransaction {
