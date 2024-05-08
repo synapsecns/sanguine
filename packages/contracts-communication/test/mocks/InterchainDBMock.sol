@@ -28,7 +28,28 @@ contract InterchainDBMock is IInterchainDB {
         returns (uint64 writerNonce, uint64 entryIndex)
     {}
 
+    function requestEntryVerification(
+        uint64 dstChainId,
+        uint64 dbNonce,
+        address[] memory srcModules
+    )
+        external
+        payable
+    {}
+
+    function writeEntryRequestVerification(
+        uint64 dstChainId,
+        bytes32 digest,
+        address[] memory srcModules
+    )
+        external
+        payable
+        returns (uint64 dbNonce)
+    {}
+
     function verifyRemoteBatch(bytes calldata versionedBatch) external {}
+
+    function verifyRemoteEntry(bytes calldata encodedEntry) external {}
 
     function getInterchainFee(uint64 dstChainId, address[] memory srcModules) external view returns (uint256) {}
 
@@ -50,6 +71,12 @@ contract InterchainDBMock is IInterchainDB {
 
     function getVersionedBatch(uint64 dbNonce) external view returns (bytes memory versionedBatch) {}
 
+    function getEncodedEntry(uint64 dbNonce) external view returns (bytes memory) {}
+
+    function getEntry(uint64 dbNonce) external view returns (InterchainEntry memory) {}
+
+    function getEntryValue(uint64 dbNonce) external view returns (bytes32) {}
+
     function getEntryValue(uint64 dbNonce, uint64 entryIndex) external view returns (bytes32) {}
 
     function getEntryProof(uint64 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof) {}
@@ -61,6 +88,15 @@ contract InterchainDBMock is IInterchainDB {
     function checkBatchVerification(
         address dstModule,
         InterchainBatch memory batch
+    )
+        external
+        view
+        returns (uint256 moduleVerifiedAt)
+    {}
+
+    function checkEntryVerification(
+        address dstModule,
+        InterchainEntry memory entry
     )
         external
         view

@@ -51,7 +51,8 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// @return entryIndex  The index of the written entry within the batch
     function writeEntry(bytes32 dataHash) external returns (uint64 dbNonce, uint64 entryIndex) {
         InterchainEntry memory entry = _writeEntry(dataHash);
-        (dbNonce, entryIndex) = (entry.dbNonce, entry.entryIndex);
+        dbNonce = entry.dbNonce;
+        // TODO: remove entryIndex
     }
 
     /// @notice Request the given Interchain Modules to verify an existing batch.
@@ -75,6 +76,17 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         InterchainBatch memory batch = getBatch(dbNonce);
         _requestVerification(dstChainId, batch, srcModules);
+    }
+
+    function requestEntryVerification(
+        uint64 dstChainId,
+        uint64 dbNonce,
+        address[] memory srcModules
+    )
+        external
+        payable
+    {
+        // TODO: implement
     }
 
     /// @notice Write data to the Interchain DataBase as a new entry in the current batch.
@@ -101,6 +113,18 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         // In "no batching" mode: the batch root is the same as the entry value
         InterchainBatch memory batch = InterchainBatchLib.constructLocalBatch(dbNonce, entry.entryValue());
         _requestVerification(dstChainId, batch, srcModules);
+    }
+
+    function writeEntryRequestVerification(
+        uint64 dstChainId,
+        bytes32 digest,
+        address[] memory srcModules
+    )
+        external
+        payable
+        returns (uint64 dbNonce)
+    {
+        // TODO: implement
     }
 
     // ═══════════════════════════════════════════════ MODULE-FACING ═══════════════════════════════════════════════════
@@ -132,6 +156,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         }
         // Overwriting an existing batch with a different one is not allowed
         revert InterchainDB__BatchConflict(msg.sender, existingBatch.batchRoot, batch);
+    }
+
+    function verifyRemoteEntry(bytes memory encodedEntry) external {
+        // TODO: implement
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -236,6 +264,17 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : BATCH_CONFLICT;
     }
 
+    function checkEntryVerification(
+        address dstModule,
+        InterchainEntry memory entry
+    )
+        external
+        view
+        returns (uint256 moduleVerifiedAt)
+    {
+        // TODO: implement
+    }
+
     /// @notice Get the versioned Interchain Batch with the given nonce.
     /// Note: will return a batch with an empty root if the batch does not exist, or is not finalized.
     /// @param dbNonce      The database nonce of the batch
@@ -245,6 +284,14 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             version: DB_VERSION,
             payload: InterchainBatchLib.encodeBatch(batch)
         });
+    }
+
+    function getEncodedEntry(uint64 dbNonce) external view returns (bytes memory) {
+        // TODO: implement
+    }
+
+    function getEntryValue(uint64 dbNonce) external view returns (bytes32) {
+        // TODO: implement
     }
 
     /// @notice Get the batch root containing the Interchain Entry with the given index.
@@ -276,6 +323,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         // For non-finalized or non-existent batches, the batch root is 0.
         bytes32 batchRoot = dbNonce < getDBNonce() ? getEntryValue(dbNonce, 0) : bytes32(0);
         return InterchainBatchLib.constructLocalBatch(dbNonce, batchRoot);
+    }
+
+    function getEntry(uint64 dbNonce) public view returns (InterchainEntry memory) {
+        // TODO: implement
     }
 
     /// @notice Get the Interchain Entry's value written on the local chain with the given batch nonce and entry index.

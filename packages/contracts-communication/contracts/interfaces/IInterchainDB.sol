@@ -8,12 +8,34 @@ interface IInterchainDB {
     error InterchainDB__BatchConflict(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
     error InterchainDB__BatchVersionMismatch(uint16 version, uint16 required);
     error InterchainDB__ChainIdNotRemote(uint64 chainId);
+    error InterchainDB__EntryConflict(address module, InterchainEntry newEntry);
     error InterchainDB__EntryIndexOutOfRange(uint64 dbNonce, uint64 entryIndex, uint64 batchSize);
     error InterchainDB__EntryRangeInvalid(uint64 dbNonce, uint64 start, uint64 end);
+    error InterchainDB__EntryVersionMismatch(uint16 version, uint16 required);
     error InterchainDB__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
     error InterchainDB__ModulesNotProvided();
 
-    function writeEntry(bytes32 dataHash) external returns (uint64 dbNonce, uint64 entryIndex);
+    // TODO: remove entryIndex
+    function writeEntry(bytes32 digest) external returns (uint64 dbNonce, uint64 entryIndex);
+
+    function requestEntryVerification(
+        uint64 dstChainId,
+        uint64 dbNonce,
+        address[] memory srcModules
+    )
+        external
+        payable;
+
+    function writeEntryRequestVerification(
+        uint64 dstChainId,
+        bytes32 digest,
+        address[] memory srcModules
+    )
+        external
+        payable
+        returns (uint64 dbNonce);
+
+    function verifyRemoteEntry(bytes memory encodedEntry) external;
 
     function requestBatchVerification(
         uint64 dstChainId,
@@ -52,6 +74,10 @@ interface IInterchainDB {
     function getBatch(uint64 dbNonce) external view returns (InterchainBatch memory);
     function getVersionedBatch(uint64 dbNonce) external view returns (bytes memory);
 
+    function getEncodedEntry(uint64 dbNonce) external view returns (bytes memory);
+    function getEntry(uint64 dbNonce) external view returns (InterchainEntry memory);
+    function getEntryValue(uint64 dbNonce) external view returns (bytes32);
+
     function getEntryValue(uint64 dbNonce, uint64 entryIndex) external view returns (bytes32);
     function getEntryProof(uint64 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof);
 
@@ -61,6 +87,14 @@ interface IInterchainDB {
     function checkBatchVerification(
         address dstModule,
         InterchainBatch memory batch
+    )
+        external
+        view
+        returns (uint256 moduleVerifiedAt);
+
+    function checkEntryVerification(
+        address dstModule,
+        InterchainEntry memory entry
     )
         external
         view

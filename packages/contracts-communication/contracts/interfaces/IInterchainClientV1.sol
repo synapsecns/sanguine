@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import {InterchainTransaction, InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 
 interface IInterchainClientV1 {
+    // TODO: batch -> entry
     enum TxReadiness {
         Ready,
         AlreadyExecuted,
