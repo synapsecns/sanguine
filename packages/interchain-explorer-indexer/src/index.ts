@@ -105,7 +105,7 @@ ponder.on(
       modules: [],
     }
 
-    const appConfig =
+    const appConfigV1 =
       (await AppConfigV1.findUnique({ id: dstReceiver })) ??
       (await AppConfigV1.create({
         id: dstReceiver,
@@ -127,7 +127,7 @@ ponder.on(
       await InterchainBatch.update({
         id: b.id,
         data: {
-          appConfigId: appConfig.id,
+          appConfigV1Id: appConfigV1.id,
         },
       })
       await InterchainTransaction.upsert({
@@ -297,10 +297,12 @@ ponder.on(
       id: batchRoot,
     })
 
-    if (batch && batch.appConfigId) {
-      const appConfig = await AppConfigV1.findUnique({ id: batch.appConfigId })
+    if (batch && batch.appConfigV1Id) {
+      const appConfigV1 = await AppConfigV1.findUnique({
+        id: batch.appConfigV1Id,
+      })
 
-      const modules = appConfig?.modules
+      const modules = appConfigV1?.modules
 
       const txns = await InterchainTransaction.findMany({
         where: {
