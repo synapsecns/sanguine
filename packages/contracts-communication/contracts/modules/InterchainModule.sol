@@ -57,6 +57,17 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         emit BatchVerificationRequested(dstChainId, encodedBatch, ethSignedBatchHash);
     }
 
+    function requestEntryVerification(
+        uint64 dstChainId,
+        uint64 dbNonce,
+        bytes memory versionedEntry
+    )
+        external
+        payable
+    {
+        // TODO: implement
+    }
+
     /// @notice Get the Module fee for verifying a batch on the specified destination chain.
     /// @param dstChainId   The chain id of the destination chain
     /// @param dbNonce      The database nonce of the batch on the source chain

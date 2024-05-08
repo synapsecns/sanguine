@@ -18,6 +18,15 @@ contract InterchainModuleMock is IInterchainModule {
         payable
     {}
 
+    function requestEntryVerification(
+        uint64 dstChainId,
+        uint64 dbNonce,
+        bytes calldata versionedEntry
+    )
+        external
+        payable
+    {}
+
     function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256) {}
 
     function mockVerifyRemoteBatch(address interchainDB, bytes calldata versionedBatch) external {
