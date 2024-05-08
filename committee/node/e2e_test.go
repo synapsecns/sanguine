@@ -3,6 +3,7 @@ package node_test
 import (
 	"crypto/sha256"
 
+	"github.com/brianvoe/gofakeit"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/committee/db"
@@ -41,12 +42,12 @@ func (n *NodeSuite) TestNodeSuite() {
 	})
 
 	// spam verifications
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 10; i++ {
 		axxt := n.originChain.GetTxContext(n.GetTestContext(), nil)
 		tx, err = originDB.WriteEntryWithVerification(
 			axxt.TransactOpts,
 			n.destChain.GetBigChainID().Uint64(),
-			sha256.Sum256([]byte("fat")),
+			sha256.Sum256([]byte(gofakeit.BeerYeast())),
 			[]common.Address{n.originModule.Address()},
 		)
 		n.Require().NoError(err)
@@ -73,8 +74,4 @@ func (n *NodeSuite) CheckTransactionStatusCount(expected int, status db.SynapseR
 
 func equal(e, a int) bool {
 	return e == a
-}
-
-func greaterThan(e, a int) bool {
-	return e > a
 }
