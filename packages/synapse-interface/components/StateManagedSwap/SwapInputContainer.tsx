@@ -136,7 +136,7 @@ export const SwapInputContainer = () => {
             handleFromValueChange={handleFromValueChange}
           />
           {hasMounted && isConnected && (
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center">
               <label htmlFor="inputRow" className={labelClassName}>
                 <span className="text-zinc-500 dark:text-zinc-400">
                   Available:{' '}
