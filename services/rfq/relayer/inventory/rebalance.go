@@ -3,6 +3,8 @@ package inventory
 import (
 	"context"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
 // RebalanceData contains metadata for a rebalance action.
@@ -10,6 +12,7 @@ type RebalanceData struct {
 	OriginMetadata *TokenMetadata
 	DestMetadata   *TokenMetadata
 	Amount         *big.Int
+	Method         relconfig.RebalanceMethod
 }
 
 // RebalanceManager is the interface for the rebalance manager.

@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -93,6 +94,8 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 //
 // This is the second step in the bridge process. It is emitted when the relayer sees the request.
 // We check if we have enough inventory to process the request and mark it as committed pending.
+//
+//nolint:cyclop
 func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	shouldProcess, err := q.Quoter.ShouldProcess(ctx, request)
 	if err != nil {
@@ -120,11 +123,21 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
-	// get destination committable balancs
+	// get destination committable balance
 	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
+	if errors.Is(err, inventory.ErrUnsupportedChain) {
+		// don't process request if chain is currently unsupported
+		span.AddEvent("dropping unsupported chain")
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.WillNotProcess)
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+		return nil
+	}
 	if err != nil {
 		return fmt.Errorf("could not get committable balance: %w", err)
 	}
+
 	// if committableBalance > destAmount
 	if committableBalance.Cmp(request.Transaction.DestAmount) < 0 {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory)
