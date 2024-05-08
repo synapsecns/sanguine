@@ -69,7 +69,6 @@ func (n *NodeSuite) SetupTest() {
 
 	n.omnirpcURL = testhelper.NewOmnirpcServer(n.GetTestContext(), n.T(), n.originChain, n.destChain)
 
-	// we will have 10 committee nodes
 	for i := 0; i < 3; i++ {
 		n.makeNode()
 	}
