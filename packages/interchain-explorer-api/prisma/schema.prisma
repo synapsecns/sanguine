@@ -11,15 +11,15 @@ generator client {
 // Update these to postgres when ready
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:../db/public.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model AppConfigV1 {
   id                  String   @id @default(cuid()) // assuming hex is a string, cuid is a unique ID generator
   requiredResponses   Int
   optimisticPeriod    Int
-  // modules             String[] // lists are represented as arrays (can only add after postgres in place)
+  modules             String // This is not String[] because ponder encodes list types as strings
   InterchainBatches   InterchainBatch[]
 }
 

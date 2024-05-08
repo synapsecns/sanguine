@@ -11,7 +11,7 @@ const typeDefs = `
     id: String!
     requiredResponses: Int!
     optimisticPeriod: Int!
-    interchainBatches: [InterchainBatch!]!
+    modules: [String!]!
   }
 
   type InterchainBatch {
@@ -24,7 +24,7 @@ const typeDefs = `
     status: String!
     verifiedAt: BigInt
     appConfigId: String
-    appConfig: AppConfigV1
+    appConfigV1: AppConfigV1
     interchainTransactions: [InterchainTransaction!]!
   }
 
@@ -99,7 +99,9 @@ const typeDefs = `
       srcChainId: Int,
       dstChainId: Int,
       status: String,
-      limit: Int
+      limit: Int,
+      dstReceiver: String,
+      transactionHash: String
     ): [InterchainTransaction!]!
     
     appConfigV1s: [AppConfigV1!]!
@@ -116,6 +118,8 @@ interface InterchainTransactionQueryFilter {
   srcChainId?: number
   dstChainId?: number
   status?: string
+  dstReceiver?: string
+  id?: string
 }
 
 const resolvers = {
@@ -152,15 +156,26 @@ const resolvers = {
         dstChainId?: number
         limit?: number
         status?: string
+        dstReceiver?: string
+        transactionHash?: string
       }
     ) => {
-      const { srcChainId, dstChainId, limit = 100, status } = args
+      const {
+        srcChainId,
+        dstChainId,
+        limit = 100,
+        status,
+        dstReceiver,
+        transactionHash,
+      } = args
 
       const where: InterchainTransactionQueryFilter = {}
 
       if (srcChainId !== undefined) where.srcChainId = srcChainId
       if (dstChainId !== undefined) where.dstChainId = dstChainId
       if (status !== undefined) where.status = status
+      if (dstReceiver !== undefined) where.dstReceiver = dstReceiver
+      if (transactionHash !== undefined) where.id = transactionHash
 
       return await prisma.interchainTransaction.findMany({
         where,
@@ -176,11 +191,29 @@ const resolvers = {
       })
     },
     appConfigV1s: async () => {
-      return await prisma.appConfigV1.findMany({
+      const appConfigs = await prisma.appConfigV1.findMany({
         include: {
           InterchainBatches: true,
         },
       })
+
+      const decodedAppConfigs = appConfigs.map((config) => {
+        if (typeof config.modules === 'string') {
+          try {
+            config.modules = JSON.parse(config.modules)
+          } catch (error) {
+            console.error(
+              `Error parsing 'modules' for AppConfigV1 ID ${config.id}:`,
+              error
+            )
+            config.modules = []
+          }
+        }
+
+        return config
+      })
+
+      return decodedAppConfigs
     },
   },
   InterchainBatch: {
@@ -189,10 +222,16 @@ const resolvers = {
         where: { interchainBatchId: parent.id },
       })
     },
-    appConfig: async (parent: InterchainBatch) => {
-      return await prisma.appConfigV1.findUnique({
+    appConfigV1: async (parent: InterchainBatch) => {
+      const appConfig = await prisma.appConfigV1.findUnique({
         where: { id: parent.appConfigId },
       })
+
+      if (appConfig && typeof appConfig.modules === 'string') {
+        appConfig.modules = JSON.parse(appConfig.modules)
+      }
+
+      return appConfig
     },
   },
   InterchainTransaction: {
