@@ -1,0 +1,26 @@
+chains:
+  42:
+    supports_eip_1559: true
+    gas_estimate: 7500000
+  43:
+    gas_bump_percentage: 40
+    is_l2: true
+    gas_estimate: 7500000
+  44:
+    gas_bump_percentage: 40
+    is_l2: true
+    gas_estimate: 7500000
+omnirpc_url: http://omnirpc:9001
+database:
+  type: 'sqlite'
+  dsn: '/tmp/committee'
+signer:
+  # signer config details here
+submitter_config:
+  # submitter config details here
+should_relay: true
+bootstrap_peers:
+  - 'peer1.example.com'
+  - 'peer2.example.com'
+p2p_port: 12345
+use_peer_id: false
