@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ipfs/go-log"
 	"github.com/jellydator/ttlcache/v3"
+	"github.com/puzpuzpuz/xsync/v2"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/listener"
@@ -45,6 +46,7 @@ type Relayer struct {
 	submitter      submitter.TransactionSubmitter
 	signer         signer.Signer
 	claimCache     *ttlcache.Cache[common.Hash, bool]
+	decimalsCache  *xsync.MapOf[string, *uint8]
 }
 
 var logger = log.Logger("relayer")
@@ -126,6 +128,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		quoter:         q,
 		metrics:        metricHandler,
 		claimCache:     cache,
+		decimalsCache:  xsync.NewMapOf[*uint8](),
 		cfg:            cfg,
 		inventory:      im,
 		submitter:      sm,
