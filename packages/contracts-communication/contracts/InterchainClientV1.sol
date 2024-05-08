@@ -51,7 +51,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         INTERCHAIN_DB = interchainDB;
     }
 
-    // @inheritdoc IInterchainClientV1
+    /// @notice Allows the contract owner to set the address of the Guard module.
+    /// Note: batches marked as invalid by the Guard could not be used for message execution,
+    /// if the app opts in to use the Guard.
+    /// @param guard            The address of the Guard module.
     function setDefaultGuard(address guard) external onlyOwner {
         if (guard == address(0)) {
             revert InterchainClientV1__GuardZeroAddress();
@@ -60,13 +63,32 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         emit DefaultGuardSet(guard);
     }
 
-    // @inheritdoc IInterchainClientV1
+    /// @notice Sets the linked client for a specific chain ID.
+    /// Note: only Interchain Entries written by the linked client could be used for message execution.
+    /// @param chainId          The chain ID for which the client is being set.
+    /// @param client           The address of the client being linked.
     function setLinkedClient(uint64 chainId, bytes32 client) external onlyOwner {
         _linkedClient[chainId] = client;
         emit LinkedClientSet(chainId, client);
     }
 
-    // @inheritdoc IInterchainClientV1
+    /// @notice Sends a message to another chain via the Interchain Communication Protocol.
+    /// @dev Charges a fee for the message, which is payable upon calling this function:
+    /// - Verification fees: paid to every module that verifies the message.
+    /// - Execution fee: paid to the executor that executes the message.
+    /// Note: while a specific execution service is specified to request the execution of the message,
+    /// any executor is able to execute the message on destination chain.
+    /// @param dstChainId           The chain ID of the destination chain.
+    /// @param receiver             The address of the receiver on the destination chain.
+    /// @param srcExecutionService  The address of the execution service to use for the message.
+    /// @param srcModules           The source modules involved in the message sending.
+    /// @param options              Execution options for the message sent, encoded as bytes,
+    ///                             currently gas limit + native gas drop.
+    /// @param message              The message to be sent.
+    /// @return desc                The descriptor of the sent transaction:
+    /// - transactionId: the ID of the transaction that was sent.
+    /// - dbNonce: the database nonce of the batch containing the written entry for transaction.
+    /// - entryIndex: the index of the written entry for transaction within the batch.
     function interchainSend(
         uint64 dstChainId,
         bytes32 receiver,
@@ -82,7 +104,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return _interchainSend(dstChainId, receiver, srcExecutionService, srcModules, options, message);
     }
 
-    // @inheritdoc IInterchainClientV1
+    /// @notice A thin wrapper around `interchainSend` that allows to specify the receiver address as an EVM address.
     function interchainSendEVM(
         uint64 dstChainId,
         address receiver,
@@ -99,7 +121,15 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return _interchainSend(dstChainId, receiverBytes32, srcExecutionService, srcModules, options, message);
     }
 
-    // @inheritdoc IInterchainClientV1
+    /// @notice Executes a transaction that has been sent via the Interchain Communication Protocol.
+    /// Note: The transaction must be proven to be included in one of the InterchainDB batches.
+    /// Note: Transaction data includes the requested gas limit, but the executors could specify a different gas limit.
+    /// If the specified gas limit is lower than requested, the requested gas limit will be used.
+    /// Otherwise, the specified gas limit will be used.
+    /// This allows to execute the transactions with requested gas limit set too low.
+    /// @param gasLimit          The gas limit to use for the execution.
+    /// @param transaction       The transaction data.
+    /// @param proof             The Merkle proof for transaction execution, fetched from the source chain.
     function interchainExecute(
         uint256 gasLimit,
         bytes calldata transaction,
@@ -138,7 +168,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         );
     }
 
-    /// @inheritdoc IInterchainClientV1
+    /// @notice Writes the proof of execution for a transaction into the InterchainDB.
+    /// @dev Will revert if the transaction has not been executed.
+    /// @param transactionId    The ID of the transaction to write the proof for.
+    /// @return dbNonce         The database nonce of the batch containing the written proof for transaction.
+    /// @return entryIndex      The index of the written proof for transaction within the batch.
     function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex) {
         address executor = _txExecutor[transactionId];
         if (executor == address(0)) {
@@ -151,7 +185,14 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    // @inheritdoc IInterchainClientV1
+    /// @notice Determines if a transaction meets the criteria to be executed based on:
+    /// - If approved modules have verified the batch in the InterchainDB
+    /// - If the threshold of approved modules have been met
+    /// - If the optimistic window has passed for all modules
+    /// - If the Guard module (if opted in) has not submitted a batch that conflicts with the approved modules
+    /// @dev Will revert with a specific error message if the transaction is not executable.
+    /// @param encodedTx        The encoded transaction to check for executable status.
+    /// @param proof            The Merkle proof for the transaction, fetched from the source chain.
     function isExecutable(bytes calldata encodedTx, bytes32[] calldata proof) external view returns (bool) {
         InterchainTransaction memory icTx = _assertCorrectTransaction(encodedTx);
         // Check that options could be decoded
@@ -161,7 +202,25 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return true;
     }
 
-    // @inheritdoc IInterchainClientV1
+    /// @notice Returns the readiness status of a transaction to be executed.
+    /// @dev Some of the possible statuses have additional arguments that are returned:
+    /// - Ready: the transaction is ready to be executed.
+    /// - AlreadyExecuted: the transaction has already been executed.
+    ///   - `firstArg` is the transaction ID.
+    /// - BatchAwaitingResponses: not enough responses have been received for the transaction.
+    ///   - `firstArg` is the number of responses received.
+    ///   - `secondArg` is the number of responses required.
+    /// - BatchConflict: one of the modules have submitted a conflicting batch.
+    ///   - `firstArg` is the address of the module.
+    ///   - This is either one of the modules that the app trusts, or the Guard module used by the app.
+    /// - ReceiverNotICApp: the receiver is not an Interchain app.
+    ///  - `firstArg` is the receiver address.
+    /// - ReceiverZeroRequiredResponses: the app config requires zero responses for the transaction.
+    /// - TxWrongDstChainId: the destination chain ID does not match the local chain ID.
+    ///   - `firstArg` is the destination chain ID.
+    /// - UndeterminedRevert: the transaction will revert for another reason.
+    ///
+    /// Note: the arguments are abi-encoded bytes32 values (as their types could be different).
     // solhint-disable-next-line code-complexity
     function getTxReadinessV1(
         InterchainTransaction memory icTx,
@@ -197,17 +256,22 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
     }
 
-    // @inheritdoc IInterchainClientV1
+    /// @notice Returns the address of the executor for a transaction that has been sent to the local chain.
     function getExecutor(bytes calldata encodedTx) external view returns (address) {
         return _txExecutor[keccak256(encodedTx)];
     }
 
-    // @inheritdoc IInterchainClientV1
+    /// @notice Returns the address of the executor for a transaction that has been sent to the local chain.
     function getExecutorById(bytes32 transactionId) external view returns (address) {
         return _txExecutor[transactionId];
     }
 
-    // @inheritdoc IInterchainClientV1
+    /// @notice Returns the fee for sending an Interchain message.
+    /// @param dstChainId           The chain ID of the destination chain.
+    /// @param srcExecutionService  The address of the execution service to use for the message.
+    /// @param srcModules           The source modules involved in the message sending.
+    /// @param options              Execution options for the message sent, currently gas limit + native gas drop.
+    /// @param messageLen           The length of the message being sent.
     function getInterchainFee(
         uint64 dstChainId,
         address srcExecutionService,
@@ -232,7 +296,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, payloadSize, options);
     }
 
-    /// @inheritdoc IInterchainClientV1
+    /// @notice Returns the address of the linked client (as bytes32) for a specific chain ID.
+    /// @dev Will return 0x0 if no client is linked for the chain ID.
     function getLinkedClient(uint64 chainId) external view returns (bytes32) {
         if (chainId == block.chainid) {
             revert InterchainClientV1__ChainIdNotRemote(chainId);
@@ -240,7 +305,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return _linkedClient[chainId];
     }
 
-    /// @inheritdoc IInterchainClientV1
+    /// @notice Returns the EVM address of the linked client for a specific chain ID.
+    /// @dev Will return 0x0 if no client is linked for the chain ID.
+    /// Will revert if the client is not an EVM client.
     function getLinkedClientEVM(uint64 chainId) external view returns (address linkedClientEVM) {
         if (chainId == block.chainid) {
             revert InterchainClientV1__ChainIdNotRemote(chainId);
