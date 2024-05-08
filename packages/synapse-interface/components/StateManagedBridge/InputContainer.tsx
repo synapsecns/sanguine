@@ -1,4 +1,4 @@
-import { isNull, isNumber, isUndefined } from 'lodash'
+import { isNull, isNumber } from 'lodash'
 import toast from 'react-hot-toast'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useAccount } from 'wagmi'
@@ -12,7 +12,6 @@ import {
 import { ChainSelector } from '@/components/ui/ChainSelector'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { AmountInput } from '@/components/ui/AmountInput'
-import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
   ConnectToNetworkButton,
@@ -31,7 +30,6 @@ import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { MaxButton } from './MaxButton'
 import { formatAmount } from '../../utils/formatAmount'
-import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
