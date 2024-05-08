@@ -25,11 +25,15 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         bytes32 batchRoot;
     }
 
+    /// @notice The version of the Interchain DataBase. Must match the version of the batches.
     uint16 public constant DB_VERSION = 1;
 
+    /// @dev The entry values written on the local chain.
     bytes32[] internal _entryValues;
+    /// @dev The remote batches verified by the modules.
     mapping(address module => mapping(BatchKey batchKey => RemoteBatch batch)) internal _remoteBatches;
 
+    /// @dev Checks if the chain id is not the same as the local chain id.
     modifier onlyRemoteChainId(uint64 chainId) {
         if (chainId == block.chainid) {
             revert InterchainDB__ChainIdNotRemote(chainId);
@@ -39,13 +43,27 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     // ═══════════════════════════════════════════════ WRITER-FACING ═══════════════════════════════════════════════════
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Write data to the Interchain DataBase as a new entry in the current batch.
+    /// Note: there are no guarantees that this entry will be available for reading on any of the remote chains.
+    /// Use `requestBatchVerification` to ensure that the entry is available for reading on the destination chain.
+    /// @param dataHash     The hash of the data to be written to the Interchain DataBase as a new entry
+    /// @return dbNonce     The database nonce of the batch containing the written entry
+    /// @return entryIndex  The index of the written entry within the batch
     function writeEntry(bytes32 dataHash) external returns (uint64 dbNonce, uint64 entryIndex) {
         InterchainEntry memory entry = _writeEntry(dataHash);
         (dbNonce, entryIndex) = (entry.dbNonce, entry.entryIndex);
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Request the given Interchain Modules to verify an existing batch.
+    /// If the batch is not finalized, the module will verify it after finalization.
+    /// For the finalized batch the batch root is already available, and the module can verify it immediately.
+    /// Note: every module has a separate fee paid in the native gas token of the source chain,
+    /// and `msg.value` must be equal to the sum of all fees.
+    /// Note: this method is permissionless, and anyone can request verification for any batch.
+    /// @dev Will revert if the batch with the given nonce does not exist.
+    /// @param dstChainId    The chain id of the destination chain
+    /// @param dbNonce       The database nonce of the existing batch
+    /// @param srcModules    The source chain addresses of the Interchain Modules to use for verification
     function requestBatchVerification(
         uint64 dstChainId,
         uint64 dbNonce,
@@ -59,7 +77,15 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         _requestVerification(dstChainId, batch, srcModules);
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Write data to the Interchain DataBase as a new entry in the current batch.
+    /// Then request the Interchain Modules to verify the batch containing the written entry on the destination chain.
+    /// See `writeEntry` and `requestBatchVerification` for more details.
+    /// @dev Will revert if the empty array of modules is provided.
+    /// @param dstChainId   The chain id of the destination chain
+    /// @param dataHash     The hash of the data to be written to the Interchain DataBase as a new entry
+    /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
+    /// @return dbNonce     The database nonce of the batch containing the written entry
+    /// @return entryIndex  The index of the written entry within the batch
     function writeEntryWithVerification(
         uint64 dstChainId,
         bytes32 dataHash,
@@ -79,7 +105,13 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     // ═══════════════════════════════════════════════ MODULE-FACING ═══════════════════════════════════════════════════
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Allows the Interchain Module to verify the batch coming from the remote chain.
+    /// The module SHOULD verify the exact finalized batch from the remote chain. If the batch with a given nonce
+    /// is not finalized or does not exist, module CAN verify it with an empty root value. Once the batch is
+    /// finalized, the module SHOULD re-verify the batch with the correct root value.
+    /// Note: The DB will only accept the batch of the same version as the DB itself.
+    /// @dev Will revert if the batch with the same nonce but a different non-empty root is already verified.
+    /// @param versionedBatch   The versioned Interchain Batch to verify
     function verifyRemoteBatch(bytes calldata versionedBatch) external {
         InterchainBatch memory batch = _assertCorrectBatch(versionedBatch);
         BatchKey batchKey = InterchainBatchLib.encodeBatchKey({srcChainId: batch.srcChainId, dbNonce: batch.dbNonce});
@@ -104,7 +136,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Returns the list of leafs of the finalized batch with the given nonce.
+    /// Note: the leafs are ordered by the index of the written entry in the current batch,
+    /// and the leafs value match the value of the written entry (srcWriter + dataHash hashed together).
+    /// @dev Will revert if the batch with the given nonce does not exist, or is not finalized.
+    /// @param dbNonce      The database nonce of the finalized batch
     function getBatchLeafs(uint64 dbNonce) external view returns (bytes32[] memory leafs) {
         uint256 batchSize = getBatchSize(dbNonce);
         leafs = new bytes32[](batchSize);
@@ -113,7 +149,15 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         }
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Returns the list of leafs of the finalized batch with the given nonce,
+    /// paginated by the given start and end indexes. The end index is exclusive.
+    /// Note: this is useful when the batch contains a large number of leafs, and calling `getBatchLeafs`
+    /// would result in a gas limit exceeded error.
+    /// @dev Will revert if the batch with the given nonce does not exist, or is not finalized.
+    /// Will revert if the provided range is invalid.
+    /// @param dbNonce      The database nonce of the finalized batch
+    /// @param start        The start index of the paginated leafs, inclusive
+    /// @param end          The end index of the paginated leafs, exclusive
     function getBatchLeafsPaginated(
         uint64 dbNonce,
         uint64 start,
@@ -133,26 +177,46 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         }
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Get the Merkle proof of inclusion for the entry with the given index
+    /// in the finalized batch with the given nonce.
+    /// @dev Will revert if the batch with the given nonce does not exist, or is not finalized.
+    /// Will revert if the entry with the given index does not exist within the batch.
+    /// @param dbNonce      The database nonce of the finalized batch
+    /// @param entryIndex   The index of the written entry within the batch
+    /// @return proof       The Merkle proof of inclusion for the entry
     function getEntryProof(uint64 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof) {
         // In "no batching" mode: the batch root is the same as the entry value, hence the proof is empty
         _assertEntryExists(dbNonce, entryIndex);
         return new bytes32[](0);
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Get the fee for writing data to the Interchain DataBase, and verifying it on the destination chain
+    /// using the provided Interchain Modules.
+    /// @dev Will revert if the empty array of modules is provided.
+    /// @param dstChainId   The chain id of the destination chain
+    /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
     function getInterchainFee(uint64 dstChainId, address[] calldata srcModules) external view returns (uint256 fee) {
         (, fee) = _getModuleFees(dstChainId, getDBNonce(), srcModules);
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Get the index of the next entry to be written to the database.
+    /// @return dbNonce      The database nonce of the batch including the next entry
+    /// @return entryIndex   The index of the next entry within that batch
     function getNextEntryIndex() external view returns (uint64 dbNonce, uint64 entryIndex) {
         // In "no batching" mode: entry index is 0, batch size is 1
         dbNonce = getDBNonce();
         entryIndex = 0;
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Check if the batch is verified by the Interchain Module on the destination chain.
+    /// - returned value `BATCH_UNVERIFIED` indicates that the module has not verified the batch.
+    /// - returned value `BATCH_CONFLICT` indicates that the module has verified a different batch root
+    /// for the same batch key.
+    /// @param dstModule    The destination chain addresses of the Interchain Modules to use for verification
+    /// @param batch        The Interchain Batch to check
+    /// @return moduleVerifiedAt    The block timestamp at which the batch was verified by the module,
+    /// BATCH_UNVERIFIED if the module has not verified the batch,
+    /// BATCH_CONFLICT if the module has verified a different batch root for the same batch key.
     function checkBatchVerification(
         address dstModule,
         InterchainBatch memory batch
@@ -172,7 +236,9 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         return remoteBatch.batchRoot == batch.batchRoot ? remoteBatch.verifiedAt : BATCH_CONFLICT;
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Get the versioned Interchain Batch with the given nonce.
+    /// Note: will return a batch with an empty root if the batch does not exist, or is not finalized.
+    /// @param dbNonce      The database nonce of the batch
     function getVersionedBatch(uint64 dbNonce) external view returns (bytes memory versionedBatch) {
         InterchainBatch memory batch = getBatch(dbNonce);
         return VersionedPayloadLib.encodeVersionedPayload({
@@ -181,7 +247,9 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         });
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Get the batch root containing the Interchain Entry with the given index.
+    /// @param entry         The Interchain Entry to get the batch root for
+    /// @param proof         The Merkle proof of inclusion for the entry in the batch
     function getBatchRoot(InterchainEntry memory entry, bytes32[] calldata proof) external pure returns (bytes32) {
         return BatchingV1Lib.getBatchRoot({
             srcWriter: entry.srcWriter,
@@ -191,14 +259,18 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         });
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Returns the size of the finalized batch with the given nonce.
+    /// @dev Will return 0 for non-existent or non-finalized batches.
+    /// @param dbNonce      The database nonce of the finalized batch
     function getBatchSize(uint64 dbNonce) public view returns (uint64) {
         // In "no batching" mode: the finalized batch size is 1, the pending batch size is 0
         // We also return 0 for non-existent batches
         return dbNonce < getDBNonce() ? 1 : 0;
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Get the finalized Interchain Batch with the given nonce.
+    /// @dev Will return a batch with an empty root if the batch does not exist, or is not finalized.
+    /// @param dbNonce      The database nonce of the finalized batch
     function getBatch(uint64 dbNonce) public view returns (InterchainBatch memory) {
         // In "no batching" mode: the batch root is the same as the entry hash.
         // For non-finalized or non-existent batches, the batch root is 0.
@@ -206,13 +278,20 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         return InterchainBatchLib.constructLocalBatch(dbNonce, batchRoot);
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Get the Interchain Entry's value written on the local chain with the given batch nonce and entry index.
+    /// Entry value is calculated as the hash of the writer address and the written data hash.
+    /// Note: the batch does not have to be finalized to fetch the entry value.
+    /// @dev Will revert if the batch with the given nonce does not exist,
+    /// or the entry with the given index does not exist within the batch.
+    /// @param dbNonce      The database nonce of the existing batch
+    /// @param entryIndex   The index of the written entry within the batch
     function getEntryValue(uint64 dbNonce, uint64 entryIndex) public view returns (bytes32) {
         _assertEntryExists(dbNonce, entryIndex);
         return _entryValues[dbNonce];
     }
 
-    /// @inheritdoc IInterchainDB
+    /// @notice Get the nonce of the database, which is incremented every time a new batch is finalized.
+    /// This is the nonce of the current non-finalized batch.
     function getDBNonce() public view returns (uint64) {
         // We can do the unsafe cast here as writing more than 2^64 entries is practically impossible
         return uint64(_entryValues.length);

@@ -32,7 +32,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     /// @dev Recipient of the fees collected by the module.
     address internal _feeRecipient;
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Address of the gas oracle used for estimating the verification fees.
     address public gasOracle;
 
     constructor(address interchainDB, address owner_) InterchainModule(interchainDB) Ownable(owner_) {
@@ -41,12 +41,14 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
 
     // ═══════════════════════════════════════════════ PERMISSIONED ════════════════════════════════════════════════════
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Adds a new verifier to the module.
+    /// @dev Could be only called by the owner. Will revert if the verifier is already added.
     function addVerifier(address verifier) external onlyOwner {
         _addVerifier(verifier);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Adds a list of new verifiers to the module.
+    /// @dev Could be only called by the owner. Will revert if any of the verifiers is already added.
     function addVerifiers(address[] calldata verifiers) external onlyOwner {
         uint256 length = verifiers.length;
         for (uint256 i = 0; i < length; ++i) {
@@ -54,12 +56,14 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
         }
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Removes a verifier from the module.
+    /// @dev Could be only called by the owner. Will revert if the verifier is not added.
     function removeVerifier(address verifier) external onlyOwner {
         _removeVerifier(verifier);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Removes a list of verifiers from the module.
+    /// @dev Could be only called by the owner. Will revert if any of the verifiers is not added.
     function removeVerifiers(address[] calldata verifiers) external onlyOwner {
         uint256 length = verifiers.length;
         for (uint256 i = 0; i < length; ++i) {
@@ -67,13 +71,15 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
         }
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Sets the threshold of the module.
+    /// @dev Could be only called by the owner. Will revert if the threshold is zero.
     function setThreshold(uint256 threshold) external onlyOwner {
         _verifiers.modifyThreshold(threshold);
         emit ThresholdSet(threshold);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Sets the address of the fee collector, which will have the verification fees forwarded to it.
+    /// @dev Could be only called by the owner.
     function setFeeRecipient(address feeRecipient) external onlyOwner {
         if (feeRecipient == address(0)) {
             revert SynapseModule__FeeRecipientZeroAddress();
@@ -82,7 +88,9 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
         emit FeeRecipientSet(feeRecipient);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Sets the fraction of the accumulated fees to be paid to caller of `claimFees`.
+    /// This encourages rational actors to call the function as soon as claim fee is higher than the gas cost.
+    /// @dev Could be only called by the owner. Could not exceed 1% (1e16).
     function setClaimerFraction(uint256 claimerFraction) external onlyOwner {
         if (claimerFraction > MAX_CLAIMER_FRACTION) {
             revert ClaimableFees__ClaimerFractionAboveMax(claimerFraction, MAX_CLAIMER_FRACTION);
@@ -91,7 +99,8 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
         emit ClaimerFractionSet(claimerFraction);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Sets the address of the gas oracle to be used for estimating the verification fees.
+    /// @dev Could be only called by the owner. Will revert if the gas oracle is not a contract.
     function setGasOracle(address gasOracle_) external onlyOwner {
         if (gasOracle_.code.length == 0) {
             revert SynapseModule__GasOracleNotContract(gasOracle_);
@@ -100,7 +109,10 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
         emit GasOracleSet(gasOracle_);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Sets the estimated gas limit for verifying a batch on the given chain.
+    /// @dev Could be only called by the owner.
+    /// @param chainId      The chain ID for which to set the gas limit
+    /// @param gasLimit     The new gas limit for the verification on the specified chain
     function setVerifyGasLimit(uint64 chainId, uint256 gasLimit) external onlyOwner {
         _verifyGasLimit[chainId] = gasLimit;
         emit VerifyGasLimitSet(chainId, gasLimit);
@@ -108,7 +120,11 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
 
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Verifies a batch from the remote chain using a set of verifier signatures.
+    /// If the threshold is met, the batch will be marked as verified in the Interchain DataBase.
+    /// @dev List of recovered signers from the signatures must be sorted in the ascending order.
+    /// @param encodedBatch The encoded batch to verify
+    /// @param signatures   Signatures used to verify the batch, concatenated
     function verifyRemoteBatch(bytes calldata encodedBatch, bytes calldata signatures) external {
         bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch));
         _verifiers.verifySignedHash(ethSignedHash, signatures);
@@ -117,22 +133,23 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Returns the list of verifiers for the module.
     function getVerifiers() external view returns (address[] memory) {
         return _verifiers.getSigners();
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Checks if the given account is a verifier for the module.
     function isVerifier(address account) external view returns (bool) {
         return _verifiers.isSigner(account);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Gets the threshold of the module. This is the minimum number of signatures required for verification.
     function getThreshold() public view returns (uint256) {
         return _verifiers.getThreshold();
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Returns the estimated gas limit for verifying a batch on the given chain.
+    /// Note: this defaults to DEFAULT_VERIFY_GAS_LIMIT if not set.
     function getVerifyGasLimit(uint64 chainId) public view override returns (uint256 gasLimit) {
         gasLimit = _verifyGasLimit[chainId];
         if (gasLimit == 0) {
