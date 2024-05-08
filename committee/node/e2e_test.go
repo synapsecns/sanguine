@@ -41,10 +41,14 @@ func (n *NodeSuite) TestNodeSuite() {
 		return n.CheckTransactionStatusCount(1, db.Completed, equal)
 	})
 
+}
+
+func (n *NodeSuite) TestLotsOfTransactions() {
+	_, originDB := n.deployManager.GetInterchainDB(n.GetTestContext(), n.originChain)
 	// spam verifications
 	for i := 0; i < 10; i++ {
 		axxt := n.originChain.GetTxContext(n.GetTestContext(), nil)
-		tx, err = originDB.WriteEntryWithVerification(
+		tx, err := originDB.WriteEntryWithVerification(
 			axxt.TransactOpts,
 			n.destChain.GetBigChainID().Uint64(),
 			sha256.Sum256([]byte(gofakeit.BeerYeast())),
@@ -58,7 +62,7 @@ func (n *NodeSuite) TestNodeSuite() {
 	}
 
 	n.Eventually(func() bool {
-		return n.CheckTransactionStatusCount(6, db.Completed, equal)
+		return n.CheckTransactionStatusCount(11, db.Completed, equal)
 	})
 }
 
