@@ -37,16 +37,7 @@ func (n *NodeSuite) TestNodeSuite() {
 	n.Require().Equal(uint64(1), recp.Status)
 
 	n.Eventually(func() bool {
-		// mine a block
-		n.originChain.GetTxContext(n.GetTestContext(), nil)
-
-		var resStatus []db.SignRequest
-		for _, node := range n.nodes {
-			resStatus, err = node.DB().GetQuoteResultsByStatus(n.GetTestContext(), db.Completed)
-			n.Require().NoError(err)
-		}
-
-		return len(resStatus) > 0
+		return n.CheckTransactionStatusCount(1, db.Completed, equal)
 	})
 
 	// spam verifications
@@ -59,40 +50,31 @@ func (n *NodeSuite) TestNodeSuite() {
 			[]common.Address{n.originModule.Address()},
 		)
 		n.Require().NoError(err)
-		// wait for the transaction to be mined
 		n.originChain.WaitForConfirmation(n.GetTestContext(), tx)
 		recp, err := n.originChain.TransactionReceipt(n.GetTestContext(), tx.Hash())
 		n.Require().NoError(err)
 		n.Require().Equal(uint64(1), recp.Status)
 	}
-	// mine couple blocks
-	for i := 0; i < 4; i++ {
-		n.originChain.GetTxContext(n.GetTestContext(), nil)
-	}
 
+	n.Eventually(func() bool {
+		return n.CheckTransactionStatusCount(6, db.Completed, equal)
+	})
+}
+
+func (n *NodeSuite) CheckTransactionStatusCount(expected int, status db.SynapseRequestStatus, cmp func(int, int) bool) bool {
 	var resStatus []db.SignRequest
+	var err error
 	for _, node := range n.nodes {
-		n.T().Log("NODE:", node.Address())
-		resStatus, err = node.DB().GetQuoteResultsByStatus(n.GetTestContext(), db.Completed)
+		resStatus, err = node.DB().GetQuoteResultsByStatus(n.GetTestContext(), status)
 		n.Require().NoError(err)
-		n.T().Log("Completed", len(resStatus))
-
-		broadcasted, err := node.DB().GetQuoteResultsByStatus(n.GetTestContext(), db.Broadcast)
-		n.Require().NoError(err)
-		n.T().Log("Broadcasted", len(broadcasted))
-
-		seen, err := node.DB().GetQuoteResultsByStatus(n.GetTestContext(), db.Seen)
-		n.Require().NoError(err)
-		n.T().Log("Seen", len(seen))
-
-		signed, err := node.DB().GetQuoteResultsByStatus(n.GetTestContext(), db.Signed)
-		n.Require().NoError(err)
-		n.T().Log("Signed", len(signed))
-		n.T().Log("-----------------------------------")
 	}
+	return cmp(expected, len(resStatus))
+}
 
-	for i := 0; i < 4; i++ {
-		n.originChain.GetTxContext(n.GetTestContext(), nil)
-	}
-	n.Require().Equal(11, len(resStatus))
+func equal(e, a int) bool {
+	return e == a
+}
+
+func greaterThan(e, a int) bool {
+	return e > a
 }
