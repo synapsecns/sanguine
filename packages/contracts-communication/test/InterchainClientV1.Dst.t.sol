@@ -3,8 +3,7 @@ pragma solidity 0.8.20;
 
 import {IInterchainClientV1} from "../contracts/interfaces/IInterchainClientV1.sol";
 import {AppConfigV1} from "../contracts/libs/AppConfig.sol";
-import {InterchainBatch} from "../contracts/libs/InterchainBatch.sol";
-import {InterchainEntryLib} from "../contracts/libs/InterchainEntry.sol";
+import {InterchainEntry, InterchainEntryLib} from "../contracts/libs/InterchainEntry.sol";
 import {OptionsV1} from "../contracts/libs/Options.sol";
 import {VersionedPayloadLib} from "../contracts/libs/VersionedPayload.sol";
 
@@ -57,8 +56,6 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     address public receiverEOA = makeAddr("Receiver EOA");
     address public receiverNotICApp;
 
-    bytes32[] public emptyProof;
-
     address[] public oneModuleA;
     address[] public twoModules;
 
@@ -67,7 +64,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     // - Almost verified: verified exactly "optimistic period" ago
     // - Just verified: verified exactly "optimistic period + 1 second" ago
     // - Over verified: verified long ago
-    // - Conflict: module verified a conflicting batch
+    // - Conflict: module verified a conflicting entry
     // Only "just verified" and "over verified" should be considered as verified.
     uint256 public constant INITIAL_TS = 1_704_067_200; // 2024-01-01 00:00:00 UTC
 
@@ -105,13 +102,13 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     )
         internal
     {
-        InterchainBatch memory batch = InterchainBatch({
+        InterchainEntry memory entry = InterchainEntry({
             srcChainId: REMOTE_CHAIN_ID,
             dbNonce: desc.dbNonce,
-            batchRoot: InterchainEntryLib.getEntryValue({srcWriter: MOCK_REMOTE_CLIENT, dataHash: desc.transactionId})
+            entryValue: InterchainEntryLib.getEntryValue({srcWriter: MOCK_REMOTE_CLIENT, dataHash: desc.transactionId})
         });
         vm.mockCall(
-            icDB, abi.encodeCall(InterchainDBMock.checkBatchVerification, (dstModule, batch)), abi.encode(verifiedAt)
+            icDB, abi.encodeCall(InterchainDBMock.checkEntryVerification, (dstModule, entry)), abi.encode(verifiedAt)
         );
     }
 
@@ -266,21 +263,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         internal
         view
     {
-        assertCorrectReadiness(icTx, emptyProof, expected, expectedFirstArg, expectedSecondArg);
-    }
-
-    function assertCorrectReadiness(
-        InterchainTransaction memory icTx,
-        bytes32[] memory proof,
-        IInterchainClientV1.TxReadiness expected,
-        uint256 expectedFirstArg,
-        uint256 expectedSecondArg
-    )
-        internal
-        view
-    {
-        (IInterchainClientV1.TxReadiness actual, bytes32 firstArg, bytes32 secondArg) =
-            icClient.getTxReadinessV1(icTx, proof);
+        (IInterchainClientV1.TxReadiness actual, bytes32 firstArg, bytes32 secondArg) = icClient.getTxReadinessV1(icTx);
         assertEq(uint256(actual), uint256(expected));
         assertEq(firstArg, bytes32(expectedFirstArg));
         assertEq(secondArg, bytes32(expectedSecondArg));
@@ -288,11 +271,11 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
-    function executeTransaction(bytes memory encodedTx, bytes32[] memory proof) internal {
+    function executeTransaction(bytes memory encodedTx) internal {
         OptionsV1 memory options = getOptions();
         deal(executor, options.gasAirdrop);
         vm.prank(executor);
-        icClient.interchainExecute{value: options.gasAirdrop}(options.gasLimit, encodedTx, proof);
+        icClient.interchainExecute{value: options.gasAirdrop}(options.gasLimit, encodedTx);
     }
 
     function prepareExecuteTest(
@@ -322,7 +305,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
             verificationTimes: toArr(OVER_VERIFIED, OVER_VERIFIED)
         });
         bytes memory encodedTx = getEncodedTx(icTx);
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
         skip(1 days);
     }
 
@@ -342,9 +325,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         expectAppReceiveCall(options);
         expectEventInterchainTransactionReceived(icTx, desc);
         bytes memory encodedTx = getEncodedTx(icTx);
-        assertTrue(icClient.isExecutable(encodedTx, emptyProof));
+        assertTrue(icClient.isExecutable(encodedTx));
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.Ready);
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.AlreadyExecuted, uint256(desc.transactionId));
         assertExecutorSaved(icTx, desc);
         assertEq(dstReceiver.balance, options.gasAirdrop);
@@ -369,23 +352,23 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     {
         (InterchainTransaction memory icTx,) = prepareExecuteTest(required, guardFlag, times);
         bytes memory encodedTx = getEncodedTx(icTx);
-        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.BatchAwaitingResponses, actual, required);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.EntryAwaitingResponses, actual, required);
         expectRevertResponsesAmountBelowMin({actual: actual, required: required});
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         expectRevertResponsesAmountBelowMin({actual: actual, required: required});
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 
-    /// @dev Execute the scenario where a batch conflict has been detected.
+    /// @dev Execute the scenario where an entry conflict has been detected.
     /// Both `isExecutable` and `interchainExecute` should revert.
-    function checkBatchConflict(address module, uint256 required, uint256 guardFlag, uint256[] memory times) internal {
+    function checkEntryConflict(address module, uint256 required, uint256 guardFlag, uint256[] memory times) internal {
         (InterchainTransaction memory icTx,) = prepareExecuteTest(required, guardFlag, times);
         bytes memory encodedTx = getEncodedTx(icTx);
-        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.BatchConflict, module);
-        expectRevertBatchConflict(module);
-        icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertBatchConflict(module);
-        executeTransaction(encodedTx, emptyProof);
+        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.EntryConflict, module);
+        expectRevertEntryConflict(module);
+        icClient.isExecutable(encodedTx);
+        expectRevertEntryConflict(module);
+        executeTransaction(encodedTx);
     }
 
     function checkScenario(uint256 required, uint256 guardFlag, uint256 indexA, uint256 indexB) internal {
@@ -394,11 +377,11 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         uint256[] memory times = toArr(timeA, timeB);
         // Check for conflicts
         if (timeA == CONFLICT) {
-            checkBatchConflict({module: icModuleA, required: required, guardFlag: guardFlag, times: times});
+            checkEntryConflict({module: icModuleA, required: required, guardFlag: guardFlag, times: times});
             return;
         }
         if (timeB == CONFLICT) {
-            checkBatchConflict({module: icModuleB, required: required, guardFlag: guardFlag, times: times});
+            checkEntryConflict({module: icModuleB, required: required, guardFlag: guardFlag, times: times});
             return;
         }
         uint256 actual = 0;
@@ -436,7 +419,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         addGuardConflict(defaultGuard);
         uint256 timeA = getTimestampFixture(indexA);
         uint256 timeB = getTimestampFixture(indexB);
-        checkBatchConflict({module: defaultGuard, required: 1, guardFlag: GUARD_DEFAULT, times: toArr(timeA, timeB)});
+        checkEntryConflict({module: defaultGuard, required: 1, guardFlag: GUARD_DEFAULT, times: toArr(timeA, timeB)});
     }
 
     function test_execute_1_2_customGuard(uint256 indexA, uint256 indexB) public {
@@ -448,7 +431,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         addGuardConflict(customGuard);
         uint256 timeA = getTimestampFixture(indexA);
         uint256 timeB = getTimestampFixture(indexB);
-        checkBatchConflict({module: customGuard, required: 1, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
+        checkEntryConflict({module: customGuard, required: 1, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
     }
 
     /// @dev Default guard conflict should not affect the behavior if the app opted-in for a custom guard.
@@ -464,7 +447,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         addGuardConflict(customGuard);
         uint256 timeA = getTimestampFixture(indexA);
         uint256 timeB = getTimestampFixture(indexB);
-        checkBatchConflict({module: customGuard, required: 1, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
+        checkEntryConflict({module: customGuard, required: 1, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
     }
 
     // ═════════════════════════════════════ APP CONFIG: 2 OUT OF 2 RESPONSES ══════════════════════════════════════════
@@ -488,7 +471,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         addGuardConflict(defaultGuard);
         uint256 timeA = getTimestampFixture(indexA);
         uint256 timeB = getTimestampFixture(indexB);
-        checkBatchConflict({module: defaultGuard, required: 2, guardFlag: GUARD_DEFAULT, times: toArr(timeA, timeB)});
+        checkEntryConflict({module: defaultGuard, required: 2, guardFlag: GUARD_DEFAULT, times: toArr(timeA, timeB)});
     }
 
     function test_execute_2_2_customGuard(uint256 indexA, uint256 indexB) public {
@@ -500,7 +483,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         addGuardConflict(customGuard);
         uint256 timeA = getTimestampFixture(indexA);
         uint256 timeB = getTimestampFixture(indexB);
-        checkBatchConflict({module: customGuard, required: 2, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
+        checkEntryConflict({module: customGuard, required: 2, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
     }
 
     /// @dev Default guard conflict should not affect the behavior if the app opted-in for a custom guard.
@@ -516,7 +499,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         addGuardConflict(customGuard);
         uint256 timeA = getTimestampFixture(indexA);
         uint256 timeB = getTimestampFixture(indexB);
-        checkBatchConflict({module: customGuard, required: 2, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
+        checkEntryConflict({module: customGuard, required: 2, guardFlag: GUARD_CUSTOM, times: toArr(timeA, timeB)});
     }
 
     // ═══════════════════════════════════════════ EXECUTE: MISC REVERTS ═══════════════════════════════════════════════
@@ -533,9 +516,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory invalidVersionTx = VersionedPayloadLib.encodeVersionedPayload(version, abi.encode(icTx));
         makeTxDescriptorExecutable(getTxDescriptor(icTx));
         expectRevertTxVersionMismatch(version, CLIENT_VERSION);
-        icClient.isExecutable(invalidVersionTx, emptyProof);
+        icClient.isExecutable(invalidVersionTx);
         expectRevertTxVersionMismatch(version, CLIENT_VERSION);
-        executeTransaction(invalidVersionTx, emptyProof);
+        executeTransaction(invalidVersionTx);
     }
 
     function test_execute_revert_srcChainNotRemote() public {
@@ -544,9 +527,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 
     function test_execute_revert_srcChainNotLinked() public {
@@ -555,9 +538,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertChainIdNotLinked(UNKNOWN_CHAIN_ID);
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         expectRevertChainIdNotLinked(UNKNOWN_CHAIN_ID);
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 
     function test_execute_revert_dstChainIncorrect() public {
@@ -566,9 +549,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.TxWrongDstChainId, UNKNOWN_CHAIN_ID);
         expectRevertDstChainIdNotLocal(UNKNOWN_CHAIN_ID);
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         expectRevertDstChainIdNotLocal(UNKNOWN_CHAIN_ID);
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 
     function test_execute_revert_revert_nonZeroEntryIndex() public {
@@ -599,9 +582,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
         vm.expectRevert();
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         vm.expectRevert();
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 
     function test_execute_revert_invalidOptionsV0() public {
@@ -611,9 +594,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         expectRevertVersionInvalid(0);
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         expectRevertVersionInvalid(0);
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 
     function test_execute_revert_invalidOptionsV1() public {
@@ -625,9 +608,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
         vm.expectRevert();
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         vm.expectRevert();
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 
     function test_execute_revert_receiverEOA() public {
@@ -636,9 +619,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ReceiverNotICApp, receiverEOA);
         expectRevertReceiverNotICApp(receiverEOA);
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         expectRevertReceiverNotICApp(receiverEOA);
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 
     function test_execute_revert_receiverNotICApp() public {
@@ -647,9 +630,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = encodeAndMakeExecutable(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ReceiverNotICApp, receiverNotICApp);
         expectRevertReceiverNotICApp(receiverNotICApp);
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         expectRevertReceiverNotICApp(receiverNotICApp);
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 
     function test_execute_revert_alreadyExecuted() public {
@@ -657,9 +640,9 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = getEncodedTx(icTx);
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.AlreadyExecuted, uint256(desc.transactionId));
         expectRevertTxAlreadyExecuted(desc.transactionId);
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         expectRevertTxAlreadyExecuted(desc.transactionId);
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 
     function test_execute_revert_zeroRequiredResponses() public {
@@ -669,8 +652,8 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         mockCheckVerification(icModuleA, desc, justVerTS());
         assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.ReceiverZeroRequiredResponses, dstReceiver);
         expectRevertReceiverZeroRequiredResponses(dstReceiver);
-        icClient.isExecutable(encodedTx, emptyProof);
+        icClient.isExecutable(encodedTx);
         expectRevertReceiverZeroRequiredResponses(dstReceiver);
-        executeTransaction(encodedTx, emptyProof);
+        executeTransaction(encodedTx);
     }
 }

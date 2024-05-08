@@ -115,7 +115,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
-    function expectWriteEntryWithVerificationCall(
+    function expectWriteEntryRequestVerificationCall(
         InterchainTransaction memory icTx,
         InterchainTxDescriptor memory desc,
         uint256 interchainFee,
@@ -124,7 +124,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         internal
     {
         bytes memory expectedCalldata = abi.encodeCall(
-            InterchainDBMock.writeEntryWithVerification, (icTx.dstChainId, desc.transactionId, srcModules)
+            InterchainDBMock.writeEntryRequestVerification, (icTx.dstChainId, desc.transactionId, srcModules)
         );
         vm.expectCall({callee: icDB, msgValue: interchainFee, data: expectedCalldata, count: 1});
     }
@@ -162,7 +162,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
         // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
         expectRequestTxExecutionCall(icTx, desc, MOCK_EXECUTION_FEE);
         expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, MOCK_EXECUTION_FEE);
         vm.prank(srcSender);
@@ -179,7 +179,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     function test_interchainSend_withExecService_icFeeNonZero_execFeeZero() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
         expectRequestTxExecutionCall(icTx, desc, 0);
         expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, 0);
         vm.prank(srcSender);
@@ -197,7 +197,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiver, interchainFee: 0, srcModules: twoModules});
         // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, 0, twoModules);
         expectRequestTxExecutionCall(icTx, desc, MOCK_EXECUTION_FEE);
         expectEventInterchainTransactionSent(icTx, desc, 0, MOCK_EXECUTION_FEE);
         vm.prank(srcSender);
@@ -214,7 +214,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     function test_interchainSend_withExecService_icFeeZero_execFeeZero() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiver, interchainFee: 0, srcModules: twoModules});
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, 0, twoModules);
         expectRequestTxExecutionCall(icTx, desc, 0);
         expectEventInterchainTransactionSent(icTx, desc, 0, 0);
         vm.prank(srcSender);
@@ -355,7 +355,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             srcModules: twoModules
         });
         // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
         expectRequestTxExecutionCall(icTx, desc, MOCK_EXECUTION_FEE);
         expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, MOCK_EXECUTION_FEE);
         vm.prank(srcSender);
@@ -375,7 +375,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             interchainFee: MOCK_INTERCHAIN_FEE,
             srcModules: twoModules
         });
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
         expectRequestTxExecutionCall(icTx, desc, 0);
         expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, 0);
         vm.prank(srcSender);
@@ -393,7 +393,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: 0, srcModules: twoModules});
         // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, 0, twoModules);
         expectRequestTxExecutionCall(icTx, desc, MOCK_EXECUTION_FEE);
         expectEventInterchainTransactionSent(icTx, desc, 0, MOCK_EXECUTION_FEE);
         vm.prank(srcSender);
@@ -410,7 +410,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     function test_interchainSendEVM_withExecService_icFeeZero_execFeeZero() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: 0, srcModules: twoModules});
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, 0, twoModules);
         expectRequestTxExecutionCall(icTx, desc, 0);
         expectEventInterchainTransactionSent(icTx, desc, 0, 0);
         vm.prank(srcSender);

@@ -4,12 +4,14 @@ pragma solidity ^0.8.0;
 import {InterchainTransaction, InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 
 interface IInterchainClientV1 {
-    // TODO: batch -> entry
+    // TODO: remove batch-related
     enum TxReadiness {
         Ready,
         AlreadyExecuted,
         BatchAwaitingResponses,
         BatchConflict,
+        EntryAwaitingResponses,
+        EntryConflict,
         ReceiverNotICApp,
         ReceiverZeroRequiredResponses,
         TxWrongDstChainId,
@@ -20,6 +22,7 @@ interface IInterchainClientV1 {
     error InterchainClientV1__ChainIdNotLinked(uint64 chainId);
     error InterchainClientV1__ChainIdNotRemote(uint64 chainId);
     error InterchainClientV1__DstChainIdNotLocal(uint64 chainId);
+    error InterchainClientV1__EntryConflict(address module);
     error InterchainClientV1__ExecutionServiceZeroAddress();
     error InterchainClientV1__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
     error InterchainClientV1__GasLeftBelowMin(uint256 gasLeft, uint256 minRequired);
