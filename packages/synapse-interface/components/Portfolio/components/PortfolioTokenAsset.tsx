@@ -13,6 +13,8 @@ import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
 import GasIcon from '@/components/icons/GasIcon'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+import { formatAmount } from '@/utils/formatAmount'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()
@@ -39,8 +41,8 @@ export const PortfolioTokenAsset = ({
     ? decimals
     : decimals[portfolioChainId]
 
-  const parsedBalance = getParsedBalance(balance, tokenDecimals, 4)
-  const parsedBalanceLong = getParsedBalance(balance, tokenDecimals, 8)
+  const parsedBalance = getParsedBalance(balance, tokenDecimals)
+  const formattedBalance = formatAmount(parsedBalance)
 
   const isDisabled = false
   const isPortfolioChainSelected = fromChainId === portfolioChainId
@@ -80,13 +82,13 @@ export const PortfolioTokenAsset = ({
               </div>
             ) : (
               <div className="whitespace-nowrap">
-                {parsedBalanceLong} {symbol}
+                {parsedBalance} {symbol}
               </div>
             )
           }
         >
           <div>
-            {parsedBalance} {symbol}
+            {formattedBalance} {symbol}
           </div>
         </HoverTooltip>
 

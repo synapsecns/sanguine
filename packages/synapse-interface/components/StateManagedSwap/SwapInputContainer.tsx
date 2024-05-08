@@ -30,6 +30,7 @@ import { joinClassNames } from '@/utils/joinClassNames'
 import { MaxButton } from '../StateManagedBridge/MaxButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatAmount } from '@/utils/formatAmount'
+import { getParsedBalance } from '@/utils/getParsedBalance'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -55,10 +56,8 @@ export const SwapInputContainer = () => {
   )
 
   const balance = tokenData?.balance
-  const parsedBalance = formatBigIntToString(
-    balance,
-    tokenData?.token?.decimals[swapChainId]
-  )
+  const decimals = tokenData?.token?.decimals[swapChainId]
+  const parsedBalance = getParsedBalance(balance, decimals)
   const formattedBalance = formatAmount(parsedBalance)
 
   const isInputMax = parsedBalance === swapFromValue

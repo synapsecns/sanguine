@@ -1,7 +1,7 @@
 export const trimTrailingZeroesAfterDecimal = (input: string): string => {
   const parts = input?.split('.')
 
-  if (parts.length === 2) {
+  if (parts?.length === 2) {
     const integerPart = parts[0]
     let fractionalPart = parts[1]
 

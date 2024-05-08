@@ -6,6 +6,7 @@ interface FormatOptions {
   minimumAmount?: number
   roundingMode?: string
 }
+
 export const formatAmount = (
   amount: string,
   options?: FormatOptions
@@ -31,7 +32,7 @@ export const formatAmount = (
 
   const locales = 'en-UK'
 
-  if (!floatAmount) return '0'
+  if (!floatAmount) return '0.0'
 
   if (fullAmount) return Intl.NumberFormat(locales).format(floatAmount)
 

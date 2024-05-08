@@ -31,6 +31,7 @@ import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { MaxButton } from './MaxButton'
 import { formatAmount } from '../../utils/formatAmount'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
