@@ -12,7 +12,6 @@ import {
 import { ChainSelector } from '@/components/ui/ChainSelector'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { AmountInput } from '@/components/ui/AmountInput'
-import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
   ConnectToNetworkButton,
@@ -30,6 +29,7 @@ import { AvailableBalance } from './AvailableBalance'
 import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { MaxButton } from './MaxButton'
+import { formatAmount } from '../../utils/formatAmount'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -47,8 +47,8 @@ export const InputContainer = () => {
   const balance: bigint = balances[fromChainId]?.find(
     (token) => token.tokenAddress === addresses?.[fromChainId]
   )?.balance
-  const parsedBalance = getParsedBalance(balance, tokenDecimals, 4)
-  const fullParsedBalance = formatBigIntToString(balance, tokenDecimals)
+  const parsedBalance = getParsedBalance(balance, tokenDecimals)
+  const formattedBalance = formatAmount(parsedBalance)
 
   const hasValidFromSelections: boolean = useMemo(() => {
     return Boolean(fromChainId && fromToken)
@@ -68,15 +68,14 @@ export const InputContainer = () => {
   } = useGasEstimator()
 
   const isInputMax =
-    maxBridgeableGas?.toString() === fromValue ||
-    fullParsedBalance === fromValue
+    maxBridgeableGas?.toString() === fromValue || parsedBalance === fromValue
 
   const onMaxBalance = useCallback(async () => {
     if (hasValidGasEstimateInputs()) {
       const bridgeableBalance = await estimateBridgeableBalanceCallback()
 
       if (isNull(bridgeableBalance)) {
-        dispatch(updateFromValue(fullParsedBalance))
+        dispatch(updateFromValue(parsedBalance))
       } else if (bridgeableBalance > 0) {
         dispatch(updateFromValue(bridgeableBalance?.toString()))
       } else {
@@ -87,12 +86,12 @@ export const InputContainer = () => {
         })
       }
     } else {
-      dispatch(updateFromValue(fullParsedBalance))
+      dispatch(updateFromValue(parsedBalance))
     }
   }, [
     fromChainId,
     fromToken,
-    fullParsedBalance,
+    parsedBalance,
     hasValidGasEstimateInputs,
     estimateBridgeableBalanceCallback,
   ])
@@ -156,7 +155,7 @@ export const InputContainer = () => {
           />
           <div className="flex items-center">
             <AvailableBalance
-              balance={parsedBalance}
+              balance={formattedBalance}
               maxBridgeableBalance={maxBridgeableGas}
               gasCost={parsedGasCost}
               isGasToken={isGasToken}

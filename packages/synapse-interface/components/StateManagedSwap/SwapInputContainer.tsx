@@ -29,6 +29,8 @@ import { AmountInput } from '@/components/ui/AmountInput'
 import { joinClassNames } from '@/utils/joinClassNames'
 import { MaxButton } from '../StateManagedBridge/MaxButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+import { formatAmount } from '@/utils/formatAmount'
+import { getParsedBalance } from '@/utils/getParsedBalance'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -53,14 +55,12 @@ export const SwapInputContainer = () => {
     (token) => token.tokenAddress === swapFromToken?.addresses[swapChainId]
   )
 
-  const parsedBalance = tokenData?.parsedBalance
   const balance = tokenData?.balance
-  const parsedFullBalance = formatBigIntToString(
-    balance,
-    tokenData?.token?.decimals[swapChainId]
-  )
+  const decimals = tokenData?.token?.decimals[swapChainId]
+  const parsedBalance = getParsedBalance(balance, decimals)
+  const formattedBalance = formatAmount(parsedBalance)
 
-  const isInputMax = parsedFullBalance === swapFromValue
+  const isInputMax = parsedBalance === swapFromValue
 
   useEffect(() => {
     if (
@@ -143,7 +143,7 @@ export const SwapInputContainer = () => {
                 <span className="text-zinc-500 dark:text-zinc-400">
                   Available:{' '}
                 </span>
-                {parsedBalance ?? '0.0'}
+                {formattedBalance ?? '0.0'}
               </label>
               <MaxButton
                 onClick={onMaxBalance}
