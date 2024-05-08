@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 import {SynapseExecutionServiceEvents} from "../events/SynapseExecutionServiceEvents.sol";
 import {ClaimableFees} from "../fees/ClaimableFees.sol";
-import {IExecutionService, ISynapseExecutionServiceV1} from "../interfaces/ISynapseExecutionServiceV1.sol";
+import {ISynapseExecutionServiceV1} from "../interfaces/ISynapseExecutionServiceV1.sol";
 import {IGasOracle} from "../interfaces/IGasOracle.sol";
 import {OptionsLib, OptionsV1} from "../libs/Options.sol";
 import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
@@ -24,12 +24,18 @@ contract SynapseExecutionServiceV1 is
         uint256 claimerFraction;
     }
 
-    // keccak256(abi.encode(uint256(keccak256("Synapse.ExecutionService.V1")) - 1)) & ~bytes32(uint256(0xff));
+    /// @dev The storage location of the SynapseExecutionServiceV1Storage struct as per ERC-7201.
+    /// keccak256(abi.encode(uint256(keccak256("Synapse.ExecutionService.V1")) - 1)) & ~bytes32(uint256(0xff));
     bytes32 private constant SYNAPSE_EXECUTION_SERVICE_V1_STORAGE_LOCATION =
         0xabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100;
+    /// @dev Precision for the markup math.
     uint256 private constant WAD = 10 ** 18;
 
+    /// @notice Role responsible for managing the SynapseExecutionService contract.
+    /// Can set all the parameters defined in the SynapseExecutionServiceV1Storage struct.
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
+    /// @notice Role to track the Interchain Client contracts.
+    /// Can request the execution of transactions by calling the requestTxExecution function.
     bytes32 public constant IC_CLIENT_ROLE = keccak256("IC_CLIENT_ROLE");
 
     constructor() {
@@ -37,11 +43,16 @@ contract SynapseExecutionServiceV1 is
         _disableInitializers();
     }
 
-    function initialize(address admin) external virtual initializer {
+    /// @notice Initializes the SynapseExecutionService contract by setting the initial admin.
+    /// @dev Needs to be called atomically after the proxy is deployed.
+    function initialize(address admin) external initializer {
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
     }
 
-    /// @inheritdoc ISynapseExecutionServiceV1
+    /// @notice Sets the fraction of the accumulated fees to be paid to caller of `claimFees`.
+    /// This encourages rational actors to call the function as soon as claim fee is higher than the gas cost.
+    /// @dev Could be only called by the governor. The fraction could not exceed 1% (1e16).
+    /// @param claimerFraction_     The fraction of the fees to be paid to the claimer (100% = 1e18)
     function setClaimerFraction(uint256 claimerFraction_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (claimerFraction_ > MAX_CLAIMER_FRACTION) {
             revert ClaimableFees__ClaimerFractionAboveMax(claimerFraction_, MAX_CLAIMER_FRACTION);
@@ -51,7 +62,10 @@ contract SynapseExecutionServiceV1 is
         emit ClaimerFractionSet(claimerFraction_);
     }
 
-    /// @inheritdoc ISynapseExecutionServiceV1
+    /// @notice Allows the contract governor to set the address of the EOA account that will be used
+    /// to execute transactions on the remote chains. This address will also be used as the recipient
+    /// of the execution fees collected by the contract.
+    /// @dev Could be only called by the governor. Will revert if the zero address is passed.
     function setExecutorEOA(address executorEOA_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (executorEOA_ == address(0)) {
             revert SynapseExecutionService__ExecutorZeroAddress();
@@ -62,7 +76,9 @@ contract SynapseExecutionServiceV1 is
         emit FeeRecipientSet(executorEOA_);
     }
 
-    /// @inheritdoc ISynapseExecutionServiceV1
+    /// @notice Allows the contract governor to set the address of the gas oracle. The gas oracle
+    /// is used for estimating the gas cost of the transactions.
+    /// @dev Could be only called by the governor. Will revert if the passed address is not a contract.
     function setGasOracle(address gasOracle_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (gasOracle_.code.length == 0) {
             revert SynapseExecutionService__GasOracleNotContract(gasOracle_);
@@ -72,14 +88,28 @@ contract SynapseExecutionServiceV1 is
         emit GasOracleSet(gasOracle_);
     }
 
-    /// @inheritdoc ISynapseExecutionServiceV1
+    /// @notice Allows the contract governor to set the global markup that the Execution Service charges
+    /// on top of the GasOracle's gas cost estimates.
+    /// Zero markup means that the Execution Service charges the exact gas cost estimated by the GasOracle.
+    /// The markup is denominated in Wei, 1e18 being 100%.
+    /// @dev Could be only called by the governor.
     function setGlobalMarkup(uint256 globalMarkup_) external virtual onlyRole(GOVERNOR_ROLE) {
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         $.globalMarkup = globalMarkup_;
         emit GlobalMarkupSet(globalMarkup_);
     }
 
-    /// @inheritdoc IExecutionService
+    /// @notice Request the execution of an Interchain Transaction on a remote chain in exchange for
+    /// the execution fee, attached to the transaction as `msg.value`.
+    /// Note: the off-chain actor needs to fetch the transaction payload from the InterchainClient
+    /// event with the same transactionId, then execute the transaction on the remote chain:
+    /// `dstInterchainClient.executeTransaction(transactionPayload)`
+    /// @dev Could only be called by `InterchainClient` contracts.
+    /// Will revert if the execution fee is not big enough.
+    /// @param dstChainId           The chain id of the destination chain.
+    /// @param txPayloadSize        The size of the transaction payload to use for the execution.
+    /// @param transactionId        The id of the transaction to execute.
+    /// @param options              The options to use for the execution.
     function requestTxExecution(
         uint64 dstChainId,
         uint256 txPayloadSize,
@@ -98,7 +128,10 @@ contract SynapseExecutionServiceV1 is
         emit ExecutionRequested({transactionId: transactionId, client: msg.sender, executionFee: msg.value});
     }
 
-    /// @inheritdoc IExecutionService
+    /// @notice Get the execution fee for executing an Interchain Transaction on a remote chain.
+    /// @param dstChainId           The chain id of the destination chain.
+    /// @param txPayloadSize        The size of the transaction payload to use for the execution.
+    /// @param options              The options to use for the execution.
     function getExecutionFee(
         uint64 dstChainId,
         uint256 txPayloadSize,
@@ -134,19 +167,21 @@ contract SynapseExecutionServiceV1 is
         executionFee += executionFee * globalMarkup() / WAD;
     }
 
-    /// @inheritdoc IExecutionService
+    /// @notice Address of the EOA account that will be used to execute transactions on the remote chains.
     function executorEOA() public view virtual returns (address) {
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         return $.executorEOA;
     }
 
-    /// @inheritdoc ISynapseExecutionServiceV1
+    /// @notice Address of the gas oracle used for estimating the gas cost of the transactions.
     function gasOracle() public view virtual returns (address) {
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         return $.gasOracle;
     }
 
-    /// @inheritdoc ISynapseExecutionServiceV1
+    /// @notice The markup that the Execution Service charges on top of the GasOracle's gas cost estimates.
+    /// Zero markup means that the Execution Service charges the exact gas cost estimated by the GasOracle.
+    /// The markup is denominated in Wei, 1e18 being 100%.
     function globalMarkup() public view virtual returns (uint256) {
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         return $.globalMarkup;
