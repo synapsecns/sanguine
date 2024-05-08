@@ -11,8 +11,8 @@ export const MaxButton = ({ onClick, isHidden }) => {
   })
 
   return (
-    <div onClick={onClick} className={buttonClassName}>
+    <button onClick={onClick} className={buttonClassName}>
       Max
-    </div>
+    </button>
   )
 }

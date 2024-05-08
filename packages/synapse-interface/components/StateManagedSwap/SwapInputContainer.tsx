@@ -129,14 +129,14 @@ export const SwapInputContainer = () => {
       </div>
       <BridgeAmountContainer>
         <SwapFromTokenSelector />
-        <div>
+        <div className="flex flex-wrap">
           <AmountInput
             inputRef={inputRef}
             showValue={showValue}
             handleFromValueChange={handleFromValueChange}
           />
           {hasMounted && isConnected && (
-            <div className="flex items-center">
+            <>
               <label htmlFor="inputRow" className={labelClassName}>
                 <span className="text-zinc-500 dark:text-zinc-400">
                   Available:{' '}
@@ -147,7 +147,7 @@ export const SwapInputContainer = () => {
                 onClick={onMaxBalance}
                 isHidden={!isConnected || !balance || isInputMax}
               />
-            </div>
+            </>
           )}
         </div>
       </BridgeAmountContainer>

@@ -147,31 +147,29 @@ export const InputContainer = () => {
       </div>
       <BridgeAmountContainer>
         <FromTokenSelector />
-        <div className="w-full">
+        <div className="flex flex-wrap w-full">
           <AmountInput
             inputRef={inputRef}
             showValue={showValue}
             handleFromValueChange={handleFromValueChange}
           />
-          <div className="flex items-center">
-            <AvailableBalance
-              balance={formattedBalance}
-              maxBridgeableBalance={maxBridgeableGas}
-              gasCost={parsedGasCost}
-              isGasToken={isGasToken}
-              isGasEstimateLoading={isLoading}
-              isDisabled={!isConnected || !hasValidFromSelections}
-            />
-            <MaxButton
-              onClick={onMaxBalance}
-              isHidden={
-                !isConnected ||
-                !hasValidInputSelections ||
-                isLoading ||
-                isInputMax
-              }
-            />
-          </div>
+          <AvailableBalance
+            balance={formattedBalance}
+            maxBridgeableBalance={maxBridgeableGas}
+            gasCost={parsedGasCost}
+            isGasToken={isGasToken}
+            isGasEstimateLoading={isLoading}
+            isDisabled={!isConnected || !hasValidFromSelections}
+          />
+          <MaxButton
+            onClick={onMaxBalance}
+            isHidden={
+              !isConnected ||
+              !hasValidInputSelections ||
+              isLoading ||
+              isInputMax
+            }
+          />
         </div>
       </BridgeAmountContainer>
     </BridgeSectionContainer>

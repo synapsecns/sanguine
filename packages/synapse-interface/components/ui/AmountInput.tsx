@@ -26,7 +26,7 @@ export function AmountInput({
   })
 
   return (
-    <div className="flex-1">
+    <>
       {isLoading ? (
         <LoadingDots className="opacity-50" />
       ) : (
@@ -45,6 +45,6 @@ export function AmountInput({
           maxLength={79}
         />
       )}
-    </div>
+    </>
   )
 }
