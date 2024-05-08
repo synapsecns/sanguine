@@ -17,7 +17,7 @@ export const AvailableBalance = ({
 }) => {
   const labelClassName = joinClassNames({
     space: 'block',
-    textColor: 'text-xxs md:text-xs',
+    text: 'text-xxs md:text-xs',
     cursor: 'cursor-default',
   })
 
