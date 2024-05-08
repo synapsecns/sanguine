@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"context"
+
 	"github.com/synapsecns/sanguine/committee/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/ethergo/backends"

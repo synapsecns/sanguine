@@ -33,11 +33,10 @@ type NodeSuite struct {
 	originChain   backends.SimulatedTestBackend
 	destChain     backends.SimulatedTestBackend
 	deployManager *testutil.DeployManager
-	// interchainClient *
-	originModule *synapsemodule.SynapseModuleRef
-	destModule   *synapsemodule.SynapseModuleRef
-	nodes        []*node.Node
-	omnirpcURL   string
+	originModule  *synapsemodule.SynapseModuleRef
+	destModule    *synapsemodule.SynapseModuleRef
+	nodes         []*node.Node
+	omnirpcURL    string
 }
 
 func NewNodeSuite(tb testing.TB) *NodeSuite {
@@ -48,7 +47,7 @@ func NewNodeSuite(tb testing.TB) *NodeSuite {
 	}
 }
 
-func (n *NodeSuite) SetupSuite() {
+func (n *NodeSuite) SetupTest() {
 	n.TestSuite.SetupTest()
 	n.deployManager = testutil.NewDeployManager(n.T())
 
@@ -70,7 +69,8 @@ func (n *NodeSuite) SetupSuite() {
 
 	n.omnirpcURL = testhelper.NewOmnirpcServer(n.GetTestContext(), n.T(), n.originChain, n.destChain)
 
-	for i := 0; i < 10; i++ {
+	// we will have 10 committee nodes
+	for i := 0; i < 3; i++ {
 		n.makeNode()
 	}
 
@@ -79,8 +79,20 @@ func (n *NodeSuite) SetupSuite() {
 		interchainValidators = append(interchainValidators, otherNode.Address())
 	}
 
-	n.setValidators(interchainValidators, n.originChain, originInfo, n.originModule)
-	n.setValidators(interchainValidators, n.destChain, destInfo, n.destModule)
+	n.setValidators(
+		interchainValidators,
+		n.originChain,
+		originInfo,
+		n.originModule,
+		big.NewInt(int64(len(interchainValidators))),
+	)
+	n.setValidators(
+		interchainValidators,
+		n.destChain,
+		destInfo,
+		n.destModule,
+		big.NewInt(int64(len(interchainValidators))),
+	)
 
 	for _, on := range n.nodes {
 		on := on
@@ -99,6 +111,7 @@ func (n *NodeSuite) setValidators(
 	backend backends.SimulatedTestBackend,
 	info contracts.DeployedContract,
 	synapseModule *synapsemodule.SynapseModuleRef,
+	threshold *big.Int,
 ) {
 	transactOpts := backend.GetTxContext(n.GetTestContext(), info.OwnerPtr())
 
@@ -108,7 +121,7 @@ func (n *NodeSuite) setValidators(
 		backend.WaitForConfirmation(n.GetTestContext(), tx)
 	}
 
-	tx, err := synapseModule.SetThreshold(transactOpts.TransactOpts, big.NewInt(int64(len(validators))))
+	tx, err := synapseModule.SetThreshold(transactOpts.TransactOpts, threshold)
 	n.NoError(err)
 	backend.WaitForConfirmation(n.GetTestContext(), tx)
 }
