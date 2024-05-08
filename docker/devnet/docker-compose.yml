@@ -265,3 +265,15 @@ services:
       - '${PWD}/config/prometheus:/etc/prometheus'
       - prometheus-data:/prometheus
     command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
+
+  committee:
+    restart: unless-stopped
+    image: 'committee/committee:latest'
+    depends_on:
+      - omnirpc
+      - chain_a
+      - chain_b
+      - chain_c
+      - tracing
+    entrypoint: committee
+
