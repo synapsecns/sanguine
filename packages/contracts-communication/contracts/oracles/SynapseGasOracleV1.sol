@@ -2,7 +2,6 @@
 pragma solidity 0.8.20;
 
 import {SynapseGasOracleV1Events} from "../events/SynapseGasOracleV1Events.sol";
-import {ISynapseGasOracle, IGasOracle} from "../interfaces/ISynapseGasOracle.sol";
 import {ISynapseGasOracleV1} from "../interfaces/ISynapseGasOracleV1.sol";
 
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";

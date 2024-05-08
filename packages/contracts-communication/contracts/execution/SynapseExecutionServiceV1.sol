@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 import {SynapseExecutionServiceEvents} from "../events/SynapseExecutionServiceEvents.sol";
 import {ClaimableFees} from "../fees/ClaimableFees.sol";
-import {IExecutionService, ISynapseExecutionServiceV1} from "../interfaces/ISynapseExecutionServiceV1.sol";
+import {ISynapseExecutionServiceV1} from "../interfaces/ISynapseExecutionServiceV1.sol";
 import {IGasOracle} from "../interfaces/IGasOracle.sol";
 import {OptionsLib, OptionsV1} from "../libs/Options.sol";
 import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
