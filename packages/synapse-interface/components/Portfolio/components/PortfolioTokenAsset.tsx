@@ -14,7 +14,6 @@ import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
 import GasIcon from '@/components/icons/GasIcon'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatAmount } from '@/utils/formatAmount'
-import { formatBigIntToString } from '@/utils/bigint/format'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()

@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
-
-import MiniMaxButton from '@/components/buttons/MiniMaxButton'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'

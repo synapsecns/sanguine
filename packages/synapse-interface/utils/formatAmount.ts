@@ -27,7 +27,7 @@ export const formatAmount = (
   const fullAmount = options?.fullAmount ?? false
   const standardDigits = options?.standardDigits ?? 4
   const useCompactNotation = options?.useCompactNotation ?? true
-  const compactDigits = options?.compactDigits ?? useCompactNotation ? 2 : 0
+  const compactDigits = options?.compactDigits ?? (useCompactNotation ? 2 : 0)
   const minimumAmount = options?.minimumAmount ?? 0.0001
 
   const locales = 'en-UK'
