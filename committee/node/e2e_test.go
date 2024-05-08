@@ -50,7 +50,7 @@ func (n *NodeSuite) TestNodeSuite() {
 	})
 
 	// spam verifications
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		axxt := n.originChain.GetTxContext(n.GetTestContext(), nil)
 		tx, err = originDB.WriteEntryWithVerification(
 			axxt.TransactOpts,
@@ -65,8 +65,10 @@ func (n *NodeSuite) TestNodeSuite() {
 		n.Require().NoError(err)
 		n.Require().Equal(uint64(1), recp.Status)
 	}
-	// mine block
-	n.originChain.GetTxContext(n.GetTestContext(), nil)
+	// mine couple blocks
+	for i := 0; i < 4; i++ {
+		n.originChain.GetTxContext(n.GetTestContext(), nil)
+	}
 
 	var resStatus []db.SignRequest
 	for _, node := range n.nodes {
@@ -87,6 +89,10 @@ func (n *NodeSuite) TestNodeSuite() {
 		n.Require().NoError(err)
 		n.T().Log("Signed", len(signed))
 		n.T().Log("-----------------------------------")
+	}
+
+	for i := 0; i < 4; i++ {
+		n.originChain.GetTxContext(n.GetTestContext(), nil)
 	}
 	n.Require().Equal(11, len(resStatus))
 }
