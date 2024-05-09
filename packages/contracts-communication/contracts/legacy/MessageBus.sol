@@ -125,7 +125,6 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         uint64 srcChainId,
         bytes32, // sender
         uint64, // dbNonce
-        uint64, // entryIndex
         bytes calldata encodedLegacyMsg
     )
         internal

@@ -1,6 +1,6 @@
 {
   "name": "contracts-communication",
-  "version": "1.5.4",
+  "version": "1.6.1",
   "private": true,
   "files": [
     "contracts/*.sol"

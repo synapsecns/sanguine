@@ -10,7 +10,7 @@ import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/S
 
 import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 
-import {InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
+import {InterchainEntryLibHarness} from "../harnesses/InterchainEntryLibHarness.sol";
 import {InterchainTransactionLibHarness} from "../harnesses/InterchainTransactionLibHarness.sol";
 import {VersionedPayloadLibHarness} from "../harnesses/VersionedPayloadLibHarness.sol";
 import {ProxyTest} from "../proxy/ProxyTest.t.sol";
@@ -33,7 +33,7 @@ abstract contract ICSetup is ProxyTest {
 
     uint256 public constant INITIAL_TS = 1_704_067_200; // 2024-01-01 00:00:00 UTC
 
-    InterchainBatchLibHarness public batchLibHarness;
+    InterchainEntryLibHarness public entryLibHarness;
     InterchainTransactionLibHarness public txLibHarness;
     VersionedPayloadLibHarness public payloadLibHarness;
 
@@ -72,7 +72,7 @@ abstract contract ICSetup is ProxyTest {
     }
 
     function deployLibraryHarnesses() internal virtual {
-        batchLibHarness = new InterchainBatchLibHarness();
+        entryLibHarness = new InterchainEntryLibHarness();
         txLibHarness = new InterchainTransactionLibHarness();
         payloadLibHarness = new VersionedPayloadLibHarness();
     }
