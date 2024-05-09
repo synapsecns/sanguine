@@ -67,10 +67,10 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         return payloadLibHarness.encodeVersionedPayload(MOCK_DB_VERSION, entryLibHarness.encodeEntry(entry));
     }
 
-    function requestEntryVerification(uint256 msgValue, uint64 dbNonce, bytes memory versionedEntry) internal {
+    function requestEntryVerification(uint256 msgValue, bytes memory versionedEntry) internal {
         deal(interchainDB, msgValue);
         vm.prank(interchainDB);
-        module.requestEntryVerification{value: msgValue}(DST_CHAIN_ID, dbNonce, versionedEntry);
+        module.requestEntryVerification{value: msgValue}(DST_CHAIN_ID, versionedEntry);
     }
 
     function encodeAndHashEntry(InterchainEntry memory entry)
@@ -97,13 +97,13 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         bytes memory versionedEntry = getVersionedEntry(mockEntry);
         vm.expectEmit(address(module));
         emit EntryVerificationRequested(DST_CHAIN_ID, encodedEntry, ethSignedHash);
-        requestEntryVerification(FEE, mockEntry.dbNonce, versionedEntry);
+        requestEntryVerification(FEE, versionedEntry);
     }
 
     function test_requestVerification_accumulatesFee() public {
         deal(address(module), 5 ether);
         bytes memory versionedEntry = getVersionedEntry(mockEntry);
-        requestEntryVerification(FEE, mockEntry.dbNonce, versionedEntry);
+        requestEntryVerification(FEE, versionedEntry);
         assertEq(address(module).balance, 5 ether + FEE);
     }
 
@@ -112,13 +112,13 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         bytes memory versionedEntry = getVersionedEntry(mockEntry);
         vm.expectEmit(address(module));
         emit EntryVerificationRequested(DST_CHAIN_ID, encodedEntry, ethSignedHash);
-        requestEntryVerification(FEE + 1, mockEntry.dbNonce, versionedEntry);
+        requestEntryVerification(FEE + 1, versionedEntry);
     }
 
     function test_requestVerification_feeAboveRequired_accumulatesFee() public {
         deal(address(module), 5 ether);
         bytes memory versionedEntry = getVersionedEntry(mockEntry);
-        requestEntryVerification(FEE + 1, mockEntry.dbNonce, versionedEntry);
+        requestEntryVerification(FEE + 1, versionedEntry);
         assertEq(address(module).balance, 5 ether + FEE + 1);
     }
 
@@ -127,7 +127,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainModule.InterchainModule__FeeAmountBelowMin.selector, FEE - 1, FEE)
         );
-        requestEntryVerification(FEE - 1, mockEntry.dbNonce, versionedEntry);
+        requestEntryVerification(FEE - 1, versionedEntry);
     }
 
     function test_claimFees_zeroClaimFee_emitsEvent() public {
@@ -233,8 +233,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
     }
 
     function test_getModuleFee_thresholdTwo() public view {
-        // TODO: dbNonce
-        assertEq(module.getModuleFee(DST_CHAIN_ID, 0), FEE);
+        assertEq(module.getModuleFee(DST_CHAIN_ID), FEE);
     }
 
     function test_getModuleFee_callsGasOracle_gasLimitDefault_twoSigners() public {
@@ -245,8 +244,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
             gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, DEFAULT_GAS_LIMIT, remoteCalldata.length)
         );
         vm.expectCall(address(gasOracle), expectedCalldata);
-        // TODO: dbNonce
-        module.getModuleFee(DST_CHAIN_ID, 0);
+        module.getModuleFee(DST_CHAIN_ID);
     }
 
     function test_getModuleFee_callsGasOracle_gasLimitDefault_threeSigners() public {
@@ -259,8 +257,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
             gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, DEFAULT_GAS_LIMIT, remoteCalldata.length)
         );
         vm.expectCall(address(gasOracle), expectedCalldata);
-        // TODO: dbNonce
-        module.getModuleFee(DST_CHAIN_ID, 0);
+        module.getModuleFee(DST_CHAIN_ID);
     }
 
     function test_getModuleFee_callsGasOracle_gasLimitSet_twoSigners() public {
@@ -272,8 +269,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         bytes memory expectedCalldata =
             abi.encodeCall(gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, 200_000, remoteCalldata.length));
         vm.expectCall(address(gasOracle), expectedCalldata);
-        // TODO: dbNonce
-        module.getModuleFee(DST_CHAIN_ID, 0);
+        module.getModuleFee(DST_CHAIN_ID);
     }
 
     function test_getModuleFee_callsGasOracle_gasLimitSet_threeSigners() public {
@@ -287,8 +283,7 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         bytes memory expectedCalldata =
             abi.encodeCall(gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, 200_000, remoteCalldata.length));
         vm.expectCall(address(gasOracle), expectedCalldata);
-        // TODO: dbNonce
-        module.getModuleFee(DST_CHAIN_ID, 0);
+        module.getModuleFee(DST_CHAIN_ID);
     }
 
     function test_getVerifyGasLimit_default() public view {

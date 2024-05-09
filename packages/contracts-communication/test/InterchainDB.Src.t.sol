@@ -103,8 +103,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     }
 
     function getModuleCalldata(InterchainEntry memory entry) internal view returns (bytes memory) {
-        bytes memory vEntry = getVersionedEntry(entry);
-        return abi.encodeCall(IInterchainModule.requestEntryVerification, (DST_CHAIN_ID, entry.dbNonce, vEntry));
+        bytes memory versionedEntry = getVersionedEntry(entry);
+        return abi.encodeCall(IInterchainModule.requestEntryVerification, (DST_CHAIN_ID, versionedEntry));
     }
 
     function addressToBytes32(address addr) internal pure returns (bytes32) {

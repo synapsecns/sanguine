@@ -135,7 +135,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// @param dstChainId   The chain id of the destination chain
     /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
     function getInterchainFee(uint64 dstChainId, address[] calldata srcModules) external view returns (uint256 fee) {
-        (, fee) = _getModuleFees(dstChainId, getDBNonce(), srcModules);
+        (, fee) = _getModuleFees(dstChainId, srcModules);
     }
 
     /// @notice Check if the entry is verified by the Interchain Module on the destination chain.
@@ -221,7 +221,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     )
         internal
     {
-        (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, entry.dbNonce, srcModules);
+        (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, srcModules);
         if (msg.value < totalFee) {
             revert InterchainDB__FeeAmountBelowMin(msg.value, totalFee);
         } else if (msg.value > totalFee) {
@@ -234,9 +234,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             payload: InterchainEntryLib.encodeEntry(entry)
         });
         for (uint256 i = 0; i < len; ++i) {
-            IInterchainModule(srcModules[i]).requestEntryVerification{value: fees[i]}(
-                dstChainId, entry.dbNonce, versionedEntry
-            );
+            IInterchainModule(srcModules[i]).requestEntryVerification{value: fees[i]}(dstChainId, versionedEntry);
         }
         emit InterchainEntryVerificationRequested(dstChainId, entry.dbNonce, srcModules);
     }
@@ -265,7 +263,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// @dev Get the verification fees for the modules
     function _getModuleFees(
         uint64 dstChainId,
-        uint64 dbNonce,
         address[] calldata srcModules
     )
         internal
@@ -278,7 +275,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         }
         fees = new uint256[](len);
         for (uint256 i = 0; i < len; ++i) {
-            fees[i] = IInterchainModule(srcModules[i]).getModuleFee(dstChainId, dbNonce);
+            fees[i] = IInterchainModule(srcModules[i]).getModuleFee(dstChainId);
             totalFee += fees[i];
         }
     }

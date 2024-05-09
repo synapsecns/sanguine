@@ -8,15 +8,9 @@ interface IInterchainModule {
     error InterchainModule__ChainIdNotRemote(uint64 chainId);
     error InterchainModule__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
 
-    function requestEntryVerification(
-        uint64 dstChainId,
-        uint64 dbNonce,
-        bytes memory versionedEntry
-    )
-        external
-        payable;
+    function requestEntryVerification(uint64 dstChainId, bytes memory versionedEntry) external payable;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256);
+    function getModuleFee(uint64 dstChainId) external view returns (uint256);
 }

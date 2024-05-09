@@ -9,16 +9,9 @@ import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 // solhint-disable ordering
 // solhint-disable no-empty-blocks
 contract InterchainModuleMock is IInterchainModule {
-    function requestEntryVerification(
-        uint64 dstChainId,
-        uint64 dbNonce,
-        bytes calldata versionedEntry
-    )
-        external
-        payable
-    {}
+    function requestEntryVerification(uint64 dstChainId, bytes calldata versionedEntry) external payable {}
 
-    function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256) {}
+    function getModuleFee(uint64 dstChainId) external view returns (uint256) {}
 
     function mockVerifyRemoteEntry(address interchainDB, bytes calldata versionedEntry) external {
         IInterchainDB(interchainDB).verifyRemoteEntry(versionedEntry);
