@@ -25,7 +25,7 @@ services:
       - tracing
     build:
       context: ../../
-      dockerfile: docker/devnet/omnirpc.Dockerfile
+      dockerfile: docker/committee-devnet/omnirpc.Dockerfile
     ports:
       - '9001:9001'
     command: >
@@ -37,19 +37,12 @@ services:
     environment:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-# TODO, consider re-enabling.
-#    healthcheck:
-#      test: ['CMD', 'curl', '-f', 'http://localhost:8545/health']
-#      interval: 1s
-#      timeout: 20s
-#      retries: 10
-#      start_period: 5s
 
   chain_a:
     restart: unless-stopped
     image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
-    platform: linux/arm64
+    platform: linux/amd64
     command: >
       --host=0.0.0.0
       --chain-id=42
@@ -68,7 +61,7 @@ services:
     restart: unless-stopped
     image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
-    platform: linux/arm64
+    platform: linux/amd64
     command: >
       --host=0.0.0.0
       --chain-id=43
@@ -87,7 +80,7 @@ services:
     restart: unless-stopped
     image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
-    platform: linux/arm64
+    platform: linux/amd64
     command: >
       --host=0.0.0.0
       --chain-id=44
@@ -145,11 +138,11 @@ services:
       - tracing
     build:
       context: ../../
-      dockerfile: docker/devnet/committee.Dockerfile
+      dockerfile: docker/committee-devnet/committee.Dockerfile
     command:
       - committee-run
       - '--config'
-      - '/config/committee-config.yml'
+      - '/config/committee-config1.yml'
     environment:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
@@ -167,11 +160,11 @@ services:
       - tracing
     build:
       context: ../../
-      dockerfile: docker/devnet/committee.Dockerfile
+      dockerfile: docker/committee-devnet/committee.Dockerfile
     command:
       - committee-run
       - '--config'
-      - '/config/committee-config.yml'
+      - '/config/committee-config2.yml'
     environment:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
@@ -188,7 +181,7 @@ services:
       - tracing
     build:
       context: ../../
-      dockerfile: docker/devnet/committee.Dockerfile
+      dockerfile: docker/committee-devnet/committee.Dockerfile
     command:
       - committee-run
       - '--config'

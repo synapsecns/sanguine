@@ -24,7 +24,7 @@ submitter_config:
       gas_estimate: 7500000
 should_relay: true
 bootstrap_peers:
-  - /ip4/10.0.0.121/tcp/63614/p2p/16Uiu2HAm7ZkqeQb5thdRitUM8pSqRFdoFGeF1TKZKgWYXmdFyqFb
-  - /ip4/127.0.0.1/tcp/63614/p2p/16Uiu2HAm7ZkqeQb5thdRitUM8pSqRFdoFGeF1TKZKgWYXmdFyqFb
+  - /ip4/10.0.0.121/tcp/12345/p2p/16Uiu2HAm7ZkqeQb5thdRitUM8pSqRFdoFGeF1TKZKgWYXmdFyqFb
+  - /ip4/127.0.0.1/tcp/12345/p2p/16Uiu2HAm7ZkqeQb5thdRitUM8pSqRFdoFGeF1TKZKgWYXmdFyqFb
 p2p_port: 12345
 use_peer_id: false
