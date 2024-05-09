@@ -15,32 +15,11 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule {
     using VersionedPayloadLib for bytes;
 
-    /// @notice The address of the Interchain DataBase contract: used for verifying the batches.
+    /// @notice The address of the Interchain DataBase contract: used for verifying the entries.
     address public immutable INTERCHAIN_DB;
 
     constructor(address interchainDB) {
         INTERCHAIN_DB = interchainDB;
-    }
-
-    /// @notice Request the verification of a batch from the Interchain DataBase by the module.
-    /// If the batch is not yet finalized, the verification on destination chain will be delayed until
-    /// the finalization is done and batch root is saved on the source chain.
-    /// Note: a fee is paid to the module for verification, and could be retrieved by using `getModuleFee`.
-    /// Note: this will eventually trigger `InterchainDB.verifyRemoteBatch(batch)` function on destination chain,
-    /// with no guarantee of ordering.
-    /// @dev Could be only called by the Interchain DataBase contract.
-    /// @param dstChainId       The chain id of the destination chain
-    /// @param batchNonce       The nonce of the batch on the source chain
-    /// @param versionedBatch   The versioned batch to verify
-    function requestBatchVerification(
-        uint64 dstChainId,
-        uint64 batchNonce,
-        bytes calldata versionedBatch
-    )
-        external
-        payable
-    {
-        // TODO: remove
     }
 
     /// @notice Request the verification of an entry from the Interchain DataBase by the module.
@@ -70,23 +49,17 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
             revert InterchainModule__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
         }
         bytes memory moduleData = _fillModuleData(dstChainId, dbNonce);
-        bytes memory encodedBatch = ModuleEntryLib.encodeVersionedModuleEntry(versionedEntry, moduleData);
-        bytes32 ethSignedBatchHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch));
-        _requestVerification(dstChainId, encodedBatch);
-        emit EntryVerificationRequested(dstChainId, encodedBatch, ethSignedBatchHash);
+        bytes memory encodedEntry = ModuleEntryLib.encodeVersionedModuleEntry(versionedEntry, moduleData);
+        bytes32 ethSignedEntryHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
+        _requestVerification(dstChainId, encodedEntry);
+        emit EntryVerificationRequested(dstChainId, encodedEntry, ethSignedEntryHash);
     }
 
-    /// @notice Get the Module fee for verifying a batch on the specified destination chain.
+    /// @notice Get the Module fee for verifying an entry on the specified destination chain.
     /// @param dstChainId   The chain id of the destination chain
-    /// @param dbNonce      The database nonce of the batch on the source chain
+    /// @param dbNonce      The database nonce of the entry on the source chain
     function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256) {
         return _getModuleFee(dstChainId, dbNonce);
-    }
-
-    /// @dev Should be called once the Module has verified the batch and needs to signal this
-    /// to the InterchainDB.
-    function _verifyBatch(bytes memory encodedModuleBatch) internal {
-        // TODO: remove
     }
 
     /// @dev Should be called once the Module has verified the entry and needs to signal this
@@ -106,8 +79,8 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     }
 
     // solhint-disable no-empty-blocks
-    /// @dev Internal logic to request the verification of an batch on the destination chain.
-    function _requestVerification(uint64 dstChainId, bytes memory encodedBatch) internal virtual {}
+    /// @dev Internal logic to request the verification of an entry on the destination chain.
+    function _requestVerification(uint64 dstChainId, bytes memory encodedEntry) internal virtual {}
 
     /// @dev Internal logic to fill the module data for the specified destination chain.
     function _fillModuleData(uint64 dstChainId, uint64 dbNonce) internal virtual returns (bytes memory) {}
@@ -115,6 +88,6 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
     function _receiveModuleData(uint64 srcChainId, uint64 dbNonce, bytes memory moduleData) internal virtual {}
 
-    /// @dev Internal logic to get the module fee for verifying an batch on the specified destination chain.
+    /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
     function _getModuleFee(uint64 dstChainId, uint64 dbNonce) internal view virtual returns (uint256);
 }
