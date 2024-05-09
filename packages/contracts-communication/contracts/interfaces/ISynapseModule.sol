@@ -20,6 +20,7 @@ interface ISynapseModule is IInterchainModule {
     function setVerifyGasLimit(uint64 chainId, uint256 gasLimit) external;
 
     function verifyRemoteBatch(bytes calldata encodedBatch, bytes calldata signatures) external;
+    function verifyRemoteEntry(bytes calldata encodedEntry, bytes calldata signatures) external;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 

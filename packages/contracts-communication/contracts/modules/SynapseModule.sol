@@ -126,9 +126,18 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     /// @param encodedBatch The encoded batch to verify
     /// @param signatures   Signatures used to verify the batch, concatenated
     function verifyRemoteBatch(bytes calldata encodedBatch, bytes calldata signatures) external {
-        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch));
+        // TODO: remove
+    }
+
+    /// @notice Verifies an entry from the remote chain using a set of verifier signatures.
+    /// If the threshold is met, the entry will be marked as verified in the Interchain DataBase.
+    /// @dev List of recovered signers from the signatures must be sorted in the ascending order.
+    /// @param encodedEntry The encoded entry to verify
+    /// @param signatures   Signatures used to verify the entry, concatenated
+    function verifyRemoteEntry(bytes calldata encodedEntry, bytes calldata signatures) external {
+        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
         _verifiers.verifySignedHash(ethSignedHash, signatures);
-        _verifyBatch(encodedBatch);
+        _verifyEntry(encodedEntry);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════

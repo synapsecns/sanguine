@@ -5,8 +5,8 @@ import {InterchainModuleEvents} from "../events/InterchainModuleEvents.sol";
 import {IInterchainDB} from "../interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "../interfaces/IInterchainModule.sol";
 
-import {InterchainBatch, InterchainBatchLib} from "../libs/InterchainBatch.sol";
-import {ModuleBatchLib} from "../libs/ModuleBatch.sol";
+import {InterchainEntry, InterchainEntryLib} from "../libs/InterchainEntry.sol";
+import {ModuleEntryLib} from "../libs/ModuleEntry.sol";
 import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
 
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
@@ -40,23 +40,17 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         external
         payable
     {
-        if (msg.sender != INTERCHAIN_DB) {
-            revert InterchainModule__CallerNotInterchainDB(msg.sender);
-        }
-        if (dstChainId == block.chainid) {
-            revert InterchainModule__ChainIdNotRemote(dstChainId);
-        }
-        uint256 requiredFee = _getModuleFee(dstChainId, batchNonce);
-        if (msg.value < requiredFee) {
-            revert InterchainModule__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
-        }
-        bytes memory moduleData = _fillModuleData(dstChainId, batchNonce);
-        bytes memory encodedBatch = ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, moduleData);
-        bytes32 ethSignedBatchHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch));
-        _requestVerification(dstChainId, encodedBatch);
-        emit BatchVerificationRequested(dstChainId, encodedBatch, ethSignedBatchHash);
+        // TODO: remove
     }
 
+    /// @notice Request the verification of an entry from the Interchain DataBase by the module.
+    /// Note: a fee is paid to the module for verification, and could be retrieved by using `getModuleFee`.
+    /// Note: this will eventually trigger `InterchainDB.verifyRemoteEntry(entry)` function on destination chain,
+    /// with no guarantee of ordering.
+    /// @dev Could be only called by the Interchain DataBase contract.
+    /// @param dstChainId       The chain id of the destination chain
+    /// @param dbNonce          The database nonce of the entry on the source chain
+    /// @param versionedEntry   The versioned entry to verify
     function requestEntryVerification(
         uint64 dstChainId,
         uint64 dbNonce,
@@ -65,7 +59,21 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         external
         payable
     {
-        // TODO: implement
+        if (msg.sender != INTERCHAIN_DB) {
+            revert InterchainModule__CallerNotInterchainDB(msg.sender);
+        }
+        if (dstChainId == block.chainid) {
+            revert InterchainModule__ChainIdNotRemote(dstChainId);
+        }
+        uint256 requiredFee = _getModuleFee(dstChainId, dbNonce);
+        if (msg.value < requiredFee) {
+            revert InterchainModule__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
+        }
+        bytes memory moduleData = _fillModuleData(dstChainId, dbNonce);
+        bytes memory encodedBatch = ModuleEntryLib.encodeVersionedModuleEntry(versionedEntry, moduleData);
+        bytes32 ethSignedBatchHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch));
+        _requestVerification(dstChainId, encodedBatch);
+        emit EntryVerificationRequested(dstChainId, encodedBatch, ethSignedBatchHash);
     }
 
     /// @notice Get the Module fee for verifying a batch on the specified destination chain.
@@ -78,16 +86,22 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     /// @dev Should be called once the Module has verified the batch and needs to signal this
     /// to the InterchainDB.
     function _verifyBatch(bytes memory encodedModuleBatch) internal {
-        (bytes memory versionedBatch, bytes memory moduleData) =
-            ModuleBatchLib.decodeVersionedModuleBatch(encodedModuleBatch);
-        InterchainBatch memory batch = InterchainBatchLib.decodeBatchFromMemory(versionedBatch.getPayloadFromMemory());
-        if (batch.srcChainId == block.chainid) {
-            revert InterchainModule__ChainIdNotRemote(batch.srcChainId);
+        // TODO: remove
+    }
+
+    /// @dev Should be called once the Module has verified the entry and needs to signal this
+    /// to the InterchainDB.
+    function _verifyEntry(bytes memory encodedModuleEntry) internal {
+        (bytes memory versionedEntry, bytes memory moduleData) =
+            ModuleEntryLib.decodeVersionedModuleEntry(encodedModuleEntry);
+        InterchainEntry memory entry = InterchainEntryLib.decodeEntryFromMemory(versionedEntry.getPayloadFromMemory());
+        if (entry.srcChainId == block.chainid) {
+            revert InterchainModule__ChainIdNotRemote(entry.srcChainId);
         }
-        IInterchainDB(INTERCHAIN_DB).verifyRemoteBatch(versionedBatch);
-        _receiveModuleData(batch.srcChainId, batch.dbNonce, moduleData);
-        emit BatchVerified(
-            batch.srcChainId, encodedModuleBatch, MessageHashUtils.toEthSignedMessageHash(keccak256(encodedModuleBatch))
+        IInterchainDB(INTERCHAIN_DB).verifyRemoteEntry(versionedEntry);
+        _receiveModuleData(entry.srcChainId, entry.dbNonce, moduleData);
+        emit EntryVerified(
+            entry.srcChainId, encodedModuleEntry, MessageHashUtils.toEthSignedMessageHash(keccak256(encodedModuleEntry))
         );
     }
 
