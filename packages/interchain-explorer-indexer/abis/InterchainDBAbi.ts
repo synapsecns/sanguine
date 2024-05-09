@@ -1,14 +1,10 @@
 export const InterchainDBAbi = [
   {
-    inputs: [{ internalType: 'uint64', name: 'dbNonce', type: 'uint64' }],
-    name: 'InterchainDB__BatchDoesNotExist',
+    inputs: [{ internalType: 'uint64', name: 'entryIndex', type: 'uint64' }],
+    name: 'BatchingV1__EntryIndexNotZero',
     type: 'error',
   },
-  {
-    inputs: [{ internalType: 'uint64', name: 'dbNonce', type: 'uint64' }],
-    name: 'InterchainDB__BatchNotFinalized',
-    type: 'error',
-  },
+  { inputs: [], name: 'BatchingV1__ProofNotEmpty', type: 'error' },
   {
     inputs: [
       { internalType: 'address', name: 'module', type: 'address' },
@@ -24,7 +20,20 @@ export const InterchainDBAbi = [
         type: 'tuple',
       },
     ],
-    name: 'InterchainDB__ConflictingBatches',
+    name: 'InterchainDB__BatchConflict',
+    type: 'error',
+  },
+  {
+    inputs: [
+      { internalType: 'uint16', name: 'version', type: 'uint16' },
+      { internalType: 'uint16', name: 'required', type: 'uint16' },
+    ],
+    name: 'InterchainDB__BatchVersionMismatch',
+    type: 'error',
+  },
+  {
+    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
+    name: 'InterchainDB__ChainIdNotRemote',
     type: 'error',
   },
   {
@@ -38,32 +47,22 @@ export const InterchainDBAbi = [
   },
   {
     inputs: [
-      { internalType: 'uint256', name: 'actualFee', type: 'uint256' },
-      { internalType: 'uint256', name: 'expectedFee', type: 'uint256' },
-    ],
-    name: 'InterchainDB__IncorrectFeeAmount',
-    type: 'error',
-  },
-  {
-    inputs: [{ internalType: 'uint16', name: 'version', type: 'uint16' }],
-    name: 'InterchainDB__InvalidBatchVersion',
-    type: 'error',
-  },
-  {
-    inputs: [
       { internalType: 'uint64', name: 'dbNonce', type: 'uint64' },
       { internalType: 'uint64', name: 'start', type: 'uint64' },
       { internalType: 'uint64', name: 'end', type: 'uint64' },
     ],
-    name: 'InterchainDB__InvalidEntryRange',
+    name: 'InterchainDB__EntryRangeInvalid',
     type: 'error',
   },
-  { inputs: [], name: 'InterchainDB__NoModulesSpecified', type: 'error' },
   {
-    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
-    name: 'InterchainDB__SameChainId',
+    inputs: [
+      { internalType: 'uint256', name: 'feeAmount', type: 'uint256' },
+      { internalType: 'uint256', name: 'minRequired', type: 'uint256' },
+    ],
+    name: 'InterchainDB__FeeAmountBelowMin',
     type: 'error',
   },
+  { inputs: [], name: 'InterchainDB__ModulesNotProvided', type: 'error' },
   {
     inputs: [
       { internalType: 'uint8', name: 'bits', type: 'uint8' },
@@ -76,7 +75,7 @@ export const InterchainDBAbi = [
     inputs: [
       { internalType: 'bytes', name: 'versionedPayload', type: 'bytes' },
     ],
-    name: 'VersionedPayload__TooShort',
+    name: 'VersionedPayload__PayloadTooShort',
     type: 'error',
   },
   {
@@ -205,17 +204,14 @@ export const InterchainDBAbi = [
         components: [
           { internalType: 'uint64', name: 'srcChainId', type: 'uint64' },
           { internalType: 'uint64', name: 'dbNonce', type: 'uint64' },
-          { internalType: 'uint64', name: 'entryIndex', type: 'uint64' },
-          { internalType: 'bytes32', name: 'srcWriter', type: 'bytes32' },
-          { internalType: 'bytes32', name: 'dataHash', type: 'bytes32' },
+          { internalType: 'bytes32', name: 'batchRoot', type: 'bytes32' },
         ],
-        internalType: 'struct InterchainEntry',
-        name: 'entry',
+        internalType: 'struct InterchainBatch',
+        name: 'batch',
         type: 'tuple',
       },
-      { internalType: 'bytes32[]', name: 'proof', type: 'bytes32[]' },
     ],
-    name: 'checkVerification',
+    name: 'checkBatchVerification',
     outputs: [
       { internalType: 'uint256', name: 'moduleVerifiedAt', type: 'uint256' },
     ],
@@ -256,6 +252,27 @@ export const InterchainDBAbi = [
     name: 'getBatchLeafsPaginated',
     outputs: [{ internalType: 'bytes32[]', name: 'leafs', type: 'bytes32[]' }],
     stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        components: [
+          { internalType: 'uint64', name: 'srcChainId', type: 'uint64' },
+          { internalType: 'uint64', name: 'dbNonce', type: 'uint64' },
+          { internalType: 'uint64', name: 'entryIndex', type: 'uint64' },
+          { internalType: 'bytes32', name: 'srcWriter', type: 'bytes32' },
+          { internalType: 'bytes32', name: 'dataHash', type: 'bytes32' },
+        ],
+        internalType: 'struct InterchainEntry',
+        name: 'entry',
+        type: 'tuple',
+      },
+      { internalType: 'bytes32[]', name: 'proof', type: 'bytes32[]' },
+    ],
+    name: 'getBatchRoot',
+    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    stateMutability: 'pure',
     type: 'function',
   },
   {
@@ -309,6 +326,13 @@ export const InterchainDBAbi = [
       { internalType: 'uint64', name: 'dbNonce', type: 'uint64' },
       { internalType: 'uint64', name: 'entryIndex', type: 'uint64' },
     ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint64', name: 'dbNonce', type: 'uint64' }],
+    name: 'getVersionedBatch',
+    outputs: [{ internalType: 'bytes', name: 'versionedBatch', type: 'bytes' }],
     stateMutability: 'view',
     type: 'function',
   },

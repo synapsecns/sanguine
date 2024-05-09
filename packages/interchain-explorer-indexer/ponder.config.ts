@@ -2,8 +2,7 @@ import { createConfig } from '@ponder/core'
 import { http } from 'viem'
 
 import { InterchainClientV1Abi } from '@/abis/InterchainClientV1Abi'
-import { InterchainDBAbi } from './abis/InterchainDBAbi'
-import { SynapseModuleAbi } from './abis/SynapseModuleAbi'
+import { InterchainDBAbi } from '@/abis/InterchainDBAbi'
 
 const arbSepoliaTransport = http(process.env.ARB_SEPOLIA_RPC)
 const ethSepoliaTransport = http(process.env.ETH_SEPOLIA_RPC)
@@ -23,11 +22,11 @@ export default createConfig({
     InterchainClientV1: {
       network: {
         ethSepolia: {
-          address: '0xfcb988E117dbAa8c8b48047afd7c22d4a8321bCA',
+          address: '0x6bAb7426099ba52ac37F309903169C4c0A5f7534',
           startBlock: 5628137,
         },
         arbSepolia: {
-          address: '0x4AdfEb01C090e14BFA84411b74D0d03dDE12e39b',
+          address: '0x15ACDFd1F2027aE084B4d92da20D22cc945d07Ec',
           startBlock: 30278491,
         },
       },
@@ -36,28 +35,15 @@ export default createConfig({
     InterchainDB: {
       network: {
         ethSepolia: {
-          address: '0x1Ce3a9d87A26Ae56a43a5BB1D5e9A8D14550D0a4',
+          address: '0x8d50e833331A0D01d6F286881ce2C3A5DAD12e26',
           startBlock: 5628137,
         },
         arbSepolia: {
-          address: '0x4361F461c5Df0DCf109BA2CF0E46dfA26e73f54f',
+          address: '0x943257aE5037f5997ab302c4E158EFe48BBCE89d',
           startBlock: 30278491,
         },
       },
       abi: InterchainDBAbi,
-    },
-    SynapseModule: {
-      network: {
-        ethSepolia: {
-          address: '0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B',
-          startBlock: 5628137,
-        },
-        arbSepolia: {
-          address: '0xC13e2b478f6531Ef096FF05733Ed65E3bc7fC5AF',
-          startBlock: 30278491,
-        },
-      },
-      abi: SynapseModuleAbi,
     },
   },
 })
@@ -67,37 +53,27 @@ export const networkDetails: any = {
   11155111: {
     name: 'ethSepolia',
     InterchainClientV1: {
-      address: '0xfcb988E117dbAa8c8b48047afd7c22d4a8321bCA',
+      address: '0x6bAb7426099ba52ac37F309903169C4c0A5f7534',
       startBlock: 5628137,
       abi: InterchainClientV1Abi,
     },
     InterchainDB: {
-      address: '0x1Ce3a9d87A26Ae56a43a5BB1D5e9A8D14550D0a4',
+      address: '0x8d50e833331A0D01d6F286881ce2C3A5DAD12e26',
       startBlock: 5628137,
       abi: InterchainDBAbi,
-    },
-    SynapseModule: {
-      address: '0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B',
-      startBlock: 5628137,
-      abi: SynapseModuleAbi,
     },
   },
   421614: {
     name: 'arbSepolia',
     InterchainClientV1: {
-      address: '0x4AdfEb01C090e14BFA84411b74D0d03dDE12e39b',
+      address: '0x15ACDFd1F2027aE084B4d92da20D22cc945d07Ec',
       startBlock: 30278491,
       abi: InterchainClientV1Abi,
     },
     InterchainDB: {
-      address: '0x4361F461c5Df0DCf109BA2CF0E46dfA26e73f54f',
+      address: '0x943257aE5037f5997ab302c4E158EFe48BBCE89d',
       startBlock: 30278491,
       abi: InterchainDBAbi,
-    },
-    SynapseModule: {
-      address: '0xC13e2b478f6531Ef096FF05733Ed65E3bc7fC5AF',
-      startBlock: 30278491,
-      abi: SynapseModuleAbi,
     },
   },
 }

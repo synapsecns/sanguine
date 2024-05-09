@@ -207,7 +207,7 @@ ponder.on(
 
           const [{ requiredResponses, optimisticPeriod }, modules] = response
 
-          const appConfigV1 =
+          const appConfig =
             (await AppConfigV1.findUnique({ id: dstReceiver })) ??
             (await AppConfigV1.create({
               id: dstReceiver,
@@ -221,7 +221,7 @@ ponder.on(
           await InterchainBatch.update({
             id: batch.id,
             data: {
-              appConfigV1Id: appConfigV1.id,
+              appConfigV1Id: appConfig.id,
             },
           })
         }
