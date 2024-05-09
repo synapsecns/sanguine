@@ -4,7 +4,6 @@ pragma solidity 0.8.20;
 import {InterchainClientV1, InterchainClientV1Events, IInterchainClientV1} from "../contracts/InterchainClientV1.sol";
 import {IInterchainApp} from "../contracts/interfaces/IInterchainApp.sol";
 import {AppConfigV1} from "../contracts/libs/AppConfig.sol";
-import {BatchingV1Lib} from "../contracts/libs/BatchingV1.sol";
 import {InterchainTxDescriptor, InterchainTransaction} from "../contracts/libs/InterchainTransaction.sol";
 import {OptionsLib} from "../contracts/libs/Options.sol";
 
@@ -94,18 +93,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertEntryIndexNotZero(uint64 entryIndex) internal {
-        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__EntryIndexNotZero.selector, entryIndex));
-    }
-
     function expectRevertMsgValueMismatch(uint256 actual, uint256 required) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__MsgValueMismatch.selector, actual, required)
         );
-    }
-
-    function expectRevertProofNotEmpty() internal {
-        vm.expectRevert(BatchingV1Lib.BatchingV1__ProofNotEmpty.selector);
     }
 
     function expectRevertTxVersionMismatch(uint16 version, uint16 required) internal {

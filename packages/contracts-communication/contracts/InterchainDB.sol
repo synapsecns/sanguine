@@ -5,7 +5,6 @@ import {InterchainDBEvents} from "./events/InterchainDBEvents.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
-import {BatchingV1Lib} from "./libs/BatchingV1.sol";
 import {
     InterchainBatch, InterchainBatchLib, BatchKey, BATCH_UNVERIFIED, BATCH_CONFLICT
 } from "./libs/InterchainBatch.sol";
@@ -298,12 +297,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// @param entry         The Interchain Entry to get the batch root for
     /// @param proof         The Merkle proof of inclusion for the entry in the batch
     function getBatchRoot(InterchainEntry memory entry, bytes32[] calldata proof) external pure returns (bytes32) {
-        return BatchingV1Lib.getBatchRoot({
-            srcWriter: entry.srcWriter,
-            dataHash: entry.dataHash,
-            entryIndex: entry.entryIndex,
-            proof: proof
-        });
+        // TODO: remove
     }
 
     /// @notice Returns the size of the finalized batch with the given nonce.

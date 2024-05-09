@@ -9,7 +9,6 @@ import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
 import {AppConfigV1, AppConfigLib, APP_CONFIG_GUARD_DISABLED, APP_CONFIG_GUARD_DEFAULT} from "./libs/AppConfig.sol";
-import {BatchingV1Lib} from "./libs/BatchingV1.sol";
 import {InterchainBatch, BATCH_UNVERIFIED, BATCH_CONFLICT} from "./libs/InterchainBatch.sol";
 import {
     InterchainTransaction, InterchainTxDescriptor, InterchainTransactionLib
@@ -458,12 +457,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         InterchainBatch memory batch = InterchainBatch({
             srcChainId: icTx.srcChainId,
             dbNonce: icTx.dbNonce,
-            batchRoot: BatchingV1Lib.getBatchRoot({
-                srcWriter: linkedClient,
-                dataHash: transactionId,
-                entryIndex: icTx.entryIndex,
-                proof: proof
-            })
+            // TODO: fix
+            batchRoot: 0
         });
         address receiver = icTx.dstReceiver.bytes32ToAddress();
         (AppConfigV1 memory appConfig, address[] memory approvedModules) = getAppReceivingConfigV1(receiver);
