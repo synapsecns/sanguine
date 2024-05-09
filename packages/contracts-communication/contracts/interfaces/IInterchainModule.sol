@@ -10,7 +10,6 @@ interface IInterchainModule {
 
     function requestEntryVerification(
         uint64 dstChainId,
-        uint64 dbNonce,
         bytes memory versionedEntry
     )
         external
@@ -18,5 +17,5 @@ interface IInterchainModule {
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256);
+    function getModuleFee(uint64 dstChainId) external view returns (uint256);
 }

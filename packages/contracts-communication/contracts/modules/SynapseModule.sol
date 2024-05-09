@@ -195,14 +195,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     }
 
     /// @dev Internal logic to fill the module data for the specified destination chain.
-    function _fillModuleData(
-        uint64 dstChainId,
-        uint64 // dbNonce
-    )
-        internal
-        override
-        returns (bytes memory moduleData)
-    {
+    function _fillModuleData(uint64 dstChainId) internal override returns (bytes memory moduleData) {
         moduleData = _getSynapseGasOracle().getLocalGasData();
         // Exit early if data is empty
         if (moduleData.length == 0) {
@@ -236,15 +229,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
-    function _getModuleFee(
-        uint64 dstChainId,
-        uint64 // dbNonce
-    )
-        internal
-        view
-        override
-        returns (uint256)
-    {
+    function _getModuleFee(uint64 dstChainId) internal view override returns (uint256) {
         // On the remote chain the verifyRemoteEntry(entry, signatures) function will be called.
         // We need to figure out the calldata size for the remote call.
         // selector (4 bytes) + entry + signatures

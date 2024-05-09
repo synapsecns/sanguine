@@ -28,27 +28,19 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     /// with no guarantee of ordering.
     /// @dev Could be only called by the Interchain DataBase contract.
     /// @param dstChainId       The chain id of the destination chain
-    /// @param dbNonce          The database nonce of the entry on the source chain
     /// @param versionedEntry   The versioned entry to verify
-    function requestEntryVerification(
-        uint64 dstChainId,
-        uint64 dbNonce,
-        bytes memory versionedEntry
-    )
-        external
-        payable
-    {
+    function requestEntryVerification(uint64 dstChainId, bytes memory versionedEntry) external payable {
         if (msg.sender != INTERCHAIN_DB) {
             revert InterchainModule__CallerNotInterchainDB(msg.sender);
         }
         if (dstChainId == block.chainid) {
             revert InterchainModule__ChainIdNotRemote(dstChainId);
         }
-        uint256 requiredFee = _getModuleFee(dstChainId, dbNonce);
+        uint256 requiredFee = _getModuleFee(dstChainId);
         if (msg.value < requiredFee) {
             revert InterchainModule__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
         }
-        bytes memory moduleData = _fillModuleData(dstChainId, dbNonce);
+        bytes memory moduleData = _fillModuleData(dstChainId);
         bytes memory encodedEntry = ModuleEntryLib.encodeVersionedModuleEntry(versionedEntry, moduleData);
         bytes32 ethSignedEntryHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
         _requestVerification(dstChainId, encodedEntry);
@@ -57,9 +49,8 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
 
     /// @notice Get the Module fee for verifying an entry on the specified destination chain.
     /// @param dstChainId   The chain id of the destination chain
-    /// @param dbNonce      The database nonce of the entry on the source chain
-    function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256) {
-        return _getModuleFee(dstChainId, dbNonce);
+    function getModuleFee(uint64 dstChainId) external view returns (uint256) {
+        return _getModuleFee(dstChainId);
     }
 
     /// @dev Should be called once the Module has verified the entry and needs to signal this
@@ -83,11 +74,11 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     function _requestVerification(uint64 dstChainId, bytes memory encodedEntry) internal virtual {}
 
     /// @dev Internal logic to fill the module data for the specified destination chain.
-    function _fillModuleData(uint64 dstChainId, uint64 dbNonce) internal virtual returns (bytes memory) {}
+    function _fillModuleData(uint64 dstChainId) internal virtual returns (bytes memory) {}
 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
     function _receiveModuleData(uint64 srcChainId, uint64 dbNonce, bytes memory moduleData) internal virtual {}
 
     /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
-    function _getModuleFee(uint64 dstChainId, uint64 dbNonce) internal view virtual returns (uint256);
+    function _getModuleFee(uint64 dstChainId) internal view virtual returns (uint256);
 }
