@@ -128,7 +128,7 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
             AppConfigV1({
                 requiredResponses: APP_REQUIRED_RESPONSES,
                 optimisticPeriod: APP_OPTIMISTIC_PERIOD,
-                guardFlag: 1,
+                guardFlag: 0,
                 guard: address(0)
             }).encodeAppConfigV1()
         );
