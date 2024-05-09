@@ -73,7 +73,7 @@ library InterchainTransactionLib {
     function payloadSize(uint256 optionsLen, uint256 messageLen) internal pure returns (uint256) {
         // 2 bytes are reserved for the transaction version
         // + 5 fields * 32 bytes (3 values for static, 2 offsets for dynamic) + 2 * 32 bytes (lengths for dynamic) = 226
-        // (srcChainId, dstChainId, dbNonce, entryIndex) are merged into a single 32 bytes field
+        // (srcChainId, dstChainId, dbNonce) are merged into a single 32 bytes field
         // Both options and message are dynamic fields, which are padded up to 32 bytes
         return 226 + optionsLen.roundUpToWord() + messageLen.roundUpToWord();
     }

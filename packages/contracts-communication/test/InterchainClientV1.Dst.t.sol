@@ -32,10 +32,8 @@ import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 /// 5. Mark transaction as executed and emit an event.
 abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     uint64 public constant MOCK_DB_NONCE = 444;
-    uint64 public constant MOCK_ENTRY_INDEX = 0;
 
     uint64 public constant MOCK_LOCAL_DB_NONCE = 123;
-    uint64 public constant MOCK_LOCAL_ENTRY_INDEX = 0;
 
     uint256 public constant BIGGER_PERIOD = 7 days;
 
@@ -105,20 +103,11 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         InterchainEntry memory entry = InterchainEntry({
             srcChainId: REMOTE_CHAIN_ID,
             dbNonce: desc.dbNonce,
-            entryValue: InterchainEntryLib.getEntryValue({srcWriter: MOCK_REMOTE_CLIENT, dataHash: desc.transactionId})
+            entryValue: InterchainEntryLib.getEntryValue({srcWriter: MOCK_REMOTE_CLIENT, digest: desc.transactionId})
         });
         vm.mockCall(
             icDB, abi.encodeCall(InterchainDBMock.checkEntryVerification, (dstModule, entry)), abi.encode(verifiedAt)
         );
-    }
-
-    /// @dev Override the local DB's returned next entry index (both for reads and writes)
-    function mockLocalNextEntryIndex(uint64 dbNonce, uint64 entryIndex) internal {
-        bytes memory returnData = abi.encode(dbNonce, entryIndex);
-        // Use partial calldata to override return values for calls to these functions with any arguments.
-        vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.getNextEntryIndex.selector), returnData);
-        vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.writeEntry.selector), returnData);
-        vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.writeEntryWithVerification.selector), returnData);
     }
 
     // ═════════════════════════════════════════════════ TEST DATA ═════════════════════════════════════════════════════
@@ -178,7 +167,6 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
             dstChainId: LOCAL_CHAIN_ID,
             dstReceiver: dstReceiverBytes32,
             dbNonce: MOCK_DB_NONCE,
-            entryIndex: MOCK_ENTRY_INDEX,
             options: encodedOptions,
             message: MOCK_MESSAGE
         });
@@ -194,11 +182,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
     }
 
     function getTxDescriptor(InterchainTransaction memory icTx) internal view returns (InterchainTxDescriptor memory) {
-        return InterchainTxDescriptor({
-            dbNonce: icTx.dbNonce,
-            entryIndex: icTx.entryIndex,
-            transactionId: keccak256(getEncodedTx(icTx))
-        });
+        return InterchainTxDescriptor({dbNonce: icTx.dbNonce, transactionId: keccak256(getEncodedTx(icTx))});
     }
 
     // ══════════════════════════════════════════════ TEST ASSERTIONS ══════════════════════════════════════════════════
@@ -551,28 +535,6 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         icClient.isExecutable(encodedTx);
         expectRevertDstChainIdNotLocal(UNKNOWN_CHAIN_ID);
         executeTransaction(encodedTx);
-    }
-
-    function test_execute_revert_revert_nonZeroEntryIndex() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx();
-        icTx.entryIndex = 1;
-        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
-        assertCorrectReadiness(icTx, IInterchainClientV1.TxReadiness.UndeterminedRevert);
-        expectRevertEntryIndexNotZero(icTx.entryIndex);
-        icClient.isExecutable(encodedTx, emptyProof);
-        expectRevertEntryIndexNotZero(icTx.entryIndex);
-        executeTransaction(encodedTx, emptyProof);
-    }
-
-    function test_execute_revert_revert_nonEmptyProof() public {
-        (InterchainTransaction memory icTx,) = constructInterchainTx();
-        bytes memory encodedTx = encodeAndMakeExecutable(icTx);
-        bytes32[] memory proof = new bytes32[](1);
-        assertCorrectReadiness(icTx, proof, IInterchainClientV1.TxReadiness.UndeterminedRevert, 0, 0);
-        expectRevertProofNotEmpty();
-        icClient.isExecutable(encodedTx, proof);
-        expectRevertProofNotEmpty();
-        executeTransaction(encodedTx, proof);
     }
 
     function test_execute_revert_emptyOptions() public {

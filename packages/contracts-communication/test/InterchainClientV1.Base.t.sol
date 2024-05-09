@@ -209,7 +209,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         emit InterchainTransactionSent({
             transactionId: desc.transactionId,
             dbNonce: desc.dbNonce,
-            entryIndex: desc.entryIndex,
             dstChainId: icTx.dstChainId,
             srcSender: icTx.srcSender,
             dstReceiver: icTx.dstReceiver,
@@ -232,28 +231,15 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         emit InterchainTransactionReceived({
             transactionId: desc.transactionId,
             dbNonce: desc.dbNonce,
-            entryIndex: desc.entryIndex,
             srcChainId: icTx.srcChainId,
             srcSender: icTx.srcSender,
             dstReceiver: icTx.dstReceiver
         });
     }
 
-    function expectEventExecutionProofWritten(
-        bytes32 transactionId,
-        uint64 localDbNonce,
-        uint64 localEntryIndex,
-        address executor
-    )
-        internal
-    {
+    function expectEventExecutionProofWritten(bytes32 transactionId, uint64 localDbNonce, address executor) internal {
         vm.expectEmit(address(icClient));
-        emit ExecutionProofWritten({
-            transactionId: transactionId,
-            dbNonce: localDbNonce,
-            entryIndex: localEntryIndex,
-            executor: executor
-        });
+        emit ExecutionProofWritten({transactionId: transactionId, dbNonce: localDbNonce, executor: executor});
     }
 
     // ════════════════════════════════════════════════ ASSERTIONS ═════════════════════════════════════════════════════
@@ -266,7 +252,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         view
     {
         assertEq(desc.dbNonce, icTx.dbNonce, "!desc.dbNonce");
-        assertEq(desc.entryIndex, icTx.entryIndex, "!desc.entryIndex");
         assertEq(desc.transactionId, keccak256(getEncodedTx(icTx)), "!desc.transactionId");
     }
 
@@ -276,7 +261,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         assertEq(icTx.dstChainId, expected.dstChainId, "!dstChainId");
         assertEq(icTx.dstReceiver, expected.dstReceiver, "!dstReceiver");
         assertEq(icTx.dbNonce, expected.dbNonce, "!dbNonce");
-        assertEq(icTx.entryIndex, expected.entryIndex, "!entryIndex");
         assertEq(icTx.options, expected.options, "!options");
         assertEq(icTx.message, expected.message, "!message");
     }

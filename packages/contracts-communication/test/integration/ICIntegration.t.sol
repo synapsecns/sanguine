@@ -56,7 +56,6 @@ abstract contract ICIntegrationTest is
         emit InterchainTransactionSent({
             transactionId: getTxId(icTx),
             dbNonce: icTx.dbNonce,
-            entryIndex: icTx.entryIndex,
             dstChainId: icTx.dstChainId,
             srcSender: icTx.srcSender,
             dstReceiver: icTx.dstReceiver,
@@ -72,7 +71,6 @@ abstract contract ICIntegrationTest is
         emit InterchainTransactionReceived({
             transactionId: getTxId(icTx),
             dbNonce: icTx.dbNonce,
-            entryIndex: icTx.entryIndex,
             srcChainId: icTx.srcChainId,
             srcSender: icTx.srcSender,
             dstReceiver: icTx.dstReceiver
@@ -123,9 +121,8 @@ abstract contract ICIntegrationTest is
     }
 
     function expectAppCall(InterchainTransaction memory icTx, OptionsV1 memory options) internal {
-        bytes memory expectedCalldata = abi.encodeCall(
-            IInterchainApp.appReceive, (icTx.srcChainId, icTx.srcSender, icTx.dbNonce, icTx.entryIndex, icTx.message)
-        );
+        bytes memory expectedCalldata =
+            abi.encodeCall(IInterchainApp.appReceive, (icTx.srcChainId, icTx.srcSender, icTx.dbNonce, icTx.message));
         vm.expectCall({
             callee: localApp(),
             msgValue: options.gasAirdrop,
