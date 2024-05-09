@@ -16,7 +16,6 @@ make/ @trajan0x
 
 packages/contracts-core/ @ChiTimesChi @trajan0x
 packages/contracts-rfq @ChiTimesChi @mikeyrf
-packages/docs/  @trajan0x
 packages/sdk-router/ @aureliusbtc @ChiTimesChi @trajan0x
 packages/explorer-ui/ @trajan0x  @bigboydiamonds @abtestingalpha
 packages/rest-api/ @trajan0x @Defi-Moses
