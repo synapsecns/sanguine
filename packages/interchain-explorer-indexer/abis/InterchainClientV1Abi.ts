@@ -9,61 +9,91 @@ export const InterchainClientV1Abi = [
   },
   {
     inputs: [{ internalType: 'uint16', name: 'version', type: 'uint16' }],
-    name: 'AppConfigLib__IncorrectVersion',
+    name: 'AppConfigLib__VersionInvalid',
     type: 'error',
   },
   {
-    inputs: [
-      { internalType: 'uint256', name: 'actual', type: 'uint256' },
-      { internalType: 'uint256', name: 'required', type: 'uint256' },
-    ],
-    name: 'InterchainClientV1__FeeAmountTooLow',
+    inputs: [{ internalType: 'uint64', name: 'entryIndex', type: 'uint64' }],
+    name: 'BatchingV1__EntryIndexNotZero',
     type: 'error',
   },
+  { inputs: [], name: 'BatchingV1__ProofNotEmpty', type: 'error' },
   {
-    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
-    name: 'InterchainClientV1__IncorrectDstChainId',
-    type: 'error',
-  },
-  {
-    inputs: [
-      { internalType: 'uint256', name: 'actual', type: 'uint256' },
-      { internalType: 'uint256', name: 'required', type: 'uint256' },
-    ],
-    name: 'InterchainClientV1__IncorrectMsgValue',
-    type: 'error',
-  },
-  {
-    inputs: [{ internalType: 'uint16', name: 'version', type: 'uint16' }],
-    name: 'InterchainClientV1__InvalidTransactionVersion',
+    inputs: [{ internalType: 'address', name: 'module', type: 'address' }],
+    name: 'InterchainClientV1__BatchConflict',
     type: 'error',
   },
   {
     inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
-    name: 'InterchainClientV1__NoLinkedClient',
+    name: 'InterchainClientV1__ChainIdNotLinked',
     type: 'error',
   },
   {
-    inputs: [{ internalType: 'bytes32', name: 'client', type: 'bytes32' }],
-    name: 'InterchainClientV1__NotEVMClient',
+    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
+    name: 'InterchainClientV1__ChainIdNotRemote',
+    type: 'error',
+  },
+  {
+    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
+    name: 'InterchainClientV1__DstChainIdNotLocal',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'InterchainClientV1__NotEnoughGasSupplied',
+    name: 'InterchainClientV1__ExecutionServiceZeroAddress',
     type: 'error',
   },
   {
     inputs: [
-      { internalType: 'uint256', name: 'actual', type: 'uint256' },
-      { internalType: 'uint256', name: 'required', type: 'uint256' },
+      { internalType: 'uint256', name: 'feeAmount', type: 'uint256' },
+      { internalType: 'uint256', name: 'minRequired', type: 'uint256' },
     ],
-    name: 'InterchainClientV1__NotEnoughResponses',
+    name: 'InterchainClientV1__FeeAmountBelowMin',
     type: 'error',
   },
   {
-    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
-    name: 'InterchainClientV1__NotRemoteChainId',
+    inputs: [
+      { internalType: 'uint256', name: 'gasLeft', type: 'uint256' },
+      { internalType: 'uint256', name: 'minRequired', type: 'uint256' },
+    ],
+    name: 'InterchainClientV1__GasLeftBelowMin',
+    type: 'error',
+  },
+  { inputs: [], name: 'InterchainClientV1__GuardZeroAddress', type: 'error' },
+  {
+    inputs: [{ internalType: 'bytes32', name: 'client', type: 'bytes32' }],
+    name: 'InterchainClientV1__LinkedClientNotEVM',
+    type: 'error',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: 'msgValue', type: 'uint256' },
+      { internalType: 'uint256', name: 'required', type: 'uint256' },
+    ],
+    name: 'InterchainClientV1__MsgValueMismatch',
+    type: 'error',
+  },
+  {
+    inputs: [{ internalType: 'address', name: 'receiver', type: 'address' }],
+    name: 'InterchainClientV1__ReceiverNotICApp',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InterchainClientV1__ReceiverZeroAddress',
+    type: 'error',
+  },
+  {
+    inputs: [{ internalType: 'address', name: 'receiver', type: 'address' }],
+    name: 'InterchainClientV1__ReceiverZeroRequiredResponses',
+    type: 'error',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: 'responsesAmount', type: 'uint256' },
+      { internalType: 'uint256', name: 'minRequired', type: 'uint256' },
+    ],
+    name: 'InterchainClientV1__ResponsesAmountBelowMin',
     type: 'error',
   },
   {
@@ -80,15 +110,17 @@ export const InterchainClientV1Abi = [
     name: 'InterchainClientV1__TxNotExecuted',
     type: 'error',
   },
-  { inputs: [], name: 'InterchainClientV1__ZeroReceiver', type: 'error' },
   {
-    inputs: [],
-    name: 'InterchainClientV1__ZeroRequiredResponses',
+    inputs: [
+      { internalType: 'uint16', name: 'txVersion', type: 'uint16' },
+      { internalType: 'uint16', name: 'required', type: 'uint16' },
+    ],
+    name: 'InterchainClientV1__TxVersionMismatch',
     type: 'error',
   },
   {
     inputs: [{ internalType: 'uint16', name: 'version', type: 'uint16' }],
-    name: 'OptionsLib__IncorrectVersion',
+    name: 'OptionsLib__VersionInvalid',
     type: 'error',
   },
   {
@@ -109,25 +141,25 @@ export const InterchainClientV1Abi = [
     name: 'SafeCastOverflowedUintDowncast',
     type: 'error',
   },
-  { inputs: [], name: 'VersionedPayload__PrecompileFailed', type: 'error' },
   {
     inputs: [
       { internalType: 'bytes', name: 'versionedPayload', type: 'bytes' },
     ],
-    name: 'VersionedPayload__TooShort',
+    name: 'VersionedPayload__PayloadTooShort',
     type: 'error',
   },
+  { inputs: [], name: 'VersionedPayload__PrecompileFailed', type: 'error' },
   {
     anonymous: false,
     inputs: [
       {
         indexed: false,
         internalType: 'address',
-        name: 'executionFees',
+        name: 'guard',
         type: 'address',
       },
     ],
-    name: 'ExecutionFeesSet',
+    name: 'DefaultGuardSet',
     type: 'event',
   },
   {
@@ -331,6 +363,13 @@ export const InterchainClientV1Abi = [
     type: 'function',
   },
   {
+    inputs: [],
+    name: 'defaultGuard',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [
       {
         components: [
@@ -354,13 +393,6 @@ export const InterchainClientV1Abi = [
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'executionFees',
-    outputs: [{ internalType: 'address', name: '', type: 'address' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
     inputs: [{ internalType: 'address', name: 'receiver', type: 'address' }],
     name: 'getAppReceivingConfigV1',
     outputs: [
@@ -376,6 +408,8 @@ export const InterchainClientV1Abi = [
             name: 'optimisticPeriod',
             type: 'uint256',
           },
+          { internalType: 'uint256', name: 'guardFlag', type: 'uint256' },
+          { internalType: 'address', name: 'guard', type: 'address' },
         ],
         internalType: 'struct AppConfigV1',
         name: 'config',
@@ -427,6 +461,38 @@ export const InterchainClientV1Abi = [
     name: 'getLinkedClientEVM',
     outputs: [
       { internalType: 'address', name: 'linkedClientEVM', type: 'address' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        components: [
+          { internalType: 'uint64', name: 'srcChainId', type: 'uint64' },
+          { internalType: 'uint64', name: 'dstChainId', type: 'uint64' },
+          { internalType: 'uint64', name: 'dbNonce', type: 'uint64' },
+          { internalType: 'uint64', name: 'entryIndex', type: 'uint64' },
+          { internalType: 'bytes32', name: 'srcSender', type: 'bytes32' },
+          { internalType: 'bytes32', name: 'dstReceiver', type: 'bytes32' },
+          { internalType: 'bytes', name: 'options', type: 'bytes' },
+          { internalType: 'bytes', name: 'message', type: 'bytes' },
+        ],
+        internalType: 'struct InterchainTransaction',
+        name: 'icTx',
+        type: 'tuple',
+      },
+      { internalType: 'bytes32[]', name: 'proof', type: 'bytes32[]' },
+    ],
+    name: 'getTxReadinessV1',
+    outputs: [
+      {
+        internalType: 'enum IInterchainClientV1.TxReadiness',
+        name: 'status',
+        type: 'uint8',
+      },
+      { internalType: 'bytes32', name: 'firstArg', type: 'bytes32' },
+      { internalType: 'bytes32', name: 'secondArg', type: 'bytes32' },
     ],
     stateMutability: 'view',
     type: 'function',
@@ -517,10 +583,8 @@ export const InterchainClientV1Abi = [
     type: 'function',
   },
   {
-    inputs: [
-      { internalType: 'address', name: 'executionFees_', type: 'address' },
-    ],
-    name: 'setExecutionFees',
+    inputs: [{ internalType: 'address', name: 'guard', type: 'address' }],
+    name: 'setDefaultGuard',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
