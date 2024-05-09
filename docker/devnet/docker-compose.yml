@@ -184,6 +184,7 @@ services:
     restart: unless-stopped
     image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
+    platform: linux/arm64
     command: >
       --host=0.0.0.0
       --chain-id=42
@@ -202,6 +203,7 @@ services:
     restart: unless-stopped
     image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
+    platform: linux/arm64
     command: >
       --host=0.0.0.0
       --chain-id=43
@@ -220,6 +222,7 @@ services:
     restart: unless-stopped
     image: 'ghcr.io/foundry-rs/foundry:latest'
     entrypoint: anvil
+    platform: linux/arm64
     command: >
       --host=0.0.0.0
       --chain-id=44
@@ -232,7 +235,7 @@ services:
     ports:
       - '8044:8545'
     volumes:
-      - chain_b_data:/data
+      - chain_c_data:/data
 
   tracing:
     restart: unless-stopped
