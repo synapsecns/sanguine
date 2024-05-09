@@ -1,9 +1,9 @@
 {
-  "address": "0x4361F461c5Df0DCf109BA2CF0E46dfA26e73f54f",
+  "address": "0x943257aE5037f5997ab302c4E158EFe48BBCE89d",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x21b9241ce3df67fc40b23144c84cf01f3edf075fad4ebb9e0b0196a0462501a4",
-    "blockNumber": 34357459
+    "hash": "0xa0586b35600ba365c0628535ca64244ab0c581c2f24394ad7d806c7b2c78b843",
+    "blockNumber": 41156776
   },
   "abi": [
     {
@@ -21,7 +21,7 @@
     },
     {
       "type": "function",
-      "name": "checkVerification",
+      "name": "checkBatchVerification",
       "inputs": [
         {
           "name": "dstModule",
@@ -29,9 +29,9 @@
           "internalType": "address"
         },
         {
-          "name": "entry",
+          "name": "batch",
           "type": "tuple",
-          "internalType": "struct InterchainEntry",
+          "internalType": "struct InterchainBatch",
           "components": [
             {
               "name": "srcChainId",
@@ -44,26 +44,11 @@
               "internalType": "uint64"
             },
             {
-              "name": "entryIndex",
-              "type": "uint64",
-              "internalType": "uint64"
-            },
-            {
-              "name": "srcWriter",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            },
-            {
-              "name": "dataHash",
+              "name": "batchRoot",
               "type": "bytes32",
               "internalType": "bytes32"
             }
           ]
-        },
-        {
-          "name": "proof",
-          "type": "bytes32[]",
-          "internalType": "bytes32[]"
         }
       ],
       "outputs": [
@@ -158,6 +143,57 @@
         }
       ],
       "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getBatchRoot",
+      "inputs": [
+        {
+          "name": "entry",
+          "type": "tuple",
+          "internalType": "struct InterchainEntry",
+          "components": [
+            {
+              "name": "srcChainId",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "entryIndex",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "srcWriter",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "dataHash",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            }
+          ]
+        },
+        {
+          "name": "proof",
+          "type": "bytes32[]",
+          "internalType": "bytes32[]"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "pure"
     },
     {
       "type": "function",
@@ -277,6 +313,25 @@
           "name": "entryIndex",
           "type": "uint64",
           "internalType": "uint64"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getVersionedBatch",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "versionedBatch",
+          "type": "bytes",
+          "internalType": "bytes"
         }
       ],
       "stateMutability": "view"
@@ -489,10 +544,10 @@
     },
     {
       "type": "error",
-      "name": "InterchainDB__BatchDoesNotExist",
+      "name": "BatchingV1__EntryIndexNotZero",
       "inputs": [
         {
-          "name": "dbNonce",
+          "name": "entryIndex",
           "type": "uint64",
           "internalType": "uint64"
         }
@@ -500,18 +555,12 @@
     },
     {
       "type": "error",
-      "name": "InterchainDB__BatchNotFinalized",
-      "inputs": [
-        {
-          "name": "dbNonce",
-          "type": "uint64",
-          "internalType": "uint64"
-        }
-      ]
+      "name": "BatchingV1__ProofNotEmpty",
+      "inputs": []
     },
     {
       "type": "error",
-      "name": "InterchainDB__ConflictingBatches",
+      "name": "InterchainDB__BatchConflict",
       "inputs": [
         {
           "name": "module",
@@ -549,6 +598,33 @@
     },
     {
       "type": "error",
+      "name": "InterchainDB__BatchVersionMismatch",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint16",
+          "internalType": "uint16"
+        },
+        {
+          "name": "required",
+          "type": "uint16",
+          "internalType": "uint16"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__ChainIdNotRemote",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
+    },
+    {
+      "type": "error",
       "name": "InterchainDB__EntryIndexOutOfRange",
       "inputs": [
         {
@@ -570,34 +646,7 @@
     },
     {
       "type": "error",
-      "name": "InterchainDB__IncorrectFeeAmount",
-      "inputs": [
-        {
-          "name": "actualFee",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "expectedFee",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainDB__InvalidBatchVersion",
-      "inputs": [
-        {
-          "name": "version",
-          "type": "uint16",
-          "internalType": "uint16"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainDB__InvalidEntryRange",
+      "name": "InterchainDB__EntryRangeInvalid",
       "inputs": [
         {
           "name": "dbNonce",
@@ -618,19 +667,24 @@
     },
     {
       "type": "error",
-      "name": "InterchainDB__NoModulesSpecified",
-      "inputs": []
+      "name": "InterchainDB__FeeAmountBelowMin",
+      "inputs": [
+        {
+          "name": "feeAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "minRequired",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
     },
     {
       "type": "error",
-      "name": "InterchainDB__SameChainId",
-      "inputs": [
-        {
-          "name": "chainId",
-          "type": "uint64",
-          "internalType": "uint64"
-        }
-      ]
+      "name": "InterchainDB__ModulesNotProvided",
+      "inputs": []
     },
     {
       "type": "error",
@@ -650,7 +704,7 @@
     },
     {
       "type": "error",
-      "name": "VersionedPayload__TooShort",
+      "name": "VersionedPayload__PayloadTooShort",
       "inputs": [
         {
           "name": "versionedPayload",
