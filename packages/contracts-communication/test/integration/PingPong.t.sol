@@ -13,6 +13,8 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
     uint256 public constant PING_PONG_BALANCE = 1000 ether;
     uint256 public constant COUNTER = 42;
 
+    uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
+
     OptionsV1 public ppOptions = OptionsV1({gasLimit: 500_000, gasAirdrop: 0});
 
     event PingReceived(uint256 counter, uint64 dbNonce);
@@ -75,5 +77,9 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
     /// @notice Message that destination chain PingPongApp sends back to source chain.
     function getDstMessage() internal pure override returns (bytes memory) {
         return abi.encode(COUNTER - 1);
+    }
+
+    function getAppOptimisticPeriod() internal pure override returns (uint256) {
+        return APP_OPTIMISTIC_PERIOD;
     }
 }

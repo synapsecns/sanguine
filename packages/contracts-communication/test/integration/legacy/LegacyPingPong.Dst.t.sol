@@ -163,22 +163,9 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
         executeTx(icOptions);
     }
 
-    function test_interchainExecute_revert_notConfirmed_guardMarked() public {
-        markInvalidByGuard(srcFullEntry);
-        expectClientRevertEntryConflict(guard);
-        executeTx(icOptions);
-    }
-
     function test_interchainExecute_revert_confirmed_sameBlock() public {
         module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
-        executeTx(icOptions);
-    }
-
-    function test_interchainExecute_revert_confirmed_sameBlock_guardMarked() public {
-        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
-        markInvalidByGuard(srcFullEntry);
-        expectClientRevertEntryConflict(guard);
         executeTx(icOptions);
     }
 
@@ -189,12 +176,40 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
         executeTx(icOptions);
     }
 
-    function test_interchainExecute_revert_confirmed_periodMinusOneSecond_guardMarked() public {
-        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
-        skip(APP_OPTIMISTIC_PERIOD);
+    /// @notice MessageBus doesn't opt in for the guard, so the guard conflict is not checked
+    function test_interchainExecute_state_db_guardMarked() public {
         markInvalidByGuard(srcFullEntry);
-        expectClientRevertEntryConflict(guard);
-        executeTx(icOptions);
+        test_interchainExecute_state_db();
+    }
+
+    function test_interchainExecute_state_execService_guardMarked() public {
+        markInvalidByGuard(srcFullEntry);
+        test_interchainExecute_state_execService();
+    }
+
+    function test_interchainExecute_state_legacyPingPong_guardMarked() public {
+        markInvalidByGuard(srcFullEntry);
+        test_interchainExecute_state_legacyPingPong();
+    }
+
+    function test_interchainExecute_state_synapseModule_guardMarked() public {
+        markInvalidByGuard(srcFullEntry);
+        test_interchainExecute_state_synapseModule();
+    }
+
+    function test_interchainExecute_revert_notConfirmed_guardMarked() public {
+        markInvalidByGuard(srcFullEntry);
+        test_interchainExecute_revert_notConfirmed();
+    }
+
+    function test_interchainExecute_revert_confirmed_sameBlock_guardMarked() public {
+        markInvalidByGuard(srcFullEntry);
+        test_interchainExecute_revert_confirmed_sameBlock();
+    }
+
+    function test_interchainExecute_revert_confirmed_periodMinusOneSecond_guardMarked() public {
+        markInvalidByGuard(srcFullEntry);
+        test_interchainExecute_revert_confirmed_periodMinusOneSecond();
     }
 
     function test_interchainExecute_revert_alreadyExecuted() public {
@@ -218,8 +233,7 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
 
     function test_isExecutable_revert_notConfirmed_guardMarked() public {
         markInvalidByGuard(srcFullEntry);
-        expectClientRevertEntryConflict(guard);
-        icClient.isExecutable(encodedSrcTx);
+        test_isExecutable_revert_notConfirmed();
     }
 
     function test_isExecutable_revert_confirmed_sameBlock() public {
@@ -229,10 +243,8 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     }
 
     function test_isExecutable_revert_confirmed_sameBlock_guardMarked() public {
-        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         markInvalidByGuard(srcFullEntry);
-        expectClientRevertEntryConflict(guard);
-        icClient.isExecutable(encodedSrcTx);
+        test_isExecutable_revert_confirmed_sameBlock();
     }
 
     function test_isExecutable_revert_confirmed_periodMinusOneSecond() public {
@@ -243,11 +255,8 @@ contract LegacyPingPongDstIntegrationTest is LegacyPingPongIntegrationTest {
     }
 
     function test_isExecutable_revert_confirmed_periodMinusOneSecond_guardMarked() public {
-        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
-        skip(APP_OPTIMISTIC_PERIOD);
         markInvalidByGuard(srcFullEntry);
-        expectClientRevertEntryConflict(guard);
-        icClient.isExecutable(encodedSrcTx);
+        test_isExecutable_revert_confirmed_periodMinusOneSecond();
     }
 
     function test_isExecutable_revert_alreadyExecuted() public {
