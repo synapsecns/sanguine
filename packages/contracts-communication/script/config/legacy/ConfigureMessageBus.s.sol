@@ -2,7 +2,6 @@
 pragma solidity 0.8.20;
 
 import {MessageBus} from "../../../contracts/legacy/MessageBus.sol";
-import {TypeCasts} from "../../../contracts/libs/TypeCasts.sol";
 
 import {stdJson, ConfigureAppV1} from "../ConfigureAppV1.s.sol";
 

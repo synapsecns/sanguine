@@ -17,22 +17,22 @@ library ThresholdECDSALib {
 
     uint256 private constant SIGNATURE_LENGTH = 65;
 
-    error ThresholdECDSA__AlreadySigner(address account);
-    error ThresholdECDSA__IncorrectSignaturesLength(uint256 length);
-    error ThresholdECDSA__InvalidSignature(bytes signature);
-    error ThresholdECDSA__NotEnoughSignatures(uint256 provided, uint256 threshold);
-    error ThresholdECDSA__NotSigner(address account);
     error ThresholdECDSA__RecoveredSignersNotSorted();
-    error ThresholdECDSA__ZeroAddress();
-    error ThresholdECDSA__ZeroThreshold();
+    error ThresholdECDSA__SignaturesAmountBelowThreshold(uint256 signaturesAmount, uint256 threshold);
+    error ThresholdECDSA__SignaturesPayloadLengthInvalid(uint256 length);
+    error ThresholdECDSA__SignerAlreadyAdded(address account);
+    error ThresholdECDSA__SignerNotAdded(address account);
+    error ThresholdECDSA__SignerRecoveryFailed(bytes signature);
+    error ThresholdECDSA__SignerZeroAddress();
+    error ThresholdECDSA__ThresholdZero();
 
     /// @notice Adds a new signer to the list of signers.
     /// @dev Will revert if the account is already a signer.
     function addSigner(ThresholdECDSA storage self, address account) internal {
-        if (account == address(0)) revert ThresholdECDSA__ZeroAddress();
+        if (account == address(0)) revert ThresholdECDSA__SignerZeroAddress();
         bool added = self._signers.add(account);
         if (!added) {
-            revert ThresholdECDSA__AlreadySigner(account);
+            revert ThresholdECDSA__SignerAlreadyAdded(account);
         }
     }
 
@@ -41,14 +41,14 @@ library ThresholdECDSALib {
     function removeSigner(ThresholdECDSA storage self, address account) internal {
         bool removed = self._signers.remove(account);
         if (!removed) {
-            revert ThresholdECDSA__NotSigner(account);
+            revert ThresholdECDSA__SignerNotAdded(account);
         }
     }
 
     /// @notice Modifies the threshold of signatures required.
     function modifyThreshold(ThresholdECDSA storage self, uint256 threshold) internal {
         if (threshold == 0) {
-            revert ThresholdECDSA__ZeroThreshold();
+            revert ThresholdECDSA__ThresholdZero();
         }
         self._threshold = threshold;
     }
@@ -79,12 +79,12 @@ library ThresholdECDSALib {
         // Figure out the signaturesAmount of signatures provided
         uint256 signaturesAmount = signatures.length / SIGNATURE_LENGTH;
         if (signaturesAmount * SIGNATURE_LENGTH != signatures.length) {
-            revert ThresholdECDSA__IncorrectSignaturesLength(signatures.length);
+            revert ThresholdECDSA__SignaturesPayloadLengthInvalid(signatures.length);
         }
         // First, check that threshold is configured and enough signatures are provided
         uint256 threshold = self._threshold;
         if (threshold == 0) {
-            revert ThresholdECDSA__ZeroThreshold();
+            revert ThresholdECDSA__ThresholdZero();
         }
         uint256 offset = 0;
         uint256 validSignatures = 0;
@@ -93,7 +93,7 @@ library ThresholdECDSALib {
             bytes memory signature = signatures[offset:offset + SIGNATURE_LENGTH];
             (address recovered, ECDSA.RecoverError error,) = ECDSA.tryRecover(hash, signature);
             if (error != ECDSA.RecoverError.NoError) {
-                revert ThresholdECDSA__InvalidSignature(signature);
+                revert ThresholdECDSA__SignerRecoveryFailed(signature);
             }
             // Check that the recovered addresses list is strictly increasing
             if (recovered <= lastSigner) {
@@ -107,7 +107,7 @@ library ThresholdECDSALib {
             offset += SIGNATURE_LENGTH;
         }
         if (validSignatures < threshold) {
-            revert ThresholdECDSA__NotEnoughSignatures(validSignatures, threshold);
+            revert ThresholdECDSA__SignaturesAmountBelowThreshold(validSignatures, threshold);
         }
     }
 }

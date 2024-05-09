@@ -3,8 +3,9 @@ package inventory
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -220,10 +221,11 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 			// update rebalance model in db
 			requestIDHex := hexutil.Encode(parsedEvent.RequestID[:])
 			rebalanceModel := reldb.Rebalance{
-				RebalanceID:  &requestIDHex,
-				Origin:       uint64(chainID),
-				OriginTxHash: log.TxHash,
-				Status:       reldb.RebalancePending,
+				RebalanceID:     &requestIDHex,
+				Origin:          uint64(chainID),
+				OriginTxHash:    log.TxHash,
+				OriginTokenAddr: parsedEvent.Token,
+				Status:          reldb.RebalancePending,
 			}
 			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
 			if err != nil {

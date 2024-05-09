@@ -22,7 +22,6 @@ yarn fsr script/deploy/DeploySynapseExecutionServiceV1.s.sol "$chainName" "$wall
 yarn vp "$chainName" SynapseExecutionServiceV1
 # Client contracts
 yarn fsr script/deploy/DeployInterchainClientV1.s.sol "$chainName" "$walletName" "$@"
-yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" ExecutionFees "$@"
 # Ping-Pong App
 yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" PingPongApp "$@"
 # Legacy contracts

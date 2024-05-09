@@ -4,7 +4,7 @@ const path = require('path')
 const { getChainId, hasCode } = require('./chain.js')
 const { readConfigValue } = require('./config.js')
 const { logSuccess, logInfo, logError, logWarning } = require('./logger.js')
-const { createDir } = require('./utils.js')
+const { areEqualAddresses, createDir } = require('./utils.js')
 const { assertCondition } = require('./utils.js')
 
 /**
@@ -42,7 +42,9 @@ const saveNewDeployment = (chainName, contractAlias, potentialReceipts) => {
     return
   }
   // Find the matching receipt
-  const receipt = potentialReceipts.find((r) => r.address === artifact.address)
+  const receipt = potentialReceipts.find((r) =>
+    areEqualAddresses(r.address, artifact.address)
+  )
   if (!receipt) {
     logInfo(`No receipt found for ${contractAlias} at ${artifact.address}`)
     return

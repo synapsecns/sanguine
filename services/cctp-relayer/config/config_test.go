@@ -18,12 +18,12 @@ func configFixture(c ConfigSuite) config.Config {
 	return config.Config{
 		Chains: config.ChainConfigs{
 			config.ChainConfig{
-				ChainID:            chainIDA,
-				SynapseCCTPAddress: mocks.MockAddress().String(),
+				ChainID:     chainIDA,
+				CCTPAddress: mocks.MockAddress().String(),
 			},
 			config.ChainConfig{
-				ChainID:            chainIDB,
-				SynapseCCTPAddress: mocks.MockAddress().String(),
+				ChainID:     chainIDB,
+				CCTPAddress: mocks.MockAddress().String(),
 			},
 		},
 		BaseOmnirpcURL: gofakeit.URL(),

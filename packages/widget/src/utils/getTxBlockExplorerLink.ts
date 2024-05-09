@@ -10,6 +10,8 @@ export const getTxBlockExplorerLink = (chainId: number, txHash: string) => {
     return [explorerUrl, explorerName]
   }
 
-  console.error('getTxBlockExplorerLink: ChainID or Transaction Hash missing')
+  console.error(
+    '[Synapse Widget] Error retrieving Native Explorer Transaction URL: ChainID or Transaction Hash missing'
+  )
   return [null, null]
 }

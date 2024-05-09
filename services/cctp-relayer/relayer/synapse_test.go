@@ -23,7 +23,7 @@ func (s *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	// create a new relayer
 	mockAPI := attestation.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(s.testOmnirpc, s.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, s.GetTestScribe(), omniRPCClient, s.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, omniRPCClient, s.metricsHandler, mockAPI)
 	s.Nil(err)
 
 	// mint token
@@ -64,7 +64,7 @@ func (s *CCTPRelayerSuite) TestStoreCircleRequestFulfilled() {
 	// create a new relayer
 	mockAPI := attestation.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(s.testOmnirpc, s.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, s.GetTestScribe(), omniRPCClient, s.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, omniRPCClient, s.metricsHandler, mockAPI)
 	s.Nil(err)
 
 	// inject a fulfilled event to be handled by relayer
@@ -121,7 +121,7 @@ func (s *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 	// create a new relayer
 	mockAPI := attestation.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(s.testOmnirpc, s.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, s.GetTestScribe(), omniRPCClient, s.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, omniRPCClient, s.metricsHandler, mockAPI)
 	s.Nil(err)
 
 	// build test msg
@@ -158,7 +158,7 @@ func (s *CCTPRelayerSuite) TestBridgeSynapseCCTP() {
 	// create a new relayer
 	mockAPI := attestation.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(s.testOmnirpc, s.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, s.GetTestScribe(), omniRPCClient, s.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, omniRPCClient, s.metricsHandler, mockAPI)
 	s.Nil(err)
 
 	// start relayer

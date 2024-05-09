@@ -1,0 +1,10 @@
+[
+  {
+    "chainId": 42161,
+    "bridgeModuleName": "ALL"
+  },
+  {
+    "chainId": 10,
+    "bridgeModuleName": "SynapseRFQ"
+  }
+]

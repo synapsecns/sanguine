@@ -113,6 +113,7 @@ func (r *RelayerAPIServer) Run(ctx context.Context) error {
 	engine.GET(getQuoteStatusByTxHashRoute, h.GetQuoteRequestStatusByTxHash)
 	engine.GET(getQuoteStatusByTxIDRoute, h.GetQuoteRequestStatusByTxID)
 	engine.GET(getRetryRoute, h.GetTxRetry)
+	engine.GET(metrics.MetricsPathDefault, gin.WrapH(r.handler.Handler()))
 
 	r.engine = engine
 

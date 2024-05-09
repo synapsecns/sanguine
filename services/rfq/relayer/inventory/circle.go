@@ -355,10 +355,11 @@ func (c *rebalanceManagerCircleCCTP) handleDepositForBurn(ctx context.Context, l
 	)
 	origin := uint64(chainID)
 	rebalanceModel := reldb.Rebalance{
-		RebalanceID:  &requestID,
-		Origin:       origin,
-		OriginTxHash: log.TxHash,
-		Status:       reldb.RebalancePending,
+		RebalanceID:     &requestID,
+		Origin:          origin,
+		OriginTxHash:    log.TxHash,
+		OriginTokenAddr: event.BurnToken,
+		Status:          reldb.RebalancePending,
 	}
 	err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
 	if err != nil {

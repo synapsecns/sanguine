@@ -11,7 +11,7 @@ import (
 )
 
 //nolint:maintidx
-func TestGetters(t *testing.T) {
+func TestChainGetters(t *testing.T) {
 	chainID := 1
 	badChainID := 2
 	usdcAddr := "0x123"
@@ -31,7 +31,7 @@ func TestGetters(t *testing.T) {
 				L1FeeDestGasEstimate:   40000,
 				MinGasToken:            "1000",
 				QuotePct:               50,
-				QuoteOffsetBps:         10,
+				QuoteWidthBps:          10,
 				FixedFeeMultiplier:     1.1,
 			},
 		},
@@ -49,7 +49,7 @@ func TestGetters(t *testing.T) {
 			L1FeeDestGasEstimate:   40001,
 			MinGasToken:            "1001",
 			QuotePct:               51,
-			QuoteOffsetBps:         11,
+			QuoteWidthBps:          11,
 			FixedFeeMultiplier:     1.2,
 		},
 	}
@@ -69,7 +69,7 @@ func TestGetters(t *testing.T) {
 				L1FeeDestGasEstimate:   40000,
 				MinGasToken:            "1000",
 				QuotePct:               50,
-				QuoteOffsetBps:         10,
+				QuoteWidthBps:          10,
 				FixedFeeMultiplier:     1.1,
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
@@ -264,18 +264,18 @@ func TestGetters(t *testing.T) {
 		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuotePct)
 	})
 
-	t.Run("GetQuoteOffsetBps", func(t *testing.T) {
-		defaultVal, err := cfg.GetQuoteOffsetBps(badChainID)
+	t.Run("GetQuoteWidthBps", func(t *testing.T) {
+		defaultVal, err := cfg.GetQuoteWidthBps(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.QuoteOffsetBps)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.QuoteWidthBps)
 
-		baseVal, err := cfgWithBase.GetQuoteOffsetBps(badChainID)
+		baseVal, err := cfgWithBase.GetQuoteWidthBps(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.QuoteOffsetBps)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.QuoteWidthBps)
 
-		chainVal, err := cfgWithBase.GetQuoteOffsetBps(chainID)
+		chainVal, err := cfgWithBase.GetQuoteWidthBps(chainID)
 		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuoteOffsetBps)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuoteWidthBps)
 	})
 
 	t.Run("GetFixedFeeMultiplier", func(t *testing.T) {
@@ -298,5 +298,161 @@ func TestGetters(t *testing.T) {
 
 		chainVal := cfg.GetMaxRebalanceAmount(chainID, common.HexToAddress(usdcAddr))
 		assert.Equal(t, chainVal.String(), "1000000000")
+	})
+}
+
+func TestGetQuoteOffset(t *testing.T) {
+	chainID := 1
+	usdcAddr := "0x123"
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			chainID: {
+				RFQAddress:             "0x123",
+				SynapseCCTPAddress:     "0x456",
+				TokenMessengerAddress:  "0x789",
+				Confirmations:          1,
+				NativeToken:            "MATIC",
+				DeadlineBufferSeconds:  10,
+				OriginGasEstimate:      10000,
+				DestGasEstimate:        20000,
+				L1FeeChainID:           10,
+				L1FeeOriginGasEstimate: 30000,
+				L1FeeDestGasEstimate:   40000,
+				MinGasToken:            "1000",
+				QuotePct:               50,
+				QuoteWidthBps:          10,
+				FixedFeeMultiplier:     1.1,
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:            usdcAddr,
+						Decimals:           6,
+						MaxRebalanceAmount: "1000",
+						QuoteOffsetBps:     100,
+					},
+				},
+			},
+		},
+	}
+
+	t.Run("GetQuoteOffsetForOrigin", func(t *testing.T) {
+		val, err := cfg.GetQuoteOffsetBps(chainID, "USDC", true)
+		assert.NoError(t, err)
+		assert.Equal(t, -100., val)
+	})
+
+	t.Run("GetQuoteOffsetForDest", func(t *testing.T) {
+		val, err := cfg.GetQuoteOffsetBps(chainID, "USDC", false)
+		assert.NoError(t, err)
+		assert.Equal(t, 100., val)
+	})
+}
+
+func TestValidation(t *testing.T) {
+	t.Run("Valid", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 25,
+							RebalanceMethod:       "synapsecctp",
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 25,
+							RebalanceMethod:       "synapsecctp",
+						},
+					},
+				},
+			},
+		}
+		err := cfg.Validate()
+		assert.Nil(t, err)
+	})
+
+	t.Run("InvalidInitialPct", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     51,
+							MaintenanceBalancePct: 50,
+							RebalanceMethod:       "synapsecctp",
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 50,
+							RebalanceMethod:       "synapsecctp",
+						},
+					},
+				},
+			},
+		}
+		err := cfg.Validate()
+		assert.NotNil(t, err)
+		assert.Equal(t, "total initial percent does not total 100 for USDC: 101.000000", err.Error())
+	})
+
+	t.Run("InvalidMaintenancePct", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 50,
+							RebalanceMethod:       "synapsecctp",
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 50.1,
+							RebalanceMethod:       "synapsecctp",
+						},
+					},
+				},
+			},
+		}
+		err := cfg.Validate()
+		assert.NotNil(t, err)
+		assert.Equal(t, "total maintenance percent exceeds 100 for USDC: 100.100000", err.Error())
+	})
+
+	t.Run("ValidWithNoRebalanceMethod", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 20,
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							InitialBalancePct:     50,
+							MaintenanceBalancePct: 20,
+						},
+					},
+				},
+			},
+		}
+		err := cfg.Validate()
+		assert.Nil(t, err)
 	})
 }

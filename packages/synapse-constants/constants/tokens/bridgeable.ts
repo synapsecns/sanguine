@@ -31,6 +31,7 @@ import sfiLogo from '../assets/icons/sfi.svg'
 import solarbeamLogo from '../assets/icons/solar.svg'
 import susdLogo from '../assets/icons/susd.svg'
 import synapseLogo from '../assets/icons/syn.svg'
+import spectralLogo from '../assets/icons/spectral.svg'
 import unidexLogo from '../assets/icons/unidex.svg'
 import usdcLogo from '../assets/icons/usdc.svg'
 import usdtLogo from '../assets/icons/usdt.svg'
@@ -42,6 +43,7 @@ import { Token } from '../types'
 import * as CHAINS from '../chains/master'
 
 const zeroAddress = '0x0000000000000000000000000000000000000000'
+const nullAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
 export const GOHM = new Token({
   addresses: {
@@ -409,6 +411,7 @@ export const USDC = new Token({
     [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
     [CHAINS.BASE.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     [CHAINS.POLYGON.id]: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+    [CHAINS.SCROLL.id]: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
   },
   decimals: {
     [CHAINS.ETH.id]: 6,
@@ -424,6 +427,7 @@ export const USDC = new Token({
     [CHAINS.DFK.id]: 18,
     [CHAINS.BASE.id]: 6,
     [CHAINS.POLYGON.id]: 6,
+    [CHAINS.SCROLL.id]: 6,
   },
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
@@ -772,14 +776,15 @@ export const NETH = new Token({
 
 export const ETH = new Token({
   addresses: {
-    [CHAINS.ETH.id]: zeroAddress,
-    [CHAINS.OPTIMISM.id]: zeroAddress,
+    [CHAINS.ETH.id]: nullAddress,
+    [CHAINS.OPTIMISM.id]: nullAddress,
     [CHAINS.BOBA.id]: zeroAddress,
     [CHAINS.CANTO.id]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
-    [CHAINS.BASE.id]: zeroAddress,
-    [CHAINS.ARBITRUM.id]: zeroAddress,
+    [CHAINS.BASE.id]: nullAddress,
+    [CHAINS.ARBITRUM.id]: nullAddress,
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
     [CHAINS.BLAST.id]: zeroAddress,
+    [CHAINS.SCROLL.id]: nullAddress,
   },
   decimals: 18,
   symbol: 'ETH',
@@ -1288,4 +1293,22 @@ export const USDB = new Token({
   color: 'blue',
   priorityRank: 125,
   routeSymbol: 'USDB',
+})
+
+export const SPECTRAL = new Token({
+  priorityRank: 6,
+  addresses: {
+    [CHAINS.ETH.id]: '0xAdF7C35560035944e805D98fF17d58CDe2449389',
+    [CHAINS.BASE.id]: '0x96419929d7949D6A801A6909c145C8EEf6A40431',
+  },
+  decimals: {
+    [CHAINS.ETH.id]: 18,
+    [CHAINS.BASE.id]: 18,
+  },
+  symbol: 'SPEC',
+  name: 'Spectral Token',
+  logo: spectralLogo,
+  swapableType: 'SPEC',
+  color: 'blue',
+  routeSymbol: 'SPEC',
 })

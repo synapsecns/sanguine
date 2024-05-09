@@ -12,11 +12,11 @@ abstract contract LegacyReceiver is Ownable, LegacyReceiverEvents, ILegacyReceiv
     address public messageBus;
     mapping(uint256 chainId => bytes32 trustedRemote) public trustedRemotes;
 
-    error LegacyReceiver__BalanceTooLow(uint256 actual, uint256 required);
-    error LegacyReceiver__NotMessageBus(address caller);
-    error LegacyReceiver__NotTrustedRemote(uint256 chainId, bytes32 srcCaller);
-    error LegacyReceiver__SameChainId(uint256 chainId);
-    error LegacyReceiver__TrustedRemoteNotSet(uint256 chainId);
+    error LegacyReceiver__BalanceBelowMin(uint256 actual, uint256 required);
+    error LegacyReceiver__ChainIdNotRemote(uint256 chainId);
+    error LegacyReceiver__CallerNotMessageBus(address caller);
+    error LegacyReceiver__SrcCallerNotTrusted(uint256 chainId, bytes32 srcCaller);
+    error LegacyReceiver__TrustedRemoteZeroAddress(uint256 chainId);
 
     constructor(address owner_) Ownable(owner_) {}
 
@@ -27,7 +27,7 @@ abstract contract LegacyReceiver is Ownable, LegacyReceiverEvents, ILegacyReceiv
 
     function setTrustedRemote(uint256 remoteChainId, bytes32 remoteApp) external onlyOwner {
         if (remoteChainId == block.chainid) {
-            revert LegacyReceiver__SameChainId(remoteChainId);
+            revert LegacyReceiver__ChainIdNotRemote(remoteChainId);
         }
         trustedRemotes[remoteChainId] = remoteApp;
         emit TrustedRemoteSet(remoteChainId, remoteApp);
@@ -42,10 +42,10 @@ abstract contract LegacyReceiver is Ownable, LegacyReceiverEvents, ILegacyReceiv
         external
     {
         if (msg.sender != messageBus) {
-            revert LegacyReceiver__NotMessageBus(msg.sender);
+            revert LegacyReceiver__CallerNotMessageBus(msg.sender);
         }
         if (trustedRemotes[srcChainId] != srcAddress) {
-            revert LegacyReceiver__NotTrustedRemote(srcChainId, srcAddress);
+            revert LegacyReceiver__SrcCallerNotTrusted(srcChainId, srcAddress);
         }
         _handleMessage(srcAddress, srcChainId, message, executor);
     }
@@ -64,10 +64,10 @@ abstract contract LegacyReceiver is Ownable, LegacyReceiverEvents, ILegacyReceiv
     function _sendMessage(uint256 dstChainId, uint256 messageFee, uint256 gasLimit, bytes memory message) internal {
         bytes32 dstRemote = trustedRemotes[dstChainId];
         if (dstRemote == 0) {
-            revert LegacyReceiver__TrustedRemoteNotSet(dstChainId);
+            revert LegacyReceiver__TrustedRemoteZeroAddress(dstChainId);
         }
         if (address(this).balance < messageFee) {
-            revert LegacyReceiver__BalanceTooLow(address(this).balance, messageFee);
+            revert LegacyReceiver__BalanceBelowMin(address(this).balance, messageFee);
         }
         bytes memory options = LegacyOptionsLib.encodeLegacyOptions(gasLimit);
         IMessageBus(messageBus).sendMessage{value: messageFee}({

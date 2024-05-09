@@ -18,6 +18,7 @@ import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTran
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 const CCTP_CONTRACTS = CHAINS.CCTP_CONTRACTS
 const BRIDGE_CONTRACTS = CHAINS.BRIDGE_CONTRACTS
+const FASTBRIDGE_CONTRACTS = CHAINS.FASTBRIDGE_CONTRACTS
 
 const link = new HttpLink({
   uri: API_URL,
@@ -49,6 +50,13 @@ export default function BridgeTransaction({ queryResult }) {
         CHAINS_BY_ID[chainID].explorerUrl +
         '/address/' +
         CCTP_CONTRACTS[chainID]
+      )
+    }
+    else if (eventType == 12 || eventType == 13) {
+      return (
+        CHAINS_BY_ID[chainID].explorerUrl +
+        '/address/' +
+        FASTBRIDGE_CONTRACTS[chainID]
       )
     }
     return (

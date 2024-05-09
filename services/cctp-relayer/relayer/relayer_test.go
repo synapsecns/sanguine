@@ -33,7 +33,7 @@ func (s *CCTPRelayerSuite) TestFetchAttestation() {
 	// create a new relayer
 	mockAPI := attestation.NewMockCircleAPI()
 	omniRPCClient := omniClient.NewOmnirpcClient(s.testOmnirpc, s.metricsHandler, omniClient.WithCaptureReqRes())
-	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, s.GetTestScribe(), omniRPCClient, s.metricsHandler, mockAPI)
+	relay, err := relayer.NewCCTPRelayer(s.GetTestContext(), s.GetTestConfig(), s.testStore, omniRPCClient, s.metricsHandler, mockAPI)
 	s.Nil(err)
 
 	// override mocked api call

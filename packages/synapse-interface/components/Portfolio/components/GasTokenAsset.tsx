@@ -2,7 +2,7 @@ import React from 'react'
 import Image from 'next/image'
 import { Token } from '@/utils/types'
 import { getParsedBalance } from '@/utils/getParsedBalance'
-import { HoverTooltip } from './HoverTooltip'
+import { HoverTooltip } from '../../HoverTooltip'
 import GasIcon from '@/components/icons/GasIcon'
 
 export const GasTokenAsset = ({

@@ -2,13 +2,13 @@
 pragma solidity 0.8.20;
 
 import {InterchainClientV1, InterchainClientV1Events, IInterchainClientV1} from "../contracts/InterchainClientV1.sol";
+import {IInterchainApp} from "../contracts/interfaces/IInterchainApp.sol";
+import {AppConfigV1} from "../contracts/libs/AppConfig.sol";
 import {InterchainTxDescriptor, InterchainTransaction} from "../contracts/libs/InterchainTransaction.sol";
-import {BatchingV1Lib} from "../contracts/libs/BatchingV1.sol";
 import {OptionsLib} from "../contracts/libs/Options.sol";
 
 import {InterchainTransactionLibHarness} from "./harnesses/InterchainTransactionLibHarness.sol";
 import {VersionedPayloadLibHarness} from "./harnesses/VersionedPayloadLibHarness.sol";
-import {ExecutionFeesMock} from "./mocks/ExecutionFeesMock.sol";
 import {ExecutionServiceMock} from "./mocks/ExecutionServiceMock.sol";
 import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
@@ -36,16 +36,15 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     address public icModuleA;
     address public icModuleB;
 
-    address public execFees;
     address public execService;
 
     address public owner = makeAddr("Owner");
+    address public defaultGuard = makeAddr("Default Guard");
 
     function setUp() public virtual {
         vm.chainId(LOCAL_CHAIN_ID);
         icDB = address(new InterchainDBMock());
         icClient = new InterchainClientV1(icDB, owner);
-        execFees = address(new ExecutionFeesMock());
         execService = address(new ExecutionServiceMock());
         icModuleA = address(new InterchainModuleMock());
         icModuleB = address(new InterchainModuleMock());
@@ -53,9 +52,9 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         payloadLibHarness = new VersionedPayloadLibHarness();
     }
 
-    function setExecutionFees(address executionFees) public {
+    function setDefaultGuard(address guard) public {
         vm.prank(owner);
-        icClient.setExecutionFees(executionFees);
+        icClient.setDefaultGuard(guard);
     }
 
     function setLinkedClient(uint64 chainId, bytes32 client) public {
@@ -63,65 +62,92 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         icClient.setLinkedClient(chainId, client);
     }
 
+    // ══════════════════════════════════════════════════ MOCKING ══════════════════════════════════════════════════════
+
+    function mockReceivingConfig(address receiver, AppConfigV1 memory appConfig, address[] memory modules) internal {
+        bytes memory encodedConfig = appConfig.encodeAppConfigV1();
+        vm.mockCall({
+            callee: receiver,
+            data: abi.encodeCall(IInterchainApp.getReceivingConfig, ()),
+            returnData: abi.encode(encodedConfig, modules)
+        });
+    }
+
     // ═════════════════════════════════════════════ EXPECT (REVERTS) ══════════════════════════════════════════════════
 
-    function expectRevertFeeAmountTooLow(uint256 actual, uint256 required) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__FeeAmountTooLow.selector, actual, required)
-        );
+    function expectRevertEntryConflict(address module) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__EntryConflict.selector, module));
     }
 
-    function expectRevertIncorrectDstChainId(uint64 chainId) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__IncorrectDstChainId.selector, chainId)
-        );
-    }
-
-    function expectRevertIncorrectEntryIndex(uint64 entryIndex) internal {
-        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__IncorrectEntryIndex.selector, entryIndex));
-    }
-
-    function expectRevertIncorrectMsgValue(uint256 actual, uint256 required) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__IncorrectMsgValue.selector, actual, required)
-        );
-    }
-
-    function expectRevertIncorrectProof() internal {
-        vm.expectRevert(BatchingV1Lib.BatchingV1__IncorrectProof.selector);
-    }
-
-    function expectRevertInvalidTransactionVersion(uint16 version) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__InvalidTransactionVersion.selector, version)
-        );
-    }
-
-    function expectRevertNoLinkedClient(uint64 chainId) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NoLinkedClient.selector, chainId)
-        );
-    }
-
-    function expectRevertNotEnoughGasSupplied() internal {
-        vm.expectRevert(IInterchainClientV1.InterchainClientV1__NotEnoughGasSupplied.selector);
-    }
-
-    function expectRevertNotEnoughResponses(uint256 actual, uint256 required) internal {
+    function expectRevertFeeAmountBelowMin(uint256 feeAmount, uint256 minRequired) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
-                IInterchainClientV1.InterchainClientV1__NotEnoughResponses.selector, actual, required
+                IInterchainClientV1.InterchainClientV1__FeeAmountBelowMin.selector, feeAmount, minRequired
             )
         );
     }
 
-    function expectRevertNotEVMClient(bytes32 client) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotEVMClient.selector, client));
+    function expectRevertDstChainIdNotLocal(uint64 chainId) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__DstChainIdNotLocal.selector, chainId)
+        );
     }
 
-    function expectRevertNotRemoteChainId(uint64 chainId) internal {
+    function expectRevertMsgValueMismatch(uint256 actual, uint256 required) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotRemoteChainId.selector, chainId)
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__MsgValueMismatch.selector, actual, required)
+        );
+    }
+
+    function expectRevertTxVersionMismatch(uint16 version, uint16 required) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IInterchainClientV1.InterchainClientV1__TxVersionMismatch.selector, version, required
+            )
+        );
+    }
+
+    function expectRevertChainIdNotLinked(uint64 chainId) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__ChainIdNotLinked.selector, chainId)
+        );
+    }
+
+    function expectRevertGasLeftBelowMin() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__GasLeftBelowMin.selector);
+    }
+
+    function expectRevertResponsesAmountBelowMin(uint256 actual, uint256 required) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IInterchainClientV1.InterchainClientV1__ResponsesAmountBelowMin.selector, actual, required
+            )
+        );
+    }
+
+    function expectRevertLinkedClientNotEVM(bytes32 client) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__LinkedClientNotEVM.selector, client)
+        );
+    }
+
+    function expectRevertChainIdNotRemote(uint64 chainId) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__ChainIdNotRemote.selector, chainId)
+        );
+    }
+
+    function expectRevertReceiverNotICApp(address receiver) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__ReceiverNotICApp.selector, receiver)
+        );
+    }
+
+    function expectRevertReceiverZeroRequiredResponses(address receiver) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IInterchainClientV1.InterchainClientV1__ReceiverZeroRequiredResponses.selector, receiver
+            )
         );
     }
 
@@ -137,16 +163,20 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertZeroReceiver() internal {
-        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroReceiver.selector);
+    function expectRevertGuardZeroAddress() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__GuardZeroAddress.selector);
     }
 
-    function expectRevertZeroRequiredResponses() internal {
-        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroRequiredResponses.selector);
+    function expectRevertExecutionServiceZeroAddress() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ExecutionServiceZeroAddress.selector);
     }
 
-    function expectRevertIncorrectVersion(uint8 version) internal {
-        vm.expectRevert(abi.encodeWithSelector(OptionsLib.OptionsLib__IncorrectVersion.selector, version));
+    function expectRevertReceiverZeroAddress() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ReceiverZeroAddress.selector);
+    }
+
+    function expectRevertVersionInvalid(uint8 version) internal {
+        vm.expectRevert(abi.encodeWithSelector(OptionsLib.OptionsLib__VersionInvalid.selector, version));
     }
 
     function expectRevertOwnableUnauthorizedAccount(address account) internal {
@@ -155,9 +185,9 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
 
     // ══════════════════════════════════════════════ EXPECT (EVENTS) ══════════════════════════════════════════════════
 
-    function expectEventExecutionFeesSet(address executionFees) internal {
+    function expectEventGuardSet(address guard) internal {
         vm.expectEmit(address(icClient));
-        emit ExecutionFeesSet(executionFees);
+        emit DefaultGuardSet(guard);
     }
 
     function expectEventLinkedClientSet(uint64 chainId, bytes32 client) internal {
@@ -179,7 +209,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         emit InterchainTransactionSent({
             transactionId: desc.transactionId,
             dbNonce: desc.dbNonce,
-            entryIndex: desc.entryIndex,
             dstChainId: icTx.dstChainId,
             srcSender: icTx.srcSender,
             dstReceiver: icTx.dstReceiver,
@@ -202,45 +231,36 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         emit InterchainTransactionReceived({
             transactionId: desc.transactionId,
             dbNonce: desc.dbNonce,
-            entryIndex: desc.entryIndex,
             srcChainId: icTx.srcChainId,
             srcSender: icTx.srcSender,
             dstReceiver: icTx.dstReceiver
         });
     }
 
-    function expectEventExecutionProofWritten(
-        bytes32 transactionId,
-        uint64 localDbNonce,
-        uint64 localEntryIndex,
-        address executor
-    )
-        internal
-    {
+    function expectEventExecutionProofWritten(bytes32 transactionId, uint64 localDbNonce, address executor) internal {
         vm.expectEmit(address(icClient));
-        emit ExecutionProofWritten({
-            transactionId: transactionId,
-            dbNonce: localDbNonce,
-            entryIndex: localEntryIndex,
-            executor: executor
-        });
+        emit ExecutionProofWritten({transactionId: transactionId, dbNonce: localDbNonce, executor: executor});
     }
 
     // ════════════════════════════════════════════════ ASSERTIONS ═════════════════════════════════════════════════════
 
-    function assertCorrectDescriptor(InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) internal {
+    function assertCorrectDescriptor(
+        InterchainTransaction memory icTx,
+        InterchainTxDescriptor memory desc
+    )
+        internal
+        view
+    {
         assertEq(desc.dbNonce, icTx.dbNonce, "!desc.dbNonce");
-        assertEq(desc.entryIndex, icTx.entryIndex, "!desc.entryIndex");
         assertEq(desc.transactionId, keccak256(getEncodedTx(icTx)), "!desc.transactionId");
     }
 
-    function assertEq(InterchainTransaction memory icTx, InterchainTransaction memory expected) internal {
+    function assertEq(InterchainTransaction memory icTx, InterchainTransaction memory expected) internal pure {
         assertEq(icTx.srcChainId, expected.srcChainId, "!srcChainId");
         assertEq(icTx.srcSender, expected.srcSender, "!srcSender");
         assertEq(icTx.dstChainId, expected.dstChainId, "!dstChainId");
         assertEq(icTx.dstReceiver, expected.dstReceiver, "!dstReceiver");
         assertEq(icTx.dbNonce, expected.dbNonce, "!dbNonce");
-        assertEq(icTx.entryIndex, expected.entryIndex, "!entryIndex");
         assertEq(icTx.options, expected.options, "!options");
         assertEq(icTx.message, expected.message, "!message");
     }

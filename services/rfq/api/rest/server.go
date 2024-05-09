@@ -8,17 +8,21 @@ import (
 	"time"
 
 	"github.com/ipfs/go-log"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
+	"github.com/synapsecns/sanguine/services/rfq/api/docs"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 )
@@ -32,6 +36,7 @@ type QuoterAPIServer struct {
 	omnirpcClient       omniClient.RPCClient
 	handler             metrics.Handler
 	fastBridgeContracts map[uint32]*fastbridge.FastBridge
+	roleCache           map[uint32]*ttlcache.Cache[string, bool]
 }
 
 // NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -56,7 +61,10 @@ func NewAPI(
 		return nil, fmt.Errorf("store is nil")
 	}
 
+	docs.SwaggerInfo.Title = "RFQ Quoter API"
+
 	bridges := make(map[uint32]*fastbridge.FastBridge)
+	roles := make(map[uint32]*ttlcache.Cache[string, bool])
 	for chainID, bridge := range cfg.Bridges {
 		chainClient, err := omniRPCClient.GetChainClient(ctx, int(chainID))
 		if err != nil {
@@ -66,6 +74,18 @@ func NewAPI(
 		if err != nil {
 			return nil, fmt.Errorf("could not create bridge contract: %w", err)
 		}
+
+		// create the roles cache
+		roles[chainID] = ttlcache.New[string, bool](
+			ttlcache.WithTTL[string, bool](cacheInterval),
+		)
+		roleCache := roles[chainID]
+
+		roleCache.Start()
+		go func() {
+			<-ctx.Done()
+			roleCache.Stop()
+		}()
 	}
 
 	return &QuoterAPIServer{
@@ -74,12 +94,14 @@ func NewAPI(
 		omnirpcClient:       omniRPCClient,
 		handler:             handler,
 		fastBridgeContracts: bridges,
+		roleCache:           roles,
 	}, nil
 }
 
 // QuoteRoute is the API endpoint for handling quote related requests.
 const (
-	QuoteRoute = "/quotes"
+	QuoteRoute    = "/quotes"
+	cacheInterval = time.Minute
 )
 
 var logger = log.Logger("rfq-api")
@@ -89,6 +111,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
 	h := NewHandler(r.db)
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Apply AuthMiddleware only to the PUT route
 	quotesPut := engine.Group(QuoteRoute)
@@ -97,7 +120,6 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// GET routes without the AuthMiddleware
 	// engine.PUT("/quotes", h.ModifyQuote)
 	engine.GET(QuoteRoute, h.GetQuotes)
-	engine.GET(fmt.Sprintf("%s/filter", QuoteRoute), h.GetFilteredQuotes)
 
 	r.engine = engine
 
@@ -140,15 +162,23 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		has, err := bridge.HasRole(ops, relayerRole, addressRecovered)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "unable to check relayer role on-chain"})
-			c.Abort()
-			return
-		} else if !has {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": "q.Relayer not an on-chain relayer"})
-			c.Abort()
-			return
+		hasRole := r.roleCache[uint32(req.DestChainID)].Get(addressRecovered.Hex())
+
+		if hasRole == nil || hasRole.IsExpired() {
+			has, err := bridge.HasRole(ops, relayerRole, addressRecovered)
+			if err == nil {
+				r.roleCache[uint32(req.DestChainID)].Set(addressRecovered.Hex(), has, cacheInterval)
+			}
+
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"msg": "unable to check relayer role on-chain"})
+				c.Abort()
+				return
+			} else if !has {
+				c.JSON(http.StatusBadRequest, gin.H{"msg": "q.Relayer not an on-chain relayer"})
+				c.Abort()
+				return
+			}
 		}
 
 		// Log and pass to the next middleware if authentication succeeds

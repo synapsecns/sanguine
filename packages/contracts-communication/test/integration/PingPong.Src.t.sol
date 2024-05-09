@@ -1,20 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {
-    PingPongIntegrationTest,
-    InterchainBatch,
-    InterchainEntry,
-    InterchainTransaction,
-    InterchainTxDescriptor,
-    PingPongApp
-} from "./PingPong.t.sol";
+import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
+
+import {PingPongIntegrationTest} from "./PingPong.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract PingPongSrcIntegrationTest is PingPongIntegrationTest {
-    InterchainBatch public batch;
-    InterchainEntry public entry;
+    FullEntry public fullEntry;
     InterchainTransaction public icTx;
     InterchainTxDescriptor public desc;
 
@@ -25,9 +19,8 @@ contract PingPongSrcIntegrationTest is PingPongIntegrationTest {
     function setUp() public override {
         super.setUp();
         icTx = getSrcTransaction();
-        entry = getSrcInterchainEntry();
-        desc = getInterchainTxDescriptor(entry);
-        batch = getInterchainBatch(entry);
+        fullEntry = getSrcFullEntry();
+        desc = getInterchainTxDescriptor(fullEntry);
         pingFee = srcPingPongApp().getPingFee(DST_CHAIN_ID);
         verificationFee = icDB.getInterchainFee(DST_CHAIN_ID, toArray(address(module)));
         executionFee = executionService.getExecutionFee({
@@ -38,19 +31,18 @@ contract PingPongSrcIntegrationTest is PingPongIntegrationTest {
     }
 
     function test_startPingPong_events() public {
-        expectEventsPingSent(COUNTER, icTx, entry, verificationFee, executionFee);
+        expectEventsPingSent(COUNTER, icTx, fullEntry, verificationFee, executionFee);
         srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
     }
 
     function test_startPingPong_state_db() public {
         srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
-        checkDatabaseStateMsgSent(entry, SRC_INITIAL_DB_NONCE);
+        checkDatabaseStateMsgSent(fullEntry, SRC_INITIAL_DB_NONCE);
     }
 
-    function test_startPingPong_state_execFees() public {
+    function test_startPingPong_state_execService() public {
         srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
-        assertEq(address(executionFees).balance, executionFee);
-        assertEq(executionFees.executionFee(DST_CHAIN_ID, desc.transactionId), executionFee);
+        assertEq(address(executionService).balance, executionFee);
     }
 
     function test_startPingPong_state_pingPongApp() public {

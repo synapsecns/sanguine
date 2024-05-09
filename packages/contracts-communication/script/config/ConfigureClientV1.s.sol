@@ -19,7 +19,6 @@ contract ConfigureClientV1 is SynapseScript {
     function run(string memory environment) external broadcastWithHooks {
         loadConfig(environment);
         linkRemoteChains();
-        setExecutionFees();
     }
 
     function loadConfig(string memory environment) internal {
@@ -45,17 +44,6 @@ contract ConfigureClientV1 is SynapseScript {
             } else {
                 printSkipWithIndent(string.concat("already linked to ", vm.toString(remoteClientEVM), " on ", chain));
             }
-        }
-    }
-
-    function setExecutionFees() internal {
-        printLog("Setting ExecutionFees");
-        address executionFees = getDeploymentAddress({contractName: "ExecutionFees", revertIfNotFound: true});
-        if (client.executionFees() != executionFees) {
-            client.setExecutionFees(executionFees);
-            printSuccessWithIndent(string.concat("Set ExecutionFees to ", vm.toString(executionFees)));
-        } else {
-            printSkipWithIndent(string.concat("already set to ", vm.toString(executionFees)));
         }
     }
 }

@@ -1,84 +1,82 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainEntry, InterchainEntryLibHarness} from "../harnesses/InterchainEntryLibHarness.sol";
+import {InterchainEntry, InterchainEntryLibHarness, EntryKey} from "../harnesses/InterchainEntryLibHarness.sol";
 
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract InterchainEntryLibTest is Test {
     InterchainEntryLibHarness public libHarness;
-
-    InterchainEntry public mockEntry = InterchainEntry({
-        srcChainId: 1,
-        dbNonce: 2,
-        entryIndex: 3,
-        srcWriter: bytes32(uint256(4)),
-        dataHash: bytes32(uint256(5))
-    });
 
     function setUp() public {
         libHarness = new InterchainEntryLibHarness();
     }
 
-    function assertEq(InterchainEntry memory actual, InterchainEntry memory expected) public {
+    function assertEq(InterchainEntry memory actual, InterchainEntry memory expected) public pure {
         assertEq(actual.srcChainId, expected.srcChainId, "!srcChainId");
         assertEq(actual.dbNonce, expected.dbNonce, "!dbNonce");
-        assertEq(actual.entryIndex, expected.entryIndex, "!entryIndex");
-        assertEq(actual.srcWriter, expected.srcWriter, "!srcWriter");
-        assertEq(actual.dataHash, expected.dataHash, "!dataHash");
+        assertEq(actual.entryValue, expected.entryValue, "!entryValue");
     }
 
     function test_constructLocalEntry() public {
         vm.chainId(1);
         uint64 dbNonce = 2;
-        uint64 entryIndex = 3;
-        address srcWriter = address(4);
-        bytes32 dataHash = bytes32(uint256(5));
-        InterchainEntry memory actual = libHarness.constructLocalEntry(dbNonce, entryIndex, srcWriter, dataHash);
-        assertEq(actual, mockEntry);
-    }
-
-    function test_constructLocalEntry(
-        uint64 chainId,
-        uint64 dbNonce,
-        uint64 entryIndex,
-        address srcWriter,
-        bytes32 dataHash
-    )
-        public
-    {
-        vm.chainId(chainId);
-        InterchainEntry memory expected = InterchainEntry({
-            srcChainId: chainId,
-            dbNonce: dbNonce,
-            entryIndex: entryIndex,
-            srcWriter: bytes32(uint256(uint160(srcWriter))),
-            dataHash: dataHash
-        });
-        InterchainEntry memory actual = libHarness.constructLocalEntry(dbNonce, entryIndex, srcWriter, dataHash);
+        bytes32 entryValue = bytes32(uint256(3));
+        InterchainEntry memory actual = libHarness.constructLocalEntry(dbNonce, entryValue);
+        InterchainEntry memory expected = InterchainEntry({srcChainId: 1, dbNonce: dbNonce, entryValue: entryValue});
         assertEq(actual, expected);
     }
 
-    function test_entryValue() public {
-        bytes32 expected = keccak256(abi.encode(4, 5));
-        assertEq(libHarness.entryValue(mockEntry), expected);
+    function test_constructLocalEntry(uint64 chainId, uint64 dbNonce, bytes32 entryValue) public {
+        vm.chainId(chainId);
+        InterchainEntry memory expected =
+            InterchainEntry({srcChainId: chainId, dbNonce: dbNonce, entryValue: entryValue});
+        InterchainEntry memory actual = libHarness.constructLocalEntry(dbNonce, entryValue);
+        assertEq(actual, expected);
     }
 
-    function test_entryValue(InterchainEntry memory entry) public {
-        bytes32 expected = keccak256(abi.encode(entry.srcWriter, entry.dataHash));
-        assertEq(libHarness.entryValue(entry), expected);
+    function test_getEntryValue_address() public view {
+        address srcWriter = address(3);
+        bytes32 digest = bytes32(uint256(4));
+        bytes32 expected = keccak256(abi.encode(srcWriter, digest));
+        assertEq(libHarness.getEntryValue(srcWriter, digest), expected);
     }
 
-    function test_getEntryValue() public {
-        bytes32 srcWriter = bytes32(uint256(4));
-        bytes32 dataHash = bytes32(uint256(5));
-        bytes32 expected = keccak256(abi.encode(srcWriter, dataHash));
-        assertEq(libHarness.getEntryValue(srcWriter, dataHash), expected);
+    function test_getEntryValue_address(address srcWriter, bytes32 digest) public view {
+        bytes32 expected = keccak256(abi.encode(srcWriter, digest));
+        assertEq(libHarness.getEntryValue(srcWriter, digest), expected);
     }
 
-    function test_getEntryValue(bytes32 srcWriter, bytes32 dataHash) public {
-        bytes32 expected = keccak256(abi.encode(srcWriter, dataHash));
-        assertEq(libHarness.getEntryValue(srcWriter, dataHash), expected);
+    function test_getEntryValue_bytes32() public view {
+        bytes32 srcWriter = bytes32(uint256(3));
+        bytes32 digest = bytes32(uint256(4));
+        bytes32 expected = keccak256(abi.encode(srcWriter, digest));
+        assertEq(libHarness.getEntryValue(srcWriter, digest), expected);
+    }
+
+    function test_getEntryValue_bytes32(bytes32 srcWriter, bytes32 digest) public view {
+        bytes32 expected = keccak256(abi.encode(srcWriter, digest));
+        assertEq(libHarness.getEntryValue(srcWriter, digest), expected);
+    }
+
+    function test_encodeEntry_roundTrip(InterchainEntry memory entry) public view {
+        bytes memory encoded = libHarness.encodeEntry(entry);
+        InterchainEntry memory decoded = libHarness.decodeEntry(encoded);
+        assertEq(decoded, entry);
+    }
+
+    function test_encodeEntryFromMemory_roundTrip(InterchainEntry memory entry) public view {
+        bytes memory encoded = libHarness.encodeEntry(entry);
+        InterchainEntry memory decoded = libHarness.decodeEntryFromMemory(encoded);
+        assertEq(decoded, entry);
+    }
+
+    function test_encodeEntryKey_roundTrip(uint64 srcChainId, uint64 dbNonce) public view {
+        EntryKey key = libHarness.encodeEntryKey(srcChainId, dbNonce);
+        (uint64 decodedSrcChainId, uint64 decodedDbNonce) = libHarness.decodeEntryKey(key);
+        assertEq(decodedSrcChainId, srcChainId);
+        assertEq(decodedDbNonce, dbNonce);
     }
 }

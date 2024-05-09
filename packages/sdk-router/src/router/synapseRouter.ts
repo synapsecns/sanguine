@@ -23,7 +23,7 @@ import {
   reduceToQuery,
 } from '../module'
 import bridgeAbi from '../abi/SynapseBridge.json'
-import { BigintIsh, HYDRATION_SUPPORTED_CHAIN_IDS } from '../constants'
+import { BigintIsh } from '../constants'
 import {
   DestRequest,
   Pool,
@@ -102,18 +102,18 @@ export class SynapseRouter extends Router {
       provider
     ) as SynapseRouterContract
     this.address = address
-    this.hydrateCache()
+    // this.hydrateCache()
   }
 
-  private async hydrateCache() {
-    if (HYDRATION_SUPPORTED_CHAIN_IDS.includes(this.chainId)) {
-      try {
-        await Promise.all([this.chainGasAmount()])
-      } catch (e) {
-        console.error('synapseRouter: Error hydrating cache', e)
-      }
-    }
-  }
+  // private async hydrateCache() {
+  //   if (HYDRATION_SUPPORTED_CHAIN_IDS.includes(this.chainId)) {
+  //     try {
+  //       await Promise.all([this.chainGasAmount()])
+  //     } catch (e) {
+  //       console.error('[SynapseSDK: SynapseRouter] Error hydrating cache: ', e)
+  //     }
+  //   }
+  // }
 
   public async getOriginAmountOut(
     tokenIn: string,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {StringUtilsHarness, StringUtils} from "../harnesses/StringUtilsHarness.sol";
+import {StringUtilsHarness} from "../harnesses/StringUtilsHarness.sol";
 
 import {Test} from "forge-std/Test.sol";
 
@@ -15,7 +15,7 @@ contract StringUtilsTest is Test {
         libHarness = new StringUtilsHarness();
     }
 
-    function testLength() public {
+    function testLength() public view {
         assertEq(libHarness.length(""), 0);
         assertEq(libHarness.length("0"), 1);
         assertEq(libHarness.length("0123456789"), 10);
@@ -23,7 +23,7 @@ contract StringUtilsTest is Test {
 
     // ════════════════════════════════════════════════ SLICING ══════════════════════════════════════════════════════
 
-    function testSubstring() public {
+    function testSubstring() public view {
         string memory str = "0123456789";
         // Empty string
         assertEq(libHarness.substring(str, 0, 0), "");
@@ -59,7 +59,7 @@ contract StringUtilsTest is Test {
         libHarness.substring(str, 5, 4);
     }
 
-    function testSuffix() public {
+    function testSuffix() public view {
         string memory str = "0123456789";
         assertEq(libHarness.suffix(str, 10), "");
         assertEq(libHarness.suffix(str, 9), "9");
@@ -73,7 +73,7 @@ contract StringUtilsTest is Test {
         libHarness.suffix(str, 11);
     }
 
-    function testPrefix() public {
+    function testPrefix() public view {
         string memory str = "0123456789";
         assertEq(libHarness.prefix(str, 0), "");
         assertEq(libHarness.prefix(str, 1), "0");
@@ -163,7 +163,7 @@ contract StringUtilsTest is Test {
 
     // ════════════════════════════════════════════════ COMPARISON ═════════════════════════════════════════════════════
 
-    function testEquals(string memory a, string memory b) public {
+    function testEquals(string memory a, string memory b) public view {
         if (libHarness.equals(a, b)) {
             assertEq(a, b);
         } else {
@@ -171,7 +171,7 @@ contract StringUtilsTest is Test {
         }
     }
 
-    function testEqualsToClone(string memory a) public {
+    function testEqualsToClone(string memory a) public view {
         bytes memory clone = new bytes(bytes(a).length);
         for (uint256 i = 0; i < bytes(a).length; i++) {
             clone[i] = bytes(a)[i];
@@ -179,7 +179,7 @@ contract StringUtilsTest is Test {
         assertTrue(libHarness.equals(a, string(clone)));
     }
 
-    function testIndexOf() public {
+    function testIndexOf() public view {
         string memory str = "01201234012345";
         assertEq(libHarness.indexOf("", ""), 0);
         assertEq(libHarness.indexOf("", "0"), type(uint256).max);
@@ -201,7 +201,7 @@ contract StringUtilsTest is Test {
         assertEq(libHarness.indexOf(str, "01230"), type(uint256).max);
     }
 
-    function testLastIndexOf() public {
+    function testLastIndexOf() public view {
         string memory str = "01201234012345";
         assertEq(libHarness.lastIndexOf("", ""), 0);
         assertEq(libHarness.lastIndexOf("", "0"), type(uint256).max);
@@ -225,7 +225,7 @@ contract StringUtilsTest is Test {
 
     // ════════════════════════════════════════════ INTEGER CONVERSION ═════════════════════════════════════════════════
 
-    function testToUint() public {
+    function testToUint() public view {
         assertEq(libHarness.toUint("0"), 0);
         assertEq(libHarness.toUint("1"), 1);
         assertEq(libHarness.toUint("42"), 42);
@@ -241,7 +241,7 @@ contract StringUtilsTest is Test {
         libHarness.toUint("0a");
     }
 
-    function testFromUint() public {
+    function testFromUint() public view {
         assertEq(libHarness.fromUint(0), "0");
         assertEq(libHarness.fromUint(1), "1");
         assertEq(libHarness.fromUint(42), "42");
@@ -252,13 +252,13 @@ contract StringUtilsTest is Test {
         );
     }
 
-    function testUintRoundtrip(uint256 val) public {
+    function testUintRoundtrip(uint256 val) public view {
         assertEq(libHarness.toUint(libHarness.fromUint(val)), val);
     }
 
     // ═════════════════════════════════════════════ FLOAT CONVERSION ══════════════════════════════════════════════════
 
-    function testFromFloat() public {
+    function testFromFloat() public view {
         // Zero decimals
         assertEq(libHarness.fromFloat(0, 0), "0.0");
         assertEq(libHarness.fromFloat(1, 0), "1.0");
@@ -288,7 +288,7 @@ contract StringUtilsTest is Test {
         );
     }
 
-    function testFromWei() public {
+    function testFromWei() public view {
         assertEq(libHarness.fromWei(0), "0.000000000000000000");
         assertEq(libHarness.fromWei(1), "0.000000000000000001");
         assertEq(libHarness.fromWei(42), "0.000000000000000042");

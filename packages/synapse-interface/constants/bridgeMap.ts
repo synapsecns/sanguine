@@ -167,6 +167,13 @@ export const BRIDGE_MAP = {
       destination: ['VSTA'],
       swappable: [],
     },
+    '0xAdF7C35560035944e805D98fF17d58CDe2449389': {
+      decimals: 18,
+      symbol: 'SPEC',
+      origin: ['SPEC'],
+      destination: ['SPEC'],
+      swappable: [],
+    },
     '0xBAac2B4491727D78D2b78815144570b9f2Fe8899': {
       decimals: 18,
       symbol: 'DOG',
@@ -1232,6 +1239,13 @@ export const BRIDGE_MAP = {
         '0xEB466342C4d449BC9f53A865D5Cb90586f405215',
         '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA',
       ],
+    },
+    '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
+      decimals: 18,
+      symbol: 'SPEC',
+      origin: ['SPEC'],
+      destination: ['SPEC'],
+      swappable: [],
     },
     '0xEB466342C4d449BC9f53A865D5Cb90586f405215': {
       decimals: 6,

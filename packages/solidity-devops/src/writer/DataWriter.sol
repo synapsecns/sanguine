@@ -21,7 +21,8 @@ abstract contract DataWriter is PathFinder, Logger {
 
     /// @notice Writes the deployment JSON for a contract on a given chain under the specified alias.
     /// Example: contractName = "LinkedPool", contractAlias = "LinkedPool.USDC"
-    /// Note: writes to the FRESH deployment path, which is moved to the correct location after the contract is deployed.
+    /// Note: writes the JSON file to the FRESH deployments directory. The written file needs to be moved
+    /// to the correct location outside of the deployment script.
     /// Note: will not include the ABI in the output JSON.
     function writeDeploymentArtifact(
         string memory chain,

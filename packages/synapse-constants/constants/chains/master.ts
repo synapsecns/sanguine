@@ -18,6 +18,7 @@ import moonbeamImg from '../assets/chains/moonbeam.svg'
 import moonriverImg from '../assets/chains/moonriver.svg'
 import optimismImg from '../assets/chains/optimism.svg'
 import polygonImg from '../assets/chains/polygon.svg'
+import scrollImg from '../assets/chains/scroll.svg'
 import ethExplorerImg from '../assets/explorer/etherscan.svg'
 import arbitrumExplorerImg from '../assets/explorer/arbitrum.svg'
 import bnbExplorerImg from '../assets/explorer/bscscan.svg'
@@ -38,6 +39,7 @@ import moonriverExplorerImg from '../assets/explorer/moonriver.svg'
 import dogeExplorerImg from '../assets/explorer/dogechain.svg'
 import baseExplorerImg from '../assets/explorer/basescan.svg'
 import blastExplorerImg from '../assets/explorer/blast.svg'
+import scrollExplorerImg from '../assets/explorer/scroll.svg'
 import { Chain } from '../types'
 
 export const ETH: Chain = {
@@ -451,4 +453,28 @@ export const BLAST: Chain = {
     decimals: 18,
   },
   color: 'yellow',
+}
+
+export const SCROLL: Chain = {
+  priorityRank: 90,
+  id: 534352,
+  chainSymbol: 'SCROLL',
+  name: 'Scroll',
+  codeName: 'scroll',
+  chainImg: scrollImg,
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://rpc.scroll.io',
+    fallback: 'https://scroll.blockpi.network/v1/rpc/public',
+  },
+  explorerUrl: 'https://scrollscan.com/',
+  explorerName: 'Scrollscan',
+  explorerImg: scrollExplorerImg,
+  blockTime: 3000,
+  nativeCurrency: {
+    name: 'Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  color: 'orange',
 }

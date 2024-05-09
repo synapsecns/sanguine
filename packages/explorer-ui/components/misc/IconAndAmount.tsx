@@ -2,7 +2,7 @@ import { getCoinTextColor } from '@styles/coins'
 import { formatAmount } from '@utils/formatAmount'
 import { AssetImage } from '@components/misc/AssetImage'
 import { addressToSymbol } from '@utils/addressToSymbol'
-import { TOKEN_HASH_MAP } from 'synapse-constants'
+import { TOKEN_HASH_MAP, tokenAddressToToken } from 'synapse-constants'
 import { addressToDecimals } from '@utils/addressToDecimals'
 
 export function IconAndAmount({
@@ -14,7 +14,7 @@ export function IconAndAmount({
   iconSize = 'w-6 h-6',
   styledCoin = false,
 }) {
-  const t = chainId && tokenAddress && TOKEN_HASH_MAP[chainId]?.[tokenAddress]
+  const t = chainId && tokenAddress && tokenAddressToToken( chainId, tokenAddress )
 
   let styledCoinClass
   if (styledCoin === true) {
@@ -23,13 +23,20 @@ export function IconAndAmount({
   } else {
     styledCoinClass = t && `${getCoinTextColor(t)} ${textSize}`
   }
-
+2
   let amount
   let showToken
   if (tokenSymbol) {
-    const displaySymbol = addressToSymbol({ tokenAddress, chainId })
+    const displaySymbol = addressToSymbol({ tokenAddress, chainId }) || tokenSymbol
     showToken = <div className={styledCoinClass}>{displaySymbol}</div>
-    amount = formattedValue
+    const dec = 10 ** addressToDecimals({ tokenAddress, chainId })
+    // Need a cleaner way of doing this.
+    if (formattedValue > 10000000) {
+      amount = formattedValue / (dec / 10 ** 6)
+    }
+    else {
+      amount = formattedValue
+    }
   } else {
     const displaySymbol = addressToSymbol({ tokenAddress, chainId })
     showToken = displaySymbol ? (
@@ -46,6 +53,7 @@ export function IconAndAmount({
       <div className="flex flex-row items-center ">
         <AssetImage
           tokenAddress={tokenAddress}
+          tokenSymbol={tokenSymbol}
           chainId={chainId}
           className={`${iconSize} inline mr-1 rounded-lg hover:opacity-[0.8] transition-all ease-in-out`}
         />

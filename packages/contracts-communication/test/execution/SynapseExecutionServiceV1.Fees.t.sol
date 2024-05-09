@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 
-import {SynapseExecutionServiceV1Test} from "./SynapseExecutionServiceV1.t.sol";
+import {SynapseExecutionServiceV1, SynapseExecutionServiceV1Test} from "./SynapseExecutionServiceV1.t.sol";
 
 import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
 
@@ -48,6 +48,8 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     address public icClientB = makeAddr("ICClientB");
     address public executorEOA = makeAddr("ExecutorEOA");
     address public gasOracle;
+
+    address public claimer = makeAddr("Claimer");
 
     function setUp() public override {
         super.setUp();
@@ -103,18 +105,99 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         return VersionedPayloadLib.encodeVersionedPayload(2, data);
     }
 
-    function requestExecution(address caller, uint256 executionFee, bytes memory options) internal {
+    function requestTxExecution(address caller, uint256 executionFee, bytes memory options) internal {
+        deal(caller, executionFee);
         vm.prank(caller);
-        service.requestExecution({
+        service.requestTxExecution{value: executionFee}({
             dstChainId: REMOTE_CHAIN_ID,
             txPayloadSize: MOCK_CALLDATA_SIZE,
             transactionId: MOCK_TX_ID,
-            executionFee: executionFee,
             options: options
         });
     }
 
-    function test_getExecutionFee_noAirdrop() public {
+    function test_claimFees_zeroClaimFraction_emitsEvent() public {
+        deal(address(service), 5 ether);
+        vm.expectEmit(address(service));
+        emit FeesClaimed(executorEOA, 5 ether, claimer, 0);
+        vm.prank(claimer);
+        service.claimFees();
+    }
+
+    function test_claimFees_zeroClaimFraction_distributesFees() public {
+        deal(address(service), 5 ether);
+        vm.prank(claimer);
+        service.claimFees();
+        assertEq(executorEOA.balance, 5 ether);
+        assertEq(claimer.balance, 0);
+    }
+
+    function test_claimFees_zeroClaimFraction_stateChanges() public {
+        deal(address(service), 5 ether);
+        assertEq(service.getClaimableAmount(), 5 ether);
+        assertEq(service.getClaimerFraction(), 0);
+        assertEq(service.getClaimerReward(), 0);
+        assertEq(service.getFeeRecipient(), executorEOA);
+        vm.prank(claimer);
+        service.claimFees();
+        assertEq(service.getClaimableAmount(), 0);
+        assertEq(service.getClaimerFraction(), 0);
+        assertEq(service.getClaimerReward(), 0);
+        assertEq(service.getFeeRecipient(), executorEOA);
+    }
+
+    function test_claimFees_nonZeroClaimFraction_emitsEvent() public {
+        // Set claim fee to 0.1%
+        service.setClaimerFraction(0.001e18);
+        deal(address(service), 5 ether);
+        vm.expectEmit(address(service));
+        emit FeesClaimed(executorEOA, 4.995 ether, claimer, 0.005 ether);
+        vm.prank(claimer);
+        service.claimFees();
+    }
+
+    function test_claimFees_nonZeroClaimFraction_distributesFees() public {
+        // Set claim fee to 0.1%
+        service.setClaimerFraction(0.001e18);
+        deal(address(service), 5 ether);
+        vm.prank(claimer);
+        service.claimFees();
+        assertEq(executorEOA.balance, 4.995 ether);
+        assertEq(claimer.balance, 0.005 ether);
+    }
+
+    function test_claimFees_nonZeroClaimFraction_stateChanges() public {
+        // Set claim fee to 0.1%
+        service.setClaimerFraction(0.001e18);
+        deal(address(service), 5 ether);
+        assertEq(service.getClaimableAmount(), 5 ether);
+        assertEq(service.getClaimerFraction(), 0.001e18);
+        assertEq(service.getClaimerReward(), 0.005 ether);
+        assertEq(service.getFeeRecipient(), executorEOA);
+        vm.prank(claimer);
+        service.claimFees();
+        assertEq(service.getClaimableAmount(), 0);
+        assertEq(service.getClaimerFraction(), 0.001e18);
+        assertEq(service.getClaimerReward(), 0);
+        assertEq(service.getFeeRecipient(), executorEOA);
+    }
+
+    function test_claimFees_revert_zeroAmount() public {
+        address caller = makeAddr("Random Caller");
+        expectRevertZeroAmount();
+        vm.prank(caller);
+        service.claimFees();
+    }
+
+    function test_claimFees_revert_zeroExecutorEOA() public {
+        SynapseExecutionServiceV1 freshService = SynapseExecutionServiceV1(deployProxy(address(implementation)));
+        deal(address(freshService), 5 ether);
+        expectRevertFeeRecipientZeroAddress();
+        vm.prank(claimer);
+        freshService.claimFees();
+    }
+
+    function test_getExecutionFee_noAirdrop() public view {
         uint256 fee = service.getExecutionFee({
             dstChainId: REMOTE_CHAIN_ID,
             txPayloadSize: MOCK_CALLDATA_SIZE,
@@ -133,7 +216,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         assertEq(fee, MOCK_FEE_NO_AIRDROP_MARKUP);
     }
 
-    function test_getExecutionFee_withAirdrop() public {
+    function test_getExecutionFee_withAirdrop() public view {
         uint256 fee = service.getExecutionFee({
             dstChainId: REMOTE_CHAIN_ID,
             txPayloadSize: MOCK_CALLDATA_SIZE,
@@ -158,173 +241,173 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         service.getExecutionFee({dstChainId: REMOTE_CHAIN_ID, txPayloadSize: MOCK_CALLDATA_SIZE, options: optionsV2});
     }
 
-    function test_requestExecution_clientA_noAirdrop_exactFee() public {
-        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
+    function test_requestTxExecution_clientA_noAirdrop_exactFee() public {
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA, MOCK_FEE_NO_AIRDROP);
+        requestTxExecution(icClientA, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientA_noAirdrop_higherFee() public {
-        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP + 1, encodedOptionsNoAirdrop);
+    function test_requestTxExecution_clientA_noAirdrop_higherFee() public {
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA, MOCK_FEE_NO_AIRDROP + 1);
+        requestTxExecution(icClientA, MOCK_FEE_NO_AIRDROP + 1, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientA_noAirdrop_revert_lowerFee() public {
-        expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP - 1, MOCK_FEE_NO_AIRDROP);
-        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP - 1, encodedOptionsNoAirdrop);
+    function test_requestTxExecution_clientA_noAirdrop_revert_lowerFee() public {
+        expectRevertFeeAmountBelowMin(MOCK_FEE_NO_AIRDROP - 1, MOCK_FEE_NO_AIRDROP);
+        requestTxExecution(icClientA, MOCK_FEE_NO_AIRDROP - 1, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientA_noAirdrop_withMarkup_exactFee() public {
+    function test_requestTxExecution_clientA_noAirdrop_withMarkup_exactFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP_MARKUP, encodedOptionsNoAirdrop);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA, MOCK_FEE_NO_AIRDROP_MARKUP);
+        requestTxExecution(icClientA, MOCK_FEE_NO_AIRDROP_MARKUP, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientA_noAirdrop_withMarkup_higherFee() public {
+    function test_requestTxExecution_clientA_noAirdrop_withMarkup_higherFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP_MARKUP + 1, encodedOptionsNoAirdrop);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA, MOCK_FEE_NO_AIRDROP_MARKUP + 1);
+        requestTxExecution(icClientA, MOCK_FEE_NO_AIRDROP_MARKUP + 1, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientA_noAirdrop_withMarkup_revert_lowerFee() public {
+    function test_requestTxExecution_clientA_noAirdrop_withMarkup_revert_lowerFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP_MARKUP - 1, MOCK_FEE_NO_AIRDROP_MARKUP);
-        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP_MARKUP - 1, encodedOptionsNoAirdrop);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_NO_AIRDROP_MARKUP - 1, MOCK_FEE_NO_AIRDROP_MARKUP);
+        requestTxExecution(icClientA, MOCK_FEE_NO_AIRDROP_MARKUP - 1, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientA_noAirdrop_revert_unsupportedOptionsVersion() public {
+    function test_requestTxExecution_clientA_noAirdrop_revert_unsupportedOptionsVersion() public {
         bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
-        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP, optionsV2);
+        requestTxExecution(icClientA, MOCK_FEE_NO_AIRDROP, optionsV2);
     }
 
-    function test_requestExecution_clientA_withAirdrop_exactFee() public {
-        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
+    function test_requestTxExecution_clientA_withAirdrop_exactFee() public {
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA, MOCK_FEE_WITH_AIRDROP);
+        requestTxExecution(icClientA, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientA_withAirdrop_higherFee() public {
-        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP + 1, encodedOptionsWithAirdrop);
+    function test_requestTxExecution_clientA_withAirdrop_higherFee() public {
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA, MOCK_FEE_WITH_AIRDROP + 1);
+        requestTxExecution(icClientA, MOCK_FEE_WITH_AIRDROP + 1, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientA_withAirdrop_revert_lowerFee() public {
-        expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
-        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP - 1, encodedOptionsWithAirdrop);
+    function test_requestTxExecution_clientA_withAirdrop_revert_lowerFee() public {
+        expectRevertFeeAmountBelowMin(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
+        requestTxExecution(icClientA, MOCK_FEE_WITH_AIRDROP - 1, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientA_withAirdrop_withMarkup_exactFee() public {
+    function test_requestTxExecution_clientA_withAirdrop_withMarkup_exactFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP, encodedOptionsWithAirdrop);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP);
+        requestTxExecution(icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientA_withAirdrop_withMarkup_higherFee() public {
+    function test_requestTxExecution_clientA_withAirdrop_withMarkup_higherFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP + 1, encodedOptionsWithAirdrop);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP + 1);
+        requestTxExecution(icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP + 1, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientA_withAirdrop_withMarkup_revert_lowerFee() public {
+    function test_requestTxExecution_clientA_withAirdrop_withMarkup_revert_lowerFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP_MARKUP - 1, MOCK_FEE_WITH_AIRDROP_MARKUP);
-        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP - 1, encodedOptionsWithAirdrop);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_WITH_AIRDROP_MARKUP - 1, MOCK_FEE_WITH_AIRDROP_MARKUP);
+        requestTxExecution(icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP - 1, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientA_withAirdrop_revert_unsupportedOptionsVersion() public {
+    function test_requestTxExecution_clientA_withAirdrop_revert_unsupportedOptionsVersion() public {
         bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
-        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP, optionsV2);
+        requestTxExecution(icClientA, MOCK_FEE_WITH_AIRDROP, optionsV2);
     }
 
-    function test_requestExecution_clientB_noAirdrop_exactFee() public {
-        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
+    function test_requestTxExecution_clientB_noAirdrop_exactFee() public {
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB, MOCK_FEE_NO_AIRDROP);
+        requestTxExecution(icClientB, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientB_noAirdrop_higherFee() public {
-        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP + 1, encodedOptionsNoAirdrop);
+    function test_requestTxExecution_clientB_noAirdrop_higherFee() public {
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB, MOCK_FEE_NO_AIRDROP + 1);
+        requestTxExecution(icClientB, MOCK_FEE_NO_AIRDROP + 1, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientB_noAirdrop_revert_lowerFee() public {
-        expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP - 1, MOCK_FEE_NO_AIRDROP);
-        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP - 1, encodedOptionsNoAirdrop);
+    function test_requestTxExecution_clientB_noAirdrop_revert_lowerFee() public {
+        expectRevertFeeAmountBelowMin(MOCK_FEE_NO_AIRDROP - 1, MOCK_FEE_NO_AIRDROP);
+        requestTxExecution(icClientB, MOCK_FEE_NO_AIRDROP - 1, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientB_noAirdrop_revert_unsupportedOptionsVersion() public {
+    function test_requestTxExecution_clientB_noAirdrop_revert_unsupportedOptionsVersion() public {
         bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
-        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP, optionsV2);
+        requestTxExecution(icClientB, MOCK_FEE_NO_AIRDROP, optionsV2);
     }
 
-    function test_requestExecution_clientB_noAirdrop_withMarkup_exactFee() public {
+    function test_requestTxExecution_clientB_noAirdrop_withMarkup_exactFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP_MARKUP, encodedOptionsNoAirdrop);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB, MOCK_FEE_NO_AIRDROP_MARKUP);
+        requestTxExecution(icClientB, MOCK_FEE_NO_AIRDROP_MARKUP, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientB_noAirdrop_withMarkup_higherFee() public {
+    function test_requestTxExecution_clientB_noAirdrop_withMarkup_higherFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP_MARKUP + 1, encodedOptionsNoAirdrop);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB, MOCK_FEE_NO_AIRDROP_MARKUP + 1);
+        requestTxExecution(icClientB, MOCK_FEE_NO_AIRDROP_MARKUP + 1, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientB_noAirdrop_withMarkup_revert_lowerFee() public {
+    function test_requestTxExecution_clientB_noAirdrop_withMarkup_revert_lowerFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP_MARKUP - 1, MOCK_FEE_NO_AIRDROP_MARKUP);
-        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP_MARKUP - 1, encodedOptionsNoAirdrop);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_NO_AIRDROP_MARKUP - 1, MOCK_FEE_NO_AIRDROP_MARKUP);
+        requestTxExecution(icClientB, MOCK_FEE_NO_AIRDROP_MARKUP - 1, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_clientB_withAirdrop_exactFee() public {
-        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
+    function test_requestTxExecution_clientB_withAirdrop_exactFee() public {
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB, MOCK_FEE_WITH_AIRDROP);
+        requestTxExecution(icClientB, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientB_withAirdrop_higherFee() public {
-        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP + 1, encodedOptionsWithAirdrop);
+    function test_requestTxExecution_clientB_withAirdrop_higherFee() public {
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB, MOCK_FEE_WITH_AIRDROP + 1);
+        requestTxExecution(icClientB, MOCK_FEE_WITH_AIRDROP + 1, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientB_withAirdrop_revert_lowerFee() public {
-        expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
-        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP - 1, encodedOptionsWithAirdrop);
+    function test_requestTxExecution_clientB_withAirdrop_revert_lowerFee() public {
+        expectRevertFeeAmountBelowMin(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
+        requestTxExecution(icClientB, MOCK_FEE_WITH_AIRDROP - 1, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientB_withAirdrop_revert_unsupportedOptionsVersion() public {
+    function test_requestTxExecution_clientB_withAirdrop_revert_unsupportedOptionsVersion() public {
         bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
-        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP, optionsV2);
+        requestTxExecution(icClientB, MOCK_FEE_WITH_AIRDROP, optionsV2);
     }
 
-    function test_requestExecution_clientB_withAirdrop_withMarkup_exactFee() public {
+    function test_requestTxExecution_clientB_withAirdrop_withMarkup_exactFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP, encodedOptionsWithAirdrop);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP);
+        requestTxExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientB_withAirdrop_withMarkup_higherFee() public {
+    function test_requestTxExecution_clientB_withAirdrop_withMarkup_higherFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP + 1, encodedOptionsWithAirdrop);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP + 1);
+        requestTxExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP + 1, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_clientB_withAirdrop_withMarkup_revert_lowerFee() public {
+    function test_requestTxExecution_clientB_withAirdrop_withMarkup_revert_lowerFee() public {
         service.setGlobalMarkup(MOCK_MARKUP);
-        expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP_MARKUP - 1, MOCK_FEE_WITH_AIRDROP_MARKUP);
-        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP - 1, encodedOptionsWithAirdrop);
+        expectRevertFeeAmountBelowMin(MOCK_FEE_WITH_AIRDROP_MARKUP - 1, MOCK_FEE_WITH_AIRDROP_MARKUP);
+        requestTxExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP - 1, encodedOptionsWithAirdrop);
     }
 
-    function test_requestExecution_noAirdrop_revert_notInterchainClient(address caller) public {
+    function test_requestTxExecution_noAirdrop_revert_CallerNotInterchainClient(address caller) public {
         assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != icClientA && caller != icClientB);
-        expectRevertNotInterchainClient(caller);
-        requestExecution(caller, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
+        expectRevertCallerNotInterchainClient(caller);
+        requestTxExecution(caller, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
     }
 
-    function test_requestExecution_withAirdrop_revert_notInterchainClient(address caller) public {
+    function test_requestTxExecution_withAirdrop_revert_CallerNotInterchainClient(address caller) public {
         assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != icClientA && caller != icClientB);
-        expectRevertNotInterchainClient(caller);
-        requestExecution(caller, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
+        expectRevertCallerNotInterchainClient(caller);
+        requestTxExecution(caller, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
     }
 }

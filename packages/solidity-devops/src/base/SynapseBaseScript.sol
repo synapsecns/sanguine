@@ -10,6 +10,7 @@ import {Script} from "forge-std/Script.sol";
 
 abstract contract SynapseBaseScript is Script, Deployer, DeploymentSaver {
     uint256 private initialDeployerNonce;
+    uint256 private finalDeployerNonce;
 
     /// @notice Common pattern for running a script.
     modifier broadcastWithHooks() {
@@ -42,7 +43,7 @@ abstract contract SynapseBaseScript is Script, Deployer, DeploymentSaver {
     /// Make sure to call `super.afterExecution()` in the overridden function.
     function afterExecution() internal virtual {
         // Check if the deployer address has the same nonce as before the script was executed
-        uint256 finalDeployerNonce = vm.getNonce(msg.sender);
+        finalDeployerNonce = vm.getNonce(msg.sender);
         printInfo(
             StringUtils.concat(
                 "Total amount of broadcasted txs: ", vm.toString(finalDeployerNonce - initialDeployerNonce)

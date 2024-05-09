@@ -21,14 +21,14 @@ library OptionsLib {
 
     uint16 internal constant OPTIONS_V1 = 1;
 
-    error OptionsLib__IncorrectVersion(uint16 version);
+    error OptionsLib__VersionInvalid(uint16 version);
 
     /// @notice Decodes options (V1 or higher) from a bytes format back into an OptionsV1 struct.
     /// @param data         The options data in bytes format.
     function decodeOptionsV1(bytes memory data) internal view returns (OptionsV1 memory) {
         uint16 version = data.getVersionFromMemory();
         if (version < OPTIONS_V1) {
-            revert OptionsLib__IncorrectVersion(version);
+            revert OptionsLib__VersionInvalid(version);
         }
         // Structs of the same version will always be decoded correctly.
         // Following versions will be decoded correctly if they have the same fields as the previous version,

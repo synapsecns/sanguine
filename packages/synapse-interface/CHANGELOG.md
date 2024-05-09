@@ -3,6 +3,117 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.23.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.22.5...@synapsecns/synapse-interface@0.23.0) (2024-05-09)
+
+
+### Features
+
+* **synapse-interface:** bridge gas handler ([#2437](https://github.com/synapsecns/sanguine/issues/2437)) ([4fcfcab](https://github.com/synapsecns/sanguine/commit/4fcfcab4fd5de08788ad017fc9faf350391cf3e5)), closes [#2598](https://github.com/synapsecns/sanguine/issues/2598)
+
+
+
+
+
+## [0.22.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.22.4...@synapsecns/synapse-interface@0.22.5) (2024-05-09)
+
+
+### Reverts
+
+* Revert "update bl" ([3693110](https://github.com/synapsecns/sanguine/commit/3693110e0f9df6177935bbbfba5444df62b11866))
+
+
+
+
+
+## [0.22.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.22.3...@synapsecns/synapse-interface@0.22.4) (2024-05-08)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.22.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.22.2...@synapsecns/synapse-interface@0.22.3) (2024-05-06)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.22.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.22.1...@synapsecns/synapse-interface@0.22.2) (2024-05-06)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.22.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.22.0...@synapsecns/synapse-interface@0.22.1) (2024-05-06)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.22.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.21.2...@synapsecns/synapse-interface@0.22.0) (2024-05-04)
+
+
+### Features
+
+* **synapse-interface:** add spectral token ([#2558](https://github.com/synapsecns/sanguine/issues/2558)) ([b936449](https://github.com/synapsecns/sanguine/commit/b9364498b32290615d05eb88542051c8c8d2c0ce))
+
+
+
+
+
+## [0.21.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.21.1...@synapsecns/synapse-interface@0.21.2) (2024-05-03)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.21.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.21.0...@synapsecns/synapse-interface@0.21.1) (2024-05-02)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.21.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.20.1...@synapsecns/synapse-interface@0.21.0) (2024-04-30)
+
+
+### Features
+
+* **synapse-interface:** maintenance aggregator using PAUSED_CHAINS ([#2345](https://github.com/synapsecns/sanguine/issues/2345)) ([ee14cb8](https://github.com/synapsecns/sanguine/commit/ee14cb82e04ec16d6fccc8cfb7f3194a1b99c140)), closes [#2346](https://github.com/synapsecns/sanguine/issues/2346)
+
+
+
+
+
+## [0.20.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.20.0...@synapsecns/synapse-interface@0.20.1) (2024-04-29)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.20.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.19.1...@synapsecns/synapse-interface@0.20.0) (2024-04-29)
+
+
+### Features
+
+* **synapse-interface:** unpause optimism ([#2508](https://github.com/synapsecns/sanguine/issues/2508)) ([4dda636](https://github.com/synapsecns/sanguine/commit/4dda636f21c70bb4f58e94616afc23b9ab9bdb12))
+
+
+
+
+
 ## [0.19.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.19.0...@synapsecns/synapse-interface@0.19.1) (2024-04-22)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

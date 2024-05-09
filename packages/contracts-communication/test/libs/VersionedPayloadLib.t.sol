@@ -14,9 +14,9 @@ contract VersionedPayloadLibraryTest is Test {
         libHarness = new VersionedPayloadLibHarness();
     }
 
-    function expectRevertTooShort(bytes memory versionedPayload) internal {
+    function expectRevertPayloadTooShort(bytes memory versionedPayload) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(VersionedPayloadLib.VersionedPayload__TooShort.selector, versionedPayload)
+            abi.encodeWithSelector(VersionedPayloadLib.VersionedPayload__PayloadTooShort.selector, versionedPayload)
         );
     }
 
@@ -25,39 +25,39 @@ contract VersionedPayloadLibraryTest is Test {
         return data[:length];
     }
 
-    function test_encodeVersionedPayload_roundtrip(uint16 version, bytes memory payload) public {
+    function test_encodeVersionedPayload_roundtrip(uint16 version, bytes memory payload) public view {
         bytes memory versionedPayload = libHarness.encodeVersionedPayload(version, payload);
         assertEq(libHarness.getVersion(versionedPayload), version);
         assertEq(libHarness.getPayload(versionedPayload), payload);
     }
 
-    function test_encodeVersionedPayloadFromMemory_roundtrip(uint16 version, bytes memory payload) public {
+    function test_encodeVersionedPayloadFromMemory_roundtrip(uint16 version, bytes memory payload) public view {
         bytes memory versionedPayload = VersionedPayloadLib.encodeVersionedPayload(version, payload);
         assertEq(libHarness.getVersionFromMemory(versionedPayload), version);
         assertEq(libHarness.getPayloadFromMemory(versionedPayload), payload);
     }
 
-    function test_getVersion_revert_tooShort(bytes calldata data) public {
+    function test_getVersion_revert_PayloadTooShort(bytes calldata data) public {
         bytes memory invalidPayload = makeInvalid(data);
-        expectRevertTooShort(invalidPayload);
+        expectRevertPayloadTooShort(invalidPayload);
         libHarness.getVersion(invalidPayload);
     }
 
-    function test_getPayload_revert_tooShort(bytes calldata data) public {
+    function test_getPayload_revert_PayloadTooShort(bytes calldata data) public {
         bytes memory invalidPayload = makeInvalid(data);
-        expectRevertTooShort(invalidPayload);
+        expectRevertPayloadTooShort(invalidPayload);
         libHarness.getPayload(invalidPayload);
     }
 
-    function test_getVersionFromMemory_revert_tooShort(bytes calldata data) public {
+    function test_getVersionFromMemory_revert_PayloadTooShort(bytes calldata data) public {
         bytes memory invalidPayload = makeInvalid(data);
-        expectRevertTooShort(invalidPayload);
+        expectRevertPayloadTooShort(invalidPayload);
         libHarness.getVersionFromMemory(invalidPayload);
     }
 
-    function test_getPayloadFromMemory_revert_tooShort(bytes calldata data) public {
+    function test_getPayloadFromMemory_revert_PayloadTooShort(bytes calldata data) public {
         bytes memory invalidPayload = makeInvalid(data);
-        expectRevertTooShort(invalidPayload);
+        expectRevertPayloadTooShort(invalidPayload);
         libHarness.getPayloadFromMemory(invalidPayload);
     }
 
@@ -71,6 +71,7 @@ contract VersionedPayloadLibraryTest is Test {
         bytes memory d
     )
         public
+        view
     {
         bytes memory versionedPayload = libHarness.encodeVersionedPayload(version, payload);
         (bytes memory a_, bytes memory b_, uint16 version_, bytes memory payload_, bytes memory c_, bytes memory d_) =
@@ -92,6 +93,7 @@ contract VersionedPayloadLibraryTest is Test {
         bytes memory d
     )
         public
+        view
     {
         bytes memory versionedPayload = libHarness.encodeVersionedPayload(version, payload);
         (bytes memory a_, bytes memory b_, uint16 version_, bytes memory payload_, bytes memory c_, bytes memory d_) =

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/contrib/screener-api/db"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql/mysql"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql/sqlite"
@@ -13,7 +14,7 @@ import (
 )
 
 // Connect connects to the database.
-func Connect(ctx context.Context, dbType dbcommon.DBType, path string, metrics metrics.Handler) (db.RuleDB, error) {
+func Connect(ctx context.Context, dbType dbcommon.DBType, path string, metrics metrics.Handler) (db.DB, error) {
 	switch dbType {
 	case dbcommon.Mysql:
 		store, err := mysql.NewMysqlStore(ctx, path, metrics)

@@ -48,7 +48,7 @@ type InterchainEntry struct {
 // AddressMetaData contains all meta data concerning the Address contract.
 var AddressMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122066cdd0aa13120a4fafce7e616e052ee9a4e47afcf1ed1d59ca99135f1e40c93164736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220d8103dceab77823eb805ac8cb7edefa1fd460abaeb70bec2670708f0b007666364736f6c63430008140033",
 }
 
 // AddressABI is the input ABI used to generate the binding from.
@@ -218,6 +218,1274 @@ func (_Address *AddressTransactorRaw) Transact(opts *bind.TransactOpts, method s
 	return _Address.Contract.contract.Transact(opts, method, params...)
 }
 
+// ClaimableFeesMetaData contains all meta data concerning the ClaimableFees contract.
+var ClaimableFeesMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxAllowed\",\"type\":\"uint256\"}],\"name\":\"ClaimableFees__ClaimerFractionAboveMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeAmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeRecipientZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimerFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"}],\"name\":\"FeeRecipientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerReward\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimableAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getFeeRecipient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"d294f093": "claimFees()",
+		"c354bd6e": "getClaimableAmount()",
+		"4f199114": "getClaimerFraction()",
+		"26533fe9": "getClaimerReward()",
+		"4ccb20c0": "getFeeRecipient()",
+	},
+}
+
+// ClaimableFeesABI is the input ABI used to generate the binding from.
+// Deprecated: Use ClaimableFeesMetaData.ABI instead.
+var ClaimableFeesABI = ClaimableFeesMetaData.ABI
+
+// Deprecated: Use ClaimableFeesMetaData.Sigs instead.
+// ClaimableFeesFuncSigs maps the 4-byte function signature to its string representation.
+var ClaimableFeesFuncSigs = ClaimableFeesMetaData.Sigs
+
+// ClaimableFees is an auto generated Go binding around an Ethereum contract.
+type ClaimableFees struct {
+	ClaimableFeesCaller     // Read-only binding to the contract
+	ClaimableFeesTransactor // Write-only binding to the contract
+	ClaimableFeesFilterer   // Log filterer for contract events
+}
+
+// ClaimableFeesCaller is an auto generated read-only Go binding around an Ethereum contract.
+type ClaimableFeesCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type ClaimableFeesTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ClaimableFeesFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type ClaimableFeesSession struct {
+	Contract     *ClaimableFees    // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// ClaimableFeesCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type ClaimableFeesCallerSession struct {
+	Contract *ClaimableFeesCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts        // Call options to use throughout this session
+}
+
+// ClaimableFeesTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type ClaimableFeesTransactorSession struct {
+	Contract     *ClaimableFeesTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts        // Transaction auth options to use throughout this session
+}
+
+// ClaimableFeesRaw is an auto generated low-level Go binding around an Ethereum contract.
+type ClaimableFeesRaw struct {
+	Contract *ClaimableFees // Generic contract binding to access the raw methods on
+}
+
+// ClaimableFeesCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ClaimableFeesCallerRaw struct {
+	Contract *ClaimableFeesCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// ClaimableFeesTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ClaimableFeesTransactorRaw struct {
+	Contract *ClaimableFeesTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewClaimableFees creates a new instance of ClaimableFees, bound to a specific deployed contract.
+func NewClaimableFees(address common.Address, backend bind.ContractBackend) (*ClaimableFees, error) {
+	contract, err := bindClaimableFees(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFees{ClaimableFeesCaller: ClaimableFeesCaller{contract: contract}, ClaimableFeesTransactor: ClaimableFeesTransactor{contract: contract}, ClaimableFeesFilterer: ClaimableFeesFilterer{contract: contract}}, nil
+}
+
+// NewClaimableFeesCaller creates a new read-only instance of ClaimableFees, bound to a specific deployed contract.
+func NewClaimableFeesCaller(address common.Address, caller bind.ContractCaller) (*ClaimableFeesCaller, error) {
+	contract, err := bindClaimableFees(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesCaller{contract: contract}, nil
+}
+
+// NewClaimableFeesTransactor creates a new write-only instance of ClaimableFees, bound to a specific deployed contract.
+func NewClaimableFeesTransactor(address common.Address, transactor bind.ContractTransactor) (*ClaimableFeesTransactor, error) {
+	contract, err := bindClaimableFees(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesTransactor{contract: contract}, nil
+}
+
+// NewClaimableFeesFilterer creates a new log filterer instance of ClaimableFees, bound to a specific deployed contract.
+func NewClaimableFeesFilterer(address common.Address, filterer bind.ContractFilterer) (*ClaimableFeesFilterer, error) {
+	contract, err := bindClaimableFees(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesFilterer{contract: contract}, nil
+}
+
+// bindClaimableFees binds a generic wrapper to an already deployed contract.
+func bindClaimableFees(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := ClaimableFeesMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ClaimableFees *ClaimableFeesRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ClaimableFees.Contract.ClaimableFeesCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ClaimableFees *ClaimableFeesRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimableFees.Contract.ClaimableFeesTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ClaimableFees *ClaimableFeesRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ClaimableFees.Contract.ClaimableFeesTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ClaimableFees *ClaimableFeesCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ClaimableFees.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ClaimableFees *ClaimableFeesTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimableFees.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ClaimableFees *ClaimableFeesTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ClaimableFees.Contract.contract.Transact(opts, method, params...)
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCaller) GetClaimableAmount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _ClaimableFees.contract.Call(opts, &out, "getClaimableAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesSession) GetClaimableAmount() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimableAmount(&_ClaimableFees.CallOpts)
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCallerSession) GetClaimableAmount() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimableAmount(&_ClaimableFees.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCaller) GetClaimerFraction(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _ClaimableFees.contract.Call(opts, &out, "getClaimerFraction")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesSession) GetClaimerFraction() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimerFraction(&_ClaimableFees.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCallerSession) GetClaimerFraction() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimerFraction(&_ClaimableFees.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCaller) GetClaimerReward(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _ClaimableFees.contract.Call(opts, &out, "getClaimerReward")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesSession) GetClaimerReward() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimerReward(&_ClaimableFees.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_ClaimableFees *ClaimableFeesCallerSession) GetClaimerReward() (*big.Int, error) {
+	return _ClaimableFees.Contract.GetClaimerReward(&_ClaimableFees.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_ClaimableFees *ClaimableFeesCaller) GetFeeRecipient(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _ClaimableFees.contract.Call(opts, &out, "getFeeRecipient")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_ClaimableFees *ClaimableFeesSession) GetFeeRecipient() (common.Address, error) {
+	return _ClaimableFees.Contract.GetFeeRecipient(&_ClaimableFees.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_ClaimableFees *ClaimableFeesCallerSession) GetFeeRecipient() (common.Address, error) {
+	return _ClaimableFees.Contract.GetFeeRecipient(&_ClaimableFees.CallOpts)
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_ClaimableFees *ClaimableFeesTransactor) ClaimFees(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimableFees.contract.Transact(opts, "claimFees")
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_ClaimableFees *ClaimableFeesSession) ClaimFees() (*types.Transaction, error) {
+	return _ClaimableFees.Contract.ClaimFees(&_ClaimableFees.TransactOpts)
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_ClaimableFees *ClaimableFeesTransactorSession) ClaimFees() (*types.Transaction, error) {
+	return _ClaimableFees.Contract.ClaimFees(&_ClaimableFees.TransactOpts)
+}
+
+// ClaimableFeesClaimerFractionSetIterator is returned from FilterClaimerFractionSet and is used to iterate over the raw logs and unpacked data for ClaimerFractionSet events raised by the ClaimableFees contract.
+type ClaimableFeesClaimerFractionSetIterator struct {
+	Event *ClaimableFeesClaimerFractionSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesClaimerFractionSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesClaimerFractionSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesClaimerFractionSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesClaimerFractionSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesClaimerFractionSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesClaimerFractionSet represents a ClaimerFractionSet event raised by the ClaimableFees contract.
+type ClaimableFeesClaimerFractionSet struct {
+	ClaimerFraction *big.Int
+	Raw             types.Log // Blockchain specific contextual infos
+}
+
+// FilterClaimerFractionSet is a free log retrieval operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFees *ClaimableFeesFilterer) FilterClaimerFractionSet(opts *bind.FilterOpts) (*ClaimableFeesClaimerFractionSetIterator, error) {
+
+	logs, sub, err := _ClaimableFees.contract.FilterLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesClaimerFractionSetIterator{contract: _ClaimableFees.contract, event: "ClaimerFractionSet", logs: logs, sub: sub}, nil
+}
+
+// WatchClaimerFractionSet is a free log subscription operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFees *ClaimableFeesFilterer) WatchClaimerFractionSet(opts *bind.WatchOpts, sink chan<- *ClaimableFeesClaimerFractionSet) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFees.contract.WatchLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesClaimerFractionSet)
+				if err := _ClaimableFees.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseClaimerFractionSet is a log parse operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFees *ClaimableFeesFilterer) ParseClaimerFractionSet(log types.Log) (*ClaimableFeesClaimerFractionSet, error) {
+	event := new(ClaimableFeesClaimerFractionSet)
+	if err := _ClaimableFees.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ClaimableFeesFeeRecipientSetIterator is returned from FilterFeeRecipientSet and is used to iterate over the raw logs and unpacked data for FeeRecipientSet events raised by the ClaimableFees contract.
+type ClaimableFeesFeeRecipientSetIterator struct {
+	Event *ClaimableFeesFeeRecipientSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesFeeRecipientSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesFeeRecipientSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesFeeRecipientSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesFeeRecipientSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesFeeRecipientSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesFeeRecipientSet represents a FeeRecipientSet event raised by the ClaimableFees contract.
+type ClaimableFeesFeeRecipientSet struct {
+	FeeRecipient common.Address
+	Raw          types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeeRecipientSet is a free log retrieval operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFees *ClaimableFeesFilterer) FilterFeeRecipientSet(opts *bind.FilterOpts) (*ClaimableFeesFeeRecipientSetIterator, error) {
+
+	logs, sub, err := _ClaimableFees.contract.FilterLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesFeeRecipientSetIterator{contract: _ClaimableFees.contract, event: "FeeRecipientSet", logs: logs, sub: sub}, nil
+}
+
+// WatchFeeRecipientSet is a free log subscription operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFees *ClaimableFeesFilterer) WatchFeeRecipientSet(opts *bind.WatchOpts, sink chan<- *ClaimableFeesFeeRecipientSet) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFees.contract.WatchLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesFeeRecipientSet)
+				if err := _ClaimableFees.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeeRecipientSet is a log parse operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFees *ClaimableFeesFilterer) ParseFeeRecipientSet(log types.Log) (*ClaimableFeesFeeRecipientSet, error) {
+	event := new(ClaimableFeesFeeRecipientSet)
+	if err := _ClaimableFees.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ClaimableFeesFeesClaimedIterator is returned from FilterFeesClaimed and is used to iterate over the raw logs and unpacked data for FeesClaimed events raised by the ClaimableFees contract.
+type ClaimableFeesFeesClaimedIterator struct {
+	Event *ClaimableFeesFeesClaimed // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesFeesClaimedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesFeesClaimed)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesFeesClaimed)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesFeesClaimedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesFeesClaimedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesFeesClaimed represents a FeesClaimed event raised by the ClaimableFees contract.
+type ClaimableFeesFeesClaimed struct {
+	FeeRecipient  common.Address
+	ClaimedFees   *big.Int
+	Claimer       common.Address
+	ClaimerReward *big.Int
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeesClaimed is a free log retrieval operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFees *ClaimableFeesFilterer) FilterFeesClaimed(opts *bind.FilterOpts) (*ClaimableFeesFeesClaimedIterator, error) {
+
+	logs, sub, err := _ClaimableFees.contract.FilterLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesFeesClaimedIterator{contract: _ClaimableFees.contract, event: "FeesClaimed", logs: logs, sub: sub}, nil
+}
+
+// WatchFeesClaimed is a free log subscription operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFees *ClaimableFeesFilterer) WatchFeesClaimed(opts *bind.WatchOpts, sink chan<- *ClaimableFeesFeesClaimed) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFees.contract.WatchLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesFeesClaimed)
+				if err := _ClaimableFees.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeesClaimed is a log parse operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFees *ClaimableFeesFilterer) ParseFeesClaimed(log types.Log) (*ClaimableFeesFeesClaimed, error) {
+	event := new(ClaimableFeesFeesClaimed)
+	if err := _ClaimableFees.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ClaimableFeesEventsMetaData contains all meta data concerning the ClaimableFeesEvents contract.
+var ClaimableFeesEventsMetaData = &bind.MetaData{
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimerFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"}],\"name\":\"FeeRecipientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerReward\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"}]",
+}
+
+// ClaimableFeesEventsABI is the input ABI used to generate the binding from.
+// Deprecated: Use ClaimableFeesEventsMetaData.ABI instead.
+var ClaimableFeesEventsABI = ClaimableFeesEventsMetaData.ABI
+
+// ClaimableFeesEvents is an auto generated Go binding around an Ethereum contract.
+type ClaimableFeesEvents struct {
+	ClaimableFeesEventsCaller     // Read-only binding to the contract
+	ClaimableFeesEventsTransactor // Write-only binding to the contract
+	ClaimableFeesEventsFilterer   // Log filterer for contract events
+}
+
+// ClaimableFeesEventsCaller is an auto generated read-only Go binding around an Ethereum contract.
+type ClaimableFeesEventsCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesEventsTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type ClaimableFeesEventsTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesEventsFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ClaimableFeesEventsFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ClaimableFeesEventsSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type ClaimableFeesEventsSession struct {
+	Contract     *ClaimableFeesEvents // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts        // Call options to use throughout this session
+	TransactOpts bind.TransactOpts    // Transaction auth options to use throughout this session
+}
+
+// ClaimableFeesEventsCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type ClaimableFeesEventsCallerSession struct {
+	Contract *ClaimableFeesEventsCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts              // Call options to use throughout this session
+}
+
+// ClaimableFeesEventsTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type ClaimableFeesEventsTransactorSession struct {
+	Contract     *ClaimableFeesEventsTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts              // Transaction auth options to use throughout this session
+}
+
+// ClaimableFeesEventsRaw is an auto generated low-level Go binding around an Ethereum contract.
+type ClaimableFeesEventsRaw struct {
+	Contract *ClaimableFeesEvents // Generic contract binding to access the raw methods on
+}
+
+// ClaimableFeesEventsCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ClaimableFeesEventsCallerRaw struct {
+	Contract *ClaimableFeesEventsCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// ClaimableFeesEventsTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ClaimableFeesEventsTransactorRaw struct {
+	Contract *ClaimableFeesEventsTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewClaimableFeesEvents creates a new instance of ClaimableFeesEvents, bound to a specific deployed contract.
+func NewClaimableFeesEvents(address common.Address, backend bind.ContractBackend) (*ClaimableFeesEvents, error) {
+	contract, err := bindClaimableFeesEvents(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEvents{ClaimableFeesEventsCaller: ClaimableFeesEventsCaller{contract: contract}, ClaimableFeesEventsTransactor: ClaimableFeesEventsTransactor{contract: contract}, ClaimableFeesEventsFilterer: ClaimableFeesEventsFilterer{contract: contract}}, nil
+}
+
+// NewClaimableFeesEventsCaller creates a new read-only instance of ClaimableFeesEvents, bound to a specific deployed contract.
+func NewClaimableFeesEventsCaller(address common.Address, caller bind.ContractCaller) (*ClaimableFeesEventsCaller, error) {
+	contract, err := bindClaimableFeesEvents(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsCaller{contract: contract}, nil
+}
+
+// NewClaimableFeesEventsTransactor creates a new write-only instance of ClaimableFeesEvents, bound to a specific deployed contract.
+func NewClaimableFeesEventsTransactor(address common.Address, transactor bind.ContractTransactor) (*ClaimableFeesEventsTransactor, error) {
+	contract, err := bindClaimableFeesEvents(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsTransactor{contract: contract}, nil
+}
+
+// NewClaimableFeesEventsFilterer creates a new log filterer instance of ClaimableFeesEvents, bound to a specific deployed contract.
+func NewClaimableFeesEventsFilterer(address common.Address, filterer bind.ContractFilterer) (*ClaimableFeesEventsFilterer, error) {
+	contract, err := bindClaimableFeesEvents(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsFilterer{contract: contract}, nil
+}
+
+// bindClaimableFeesEvents binds a generic wrapper to an already deployed contract.
+func bindClaimableFeesEvents(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := ClaimableFeesEventsMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ClaimableFeesEvents *ClaimableFeesEventsRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ClaimableFeesEvents.Contract.ClaimableFeesEventsCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ClaimableFeesEvents *ClaimableFeesEventsRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimableFeesEvents.Contract.ClaimableFeesEventsTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ClaimableFeesEvents *ClaimableFeesEventsRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ClaimableFeesEvents.Contract.ClaimableFeesEventsTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ClaimableFeesEvents *ClaimableFeesEventsCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ClaimableFeesEvents.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ClaimableFeesEvents *ClaimableFeesEventsTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ClaimableFeesEvents.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ClaimableFeesEvents *ClaimableFeesEventsTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ClaimableFeesEvents.Contract.contract.Transact(opts, method, params...)
+}
+
+// ClaimableFeesEventsClaimerFractionSetIterator is returned from FilterClaimerFractionSet and is used to iterate over the raw logs and unpacked data for ClaimerFractionSet events raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsClaimerFractionSetIterator struct {
+	Event *ClaimableFeesEventsClaimerFractionSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesEventsClaimerFractionSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesEventsClaimerFractionSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesEventsClaimerFractionSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesEventsClaimerFractionSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesEventsClaimerFractionSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesEventsClaimerFractionSet represents a ClaimerFractionSet event raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsClaimerFractionSet struct {
+	ClaimerFraction *big.Int
+	Raw             types.Log // Blockchain specific contextual infos
+}
+
+// FilterClaimerFractionSet is a free log retrieval operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) FilterClaimerFractionSet(opts *bind.FilterOpts) (*ClaimableFeesEventsClaimerFractionSetIterator, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.FilterLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsClaimerFractionSetIterator{contract: _ClaimableFeesEvents.contract, event: "ClaimerFractionSet", logs: logs, sub: sub}, nil
+}
+
+// WatchClaimerFractionSet is a free log subscription operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) WatchClaimerFractionSet(opts *bind.WatchOpts, sink chan<- *ClaimableFeesEventsClaimerFractionSet) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.WatchLogs(opts, "ClaimerFractionSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesEventsClaimerFractionSet)
+				if err := _ClaimableFeesEvents.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseClaimerFractionSet is a log parse operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
+//
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) ParseClaimerFractionSet(log types.Log) (*ClaimableFeesEventsClaimerFractionSet, error) {
+	event := new(ClaimableFeesEventsClaimerFractionSet)
+	if err := _ClaimableFeesEvents.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ClaimableFeesEventsFeeRecipientSetIterator is returned from FilterFeeRecipientSet and is used to iterate over the raw logs and unpacked data for FeeRecipientSet events raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsFeeRecipientSetIterator struct {
+	Event *ClaimableFeesEventsFeeRecipientSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesEventsFeeRecipientSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesEventsFeeRecipientSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesEventsFeeRecipientSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesEventsFeeRecipientSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesEventsFeeRecipientSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesEventsFeeRecipientSet represents a FeeRecipientSet event raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsFeeRecipientSet struct {
+	FeeRecipient common.Address
+	Raw          types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeeRecipientSet is a free log retrieval operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) FilterFeeRecipientSet(opts *bind.FilterOpts) (*ClaimableFeesEventsFeeRecipientSetIterator, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.FilterLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsFeeRecipientSetIterator{contract: _ClaimableFeesEvents.contract, event: "FeeRecipientSet", logs: logs, sub: sub}, nil
+}
+
+// WatchFeeRecipientSet is a free log subscription operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) WatchFeeRecipientSet(opts *bind.WatchOpts, sink chan<- *ClaimableFeesEventsFeeRecipientSet) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.WatchLogs(opts, "FeeRecipientSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesEventsFeeRecipientSet)
+				if err := _ClaimableFeesEvents.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeeRecipientSet is a log parse operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
+//
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) ParseFeeRecipientSet(log types.Log) (*ClaimableFeesEventsFeeRecipientSet, error) {
+	event := new(ClaimableFeesEventsFeeRecipientSet)
+	if err := _ClaimableFeesEvents.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ClaimableFeesEventsFeesClaimedIterator is returned from FilterFeesClaimed and is used to iterate over the raw logs and unpacked data for FeesClaimed events raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsFeesClaimedIterator struct {
+	Event *ClaimableFeesEventsFeesClaimed // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ClaimableFeesEventsFeesClaimedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ClaimableFeesEventsFeesClaimed)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ClaimableFeesEventsFeesClaimed)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ClaimableFeesEventsFeesClaimedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ClaimableFeesEventsFeesClaimedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ClaimableFeesEventsFeesClaimed represents a FeesClaimed event raised by the ClaimableFeesEvents contract.
+type ClaimableFeesEventsFeesClaimed struct {
+	FeeRecipient  common.Address
+	ClaimedFees   *big.Int
+	Claimer       common.Address
+	ClaimerReward *big.Int
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeesClaimed is a free log retrieval operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) FilterFeesClaimed(opts *bind.FilterOpts) (*ClaimableFeesEventsFeesClaimedIterator, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.FilterLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return &ClaimableFeesEventsFeesClaimedIterator{contract: _ClaimableFeesEvents.contract, event: "FeesClaimed", logs: logs, sub: sub}, nil
+}
+
+// WatchFeesClaimed is a free log subscription operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) WatchFeesClaimed(opts *bind.WatchOpts, sink chan<- *ClaimableFeesEventsFeesClaimed) (event.Subscription, error) {
+
+	logs, sub, err := _ClaimableFeesEvents.contract.WatchLogs(opts, "FeesClaimed")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ClaimableFeesEventsFeesClaimed)
+				if err := _ClaimableFeesEvents.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeesClaimed is a log parse operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
+//
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
+func (_ClaimableFeesEvents *ClaimableFeesEventsFilterer) ParseFeesClaimed(log types.Log) (*ClaimableFeesEventsFeesClaimed, error) {
+	event := new(ClaimableFeesEventsFeesClaimed)
+	if err := _ClaimableFeesEvents.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
 // ContextMetaData contains all meta data concerning the Context contract.
 var ContextMetaData = &bind.MetaData{
 	ABI: "[]",
@@ -372,7 +1640,7 @@ func (_Context *ContextTransactorRaw) Transact(opts *bind.TransactOpts, method s
 // ECDSAMetaData contains all meta data concerning the ECDSA contract.
 var ECDSAMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ba952d9344a76b63b62814fef33a6610ba82835dd64158e66fcdd7b8e04f832564736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220b99ef9c16d69f5b98958bb87a2c1f815d870fffc7a36cb912650ffdae4962fb264736f6c63430008140033",
 }
 
 // ECDSAABI is the input ABI used to generate the binding from.
@@ -545,7 +1813,7 @@ func (_ECDSA *ECDSATransactorRaw) Transact(opts *bind.TransactOpts, method strin
 // EnumerableSetMetaData contains all meta data concerning the EnumerableSet contract.
 var EnumerableSetMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220acc9fa81cd4a427619bd203103598dc2ce22568969600281d5d88f73e42c3bca64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212202acafb4cff2d782a8bf8f646ed67332ae08ff96d7444329fd4430878c15e761364736f6c63430008140033",
 }
 
 // EnumerableSetABI is the input ABI used to generate the binding from.
@@ -713,6 +1981,313 @@ func (_EnumerableSet *EnumerableSetTransactorRaw) Transfer(opts *bind.TransactOp
 // Transact invokes the (paid) contract method with params as input values.
 func (_EnumerableSet *EnumerableSetTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
 	return _EnumerableSet.Contract.contract.Transact(opts, method, params...)
+}
+
+// IClaimableFeesMetaData contains all meta data concerning the IClaimableFees contract.
+var IClaimableFeesMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxAllowed\",\"type\":\"uint256\"}],\"name\":\"ClaimableFees__ClaimerFractionAboveMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeAmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeRecipientZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimableAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getFeeRecipient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"d294f093": "claimFees()",
+		"c354bd6e": "getClaimableAmount()",
+		"4f199114": "getClaimerFraction()",
+		"26533fe9": "getClaimerReward()",
+		"4ccb20c0": "getFeeRecipient()",
+	},
+}
+
+// IClaimableFeesABI is the input ABI used to generate the binding from.
+// Deprecated: Use IClaimableFeesMetaData.ABI instead.
+var IClaimableFeesABI = IClaimableFeesMetaData.ABI
+
+// Deprecated: Use IClaimableFeesMetaData.Sigs instead.
+// IClaimableFeesFuncSigs maps the 4-byte function signature to its string representation.
+var IClaimableFeesFuncSigs = IClaimableFeesMetaData.Sigs
+
+// IClaimableFees is an auto generated Go binding around an Ethereum contract.
+type IClaimableFees struct {
+	IClaimableFeesCaller     // Read-only binding to the contract
+	IClaimableFeesTransactor // Write-only binding to the contract
+	IClaimableFeesFilterer   // Log filterer for contract events
+}
+
+// IClaimableFeesCaller is an auto generated read-only Go binding around an Ethereum contract.
+type IClaimableFeesCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// IClaimableFeesTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type IClaimableFeesTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// IClaimableFeesFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type IClaimableFeesFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// IClaimableFeesSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type IClaimableFeesSession struct {
+	Contract     *IClaimableFees   // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// IClaimableFeesCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type IClaimableFeesCallerSession struct {
+	Contract *IClaimableFeesCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts         // Call options to use throughout this session
+}
+
+// IClaimableFeesTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type IClaimableFeesTransactorSession struct {
+	Contract     *IClaimableFeesTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts         // Transaction auth options to use throughout this session
+}
+
+// IClaimableFeesRaw is an auto generated low-level Go binding around an Ethereum contract.
+type IClaimableFeesRaw struct {
+	Contract *IClaimableFees // Generic contract binding to access the raw methods on
+}
+
+// IClaimableFeesCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type IClaimableFeesCallerRaw struct {
+	Contract *IClaimableFeesCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// IClaimableFeesTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type IClaimableFeesTransactorRaw struct {
+	Contract *IClaimableFeesTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewIClaimableFees creates a new instance of IClaimableFees, bound to a specific deployed contract.
+func NewIClaimableFees(address common.Address, backend bind.ContractBackend) (*IClaimableFees, error) {
+	contract, err := bindIClaimableFees(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &IClaimableFees{IClaimableFeesCaller: IClaimableFeesCaller{contract: contract}, IClaimableFeesTransactor: IClaimableFeesTransactor{contract: contract}, IClaimableFeesFilterer: IClaimableFeesFilterer{contract: contract}}, nil
+}
+
+// NewIClaimableFeesCaller creates a new read-only instance of IClaimableFees, bound to a specific deployed contract.
+func NewIClaimableFeesCaller(address common.Address, caller bind.ContractCaller) (*IClaimableFeesCaller, error) {
+	contract, err := bindIClaimableFees(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &IClaimableFeesCaller{contract: contract}, nil
+}
+
+// NewIClaimableFeesTransactor creates a new write-only instance of IClaimableFees, bound to a specific deployed contract.
+func NewIClaimableFeesTransactor(address common.Address, transactor bind.ContractTransactor) (*IClaimableFeesTransactor, error) {
+	contract, err := bindIClaimableFees(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &IClaimableFeesTransactor{contract: contract}, nil
+}
+
+// NewIClaimableFeesFilterer creates a new log filterer instance of IClaimableFees, bound to a specific deployed contract.
+func NewIClaimableFeesFilterer(address common.Address, filterer bind.ContractFilterer) (*IClaimableFeesFilterer, error) {
+	contract, err := bindIClaimableFees(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &IClaimableFeesFilterer{contract: contract}, nil
+}
+
+// bindIClaimableFees binds a generic wrapper to an already deployed contract.
+func bindIClaimableFees(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := IClaimableFeesMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_IClaimableFees *IClaimableFeesRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _IClaimableFees.Contract.IClaimableFeesCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_IClaimableFees *IClaimableFeesRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IClaimableFees.Contract.IClaimableFeesTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_IClaimableFees *IClaimableFeesRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IClaimableFees.Contract.IClaimableFeesTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_IClaimableFees *IClaimableFeesCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _IClaimableFees.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_IClaimableFees *IClaimableFeesTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IClaimableFees.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_IClaimableFees *IClaimableFeesTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IClaimableFees.Contract.contract.Transact(opts, method, params...)
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCaller) GetClaimableAmount(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _IClaimableFees.contract.Call(opts, &out, "getClaimableAmount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesSession) GetClaimableAmount() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimableAmount(&_IClaimableFees.CallOpts)
+}
+
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
+//
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCallerSession) GetClaimableAmount() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimableAmount(&_IClaimableFees.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCaller) GetClaimerFraction(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _IClaimableFees.contract.Call(opts, &out, "getClaimerFraction")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesSession) GetClaimerFraction() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimerFraction(&_IClaimableFees.CallOpts)
+}
+
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
+//
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCallerSession) GetClaimerFraction() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimerFraction(&_IClaimableFees.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCaller) GetClaimerReward(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _IClaimableFees.contract.Call(opts, &out, "getClaimerReward")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesSession) GetClaimerReward() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimerReward(&_IClaimableFees.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_IClaimableFees *IClaimableFeesCallerSession) GetClaimerReward() (*big.Int, error) {
+	return _IClaimableFees.Contract.GetClaimerReward(&_IClaimableFees.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_IClaimableFees *IClaimableFeesCaller) GetFeeRecipient(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _IClaimableFees.contract.Call(opts, &out, "getFeeRecipient")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_IClaimableFees *IClaimableFeesSession) GetFeeRecipient() (common.Address, error) {
+	return _IClaimableFees.Contract.GetFeeRecipient(&_IClaimableFees.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_IClaimableFees *IClaimableFeesCallerSession) GetFeeRecipient() (common.Address, error) {
+	return _IClaimableFees.Contract.GetFeeRecipient(&_IClaimableFees.CallOpts)
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_IClaimableFees *IClaimableFeesTransactor) ClaimFees(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IClaimableFees.contract.Transact(opts, "claimFees")
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_IClaimableFees *IClaimableFeesSession) ClaimFees() (*types.Transaction, error) {
+	return _IClaimableFees.Contract.ClaimFees(&_IClaimableFees.TransactOpts)
+}
+
+// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
+//
+// Solidity: function claimFees() returns()
+func (_IClaimableFees *IClaimableFeesTransactorSession) ClaimFees() (*types.Transaction, error) {
+	return _IClaimableFees.Contract.ClaimFees(&_IClaimableFees.TransactOpts)
 }
 
 // IGasOracleMetaData contains all meta data concerning the IGasOracle contract.
@@ -970,19 +2545,21 @@ func (_IGasOracle *IGasOracleCallerSession) EstimateTxCostInRemoteUnits(remoteCh
 
 // IInterchainDBMetaData contains all meta data concerning the IInterchainDB contract.
 var IInterchainDBMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"InterchainDB__BatchDoesNotExist\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"InterchainDB__BatchNotFinalized\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"existingBatchRoot\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"batchRoot\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainBatch\",\"name\":\"newBatch\",\"type\":\"tuple\"}],\"name\":\"InterchainDB__ConflictingBatches\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"batchSize\",\"type\":\"uint64\"}],\"name\":\"InterchainDB__EntryIndexOutOfRange\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actualFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expectedFee\",\"type\":\"uint256\"}],\"name\":\"InterchainDB__IncorrectFeeAmount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"InterchainDB__InvalidBatchVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"start\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"end\",\"type\":\"uint64\"}],\"name\":\"InterchainDB__InvalidEntryRange\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainDB__NoModulesSpecified\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainDB__SameChainId\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"DB_VERSION\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"dstModule\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"checkVerification\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleVerifiedAt\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getBatch\",\"outputs\":[{\"components\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"batchRoot\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainBatch\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getBatchLeafs\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"start\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"end\",\"type\":\"uint64\"}],\"name\":\"getBatchLeafsPaginated\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getBatchSize\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getDBNonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"name\":\"getEntryProof\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"name\":\"getEntryValue\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"getInterchainFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getNextEntryIndex\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"verifyRemoteBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"writeEntry\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"writeEntryWithVerification\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"existingBatchRoot\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"batchRoot\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainBatch\",\"name\":\"newBatch\",\"type\":\"tuple\"}],\"name\":\"InterchainDB__BatchConflict\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"required\",\"type\":\"uint16\"}],\"name\":\"InterchainDB__BatchVersionMismatch\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainDB__ChainIdNotRemote\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"batchSize\",\"type\":\"uint64\"}],\"name\":\"InterchainDB__EntryIndexOutOfRange\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"start\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"end\",\"type\":\"uint64\"}],\"name\":\"InterchainDB__EntryRangeInvalid\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minRequired\",\"type\":\"uint256\"}],\"name\":\"InterchainDB__FeeAmountBelowMin\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainDB__ModulesNotProvided\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"DB_VERSION\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"dstModule\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"batchRoot\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainBatch\",\"name\":\"batch\",\"type\":\"tuple\"}],\"name\":\"checkBatchVerification\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleVerifiedAt\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getBatch\",\"outputs\":[{\"components\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"batchRoot\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainBatch\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getBatchLeafs\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"start\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"end\",\"type\":\"uint64\"}],\"name\":\"getBatchLeafsPaginated\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"getBatchRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getBatchSize\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getDBNonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"name\":\"getEntryProof\",\"outputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"name\":\"getEntryValue\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"getInterchainFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getNextEntryIndex\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getVersionedBatch\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"verifyRemoteBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"writeEntry\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"writeEntryWithVerification\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"15f53956": "DB_VERSION()",
-		"1e5df4c4": "checkVerification(address,(uint64,uint64,uint64,bytes32,bytes32),bytes32[])",
+		"e39682c1": "checkBatchVerification(address,(uint64,uint64,bytes32))",
 		"888775d9": "getBatch(uint64)",
 		"fc1ebc91": "getBatchLeafs(uint64)",
 		"1c679ac1": "getBatchLeafsPaginated(uint64,uint64,uint64)",
+		"0166204f": "getBatchRoot((uint64,uint64,uint64,bytes32,bytes32),bytes32[])",
 		"727a5f91": "getBatchSize(uint64)",
 		"f338140e": "getDBNonce()",
 		"fec8dfb9": "getEntryProof(uint64,uint64)",
 		"d180db6f": "getEntryValue(uint64,uint64)",
 		"b8ba4ba1": "getInterchainFee(uint64,address[])",
 		"aa2f06ae": "getNextEntryIndex()",
+		"c7265781": "getVersionedBatch(uint64)",
 		"6c49312c": "requestBatchVerification(uint64,uint64,address[])",
 		"d961a48e": "verifyRemoteBatch(bytes)",
 		"2ad8c706": "writeEntry(bytes32)",
@@ -1171,12 +2748,12 @@ func (_IInterchainDB *IInterchainDBCallerSession) DBVERSION() (uint16, error) {
 	return _IInterchainDB.Contract.DBVERSION(&_IInterchainDB.CallOpts)
 }
 
-// CheckVerification is a free data retrieval call binding the contract method 0x1e5df4c4.
+// CheckBatchVerification is a free data retrieval call binding the contract method 0xe39682c1.
 //
-// Solidity: function checkVerification(address dstModule, (uint64,uint64,uint64,bytes32,bytes32) entry, bytes32[] proof) view returns(uint256 moduleVerifiedAt)
-func (_IInterchainDB *IInterchainDBCaller) CheckVerification(opts *bind.CallOpts, dstModule common.Address, entry InterchainEntry, proof [][32]byte) (*big.Int, error) {
+// Solidity: function checkBatchVerification(address dstModule, (uint64,uint64,bytes32) batch) view returns(uint256 moduleVerifiedAt)
+func (_IInterchainDB *IInterchainDBCaller) CheckBatchVerification(opts *bind.CallOpts, dstModule common.Address, batch InterchainBatch) (*big.Int, error) {
 	var out []interface{}
-	err := _IInterchainDB.contract.Call(opts, &out, "checkVerification", dstModule, entry, proof)
+	err := _IInterchainDB.contract.Call(opts, &out, "checkBatchVerification", dstModule, batch)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -1188,18 +2765,18 @@ func (_IInterchainDB *IInterchainDBCaller) CheckVerification(opts *bind.CallOpts
 
 }
 
-// CheckVerification is a free data retrieval call binding the contract method 0x1e5df4c4.
+// CheckBatchVerification is a free data retrieval call binding the contract method 0xe39682c1.
 //
-// Solidity: function checkVerification(address dstModule, (uint64,uint64,uint64,bytes32,bytes32) entry, bytes32[] proof) view returns(uint256 moduleVerifiedAt)
-func (_IInterchainDB *IInterchainDBSession) CheckVerification(dstModule common.Address, entry InterchainEntry, proof [][32]byte) (*big.Int, error) {
-	return _IInterchainDB.Contract.CheckVerification(&_IInterchainDB.CallOpts, dstModule, entry, proof)
+// Solidity: function checkBatchVerification(address dstModule, (uint64,uint64,bytes32) batch) view returns(uint256 moduleVerifiedAt)
+func (_IInterchainDB *IInterchainDBSession) CheckBatchVerification(dstModule common.Address, batch InterchainBatch) (*big.Int, error) {
+	return _IInterchainDB.Contract.CheckBatchVerification(&_IInterchainDB.CallOpts, dstModule, batch)
 }
 
-// CheckVerification is a free data retrieval call binding the contract method 0x1e5df4c4.
+// CheckBatchVerification is a free data retrieval call binding the contract method 0xe39682c1.
 //
-// Solidity: function checkVerification(address dstModule, (uint64,uint64,uint64,bytes32,bytes32) entry, bytes32[] proof) view returns(uint256 moduleVerifiedAt)
-func (_IInterchainDB *IInterchainDBCallerSession) CheckVerification(dstModule common.Address, entry InterchainEntry, proof [][32]byte) (*big.Int, error) {
-	return _IInterchainDB.Contract.CheckVerification(&_IInterchainDB.CallOpts, dstModule, entry, proof)
+// Solidity: function checkBatchVerification(address dstModule, (uint64,uint64,bytes32) batch) view returns(uint256 moduleVerifiedAt)
+func (_IInterchainDB *IInterchainDBCallerSession) CheckBatchVerification(dstModule common.Address, batch InterchainBatch) (*big.Int, error) {
+	return _IInterchainDB.Contract.CheckBatchVerification(&_IInterchainDB.CallOpts, dstModule, batch)
 }
 
 // GetBatch is a free data retrieval call binding the contract method 0x888775d9.
@@ -1293,6 +2870,37 @@ func (_IInterchainDB *IInterchainDBSession) GetBatchLeafsPaginated(dbNonce uint6
 // Solidity: function getBatchLeafsPaginated(uint64 dbNonce, uint64 start, uint64 end) view returns(bytes32[])
 func (_IInterchainDB *IInterchainDBCallerSession) GetBatchLeafsPaginated(dbNonce uint64, start uint64, end uint64) ([][32]byte, error) {
 	return _IInterchainDB.Contract.GetBatchLeafsPaginated(&_IInterchainDB.CallOpts, dbNonce, start, end)
+}
+
+// GetBatchRoot is a free data retrieval call binding the contract method 0x0166204f.
+//
+// Solidity: function getBatchRoot((uint64,uint64,uint64,bytes32,bytes32) entry, bytes32[] proof) pure returns(bytes32)
+func (_IInterchainDB *IInterchainDBCaller) GetBatchRoot(opts *bind.CallOpts, entry InterchainEntry, proof [][32]byte) ([32]byte, error) {
+	var out []interface{}
+	err := _IInterchainDB.contract.Call(opts, &out, "getBatchRoot", entry, proof)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// GetBatchRoot is a free data retrieval call binding the contract method 0x0166204f.
+//
+// Solidity: function getBatchRoot((uint64,uint64,uint64,bytes32,bytes32) entry, bytes32[] proof) pure returns(bytes32)
+func (_IInterchainDB *IInterchainDBSession) GetBatchRoot(entry InterchainEntry, proof [][32]byte) ([32]byte, error) {
+	return _IInterchainDB.Contract.GetBatchRoot(&_IInterchainDB.CallOpts, entry, proof)
+}
+
+// GetBatchRoot is a free data retrieval call binding the contract method 0x0166204f.
+//
+// Solidity: function getBatchRoot((uint64,uint64,uint64,bytes32,bytes32) entry, bytes32[] proof) pure returns(bytes32)
+func (_IInterchainDB *IInterchainDBCallerSession) GetBatchRoot(entry InterchainEntry, proof [][32]byte) ([32]byte, error) {
+	return _IInterchainDB.Contract.GetBatchRoot(&_IInterchainDB.CallOpts, entry, proof)
 }
 
 // GetBatchSize is a free data retrieval call binding the contract method 0x727a5f91.
@@ -1495,6 +3103,37 @@ func (_IInterchainDB *IInterchainDBCallerSession) GetNextEntryIndex() (struct {
 	return _IInterchainDB.Contract.GetNextEntryIndex(&_IInterchainDB.CallOpts)
 }
 
+// GetVersionedBatch is a free data retrieval call binding the contract method 0xc7265781.
+//
+// Solidity: function getVersionedBatch(uint64 dbNonce) view returns(bytes)
+func (_IInterchainDB *IInterchainDBCaller) GetVersionedBatch(opts *bind.CallOpts, dbNonce uint64) ([]byte, error) {
+	var out []interface{}
+	err := _IInterchainDB.contract.Call(opts, &out, "getVersionedBatch", dbNonce)
+
+	if err != nil {
+		return *new([]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
+
+	return out0, err
+
+}
+
+// GetVersionedBatch is a free data retrieval call binding the contract method 0xc7265781.
+//
+// Solidity: function getVersionedBatch(uint64 dbNonce) view returns(bytes)
+func (_IInterchainDB *IInterchainDBSession) GetVersionedBatch(dbNonce uint64) ([]byte, error) {
+	return _IInterchainDB.Contract.GetVersionedBatch(&_IInterchainDB.CallOpts, dbNonce)
+}
+
+// GetVersionedBatch is a free data retrieval call binding the contract method 0xc7265781.
+//
+// Solidity: function getVersionedBatch(uint64 dbNonce) view returns(bytes)
+func (_IInterchainDB *IInterchainDBCallerSession) GetVersionedBatch(dbNonce uint64) ([]byte, error) {
+	return _IInterchainDB.Contract.GetVersionedBatch(&_IInterchainDB.CallOpts, dbNonce)
+}
+
 // RequestBatchVerification is a paid mutator transaction binding the contract method 0x6c49312c.
 //
 // Solidity: function requestBatchVerification(uint64 dstChainId, uint64 dbNonce, address[] srcModules) payable returns()
@@ -1581,10 +3220,10 @@ func (_IInterchainDB *IInterchainDBTransactorSession) WriteEntryWithVerification
 
 // IInterchainModuleMetaData contains all meta data concerning the IInterchainModule contract.
 var IInterchainModuleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__IncorrectSourceChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__InsufficientFee\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"InterchainModule__NotInterchainDB\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"InterchainModule__CallerNotInterchainDB\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__ChainIdNotRemote\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minRequired\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__FeeAmountBelowMin\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"batchNonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"1888f4d4": "getModuleFee(uint64,uint64)",
-		"30068e33": "requestBatchVerification(uint64,bytes)",
+		"6b8d469f": "requestBatchVerification(uint64,uint64,bytes)",
 	},
 }
 
@@ -1769,25 +3408,25 @@ func (_IInterchainModule *IInterchainModuleCallerSession) GetModuleFee(dstChainI
 	return _IInterchainModule.Contract.GetModuleFee(&_IInterchainModule.CallOpts, dstChainId, dbNonce)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_IInterchainModule *IInterchainModuleTransactor) RequestBatchVerification(opts *bind.TransactOpts, dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _IInterchainModule.contract.Transact(opts, "requestBatchVerification", dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_IInterchainModule *IInterchainModuleTransactor) RequestBatchVerification(opts *bind.TransactOpts, dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _IInterchainModule.contract.Transact(opts, "requestBatchVerification", dstChainId, batchNonce, versionedBatch)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_IInterchainModule *IInterchainModuleSession) RequestBatchVerification(dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _IInterchainModule.Contract.RequestBatchVerification(&_IInterchainModule.TransactOpts, dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_IInterchainModule *IInterchainModuleSession) RequestBatchVerification(dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _IInterchainModule.Contract.RequestBatchVerification(&_IInterchainModule.TransactOpts, dstChainId, batchNonce, versionedBatch)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_IInterchainModule *IInterchainModuleTransactorSession) RequestBatchVerification(dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _IInterchainModule.Contract.RequestBatchVerification(&_IInterchainModule.TransactOpts, dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_IInterchainModule *IInterchainModuleTransactorSession) RequestBatchVerification(dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _IInterchainModule.Contract.RequestBatchVerification(&_IInterchainModule.TransactOpts, dstChainId, batchNonce, versionedBatch)
 }
 
 // ISynapseGasOracleMetaData contains all meta data concerning the ISynapseGasOracle contract.
@@ -2099,15 +3738,11 @@ func (_ISynapseGasOracle *ISynapseGasOracleTransactorSession) ReceiveRemoteGasDa
 
 // ISynapseModuleMetaData contains all meta data concerning the ISynapseModule contract.
 var ISynapseModuleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__IncorrectSourceChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__InsufficientFee\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"InterchainModule__NotInterchainDB\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"SynapseModule__ClaimFeeFractionExceedsMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__FeeCollectorNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"SynapseModule__GasOracleNotContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__NoFeesToClaim\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"addVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"addVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"feeCollector\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimFeeAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimFeeFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVerifiers\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getVerifyGasLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isVerifier\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"removeVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"removeVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"setClaimFeeFraction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"feeCollector_\",\"type\":\"address\"}],\"name\":\"setFeeCollector\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"setThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"setVerifyGasLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"encodedBatch\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signatures\",\"type\":\"bytes\"}],\"name\":\"verifyRemoteBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"InterchainModule__CallerNotInterchainDB\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__ChainIdNotRemote\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minRequired\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__FeeAmountBelowMin\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__FeeRecipientZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"SynapseModule__GasOracleNotContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__GasOracleZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"addVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"addVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVerifiers\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getVerifyGasLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isVerifier\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"removeVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"removeVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"batchNonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"}],\"name\":\"setClaimerFraction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"}],\"name\":\"setFeeRecipient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"setThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"setVerifyGasLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"encodedBatch\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signatures\",\"type\":\"bytes\"}],\"name\":\"verifyRemoteBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"9000b3d6": "addVerifier(address)",
 		"b5344257": "addVerifiers(address[])",
-		"d294f093": "claimFees()",
-		"c415b95c": "feeCollector()",
 		"5d62a8dd": "gasOracle()",
-		"20c8eed2": "getClaimFeeAmount()",
-		"6adb16b5": "getClaimFeeFraction()",
 		"1888f4d4": "getModuleFee(uint64,uint64)",
 		"e75235b8": "getThreshold()",
 		"a935e766": "getVerifiers()",
@@ -2115,9 +3750,9 @@ var ISynapseModuleMetaData = &bind.MetaData{
 		"33105218": "isVerifier(address)",
 		"ca2dfd0a": "removeVerifier(address)",
 		"86ae47f0": "removeVerifiers(address[])",
-		"30068e33": "requestBatchVerification(uint64,bytes)",
-		"9a96f35b": "setClaimFeeFraction(uint256)",
-		"a42dce80": "setFeeCollector(address)",
+		"6b8d469f": "requestBatchVerification(uint64,uint64,bytes)",
+		"a9bc769b": "setClaimerFraction(uint256)",
+		"e74b981b": "setFeeRecipient(address)",
 		"a87b8152": "setGasOracle(address)",
 		"960bfe04": "setThreshold(uint256)",
 		"4d8ccff9": "setVerifyGasLimit(uint64,uint256)",
@@ -2275,37 +3910,6 @@ func (_ISynapseModule *ISynapseModuleTransactorRaw) Transact(opts *bind.Transact
 	return _ISynapseModule.Contract.contract.Transact(opts, method, params...)
 }
 
-// FeeCollector is a free data retrieval call binding the contract method 0xc415b95c.
-//
-// Solidity: function feeCollector() view returns(address)
-func (_ISynapseModule *ISynapseModuleCaller) FeeCollector(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _ISynapseModule.contract.Call(opts, &out, "feeCollector")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// FeeCollector is a free data retrieval call binding the contract method 0xc415b95c.
-//
-// Solidity: function feeCollector() view returns(address)
-func (_ISynapseModule *ISynapseModuleSession) FeeCollector() (common.Address, error) {
-	return _ISynapseModule.Contract.FeeCollector(&_ISynapseModule.CallOpts)
-}
-
-// FeeCollector is a free data retrieval call binding the contract method 0xc415b95c.
-//
-// Solidity: function feeCollector() view returns(address)
-func (_ISynapseModule *ISynapseModuleCallerSession) FeeCollector() (common.Address, error) {
-	return _ISynapseModule.Contract.FeeCollector(&_ISynapseModule.CallOpts)
-}
-
 // GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
 //
 // Solidity: function gasOracle() view returns(address)
@@ -2335,68 +3939,6 @@ func (_ISynapseModule *ISynapseModuleSession) GasOracle() (common.Address, error
 // Solidity: function gasOracle() view returns(address)
 func (_ISynapseModule *ISynapseModuleCallerSession) GasOracle() (common.Address, error) {
 	return _ISynapseModule.Contract.GasOracle(&_ISynapseModule.CallOpts)
-}
-
-// GetClaimFeeAmount is a free data retrieval call binding the contract method 0x20c8eed2.
-//
-// Solidity: function getClaimFeeAmount() view returns(uint256)
-func (_ISynapseModule *ISynapseModuleCaller) GetClaimFeeAmount(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _ISynapseModule.contract.Call(opts, &out, "getClaimFeeAmount")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetClaimFeeAmount is a free data retrieval call binding the contract method 0x20c8eed2.
-//
-// Solidity: function getClaimFeeAmount() view returns(uint256)
-func (_ISynapseModule *ISynapseModuleSession) GetClaimFeeAmount() (*big.Int, error) {
-	return _ISynapseModule.Contract.GetClaimFeeAmount(&_ISynapseModule.CallOpts)
-}
-
-// GetClaimFeeAmount is a free data retrieval call binding the contract method 0x20c8eed2.
-//
-// Solidity: function getClaimFeeAmount() view returns(uint256)
-func (_ISynapseModule *ISynapseModuleCallerSession) GetClaimFeeAmount() (*big.Int, error) {
-	return _ISynapseModule.Contract.GetClaimFeeAmount(&_ISynapseModule.CallOpts)
-}
-
-// GetClaimFeeFraction is a free data retrieval call binding the contract method 0x6adb16b5.
-//
-// Solidity: function getClaimFeeFraction() view returns(uint256)
-func (_ISynapseModule *ISynapseModuleCaller) GetClaimFeeFraction(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _ISynapseModule.contract.Call(opts, &out, "getClaimFeeFraction")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetClaimFeeFraction is a free data retrieval call binding the contract method 0x6adb16b5.
-//
-// Solidity: function getClaimFeeFraction() view returns(uint256)
-func (_ISynapseModule *ISynapseModuleSession) GetClaimFeeFraction() (*big.Int, error) {
-	return _ISynapseModule.Contract.GetClaimFeeFraction(&_ISynapseModule.CallOpts)
-}
-
-// GetClaimFeeFraction is a free data retrieval call binding the contract method 0x6adb16b5.
-//
-// Solidity: function getClaimFeeFraction() view returns(uint256)
-func (_ISynapseModule *ISynapseModuleCallerSession) GetClaimFeeFraction() (*big.Int, error) {
-	return _ISynapseModule.Contract.GetClaimFeeFraction(&_ISynapseModule.CallOpts)
 }
 
 // GetModuleFee is a free data retrieval call binding the contract method 0x1888f4d4.
@@ -2596,27 +4138,6 @@ func (_ISynapseModule *ISynapseModuleTransactorSession) AddVerifiers(verifiers [
 	return _ISynapseModule.Contract.AddVerifiers(&_ISynapseModule.TransactOpts, verifiers)
 }
 
-// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
-//
-// Solidity: function claimFees() returns()
-func (_ISynapseModule *ISynapseModuleTransactor) ClaimFees(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _ISynapseModule.contract.Transact(opts, "claimFees")
-}
-
-// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
-//
-// Solidity: function claimFees() returns()
-func (_ISynapseModule *ISynapseModuleSession) ClaimFees() (*types.Transaction, error) {
-	return _ISynapseModule.Contract.ClaimFees(&_ISynapseModule.TransactOpts)
-}
-
-// ClaimFees is a paid mutator transaction binding the contract method 0xd294f093.
-//
-// Solidity: function claimFees() returns()
-func (_ISynapseModule *ISynapseModuleTransactorSession) ClaimFees() (*types.Transaction, error) {
-	return _ISynapseModule.Contract.ClaimFees(&_ISynapseModule.TransactOpts)
-}
-
 // RemoveVerifier is a paid mutator transaction binding the contract method 0xca2dfd0a.
 //
 // Solidity: function removeVerifier(address verifier) returns()
@@ -2659,67 +4180,67 @@ func (_ISynapseModule *ISynapseModuleTransactorSession) RemoveVerifiers(verifier
 	return _ISynapseModule.Contract.RemoveVerifiers(&_ISynapseModule.TransactOpts, verifiers)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_ISynapseModule *ISynapseModuleTransactor) RequestBatchVerification(opts *bind.TransactOpts, dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _ISynapseModule.contract.Transact(opts, "requestBatchVerification", dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_ISynapseModule *ISynapseModuleTransactor) RequestBatchVerification(opts *bind.TransactOpts, dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _ISynapseModule.contract.Transact(opts, "requestBatchVerification", dstChainId, batchNonce, versionedBatch)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_ISynapseModule *ISynapseModuleSession) RequestBatchVerification(dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _ISynapseModule.Contract.RequestBatchVerification(&_ISynapseModule.TransactOpts, dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_ISynapseModule *ISynapseModuleSession) RequestBatchVerification(dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.RequestBatchVerification(&_ISynapseModule.TransactOpts, dstChainId, batchNonce, versionedBatch)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_ISynapseModule *ISynapseModuleTransactorSession) RequestBatchVerification(dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _ISynapseModule.Contract.RequestBatchVerification(&_ISynapseModule.TransactOpts, dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_ISynapseModule *ISynapseModuleTransactorSession) RequestBatchVerification(dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.RequestBatchVerification(&_ISynapseModule.TransactOpts, dstChainId, batchNonce, versionedBatch)
 }
 
-// SetClaimFeeFraction is a paid mutator transaction binding the contract method 0x9a96f35b.
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
 //
-// Solidity: function setClaimFeeFraction(uint256 claimFeeFraction) returns()
-func (_ISynapseModule *ISynapseModuleTransactor) SetClaimFeeFraction(opts *bind.TransactOpts, claimFeeFraction *big.Int) (*types.Transaction, error) {
-	return _ISynapseModule.contract.Transact(opts, "setClaimFeeFraction", claimFeeFraction)
+// Solidity: function setClaimerFraction(uint256 claimerFraction) returns()
+func (_ISynapseModule *ISynapseModuleTransactor) SetClaimerFraction(opts *bind.TransactOpts, claimerFraction *big.Int) (*types.Transaction, error) {
+	return _ISynapseModule.contract.Transact(opts, "setClaimerFraction", claimerFraction)
 }
 
-// SetClaimFeeFraction is a paid mutator transaction binding the contract method 0x9a96f35b.
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
 //
-// Solidity: function setClaimFeeFraction(uint256 claimFeeFraction) returns()
-func (_ISynapseModule *ISynapseModuleSession) SetClaimFeeFraction(claimFeeFraction *big.Int) (*types.Transaction, error) {
-	return _ISynapseModule.Contract.SetClaimFeeFraction(&_ISynapseModule.TransactOpts, claimFeeFraction)
+// Solidity: function setClaimerFraction(uint256 claimerFraction) returns()
+func (_ISynapseModule *ISynapseModuleSession) SetClaimerFraction(claimerFraction *big.Int) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.SetClaimerFraction(&_ISynapseModule.TransactOpts, claimerFraction)
 }
 
-// SetClaimFeeFraction is a paid mutator transaction binding the contract method 0x9a96f35b.
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
 //
-// Solidity: function setClaimFeeFraction(uint256 claimFeeFraction) returns()
-func (_ISynapseModule *ISynapseModuleTransactorSession) SetClaimFeeFraction(claimFeeFraction *big.Int) (*types.Transaction, error) {
-	return _ISynapseModule.Contract.SetClaimFeeFraction(&_ISynapseModule.TransactOpts, claimFeeFraction)
+// Solidity: function setClaimerFraction(uint256 claimerFraction) returns()
+func (_ISynapseModule *ISynapseModuleTransactorSession) SetClaimerFraction(claimerFraction *big.Int) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.SetClaimerFraction(&_ISynapseModule.TransactOpts, claimerFraction)
 }
 
-// SetFeeCollector is a paid mutator transaction binding the contract method 0xa42dce80.
+// SetFeeRecipient is a paid mutator transaction binding the contract method 0xe74b981b.
 //
-// Solidity: function setFeeCollector(address feeCollector_) returns()
-func (_ISynapseModule *ISynapseModuleTransactor) SetFeeCollector(opts *bind.TransactOpts, feeCollector_ common.Address) (*types.Transaction, error) {
-	return _ISynapseModule.contract.Transact(opts, "setFeeCollector", feeCollector_)
+// Solidity: function setFeeRecipient(address feeRecipient) returns()
+func (_ISynapseModule *ISynapseModuleTransactor) SetFeeRecipient(opts *bind.TransactOpts, feeRecipient common.Address) (*types.Transaction, error) {
+	return _ISynapseModule.contract.Transact(opts, "setFeeRecipient", feeRecipient)
 }
 
-// SetFeeCollector is a paid mutator transaction binding the contract method 0xa42dce80.
+// SetFeeRecipient is a paid mutator transaction binding the contract method 0xe74b981b.
 //
-// Solidity: function setFeeCollector(address feeCollector_) returns()
-func (_ISynapseModule *ISynapseModuleSession) SetFeeCollector(feeCollector_ common.Address) (*types.Transaction, error) {
-	return _ISynapseModule.Contract.SetFeeCollector(&_ISynapseModule.TransactOpts, feeCollector_)
+// Solidity: function setFeeRecipient(address feeRecipient) returns()
+func (_ISynapseModule *ISynapseModuleSession) SetFeeRecipient(feeRecipient common.Address) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.SetFeeRecipient(&_ISynapseModule.TransactOpts, feeRecipient)
 }
 
-// SetFeeCollector is a paid mutator transaction binding the contract method 0xa42dce80.
+// SetFeeRecipient is a paid mutator transaction binding the contract method 0xe74b981b.
 //
-// Solidity: function setFeeCollector(address feeCollector_) returns()
-func (_ISynapseModule *ISynapseModuleTransactorSession) SetFeeCollector(feeCollector_ common.Address) (*types.Transaction, error) {
-	return _ISynapseModule.Contract.SetFeeCollector(&_ISynapseModule.TransactOpts, feeCollector_)
+// Solidity: function setFeeRecipient(address feeRecipient) returns()
+func (_ISynapseModule *ISynapseModuleTransactorSession) SetFeeRecipient(feeRecipient common.Address) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.SetFeeRecipient(&_ISynapseModule.TransactOpts, feeRecipient)
 }
 
 // SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
@@ -2809,7 +4330,7 @@ func (_ISynapseModule *ISynapseModuleTransactorSession) VerifyRemoteBatch(encode
 // InterchainBatchLibMetaData contains all meta data concerning the InterchainBatchLib contract.
 var InterchainBatchLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122001669feac7ae12b576a7d79ab2c7de1b2c68600307a31cff0a08a227e05902d464736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212200022b26c9d6881d949f48bf2a06ee54aba64e40b9df0d69c019c173ffce50ed564736f6c63430008140033",
 }
 
 // InterchainBatchLibABI is the input ABI used to generate the binding from.
@@ -2982,7 +4503,7 @@ func (_InterchainBatchLib *InterchainBatchLibTransactorRaw) Transact(opts *bind.
 // InterchainEntryLibMetaData contains all meta data concerning the InterchainEntryLib contract.
 var InterchainEntryLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220d2ce3fc34ae4b47895a757e92cd65cefd5f508427f5afbf2c8198f87e7098a0764736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220266324a33e050f7081e43d2f6601cc608ba812730fc3b1950213b2ffbf36bd6c64736f6c63430008140033",
 }
 
 // InterchainEntryLibABI is the input ABI used to generate the binding from.
@@ -3154,11 +4675,11 @@ func (_InterchainEntryLib *InterchainEntryLibTransactorRaw) Transact(opts *bind.
 
 // InterchainModuleMetaData contains all meta data concerning the InterchainModule contract.
 var InterchainModuleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__IncorrectSourceChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__InsufficientFee\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"InterchainModule__NotInterchainDB\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__TooShort\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerificationRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerified\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"INTERCHAIN_DB\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"InterchainModule__CallerNotInterchainDB\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__ChainIdNotRemote\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minRequired\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__FeeAmountBelowMin\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerificationRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerified\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"INTERCHAIN_DB\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"batchNonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"e4c61247": "INTERCHAIN_DB()",
 		"1888f4d4": "getModuleFee(uint64,uint64)",
-		"30068e33": "requestBatchVerification(uint64,bytes)",
+		"6b8d469f": "requestBatchVerification(uint64,uint64,bytes)",
 	},
 }
 
@@ -3374,25 +4895,25 @@ func (_InterchainModule *InterchainModuleCallerSession) GetModuleFee(dstChainId 
 	return _InterchainModule.Contract.GetModuleFee(&_InterchainModule.CallOpts, dstChainId, dbNonce)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_InterchainModule *InterchainModuleTransactor) RequestBatchVerification(opts *bind.TransactOpts, dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _InterchainModule.contract.Transact(opts, "requestBatchVerification", dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_InterchainModule *InterchainModuleTransactor) RequestBatchVerification(opts *bind.TransactOpts, dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _InterchainModule.contract.Transact(opts, "requestBatchVerification", dstChainId, batchNonce, versionedBatch)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_InterchainModule *InterchainModuleSession) RequestBatchVerification(dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _InterchainModule.Contract.RequestBatchVerification(&_InterchainModule.TransactOpts, dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_InterchainModule *InterchainModuleSession) RequestBatchVerification(dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _InterchainModule.Contract.RequestBatchVerification(&_InterchainModule.TransactOpts, dstChainId, batchNonce, versionedBatch)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_InterchainModule *InterchainModuleTransactorSession) RequestBatchVerification(dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _InterchainModule.Contract.RequestBatchVerification(&_InterchainModule.TransactOpts, dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_InterchainModule *InterchainModuleTransactorSession) RequestBatchVerification(dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _InterchainModule.Contract.RequestBatchVerification(&_InterchainModule.TransactOpts, dstChainId, batchNonce, versionedBatch)
 }
 
 // InterchainModuleBatchVerificationRequestedIterator is returned from FilterBatchVerificationRequested and is used to iterate over the raw logs and unpacked data for BatchVerificationRequested events raised by the InterchainModule contract.
@@ -4133,7 +5654,7 @@ func (_InterchainModuleEvents *InterchainModuleEventsFilterer) ParseBatchVerifie
 // MathMetaData contains all meta data concerning the Math contract.
 var MathMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"MathOverflowedMulDiv\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212202365482eb77f9000b012af0a96a8a43711e70bc7978f00499e713f70ce5c054b64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220f595b44ceeea9c9d41918290f256f0e38b30bb5a9cfc823e3004df961ebb0f0664736f6c63430008140033",
 }
 
 // MathABI is the input ABI used to generate the binding from.
@@ -4306,7 +5827,7 @@ func (_Math *MathTransactorRaw) Transact(opts *bind.TransactOpts, method string,
 // MessageHashUtilsMetaData contains all meta data concerning the MessageHashUtils contract.
 var MessageHashUtilsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206b1dfc22db8d1035290895c09be993d064737267939894e7ef9ed4fa0f45882d64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220bad6493a76586fffa6bf174b791dee440252d0e55dba777abcb686bad0b1862364736f6c63430008140033",
 }
 
 // MessageHashUtilsABI is the input ABI used to generate the binding from.
@@ -4479,7 +6000,7 @@ func (_MessageHashUtils *MessageHashUtilsTransactorRaw) Transact(opts *bind.Tran
 // ModuleBatchLibMetaData contains all meta data concerning the ModuleBatchLib contract.
 var ModuleBatchLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122089b0b9881251cd581cc28645a41e052f1271bcfb8af58a1e5f61a5110d1c4c6864736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220fb832767f5bc4bade9733b4c5a693d944983f537e42bdc9fb0d930eaddfbe30464736f6c63430008140033",
 }
 
 // ModuleBatchLibABI is the input ABI used to generate the binding from.
@@ -5038,7 +6559,7 @@ func (_Ownable *OwnableFilterer) ParseOwnershipTransferred(log types.Log) (*Owna
 // SafeCastMetaData contains all meta data concerning the SafeCast contract.
 var SafeCastMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"bits\",\"type\":\"uint8\"},{\"internalType\":\"int256\",\"name\":\"value\",\"type\":\"int256\"}],\"name\":\"SafeCastOverflowedIntDowncast\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"value\",\"type\":\"int256\"}],\"name\":\"SafeCastOverflowedIntToUint\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"bits\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"SafeCastOverflowedUintDowncast\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"SafeCastOverflowedUintToInt\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212200201e852d356ec4e13638b31b307539198c93899e97cbdddb4770feb1e59e31d64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209ede9d687ad0fc53698ca7dc505bb6a628c7fa9a5f845dd26ab704e5585e093f64736f6c63430008140033",
 }
 
 // SafeCastABI is the input ABI used to generate the binding from.
@@ -5211,7 +6732,7 @@ func (_SafeCast *SafeCastTransactorRaw) Transact(opts *bind.TransactOpts, method
 // SignedMathMetaData contains all meta data concerning the SignedMath contract.
 var SignedMathMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206af848beac6118976eb770c69e271c41795ec262a2434751a48ce0a7333c5b5864736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220caa83c852bac3ad7a0a5b14a4e51a044bd0ef467302f97116bb6264a626330d064736f6c63430008140033",
 }
 
 // SignedMathABI is the input ABI used to generate the binding from.
@@ -5384,7 +6905,7 @@ func (_SignedMath *SignedMathTransactorRaw) Transact(opts *bind.TransactOpts, me
 // StringsMetaData contains all meta data concerning the Strings contract.
 var StringsMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"StringsInsufficientHexLength\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122093822a20ab5679ce3013dae7ce45380519bc91bc9a195e6f4dddf24e88cd69ba64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206b913f07db81909494c2ab140b0cb39d1ea8c993ddbd115a072f2284f7cde87864736f6c63430008140033",
 }
 
 // StringsABI is the input ABI used to generate the binding from.
@@ -5556,17 +7077,18 @@ func (_Strings *StringsTransactorRaw) Transact(opts *bind.TransactOpts, method s
 
 // SynapseModuleMetaData contains all meta data concerning the SynapseModule contract.
 var SynapseModuleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"interchainDB\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"owner_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__IncorrectSourceChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__InsufficientFee\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"InterchainModule__NotInterchainDB\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"SynapseModule__ClaimFeeFractionExceedsMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__FeeCollectorNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"SynapseModule__GasOracleNotContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__NoFeesToClaim\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__AlreadySigner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__IncorrectSignaturesLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"ThresholdECDSA__InvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"provided\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__NotEnoughSignatures\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__NotSigner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__RecoveredSignersNotSorted\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ZeroThreshold\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__TooShort\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerificationRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimFeeFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"}],\"name\":\"FeeCollectorSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"collectedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFee\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"VerifyGasLimitSet\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_VERIFY_GAS_LIMIT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"INTERCHAIN_DB\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"addVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"addVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"feeCollector\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimFeeAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimFeeFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVerifiers\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getVerifyGasLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isVerifier\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"removeVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"removeVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"setClaimFeeFraction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"feeCollector_\",\"type\":\"address\"}],\"name\":\"setFeeCollector\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"setThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"setVerifyGasLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"encodedBatch\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signatures\",\"type\":\"bytes\"}],\"name\":\"verifyRemoteBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"interchainDB\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"owner_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxAllowed\",\"type\":\"uint256\"}],\"name\":\"ClaimableFees__ClaimerFractionAboveMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeAmountZero\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ClaimableFees__FeeRecipientZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"InterchainModule__CallerNotInterchainDB\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__ChainIdNotRemote\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minRequired\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__FeeAmountBelowMin\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__FeeRecipientZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"SynapseModule__GasOracleNotContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__GasOracleZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__RecoveredSignersNotSorted\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"signaturesAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__SignaturesAmountBelowThreshold\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__SignaturesPayloadLengthInvalid\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__SignerAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__SignerNotAdded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"ThresholdECDSA__SignerRecoveryFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__SignerZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ThresholdZero\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__PayloadTooShort\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerificationRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimerFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"}],\"name\":\"FeeRecipientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerReward\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"VerifyGasLimitSet\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_VERIFY_GAS_LIMIT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"INTERCHAIN_DB\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"addVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"addVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimableAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimerReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getFeeRecipient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVerifiers\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getVerifyGasLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isVerifier\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"removeVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"removeVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"batchNonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimerFraction\",\"type\":\"uint256\"}],\"name\":\"setClaimerFraction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"feeRecipient\",\"type\":\"address\"}],\"name\":\"setFeeRecipient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"setThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"setVerifyGasLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"encodedBatch\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signatures\",\"type\":\"bytes\"}],\"name\":\"verifyRemoteBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"e232d191": "DEFAULT_VERIFY_GAS_LIMIT()",
 		"e4c61247": "INTERCHAIN_DB()",
 		"9000b3d6": "addVerifier(address)",
 		"b5344257": "addVerifiers(address[])",
 		"d294f093": "claimFees()",
-		"c415b95c": "feeCollector()",
 		"5d62a8dd": "gasOracle()",
-		"20c8eed2": "getClaimFeeAmount()",
-		"6adb16b5": "getClaimFeeFraction()",
+		"c354bd6e": "getClaimableAmount()",
+		"4f199114": "getClaimerFraction()",
+		"26533fe9": "getClaimerReward()",
+		"4ccb20c0": "getFeeRecipient()",
 		"1888f4d4": "getModuleFee(uint64,uint64)",
 		"e75235b8": "getThreshold()",
 		"a935e766": "getVerifiers()",
@@ -5576,16 +7098,16 @@ var SynapseModuleMetaData = &bind.MetaData{
 		"ca2dfd0a": "removeVerifier(address)",
 		"86ae47f0": "removeVerifiers(address[])",
 		"715018a6": "renounceOwnership()",
-		"30068e33": "requestBatchVerification(uint64,bytes)",
-		"9a96f35b": "setClaimFeeFraction(uint256)",
-		"a42dce80": "setFeeCollector(address)",
+		"6b8d469f": "requestBatchVerification(uint64,uint64,bytes)",
+		"a9bc769b": "setClaimerFraction(uint256)",
+		"e74b981b": "setFeeRecipient(address)",
 		"a87b8152": "setGasOracle(address)",
 		"960bfe04": "setThreshold(uint256)",
 		"4d8ccff9": "setVerifyGasLimit(uint64,uint256)",
 		"f2fde38b": "transferOwnership(address)",
 		"b80cb14b": "verifyRemoteBatch(bytes,bytes)",
 	},
-	Bin: "0x60a06040523480156200001157600080fd5b5060405162002810380380620028108339810160408190526200003491620000ec565b6001600160a01b03808316608052819081166200006b57604051631e4fbdf760e01b81526000600482015260240160405180910390fd5b62000076816200007f565b50505062000124565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80516001600160a01b0381168114620000e757600080fd5b919050565b600080604083850312156200010057600080fd5b6200010b83620000cf565b91506200011b60208401620000cf565b90509250929050565b6080516126c26200014e600039600081816104a701528181610573015261158401526126c26000f3fe6080604052600436106101a15760003560e01c8063a42dce80116100e1578063ca2dfd0a1161008a578063e4c6124711610064578063e4c6124714610495578063e75235b8146104c9578063f0b8cb1d146104de578063f2fde38b146104fe57600080fd5b8063ca2dfd0a14610449578063d294f09314610469578063e232d1911461047e57600080fd5b8063b5344257116100bb578063b5344257146103dc578063b80cb14b146103fc578063c415b95c1461041c57600080fd5b8063a42dce801461037a578063a87b81521461039a578063a935e766146103ba57600080fd5b80636adb16b51161014e5780638da5cb5b116101285780638da5cb5b146102ef5780639000b3d61461031a578063960bfe041461033a5780639a96f35b1461035a57600080fd5b80636adb16b5146102a5578063715018a6146102ba57806386ae47f0146102cf57600080fd5b8063331052181161017f57806333105218146102035780634d8ccff9146102335780635d62a8dd1461025357600080fd5b80631888f4d4146101a657806320c8eed2146101d957806330068e33146101ee575b600080fd5b3480156101b257600080fd5b506101c66101c1366004611f15565b61051e565b6040519081526020015b60405180910390f35b3480156101e557600080fd5b506101c6610533565b6102016101fc366004611f8a565b61055b565b005b34801561020f57600080fd5b5061022361021e366004611fdd565b6107bc565b60405190151581526020016101d0565b34801561023f57600080fd5b5061020161024e366004612013565b6107c9565b34801561025f57600080fd5b506009546102809073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016101d0565b3480156102b157600080fd5b506004546101c6565b3480156102c657600080fd5b5061020161082b565b3480156102db57600080fd5b506102016102ea36600461203d565b61083f565b3480156102fb57600080fd5b5060005473ffffffffffffffffffffffffffffffffffffffff16610280565b34801561032657600080fd5b50610201610335366004611fdd565b610898565b34801561034657600080fd5b506102016103553660046120b2565b6108ac565b34801561036657600080fd5b506102016103753660046120b2565b6108f6565b34801561038657600080fd5b50610201610395366004611fdd565b610977565b3480156103a657600080fd5b506102016103b5366004611fdd565b6109f2565b3480156103c657600080fd5b506103cf610ad6565b6040516101d091906120cb565b3480156103e857600080fd5b506102016103f736600461203d565b610ae2565b34801561040857600080fd5b50610201610417366004612125565b610b35565b34801561042857600080fd5b506008546102809073ffffffffffffffffffffffffffffffffffffffff1681565b34801561045557600080fd5b50610201610464366004611fdd565b610bda565b34801561047557600080fd5b50610201610beb565b34801561048a57600080fd5b506101c6620186a081565b3480156104a157600080fd5b506102807f000000000000000000000000000000000000000000000000000000000000000081565b3480156104d557600080fd5b506101c6610d1a565b3480156104ea57600080fd5b506101c66104f9366004612191565b610d25565b34801561050a57600080fd5b50610201610519366004611fdd565b610d52565b600061052a8383610db3565b90505b92915050565b6000670de0b6b3a76400006004544761054c91906121db565b61055691906121f2565b905090565b3373ffffffffffffffffffffffffffffffffffffffff7f000000000000000000000000000000000000000000000000000000000000000016146105d1576040517fb90af10e0000000000000000000000000000000000000000000000000000000081523360048201526024015b60405180910390fd5b60006105e56105e08484610e8f565b610eea565b9050468467ffffffffffffffff1603610636576040517f84b86e4500000000000000000000000000000000000000000000000000000000815267ffffffffffffffff851660048201526024016105c8565b805167ffffffffffffffff1646146106895780516040517f4b48097500000000000000000000000000000000000000000000000000000000815267ffffffffffffffff90911660048201526024016105c8565b6000610699858360200151610db3565b9050803410156106de576040517f87ba450a000000000000000000000000000000000000000000000000000000008152346004820152602481018290526044016105c8565b60006106ee868460200151610f4b565b9050600061073386868080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250869250611090915050565b805160208201207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c8120919250508767ffffffffffffffff167fb843b64b261f738887ce2abb3c81cf03cb335944dea7923c22f6d97acbda8d4483836040516107aa92919061229b565b60405180910390a25050505050505050565b600061052d6001836110bc565b6107d16110cb565b67ffffffffffffffff8216600081815260056020908152604091829020849055815192835282018390527f51178ef7476261c9f8257978aa4f938e564be17543cea415e92527f11dd8149891015b60405180910390a15050565b6108336110cb565b61083d600061111e565b565b6108476110cb565b8060005b8181101561089257610882848483818110610868576108686122bd565b905060200201602081019061087d9190611fdd565b611193565b61088b816122ec565b905061084b565b50505050565b6108a06110cb565b6108a9816111e4565b50565b6108b46110cb565b6108bf600182611235565b6040518181527f6e8a187d7944998085dbd1f16b84c51c903bb727536cdba86962439aded2cfd7906020015b60405180910390a150565b6108fe6110cb565b662386f26fc10000811115610942576040517f8a7acbcd000000000000000000000000000000000000000000000000000000008152600481018290526024016105c8565b60048190556040518181527ff836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd906020016108eb565b61097f6110cb565b600880547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040519081527f12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4906020016108eb565b6109fa6110cb565b8073ffffffffffffffffffffffffffffffffffffffff163b600003610a63576040517fd129a3eb00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff821660048201526024016105c8565b600980547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040519081527f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa906020016108eb565b60606105566001611273565b610aea6110cb565b8060005b8181101561089257610b25848483818110610b0b57610b0b6122bd565b9050602002016020810190610b209190611fdd565b6111e4565b610b2e816122ec565b9050610aee565b6000610b858585604051610b4a929190612324565b60405180910390207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c902090565b9050610b946001828585611281565b610bd385858080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152506114cc92505050565b5050505050565b610be26110cb565b6108a981611193565b60085473ffffffffffffffffffffffffffffffffffffffff16610c3a576040517fcaa4422900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b47600003610c74576040517f1dd7191300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000610c7e610533565b90506000610c8c8247612334565b600854909150610cb29073ffffffffffffffffffffffffffffffffffffffff1682611689565b610cbc3383611689565b6008546040805173ffffffffffffffffffffffffffffffffffffffff9092168252602082018390523390820152606081018390527ff4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b19060800161081f565b600061055660015490565b67ffffffffffffffff811660009081526005602052604081205490819003610d4d5750620186a05b919050565b610d5a6110cb565b73ffffffffffffffffffffffffffffffffffffffff8116610daa576040517f1e4fbdf7000000000000000000000000000000000000000000000000000000008152600060048201526024016105c8565b6108a98161111e565b6000610dbd611764565b73ffffffffffffffffffffffffffffffffffffffff1663bf495c8884610de286610d25565b610dea610d1a565b610df59060406121db565b610e0190610104612347565b6040517fffffffff0000000000000000000000000000000000000000000000000000000060e086901b16815267ffffffffffffffff909316600484015260248301919091526044820152606401602060405180830381865afa158015610e6b573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061052a919061235a565b3660006002831015610ed15783836040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016105c8929190612373565b610ede83600281876123c0565b915091505b9250929050565b6040805160608101825260008082526020820181905291810182905290610f1384840185612408565b60408401529050610f308167ffffffffffffffff604082901c1691565b67ffffffffffffffff90811660208501521682525092915050565b6060610f55611764565b73ffffffffffffffffffffffffffffffffffffffff16636f928aa76040518163ffffffff1660e01b8152600401600060405180830381865afa158015610f9f573d6000803e3d6000fd5b505050506040513d6000823e601f3d9081017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0168201604052610fe591908101906124fb565b80519091501561052d57805160208083019190912067ffffffffffffffff851660009081526006909252604090912054810361103257604051806020016040528060008152509150611089565b67ffffffffffffffff841660009081526006602052604090819020829055517fb2243d133e6d54117d7ce9f172219373d8c0f601f4976bcb7860abe1addb9b2d906110809086908590612538565b60405180910390a15b5092915050565b606082826040516020016110a592919061255b565b604051602081830303815290604052905092915050565b600061052a60018401836117b7565b60005473ffffffffffffffffffffffffffffffffffffffff16331461083d576040517f118cdaa70000000000000000000000000000000000000000000000000000000081523360048201526024016105c8565b6000805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b61119e6001826117e6565b60405173ffffffffffffffffffffffffffffffffffffffff821681527f44a3cd4eb5cc5748f6169df057b1cb2ae4c383e87cd94663c430e095d4cba424906020016108eb565b6111ef600182611846565b60405173ffffffffffffffffffffffffffffffffffffffff821681527f6d05492139c5ea989514a5d2150c028041e5c087e2a39967f67dc7d2655adb81906020016108eb565b8060000361126f576040517f9a6378d400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b9055565b606061052d826001016118f3565b600061128e6041836121f2565b90508161129c6041836121db565b146112d6576040517fca4f9100000000000000000000000000000000000000000000000000000000008152600481018390526024016105c8565b84546000819003611313576040517f9a6378d400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000806000805b8581101561147c576000888589611332604183612347565b9261133f939291906123c0565b8080601f016020809104026020016040519081016040528093929190818152602001838380828437600092018290525093945083925061138391508d905084611907565b509092509050600081600381111561139d5761139d612589565b146113d657826040517fec8565ea0000000000000000000000000000000000000000000000000000000081526004016105c891906125b8565b8473ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff161161143b576040517f0da2019900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8194506114488d836110bc565b1561145b57611458600187612347565b95505b611466604188612347565b965050505080611475906122ec565b905061131a565b50838210156114c1576040517fdfc0bbc800000000000000000000000000000000000000000000000000000000815260048101839052602481018590526044016105c8565b505050505050505050565b6000806114d883611954565b9150915060006114ef6114ea84611974565b611a6e565b905046816000015167ffffffffffffffff16036115475780516040517f84b86e4500000000000000000000000000000000000000000000000000000000815267ffffffffffffffff90911660048201526024016105c8565b6040517fd961a48e00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000169063d961a48e906115b99086906004016125b8565b600060405180830381600087803b1580156115d357600080fd5b505af11580156115e7573d6000803e3d6000fd5b505050506115fe8160000151826020015184611ad8565b806000015167ffffffffffffffff167f68f4bb93e8c001407d02d37b4d097d303de40e999c66e924fda668c671578df88561166d87805190602001207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c902090565b60405161167b92919061229b565b60405180910390a250505050565b804710156116c5576040517fcd7860590000000000000000000000000000000000000000000000000000000081523060048201526024016105c8565b60008273ffffffffffffffffffffffffffffffffffffffff168260405160006040518083038185875af1925050503d806000811461171f576040519150601f19603f3d011682016040523d82523d6000602084013e611724565b606091505b505090508061175f576040517f1425ea4200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b505050565b60095473ffffffffffffffffffffffffffffffffffffffff16806117b4576040517fb31c611e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b90565b73ffffffffffffffffffffffffffffffffffffffff81166000908152600183016020526040812054151561052a565b60006117f56001840183611c21565b90508061175f576040517f5689319100000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff831660048201526024016105c8565b73ffffffffffffffffffffffffffffffffffffffff8116611893576040517fe5ff8d7200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006118a26001840183611c43565b90508061175f576040517ff09690b100000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff831660048201526024016105c8565b6060600061190083611c65565b9392505050565b600080600083516041036119415760208401516040850151606086015160001a61193388828585611cc1565b95509550955050505061194d565b50508151600091506002905b9250925092565b6060808280602001905181019061196b91906125cb565b91509150915091565b60606002825110156119b457816040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016105c891906125b8565b81517ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe018067ffffffffffffffff8111156119f1576119f1612426565b6040519080825280601f01601f191660200182016040528015611a1b576020820181803683370190505b50915060008160208401836022870160045afa905080611a67576040517f101e44fa00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050919050565b6040805160608101825260008082526020820181905291810191909152600082806020019051810190611aa1919061262f565b60408401529050611abe8167ffffffffffffffff604082901c1691565b67ffffffffffffffff908116602085015216825250919050565b8051600003611ae657505050565b67ffffffffffffffff80841660009081526007602052604090205416801580611b2257508267ffffffffffffffff168167ffffffffffffffff16105b156108925767ffffffffffffffff848116600090815260076020526040902080547fffffffffffffffffffffffffffffffffffffffffffffffff000000000000000016918516919091179055611b76611764565b73ffffffffffffffffffffffffffffffffffffffff166383389de785846040518363ffffffff1660e01b8152600401611bb0929190612538565b600060405180830381600087803b158015611bca57600080fd5b505af1158015611bde573d6000803e3d6000fd5b505050507f02c233a01329dc53cb24eb5e8e0131ad57c2d982e4aaa5bf8a75ee90e95b1c008483604051611c13929190612538565b60405180910390a150505050565b600061052a8373ffffffffffffffffffffffffffffffffffffffff8416611dbb565b600061052a8373ffffffffffffffffffffffffffffffffffffffff8416611eae565b606081600001805480602002602001604051908101604052809291908181526020018280548015611cb557602002820191906000526020600020905b815481526020019060010190808311611ca1575b50505050509050919050565b600080807f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0841115611cfc5750600091506003905082611db1565b604080516000808252602082018084528a905260ff891692820192909252606081018790526080810186905260019060a0016020604051602081039080840390855afa158015611d50573d6000803e3d6000fd5b50506040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0015191505073ffffffffffffffffffffffffffffffffffffffff8116611da757506000925060019150829050611db1565b9250600091508190505b9450945094915050565b60008181526001830160205260408120548015611ea4576000611ddf600183612334565b8554909150600090611df390600190612334565b9050808214611e58576000866000018281548110611e1357611e136122bd565b9060005260206000200154905080876000018481548110611e3657611e366122bd565b6000918252602080832090910192909255918252600188019052604090208390555b8554869080611e6957611e6961265d565b60019003818190600052602060002001600090559055856001016000868152602001908152602001600020600090556001935050505061052d565b600091505061052d565b6000818152600183016020526040812054611ef55750815460018181018455600084815260208082209093018490558454848252828601909352604090209190915561052d565b50600061052d565b803567ffffffffffffffff81168114610d4d57600080fd5b60008060408385031215611f2857600080fd5b611f3183611efd565b9150611f3f60208401611efd565b90509250929050565b60008083601f840112611f5a57600080fd5b50813567ffffffffffffffff811115611f7257600080fd5b602083019150836020828501011115610ee357600080fd5b600080600060408486031215611f9f57600080fd5b611fa884611efd565b9250602084013567ffffffffffffffff811115611fc457600080fd5b611fd086828701611f48565b9497909650939450505050565b600060208284031215611fef57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff8116811461190057600080fd5b6000806040838503121561202657600080fd5b61202f83611efd565b946020939093013593505050565b6000806020838503121561205057600080fd5b823567ffffffffffffffff8082111561206857600080fd5b818501915085601f83011261207c57600080fd5b81358181111561208b57600080fd5b8660208260051b85010111156120a057600080fd5b60209290920196919550909350505050565b6000602082840312156120c457600080fd5b5035919050565b6020808252825182820181905260009190848201906040850190845b8181101561211957835173ffffffffffffffffffffffffffffffffffffffff16835292840192918401916001016120e7565b50909695505050505050565b6000806000806040858703121561213b57600080fd5b843567ffffffffffffffff8082111561215357600080fd5b61215f88838901611f48565b9096509450602087013591508082111561217857600080fd5b5061218587828801611f48565b95989497509550505050565b6000602082840312156121a357600080fd5b61052a82611efd565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b808202811582820484141761052d5761052d6121ac565b600082612228577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b60005b83811015612248578181015183820152602001612230565b50506000910152565b6000815180845261226981602086016020860161222d565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b6040815260006122ae6040830185612251565b90508260208301529392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff820361231d5761231d6121ac565b5060010190565b8183823760009101908152919050565b8181038181111561052d5761052d6121ac565b8082018082111561052d5761052d6121ac565b60006020828403121561236c57600080fd5b5051919050565b60208152816020820152818360408301376000818301604090810191909152601f9092017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0160101919050565b600080858511156123d057600080fd5b838611156123dd57600080fd5b5050820193919092039150565b6fffffffffffffffffffffffffffffffff811681146108a957600080fd5b6000806040838503121561241b57600080fd5b823561202f816123ea565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261246657600080fd5b815167ffffffffffffffff8082111561248157612481612426565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156124c7576124c7612426565b816040528381528660208588010111156124e057600080fd5b6124f184602083016020890161222d565b9695505050505050565b60006020828403121561250d57600080fd5b815167ffffffffffffffff81111561252457600080fd5b61253084828501612455565b949350505050565b67ffffffffffffffff831681526040602082015260006125306040830184612251565b60408152600061256e6040830185612251565b82810360208401526125808185612251565b95945050505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602160045260246000fd5b60208152600061052a6020830184612251565b600080604083850312156125de57600080fd5b825167ffffffffffffffff808211156125f657600080fd5b61260286838701612455565b9350602085015191508082111561261857600080fd5b5061262585828601612455565b9150509250929050565b6000806040838503121561264257600080fd5b825161264d816123ea565b6020939093015192949293505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603160045260246000fdfea26469706673582212203dd3258ee2ad2e7c9a69871248db8b6a4bc2fd07dee87859c4beba15bcd0d33564736f6c63430008140033",
+	Bin: "0x60a06040523480156200001157600080fd5b5060405162002755380380620027558339810160408190526200003491620000ec565b6001600160a01b03808316608052819081166200006b57604051631e4fbdf760e01b81526000600482015260240160405180910390fd5b62000076816200007f565b50505062000124565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80516001600160a01b0381168114620000e757600080fd5b919050565b600080604083850312156200010057600080fd5b6200010b83620000cf565b91506200011b60208401620000cf565b90509250929050565b6080516126076200014e6000396000818161049f015281816105e3015261154001526126076000f3fe6080604052600436106101ac5760003560e01c8063a87b8152116100ec578063d294f0931161008a578063e74b981b11610064578063e74b981b146104c1578063e75235b8146104e1578063f0b8cb1d146104f6578063f2fde38b1461051657600080fd5b8063d294f09314610461578063e232d19114610476578063e4c612471461048d57600080fd5b8063b5344257116100c6578063b5344257146103ee578063b80cb14b1461040e578063c354bd6e1461042e578063ca2dfd0a1461044157600080fd5b8063a87b81521461038c578063a935e766146103ac578063a9bc769b146103ce57600080fd5b80635d62a8dd1161015957806386ae47f01161013357806386ae47f0146103015780638da5cb5b146103215780639000b3d61461034c578063960bfe041461036c57600080fd5b80635d62a8dd146102ac5780636b8d469f146102d9578063715018a6146102ec57600080fd5b80634ccb20c01161018a5780634ccb20c0146102295780634d8ccff9146102755780634f1991141461029757600080fd5b80631888f4d4146101b157806326533fe9146101e457806333105218146101f9575b600080fd5b3480156101bd57600080fd5b506101d16101cc366004611ec5565b610536565b6040519081526020015b60405180910390f35b3480156101f057600080fd5b506101d161054b565b34801561020557600080fd5b50610219610214366004611ef8565b61055d565b60405190151581526020016101db565b34801561023557600080fd5b5060085473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016101db565b34801561028157600080fd5b50610295610290366004611f2e565b61056a565b005b3480156102a357600080fd5b506007546101d1565b3480156102b857600080fd5b506009546102509073ffffffffffffffffffffffffffffffffffffffff1681565b6102956102e7366004611fa1565b6105cb565b3480156102f857600080fd5b506102956107bb565b34801561030d57600080fd5b5061029561031c366004612002565b6107cf565b34801561032d57600080fd5b5060005473ffffffffffffffffffffffffffffffffffffffff16610250565b34801561035857600080fd5b50610295610367366004611ef8565b610828565b34801561037857600080fd5b50610295610387366004612077565b61083c565b34801561039857600080fd5b506102956103a7366004611ef8565b610886565b3480156103b857600080fd5b506103c161096a565b6040516101db9190612090565b3480156103da57600080fd5b506102956103e9366004612077565b61097b565b3480156103fa57600080fd5b50610295610409366004612002565b610a09565b34801561041a57600080fd5b506102956104293660046120ea565b610a5c565b34801561043a57600080fd5b50476101d1565b34801561044d57600080fd5b5061029561045c366004611ef8565b610b01565b34801561046d57600080fd5b50610295610b12565b34801561048257600080fd5b506101d1620186a081565b34801561049957600080fd5b506102507f000000000000000000000000000000000000000000000000000000000000000081565b3480156104cd57600080fd5b506102956104dc366004611ef8565b610c47565b3480156104ed57600080fd5b506101d1610d0f565b34801561050257600080fd5b506101d161051136600461214a565b610d1a565b34801561052257600080fd5b50610295610531366004611ef8565b610d47565b60006105428383610da8565b90505b92915050565b60004761055781610e84565b91505090565b6000610545600183610f07565b610572610f16565b67ffffffffffffffff8216600081815260046020908152604091829020849055815192835282018390527f51178ef7476261c9f8257978aa4f938e564be17543cea415e92527f11dd81498910160405180910390a15050565b3373ffffffffffffffffffffffffffffffffffffffff7f00000000000000000000000000000000000000000000000000000000000000001614610641576040517f900574930000000000000000000000000000000000000000000000000000000081523360048201526024015b60405180910390fd5b468467ffffffffffffffff1603610690576040517f6434f95000000000000000000000000000000000000000000000000000000000815267ffffffffffffffff85166004820152602401610638565b600061069c8585610da8565b9050803410156106e1576040517f4290de2100000000000000000000000000000000000000000000000000000000815234600482015260248101829052604401610638565b60006106ed8686610f69565b9050600061073285858080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152508692506110ae915050565b805160208201207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c8120919250508767ffffffffffffffff167fb843b64b261f738887ce2abb3c81cf03cb335944dea7923c22f6d97acbda8d4483836040516107a99291906121d3565b60405180910390a25050505050505050565b6107c3610f16565b6107cd60006110da565b565b6107d7610f16565b8060005b81811015610822576108128484838181106107f8576107f86121f5565b905060200201602081019061080d9190611ef8565b61114f565b61081b81612253565b90506107db565b50505050565b610830610f16565b610839816111a0565b50565b610844610f16565b61084f6001826111f1565b6040518181527f6e8a187d7944998085dbd1f16b84c51c903bb727536cdba86962439aded2cfd7906020015b60405180910390a150565b61088e610f16565b8073ffffffffffffffffffffffffffffffffffffffff163b6000036108f7576040517fd129a3eb00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff82166004820152602401610638565b600980547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040519081527f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa9060200161087b565b6060610976600161122f565b905090565b610983610f16565b662386f26fc100008111156109d4576040517f0ae993dd00000000000000000000000000000000000000000000000000000000815260048101829052662386f26fc100006024820152604401610638565b60078190556040518181527f2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc99060200161087b565b610a11610f16565b8060005b8181101561082257610a4c848483818110610a3257610a326121f5565b9050602002016020810190610a479190611ef8565b6111a0565b610a5581612253565b9050610a15565b6000610aac8585604051610a7192919061228b565b60405180910390207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c902090565b9050610abb600182858561123d565b610afa85858080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525061148892505050565b5050505050565b610b09610f16565b6108398161114f565b476000819003610b4e576040517f6e95c0a700000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000610b6f60085473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff8116610bbe576040517f3c73eece00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000610bc983610e84565b6040805173ffffffffffffffffffffffffffffffffffffffff851681529482900360208601819052338683015260608601839052905190949192507ff4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b19181900360800190a1610c388284611645565b610c423382611645565b505050565b610c4f610f16565b73ffffffffffffffffffffffffffffffffffffffff8116610c9c576040517f61d0f62900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600880547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040519081527fbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb3239060200161087b565b600061097660015490565b67ffffffffffffffff811660009081526004602052604081205490819003610d425750620186a05b919050565b610d4f610f16565b73ffffffffffffffffffffffffffffffffffffffff8116610d9f576040517f1e4fbdf700000000000000000000000000000000000000000000000000000000815260006004820152602401610638565b610839816110da565b6000610db261171b565b73ffffffffffffffffffffffffffffffffffffffff1663bf495c8884610dd786610d1a565b610ddf610d0f565b610dea90604061229b565b610df6906101046122b2565b6040517fffffffff0000000000000000000000000000000000000000000000000000000060e086901b16815267ffffffffffffffff909316600484015260248301919091526044820152606401602060405180830381865afa158015610e60573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061054291906122c5565b600080610e9060075490565b9050662386f26fc10000811115610ee3576040517f0ae993dd00000000000000000000000000000000000000000000000000000000815260048101829052662386f26fc100006024820152604401610638565b670de0b6b3a7640000610ef6828561229b565b610f0091906122de565b9392505050565b6000610542600184018361176e565b60005473ffffffffffffffffffffffffffffffffffffffff1633146107cd576040517f118cdaa7000000000000000000000000000000000000000000000000000000008152336004820152602401610638565b6060610f7361171b565b73ffffffffffffffffffffffffffffffffffffffff16636f928aa76040518163ffffffff1660e01b8152600401600060405180830381865afa158015610fbd573d6000803e3d6000fd5b505050506040513d6000823e601f3d9081017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016820160405261100391908101906123ee565b80519091501561054557805160208083019190912067ffffffffffffffff8516600090815260059092526040909120548103611050576040518060200160405280600081525091506110a7565b67ffffffffffffffff841660009081526005602052604090819020829055517fb2243d133e6d54117d7ce9f172219373d8c0f601f4976bcb7860abe1addb9b2d9061109e908690859061242b565b60405180910390a15b5092915050565b606082826040516020016110c392919061244e565b604051602081830303815290604052905092915050565b6000805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b61115a60018261179d565b60405173ffffffffffffffffffffffffffffffffffffffff821681527f44a3cd4eb5cc5748f6169df057b1cb2ae4c383e87cd94663c430e095d4cba4249060200161087b565b6111ab6001826117fd565b60405173ffffffffffffffffffffffffffffffffffffffff821681527f6d05492139c5ea989514a5d2150c028041e5c087e2a39967f67dc7d2655adb819060200161087b565b8060000361122b576040517fbc34f71600000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b9055565b6060610545826001016118aa565b600061124a6041836122de565b90508161125860418361229b565b14611292576040517fcecdb4c800000000000000000000000000000000000000000000000000000000815260048101839052602401610638565b845460008190036112cf576040517fbc34f71600000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000806000805b858110156114385760008885896112ee6041836122b2565b926112fb9392919061247c565b8080601f016020809104026020016040519081016040528093929190818152602001838380828437600092018290525093945083925061133f91508d9050846118b7565b5090925090506000816003811115611359576113596124a6565b1461139257826040517f7ec10fc000000000000000000000000000000000000000000000000000000000815260040161063891906124d5565b8473ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff16116113f7576040517f0da2019900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8194506114048d83610f07565b15611417576114146001876122b2565b95505b6114226041886122b2565b96505050508061143190612253565b90506112d6565b508382101561147d576040517f2bffb55c0000000000000000000000000000000000000000000000000000000081526004810183905260248101859052604401610638565b505050505050505050565b60008061149483611904565b9150915060006114ab6114a684611924565b611a1e565b905046816000015167ffffffffffffffff16036115035780516040517f6434f95000000000000000000000000000000000000000000000000000000000815267ffffffffffffffff9091166004820152602401610638565b6040517fd961a48e00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000169063d961a48e906115759086906004016124d5565b600060405180830381600087803b15801561158f57600080fd5b505af11580156115a3573d6000803e3d6000fd5b505050506115ba8160000151826020015184611a88565b806000015167ffffffffffffffff167f68f4bb93e8c001407d02d37b4d097d303de40e999c66e924fda668c671578df88561162987805190602001207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c902090565b6040516116379291906121d3565b60405180910390a250505050565b80471015611681576040517fcd786059000000000000000000000000000000000000000000000000000000008152306004820152602401610638565b60008273ffffffffffffffffffffffffffffffffffffffff168260405160006040518083038185875af1925050503d80600081146116db576040519150601f19603f3d011682016040523d82523d6000602084013e6116e0565b606091505b5050905080610c42576040517f1425ea4200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60095473ffffffffffffffffffffffffffffffffffffffff168061176b576040517fe929642300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b90565b73ffffffffffffffffffffffffffffffffffffffff811660009081526001830160205260408120541515610542565b60006117ac6001840183611bd1565b905080610c42576040517f75a1d0c900000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff83166004820152602401610638565b73ffffffffffffffffffffffffffffffffffffffff811661184a576040517f73e66c2d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006118596001840183611bf3565b905080610c42576040517fa283f0a400000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff83166004820152602401610638565b60606000610f0083611c15565b600080600083516041036118f15760208401516040850151606086015160001a6118e388828585611c71565b9550955095505050506118fd565b50508151600091506002905b9250925092565b6060808280602001905181019061191b91906124e8565b91509150915091565b606060028251101561196457816040517fb0818b6200000000000000000000000000000000000000000000000000000000815260040161063891906124d5565b81517ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe018067ffffffffffffffff8111156119a1576119a1612319565b6040519080825280601f01601f1916602001820160405280156119cb576020820181803683370190505b50915060008160208401836022870160045afa905080611a17576040517f101e44fa00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050919050565b6040805160608101825260008082526020820181905291810191909152600082806020019051810190611a51919061254c565b60408401529050611a6e8167ffffffffffffffff604082901c1691565b67ffffffffffffffff908116602085015216825250919050565b8051600003611a9657505050565b67ffffffffffffffff80841660009081526006602052604090205416801580611ad257508267ffffffffffffffff168167ffffffffffffffff16105b156108225767ffffffffffffffff848116600090815260066020526040902080547fffffffffffffffffffffffffffffffffffffffffffffffff000000000000000016918516919091179055611b2661171b565b73ffffffffffffffffffffffffffffffffffffffff166383389de785846040518363ffffffff1660e01b8152600401611b6092919061242b565b600060405180830381600087803b158015611b7a57600080fd5b505af1158015611b8e573d6000803e3d6000fd5b505050507f02c233a01329dc53cb24eb5e8e0131ad57c2d982e4aaa5bf8a75ee90e95b1c008483604051611bc392919061242b565b60405180910390a150505050565b60006105428373ffffffffffffffffffffffffffffffffffffffff8416611d6b565b60006105428373ffffffffffffffffffffffffffffffffffffffff8416611e5e565b606081600001805480602002602001604051908101604052809291908181526020018280548015611c6557602002820191906000526020600020905b815481526020019060010190808311611c51575b50505050509050919050565b600080807f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0841115611cac5750600091506003905082611d61565b604080516000808252602082018084528a905260ff891692820192909252606081018790526080810186905260019060a0016020604051602081039080840390855afa158015611d00573d6000803e3d6000fd5b50506040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0015191505073ffffffffffffffffffffffffffffffffffffffff8116611d5757506000925060019150829050611d61565b9250600091508190505b9450945094915050565b60008181526001830160205260408120548015611e54576000611d8f60018361258f565b8554909150600090611da39060019061258f565b9050808214611e08576000866000018281548110611dc357611dc36121f5565b9060005260206000200154905080876000018481548110611de657611de66121f5565b6000918252602080832090910192909255918252600188019052604090208390555b8554869080611e1957611e196125a2565b600190038181906000526020600020016000905590558560010160008681526020019081526020016000206000905560019350505050610545565b6000915050610545565b6000818152600183016020526040812054611ea557508154600181810184556000848152602080822090930184905584548482528286019093526040902091909155610545565b506000610545565b803567ffffffffffffffff81168114610d4257600080fd5b60008060408385031215611ed857600080fd5b611ee183611ead565b9150611eef60208401611ead565b90509250929050565b600060208284031215611f0a57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff81168114610f0057600080fd5b60008060408385031215611f4157600080fd5b611f4a83611ead565b946020939093013593505050565b60008083601f840112611f6a57600080fd5b50813567ffffffffffffffff811115611f8257600080fd5b602083019150836020828501011115611f9a57600080fd5b9250929050565b60008060008060608587031215611fb757600080fd5b611fc085611ead565b9350611fce60208601611ead565b9250604085013567ffffffffffffffff811115611fea57600080fd5b611ff687828801611f58565b95989497509550505050565b6000806020838503121561201557600080fd5b823567ffffffffffffffff8082111561202d57600080fd5b818501915085601f83011261204157600080fd5b81358181111561205057600080fd5b8660208260051b850101111561206557600080fd5b60209290920196919550909350505050565b60006020828403121561208957600080fd5b5035919050565b6020808252825182820181905260009190848201906040850190845b818110156120de57835173ffffffffffffffffffffffffffffffffffffffff16835292840192918401916001016120ac565b50909695505050505050565b6000806000806040858703121561210057600080fd5b843567ffffffffffffffff8082111561211857600080fd5b61212488838901611f58565b9096509450602087013591508082111561213d57600080fd5b50611ff687828801611f58565b60006020828403121561215c57600080fd5b61054282611ead565b60005b83811015612180578181015183820152602001612168565b50506000910152565b600081518084526121a1816020860160208601612165565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b6040815260006121e66040830185612189565b90508260208301529392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff820361228457612284612224565b5060010190565b8183823760009101908152919050565b808202811582820484141761054557610545612224565b8082018082111561054557610545612224565b6000602082840312156122d757600080fd5b5051919050565b600082612314577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261235957600080fd5b815167ffffffffffffffff8082111561237457612374612319565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156123ba576123ba612319565b816040528381528660208588010111156123d357600080fd5b6123e4846020830160208901612165565b9695505050505050565b60006020828403121561240057600080fd5b815167ffffffffffffffff81111561241757600080fd5b61242384828501612348565b949350505050565b67ffffffffffffffff831681526040602082015260006124236040830184612189565b6040815260006124616040830185612189565b82810360208401526124738185612189565b95945050505050565b6000808585111561248c57600080fd5b8386111561249957600080fd5b5050820193919092039150565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602160045260246000fd5b6020815260006105426020830184612189565b600080604083850312156124fb57600080fd5b825167ffffffffffffffff8082111561251357600080fd5b61251f86838701612348565b9350602085015191508082111561253557600080fd5b5061254285828601612348565b9150509250929050565b6000806040838503121561255f57600080fd5b82516fffffffffffffffffffffffffffffffff8116811461257f57600080fd5b6020939093015192949293505050565b8181038181111561054557610545612224565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603160045260246000fdfea2646970667358221220789b7aae8a72c6a80d9f1c328e3c88fe97fff83f3578596dc7701b9ed425b22864736f6c63430008140033",
 }
 
 // SynapseModuleABI is the input ABI used to generate the binding from.
@@ -5821,37 +7343,6 @@ func (_SynapseModule *SynapseModuleCallerSession) INTERCHAINDB() (common.Address
 	return _SynapseModule.Contract.INTERCHAINDB(&_SynapseModule.CallOpts)
 }
 
-// FeeCollector is a free data retrieval call binding the contract method 0xc415b95c.
-//
-// Solidity: function feeCollector() view returns(address)
-func (_SynapseModule *SynapseModuleCaller) FeeCollector(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _SynapseModule.contract.Call(opts, &out, "feeCollector")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// FeeCollector is a free data retrieval call binding the contract method 0xc415b95c.
-//
-// Solidity: function feeCollector() view returns(address)
-func (_SynapseModule *SynapseModuleSession) FeeCollector() (common.Address, error) {
-	return _SynapseModule.Contract.FeeCollector(&_SynapseModule.CallOpts)
-}
-
-// FeeCollector is a free data retrieval call binding the contract method 0xc415b95c.
-//
-// Solidity: function feeCollector() view returns(address)
-func (_SynapseModule *SynapseModuleCallerSession) FeeCollector() (common.Address, error) {
-	return _SynapseModule.Contract.FeeCollector(&_SynapseModule.CallOpts)
-}
-
 // GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
 //
 // Solidity: function gasOracle() view returns(address)
@@ -5883,12 +7374,12 @@ func (_SynapseModule *SynapseModuleCallerSession) GasOracle() (common.Address, e
 	return _SynapseModule.Contract.GasOracle(&_SynapseModule.CallOpts)
 }
 
-// GetClaimFeeAmount is a free data retrieval call binding the contract method 0x20c8eed2.
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
 //
-// Solidity: function getClaimFeeAmount() view returns(uint256)
-func (_SynapseModule *SynapseModuleCaller) GetClaimFeeAmount(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_SynapseModule *SynapseModuleCaller) GetClaimableAmount(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _SynapseModule.contract.Call(opts, &out, "getClaimFeeAmount")
+	err := _SynapseModule.contract.Call(opts, &out, "getClaimableAmount")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -5900,26 +7391,26 @@ func (_SynapseModule *SynapseModuleCaller) GetClaimFeeAmount(opts *bind.CallOpts
 
 }
 
-// GetClaimFeeAmount is a free data retrieval call binding the contract method 0x20c8eed2.
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
 //
-// Solidity: function getClaimFeeAmount() view returns(uint256)
-func (_SynapseModule *SynapseModuleSession) GetClaimFeeAmount() (*big.Int, error) {
-	return _SynapseModule.Contract.GetClaimFeeAmount(&_SynapseModule.CallOpts)
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_SynapseModule *SynapseModuleSession) GetClaimableAmount() (*big.Int, error) {
+	return _SynapseModule.Contract.GetClaimableAmount(&_SynapseModule.CallOpts)
 }
 
-// GetClaimFeeAmount is a free data retrieval call binding the contract method 0x20c8eed2.
+// GetClaimableAmount is a free data retrieval call binding the contract method 0xc354bd6e.
 //
-// Solidity: function getClaimFeeAmount() view returns(uint256)
-func (_SynapseModule *SynapseModuleCallerSession) GetClaimFeeAmount() (*big.Int, error) {
-	return _SynapseModule.Contract.GetClaimFeeAmount(&_SynapseModule.CallOpts)
+// Solidity: function getClaimableAmount() view returns(uint256)
+func (_SynapseModule *SynapseModuleCallerSession) GetClaimableAmount() (*big.Int, error) {
+	return _SynapseModule.Contract.GetClaimableAmount(&_SynapseModule.CallOpts)
 }
 
-// GetClaimFeeFraction is a free data retrieval call binding the contract method 0x6adb16b5.
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
 //
-// Solidity: function getClaimFeeFraction() view returns(uint256)
-func (_SynapseModule *SynapseModuleCaller) GetClaimFeeFraction(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_SynapseModule *SynapseModuleCaller) GetClaimerFraction(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _SynapseModule.contract.Call(opts, &out, "getClaimFeeFraction")
+	err := _SynapseModule.contract.Call(opts, &out, "getClaimerFraction")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -5931,18 +7422,80 @@ func (_SynapseModule *SynapseModuleCaller) GetClaimFeeFraction(opts *bind.CallOp
 
 }
 
-// GetClaimFeeFraction is a free data retrieval call binding the contract method 0x6adb16b5.
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
 //
-// Solidity: function getClaimFeeFraction() view returns(uint256)
-func (_SynapseModule *SynapseModuleSession) GetClaimFeeFraction() (*big.Int, error) {
-	return _SynapseModule.Contract.GetClaimFeeFraction(&_SynapseModule.CallOpts)
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_SynapseModule *SynapseModuleSession) GetClaimerFraction() (*big.Int, error) {
+	return _SynapseModule.Contract.GetClaimerFraction(&_SynapseModule.CallOpts)
 }
 
-// GetClaimFeeFraction is a free data retrieval call binding the contract method 0x6adb16b5.
+// GetClaimerFraction is a free data retrieval call binding the contract method 0x4f199114.
 //
-// Solidity: function getClaimFeeFraction() view returns(uint256)
-func (_SynapseModule *SynapseModuleCallerSession) GetClaimFeeFraction() (*big.Int, error) {
-	return _SynapseModule.Contract.GetClaimFeeFraction(&_SynapseModule.CallOpts)
+// Solidity: function getClaimerFraction() view returns(uint256)
+func (_SynapseModule *SynapseModuleCallerSession) GetClaimerFraction() (*big.Int, error) {
+	return _SynapseModule.Contract.GetClaimerFraction(&_SynapseModule.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_SynapseModule *SynapseModuleCaller) GetClaimerReward(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseModule.contract.Call(opts, &out, "getClaimerReward")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_SynapseModule *SynapseModuleSession) GetClaimerReward() (*big.Int, error) {
+	return _SynapseModule.Contract.GetClaimerReward(&_SynapseModule.CallOpts)
+}
+
+// GetClaimerReward is a free data retrieval call binding the contract method 0x26533fe9.
+//
+// Solidity: function getClaimerReward() view returns(uint256)
+func (_SynapseModule *SynapseModuleCallerSession) GetClaimerReward() (*big.Int, error) {
+	return _SynapseModule.Contract.GetClaimerReward(&_SynapseModule.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_SynapseModule *SynapseModuleCaller) GetFeeRecipient(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _SynapseModule.contract.Call(opts, &out, "getFeeRecipient")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_SynapseModule *SynapseModuleSession) GetFeeRecipient() (common.Address, error) {
+	return _SynapseModule.Contract.GetFeeRecipient(&_SynapseModule.CallOpts)
+}
+
+// GetFeeRecipient is a free data retrieval call binding the contract method 0x4ccb20c0.
+//
+// Solidity: function getFeeRecipient() view returns(address)
+func (_SynapseModule *SynapseModuleCallerSession) GetFeeRecipient() (common.Address, error) {
+	return _SynapseModule.Contract.GetFeeRecipient(&_SynapseModule.CallOpts)
 }
 
 // GetModuleFee is a free data retrieval call binding the contract method 0x1888f4d4.
@@ -6257,67 +7810,67 @@ func (_SynapseModule *SynapseModuleTransactorSession) RenounceOwnership() (*type
 	return _SynapseModule.Contract.RenounceOwnership(&_SynapseModule.TransactOpts)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_SynapseModule *SynapseModuleTransactor) RequestBatchVerification(opts *bind.TransactOpts, dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _SynapseModule.contract.Transact(opts, "requestBatchVerification", dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_SynapseModule *SynapseModuleTransactor) RequestBatchVerification(opts *bind.TransactOpts, dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _SynapseModule.contract.Transact(opts, "requestBatchVerification", dstChainId, batchNonce, versionedBatch)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_SynapseModule *SynapseModuleSession) RequestBatchVerification(dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _SynapseModule.Contract.RequestBatchVerification(&_SynapseModule.TransactOpts, dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_SynapseModule *SynapseModuleSession) RequestBatchVerification(dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _SynapseModule.Contract.RequestBatchVerification(&_SynapseModule.TransactOpts, dstChainId, batchNonce, versionedBatch)
 }
 
-// RequestBatchVerification is a paid mutator transaction binding the contract method 0x30068e33.
+// RequestBatchVerification is a paid mutator transaction binding the contract method 0x6b8d469f.
 //
-// Solidity: function requestBatchVerification(uint64 dstChainId, bytes versionedBatch) payable returns()
-func (_SynapseModule *SynapseModuleTransactorSession) RequestBatchVerification(dstChainId uint64, versionedBatch []byte) (*types.Transaction, error) {
-	return _SynapseModule.Contract.RequestBatchVerification(&_SynapseModule.TransactOpts, dstChainId, versionedBatch)
+// Solidity: function requestBatchVerification(uint64 dstChainId, uint64 batchNonce, bytes versionedBatch) payable returns()
+func (_SynapseModule *SynapseModuleTransactorSession) RequestBatchVerification(dstChainId uint64, batchNonce uint64, versionedBatch []byte) (*types.Transaction, error) {
+	return _SynapseModule.Contract.RequestBatchVerification(&_SynapseModule.TransactOpts, dstChainId, batchNonce, versionedBatch)
 }
 
-// SetClaimFeeFraction is a paid mutator transaction binding the contract method 0x9a96f35b.
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
 //
-// Solidity: function setClaimFeeFraction(uint256 claimFeeFraction) returns()
-func (_SynapseModule *SynapseModuleTransactor) SetClaimFeeFraction(opts *bind.TransactOpts, claimFeeFraction *big.Int) (*types.Transaction, error) {
-	return _SynapseModule.contract.Transact(opts, "setClaimFeeFraction", claimFeeFraction)
+// Solidity: function setClaimerFraction(uint256 claimerFraction) returns()
+func (_SynapseModule *SynapseModuleTransactor) SetClaimerFraction(opts *bind.TransactOpts, claimerFraction *big.Int) (*types.Transaction, error) {
+	return _SynapseModule.contract.Transact(opts, "setClaimerFraction", claimerFraction)
 }
 
-// SetClaimFeeFraction is a paid mutator transaction binding the contract method 0x9a96f35b.
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
 //
-// Solidity: function setClaimFeeFraction(uint256 claimFeeFraction) returns()
-func (_SynapseModule *SynapseModuleSession) SetClaimFeeFraction(claimFeeFraction *big.Int) (*types.Transaction, error) {
-	return _SynapseModule.Contract.SetClaimFeeFraction(&_SynapseModule.TransactOpts, claimFeeFraction)
+// Solidity: function setClaimerFraction(uint256 claimerFraction) returns()
+func (_SynapseModule *SynapseModuleSession) SetClaimerFraction(claimerFraction *big.Int) (*types.Transaction, error) {
+	return _SynapseModule.Contract.SetClaimerFraction(&_SynapseModule.TransactOpts, claimerFraction)
 }
 
-// SetClaimFeeFraction is a paid mutator transaction binding the contract method 0x9a96f35b.
+// SetClaimerFraction is a paid mutator transaction binding the contract method 0xa9bc769b.
 //
-// Solidity: function setClaimFeeFraction(uint256 claimFeeFraction) returns()
-func (_SynapseModule *SynapseModuleTransactorSession) SetClaimFeeFraction(claimFeeFraction *big.Int) (*types.Transaction, error) {
-	return _SynapseModule.Contract.SetClaimFeeFraction(&_SynapseModule.TransactOpts, claimFeeFraction)
+// Solidity: function setClaimerFraction(uint256 claimerFraction) returns()
+func (_SynapseModule *SynapseModuleTransactorSession) SetClaimerFraction(claimerFraction *big.Int) (*types.Transaction, error) {
+	return _SynapseModule.Contract.SetClaimerFraction(&_SynapseModule.TransactOpts, claimerFraction)
 }
 
-// SetFeeCollector is a paid mutator transaction binding the contract method 0xa42dce80.
+// SetFeeRecipient is a paid mutator transaction binding the contract method 0xe74b981b.
 //
-// Solidity: function setFeeCollector(address feeCollector_) returns()
-func (_SynapseModule *SynapseModuleTransactor) SetFeeCollector(opts *bind.TransactOpts, feeCollector_ common.Address) (*types.Transaction, error) {
-	return _SynapseModule.contract.Transact(opts, "setFeeCollector", feeCollector_)
+// Solidity: function setFeeRecipient(address feeRecipient) returns()
+func (_SynapseModule *SynapseModuleTransactor) SetFeeRecipient(opts *bind.TransactOpts, feeRecipient common.Address) (*types.Transaction, error) {
+	return _SynapseModule.contract.Transact(opts, "setFeeRecipient", feeRecipient)
 }
 
-// SetFeeCollector is a paid mutator transaction binding the contract method 0xa42dce80.
+// SetFeeRecipient is a paid mutator transaction binding the contract method 0xe74b981b.
 //
-// Solidity: function setFeeCollector(address feeCollector_) returns()
-func (_SynapseModule *SynapseModuleSession) SetFeeCollector(feeCollector_ common.Address) (*types.Transaction, error) {
-	return _SynapseModule.Contract.SetFeeCollector(&_SynapseModule.TransactOpts, feeCollector_)
+// Solidity: function setFeeRecipient(address feeRecipient) returns()
+func (_SynapseModule *SynapseModuleSession) SetFeeRecipient(feeRecipient common.Address) (*types.Transaction, error) {
+	return _SynapseModule.Contract.SetFeeRecipient(&_SynapseModule.TransactOpts, feeRecipient)
 }
 
-// SetFeeCollector is a paid mutator transaction binding the contract method 0xa42dce80.
+// SetFeeRecipient is a paid mutator transaction binding the contract method 0xe74b981b.
 //
-// Solidity: function setFeeCollector(address feeCollector_) returns()
-func (_SynapseModule *SynapseModuleTransactorSession) SetFeeCollector(feeCollector_ common.Address) (*types.Transaction, error) {
-	return _SynapseModule.Contract.SetFeeCollector(&_SynapseModule.TransactOpts, feeCollector_)
+// Solidity: function setFeeRecipient(address feeRecipient) returns()
+func (_SynapseModule *SynapseModuleTransactorSession) SetFeeRecipient(feeRecipient common.Address) (*types.Transaction, error) {
+	return _SynapseModule.Contract.SetFeeRecipient(&_SynapseModule.TransactOpts, feeRecipient)
 }
 
 // SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
@@ -6717,9 +8270,9 @@ func (_SynapseModule *SynapseModuleFilterer) ParseBatchVerified(log types.Log) (
 	return event, nil
 }
 
-// SynapseModuleClaimFeeFractionSetIterator is returned from FilterClaimFeeFractionSet and is used to iterate over the raw logs and unpacked data for ClaimFeeFractionSet events raised by the SynapseModule contract.
-type SynapseModuleClaimFeeFractionSetIterator struct {
-	Event *SynapseModuleClaimFeeFractionSet // Event containing the contract specifics and raw log
+// SynapseModuleClaimerFractionSetIterator is returned from FilterClaimerFractionSet and is used to iterate over the raw logs and unpacked data for ClaimerFractionSet events raised by the SynapseModule contract.
+type SynapseModuleClaimerFractionSetIterator struct {
+	Event *SynapseModuleClaimerFractionSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -6733,7 +8286,7 @@ type SynapseModuleClaimFeeFractionSetIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleClaimFeeFractionSetIterator) Next() bool {
+func (it *SynapseModuleClaimerFractionSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -6742,7 +8295,7 @@ func (it *SynapseModuleClaimFeeFractionSetIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleClaimFeeFractionSet)
+			it.Event = new(SynapseModuleClaimerFractionSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -6757,7 +8310,7 @@ func (it *SynapseModuleClaimFeeFractionSetIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleClaimFeeFractionSet)
+		it.Event = new(SynapseModuleClaimerFractionSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -6773,41 +8326,41 @@ func (it *SynapseModuleClaimFeeFractionSetIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleClaimFeeFractionSetIterator) Error() error {
+func (it *SynapseModuleClaimerFractionSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleClaimFeeFractionSetIterator) Close() error {
+func (it *SynapseModuleClaimerFractionSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleClaimFeeFractionSet represents a ClaimFeeFractionSet event raised by the SynapseModule contract.
-type SynapseModuleClaimFeeFractionSet struct {
-	ClaimFeeFraction *big.Int
-	Raw              types.Log // Blockchain specific contextual infos
+// SynapseModuleClaimerFractionSet represents a ClaimerFractionSet event raised by the SynapseModule contract.
+type SynapseModuleClaimerFractionSet struct {
+	ClaimerFraction *big.Int
+	Raw             types.Log // Blockchain specific contextual infos
 }
 
-// FilterClaimFeeFractionSet is a free log retrieval operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
+// FilterClaimerFractionSet is a free log retrieval operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
 //
-// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
-func (_SynapseModule *SynapseModuleFilterer) FilterClaimFeeFractionSet(opts *bind.FilterOpts) (*SynapseModuleClaimFeeFractionSetIterator, error) {
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_SynapseModule *SynapseModuleFilterer) FilterClaimerFractionSet(opts *bind.FilterOpts) (*SynapseModuleClaimerFractionSetIterator, error) {
 
-	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "ClaimFeeFractionSet")
+	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "ClaimerFractionSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleClaimFeeFractionSetIterator{contract: _SynapseModule.contract, event: "ClaimFeeFractionSet", logs: logs, sub: sub}, nil
+	return &SynapseModuleClaimerFractionSetIterator{contract: _SynapseModule.contract, event: "ClaimerFractionSet", logs: logs, sub: sub}, nil
 }
 
-// WatchClaimFeeFractionSet is a free log subscription operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
+// WatchClaimerFractionSet is a free log subscription operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
 //
-// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
-func (_SynapseModule *SynapseModuleFilterer) WatchClaimFeeFractionSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleClaimFeeFractionSet) (event.Subscription, error) {
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_SynapseModule *SynapseModuleFilterer) WatchClaimerFractionSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleClaimerFractionSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "ClaimFeeFractionSet")
+	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "ClaimerFractionSet")
 	if err != nil {
 		return nil, err
 	}
@@ -6817,8 +8370,8 @@ func (_SynapseModule *SynapseModuleFilterer) WatchClaimFeeFractionSet(opts *bind
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleClaimFeeFractionSet)
-				if err := _SynapseModule.contract.UnpackLog(event, "ClaimFeeFractionSet", log); err != nil {
+				event := new(SynapseModuleClaimerFractionSet)
+				if err := _SynapseModule.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -6839,21 +8392,21 @@ func (_SynapseModule *SynapseModuleFilterer) WatchClaimFeeFractionSet(opts *bind
 	}), nil
 }
 
-// ParseClaimFeeFractionSet is a log parse operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
+// ParseClaimerFractionSet is a log parse operation binding the contract event 0x2b76ed3837bd14c860020e473bce45e560d5bca9b5109ef2f08b2051d1cf6cc9.
 //
-// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
-func (_SynapseModule *SynapseModuleFilterer) ParseClaimFeeFractionSet(log types.Log) (*SynapseModuleClaimFeeFractionSet, error) {
-	event := new(SynapseModuleClaimFeeFractionSet)
-	if err := _SynapseModule.contract.UnpackLog(event, "ClaimFeeFractionSet", log); err != nil {
+// Solidity: event ClaimerFractionSet(uint256 claimerFraction)
+func (_SynapseModule *SynapseModuleFilterer) ParseClaimerFractionSet(log types.Log) (*SynapseModuleClaimerFractionSet, error) {
+	event := new(SynapseModuleClaimerFractionSet)
+	if err := _SynapseModule.contract.UnpackLog(event, "ClaimerFractionSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// SynapseModuleFeeCollectorSetIterator is returned from FilterFeeCollectorSet and is used to iterate over the raw logs and unpacked data for FeeCollectorSet events raised by the SynapseModule contract.
-type SynapseModuleFeeCollectorSetIterator struct {
-	Event *SynapseModuleFeeCollectorSet // Event containing the contract specifics and raw log
+// SynapseModuleFeeRecipientSetIterator is returned from FilterFeeRecipientSet and is used to iterate over the raw logs and unpacked data for FeeRecipientSet events raised by the SynapseModule contract.
+type SynapseModuleFeeRecipientSetIterator struct {
+	Event *SynapseModuleFeeRecipientSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -6867,7 +8420,7 @@ type SynapseModuleFeeCollectorSetIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleFeeCollectorSetIterator) Next() bool {
+func (it *SynapseModuleFeeRecipientSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -6876,7 +8429,7 @@ func (it *SynapseModuleFeeCollectorSetIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleFeeCollectorSet)
+			it.Event = new(SynapseModuleFeeRecipientSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -6891,7 +8444,7 @@ func (it *SynapseModuleFeeCollectorSetIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleFeeCollectorSet)
+		it.Event = new(SynapseModuleFeeRecipientSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -6907,41 +8460,41 @@ func (it *SynapseModuleFeeCollectorSetIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleFeeCollectorSetIterator) Error() error {
+func (it *SynapseModuleFeeRecipientSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleFeeCollectorSetIterator) Close() error {
+func (it *SynapseModuleFeeRecipientSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleFeeCollectorSet represents a FeeCollectorSet event raised by the SynapseModule contract.
-type SynapseModuleFeeCollectorSet struct {
-	FeeCollector common.Address
+// SynapseModuleFeeRecipientSet represents a FeeRecipientSet event raised by the SynapseModule contract.
+type SynapseModuleFeeRecipientSet struct {
+	FeeRecipient common.Address
 	Raw          types.Log // Blockchain specific contextual infos
 }
 
-// FilterFeeCollectorSet is a free log retrieval operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
+// FilterFeeRecipientSet is a free log retrieval operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
 //
-// Solidity: event FeeCollectorSet(address feeCollector)
-func (_SynapseModule *SynapseModuleFilterer) FilterFeeCollectorSet(opts *bind.FilterOpts) (*SynapseModuleFeeCollectorSetIterator, error) {
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_SynapseModule *SynapseModuleFilterer) FilterFeeRecipientSet(opts *bind.FilterOpts) (*SynapseModuleFeeRecipientSetIterator, error) {
 
-	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "FeeCollectorSet")
+	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "FeeRecipientSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleFeeCollectorSetIterator{contract: _SynapseModule.contract, event: "FeeCollectorSet", logs: logs, sub: sub}, nil
+	return &SynapseModuleFeeRecipientSetIterator{contract: _SynapseModule.contract, event: "FeeRecipientSet", logs: logs, sub: sub}, nil
 }
 
-// WatchFeeCollectorSet is a free log subscription operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
+// WatchFeeRecipientSet is a free log subscription operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
 //
-// Solidity: event FeeCollectorSet(address feeCollector)
-func (_SynapseModule *SynapseModuleFilterer) WatchFeeCollectorSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleFeeCollectorSet) (event.Subscription, error) {
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_SynapseModule *SynapseModuleFilterer) WatchFeeRecipientSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleFeeRecipientSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "FeeCollectorSet")
+	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "FeeRecipientSet")
 	if err != nil {
 		return nil, err
 	}
@@ -6951,8 +8504,8 @@ func (_SynapseModule *SynapseModuleFilterer) WatchFeeCollectorSet(opts *bind.Wat
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleFeeCollectorSet)
-				if err := _SynapseModule.contract.UnpackLog(event, "FeeCollectorSet", log); err != nil {
+				event := new(SynapseModuleFeeRecipientSet)
+				if err := _SynapseModule.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -6973,12 +8526,12 @@ func (_SynapseModule *SynapseModuleFilterer) WatchFeeCollectorSet(opts *bind.Wat
 	}), nil
 }
 
-// ParseFeeCollectorSet is a log parse operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
+// ParseFeeRecipientSet is a log parse operation binding the contract event 0xbf9a9534339a9d6b81696e05dcfb614b7dc518a31d48be3cfb757988381fb323.
 //
-// Solidity: event FeeCollectorSet(address feeCollector)
-func (_SynapseModule *SynapseModuleFilterer) ParseFeeCollectorSet(log types.Log) (*SynapseModuleFeeCollectorSet, error) {
-	event := new(SynapseModuleFeeCollectorSet)
-	if err := _SynapseModule.contract.UnpackLog(event, "FeeCollectorSet", log); err != nil {
+// Solidity: event FeeRecipientSet(address feeRecipient)
+func (_SynapseModule *SynapseModuleFilterer) ParseFeeRecipientSet(log types.Log) (*SynapseModuleFeeRecipientSet, error) {
+	event := new(SynapseModuleFeeRecipientSet)
+	if err := _SynapseModule.contract.UnpackLog(event, "FeeRecipientSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -7054,16 +8607,16 @@ func (it *SynapseModuleFeesClaimedIterator) Close() error {
 
 // SynapseModuleFeesClaimed represents a FeesClaimed event raised by the SynapseModule contract.
 type SynapseModuleFeesClaimed struct {
-	FeeCollector  common.Address
-	CollectedFees *big.Int
+	FeeRecipient  common.Address
+	ClaimedFees   *big.Int
 	Claimer       common.Address
-	ClaimerFee    *big.Int
+	ClaimerReward *big.Int
 	Raw           types.Log // Blockchain specific contextual infos
 }
 
 // FilterFeesClaimed is a free log retrieval operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
 //
-// Solidity: event FeesClaimed(address feeCollector, uint256 collectedFees, address claimer, uint256 claimerFee)
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
 func (_SynapseModule *SynapseModuleFilterer) FilterFeesClaimed(opts *bind.FilterOpts) (*SynapseModuleFeesClaimedIterator, error) {
 
 	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "FeesClaimed")
@@ -7075,7 +8628,7 @@ func (_SynapseModule *SynapseModuleFilterer) FilterFeesClaimed(opts *bind.Filter
 
 // WatchFeesClaimed is a free log subscription operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
 //
-// Solidity: event FeesClaimed(address feeCollector, uint256 collectedFees, address claimer, uint256 claimerFee)
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
 func (_SynapseModule *SynapseModuleFilterer) WatchFeesClaimed(opts *bind.WatchOpts, sink chan<- *SynapseModuleFeesClaimed) (event.Subscription, error) {
 
 	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "FeesClaimed")
@@ -7112,7 +8665,7 @@ func (_SynapseModule *SynapseModuleFilterer) WatchFeesClaimed(opts *bind.WatchOp
 
 // ParseFeesClaimed is a log parse operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
 //
-// Solidity: event FeesClaimed(address feeCollector, uint256 collectedFees, address claimer, uint256 claimerFee)
+// Solidity: event FeesClaimed(address feeRecipient, uint256 claimedFees, address claimer, uint256 claimerReward)
 func (_SynapseModule *SynapseModuleFilterer) ParseFeesClaimed(log types.Log) (*SynapseModuleFeesClaimed, error) {
 	event := new(SynapseModuleFeesClaimed)
 	if err := _SynapseModule.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
@@ -8218,7 +9771,7 @@ func (_SynapseModule *SynapseModuleFilterer) ParseVerifyGasLimitSet(log types.Lo
 
 // SynapseModuleEventsMetaData contains all meta data concerning the SynapseModuleEvents contract.
 var SynapseModuleEventsMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimFeeFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"}],\"name\":\"FeeCollectorSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"collectedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFee\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"VerifyGasLimitSet\",\"type\":\"event\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"VerifyGasLimitSet\",\"type\":\"event\"}]",
 }
 
 // SynapseModuleEventsABI is the input ABI used to generate the binding from.
@@ -8365,411 +9918,6 @@ func (_SynapseModuleEvents *SynapseModuleEventsTransactorRaw) Transfer(opts *bin
 // Transact invokes the (paid) contract method with params as input values.
 func (_SynapseModuleEvents *SynapseModuleEventsTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
 	return _SynapseModuleEvents.Contract.contract.Transact(opts, method, params...)
-}
-
-// SynapseModuleEventsClaimFeeFractionSetIterator is returned from FilterClaimFeeFractionSet and is used to iterate over the raw logs and unpacked data for ClaimFeeFractionSet events raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsClaimFeeFractionSetIterator struct {
-	Event *SynapseModuleEventsClaimFeeFractionSet // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleEventsClaimFeeFractionSetIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(SynapseModuleEventsClaimFeeFractionSet)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(SynapseModuleEventsClaimFeeFractionSet)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleEventsClaimFeeFractionSetIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *SynapseModuleEventsClaimFeeFractionSetIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// SynapseModuleEventsClaimFeeFractionSet represents a ClaimFeeFractionSet event raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsClaimFeeFractionSet struct {
-	ClaimFeeFraction *big.Int
-	Raw              types.Log // Blockchain specific contextual infos
-}
-
-// FilterClaimFeeFractionSet is a free log retrieval operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
-//
-// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterClaimFeeFractionSet(opts *bind.FilterOpts) (*SynapseModuleEventsClaimFeeFractionSetIterator, error) {
-
-	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "ClaimFeeFractionSet")
-	if err != nil {
-		return nil, err
-	}
-	return &SynapseModuleEventsClaimFeeFractionSetIterator{contract: _SynapseModuleEvents.contract, event: "ClaimFeeFractionSet", logs: logs, sub: sub}, nil
-}
-
-// WatchClaimFeeFractionSet is a free log subscription operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
-//
-// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchClaimFeeFractionSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsClaimFeeFractionSet) (event.Subscription, error) {
-
-	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "ClaimFeeFractionSet")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleEventsClaimFeeFractionSet)
-				if err := _SynapseModuleEvents.contract.UnpackLog(event, "ClaimFeeFractionSet", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseClaimFeeFractionSet is a log parse operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
-//
-// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseClaimFeeFractionSet(log types.Log) (*SynapseModuleEventsClaimFeeFractionSet, error) {
-	event := new(SynapseModuleEventsClaimFeeFractionSet)
-	if err := _SynapseModuleEvents.contract.UnpackLog(event, "ClaimFeeFractionSet", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// SynapseModuleEventsFeeCollectorSetIterator is returned from FilterFeeCollectorSet and is used to iterate over the raw logs and unpacked data for FeeCollectorSet events raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsFeeCollectorSetIterator struct {
-	Event *SynapseModuleEventsFeeCollectorSet // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleEventsFeeCollectorSetIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(SynapseModuleEventsFeeCollectorSet)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(SynapseModuleEventsFeeCollectorSet)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleEventsFeeCollectorSetIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *SynapseModuleEventsFeeCollectorSetIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// SynapseModuleEventsFeeCollectorSet represents a FeeCollectorSet event raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsFeeCollectorSet struct {
-	FeeCollector common.Address
-	Raw          types.Log // Blockchain specific contextual infos
-}
-
-// FilterFeeCollectorSet is a free log retrieval operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
-//
-// Solidity: event FeeCollectorSet(address feeCollector)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterFeeCollectorSet(opts *bind.FilterOpts) (*SynapseModuleEventsFeeCollectorSetIterator, error) {
-
-	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "FeeCollectorSet")
-	if err != nil {
-		return nil, err
-	}
-	return &SynapseModuleEventsFeeCollectorSetIterator{contract: _SynapseModuleEvents.contract, event: "FeeCollectorSet", logs: logs, sub: sub}, nil
-}
-
-// WatchFeeCollectorSet is a free log subscription operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
-//
-// Solidity: event FeeCollectorSet(address feeCollector)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchFeeCollectorSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsFeeCollectorSet) (event.Subscription, error) {
-
-	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "FeeCollectorSet")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleEventsFeeCollectorSet)
-				if err := _SynapseModuleEvents.contract.UnpackLog(event, "FeeCollectorSet", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseFeeCollectorSet is a log parse operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
-//
-// Solidity: event FeeCollectorSet(address feeCollector)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseFeeCollectorSet(log types.Log) (*SynapseModuleEventsFeeCollectorSet, error) {
-	event := new(SynapseModuleEventsFeeCollectorSet)
-	if err := _SynapseModuleEvents.contract.UnpackLog(event, "FeeCollectorSet", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// SynapseModuleEventsFeesClaimedIterator is returned from FilterFeesClaimed and is used to iterate over the raw logs and unpacked data for FeesClaimed events raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsFeesClaimedIterator struct {
-	Event *SynapseModuleEventsFeesClaimed // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleEventsFeesClaimedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(SynapseModuleEventsFeesClaimed)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(SynapseModuleEventsFeesClaimed)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleEventsFeesClaimedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *SynapseModuleEventsFeesClaimedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// SynapseModuleEventsFeesClaimed represents a FeesClaimed event raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsFeesClaimed struct {
-	FeeCollector  common.Address
-	CollectedFees *big.Int
-	Claimer       common.Address
-	ClaimerFee    *big.Int
-	Raw           types.Log // Blockchain specific contextual infos
-}
-
-// FilterFeesClaimed is a free log retrieval operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
-//
-// Solidity: event FeesClaimed(address feeCollector, uint256 collectedFees, address claimer, uint256 claimerFee)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterFeesClaimed(opts *bind.FilterOpts) (*SynapseModuleEventsFeesClaimedIterator, error) {
-
-	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "FeesClaimed")
-	if err != nil {
-		return nil, err
-	}
-	return &SynapseModuleEventsFeesClaimedIterator{contract: _SynapseModuleEvents.contract, event: "FeesClaimed", logs: logs, sub: sub}, nil
-}
-
-// WatchFeesClaimed is a free log subscription operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
-//
-// Solidity: event FeesClaimed(address feeCollector, uint256 collectedFees, address claimer, uint256 claimerFee)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchFeesClaimed(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsFeesClaimed) (event.Subscription, error) {
-
-	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "FeesClaimed")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleEventsFeesClaimed)
-				if err := _SynapseModuleEvents.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseFeesClaimed is a log parse operation binding the contract event 0xf4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b1.
-//
-// Solidity: event FeesClaimed(address feeCollector, uint256 collectedFees, address claimer, uint256 claimerFee)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseFeesClaimed(log types.Log) (*SynapseModuleEventsFeesClaimed, error) {
-	event := new(SynapseModuleEventsFeesClaimed)
-	if err := _SynapseModuleEvents.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
 }
 
 // SynapseModuleEventsGasDataReceivedIterator is returned from FilterGasDataReceived and is used to iterate over the raw logs and unpacked data for GasDataReceived events raised by the SynapseModuleEvents contract.
@@ -9715,8 +10863,8 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseVerifyGasLimitSet(
 
 // ThresholdECDSALibMetaData contains all meta data concerning the ThresholdECDSALib contract.
 var ThresholdECDSALibMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__AlreadySigner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__IncorrectSignaturesLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"ThresholdECDSA__InvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"provided\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__NotEnoughSignatures\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__NotSigner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__RecoveredSignersNotSorted\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ZeroThreshold\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205cb8205773de9c0eb641d7c84806960b36ec0900ac6a1c9f24f397c26a25595464736f6c63430008140033",
+	ABI: "[{\"inputs\":[],\"name\":\"ThresholdECDSA__RecoveredSignersNotSorted\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"signaturesAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__SignaturesAmountBelowThreshold\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__SignaturesPayloadLengthInvalid\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__SignerAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__SignerNotAdded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"ThresholdECDSA__SignerRecoveryFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__SignerZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ThresholdZero\",\"type\":\"error\"}]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212208e272d0c6cda644b3a97bf6686b7fe3d65691a6fd01790c13ea924223db5906f64736f6c63430008140033",
 }
 
 // ThresholdECDSALibABI is the input ABI used to generate the binding from.
@@ -9889,7 +11037,7 @@ func (_ThresholdECDSALib *ThresholdECDSALibTransactorRaw) Transact(opts *bind.Tr
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ded706e3dfee655212838a506fb556bc8da097bc9daee10dc214d136a5480be764736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220d82966c0aa9abe80bdabfa6e43732a77596696037df8b14216feffad260752ef64736f6c63430008140033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.
@@ -10061,8 +11209,8 @@ func (_TypeCasts *TypeCastsTransactorRaw) Transact(opts *bind.TransactOpts, meth
 
 // VersionedPayloadLibMetaData contains all meta data concerning the VersionedPayloadLib contract.
 var VersionedPayloadLibMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__TooShort\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206f785be4cbe334f3d8b60425d3c36bf0c230d2755c93dac5056264c63192d30d64736f6c63430008140033",
+	ABI: "[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__PayloadTooShort\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"}]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ac3ff1f9382f59e15ca9e3f1db3c94df4beeb672e95324478a4b13f1b2d95ec464736f6c63430008140033",
 }
 
 // VersionedPayloadLibABI is the input ABI used to generate the binding from.

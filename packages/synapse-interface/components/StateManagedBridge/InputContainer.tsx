@@ -1,18 +1,17 @@
+import { isNull, isNumber } from 'lodash'
+import toast from 'react-hot-toast'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
-import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
-
+import { useAppDispatch } from '@/store/hooks'
 import {
   initialState,
+  updateFromValue,
   setFromChainId,
   setFromToken,
-  updateFromValue,
 } from '@/slices/bridge/reducer'
-import MiniMaxButton from '../buttons/MiniMaxButton'
 import { ChainSelector } from '@/components/ui/ChainSelector'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { AmountInput } from '@/components/ui/AmountInput'
-import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
   ConnectToNetworkButton,
@@ -26,36 +25,93 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { useFromTokenListArray } from './hooks/useFromTokenListArray'
+import { AvailableBalance } from './AvailableBalance'
+import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
+import { getParsedBalance } from '@/utils/getParsedBalance'
+import { MaxButton } from './MaxButton'
+import { formatAmount } from '../../utils/formatAmount'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
-  const { fromChainId, fromToken, fromValue } = useBridgeState()
+  const dispatch = useAppDispatch()
+  const { chain, isConnected } = useAccount()
+  const { balances } = usePortfolioState()
+  const { fromChainId, toChainId, fromToken, toToken, fromValue } =
+    useBridgeState()
   const [showValue, setShowValue] = useState('')
-
   const [hasMounted, setHasMounted] = useState(false)
 
-  const { balances } = usePortfolioState()
+  const { addresses, decimals } = fromToken || {}
+  const tokenDecimals = isNumber(decimals) ? decimals : decimals?.[fromChainId]
+  const balance: bigint = balances[fromChainId]?.find(
+    (token) => token.tokenAddress === addresses?.[fromChainId]
+  )?.balance
+  const parsedBalance = getParsedBalance(balance, tokenDecimals)
+  const formattedBalance = formatAmount(parsedBalance)
+
+  const hasValidFromSelections: boolean = useMemo(() => {
+    return Boolean(fromChainId && fromToken)
+  }, [fromChainId, fromToken])
+
+  const hasValidInputSelections: boolean = useMemo(() => {
+    return Boolean(fromChainId && fromToken && toChainId && toToken)
+  }, [fromChainId, toChainId, fromToken, toToken])
+
+  const {
+    isLoading,
+    isGasToken,
+    parsedGasCost,
+    maxBridgeableGas,
+    hasValidGasEstimateInputs,
+    estimateBridgeableBalanceCallback,
+  } = useGasEstimator()
+
+  const isInputMax =
+    maxBridgeableGas?.toString() === fromValue || parsedBalance === fromValue
+
+  const onMaxBalance = useCallback(async () => {
+    if (hasValidGasEstimateInputs()) {
+      const bridgeableBalance = await estimateBridgeableBalanceCallback()
+
+      if (isNull(bridgeableBalance)) {
+        dispatch(updateFromValue(parsedBalance))
+      } else if (bridgeableBalance > 0) {
+        dispatch(updateFromValue(bridgeableBalance?.toString()))
+      } else {
+        dispatch(updateFromValue('0.0'))
+        toast.error('Gas fees likely exceeds your balance.', {
+          id: 'toast-error-not-enough-gas',
+          duration: 10000,
+        })
+      }
+    } else {
+      dispatch(updateFromValue(parsedBalance))
+    }
+  }, [
+    fromChainId,
+    fromToken,
+    parsedBalance,
+    hasValidGasEstimateInputs,
+    estimateBridgeableBalanceCallback,
+  ])
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
 
-  const { isConnected } = useAccount()
-  const { chain } = useAccount()
-
-  const dispatch = useDispatch()
-
-  const parsedBalance = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.parsedBalance
-
-  const balance = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.balance
+  const connectedStatus = useMemo(() => {
+    if (hasMounted && !isConnected) {
+      return <ConnectWalletButton />
+    } else if (hasMounted && isConnected && fromChainId === chain?.id) {
+      return <ConnectedIndicator />
+    } else if (hasMounted && isConnected && fromChainId !== chain?.id) {
+      return <ConnectToNetworkButton chainId={fromChainId} />
+    }
+  }, [chain, fromChainId, isConnected, hasMounted])
 
   useEffect(() => {
-    if (fromToken && fromToken?.decimals[fromChainId]) {
+    if (fromToken && tokenDecimals) {
       setShowValue(fromValue)
     }
 
@@ -83,24 +139,6 @@ export const InputContainer = () => {
     }
   }
 
-  const onMaxBalance = useCallback(() => {
-    dispatch(
-      updateFromValue(
-        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
-      )
-    )
-  }, [balance, fromChainId, fromToken])
-
-  const connectedStatus = useMemo(() => {
-    if (hasMounted && !isConnected) {
-      return <ConnectWalletButton />
-    } else if (hasMounted && isConnected && fromChainId === chain?.id) {
-      return <ConnectedIndicator />
-    } else if (hasMounted && isConnected && fromChainId !== chain?.id) {
-      return <ConnectToNetworkButton chainId={fromChainId} />
-    }
-  }, [chain, fromChainId, isConnected, hasMounted])
-
   return (
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
@@ -109,21 +147,30 @@ export const InputContainer = () => {
       </div>
       <BridgeAmountContainer>
         <FromTokenSelector />
-        <AmountInput
-          inputRef={inputRef}
-          hasMounted={hasMounted}
-          isConnected={isConnected}
-          showValue={showValue}
-          handleFromValueChange={handleFromValueChange}
-          parsedBalance={parsedBalance}
-          onMaxBalance={onMaxBalance}
-        />
-        {hasMounted && isConnected && (
-          <MiniMaxButton
-            disabled={!balance || balance === 0n ? true : false}
-            onClickBalance={onMaxBalance}
+        <div className="flex flex-wrap w-full">
+          <AmountInput
+            inputRef={inputRef}
+            showValue={showValue}
+            handleFromValueChange={handleFromValueChange}
           />
-        )}
+          <AvailableBalance
+            balance={formattedBalance}
+            maxBridgeableBalance={maxBridgeableGas}
+            gasCost={parsedGasCost}
+            isGasToken={isGasToken}
+            isGasEstimateLoading={isLoading}
+            isDisabled={!isConnected || !hasValidFromSelections}
+          />
+          <MaxButton
+            onClick={onMaxBalance}
+            isHidden={
+              !isConnected ||
+              !hasValidInputSelections ||
+              isLoading ||
+              isInputMax
+            }
+          />
+        </div>
       </BridgeAmountContainer>
     </BridgeSectionContainer>
   )

@@ -74,9 +74,10 @@ func (s Store) UpdateRebalance(ctx context.Context, rebalance reldb.Rebalance, u
 	return nil
 }
 
-// HasPendingRebalance checks if there is a pending rebalance for the given chain ids.
-func (s Store) HasPendingRebalance(ctx context.Context, chainIDs ...uint64) (bool, error) {
+// GetPendingRebalances checks fetches all pending rebalances that involve the given chainIDs.
+func (s Store) GetPendingRebalances(ctx context.Context, chainIDs ...uint64) ([]*reldb.Rebalance, error) {
 	var rebalances []Rebalance
+	var pendingRebalances []*reldb.Rebalance
 
 	matchStatuses := []reldb.RebalanceStatus{reldb.RebalanceInitiated, reldb.RebalancePending}
 	inArgs := make([]int, len(matchStatuses))
@@ -87,18 +88,22 @@ func (s Store) HasPendingRebalance(ctx context.Context, chainIDs ...uint64) (boo
 	// TODO: can be made more efficient by doing below check inside sql query
 	tx := s.DB().WithContext(ctx).Model(&Rebalance{}).Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).Find(&rebalances)
 	if tx.Error != nil {
-		return false, fmt.Errorf("could not get db results: %w", tx.Error)
+		return pendingRebalances, fmt.Errorf("could not get db results: %w", tx.Error)
 	}
 
 	// Check if any pending rebalances involve the given chain ids
 	for _, result := range rebalances {
 		for _, chainID := range chainIDs {
 			if result.Origin == chainID || result.Destination == chainID {
-				return true, nil
+				pendingRebalance, err := result.ToRebalance()
+				if err != nil {
+					return pendingRebalances, fmt.Errorf("could not convert rebalance from model: %w", err)
+				}
+				pendingRebalances = append(pendingRebalances, pendingRebalance)
 			}
 		}
 	}
-	return false, nil
+	return pendingRebalances, nil
 }
 
 // GetRebalanceByID gets a rebalance by id. Should return ErrNoRebalanceForID if not found.

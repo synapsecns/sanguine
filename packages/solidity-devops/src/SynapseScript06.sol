@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 import {SynapseBaseScript} from "./base/SynapseBaseScript.sol";
 
 // Imports for external consumption
+// solhint-disable no-unused-import
 import {StringUtils} from "./libs/StringUtils.sol";
 import {stdJson} from "forge-std/Script.sol";
 

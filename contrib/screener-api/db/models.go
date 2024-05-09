@@ -8,11 +8,26 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
-	"gorm.io/gorm/schema"
 	"strings"
 	"time"
+
+	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
+	"gorm.io/gorm/schema"
 )
+
+// BlacklistedAddress is a blacklisted address.
+type BlacklistedAddress struct {
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	TypeReq string `gorm:"column:typereq"        json:"typereq"`
+	ID      string `gorm:"column:id;primary_key" json:"id"`
+	Data    string `gorm:"column:data"           json:"data"`
+	Address string `gorm:"column:address"        json:"address"`
+	Network string `gorm:"column:network"        json:"network"`
+	Tag     string `gorm:"column:tag"            json:"tag"`
+	Remark  string `gorm:"column:remark"         json:"remark"`
+}
 
 // AddressIndicators is the address indicators for a given address.
 type AddressIndicators struct {

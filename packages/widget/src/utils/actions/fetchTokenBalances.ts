@@ -31,11 +31,15 @@ export const fetchTokenBalances = async ({
   const multicall: Contract = useMulticallContract(signerOrProvider)
 
   if (!signerOrProvider) {
-    console.error('Require valid Signer or Provider')
+    console.error(
+      '[Synapse Widget] Error fetching token balances: Require valid Signer or Provider'
+    )
     return
   }
   if (Number(signerOrProvider?._network.chainId.toString()) !== chainId) {
-    console.error('Signer or Provider does not match selected chainId')
+    console.error(
+      '[Synapse Widget] Error fetching token balances: Signer or Provider does not match selected chainId'
+    )
     return
   }
 
@@ -94,7 +98,7 @@ export const fetchTokenBalances = async ({
 
     return data
   } catch (error) {
-    console.error('Error fetching token balances:', error)
+    console.error('[Synapse Widget] Error fetching token balances: ', error)
     return error
   }
 }

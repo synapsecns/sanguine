@@ -1,9 +1,9 @@
 {
-  "address": "0xE424490d88562F8123AC756f9A7ffa173630DB4E",
+  "address": "0xEaF2728Fa62C3acaEA43D796219fc83019C04B2b",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x221171644ba5b06767d060e6e1d69657b686346f97b3c49847c2dfa8b5a5ca67",
-    "blockNumber": 5712784
+    "hash": "0x0bdd2845acd5f2f5734d41303e98f4d6019b680736274983713aa3b7d18925ac",
+    "blockNumber": 5847930
   },
   "abi": [
     {
@@ -52,6 +52,13 @@
     },
     {
       "type": "function",
+      "name": "claimFees",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
       "name": "executorEOA",
       "inputs": [],
       "outputs": [
@@ -72,6 +79,45 @@
           "name": "",
           "type": "address",
           "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getClaimableAmount",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getClaimerFraction",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getClaimerReward",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ],
       "stateMutability": "view"
@@ -101,6 +147,19 @@
           "name": "executionFee",
           "type": "uint256",
           "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getFeeRecipient",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
         }
       ],
       "stateMutability": "view"
@@ -212,7 +271,7 @@
     },
     {
       "type": "function",
-      "name": "requestExecution",
+      "name": "requestTxExecution",
       "inputs": [
         {
           "name": "dstChainId",
@@ -230,18 +289,13 @@
           "internalType": "bytes32"
         },
         {
-          "name": "executionFee",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
           "name": "options",
           "type": "bytes",
           "internalType": "bytes"
         }
       ],
       "outputs": [],
-      "stateMutability": "nonpayable"
+      "stateMutability": "payable"
     },
     {
       "type": "function",
@@ -256,6 +310,19 @@
           "name": "account",
           "type": "address",
           "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setClaimerFraction",
+      "inputs": [
+        {
+          "name": "claimerFraction_",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ],
       "outputs": [],
@@ -321,6 +388,19 @@
     },
     {
       "type": "event",
+      "name": "ClaimerFractionSet",
+      "inputs": [
+        {
+          "name": "claimerFraction",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
       "name": "ExecutionRequested",
       "inputs": [
         {
@@ -334,6 +414,12 @@
           "type": "address",
           "indexed": false,
           "internalType": "address"
+        },
+        {
+          "name": "executionFee",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
         }
       ],
       "anonymous": false
@@ -347,6 +433,50 @@
           "type": "address",
           "indexed": false,
           "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "FeeRecipientSet",
+      "inputs": [
+        {
+          "name": "feeRecipient",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "FeesClaimed",
+      "inputs": [
+        {
+          "name": "feeRecipient",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "claimedFees",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "claimer",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "claimerReward",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
         }
       ],
       "anonymous": false
@@ -488,6 +618,48 @@
     },
     {
       "type": "error",
+      "name": "AddressInsufficientBalance",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ClaimableFees__ClaimerFractionAboveMax",
+      "inputs": [
+        {
+          "name": "claimerFraction",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "maxAllowed",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ClaimableFees__FeeAmountZero",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ClaimableFees__FeeRecipientZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "FailedInnerCall",
+      "inputs": []
+    },
+    {
+      "type": "error",
       "name": "InvalidInitialization",
       "inputs": []
     },
@@ -498,7 +670,7 @@
     },
     {
       "type": "error",
-      "name": "OptionsLib__IncorrectVersion",
+      "name": "OptionsLib__VersionInvalid",
       "inputs": [
         {
           "name": "version",
@@ -509,15 +681,20 @@
     },
     {
       "type": "error",
-      "name": "SynapseExecutionService__FeeAmountTooLow",
+      "name": "SynapseExecutionService__ExecutorZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SynapseExecutionService__FeeAmountBelowMin",
       "inputs": [
         {
-          "name": "actual",
+          "name": "feeAmount",
           "type": "uint256",
           "internalType": "uint256"
         },
         {
-          "name": "required",
+          "name": "minRequired",
           "type": "uint256",
           "internalType": "uint256"
         }
@@ -525,7 +702,18 @@
     },
     {
       "type": "error",
-      "name": "SynapseExecutionService__GasOracleNotSet",
+      "name": "SynapseExecutionService__GasOracleNotContract",
+      "inputs": [
+        {
+          "name": "gasOracle",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SynapseExecutionService__GasOracleZeroAddress",
       "inputs": []
     },
     {
@@ -541,17 +729,7 @@
     },
     {
       "type": "error",
-      "name": "SynapseExecutionService__ZeroAddress",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "VersionedPayload__PrecompileFailed",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "VersionedPayload__TooShort",
+      "name": "VersionedPayload__PayloadTooShort",
       "inputs": [
         {
           "name": "versionedPayload",
@@ -559,6 +737,11 @@
           "internalType": "bytes"
         }
       ]
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__PrecompileFailed",
+      "inputs": []
     }
   ]
 }

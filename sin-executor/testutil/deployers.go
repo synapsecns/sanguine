@@ -3,6 +3,8 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -12,12 +14,10 @@ import (
 	"github.com/synapsecns/sanguine/sin-executor/contracts/executionservice"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
-	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/executionfeesmock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/gasoraclemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainapp"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
-	"testing"
 )
 
 // DeployManager wraps DeployManager and allows typed contract handles to be returned.
@@ -29,7 +29,7 @@ type DeployManager struct {
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	return &DeployManager{manager.NewDeployerManager(t, interchainClientDeployer, interchainDBDeployer, interchainModuleMockDeployer, interchainAppMockDeployer, optionsLibMock, executionService, executionFeesMock, gasOracleMock)}
+	return &DeployManager{manager.NewDeployerManager(t, interchainClientDeployer, interchainDBDeployer, interchainModuleMockDeployer, interchainAppMockDeployer, optionsLibMock, executionService, gasOracleMock)}
 }
 
 var (
@@ -46,21 +46,10 @@ var (
 
 			helpers.Backend().WaitForConfirmation(ctx, deployTx)
 
-			// set the interchain db
-			transactor := helpers.Backend().GetTxContext(ctx, &transactOps.From)
-
-			// set the execution service
-			em := helpers.Registry().Get(ctx, ExecutionFeesMock)
-			emSet, err := deployIface.SetExecutionFees(transactor.TransactOpts, em.Address())
-			if err != nil {
-				return common.Address{}, nil, nil, fmt.Errorf("could not set execution fees: %w", err)
-			}
-			helpers.Backend().WaitForConfirmation(ctx, emSet)
-
 			return deployAddress, deployTx, deployIface, nil
 		}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 			return interchainclient.NewInterchainClientRef(address, backend)
-		}, []contracts.ContractType{InterchainDB, ExecutionFeesMock})
+		}, []contracts.ContractType{InterchainDB})
 
 	interchainDBDeployer = deployer.NewFunctionalDeployer(InterchainDB,
 		func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
@@ -142,12 +131,6 @@ var (
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return executionservice.NewSynapseExecutionServiceV1HarnessRef(address, backend)
 	}, []contracts.ContractType{GasOracleMock, InterchainClient})
-
-	executionFeesMock = deployer.NewFunctionalDeployer(ExecutionFeesMock, func(_ context.Context, _ deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return executionfeesmock.DeployExecutionFeesMock(transactOps, backend)
-	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return executionfeesmock.NewExecutionfeesMockRef(address, backend)
-	}, []contracts.ContractType{})
 
 	gasOracleMock = deployer.NewFunctionalDeployer(GasOracleMock, func(_ context.Context, _ deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return gasoraclemock.DeploySynapseGasOracleMock(transactOps, backend)

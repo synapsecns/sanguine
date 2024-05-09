@@ -6,7 +6,6 @@ import { getToChainIds } from './getToChainIds'
 import { getFromChainIds } from './getFromChainIds'
 import { getFromTokens } from './getFromTokens'
 import { getToTokens } from './getToTokens'
-import { PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 import { findTokenByRouteSymbol } from '../findTokenByRouteSymbol'
 
 export interface RouteQueryFields {
@@ -57,9 +56,7 @@ export const getRoutePossibilities = ({
     fromTokenRouteSymbol,
     toChainId,
     toTokenRouteSymbol,
-  })
-    ?.filter((chainId) => !PAUSED_TO_CHAIN_IDS.includes(chainId))
-    .filter((chainId) => chainId !== fromChainId)
+  }).filter((chainId) => chainId !== fromChainId)
 
   const toTokens: Token[] = _(
     getToTokens({
@@ -70,9 +67,6 @@ export const getRoutePossibilities = ({
     })
   )
     .difference(flattenPausedTokens())
-    .filter((token) => {
-      return !PAUSED_TO_CHAIN_IDS.some((value) => token.endsWith(`-${value}`))
-    })
     .map(getSymbol)
     .uniq()
     .map((symbol) => findTokenByRouteSymbol(symbol))

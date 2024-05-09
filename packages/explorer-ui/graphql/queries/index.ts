@@ -209,6 +209,7 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
       dogechain
       base
       blast
+      scroll
       total
     }
   }
