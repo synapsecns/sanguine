@@ -87,7 +87,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @return desc                The descriptor of the sent transaction:
     /// - transactionId: the ID of the transaction that was sent.
     /// - dbNonce: the database nonce of the entry containing the transaction.
-    /// - entryIndex: the index of the written entry for transaction within the batch.
     function interchainSend(
         uint64 dstChainId,
         bytes32 receiver,
@@ -178,13 +177,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @dev Will revert if the transaction has not been executed.
     /// @param transactionId    The ID of the transaction to write the proof for.
     /// @return dbNonce         The database nonce of the entry containing the written proof for transaction.
-    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex) {
+    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce) {
         address executor = _txExecutor[transactionId];
         if (executor == address(0)) {
             revert InterchainClientV1__TxNotExecuted(transactionId);
         }
         bytes memory proof = abi.encode(transactionId, executor);
-        (dbNonce, entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntry(keccak256(proof));
+        dbNonce = IInterchainDB(INTERCHAIN_DB).writeEntry(keccak256(proof));
         emit ExecutionProofWritten({transactionId: transactionId, dbNonce: dbNonce, executor: executor});
     }
 

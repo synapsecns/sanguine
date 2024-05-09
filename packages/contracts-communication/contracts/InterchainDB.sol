@@ -49,10 +49,9 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// Use `requestEntryVerification` to ensure that the entry is available for reading on the destination chain.
     /// @param digest       The digest of the data to be written to the Interchain DataBase
     /// @return dbNonce     The database nonce of the entry
-    function writeEntry(bytes32 digest) external returns (uint64 dbNonce, uint64 entryIndex) {
+    function writeEntry(bytes32 digest) external returns (uint64 dbNonce) {
         InterchainEntry memory entry = _writeEntry(digest);
         dbNonce = entry.dbNonce;
-        // TODO: remove entryIndex
     }
 
     function requestBatchVerification(

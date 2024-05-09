@@ -121,7 +121,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     function writeEntry(address writer, bytes32 digest) internal returns (uint64 dbNonce) {
         vm.prank(writer);
-        (dbNonce,) = icDB.writeEntry(digest);
+        return icDB.writeEntry(digest);
     }
 
     function requestVerification(address caller, uint256 msgValue, uint64 dbNonce, address[] memory modules) internal {

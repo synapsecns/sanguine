@@ -7,7 +7,7 @@ import {IInterchainDB, InterchainBatch, InterchainEntry} from "../../contracts/i
 contract InterchainDBMock is IInterchainDB {
     uint16 public constant DB_VERSION = 1;
 
-    function writeEntry(bytes32 dataHash) external returns (uint64 writerNonce, uint64 entryIndex) {}
+    function writeEntry(bytes32 dataHash) external returns (uint64 writerNonce) {}
 
     function requestBatchVerification(
         uint64 dstChainId,

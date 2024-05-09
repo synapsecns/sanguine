@@ -15,8 +15,7 @@ interface IInterchainDB {
     error InterchainDB__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
     error InterchainDB__ModulesNotProvided();
 
-    // TODO: remove entryIndex
-    function writeEntry(bytes32 digest) external returns (uint64 dbNonce, uint64 entryIndex);
+    function writeEntry(bytes32 digest) external returns (uint64 dbNonce);
 
     function requestEntryVerification(
         uint64 dstChainId,

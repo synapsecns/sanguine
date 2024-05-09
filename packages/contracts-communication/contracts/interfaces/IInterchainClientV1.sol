@@ -75,7 +75,7 @@ interface IInterchainClientV1 {
 
     function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable;
 
-    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex);
+    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce);
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
