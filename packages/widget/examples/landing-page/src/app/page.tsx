@@ -172,7 +172,6 @@ export default function Home() {
                 customTheme={config.customTheme}
                 protocolName={config.protocolName}
                 container={container}
-                hideConsoleErrors={true}
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
