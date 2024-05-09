@@ -3,15 +3,13 @@ pragma solidity 0.8.20;
 
 import {
     InterchainDB,
-    InterchainBatch,
     InterchainEntry,
     InterchainEntryLib,
     IInterchainDB,
-    InterchainDBEvents,
-    BatchingV1Lib
+    InterchainDBEvents
 } from "../contracts/InterchainDB.sol";
 
-import {InterchainBatchLibHarness} from "./harnesses/InterchainBatchLibHarness.sol";
+import {InterchainEntryLibHarness} from "./harnesses/InterchainEntryLibHarness.sol";
 import {VersionedPayloadLibHarness} from "./harnesses/VersionedPayloadLibHarness.sol";
 import {InterchainModuleMock, IInterchainModule} from "./mocks/InterchainModuleMock.sol";
 
@@ -35,7 +33,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     uint256 public constant MODULE_A_FEE = 100;
     uint256 public constant MODULE_B_FEE = 200;
 
-    InterchainBatchLibHarness public batchLibHarness;
+    InterchainEntryLibHarness public entryLibHarness;
     VersionedPayloadLibHarness public payloadLibHarness;
 
     InterchainDB public icDB;
@@ -57,7 +55,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB = new InterchainDB();
         moduleA = new InterchainModuleMock();
         moduleB = new InterchainModuleMock();
-        batchLibHarness = new InterchainBatchLibHarness();
+        entryLibHarness = new InterchainEntryLibHarness();
         payloadLibHarness = new VersionedPayloadLibHarness();
         oneModule.push(address(moduleA));
         twoModules.push(address(moduleA));
@@ -69,14 +67,12 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     function initialWrites() internal {
         for (uint64 i = 0; i < INITIAL_WRITER_F; ++i) {
-            InterchainEntry memory entry = getMockEntry(i, writerF);
-            writeEntry(writerF, entry.dataHash);
-            initialEntries.push(entry);
+            writeEntry(writerF, getMockDigest(i, writerF));
+            initialEntries.push(getMockEntry(i, writerF));
         }
         for (uint64 i = 0; i < INITIAL_WRITER_S; ++i) {
-            InterchainEntry memory entry = getMockEntry(INITIAL_WRITER_F + i, writerS);
-            writeEntry(writerS, entry.dataHash);
-            initialEntries.push(entry);
+            writeEntry(writerS, getMockDigest(INITIAL_WRITER_F + i, writerS));
+            initialEntries.push(getMockEntry(INITIAL_WRITER_F + i, writerS));
         }
     }
 
@@ -85,30 +81,30 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         return initialEntries[dbNonce];
     }
 
-    function getMockDataHash(address writer, uint64 nonce) internal pure returns (bytes32) {
-        return keccak256(abi.encode(writer, nonce));
+    function getEmptyEntry(uint64 dbNonce) internal pure returns (InterchainEntry memory) {
+        return InterchainEntry({srcChainId: SRC_CHAIN_ID, dbNonce: dbNonce, entryValue: 0});
     }
 
-    function getMockEntry(uint64 dbNonce, address writer) internal pure returns (InterchainEntry memory entry) {
+    function getMockDigest(uint64 nonce, address writer) internal pure returns (bytes32) {
+        return keccak256(abi.encode("Mock data", nonce, writer));
+    }
+
+    function getMockEntry(uint64 dbNonce, address writer) internal view returns (InterchainEntry memory entry) {
+        bytes32 digest = getMockDigest(dbNonce, writer);
         return InterchainEntry({
             srcChainId: SRC_CHAIN_ID,
             dbNonce: dbNonce,
-            // TODO: entryIndex
-            entryIndex: 0,
-            srcWriter: addressToBytes32(writer),
-            dataHash: getMockDataHash(writer, dbNonce)
+            entryValue: entryLibHarness.getEntryValue(writer, digest)
         });
     }
 
+    function getVersionedEntry(InterchainEntry memory entry) internal view returns (bytes memory) {
+        return payloadLibHarness.encodeVersionedPayload(DB_VERSION, entryLibHarness.encodeEntry(entry));
+    }
+
     function getModuleCalldata(InterchainEntry memory entry) internal view returns (bytes memory) {
-        bytes32 batchRoot = keccak256(abi.encode(entry.srcWriter, entry.dataHash));
-        bytes memory versionedBatch = payloadLibHarness.encodeVersionedPayload(
-            DB_VERSION,
-            batchLibHarness.encodeBatch(
-                InterchainBatch({srcChainId: entry.srcChainId, dbNonce: entry.dbNonce, batchRoot: batchRoot})
-            )
-        );
-        return abi.encodeCall(IInterchainModule.requestBatchVerification, (DST_CHAIN_ID, versionedBatch));
+        bytes memory vEntry = getVersionedEntry(entry);
+        return abi.encodeCall(IInterchainModule.requestEntryVerification, (DST_CHAIN_ID, entry.dbNonce, vEntry));
     }
 
     function addressToBytes32(address addr) internal pure returns (bytes32) {
@@ -123,21 +119,21 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.mockCall(address(module), callData, returnData);
     }
 
-    function writeEntry(address writer, bytes32 dataHash) internal returns (uint64 dbNonce) {
+    function writeEntry(address writer, bytes32 digest) internal returns (uint64 dbNonce) {
         vm.prank(writer);
-        (dbNonce,) = icDB.writeEntry(dataHash);
+        return icDB.writeEntry(digest);
     }
 
     function requestVerification(address caller, uint256 msgValue, uint64 dbNonce, address[] memory modules) internal {
         deal(caller, msgValue);
         vm.prank(caller);
-        icDB.requestBatchVerification{value: msgValue}(DST_CHAIN_ID, dbNonce, modules);
+        icDB.requestEntryVerification{value: msgValue}(DST_CHAIN_ID, dbNonce, modules);
     }
 
-    function writeEntryWithVerification(
+    function writeEntryRequestVerification(
         uint256 msgValue,
         address writer,
-        bytes32 dataHash,
+        bytes32 digest,
         address[] memory modules
     )
         internal
@@ -145,178 +141,113 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     {
         deal(writer, msgValue);
         vm.prank(writer);
-        (dbNonce,) = icDB.writeEntryWithVerification{value: msgValue}(DST_CHAIN_ID, dataHash, modules);
+        return icDB.writeEntryRequestVerification{value: msgValue}(DST_CHAIN_ID, digest, modules);
     }
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
-    function assertCorrectValue(bytes32 entryValue, InterchainEntry memory expected) internal {
-        bytes32 expectedValue = keccak256(abi.encode(expected.srcWriter, expected.dataHash));
-        assertEq(entryValue, expectedValue, "!entryValue");
+    function checkSavedEntry(uint64 dbNonce, InterchainEntry memory expected) internal view {
+        assertEq(icDB.getEntry(dbNonce), expected);
+        assertEq(icDB.getEntryValue(dbNonce), expected.entryValue);
     }
 
-    function expectEventInterchainEntryWritten(InterchainEntry memory entry) internal {
+    function assertEq(InterchainEntry memory actual, InterchainEntry memory expected) internal pure {
+        assertEq(actual.srcChainId, expected.srcChainId, "!srcChainId");
+        assertEq(actual.dbNonce, expected.dbNonce, "!dbNonce");
+        assertEq(actual.entryValue, expected.entryValue, "!entryValue");
+    }
+
+    function expectEventInterchainEntryWritten(
+        uint64 dbNonce,
+        address srcWriter,
+        bytes32 digest,
+        bytes32 entryValue
+    )
+        internal
+    {
         vm.expectEmit(address(icDB));
         emit InterchainEntryWritten({
-            dbNonce: entry.dbNonce,
-            entryIndex: entry.entryIndex,
-            srcWriter: entry.srcWriter,
-            dataHash: entry.dataHash
+            dbNonce: dbNonce,
+            srcWriter: addressToBytes32(srcWriter),
+            digest: digest,
+            entryValue: entryValue
         });
-        // In the V1 of InterchainDB, the batch is finalized immediately after writing an entry
+    }
+
+    function expectEventEntryVerificationRequested(uint64 dbNonce, address[] memory srcModules) internal {
         vm.expectEmit(address(icDB));
-        emit InterchainBatchFinalized({dbNonce: entry.dbNonce, batchRoot: entry.entryValue()});
+        emit InterchainEntryVerificationRequested(DST_CHAIN_ID, dbNonce, srcModules);
     }
 
-    function expectEventVerificationRequested(InterchainEntry memory entry, address[] memory srcModules) internal {
-        bytes32 batchRoot = InterchainEntryLib.entryValue(entry);
-        vm.expectEmit(address(icDB));
-        emit InterchainBatchVerificationRequested(DST_CHAIN_ID, entry.dbNonce, batchRoot, srcModules);
-    }
-
-    function expectRevertBatchDoesNotExist(uint64 dbNonce) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__BatchDoesNotExist.selector, dbNonce));
-    }
-
-    function expectRevertBatchNotFinalized(uint64 dbNonce) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__BatchNotFinalized.selector, dbNonce));
-    }
-
-    function expectRevertEntryIndexOutOfRange(uint64 dbNonce, uint64 entryIndex, uint64 batchSize) internal {
+    function expectRevertFeeAmountBelowMin(uint256 feeAmount, uint256 minRequired) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(
-                IInterchainDB.InterchainDB__EntryIndexOutOfRange.selector, dbNonce, entryIndex, batchSize
-            )
+            abi.encodeWithSelector(IInterchainDB.InterchainDB__FeeAmountBelowMin.selector, feeAmount, minRequired)
         );
     }
 
-    function expectRevertIncorrectEntryIndex(uint64 entryIndex) internal {
-        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__IncorrectEntryIndex.selector, entryIndex));
+    function expectRevertModulesNotProvided() internal {
+        vm.expectRevert(IInterchainDB.InterchainDB__ModulesNotProvided.selector);
     }
 
-    function expectRevertIncorrectFeeAmount(uint256 actualFee, uint256 expectedFee) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(IInterchainDB.InterchainDB__IncorrectFeeAmount.selector, actualFee, expectedFee)
-        );
-    }
-
-    function expectRevertIncorrectProof() internal {
-        vm.expectRevert(BatchingV1Lib.BatchingV1__IncorrectProof.selector);
-    }
-
-    function expectRevertInvalidEntryRange(uint64 dbNonce, uint64 start, uint64 end) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(IInterchainDB.InterchainDB__InvalidEntryRange.selector, dbNonce, start, end)
-        );
-    }
-
-    function expectRevertNoModulesSpecified() internal {
-        vm.expectRevert(IInterchainDB.InterchainDB__NoModulesSpecified.selector);
-    }
-
-    function expectRevertSameChainId(uint64 chainId) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector, chainId));
+    function expectRevertChainIdNotRemote(uint64 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__ChainIdNotRemote.selector, chainId));
     }
 
     // ═══════════════════════════════════════════════ TESTS: SET UP ═══════════════════════════════════════════════════
 
-    function test_setup_getDBNonce() public {
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE);
-    }
-
-    function test_setup_getEntryValue() public {
+    function test_setup_getters() public view {
         for (uint64 i = 0; i < INITIAL_DB_NONCE; ++i) {
-            assertCorrectValue(icDB.getEntryValue(i, 0), getInitialEntry(i));
+            checkSavedEntry(i, getInitialEntry(i));
         }
+        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE);
     }
 
     // ══════════════════════════════════════════ TESTS: WRITING AN ENTRY ══════════════════════════════════════════════
 
-    function test_writeEntry_writerF_emitsEvent() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
-        expectEventInterchainEntryWritten(entry);
-        writeEntry(writerF, entry.dataHash);
-    }
-
-    function test_writeEntry_writerF_increasesDBNonce() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        writeEntry(writerF, dataHash);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
-    }
-
-    function test_writeEntry_writerF_returnsCorrectNonce() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        uint64 nonce = writeEntry(writerF, dataHash);
+    function test_writeEntry_writerF() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerF);
+        bytes32 entryValue = getMockEntry(INITIAL_DB_NONCE, writerF).entryValue;
+        expectEventInterchainEntryWritten(INITIAL_DB_NONCE, writerF, digest, entryValue);
+        uint64 nonce = writeEntry(writerF, digest);
         assertEq(nonce, INITIAL_DB_NONCE);
-    }
-
-    function test_writeEntry_writerF_savesEntry() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
-        writeEntry(writerF, entry.dataHash);
-        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
-    }
-
-    function test_writeEntry_writerS_emitsEvent() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
-        expectEventInterchainEntryWritten(entry);
-        writeEntry(writerS, entry.dataHash);
-    }
-
-    function test_writeEntry_writerS_increasesDBNonce() public {
-        bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
-        writeEntry(writerS, dataHash);
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkSavedEntry(INITIAL_DB_NONCE, getMockEntry(INITIAL_DB_NONCE, writerF));
     }
 
-    function test_writeEntry_writerS_returnsCorrectNonce() public {
-        bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
-        uint64 nonce = writeEntry(writerS, dataHash);
+    function test_writeEntry_writerS() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerS);
+        bytes32 entryValue = getMockEntry(INITIAL_DB_NONCE, writerS).entryValue;
+        expectEventInterchainEntryWritten(INITIAL_DB_NONCE, writerS, digest, entryValue);
+        uint64 nonce = writeEntry(writerS, digest);
         assertEq(nonce, INITIAL_DB_NONCE);
-    }
-
-    function test_writeEntry_writerS_savesEntry() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
-        writeEntry(writerS, entry.dataHash);
-        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
+        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkSavedEntry(INITIAL_DB_NONCE, getMockEntry(INITIAL_DB_NONCE, writerS));
     }
 
     // ═══════════════════════════════════════ TESTS: REQUESTING VALIDATION ════════════════════════════════════════════
 
-    function test_requestVerification_writerF_oneModule_emitsEvent() public {
-        uint64 dbNonce = 0;
-        expectEventVerificationRequested(getInitialEntry(dbNonce), oneModule);
-        requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
-    }
-
-    function test_requestVerification_writerF_oneModule_callsModule() public {
+    function test_requestVerification_writerF_oneModule() public {
         uint64 dbNonce = 0;
         InterchainEntry memory entry = getInitialEntry(dbNonce);
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
     }
 
     function test_requestVerification_writerF_oneModule_higherFee() public {
         uint64 dbNonce = 0;
         InterchainEntry memory entry = getInitialEntry(dbNonce);
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(entry));
-        expectEventVerificationRequested(getInitialEntry(dbNonce), oneModule);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE * 2, dbNonce, oneModule);
     }
 
-    function test_requestVerification_writerF_twoModules_emitsEvent() public {
-        uint64 dbNonce = 0;
-        expectEventVerificationRequested(getInitialEntry(dbNonce), twoModules);
-        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
-    }
-
-    function test_requestVerification_writerF_twoModules_callsModules() public {
+    function test_requestVerification_writerF_twoModules() public {
         uint64 dbNonce = 0;
         InterchainEntry memory entry = getInitialEntry(dbNonce);
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
     }
 
@@ -324,48 +255,34 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         // Overpaid fees should be directed to the first module
         uint64 dbNonce = 0;
         InterchainEntry memory entry = getInitialEntry(dbNonce);
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(entry));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
-        expectEventVerificationRequested(getInitialEntry(dbNonce), twoModules);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
     }
 
-    function test_requestVerification_writerS_oneModule_emitsEvent() public {
-        uint64 dbNonce = 2;
-        expectEventVerificationRequested(getInitialEntry(dbNonce), oneModule);
-        requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
-    }
-
-    function test_requestVerification_writerS_oneModule_callsModule() public {
+    function test_requestVerification_writerS_oneModule() public {
         uint64 dbNonce = 2;
         InterchainEntry memory entry = getInitialEntry(dbNonce);
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
     }
 
     function test_requestVerification_writerS_oneModule_higherFee() public {
         uint64 dbNonce = 2;
         InterchainEntry memory entry = getInitialEntry(dbNonce);
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(entry));
-        expectEventVerificationRequested(getInitialEntry(dbNonce), oneModule);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE * 2, dbNonce, oneModule);
     }
 
-    function test_requestVerification_writerS_twoModules_emitsEvent() public {
-        uint64 dbNonce = 2;
-        expectEventVerificationRequested(getInitialEntry(dbNonce), twoModules);
-        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
-    }
-
-    function test_requestVerification_writerS_twoModules_callsModules() public {
+    function test_requestVerification_writerS_twoModules() public {
         uint64 dbNonce = 2;
         InterchainEntry memory entry = getInitialEntry(dbNonce);
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
     }
 
@@ -373,409 +290,310 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         // Overpaid fees should be directed to the first module
         uint64 dbNonce = 2;
         InterchainEntry memory entry = getInitialEntry(dbNonce);
-        // expectCall(address callee, uint256 msgValue, bytes calldata data)
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(entry));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
-        expectEventVerificationRequested(getInitialEntry(dbNonce), twoModules);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, twoModules);
+        requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
+    }
+
+    function test_requestVerification_nextNonce_oneModule() public {
+        uint64 dbNonce = INITIAL_DB_NONCE;
+        InterchainEntry memory entry = getEmptyEntry(dbNonce);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, oneModule);
+        requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
+    }
+
+    function test_requestVerification_nextNonce_oneModule_higherFee() public {
+        uint64 dbNonce = INITIAL_DB_NONCE;
+        InterchainEntry memory entry = getEmptyEntry(dbNonce);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, oneModule);
+        requestVerification(requestCaller, MODULE_A_FEE * 2, dbNonce, oneModule);
+    }
+
+    function test_requestVerification_nextNonce_twoModules() public {
+        uint64 dbNonce = INITIAL_DB_NONCE;
+        InterchainEntry memory entry = getEmptyEntry(dbNonce);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, twoModules);
+        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
+    }
+
+    function test_requestVerification_nextNonce_twoModules_higherFee() public {
+        // Overpaid fees should be directed to the first module
+        uint64 dbNonce = INITIAL_DB_NONCE;
+        InterchainEntry memory entry = getEmptyEntry(dbNonce);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, twoModules);
+        requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
+    }
+
+    function test_requestVerification_hugeNonce_oneModule() public {
+        uint64 dbNonce = 2 ** 32;
+        InterchainEntry memory entry = getEmptyEntry(dbNonce);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, oneModule);
+        requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
+    }
+
+    function test_requestVerification_hugeNonce_oneModule_higherFee() public {
+        uint64 dbNonce = 2 ** 32;
+        InterchainEntry memory entry = getEmptyEntry(dbNonce);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, oneModule);
+        requestVerification(requestCaller, MODULE_A_FEE * 2, dbNonce, oneModule);
+    }
+
+    function test_requestVerification_hugeNonce_twoModules() public {
+        uint64 dbNonce = 2 ** 32;
+        InterchainEntry memory entry = getEmptyEntry(dbNonce);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, twoModules);
+        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
+    }
+
+    function test_requestVerification_hugeNonce_twoModules_higherFee() public {
+        // Overpaid fees should be directed to the first module
+        uint64 dbNonce = 2 ** 32;
+        InterchainEntry memory entry = getEmptyEntry(dbNonce);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventEntryVerificationRequested(dbNonce, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE * 2 + MODULE_B_FEE, dbNonce, twoModules);
     }
 
     // ══════════════════════════════════ TESTS: REQUESTING VALIDATION (REVERTS) ═══════════════════════════════════════
 
-    function test_requestVerification_revert_batchNotFinalized_oneModule_nextNonce() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE);
-        requestVerification(requestCaller, MODULE_A_FEE, INITIAL_DB_NONCE, oneModule);
-    }
-
-    function test_requestVerification_revert_batchNotFinalized_oneModule_hugeNonce() public {
-        expectRevertBatchNotFinalized(2 ** 32);
-        requestVerification(requestCaller, MODULE_A_FEE, 2 ** 32, oneModule);
-        expectRevertBatchNotFinalized(type(uint64).max);
-        requestVerification(requestCaller, MODULE_A_FEE, type(uint64).max, oneModule);
-    }
-
-    function test_requestVerification_revert_batchNotFinalized_twoModules_nextNonce() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE);
-        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, INITIAL_DB_NONCE, twoModules);
-    }
-
-    function test_requestVerification_revert_batchNotFinalized_twoModules_hugeNonce() public {
-        expectRevertBatchNotFinalized(2 ** 32);
-        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, 2 ** 32, twoModules);
-        expectRevertBatchNotFinalized(type(uint64).max);
-        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, type(uint64).max, twoModules);
-    }
-
-    function test_requestVerification_revert_incorrectFeeAmount_oneModule_underpaid() public {
+    function test_requestVerification_revert_FeeAmountBelowMin_oneModule_underpaid() public {
         uint256 incorrectFee = MODULE_A_FEE - 1;
-        expectRevertIncorrectFeeAmount(incorrectFee, MODULE_A_FEE);
+        expectRevertFeeAmountBelowMin(incorrectFee, MODULE_A_FEE);
         requestVerification(requestCaller, incorrectFee, 0, oneModule);
     }
 
-    function test_requestVerification_revert_incorrectFeeAmount_twoModules_underpaid() public {
+    function test_requestVerification_revert_FeeAmountBelowMin_twoModules_underpaid() public {
         uint256 incorrectFee = MODULE_A_FEE + MODULE_B_FEE - 1;
-        expectRevertIncorrectFeeAmount(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
+        expectRevertFeeAmountBelowMin(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
         requestVerification(requestCaller, incorrectFee, 0, twoModules);
     }
 
-    function test_requestVerification_revert_noModulesSpecified() public {
-        expectRevertNoModulesSpecified();
+    function test_requestVerification_revert_ModulesNotProvided() public {
+        expectRevertModulesNotProvided();
         requestVerification(requestCaller, MODULE_A_FEE, 0, new address[](0));
     }
 
-    function test_requestVerification_revert_sameChainId() public {
-        expectRevertSameChainId(SRC_CHAIN_ID);
+    function test_requestVerification_revert_ChainIdNotRemote() public {
+        expectRevertChainIdNotRemote(SRC_CHAIN_ID);
         vm.prank(requestCaller);
-        icDB.requestBatchVerification(SRC_CHAIN_ID, 0, oneModule);
+        icDB.requestEntryVerification(SRC_CHAIN_ID, 0, oneModule);
     }
 
     // ═════════════════════════════════════ TESTS: WRITE + REQUEST VALIDATION ═════════════════════════════════════════
 
-    function test_writeEntryWithVerification_writerF_oneModule_callsModule() public {
+    function test_writeEntryRequestVerification_writerF_oneModule() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerF);
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
-        writeEntryWithVerification(MODULE_A_FEE, writerF, entry.dataHash, oneModule);
-    }
-
-    function test_writeEntryWithVerification_writerF_oneModule_emitsEvents() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
-        expectEventInterchainEntryWritten(entry);
-        expectEventVerificationRequested(entry, oneModule);
-        writeEntryWithVerification(MODULE_A_FEE, writerF, entry.dataHash, oneModule);
-    }
-
-    function test_writeEntryWithVerification_writerF_oneModule_increasesDBNonce() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        writeEntryWithVerification(MODULE_A_FEE, writerF, dataHash, oneModule);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
-    }
-
-    function test_writeEntryWithVerification_writerF_oneModule_returnsCorrectNonce() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        uint64 nonce = writeEntryWithVerification(MODULE_A_FEE, writerF, dataHash, oneModule);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        expectEventInterchainEntryWritten(INITIAL_DB_NONCE, writerF, digest, entry.entryValue);
+        expectEventEntryVerificationRequested(INITIAL_DB_NONCE, oneModule);
+        uint64 nonce = writeEntryRequestVerification(MODULE_A_FEE, writerF, digest, oneModule);
         assertEq(nonce, INITIAL_DB_NONCE);
-    }
-
-    function test_writeEntryWithVerification_writerF_oneModule_savesEntry() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
-        writeEntryWithVerification(MODULE_A_FEE, writerF, entry.dataHash, oneModule);
-        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
-    }
-
-    function test_writeEntryWithVerification_writerF_oneModule_higherFee() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(entry));
-        expectEventInterchainEntryWritten(entry);
-        writeEntryWithVerification(MODULE_A_FEE * 2, writerF, dataHash, oneModule);
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
-        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
+        checkSavedEntry(INITIAL_DB_NONCE, entry);
     }
 
-    function test_writeEntryWithVerification_writerF_twoModules_callsModules() public {
+    function test_writeEntryRequestVerification_writerF_oneModule_higherFee() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerF);
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
-        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, entry.dataHash, twoModules);
-    }
-
-    function test_writeEntryWithVerification_writerF_twoModules_emitsEvents() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
-        expectEventInterchainEntryWritten(entry);
-        expectEventVerificationRequested(entry, twoModules);
-        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, entry.dataHash, twoModules);
-    }
-
-    function test_writeEntryWithVerification_writerF_twoModules_increasesDBNonce() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, dataHash, twoModules);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
-    }
-
-    function test_writeEntryWithVerification_writerF_twoModules_returnsCorrectNonce() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        uint64 nonce = writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, dataHash, twoModules);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        expectEventInterchainEntryWritten(INITIAL_DB_NONCE, writerF, digest, entry.entryValue);
+        expectEventEntryVerificationRequested(INITIAL_DB_NONCE, oneModule);
+        uint64 nonce = writeEntryRequestVerification(MODULE_A_FEE * 2, writerF, digest, oneModule);
         assertEq(nonce, INITIAL_DB_NONCE);
+        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkSavedEntry(INITIAL_DB_NONCE, entry);
     }
 
-    function test_writeEntryWithVerification_writerF_twoModules_savesEntry() public {
+    function test_writeEntryRequestVerification_writerF_twoModules() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerF);
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
-        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, entry.dataHash, twoModules);
-        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventInterchainEntryWritten(INITIAL_DB_NONCE, writerF, digest, entry.entryValue);
+        expectEventEntryVerificationRequested(INITIAL_DB_NONCE, twoModules);
+        uint64 nonce = writeEntryRequestVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, digest, twoModules);
+        assertEq(nonce, INITIAL_DB_NONCE);
+        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkSavedEntry(INITIAL_DB_NONCE, entry);
     }
 
-    function test_writeEntryWithVerification_writerF_twoModules_higherFee() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
+    function test_writeEntryRequestVerification_writerF_twoModules_higherFee() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerF);
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(entry));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
-        expectEventInterchainEntryWritten(entry);
-        writeEntryWithVerification(MODULE_A_FEE * 2 + MODULE_B_FEE, writerF, dataHash, twoModules);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
-        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
-    }
-
-    function test_writeEntryWithVerification_writerS_oneModule_callsModule() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
-        writeEntryWithVerification(MODULE_A_FEE, writerS, entry.dataHash, oneModule);
-    }
-
-    function test_writeEntryWithVerification_writerS_oneModule_emitsEvents() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
-        expectEventInterchainEntryWritten(entry);
-        expectEventVerificationRequested(entry, oneModule);
-        writeEntryWithVerification(MODULE_A_FEE, writerS, entry.dataHash, oneModule);
-    }
-
-    function test_writeEntryWithVerification_writerS_oneModule_increasesDBNonce() public {
-        bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
-        writeEntryWithVerification(MODULE_A_FEE, writerS, dataHash, oneModule);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
-    }
-
-    function test_writeEntryWithVerification_writerS_oneModule_returnsCorrectNonce() public {
-        bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
-        uint64 nonce = writeEntryWithVerification(MODULE_A_FEE, writerS, dataHash, oneModule);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventInterchainEntryWritten(INITIAL_DB_NONCE, writerF, digest, entry.entryValue);
+        expectEventEntryVerificationRequested(INITIAL_DB_NONCE, twoModules);
+        uint64 nonce = writeEntryRequestVerification(MODULE_A_FEE * 2 + MODULE_B_FEE, writerF, digest, twoModules);
         assertEq(nonce, INITIAL_DB_NONCE);
-    }
-
-    function test_writeEntryWithVerification_writerS_oneModule_savesEntry() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
-        writeEntryWithVerification(MODULE_A_FEE, writerS, entry.dataHash, oneModule);
-        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
-    }
-
-    function test_writeEntryWithVerification_writerS_oneModule_higherFee() public {
-        bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(entry));
-        expectEventInterchainEntryWritten(entry);
-        writeEntryWithVerification(MODULE_A_FEE * 2, writerS, dataHash, oneModule);
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
-        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
+        checkSavedEntry(INITIAL_DB_NONCE, entry);
     }
 
-    function test_writeEntryWithVerification_writerS_twoModules_callsModules() public {
+    function test_writeEntryRequestVerification_writerS_oneModule() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerS);
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
-        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
-        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, entry.dataHash, twoModules);
-    }
-
-    function test_writeEntryWithVerification_writerS_twoModules_emitsEvents() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
-        expectEventInterchainEntryWritten(entry);
-        expectEventVerificationRequested(entry, twoModules);
-        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, entry.dataHash, twoModules);
-    }
-
-    function test_writeEntryWithVerification_writerS_twoModules_increasesDBNonce() public {
-        bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
-        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, dataHash, twoModules);
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
-    }
-
-    function test_writeEntryWithVerification_writerS_twoModules_returnsCorrectNonce() public {
-        bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
-        uint64 nonce = writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, dataHash, twoModules);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        expectEventInterchainEntryWritten(INITIAL_DB_NONCE, writerS, digest, entry.entryValue);
+        expectEventEntryVerificationRequested(INITIAL_DB_NONCE, oneModule);
+        uint64 nonce = writeEntryRequestVerification(MODULE_A_FEE, writerS, digest, oneModule);
         assertEq(nonce, INITIAL_DB_NONCE);
-    }
-
-    function test_writeEntryWithVerification_writerS_twoModules_savesEntry() public {
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
-        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, entry.dataHash, twoModules);
-        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
-    }
-
-    function test_writeEntryWithVerification_writerS_twoModules_higherFee() public {
-        bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
-        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
-        vm.expectCall(address(moduleA), MODULE_A_FEE * 2, getModuleCalldata(entry));
-        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
-        expectEventInterchainEntryWritten(entry);
-        writeEntryWithVerification(MODULE_A_FEE * 2 + MODULE_B_FEE, writerS, dataHash, twoModules);
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
-        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
+        checkSavedEntry(INITIAL_DB_NONCE, entry);
+    }
+
+    function test_writeEntryRequestVerification_writerS_oneModule_higherFee() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerS);
+        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        expectEventInterchainEntryWritten(INITIAL_DB_NONCE, writerS, digest, entry.entryValue);
+        expectEventEntryVerificationRequested(INITIAL_DB_NONCE, oneModule);
+        uint64 nonce = writeEntryRequestVerification(MODULE_A_FEE * 2, writerS, digest, oneModule);
+        assertEq(nonce, INITIAL_DB_NONCE);
+        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkSavedEntry(INITIAL_DB_NONCE, entry);
+    }
+
+    function test_writeEntryRequestVerification_writerS_twoModules() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerS);
+        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventInterchainEntryWritten(INITIAL_DB_NONCE, writerS, digest, entry.entryValue);
+        expectEventEntryVerificationRequested(INITIAL_DB_NONCE, twoModules);
+        uint64 nonce = writeEntryRequestVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, digest, twoModules);
+        assertEq(nonce, INITIAL_DB_NONCE);
+        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkSavedEntry(INITIAL_DB_NONCE, entry);
+    }
+
+    function test_writeEntryRequestVerification_writerS_twoModules_higherFee() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerS);
+        InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
+        vm.expectCall({callee: address(moduleA), msgValue: MODULE_A_FEE * 2, data: getModuleCalldata(entry)});
+        vm.expectCall({callee: address(moduleB), msgValue: MODULE_B_FEE, data: getModuleCalldata(entry)});
+        expectEventInterchainEntryWritten(INITIAL_DB_NONCE, writerS, digest, entry.entryValue);
+        expectEventEntryVerificationRequested(INITIAL_DB_NONCE, twoModules);
+        uint64 nonce = writeEntryRequestVerification(MODULE_A_FEE * 2 + MODULE_B_FEE, writerS, digest, twoModules);
+        assertEq(nonce, INITIAL_DB_NONCE);
+        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE + 1);
+        checkSavedEntry(INITIAL_DB_NONCE, entry);
     }
 
     // ════════════════════════════════ TESTS: WRITE + REQUEST VALIDATION (REVERTS) ════════════════════════════════════
 
-    function test_writeEntryWithVerification_revert_incorrectFeeAmount_oneModule_underpaid() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
+    function test_writeEntryRequestVerification_revert_FeeAmountBelowMin_oneModule_underpaid() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerF);
         uint256 incorrectFee = MODULE_A_FEE - 1;
-        expectRevertIncorrectFeeAmount(incorrectFee, MODULE_A_FEE);
-        writeEntryWithVerification(incorrectFee, writerF, dataHash, oneModule);
+        expectRevertFeeAmountBelowMin(incorrectFee, MODULE_A_FEE);
+        writeEntryRequestVerification(incorrectFee, writerF, digest, oneModule);
     }
 
-    function test_writeEntryWithVerification_revert_incorrectFeeAmount_twoModules_underpaid() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
+    function test_writeEntryRequestVerification_revert_FeeAmountBelowMin_twoModules_underpaid() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerF);
         uint256 incorrectFee = MODULE_A_FEE + MODULE_B_FEE - 1;
-        expectRevertIncorrectFeeAmount(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
-        writeEntryWithVerification(incorrectFee, writerF, dataHash, twoModules);
+        expectRevertFeeAmountBelowMin(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
+        writeEntryRequestVerification(incorrectFee, writerF, digest, twoModules);
     }
 
-    function test_writeEntryWithVerification_revert_noModulesSpecified() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        expectRevertNoModulesSpecified();
-        writeEntryWithVerification(0, writerF, dataHash, new address[](0));
+    function test_writeEntryRequestVerification_revert_ModulesNotProvided() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerF);
+        expectRevertModulesNotProvided();
+        writeEntryRequestVerification(0, writerF, digest, new address[](0));
     }
 
-    function test_writeEntryWithVerification_revert_sameChainId() public {
-        bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        expectRevertSameChainId(SRC_CHAIN_ID);
+    function test_writeEntryRequestVerification_revert_ChainIdNotRemote() public {
+        bytes32 digest = getMockDigest(INITIAL_DB_NONCE, writerF);
+        expectRevertChainIdNotRemote(SRC_CHAIN_ID);
         vm.prank(writerF);
-        icDB.writeEntryWithVerification(SRC_CHAIN_ID, dataHash, oneModule);
+        icDB.writeEntryRequestVerification(SRC_CHAIN_ID, digest, oneModule);
     }
 
     // ═════════════════════════════════════════ TESTS: GET INTERCHAIN FEE ═════════════════════════════════════════════
 
     function test_getInterchainFee_noModules() public {
-        expectRevertNoModulesSpecified();
+        expectRevertModulesNotProvided();
         icDB.getInterchainFee(DST_CHAIN_ID, new address[](0));
     }
 
-    function test_getInterchainFee_oneModule() public {
+    function test_getInterchainFee_oneModule() public view {
         // [moduleA]
         assertEq(icDB.getInterchainFee(DST_CHAIN_ID, oneModule), MODULE_A_FEE);
     }
 
-    function test_getInterchainFee_twoModules() public {
+    function test_getInterchainFee_twoModules() public view {
         // [moduleA, moduleB]
         assertEq(icDB.getInterchainFee(DST_CHAIN_ID, twoModules), MODULE_A_FEE + MODULE_B_FEE);
     }
 
     // ════════════════════════════════════════ TESTS: RETRIEVING DB VALUES ════════════════════════════════════════════
 
-    function checkBatchRoot(bytes32 batchRoot, InterchainEntry memory expectedEntry) internal {
-        bytes32 expectedRoot = InterchainEntryLib.entryValue(expectedEntry);
-        assertEq(batchRoot, expectedRoot, "!batchRoot");
-    }
-
-    function checkBatch(InterchainBatch memory batch, InterchainEntry memory expectedEntry) internal {
-        assertEq(batch.srcChainId, expectedEntry.srcChainId, "!srcChainId");
-        assertEq(batch.dbNonce, expectedEntry.dbNonce, "!dbNonce");
-        checkBatchRoot(batch.batchRoot, expectedEntry);
-    }
-
-    function test_getBatchLeafs() public {
+    function test_getEntry_finalized() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
-            bytes32[] memory leafs = icDB.getBatchLeafs(nonce);
-            assertEq(leafs.length, 1, "!leafs.length");
-            checkBatchRoot(leafs[0], getInitialEntry(nonce));
+            InterchainEntry memory entry = icDB.getEntry(nonce);
+            assertEq(entry, getInitialEntry(nonce));
         }
     }
 
-    function test_getBatchLeafs_revert_notFinalized() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE);
-        icDB.getBatchLeafs(INITIAL_DB_NONCE);
+    function test_getEntry_nextNonce() public view {
+        InterchainEntry memory entry = icDB.getEntry(INITIAL_DB_NONCE);
+        InterchainEntry memory expected =
+            InterchainEntry({srcChainId: SRC_CHAIN_ID, dbNonce: INITIAL_DB_NONCE, entryValue: 0});
+        assertEq(entry, expected);
     }
 
-    function test_getBatchLeafs_revert_nonExistent() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE + 1);
-        icDB.getBatchLeafs(INITIAL_DB_NONCE + 1);
+    function test_getEntry_hugeNonce() public view {
+        InterchainEntry memory entry = icDB.getEntry(2 ** 32);
+        InterchainEntry memory expected = InterchainEntry({srcChainId: SRC_CHAIN_ID, dbNonce: 2 ** 32, entryValue: 0});
+        assertEq(entry, expected);
     }
 
-    function test_getBatchLeafsPaginated() public {
-        for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
-            bytes32[] memory leafs = icDB.getBatchLeafsPaginated(nonce, 0, 1);
-            assertEq(leafs.length, 1, "!leafs.length");
-            checkBatchRoot(leafs[0], getInitialEntry(nonce));
-        }
-    }
-
-    function test_getBatchLeafsPaginated_revert_notFinalized() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE);
-        icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE, 0, 1);
-    }
-
-    function test_getBatchLeafsPaginated_revert_nonExistent() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE + 1);
-        icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE + 1, 0, 1);
-    }
-
-    function test_getBatchLeafsPaginated_revert_invalidRange() public {
-        expectRevertInvalidEntryRange(0, 0, 0);
-        icDB.getBatchLeafsPaginated(0, 0, 0);
-        expectRevertInvalidEntryRange(1, 0, 2);
-        icDB.getBatchLeafsPaginated(1, 0, 2);
-        expectRevertInvalidEntryRange(2, 1, 1);
-        icDB.getBatchLeafsPaginated(2, 1, 1);
-        expectRevertInvalidEntryRange(3, 1, 0);
-        icDB.getBatchLeafsPaginated(3, 1, 0);
-    }
-
-    function test_getBatchSize_finalized() public {
-        for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
-            assertEq(icDB.getBatchSize(nonce), 1, "!batchSize");
-        }
-    }
-
-    function test_getBatchSize_pending() public {
-        assertEq(icDB.getBatchSize(INITIAL_DB_NONCE), 0);
-    }
-
-    function test_getBatchSize_revert_nonExistent() public {
-        expectRevertBatchDoesNotExist(INITIAL_DB_NONCE + 1);
-        icDB.getBatchSize(INITIAL_DB_NONCE + 1);
-    }
-
-    function test_getBatch() public {
-        for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
-            InterchainBatch memory batch = icDB.getBatch(nonce);
-            checkBatch(batch, getInitialEntry(nonce));
-        }
-    }
-
-    function test_getBatch_revert_notFinalized() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE);
-        icDB.getBatch(INITIAL_DB_NONCE);
-    }
-
-    function test_getBatch_revert_nonExistent() public {
-        expectRevertBatchNotFinalized(INITIAL_DB_NONCE + 1);
-        icDB.getBatch(INITIAL_DB_NONCE + 1);
-    }
-
-    function test_getEntryValue() public {
+    function test_getEntryValue_finalized() public view {
         for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             InterchainEntry memory expectedEntry = getInitialEntry(nonce);
-            assertCorrectValue(icDB.getEntryValue(nonce, 0), expectedEntry);
+            assertEq(icDB.getEntryValue(nonce), expectedEntry.entryValue);
         }
     }
 
-    function test_getEntryValue_revert_finalizedOutOfRange() public {
-        expectRevertEntryIndexOutOfRange(INITIAL_DB_NONCE - 1, 1, 1);
-        icDB.getEntryValue(INITIAL_DB_NONCE - 1, 1);
+    function test_getEntryValue_nextNonce() public view {
+        assertEq(icDB.getEntryValue(INITIAL_DB_NONCE), 0);
     }
 
-    function test_getEntryValue_revert_notFinalizedOutOfRange() public {
-        expectRevertEntryIndexOutOfRange(INITIAL_DB_NONCE, 0, 0);
-        icDB.getEntryValue(INITIAL_DB_NONCE, 0);
+    function test_getEntryValue_hugeNonce() public view {
+        assertEq(icDB.getEntryValue(2 ** 32), 0);
     }
 
-    function test_getDBNonce() public {
-        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE);
+    function test_getEncodedEntry_finalized() public view {
+        for (uint64 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
+            InterchainEntry memory entry = getInitialEntry(nonce);
+            bytes memory encodedEntry = icDB.getEncodedEntry(nonce);
+            assertEq(encodedEntry, getVersionedEntry(entry));
+        }
     }
 
-    // ═══════════════════════════════════════════ TESTS: GET BATCH ROOT ═══════════════════════════════════════════════
-
-    function test_getBatchRoot(InterchainEntry memory entry) public {
-        entry.entryIndex = 0;
-        bytes32 batchRoot = icDB.getBatchRoot(entry, new bytes32[](0));
-        assertEq(batchRoot, InterchainEntryLib.entryValue(entry));
+    function test_getEncodedEntry_nextNonce() public view {
+        InterchainEntry memory entry =
+            InterchainEntry({srcChainId: SRC_CHAIN_ID, dbNonce: INITIAL_DB_NONCE, entryValue: 0});
+        bytes memory encodedEntry = icDB.getEncodedEntry(INITIAL_DB_NONCE);
+        assertEq(encodedEntry, getVersionedEntry(entry));
     }
 
-    function test_getBatchRoot_revert_nonZeroEntryIndex() public {
-        InterchainEntry memory entry = getInitialEntry(0);
-        entry.entryIndex = 1;
-        expectRevertIncorrectEntryIndex(1);
-        icDB.getBatchRoot(entry, new bytes32[](0));
-    }
-
-    function test_getBatchRoot_revert_nonEmptyProof() public {
-        InterchainEntry memory entry = getInitialEntry(0);
-        expectRevertIncorrectProof();
-        icDB.getBatchRoot(entry, new bytes32[](1));
+    function test_getEncodedEntry_hugeNonce() public view {
+        InterchainEntry memory entry = InterchainEntry({srcChainId: SRC_CHAIN_ID, dbNonce: 2 ** 32, entryValue: 0});
+        bytes memory encodedEntry = icDB.getEncodedEntry(2 ** 32);
+        assertEq(encodedEntry, getVersionedEntry(entry));
     }
 }

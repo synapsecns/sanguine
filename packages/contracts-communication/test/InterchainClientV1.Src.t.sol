@@ -37,7 +37,6 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     uint256 public constant MOCK_INTERCHAIN_FEE = 0.5 ether;
 
     uint64 public constant MOCK_DB_NONCE = 444;
-    uint64 public constant MOCK_ENTRY_INDEX = 4;
 
     OptionsV1 public options = OptionsV1({gasLimit: 100_000, gasAirdrop: 1 ether});
     bytes public encodedOptions = options.encodeOptionsV1();
@@ -81,13 +80,13 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         );
     }
 
-    /// @dev Override the DB's returned next entry index (both for reads and writes)
-    function mockNextEntryIndex(uint64 dbNonce, uint64 entryIndex) internal {
-        bytes memory returnData = abi.encode(dbNonce, entryIndex);
+    /// @dev Override the DB's returned next DB nonce (both for reads and writes)
+    function mockNextDbNonce(uint64 dbNonce) internal {
+        bytes memory returnData = abi.encode(dbNonce);
         // Use partial calldata to override return values for calls to these functions with any arguments.
-        vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.getNextEntryIndex.selector), returnData);
+        vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.getDBNonce.selector), returnData);
         vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.writeEntry.selector), returnData);
-        vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.writeEntryWithVerification.selector), returnData);
+        vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.writeEntryRequestVerification.selector), returnData);
     }
 
     /// @dev Constructs an interchain transaction and its descriptor for testing.
@@ -102,20 +101,15 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             dstChainId: REMOTE_CHAIN_ID,
             dstReceiver: receiver,
             dbNonce: MOCK_DB_NONCE,
-            entryIndex: MOCK_ENTRY_INDEX,
             options: encodedOptions,
             message: message
         });
-        desc = InterchainTxDescriptor({
-            transactionId: keccak256(getEncodedTx(icTx)),
-            dbNonce: MOCK_DB_NONCE,
-            entryIndex: MOCK_ENTRY_INDEX
-        });
+        desc = InterchainTxDescriptor({transactionId: keccak256(getEncodedTx(icTx)), dbNonce: MOCK_DB_NONCE});
     }
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
-    function expectWriteEntryWithVerificationCall(
+    function expectWriteEntryRequestVerificationCall(
         InterchainTransaction memory icTx,
         InterchainTxDescriptor memory desc,
         uint256 interchainFee,
@@ -124,7 +118,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         internal
     {
         bytes memory expectedCalldata = abi.encodeCall(
-            InterchainDBMock.writeEntryWithVerification, (icTx.dstChainId, desc.transactionId, srcModules)
+            InterchainDBMock.writeEntryRequestVerification, (icTx.dstChainId, desc.transactionId, srcModules)
         );
         vm.expectCall({callee: icDB, msgValue: interchainFee, data: expectedCalldata, count: 1});
     }
@@ -155,14 +149,14 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     {
         (icTx, desc) = constructInterchainTx(receiver);
         mockInterchainFee(icTx.dstChainId, srcModules, interchainFee);
-        mockNextEntryIndex(MOCK_DB_NONCE, MOCK_ENTRY_INDEX);
+        mockNextDbNonce(MOCK_DB_NONCE);
     }
 
     function test_interchainSend_withExecService_icFeeNonZero_execFeeNonZero() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
         // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
         expectRequestTxExecutionCall(icTx, desc, MOCK_EXECUTION_FEE);
         expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, MOCK_EXECUTION_FEE);
         vm.prank(srcSender);
@@ -179,7 +173,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     function test_interchainSend_withExecService_icFeeNonZero_execFeeZero() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
         expectRequestTxExecutionCall(icTx, desc, 0);
         expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, 0);
         vm.prank(srcSender);
@@ -197,7 +191,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiver, interchainFee: 0, srcModules: twoModules});
         // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, 0, twoModules);
         expectRequestTxExecutionCall(icTx, desc, MOCK_EXECUTION_FEE);
         expectEventInterchainTransactionSent(icTx, desc, 0, MOCK_EXECUTION_FEE);
         vm.prank(srcSender);
@@ -214,7 +208,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     function test_interchainSend_withExecService_icFeeZero_execFeeZero() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiver, interchainFee: 0, srcModules: twoModules});
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, 0, twoModules);
         expectRequestTxExecutionCall(icTx, desc, 0);
         expectEventInterchainTransactionSent(icTx, desc, 0, 0);
         vm.prank(srcSender);
@@ -234,7 +228,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     function test_interchainSend_revert_feeTooLow() public {
         prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
         deal(srcSender, MOCK_INTERCHAIN_FEE - 1);
-        expectRevertFeeAmountTooLow(MOCK_INTERCHAIN_FEE - 1, MOCK_INTERCHAIN_FEE);
+        expectRevertFeeAmountBelowMin(MOCK_INTERCHAIN_FEE - 1, MOCK_INTERCHAIN_FEE);
         vm.prank(srcSender);
         icClient.interchainSend{value: MOCK_INTERCHAIN_FEE - 1}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -246,9 +240,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSend_revert_notRemoteChainId() public {
+    function test_interchainSend_revert_ChainIdNotRemote() public {
         prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         vm.prank(srcSender);
         icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: LOCAL_CHAIN_ID,
@@ -260,9 +254,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSend_revert_noLinkedClient() public {
+    function test_interchainSend_revert_ChainIdNotLinked() public {
         prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
+        expectRevertChainIdNotLinked(UNKNOWN_CHAIN_ID);
         vm.prank(srcSender);
         icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: UNKNOWN_CHAIN_ID,
@@ -274,9 +268,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSend_revert_zeroReceiver() public {
+    function test_interchainSend_revert_ReceiverZeroAddress() public {
         prepareSendTest({receiver: 0, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertZeroReceiver();
+        expectRevertReceiverZeroAddress();
         vm.prank(srcSender);
         icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -288,9 +282,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSend_revert_zeroExecutionService() public {
+    function test_interchainSend_revert_ExecutionServiceZeroAddress() public {
         prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertZeroExecutionService();
+        expectRevertExecutionServiceZeroAddress();
         vm.prank(srcSender);
         icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -319,7 +313,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
 
     function test_interchainSend_revert_invalidOptionsV0() public {
         prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertIncorrectVersion(0);
+        expectRevertVersionInvalid(0);
         vm.prank(srcSender);
         icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -355,7 +349,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             srcModules: twoModules
         });
         // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
         expectRequestTxExecutionCall(icTx, desc, MOCK_EXECUTION_FEE);
         expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, MOCK_EXECUTION_FEE);
         vm.prank(srcSender);
@@ -375,7 +369,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             interchainFee: MOCK_INTERCHAIN_FEE,
             srcModules: twoModules
         });
-        expectWriteEntryWithVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, MOCK_INTERCHAIN_FEE, twoModules);
         expectRequestTxExecutionCall(icTx, desc, 0);
         expectEventInterchainTransactionSent(icTx, desc, MOCK_INTERCHAIN_FEE, 0);
         vm.prank(srcSender);
@@ -393,7 +387,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: 0, srcModules: twoModules});
         // Anything paid on top of the interchain fee is considered an execution fee.
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, 0, twoModules);
         expectRequestTxExecutionCall(icTx, desc, MOCK_EXECUTION_FEE);
         expectEventInterchainTransactionSent(icTx, desc, 0, MOCK_EXECUTION_FEE);
         vm.prank(srcSender);
@@ -410,7 +404,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     function test_interchainSendEVM_withExecService_icFeeZero_execFeeZero() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: 0, srcModules: twoModules});
-        expectWriteEntryWithVerificationCall(icTx, desc, 0, twoModules);
+        expectWriteEntryRequestVerificationCall(icTx, desc, 0, twoModules);
         expectRequestTxExecutionCall(icTx, desc, 0);
         expectEventInterchainTransactionSent(icTx, desc, 0, 0);
         vm.prank(srcSender);
@@ -430,7 +424,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     function test_interchainSendEVM_revert_feeTooLow() public {
         prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
         deal(srcSender, MOCK_INTERCHAIN_FEE - 1);
-        expectRevertFeeAmountTooLow(MOCK_INTERCHAIN_FEE - 1, MOCK_INTERCHAIN_FEE);
+        expectRevertFeeAmountBelowMin(MOCK_INTERCHAIN_FEE - 1, MOCK_INTERCHAIN_FEE);
         vm.prank(srcSender);
         icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE - 1}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -442,9 +436,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSendEVM_revert_notRemoteChainId() public {
+    function test_interchainSendEVM_revert_ChainIdNotRemote() public {
         prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         vm.prank(srcSender);
         icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: LOCAL_CHAIN_ID,
@@ -456,9 +450,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSendEVM_revert_noLinkedClient() public {
+    function test_interchainSendEVM_revert_ChainIdNotLinked() public {
         prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
+        expectRevertChainIdNotLinked(UNKNOWN_CHAIN_ID);
         vm.prank(srcSender);
         icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: UNKNOWN_CHAIN_ID,
@@ -470,9 +464,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSendEVM_revert_zeroReceiver() public {
+    function test_interchainSendEVM_revert_ReceiverZeroAddress() public {
         prepareSendTest({receiver: 0, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertZeroReceiver();
+        expectRevertReceiverZeroAddress();
         vm.prank(srcSender);
         icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -484,9 +478,9 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_interchainSendEVM_revert_zeroExecutionService() public {
+    function test_interchainSendEVM_revert_ExecutionServiceZeroAddress() public {
         prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertZeroExecutionService();
+        expectRevertExecutionServiceZeroAddress();
         vm.prank(srcSender);
         icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -515,7 +509,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
 
     function test_interchainSendEVM_revert_invalidOptionsV0() public {
         prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
-        expectRevertIncorrectVersion(0);
+        expectRevertVersionInvalid(0);
         vm.prank(srcSender);
         icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
@@ -608,8 +602,8 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         );
     }
 
-    function test_getInterchainFee_revert_notRemoteChainId() public {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+    function test_getInterchainFee_revert_ChainIdNotRemote() public {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         icClient.getInterchainFee({
             dstChainId: LOCAL_CHAIN_ID,
             srcExecutionService: execService,
@@ -619,8 +613,8 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_getInterchainFee_revert_noLinkedClient() public {
-        expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
+    function test_getInterchainFee_revert_ChainIdNotLinked() public {
+        expectRevertChainIdNotLinked(UNKNOWN_CHAIN_ID);
         icClient.getInterchainFee({
             dstChainId: UNKNOWN_CHAIN_ID,
             srcExecutionService: execService,
@@ -630,8 +624,8 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
-    function test_getInterchainFee_revert_zeroExecutionService() public {
-        expectRevertZeroExecutionService();
+    function test_getInterchainFee_revert_ExecutionServiceZeroAddress() public {
+        expectRevertExecutionServiceZeroAddress();
         icClient.getInterchainFee({
             dstChainId: REMOTE_CHAIN_ID,
             srcExecutionService: address(0),
@@ -654,7 +648,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     }
 
     function test_getInterchainFee_revert_invalidOptionsV0() public {
-        expectRevertIncorrectVersion(0);
+        expectRevertVersionInvalid(0);
         icClient.getInterchainFee({
             dstChainId: REMOTE_CHAIN_ID,
             srcExecutionService: execService,

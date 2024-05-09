@@ -92,6 +92,29 @@ func (_m *Manager) GetCommittableBalances(ctx context.Context, options ...invent
 	return r0, r1
 }
 
+// GetTokenMetadata provides a mock function with given fields: chainID, token
+func (_m *Manager) GetTokenMetadata(chainID int, token common.Address) (*inventory.TokenMetadata, error) {
+	ret := _m.Called(chainID, token)
+
+	var r0 *inventory.TokenMetadata
+	if rf, ok := ret.Get(0).(func(int, common.Address) *inventory.TokenMetadata); ok {
+		r0 = rf(chainID, token)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*inventory.TokenMetadata)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int, common.Address) error); ok {
+		r1 = rf(chainID, token)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // HasSufficientGas provides a mock function with given fields: ctx, chainID, gasValue
 func (_m *Manager) HasSufficientGas(ctx context.Context, chainID int, gasValue *big.Int) (bool, error) {
 	ret := _m.Called(ctx, chainID, gasValue)

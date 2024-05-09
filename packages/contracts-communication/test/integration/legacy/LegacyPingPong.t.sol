@@ -8,14 +8,7 @@ import {LegacyMessageLib} from "../../../contracts/legacy/libs/LegacyMessage.sol
 import {LegacyOptionsLib} from "../../../contracts/legacy/libs/LegacyOptions.sol";
 import {TypeCasts} from "../../../contracts/libs/TypeCasts.sol";
 
-import {
-    ICIntegrationTest,
-    InterchainBatch,
-    InterchainEntry,
-    InterchainTransaction,
-    InterchainTxDescriptor,
-    OptionsV1
-} from "../ICIntegration.t.sol";
+import {ICIntegrationTest, InterchainEntry, InterchainTransaction, OptionsV1} from "../ICIntegration.t.sol";
 import {MessageBusHarness} from "../../harnesses/MessageBusHarness.sol";
 
 // solhint-disable custom-errors
@@ -104,13 +97,13 @@ abstract contract LegacyPingPongIntegrationTest is ICIntegrationTest {
     function expectEventsPingSent(
         uint256 counter,
         InterchainTransaction memory icTx,
-        InterchainEntry memory entry,
+        FullEntry memory fullEntry,
         uint256 verificationFee,
         uint256 executionFee
     )
         internal
     {
-        expectEventsMessageSent(icTx, entry, verificationFee, executionFee);
+        expectEventsMessageSent(icTx, fullEntry, verificationFee, executionFee);
         expectPingPongEventPingSent(counter);
     }
 
