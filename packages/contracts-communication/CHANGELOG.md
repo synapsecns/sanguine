@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.6.0...contracts-communication@1.6.1) (2024-05-09)
+
+
+### Bug Fixes
+
+* **contracts-communication:** interchain module ignore nonces ([#2604](https://github.com/synapsecns/sanguine/issues/2604)) ([be4351b](https://github.com/synapsecns/sanguine/commit/be4351be2a5954e6d2c11471b5e93de99b3e42b6))
+
+
+
+
+
 # [1.6.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.5.4...contracts-communication@1.6.0) (2024-05-09)
 
 
