@@ -278,7 +278,7 @@ func (s *screenerImpl) Start(ctx context.Context) error {
 // @Success 200 {object} map[string]bool "Returns the risk assessment result"
 // @Failure 400 {object} map[string]string "Returns error if the required parameters are missing or invalid"
 // @Failure 500 {object} map[string]string "Returns error if there are problems processing the indicators"
-// @Router /screen/{ruleset}/{address} [get]
+// @Router /screen/{ruleset}/{address} [get].
 func (s *screenerImpl) screenAddress(c *gin.Context) {
 	var err error
 
