@@ -1,14 +1,14 @@
 chains:
-  42:
-  43:
-  44:
-omnirpc_url: http://omnirpc:9001
+  42: '0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB'
+  43: '0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB'
+  44: '0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB'
+omnirpc_url: http://localhost:9001
 database:
   type: 'sqlite'
   dsn: '/tmp/committee'
 signer:
   type: 'File'
-  file: '/config/committee-signer.txt'
+  file: '/config/committee-signer1.txt'
 submitter_config:
   chains:
     42:

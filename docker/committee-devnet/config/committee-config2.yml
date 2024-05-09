@@ -2,13 +2,13 @@ chains:
   42:
   43:
   44:
-omnirpc_url: http://omnirpc:9001
+omnirpc_url: http://localhost:9001
 database:
   type: 'sqlite'
   dsn: '/tmp/committee'
 signer:
   type: 'File'
-  file: '/config/committee-signer.txt'
+  file: '/config/committee-signer2.txt'
 submitter_config:
   chains:
     42:
