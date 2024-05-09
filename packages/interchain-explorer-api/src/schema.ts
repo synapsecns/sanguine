@@ -1,6 +1,11 @@
 import { createSchema } from 'graphql-yoga'
 import { PrismaClient } from '@prisma/client'
-import { InterchainBatch, InterchainTransaction } from '@/types'
+import {
+  InterchainBatch,
+  InterchainBatchQueryFilter,
+  InterchainTransaction,
+  InterchainTransactionQueryFilter,
+} from '@/types'
 
 const prisma = new PrismaClient()
 
@@ -107,20 +112,6 @@ const typeDefs = `
     appConfigV1s: [AppConfigV1!]!
   }
 `
-
-interface InterchainBatchQueryFilter {
-  srcChainId?: number
-  dstChainId?: number
-  status?: string
-}
-
-interface InterchainTransactionQueryFilter {
-  srcChainId?: number
-  dstChainId?: number
-  status?: string
-  dstReceiver?: string
-  id?: string
-}
 
 const resolvers = {
   Query: {

@@ -24,3 +24,17 @@ export interface InterchainTransaction {
   interchainTransactionReceivedId?: string
   interchainBatchId?: string
 }
+
+export interface InterchainBatchQueryFilter {
+  srcChainId?: number
+  dstChainId?: number
+  status?: string
+}
+
+export interface InterchainTransactionQueryFilter {
+  srcChainId?: number
+  dstChainId?: number
+  status?: string
+  dstReceiver?: string
+  id?: string
+}
