@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 abstract contract InterchainDBEvents {
-    /// @notice Emitted when a local entry (a specific digest by the specific writer) is written to the database.
-    /// @param dbNonce      The nonce of written entry.
-    /// @param srcWriter    The address of the writer.
+    /// @notice Emitted when a local entry is written to the database.
+    /// @param dbNonce      The nonce of the written entry.
+    /// @param srcWriter    The address of the entry writer.
     /// @param digest       The written data digest.
     /// @param entryValue   The value of the written entry: keccak256(abi.encode(srcWriter, digest)).
     event InterchainEntryWritten(uint64 indexed dbNonce, bytes32 indexed srcWriter, bytes32 digest, bytes32 entryValue);

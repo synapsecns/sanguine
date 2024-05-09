@@ -7,7 +7,7 @@ import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @notice Struct representing an entry in the Interchain DataBase.
 /// Entry has a globally unique identifier (key) and a value.
-/// Assuming `srcWriter` written data `digest` on the source chain:
+/// Assuming `srcWriter` has written data `digest` on the source chain:
 /// - key: (srcChainId, dbNonce)
 /// - entryValue = keccak256(srcWriter, digest)
 /// @param srcChainId   The chain id of the source chain
