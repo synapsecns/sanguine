@@ -15,8 +15,8 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
 
     OptionsV1 public ppOptions = OptionsV1({gasLimit: 500_000, gasAirdrop: 0});
 
-    event PingReceived(uint256 counter, uint64 dbNonce, uint64 entryIndex);
-    event PingSent(uint256 counter, uint64 dbNonce, uint64 entryIndex);
+    event PingReceived(uint256 counter, uint64 dbNonce);
+    event PingSent(uint256 counter, uint64 dbNonce);
 
     /// @dev Should deploy the tested app and return its address.
     function deployApp() internal override returns (address app) {
@@ -26,12 +26,12 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
 
     function expectPingPongEventPingReceived(uint256 counter, FullEntry memory fullEntry) internal {
         vm.expectEmit(localApp());
-        emit PingReceived(counter, fullEntry.dbNonce, fullEntry.entryIndex);
+        emit PingReceived(counter, fullEntry.dbNonce);
     }
 
     function expectPingPongEventPingSent(uint256 counter, FullEntry memory fullEntry) internal {
         vm.expectEmit(localApp());
-        emit PingSent(counter, fullEntry.dbNonce, fullEntry.entryIndex);
+        emit PingSent(counter, fullEntry.dbNonce);
     }
 
     // ═══════════════════════════════════════════ COMPLEX SERIES CHECKS ═══════════════════════════════════════════════

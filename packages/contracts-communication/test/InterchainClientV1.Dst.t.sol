@@ -205,8 +205,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
 
     function expectAppReceiveCall(OptionsV1 memory options) internal {
         bytes memory expectedCalldata = abi.encodeCall(
-            InterchainAppMock.appReceive,
-            (REMOTE_CHAIN_ID, MOCK_SRC_SENDER, MOCK_DB_NONCE, MOCK_ENTRY_INDEX, MOCK_MESSAGE)
+            InterchainAppMock.appReceive, (REMOTE_CHAIN_ID, MOCK_SRC_SENDER, MOCK_DB_NONCE, MOCK_MESSAGE)
         );
         vm.expectCall({
             callee: dstReceiver,
