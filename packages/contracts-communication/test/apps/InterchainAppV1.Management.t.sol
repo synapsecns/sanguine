@@ -398,6 +398,16 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
         assertEq(appHarness.getAppConfigV1().optimisticPeriod, APP_OPTIMISTIC_PERIOD);
     }
 
+    function test_setAppConfigV1_whenNotSet_zeroPeriod() public {
+        expectEventAppConfigV1Set(APP_REQUIRED_RESPONSES, 0);
+        vm.recordLogs();
+        vm.prank(governor);
+        appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES, 0);
+        assertEq(vm.getRecordedLogs().length, 1);
+        assertEq(appHarness.getAppConfigV1().requiredResponses, APP_REQUIRED_RESPONSES);
+        assertEq(appHarness.getAppConfigV1().optimisticPeriod, 0);
+    }
+
     function test_setAppConfigV1_whenSet() public {
         vm.prank(governor);
         appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES, APP_OPTIMISTIC_PERIOD);
@@ -408,6 +418,18 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
         assertEq(vm.getRecordedLogs().length, 1);
         assertEq(appHarness.getAppConfigV1().requiredResponses, APP_REQUIRED_RESPONSES + 1);
         assertEq(appHarness.getAppConfigV1().optimisticPeriod, APP_OPTIMISTIC_PERIOD + 1);
+    }
+
+    function test_setAppConfigV1_whenSet_zeroPeriod() public {
+        vm.prank(governor);
+        appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES, APP_OPTIMISTIC_PERIOD);
+        expectEventAppConfigV1Set(APP_REQUIRED_RESPONSES + 1, 0);
+        vm.recordLogs();
+        vm.prank(governor);
+        appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES + 1, 0);
+        assertEq(vm.getRecordedLogs().length, 1);
+        assertEq(appHarness.getAppConfigV1().requiredResponses, APP_REQUIRED_RESPONSES + 1);
+        assertEq(appHarness.getAppConfigV1().optimisticPeriod, 0);
     }
 
     function test_setAppConfigV1_revert_notGovernor(address caller) public {
@@ -421,12 +443,6 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
         expectRevertAppConfigInvalid(0, APP_OPTIMISTIC_PERIOD);
         vm.prank(governor);
         appHarness.setAppConfigV1(0, APP_OPTIMISTIC_PERIOD);
-    }
-
-    function test_setAppConfigV1_revert_zeroOptimisticPeriod() public {
-        expectRevertAppConfigInvalid(APP_REQUIRED_RESPONSES, 0);
-        vm.prank(governor);
-        appHarness.setAppConfigV1(APP_REQUIRED_RESPONSES, 0);
     }
 
     function test_setAppConfigV1_revert_zeroedAppConfig() public {
