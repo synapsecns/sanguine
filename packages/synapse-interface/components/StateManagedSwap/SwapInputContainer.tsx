@@ -129,26 +129,26 @@ export const SwapInputContainer = () => {
       </div>
       <BridgeAmountContainer>
         <SwapFromTokenSelector />
-        <div className="flex flex-wrap">
+        <div className="flex flex-col">
           <AmountInput
             inputRef={inputRef}
             showValue={showValue}
             handleFromValueChange={handleFromValueChange}
           />
-          {hasMounted && isConnected && (
-            <>
+          <div className="flex">
+            {hasMounted && isConnected && (
               <label htmlFor="inputRow" className={labelClassName}>
                 <span className="text-zinc-500 dark:text-zinc-400">
                   Available:{' '}
                 </span>
                 {formattedBalance ?? '0.0'}
               </label>
-              <MaxButton
-                onClick={onMaxBalance}
-                isHidden={!isConnected || !balance || isInputMax}
-              />
-            </>
-          )}
+            )}
+            <MaxButton
+              onClick={onMaxBalance}
+              isHidden={!isConnected || !balance || isInputMax}
+            />
+          </div>
         </div>
       </BridgeAmountContainer>
     </BridgeSectionContainer>
