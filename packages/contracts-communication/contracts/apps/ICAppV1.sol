@@ -107,7 +107,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// - requiredResponses: the number of module responses required for accepting the message
     /// - optimisticPeriod: the minimum time after which the module responses are considered final
     function setAppConfigV1(uint256 requiredResponses, uint256 optimisticPeriod) external onlyRole(IC_GOVERNOR_ROLE) {
-        if (requiredResponses == 0 || optimisticPeriod == 0) {
+        if (requiredResponses == 0) {
             revert InterchainApp__AppConfigInvalid(requiredResponses, optimisticPeriod);
         }
         _requiredResponses = SafeCast.toUint16(requiredResponses);
