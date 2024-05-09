@@ -8,10 +8,10 @@ interface IInterchainModule {
     error InterchainModule__ChainIdNotRemote(uint64 chainId);
     error InterchainModule__FeeAmountBelowMin(uint256 feeAmount, uint256 minRequired);
 
-    function requestBatchVerification(
+    function requestEntryVerification(
         uint64 dstChainId,
-        uint64 batchNonce,
-        bytes memory versionedBatch
+        uint64 dbNonce,
+        bytes memory versionedEntry
     )
         external
         payable;

@@ -20,7 +20,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     /// @dev Struct to hold the verifiers and the threshold for the module.
     ThresholdECDSA internal _verifiers;
 
-    /// @dev Gas limit for the verifyBatch function on the remote chain.
+    /// @dev Gas limit for the verifyEntry function on the remote chain.
     mapping(uint64 chainId => uint256 gasLimit) internal _verifyGasLimit;
     /// @dev Hash of the last gas data sent to the remote chain.
     mapping(uint64 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
@@ -109,7 +109,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
         emit GasOracleSet(gasOracle_);
     }
 
-    /// @notice Sets the estimated gas limit for verifying a batch on the given chain.
+    /// @notice Sets the estimated gas limit for verifying an entry on the given chain.
     /// @dev Could be only called by the owner.
     /// @param chainId      The chain ID for which to set the gas limit
     /// @param gasLimit     The new gas limit for the verification on the specified chain
@@ -120,15 +120,15 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
 
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
-    /// @notice Verifies a batch from the remote chain using a set of verifier signatures.
-    /// If the threshold is met, the batch will be marked as verified in the Interchain DataBase.
+    /// @notice Verifies an entry from the remote chain using a set of verifier signatures.
+    /// If the threshold is met, the entry will be marked as verified in the Interchain DataBase.
     /// @dev List of recovered signers from the signatures must be sorted in the ascending order.
-    /// @param encodedBatch The encoded batch to verify
-    /// @param signatures   Signatures used to verify the batch, concatenated
-    function verifyRemoteBatch(bytes calldata encodedBatch, bytes calldata signatures) external {
-        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch));
+    /// @param encodedEntry The encoded entry to verify
+    /// @param signatures   Signatures used to verify the entry, concatenated
+    function verifyRemoteEntry(bytes calldata encodedEntry, bytes calldata signatures) external {
+        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
         _verifiers.verifySignedHash(ethSignedHash, signatures);
-        _verifyBatch(encodedBatch);
+        _verifyEntry(encodedEntry);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -148,7 +148,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
         return _verifiers.getThreshold();
     }
 
-    /// @notice Returns the estimated gas limit for verifying a batch on the given chain.
+    /// @notice Returns the estimated gas limit for verifying an entry on the given chain.
     /// Note: this defaults to DEFAULT_VERIFY_GAS_LIMIT if not set.
     function getVerifyGasLimit(uint64 chainId) public view override returns (uint256 gasLimit) {
         gasLimit = _verifyGasLimit[chainId];
@@ -235,7 +235,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
-    /// @dev Internal logic to get the module fee for verifying an batch on the specified destination chain.
+    /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
     function _getModuleFee(
         uint64 dstChainId,
         uint64 // dbNonce
@@ -245,12 +245,12 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
         override
         returns (uint256)
     {
-        // On the remote chain the verifyRemoteBatch(batch, signatures) function will be called.
+        // On the remote chain the verifyRemoteEntry(entry, signatures) function will be called.
         // We need to figure out the calldata size for the remote call.
-        // selector (4 bytes) + batch + signatures
-        // batch is 32 (length) + 32*3 (fields) = 128
+        // selector (4 bytes) + entry + signatures
+        // entry is 32 (length) + 32*3 (fields) = 128
         // signatures: 32 (length) + 65*threshold (padded up to be a multiple of 32 bytes)
-        // Total formula is: 4 + 32 (batch offset) + 32 (signatures offset) + 128 + 32
+        // Total formula is: 4 + 32 (entry offset) + 32 (signatures offset) + 128 + 32
         return _getSynapseGasOracle().estimateTxCostInLocalUnits({
             remoteChainId: dstChainId,
             gasLimit: getVerifyGasLimit(dstChainId),

@@ -25,19 +25,9 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     /// @dev App is responsible for keeping track of interchain clients, and must verify the message sender.
     /// @param srcChainId   Chain ID of the source chain, where the message was sent from.
     /// @param sender       Sender address on the source chain, as a bytes32 value.
-    /// @param dbNonce      The Interchain DB nonce of the batch containing the message entry.
-    /// @param entryIndex   The index of the message entry within the batch.
+    /// @param dbNonce      The Interchain DB nonce of the message entry.
     /// @param message      The message being sent.
-    function appReceive(
-        uint64 srcChainId,
-        bytes32 sender,
-        uint64 dbNonce,
-        uint64 entryIndex,
-        bytes calldata message
-    )
-        external
-        payable
-    {
+    function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, bytes calldata message) external payable {
         if (!_isInterchainClient(msg.sender)) {
             revert InterchainApp__CallerNotInterchainClient(msg.sender);
         }
@@ -47,7 +37,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
         if (!_isAllowedSender(srcChainId, sender)) {
             revert InterchainApp__SrcSenderNotAllowed(srcChainId, sender);
         }
-        _receiveMessage(srcChainId, sender, dbNonce, entryIndex, message);
+        _receiveMessage(srcChainId, sender, dbNonce, message);
     }
 
     /// @notice Returns the verification configuration of the Interchain App.
@@ -173,7 +163,6 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
         uint64 srcChainId,
         bytes32 sender,
         uint64 dbNonce,
-        uint64 entryIndex,
         bytes calldata message
     )
         internal

@@ -2,7 +2,6 @@
 pragma solidity 0.8.20;
 
 import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV1.sol";
-import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
@@ -14,14 +13,12 @@ import {PingPongIntegrationTest} from "./PingPong.t.sol";
 contract PingPongDstIntegrationTest is PingPongIntegrationTest {
     uint256 public constant LONG_PERIOD = 1 weeks;
 
-    InterchainBatch public srcBatch;
-    InterchainEntry public srcEntry;
+    FullEntry public srcFullEntry;
     InterchainTransaction public srcTx;
     InterchainTxDescriptor public srcDesc;
     bytes public encodedSrcTx;
 
-    InterchainBatch public dstBatch;
-    InterchainEntry public dstEntry;
+    FullEntry public dstFullEntry;
     InterchainTransaction public dstTx;
     InterchainTxDescriptor public dstDesc;
 
@@ -29,24 +26,22 @@ contract PingPongDstIntegrationTest is PingPongIntegrationTest {
     uint256 public dstVerificationFee;
     uint256 public dstExecutionFee;
 
-    bytes public moduleBatch;
+    bytes public moduleEntry;
     bytes public moduleSignatures;
 
     function setUp() public override {
         super.setUp();
         srcTx = getSrcTransaction();
-        srcEntry = getSrcInterchainEntry();
-        srcDesc = getInterchainTxDescriptor(srcEntry);
-        srcBatch = getInterchainBatch(srcEntry);
+        srcFullEntry = getSrcFullEntry();
+        srcDesc = getInterchainTxDescriptor(srcFullEntry);
         encodedSrcTx = getEncodedTx(srcTx);
 
-        moduleBatch = getModuleBatch(srcBatch);
-        moduleSignatures = getModuleSignatures(srcBatch);
+        moduleEntry = getModuleEntry(srcFullEntry);
+        moduleSignatures = getModuleSignatures(srcFullEntry);
 
         dstTx = getDstTransaction();
-        dstEntry = getDstInterchainEntry();
-        dstDesc = getInterchainTxDescriptor(dstEntry);
-        dstBatch = getInterchainBatch(dstEntry);
+        dstFullEntry = getDstFullEntry();
+        dstDesc = getInterchainTxDescriptor(dstFullEntry);
 
         dstPingFee = dstPingPongApp().getPingFee(SRC_CHAIN_ID);
         dstVerificationFee = icDB.getInterchainFee(SRC_CHAIN_ID, toArray(address(module)));
@@ -59,35 +54,32 @@ contract PingPongDstIntegrationTest is PingPongIntegrationTest {
 
     function executeTx(OptionsV1 memory options) internal {
         vm.prank(executor);
-        icClient.interchainExecute{value: options.gasAirdrop}({
-            gasLimit: options.gasLimit,
-            transaction: encodedSrcTx,
-            proof: new bytes32[](0)
-        });
+        icClient.interchainExecute{value: options.gasAirdrop}({gasLimit: options.gasLimit, transaction: encodedSrcTx});
     }
 
-    function test_verifyRemoteBatch_events() public {
-        expectDatabaseEventInterchainBatchVerified(srcBatch);
-        expectModuleEventBatchVerified(srcBatch);
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+    function test_verifyRemoteEntry_events() public {
+        expectDatabaseEventInterchainEntryVerified(srcFullEntry);
+        expectModuleEventEntryVerified(srcFullEntry);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
     }
 
-    function test_verifyRemoteBatch_state_client() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+    function test_verifyRemoteEntry_state_client() public {
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         assertEq(icClient.getExecutor(encodedSrcTx), address(0));
         assertEq(icClient.getExecutorById(srcDesc.transactionId), address(0));
-        assertTrue(icClient.isExecutable(encodedSrcTx, new bytes32[](0)));
+        assertTrue(icClient.isExecutable(encodedSrcTx));
     }
 
-    function test_verifyRemoteBatch_state_db() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+    function test_verifyRemoteEntry_state_db() public {
+        InterchainEntry memory srcEntry = getInterchainEntry(srcFullEntry);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(LONG_PERIOD);
-        assertEq(icDB.checkBatchVerification(address(module), srcBatch), INITIAL_TS);
+        assertEq(icDB.checkEntryVerification(address(module), srcEntry), INITIAL_TS);
     }
 
     function test_interchainExecute_callPingPongApp() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         expectAppCall(srcTx, ppOptions);
         executeTx(ppOptions);
@@ -95,7 +87,7 @@ contract PingPongDstIntegrationTest is PingPongIntegrationTest {
 
     function test_interchainExecute_callPingPongApp_lowerGas() public {
         OptionsV1 memory options = OptionsV1({gasLimit: ppOptions.gasLimit / 2, gasAirdrop: ppOptions.gasAirdrop});
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         // Should use the requested gas limit
         expectAppCall(srcTx, ppOptions);
@@ -104,7 +96,7 @@ contract PingPongDstIntegrationTest is PingPongIntegrationTest {
 
     function test_interchainExecute_callPingPongApp_higherGas() public {
         OptionsV1 memory options = OptionsV1({gasLimit: 2 * ppOptions.gasLimit, gasAirdrop: ppOptions.gasAirdrop});
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         // Should allow to use higher gas limit
         expectAppCall(srcTx, options);
@@ -112,16 +104,16 @@ contract PingPongDstIntegrationTest is PingPongIntegrationTest {
     }
 
     function test_interchainExecute_events() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
-        expectPingPongEventPingReceived(COUNTER, srcEntry);
-        expectEventsPingSent(COUNTER - 1, dstTx, dstEntry, dstVerificationFee, dstExecutionFee);
+        expectPingPongEventPingReceived(COUNTER, srcFullEntry);
+        expectEventsPingSent(COUNTER - 1, dstTx, dstFullEntry, dstVerificationFee, dstExecutionFee);
         expectClientEventInterchainTransactionReceived(srcTx);
         executeTx(ppOptions);
     }
 
     function test_interchainExecute_state_client() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         executeTx(ppOptions);
         assertEq(icClient.getExecutor(encodedSrcTx), executor);
@@ -131,32 +123,32 @@ contract PingPongDstIntegrationTest is PingPongIntegrationTest {
                 IInterchainClientV1.InterchainClientV1__TxAlreadyExecuted.selector, srcDesc.transactionId
             )
         );
-        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+        icClient.isExecutable(encodedSrcTx);
     }
 
     function test_interchainExecute_state_db() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         executeTx(ppOptions);
-        checkDatabaseStateMsgSent(dstEntry, DST_INITIAL_DB_NONCE);
+        checkDatabaseStateMsgSent(dstFullEntry, DST_INITIAL_DB_NONCE);
     }
 
     function test_interchainExecute_state_execService() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         executeTx(ppOptions);
         assertEq(address(executionService).balance, dstExecutionFee);
     }
 
     function test_interchainExecute_state_pingPongApp() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         executeTx(ppOptions);
         assertEq(dstApp.balance, PING_PONG_BALANCE - dstPingFee);
     }
 
     function test_interchainExecute_state_synapseModule() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         executeTx(ppOptions);
         assertEq(address(module).balance, dstVerificationFee);
@@ -169,41 +161,41 @@ contract PingPongDstIntegrationTest is PingPongIntegrationTest {
     }
 
     function test_interchainExecute_revert_notConfirmed_guardMarked() public {
-        markInvalidByGuard(srcBatch);
-        expectClientRevertBatchConflict(guard);
+        markInvalidByGuard(srcFullEntry);
+        expectClientRevertEntryConflict(guard);
         executeTx(ppOptions);
     }
 
     function test_interchainExecute_revert_confirmed_sameBlock() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
         executeTx(ppOptions);
     }
 
     function test_interchainExecute_revert_confirmed_sameBlock_guardMarked() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
-        markInvalidByGuard(srcBatch);
-        expectClientRevertBatchConflict(guard);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
+        markInvalidByGuard(srcFullEntry);
+        expectClientRevertEntryConflict(guard);
         executeTx(ppOptions);
     }
 
     function test_interchainExecute_revert_confirmed_periodMinusOneSecond() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD);
         expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
         executeTx(ppOptions);
     }
 
     function test_interchainExecute_revert_confirmed_periodMinusOneSecond_guardMarked() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
-        markInvalidByGuard(srcBatch);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
+        markInvalidByGuard(srcFullEntry);
         skip(APP_OPTIMISTIC_PERIOD);
-        expectClientRevertBatchConflict(guard);
+        expectClientRevertEntryConflict(guard);
         executeTx(ppOptions);
     }
 
     function test_interchainExecute_revert_alreadyExecuted() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         executeTx(ppOptions);
         expectClientRevertTxAlreadyExecuted(srcDesc);
@@ -211,56 +203,56 @@ contract PingPongDstIntegrationTest is PingPongIntegrationTest {
     }
 
     function test_isExecutable() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
-        assertTrue(icClient.isExecutable(encodedSrcTx, new bytes32[](0)));
+        assertTrue(icClient.isExecutable(encodedSrcTx));
     }
 
     function test_isExecutable_revert_notConfirmed() public {
         expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
-        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+        icClient.isExecutable(encodedSrcTx);
     }
 
     function test_isExecutable_revert_notConfirmed_guardMarked() public {
-        markInvalidByGuard(srcBatch);
-        expectClientRevertBatchConflict(guard);
-        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+        markInvalidByGuard(srcFullEntry);
+        expectClientRevertEntryConflict(guard);
+        icClient.isExecutable(encodedSrcTx);
     }
 
     function test_isExecutable_revert_confirmed_sameBlock() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
-        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+        icClient.isExecutable(encodedSrcTx);
     }
 
     function test_isExecutable_revert_confirmed_sameBlock_guardMarked() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
-        markInvalidByGuard(srcBatch);
-        expectClientRevertBatchConflict(guard);
-        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
+        markInvalidByGuard(srcFullEntry);
+        expectClientRevertEntryConflict(guard);
+        icClient.isExecutable(encodedSrcTx);
     }
 
     function test_isExecutable_revert_confirmed_periodMinusOneSecond() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD);
         expectClientRevertResponsesAmountBelowMin({actual: 0, required: 1});
-        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+        icClient.isExecutable(encodedSrcTx);
     }
 
     function test_isExecutable_revert_confirmed_periodMinusOneSecond_guardMarked() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
-        markInvalidByGuard(srcBatch);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
+        markInvalidByGuard(srcFullEntry);
         skip(APP_OPTIMISTIC_PERIOD);
-        expectClientRevertBatchConflict(guard);
-        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+        expectClientRevertEntryConflict(guard);
+        icClient.isExecutable(encodedSrcTx);
     }
 
     function test_isExecutable_revert_alreadyExecuted() public {
-        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        module.verifyRemoteEntry(moduleEntry, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
         executeTx(ppOptions);
         expectClientRevertTxAlreadyExecuted(srcDesc);
-        icClient.isExecutable(encodedSrcTx, new bytes32[](0));
+        icClient.isExecutable(encodedSrcTx);
     }
 
     function localChainId() internal pure override returns (uint64) {

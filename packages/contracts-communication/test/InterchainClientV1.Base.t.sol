@@ -4,7 +4,6 @@ pragma solidity 0.8.20;
 import {InterchainClientV1, InterchainClientV1Events, IInterchainClientV1} from "../contracts/InterchainClientV1.sol";
 import {IInterchainApp} from "../contracts/interfaces/IInterchainApp.sol";
 import {AppConfigV1} from "../contracts/libs/AppConfig.sol";
-import {BatchingV1Lib} from "../contracts/libs/BatchingV1.sol";
 import {InterchainTxDescriptor, InterchainTransaction} from "../contracts/libs/InterchainTransaction.sol";
 import {OptionsLib} from "../contracts/libs/Options.sol";
 
@@ -76,8 +75,8 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
 
     // ═════════════════════════════════════════════ EXPECT (REVERTS) ══════════════════════════════════════════════════
 
-    function expectRevertBatchConflict(address module) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__BatchConflict.selector, module));
+    function expectRevertEntryConflict(address module) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__EntryConflict.selector, module));
     }
 
     function expectRevertFeeAmountBelowMin(uint256 feeAmount, uint256 minRequired) internal {
@@ -94,18 +93,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertEntryIndexNotZero(uint64 entryIndex) internal {
-        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__EntryIndexNotZero.selector, entryIndex));
-    }
-
     function expectRevertMsgValueMismatch(uint256 actual, uint256 required) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__MsgValueMismatch.selector, actual, required)
         );
-    }
-
-    function expectRevertProofNotEmpty() internal {
-        vm.expectRevert(BatchingV1Lib.BatchingV1__ProofNotEmpty.selector);
     }
 
     function expectRevertTxVersionMismatch(uint16 version, uint16 required) internal {
@@ -218,7 +209,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         emit InterchainTransactionSent({
             transactionId: desc.transactionId,
             dbNonce: desc.dbNonce,
-            entryIndex: desc.entryIndex,
             dstChainId: icTx.dstChainId,
             srcSender: icTx.srcSender,
             dstReceiver: icTx.dstReceiver,
@@ -241,28 +231,15 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         emit InterchainTransactionReceived({
             transactionId: desc.transactionId,
             dbNonce: desc.dbNonce,
-            entryIndex: desc.entryIndex,
             srcChainId: icTx.srcChainId,
             srcSender: icTx.srcSender,
             dstReceiver: icTx.dstReceiver
         });
     }
 
-    function expectEventExecutionProofWritten(
-        bytes32 transactionId,
-        uint64 localDbNonce,
-        uint64 localEntryIndex,
-        address executor
-    )
-        internal
-    {
+    function expectEventExecutionProofWritten(bytes32 transactionId, uint64 localDbNonce, address executor) internal {
         vm.expectEmit(address(icClient));
-        emit ExecutionProofWritten({
-            transactionId: transactionId,
-            dbNonce: localDbNonce,
-            entryIndex: localEntryIndex,
-            executor: executor
-        });
+        emit ExecutionProofWritten({transactionId: transactionId, dbNonce: localDbNonce, executor: executor});
     }
 
     // ════════════════════════════════════════════════ ASSERTIONS ═════════════════════════════════════════════════════
@@ -275,7 +252,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         view
     {
         assertEq(desc.dbNonce, icTx.dbNonce, "!desc.dbNonce");
-        assertEq(desc.entryIndex, icTx.entryIndex, "!desc.entryIndex");
         assertEq(desc.transactionId, keccak256(getEncodedTx(icTx)), "!desc.transactionId");
     }
 
@@ -285,7 +261,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         assertEq(icTx.dstChainId, expected.dstChainId, "!dstChainId");
         assertEq(icTx.dstReceiver, expected.dstReceiver, "!dstReceiver");
         assertEq(icTx.dbNonce, expected.dbNonce, "!dbNonce");
-        assertEq(icTx.entryIndex, expected.entryIndex, "!entryIndex");
         assertEq(icTx.options, expected.options, "!options");
         assertEq(icTx.message, expected.message, "!message");
     }
