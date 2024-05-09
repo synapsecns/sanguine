@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {ICAppV1} from "../ICAppV1.sol";
 
+import {APP_CONFIG_GUARD_DEFAULT} from "../../libs/AppConfig.sol";
 import {InterchainTxDescriptor} from "../../libs/InterchainTransaction.sol";
 import {OptionsV1} from "../../libs/Options.sol";
 
@@ -87,5 +88,12 @@ contract PingPongApp is ICAppV1 {
     function _setGasLimit(uint256 gasLimit_) internal {
         gasLimit = gasLimit_;
         emit GasLimitSet(gasLimit_);
+    }
+
+    /// @dev Returns the guard flag and address in the app config.
+    /// By default, the ICApp does not opt in for any guard, but it can be overridden in the derived contracts.
+    /// PingPong app opts in for the default guard.
+    function _getGuardConfig() internal pure override returns (uint8 guardFlag, address guard) {
+        return (APP_CONFIG_GUARD_DEFAULT, address(0));
     }
 }
