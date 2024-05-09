@@ -6,6 +6,7 @@ volumes:
   chain_a_data:
   chain_b_data:
   chain_c_data:
+  committee_data:
   guard_data:
   notary43_data:
   scribe_data:
@@ -139,10 +140,14 @@ services:
     build:
       context: ../../
       dockerfile: docker/committee-devnet/committee.Dockerfile
+    volumes:
+      - '${PWD}/config/committee-config1.yml:/config/committee-config1.yml'
+      - '${PWD}/config/committee-signer1.txt:/config/committee-signer1.txt'
+      - committee_data:/config/synapse.db
     command:
-      - committee-run
+      - run
       - '--config'
-      - '/config/committee-config1.yml'
+      - /config/committee-config1.yml
     environment:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
@@ -162,7 +167,7 @@ services:
       context: ../../
       dockerfile: docker/committee-devnet/committee.Dockerfile
     command:
-      - committee-run
+      - committee run
       - '--config'
       - '/config/committee-config2.yml'
     environment:
@@ -183,7 +188,7 @@ services:
       context: ../../
       dockerfile: docker/committee-devnet/committee.Dockerfile
     command:
-      - committee-run
+      - committee run
       - '--config'
       - '/config/committee-config3.yml'
     environment:
