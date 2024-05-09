@@ -15,8 +15,8 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
 
     OptionsV1 public ppOptions = OptionsV1({gasLimit: 500_000, gasAirdrop: 0});
 
-    event PingReceived(uint256 counter, uint64 dbNonce, uint64 entryIndex);
-    event PingSent(uint256 counter, uint64 dbNonce, uint64 entryIndex);
+    event PingReceived(uint256 counter, uint64 dbNonce);
+    event PingSent(uint256 counter, uint64 dbNonce);
 
     /// @dev Should deploy the tested app and return its address.
     function deployApp() internal override returns (address app) {
@@ -24,14 +24,14 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
         deal(app, PING_PONG_BALANCE);
     }
 
-    function expectPingPongEventPingReceived(uint256 counter, InterchainEntry memory entry) internal {
+    function expectPingPongEventPingReceived(uint256 counter, FullEntry memory fullEntry) internal {
         vm.expectEmit(localApp());
-        emit PingReceived(counter, entry.dbNonce, entry.entryIndex);
+        emit PingReceived(counter, fullEntry.dbNonce);
     }
 
-    function expectPingPongEventPingSent(uint256 counter, InterchainEntry memory entry) internal {
+    function expectPingPongEventPingSent(uint256 counter, FullEntry memory fullEntry) internal {
         vm.expectEmit(localApp());
-        emit PingSent(counter, entry.dbNonce, entry.entryIndex);
+        emit PingSent(counter, fullEntry.dbNonce);
     }
 
     // ═══════════════════════════════════════════ COMPLEX SERIES CHECKS ═══════════════════════════════════════════════
@@ -39,14 +39,14 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
     function expectEventsPingSent(
         uint256 counter,
         InterchainTransaction memory icTx,
-        InterchainEntry memory entry,
+        FullEntry memory fullEntry,
         uint256 verificationFee,
         uint256 executionFee
     )
         internal
     {
-        expectEventsMessageSent(icTx, entry, verificationFee, executionFee);
-        expectPingPongEventPingSent(counter, entry);
+        expectEventsMessageSent(icTx, fullEntry, verificationFee, executionFee);
+        expectPingPongEventPingSent(counter, fullEntry);
     }
 
     // ═══════════════════════════════════════════════ DATA HELPERS ════════════════════════════════════════════════════

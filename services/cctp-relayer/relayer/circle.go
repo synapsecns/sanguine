@@ -56,6 +56,7 @@ func NewCircleCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRel
 	if err != nil {
 		return nil, fmt.Errorf("could not make cctp signer: %w", err)
 	}
+
 	return &circleCCTPHandler{
 		cfg:                      cfg,
 		db:                       db,

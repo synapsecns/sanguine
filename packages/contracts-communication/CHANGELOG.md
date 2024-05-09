@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.5.4...contracts-communication@1.6.0) (2024-05-09)
+
+
+### Features
+
+* **contracts-communication:** remove batching ([#2599](https://github.com/synapsecns/sanguine/issues/2599)) ([e6588f7](https://github.com/synapsecns/sanguine/commit/e6588f7dab0d4314e1c18b834708264177abdc7a))
+
+
+
+
+
 ## [1.5.4](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.5.3...contracts-communication@1.5.4) (2024-05-08)
 
 **Note:** Version bump only for package contracts-communication

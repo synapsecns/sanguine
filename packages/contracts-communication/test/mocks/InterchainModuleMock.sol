@@ -3,16 +3,16 @@ pragma solidity 0.8.20;
 
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
 import {IInterchainDB} from "../../contracts/interfaces/IInterchainDB.sol";
-import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainEntry, InterchainEntryLib} from "../../contracts/libs/InterchainEntry.sol";
 import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 
 // solhint-disable ordering
 // solhint-disable no-empty-blocks
 contract InterchainModuleMock is IInterchainModule {
-    function requestBatchVerification(
+    function requestEntryVerification(
         uint64 dstChainId,
-        uint64 batchNonce,
-        bytes calldata versionedBatch
+        uint64 dbNonce,
+        bytes calldata versionedEntry
     )
         external
         payable
@@ -20,17 +20,17 @@ contract InterchainModuleMock is IInterchainModule {
 
     function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256) {}
 
-    function mockVerifyRemoteBatch(address interchainDB, bytes calldata versionedBatch) external {
-        IInterchainDB(interchainDB).verifyRemoteBatch(versionedBatch);
+    function mockVerifyRemoteEntry(address interchainDB, bytes calldata versionedEntry) external {
+        IInterchainDB(interchainDB).verifyRemoteEntry(versionedEntry);
     }
 
-    // @notice This function is exposed for simplicity of Go tests. It uses the version signalled
-    // by the InterchainDB contract to encode the versioned batch.
-    function mockVerifyRemoteBatchStruct(address interchainDB, InterchainBatch memory batch) external {
-        bytes memory versionedBatch = VersionedPayloadLib.encodeVersionedPayload({
+    /// @notice This function is exposed for simplicity of Go tests. It uses the version signalled
+    /// by the InterchainDB contract to encode the versioned entry.
+    function mockVerifyRemoteEntryStruct(address interchainDB, InterchainEntry memory entry) external {
+        bytes memory versionedEntry = VersionedPayloadLib.encodeVersionedPayload({
             version: IInterchainDB(interchainDB).DB_VERSION(),
-            payload: InterchainBatchLib.encodeBatch(batch)
+            payload: InterchainEntryLib.encodeEntry(entry)
         });
-        IInterchainDB(interchainDB).verifyRemoteBatch(versionedBatch);
+        IInterchainDB(interchainDB).verifyRemoteEntry(versionedEntry);
     }
 }

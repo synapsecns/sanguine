@@ -40,6 +40,8 @@ type Config struct {
 	HTTPBackoffMaxElapsedTimeMs int `yaml:"http_backoff_max_elapsed_time_ms"`
 	// SubmitterConfig is the config for the transaction submitter
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
+	// ScreenerAPIUrl is the TRM API url.
+	ScreenerAPIUrl string `yaml:"screener_api_url"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

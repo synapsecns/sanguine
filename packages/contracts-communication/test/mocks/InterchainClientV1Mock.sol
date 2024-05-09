@@ -39,23 +39,13 @@ contract InterchainClientV1Mock is IInterchainClientV1 {
         returns (InterchainTxDescriptor memory desc)
     {}
 
-    function interchainExecute(
-        uint256 gasLimit,
-        bytes calldata transaction,
-        bytes32[] calldata proof
-    )
-        external
-        payable
-    {}
+    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {}
 
-    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex) {}
+    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce) {}
 
-    function isExecutable(bytes calldata transaction, bytes32[] calldata proof) external view returns (bool) {}
+    function isExecutable(bytes calldata transaction) external view returns (bool) {}
 
-    function getTxReadinessV1(
-        InterchainTransaction memory icTx,
-        bytes32[] calldata proof
-    )
+    function getTxReadinessV1(InterchainTransaction memory icTx)
         external
         view
         returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg)
