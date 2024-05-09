@@ -90,6 +90,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	}
 
 	screener.router = ginhelper.New(logger)
+	screener.router.Use(screener.metrics.Gin())
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
 
 	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
@@ -144,6 +145,12 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 // @Produce json
 // @Router /api/data/sync [post].
 func (s *screenerImpl) blacklistAddress(c *gin.Context) {
+	var err error
+	ctx, span := s.metrics.Tracer().Start(c.Request.Context(), "blacklistAddress")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	var blacklistBody client.BlackListBody
 
 	// Grab the body of the JSON request and unmarshal it into the blacklistBody struct.
@@ -151,6 +158,14 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	span.SetAttributes(attribute.String("type", blacklistBody.TypeReq))
+	span.SetAttributes(attribute.String("id", blacklistBody.ID))
+	span.SetAttributes(attribute.String("data", blacklistBody.Data))
+	span.SetAttributes(attribute.String("network", blacklistBody.Network))
+	span.SetAttributes(attribute.String("tag", blacklistBody.Tag))
+	span.SetAttributes(attribute.String("remark", blacklistBody.Remark))
+	span.SetAttributes(attribute.String("address", blacklistBody.Address))
 
 	blacklistedAddress := db.BlacklistedAddress{
 		TypeReq: blacklistBody.TypeReq,
@@ -164,7 +179,8 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 	switch blacklistBody.TypeReq {
 	case "create":
-		if err := s.db.PutBlacklistedAddress(c, blacklistedAddress); err != nil {
+		if err := s.db.PutBlacklistedAddress(ctx, blacklistedAddress); err != nil {
+			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
