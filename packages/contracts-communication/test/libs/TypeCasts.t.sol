@@ -6,6 +6,7 @@ import {TypeCastsHarness} from "../harnesses/TypeCastsHarness.sol";
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract TypeCastsLibraryTest is Test {
     TypeCastsHarness public libHarness;
 
@@ -13,7 +14,7 @@ contract TypeCastsLibraryTest is Test {
         libHarness = new TypeCastsHarness();
     }
 
-    function test_addressToBytes32() public {
+    function test_addressToBytes32() public view {
         assertEq(
             libHarness.addressToBytes32(address(0x01)),
             0x0000000000000000000000000000000000000000000000000000000000000001
@@ -24,12 +25,12 @@ contract TypeCastsLibraryTest is Test {
         );
     }
 
-    function test_addressToBytes32(address addr) public {
+    function test_addressToBytes32(address addr) public view {
         bytes32 expected = bytes32(abi.encode(addr));
         assertEq(libHarness.addressToBytes32(addr), expected);
     }
 
-    function test_bytes32ToAddress() public {
+    function test_bytes32ToAddress() public view {
         assertEq(
             libHarness.bytes32ToAddress(0x0000000000000000000000000000000000000000000000000000000000000001),
             address(0x01)
@@ -48,14 +49,14 @@ contract TypeCastsLibraryTest is Test {
         );
     }
 
-    function test_bytes32ToAddress(bytes32 b) public {
+    function test_bytes32ToAddress(bytes32 b) public view {
         // Clear the first 96 bits
         bytes32 cleared = b & bytes32(uint256(type(uint160).max));
         address expected = abi.decode(bytes.concat(cleared), (address));
         assertEq(libHarness.bytes32ToAddress(b), expected);
     }
 
-    function test_roundtrip(address addr) public {
+    function test_roundtrip(address addr) public view {
         bytes32 b = libHarness.addressToBytes32(addr);
         assertEq(libHarness.bytes32ToAddress(b), addr);
     }

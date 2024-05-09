@@ -43,22 +43,22 @@ func (d *DBSuite) TestStoreAndUpdateRebalance() {
 		}
 
 		// make sure no rebalances are pending
-		pending, err := testDB.HasPendingRebalance(d.GetTestContext(), rebalance.Origin)
+		pending, err := testDB.GetPendingRebalances(d.GetTestContext(), rebalance.Origin)
 		d.Nil(err)
-		d.False(pending)
-		pending, err = testDB.HasPendingRebalance(d.GetTestContext(), rebalance.Destination)
+		d.False(len(pending) > 0)
+		pending, err = testDB.GetPendingRebalances(d.GetTestContext(), rebalance.Destination)
 		d.Nil(err)
-		d.False(pending)
+		d.False(len(pending) > 0)
 
 		// store rebalance
 		err = testDB.StoreRebalance(d.GetTestContext(), rebalance)
 		d.Nil(err)
-		pending, err = testDB.HasPendingRebalance(d.GetTestContext(), rebalance.Origin)
+		pending, err = testDB.GetPendingRebalances(d.GetTestContext(), rebalance.Origin)
 		d.Nil(err)
-		d.True(pending)
-		pending, err = testDB.HasPendingRebalance(d.GetTestContext(), rebalance.Destination)
+		d.True(len(pending) > 0)
+		pending, err = testDB.GetPendingRebalances(d.GetTestContext(), rebalance.Destination)
 		d.Nil(err)
-		d.True(pending)
+		d.True(len(pending) > 0)
 
 		// update rebalance to pending
 		rebalanceID := "1-1"

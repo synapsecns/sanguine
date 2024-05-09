@@ -12,16 +12,22 @@ import {TypeCasts} from "../libs/TypeCasts.sol";
 abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     using TypeCasts for address;
 
-    error InterchainApp__AlreadyLatestClient(address client);
-    error InterchainApp__BalanceTooLow(uint256 actual, uint256 required);
-    error InterchainApp__ClientAlreadyAdded(address client);
+    error InterchainApp__BalanceBelowMin(uint256 balance, uint256 minRequired);
+    error InterchainApp__CallerNotInterchainClient(address caller);
+    error InterchainApp__ChainIdNotRemote(uint64 chainId);
+    error InterchainApp__InterchainClientAlreadyAdded(address client);
+    error InterchainApp__InterchainClientAlreadyLatest(address client);
     error InterchainApp__InterchainClientZeroAddress();
-    error InterchainApp__NotInterchainClient(address account);
-    error InterchainApp__ReceiverNotSet(uint64 chainId);
-    error InterchainApp__SameChainId(uint64 chainId);
-    error InterchainApp__SenderNotAllowed(uint64 srcChainId, bytes32 sender);
+    error InterchainApp__ReceiverZeroAddress(uint64 chainId);
+    error InterchainApp__SrcSenderNotAllowed(uint64 srcChainId, bytes32 sender);
 
-    /// @inheritdoc IInterchainApp
+    /// @notice Allows the Interchain Client to pass the message to the Interchain App.
+    /// @dev App is responsible for keeping track of interchain clients, and must verify the message sender.
+    /// @param srcChainId   Chain ID of the source chain, where the message was sent from.
+    /// @param sender       Sender address on the source chain, as a bytes32 value.
+    /// @param dbNonce      The Interchain DB nonce of the batch containing the message entry.
+    /// @param entryIndex   The index of the message entry within the batch.
+    /// @param message      The message being sent.
     function appReceive(
         uint64 srcChainId,
         bytes32 sender,
@@ -33,18 +39,24 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
         payable
     {
         if (!_isInterchainClient(msg.sender)) {
-            revert InterchainApp__NotInterchainClient(msg.sender);
+            revert InterchainApp__CallerNotInterchainClient(msg.sender);
         }
         if (srcChainId == block.chainid) {
-            revert InterchainApp__SameChainId(srcChainId);
+            revert InterchainApp__ChainIdNotRemote(srcChainId);
         }
         if (!_isAllowedSender(srcChainId, sender)) {
-            revert InterchainApp__SenderNotAllowed(srcChainId, sender);
+            revert InterchainApp__SrcSenderNotAllowed(srcChainId, sender);
         }
         _receiveMessage(srcChainId, sender, dbNonce, entryIndex, message);
     }
 
-    /// @inheritdoc IInterchainApp
+    /// @notice Returns the verification configuration of the Interchain App.
+    /// @dev This configuration is used by the Interchain Client to verify that message has been confirmed
+    /// by the Interchain Modules on the destination chain.
+    /// Note: V1 version of AppConfig includes the required responses count, and optimistic period after which
+    /// the message is considered confirmed by the module. Following versions may include additional fields.
+    /// @return appConfig    The versioned configuration of the Interchain App, encoded as bytes.
+    /// @return modules      The list of Interchain Modules that app is trusting to confirm the messages.
     function getReceivingConfig() external view returns (bytes memory appConfig, address[] memory modules) {
         appConfig = _getAppConfig();
         modules = _getModules();
@@ -60,7 +72,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
             revert InterchainApp__InterchainClientZeroAddress();
         }
         if (_isInterchainClient(client)) {
-            revert InterchainApp__ClientAlreadyAdded(client);
+            revert InterchainApp__InterchainClientAlreadyAdded(client);
         }
         _toggleClientState(client, true);
         emit InterchainClientAdded(client);
@@ -74,7 +86,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     /// Note: should be guarded with permission checks in the derived contracts.
     function _removeClient(address client) internal {
         if (!_isInterchainClient(client)) {
-            revert InterchainApp__NotInterchainClient(client);
+            revert InterchainApp__CallerNotInterchainClient(client);
         }
         _toggleClientState(client, false);
         emit InterchainClientRemoved(client);
@@ -89,10 +101,10 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     function _setLatestClient(address client) internal {
         // New latest client must be an allowed client or zero address.
         if (!_isInterchainClient(client) && client != address(0)) {
-            revert InterchainApp__NotInterchainClient(client);
+            revert InterchainApp__CallerNotInterchainClient(client);
         }
         if (client == _getLatestClient()) {
-            revert InterchainApp__AlreadyLatestClient(client);
+            revert InterchainApp__InterchainClientAlreadyLatest(client);
         }
         _storeLatestClient(client);
         emit LatestClientSet(client);
@@ -143,13 +155,13 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
             revert InterchainApp__InterchainClientZeroAddress();
         }
         if (dstChainId == block.chainid) {
-            revert InterchainApp__SameChainId(dstChainId);
+            revert InterchainApp__ChainIdNotRemote(dstChainId);
         }
         if (receiver == 0) {
-            revert InterchainApp__ReceiverNotSet(dstChainId);
+            revert InterchainApp__ReceiverZeroAddress(dstChainId);
         }
         if (address(this).balance < messageFee) {
-            revert InterchainApp__BalanceTooLow({actual: address(this).balance, required: messageFee});
+            revert InterchainApp__BalanceBelowMin({balance: address(this).balance, minRequired: messageFee});
         }
         return IInterchainClientV1(client).interchainSend{value: messageFee}(
             dstChainId, receiver, _getExecutionService(), _getModules(), options, message

@@ -6,6 +6,7 @@ import {InterchainBatch, InterchainBatchLibHarness, BatchKey} from "../harnesses
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract InterchainBatchLibTest is Test {
     InterchainBatchLibHarness public libHarness;
 
@@ -15,7 +16,7 @@ contract InterchainBatchLibTest is Test {
         libHarness = new InterchainBatchLibHarness();
     }
 
-    function assertEq(InterchainBatch memory actual, InterchainBatch memory expected) public {
+    function assertEq(InterchainBatch memory actual, InterchainBatch memory expected) public pure {
         assertEq(actual.srcChainId, expected.srcChainId, "!srcChainId");
         assertEq(actual.dbNonce, expected.dbNonce, "!dbNonce");
         assertEq(actual.batchRoot, expected.batchRoot, "!batchRoot");
@@ -36,19 +37,19 @@ contract InterchainBatchLibTest is Test {
         assertEq(actual, expected);
     }
 
-    function test_encodeBatch_roundTrip(InterchainBatch memory batch) public {
+    function test_encodeBatch_roundTrip(InterchainBatch memory batch) public view {
         bytes memory encoded = libHarness.encodeBatch(batch);
         InterchainBatch memory decoded = libHarness.decodeBatch(encoded);
         assertEq(decoded, batch);
     }
 
-    function test_encodeBatchFromMemory_roundTrip(InterchainBatch memory batch) public {
+    function test_encodeBatchFromMemory_roundTrip(InterchainBatch memory batch) public view {
         bytes memory encoded = libHarness.encodeBatch(batch);
         InterchainBatch memory decoded = libHarness.decodeBatchFromMemory(encoded);
         assertEq(decoded, batch);
     }
 
-    function test_encodeBatchKey_roundTrip(uint64 srcChainId, uint64 dbNonce) public {
+    function test_encodeBatchKey_roundTrip(uint64 srcChainId, uint64 dbNonce) public view {
         BatchKey key = libHarness.encodeBatchKey(srcChainId, dbNonce);
         (uint64 decodedSrcChainId, uint64 decodedDbNonce) = libHarness.decodeBatchKey(key);
         assertEq(decodedSrcChainId, srcChainId);

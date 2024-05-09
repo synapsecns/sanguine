@@ -15,36 +15,51 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule {
     using VersionedPayloadLib for bytes;
 
+    /// @notice The address of the Interchain DataBase contract: used for verifying the batches.
     address public immutable INTERCHAIN_DB;
 
     constructor(address interchainDB) {
         INTERCHAIN_DB = interchainDB;
     }
 
-    /// @inheritdoc IInterchainModule
-    function requestBatchVerification(uint64 dstChainId, bytes calldata versionedBatch) external payable {
+    /// @notice Request the verification of a batch from the Interchain DataBase by the module.
+    /// If the batch is not yet finalized, the verification on destination chain will be delayed until
+    /// the finalization is done and batch root is saved on the source chain.
+    /// Note: a fee is paid to the module for verification, and could be retrieved by using `getModuleFee`.
+    /// Note: this will eventually trigger `InterchainDB.verifyRemoteBatch(batch)` function on destination chain,
+    /// with no guarantee of ordering.
+    /// @dev Could be only called by the Interchain DataBase contract.
+    /// @param dstChainId       The chain id of the destination chain
+    /// @param batchNonce       The nonce of the batch on the source chain
+    /// @param versionedBatch   The versioned batch to verify
+    function requestBatchVerification(
+        uint64 dstChainId,
+        uint64 batchNonce,
+        bytes calldata versionedBatch
+    )
+        external
+        payable
+    {
         if (msg.sender != INTERCHAIN_DB) {
-            revert InterchainModule__NotInterchainDB(msg.sender);
+            revert InterchainModule__CallerNotInterchainDB(msg.sender);
         }
-        InterchainBatch memory batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
         if (dstChainId == block.chainid) {
-            revert InterchainModule__SameChainId(dstChainId);
+            revert InterchainModule__ChainIdNotRemote(dstChainId);
         }
-        if (batch.srcChainId != block.chainid) {
-            revert InterchainModule__IncorrectSourceChainId({chainId: batch.srcChainId});
-        }
-        uint256 requiredFee = _getModuleFee(dstChainId, batch.dbNonce);
+        uint256 requiredFee = _getModuleFee(dstChainId, batchNonce);
         if (msg.value < requiredFee) {
-            revert InterchainModule__InsufficientFee({actual: msg.value, required: requiredFee});
+            revert InterchainModule__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
         }
-        bytes memory moduleData = _fillModuleData(dstChainId, batch.dbNonce);
+        bytes memory moduleData = _fillModuleData(dstChainId, batchNonce);
         bytes memory encodedBatch = ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, moduleData);
         bytes32 ethSignedBatchHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch));
         _requestVerification(dstChainId, encodedBatch);
         emit BatchVerificationRequested(dstChainId, encodedBatch, ethSignedBatchHash);
     }
 
-    /// @inheritdoc IInterchainModule
+    /// @notice Get the Module fee for verifying a batch on the specified destination chain.
+    /// @param dstChainId   The chain id of the destination chain
+    /// @param dbNonce      The database nonce of the batch on the source chain
     function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256) {
         return _getModuleFee(dstChainId, dbNonce);
     }
@@ -56,7 +71,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
             ModuleBatchLib.decodeVersionedModuleBatch(encodedModuleBatch);
         InterchainBatch memory batch = InterchainBatchLib.decodeBatchFromMemory(versionedBatch.getPayloadFromMemory());
         if (batch.srcChainId == block.chainid) {
-            revert InterchainModule__SameChainId(batch.srcChainId);
+            revert InterchainModule__ChainIdNotRemote(batch.srcChainId);
         }
         IInterchainDB(INTERCHAIN_DB).verifyRemoteBatch(versionedBatch);
         _receiveModuleData(batch.srcChainId, batch.dbNonce, moduleData);

@@ -178,6 +178,7 @@ type DateResultByChain {
   dogechain: Float
   base: Float
   blast: Float
+  scroll: Float
   total:  Float
 }
 

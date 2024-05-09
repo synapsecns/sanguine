@@ -3,15 +3,8 @@ pragma solidity 0.8.20;
 
 import {PingPongApp} from "../../contracts/apps/examples/PingPongApp.sol";
 
-import {
-    ICIntegrationTest,
-    InterchainBatch,
-    InterchainEntry,
-    InterchainTransaction,
-    InterchainTxDescriptor
-} from "./ICIntegration.t.sol";
+import {ICIntegrationTest, InterchainEntry, InterchainTransaction} from "./ICIntegration.t.sol";
 
-import {IInterchainApp} from "../../contracts/interfaces/IInterchainApp.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
 // solhint-disable custom-errors

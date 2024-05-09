@@ -16,6 +16,7 @@ contract ConfigureSynapseExecutionServiceV1 is SynapseScript {
     function run(string memory environment) external broadcastWithHooks {
         loadConfig(environment);
         setGovernor();
+        setClaimerFraction();
         setExecutorEOA();
         setGasOracle();
         setInterchainClient();
@@ -34,6 +35,20 @@ contract ConfigureSynapseExecutionServiceV1 is SynapseScript {
             printSuccessWithIndent(string.concat("Granted Governor role to ", vm.toString(msg.sender)));
         } else {
             printSkipWithIndent(string.concat("governor role already granted to ", vm.toString(msg.sender)));
+        }
+    }
+
+    function setClaimerFraction() internal {
+        printLog("Setting claimerFraction");
+        uint256 claimFeeBPS = config.readUint(".claimFeeBPS");
+        // Convert from basis points to wei
+        uint256 claimerFraction = claimFeeBPS * 1e18 / 10_000;
+        string memory desc = string.concat(vm.toString(claimerFraction), " [", vm.toString(claimFeeBPS), " BPS]");
+        if (service.getClaimerFraction() != claimerFraction) {
+            service.setClaimerFraction(claimerFraction);
+            printSuccessWithIndent(string.concat("Set claimerFraction to ", desc));
+        } else {
+            printSkipWithIndent(string.concat("already set to ", desc));
         }
     }
 

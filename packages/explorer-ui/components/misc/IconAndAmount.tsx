@@ -23,13 +23,20 @@ export function IconAndAmount({
   } else {
     styledCoinClass = t && `${getCoinTextColor(t)} ${textSize}`
   }
-
+2
   let amount
   let showToken
   if (tokenSymbol) {
     const displaySymbol = addressToSymbol({ tokenAddress, chainId }) || tokenSymbol
     showToken = <div className={styledCoinClass}>{displaySymbol}</div>
-    amount = formattedValue
+    const dec = 10 ** addressToDecimals({ tokenAddress, chainId })
+    // Need a cleaner way of doing this.
+    if (formattedValue > 10000000) {
+      amount = formattedValue / (dec / 10 ** 6)
+    }
+    else {
+      amount = formattedValue
+    }
   } else {
     const displaySymbol = addressToSymbol({ tokenAddress, chainId })
     showToken = displaySymbol ? (

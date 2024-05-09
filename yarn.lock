@@ -5704,6 +5704,11 @@
   resolved "https://registry.yarnpkg.com/@solidity-parser/parser/-/parser-0.17.0.tgz#52a2fcc97ff609f72011014e4c5b485ec52243ef"
   integrity sha512-Nko8R0/kUo391jsEHHxrGM07QFdnPGvlmox4rmH0kNiNAashItAilhy4Mv4pK5gQmW5f4sXAF58fwJbmlkGcVw==
 
+"@solidity-parser/parser@^0.18.0":
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/@solidity-parser/parser/-/parser-0.18.0.tgz#8e77a02a09ecce957255a2f48c9a7178ec191908"
+  integrity sha512-yfORGUIPgLck41qyN7nbwJRAx17/jAIXCTanHOJZhB6PJ1iAk/84b/xlsVKFSyNyLXIj0dhppoE0+CRws7wlzA==
+
 "@stablelib/aead@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@stablelib/aead/-/aead-1.0.1.tgz#c4b1106df9c23d1b867eb9b276d8f42d5fc4c0c3"
@@ -7638,16 +7643,6 @@
     path "^0.12.7"
     ts-jest "^29.0.5"
     yargs "^17.6.2"
-
-"@synapsecns/solidity-devops@^0.1.5":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@synapsecns/solidity-devops/-/solidity-devops-0.1.6.tgz#cf6b62c5a744f8efcf9fd7e60d86cdd6c238dad9"
-  integrity sha512-1ROEUgKV7NVRCjNbpMAEYKUUHP4Hu63n8C8l9Dbi9F+PncagvBobTuxNjOYJLcUxI6cugMkk8Q5lnONLQg8b4g==
-  dependencies:
-    chalk "^4.1.2"
-    dotenv "^16.4.5"
-    ds-test "github:dapphub/ds-test#e282159"
-    forge-std "github:foundry-rs/forge-std#v1.7.6"
 
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
@@ -10212,6 +10207,11 @@ antlr4@^4.11.0:
   version "4.13.1"
   resolved "https://registry.yarnpkg.com/antlr4/-/antlr4-4.13.1.tgz#1e0a1830a08faeb86217cb2e6c34716004e4253d"
   integrity sha512-kiXTspaRYvnIArgE97z5YVVf/cDVQABr3abFRR6mE7yesLMkgu4ujuyV/sgxafQ8wgve0DJQUJ38Z8tkgA2izA==
+
+antlr4@^4.13.1-patch-1:
+  version "4.13.1-patch-1"
+  resolved "https://registry.yarnpkg.com/antlr4/-/antlr4-4.13.1-patch-1.tgz#946176f863f890964a050c4f18c47fd6f7e57602"
+  integrity sha512-OjFLWWLzDMV9rdFhpvroCWR4ooktNg9/nvVYSA5z28wuVpU36QUNuioR1XLnQtcjVlf8npjyz593PxnU/f/Cow==
 
 antlr4ts@^0.5.0-alpha.4:
   version "0.5.0-alpha.4"
@@ -14283,10 +14283,6 @@ download@^7.1.0:
     p-event "^2.1.0"
     pify "^3.0.0"
 
-"ds-test@github:dapphub/ds-test#e282159":
-  version "1.0.0"
-  resolved "https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0"
-
 dset@^3.1.1, dset@^3.1.2:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/dset/-/dset-3.1.3.tgz#c194147f159841148e8e34ca41f638556d9542d2"
@@ -16704,9 +16700,9 @@ forever-agent@~0.6.1:
   resolved "https://registry.yarnpkg.com/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
   integrity sha512-j0KLYPhm6zeac4lz3oJ3o65qvgQCcPubiyotZrXqEaG4hNagNYO8qdlUrX5vwqv9ohqeT/Z3j6+yW067yWWdUw==
 
-"forge-std@github:foundry-rs/forge-std#v1.7.6":
+"forge-std@github:foundry-rs/forge-std#v1.8.1":
   version "1.7.6"
-  resolved "https://codeload.github.com/foundry-rs/forge-std/tar.gz/ae570fec082bfe1c1f45b0acca4a2b4f84d345ce"
+  resolved "https://codeload.github.com/foundry-rs/forge-std/tar.gz/bb4ceea94d6f10eeb5b41dc2391c6c8bf8e734ef"
 
 fork-ts-checker-webpack-plugin@^4.1.6:
   version "4.1.6"
@@ -27090,6 +27086,32 @@ solhint@^4.1.1:
     "@solidity-parser/parser" "^0.16.0"
     ajv "^6.12.6"
     antlr4 "^4.11.0"
+    ast-parents "^0.0.1"
+    chalk "^4.1.2"
+    commander "^10.0.0"
+    cosmiconfig "^8.0.0"
+    fast-diff "^1.2.0"
+    glob "^8.0.3"
+    ignore "^5.2.4"
+    js-yaml "^4.1.0"
+    latest-version "^7.0.0"
+    lodash "^4.17.21"
+    pluralize "^8.0.0"
+    semver "^7.5.2"
+    strip-ansi "^6.0.1"
+    table "^6.8.1"
+    text-table "^0.2.0"
+  optionalDependencies:
+    prettier "^2.8.3"
+
+solhint@^4.5.4:
+  version "4.5.4"
+  resolved "https://registry.yarnpkg.com/solhint/-/solhint-4.5.4.tgz#171cf33f46c36b8499efe60c0e425f6883a54e50"
+  integrity sha512-Cu1XiJXub2q1eCr9kkJ9VPv1sGcmj3V7Zb76B0CoezDOB9bu3DxKIFFH7ggCl9fWpEPD6xBmRLfZrYijkVmujQ==
+  dependencies:
+    "@solidity-parser/parser" "^0.18.0"
+    ajv "^6.12.6"
+    antlr4 "^4.13.1-patch-1"
     ast-parents "^0.0.1"
     chalk "^4.1.2"
     commander "^10.0.0"

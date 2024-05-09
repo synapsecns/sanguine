@@ -5,7 +5,7 @@ import {AbstractICApp, InterchainTxDescriptor} from "./AbstractICApp.sol";
 
 import {InterchainAppV1Events} from "../events/InterchainAppV1Events.sol";
 import {IInterchainAppV1} from "../interfaces/IInterchainAppV1.sol";
-import {AppConfigV1} from "../libs/AppConfig.sol";
+import {AppConfigV1, APP_CONFIG_GUARD_DEFAULT} from "../libs/AppConfig.sol";
 import {OptionsV1} from "../libs/Options.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
@@ -41,32 +41,48 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Allows the governor to add the interchain client to the allowed clients set,
+    /// and optionally set the latest client to this one.
+    /// Note: only the allowed clients can send messages to this app.
+    /// Note: the latest client is used for sending messages from this app.
+    /// @param client       The address of the interchain client to add.
+    /// @param updateLatest Whether to set the latest client to this one.
     function addInterchainClient(address client, bool updateLatest) external onlyRole(IC_GOVERNOR_ROLE) {
         _addClient(client, updateLatest);
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Allows the governor to remove the interchain client from the allowed clients set.
+    /// If the client is the latest client, the latest client is set to the zero address.
+    /// @param client       The address of the interchain client to remove.
     function removeInterchainClient(address client) external onlyRole(IC_GOVERNOR_ROLE) {
         _removeClient(client);
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Allows the governor to set the address of the latest interchain client.
+    /// @dev The new latest client must be an allowed client or zero address.
+    /// Setting the client to zero address effectively pauses the app ability to send messages,
+    /// while allowing to receive them.
+    /// @param client       The address of the latest interchain client.
     function setLatestInterchainClient(address client) external onlyRole(IC_GOVERNOR_ROLE) {
         _setLatestClient(client);
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Allows the governor to link the remote app for the given chain ID.
+    /// - This address will be used as the receiver for the messages sent from this chain.
+    /// - This address will be the only trusted sender for the messages sent to this chain.
+    /// @param chainId      The remote chain ID.
+    /// @param remoteApp    The address of the remote app to link.
     function linkRemoteApp(uint64 chainId, bytes32 remoteApp) external onlyRole(IC_GOVERNOR_ROLE) {
         _linkRemoteApp(chainId, remoteApp);
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Thin wrapper for `linkRemoteApp` to accept EVM address as a parameter.
     function linkRemoteAppEVM(uint64 chainId, address remoteApp) external onlyRole(IC_GOVERNOR_ROLE) {
         _linkRemoteApp(chainId, remoteApp.addressToBytes32());
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Allows the governor to add the module to the trusted modules set.
+    /// - This set of modules will be used to verify both sent and received messages.
     function addTrustedModule(address module) external onlyRole(IC_GOVERNOR_ROLE) {
         if (module == address(0)) {
             revert InterchainApp__ModuleZeroAddress();
@@ -78,7 +94,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
         emit TrustedModuleAdded(module);
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Allows the governor to remove the module from the trusted modules set.
     function removeTrustedModule(address module) external onlyRole(IC_GOVERNOR_ROLE) {
         bool removed = _trustedModules.remove(module);
         if (!removed) {
@@ -87,17 +103,21 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
         emit TrustedModuleRemoved(module);
     }
 
-    /// @inheritdoc IInterchainAppV1
-    function setAppConfigV1(AppConfigV1 memory appConfig) external onlyRole(IC_GOVERNOR_ROLE) {
-        if (appConfig.requiredResponses == 0 || appConfig.optimisticPeriod == 0) {
-            revert InterchainApp__InvalidAppConfig(appConfig.requiredResponses, appConfig.optimisticPeriod);
+    /// @notice Allows the governor to set the app config for the current app. App config includes:
+    /// - requiredResponses: the number of module responses required for accepting the message
+    /// - optimisticPeriod: the minimum time after which the module responses are considered final
+    function setAppConfigV1(uint256 requiredResponses, uint256 optimisticPeriod) external onlyRole(IC_GOVERNOR_ROLE) {
+        if (requiredResponses == 0 || optimisticPeriod == 0) {
+            revert InterchainApp__AppConfigInvalid(requiredResponses, optimisticPeriod);
         }
-        _requiredResponses = SafeCast.toUint16(appConfig.requiredResponses);
-        _optimisticPeriod = SafeCast.toUint48(appConfig.optimisticPeriod);
-        emit AppConfigV1Set(appConfig.requiredResponses, appConfig.optimisticPeriod);
+        _requiredResponses = SafeCast.toUint16(requiredResponses);
+        _optimisticPeriod = SafeCast.toUint48(optimisticPeriod);
+        emit AppConfigV1Set(requiredResponses, optimisticPeriod);
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Allows the governor to set the address of the Execution Service.
+    /// This address will be used to request execution of the messages sent from this chain,
+    /// by supplying the Service's execution fee.
     function setExecutionService(address executionService) external onlyRole(IC_GOVERNOR_ROLE) {
         _executionService = executionService;
         emit ExecutionServiceSet(executionService);
@@ -105,42 +125,55 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Returns the app config for the current app:
+    /// - requiredResponses: the number of module responses required for accepting the message
+    /// - optimisticPeriod: the minimum time after which the module responses are considered final
+    /// - guardFlag: the flag indicating the guard type (0 - none, 1 - client's default, 2 - custom)
+    /// - guard: the address of the guard contract (if the guardFlag is set to 2)
     function getAppConfigV1() public view returns (AppConfigV1 memory) {
-        return AppConfigV1({requiredResponses: _requiredResponses, optimisticPeriod: _optimisticPeriod});
+        (uint8 guardFlag, address guard) = _getGuardConfig();
+        return AppConfigV1({
+            requiredResponses: _requiredResponses,
+            optimisticPeriod: _optimisticPeriod,
+            guardFlag: guardFlag,
+            guard: guard
+        });
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Returns the address of the Execution Service used by this app for sending messages.
     // solhint-disable-next-line ordering
     function getExecutionService() external view returns (address) {
         return _executionService;
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Returns the list of Interchain Clients allowed to send messages to this app.
     function getInterchainClients() external view returns (address[] memory) {
         return _interchainClients.values();
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Returns the address of the latest interchain client.
+    /// This address is used for sending messages from this app.
     function getLatestInterchainClient() external view returns (address) {
         return _latestClient;
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Returns the linked app address (as bytes32) for the given chain ID.
     function getLinkedApp(uint64 chainId) external view returns (bytes32) {
         return _linkedApp[chainId];
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Thin wrapper for `getLinkedApp` to return the linked app address as EVM address.
+    /// @dev Will revert if the linked app address is not an EVM address.
     function getLinkedAppEVM(uint64 chainId) external view returns (address linkedAppEVM) {
         bytes32 linkedApp = _linkedApp[chainId];
         linkedAppEVM = linkedApp.bytes32ToAddress();
         if (linkedAppEVM.addressToBytes32() != linkedApp) {
-            revert InterchainApp__NotEVMLinkedApp(linkedApp);
+            revert InterchainApp__LinkedAppNotEVM(linkedApp);
         }
     }
 
-    /// @inheritdoc IInterchainAppV1
+    /// @notice Returns the list of Interchain Modules trusted by this app.
+    /// This set of modules will be used to verify both sent and received messages.
     function getModules() external view returns (address[] memory) {
         return _trustedModules.values();
     }
@@ -152,10 +185,10 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// Note: Should be guarded with permissions check.
     function _linkRemoteApp(uint64 chainId, bytes32 remoteApp) internal {
         if (chainId == block.chainid) {
-            revert InterchainApp__SameChainId(chainId);
+            revert InterchainApp__ChainIdNotRemote(chainId);
         }
         if (remoteApp == 0) {
-            revert InterchainApp__AppZeroAddress();
+            revert InterchainApp__RemoteAppZeroAddress();
         }
         _linkedApp[chainId] = remoteApp;
         emit AppLinked(chainId, remoteApp);
@@ -217,6 +250,12 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// @dev Returns the configuration of the app for validating the received messages.
     function _getAppConfig() internal view override returns (bytes memory) {
         return getAppConfigV1().encodeAppConfigV1();
+    }
+
+    /// @dev Returns the guard flag and address in the app config.
+    /// By default, the ICApp is using the Client-provided guard, but it can be overridden in the derived contract.
+    function _getGuardConfig() internal view virtual returns (uint8 guardFlag, address guard) {
+        return (APP_CONFIG_GUARD_DEFAULT, address(0));
     }
 
     /// @dev Returns the address of the Execution Service to use for sending messages.

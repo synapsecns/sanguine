@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {
-    PingPongIntegrationTest,
-    InterchainBatch,
-    InterchainEntry,
-    InterchainTransaction,
-    InterchainTxDescriptor,
-    PingPongApp
-} from "./PingPong.t.sol";
+import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
+import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
+
+import {PingPongIntegrationTest} from "./PingPong.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering

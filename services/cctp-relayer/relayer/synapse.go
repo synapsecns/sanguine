@@ -41,7 +41,7 @@ func NewSynapseCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRe
 		if err != nil {
 			return nil, fmt.Errorf("could not get client: %w", err)
 		}
-		boundSynapseCCTPs[chain.ChainID], err = cctp.NewSynapseCCTP(chain.GetSynapseCCTPAddress(), cl)
+		boundSynapseCCTPs[chain.ChainID], err = cctp.NewSynapseCCTP(chain.GetCCTPAddress(), cl)
 		if err != nil {
 			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
