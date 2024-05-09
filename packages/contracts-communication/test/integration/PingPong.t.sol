@@ -24,14 +24,14 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
         deal(app, PING_PONG_BALANCE);
     }
 
-    function expectPingPongEventPingReceived(uint256 counter, InterchainEntry memory entry) internal {
+    function expectPingPongEventPingReceived(uint256 counter, FullEntry memory fullEntry) internal {
         vm.expectEmit(localApp());
-        emit PingReceived(counter, entry.dbNonce, entry.entryIndex);
+        emit PingReceived(counter, fullEntry.dbNonce, fullEntry.entryIndex);
     }
 
-    function expectPingPongEventPingSent(uint256 counter, InterchainEntry memory entry) internal {
+    function expectPingPongEventPingSent(uint256 counter, FullEntry memory fullEntry) internal {
         vm.expectEmit(localApp());
-        emit PingSent(counter, entry.dbNonce, entry.entryIndex);
+        emit PingSent(counter, fullEntry.dbNonce, fullEntry.entryIndex);
     }
 
     // ═══════════════════════════════════════════ COMPLEX SERIES CHECKS ═══════════════════════════════════════════════
@@ -39,14 +39,14 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
     function expectEventsPingSent(
         uint256 counter,
         InterchainTransaction memory icTx,
-        InterchainEntry memory entry,
+        FullEntry memory fullEntry,
         uint256 verificationFee,
         uint256 executionFee
     )
         internal
     {
-        expectEventsMessageSent(icTx, entry, verificationFee, executionFee);
-        expectPingPongEventPingSent(counter, entry);
+        expectEventsMessageSent(icTx, fullEntry, verificationFee, executionFee);
+        expectPingPongEventPingSent(counter, fullEntry);
     }
 
     // ═══════════════════════════════════════════════ DATA HELPERS ════════════════════════════════════════════════════
