@@ -4,6 +4,8 @@ ARG VERSION=v0.0.0
 
 COPY ./services /app/services
 COPY ./committee /app/committee
+COPY ./sin-executor /app/sin-executor
+COPY ./agents /app/agents
 COPY ./core /app/core
 COPY ./ethergo /app/ethergo
 COPY ./tools /app/tools

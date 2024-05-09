@@ -266,69 +266,68 @@ services:
       - prometheus-data:/prometheus
     command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
 
-#   committee-node1:
-#     restart: unless-stopped
-#     entrypoint: committee
-#     depends_on:
-#       - omnirpc
-#       - chain_a
-#       - chain_b
-#       - chain_c
-#       - tracing
-#     build:
-#       context: ../../
-#       dockerfile: docker/devnet/committee.Dockerfile
-#     command:
-#       - committee-run
-#       - '--config'
-#       - '/config/committee-config.yml'
-#     environment:
-#       METRICS_HANDLER: jaeger
-#       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-#       GOLOG_LOG_LEVEL: debug
-#
-#
-#   committee-node2:
-#     restart: unless-stopped
-#     entrypoint: committee
-#     depends_on:
-#       - omnirpc
-#       - chain_a
-#       - chain_b
-#       - chain_c
-#       - tracing
-#     build:
-#       context: ../../
-#       dockerfile: docker/devnet/committee.Dockerfile
-#     command:
-#       - committee-run
-#       - '--config'
-#       - '/config/committee-config.yml'
-#     environment:
-#       METRICS_HANDLER: jaeger
-#       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-#       GOLOG_LOG_LEVEL: debug
-#
-#   committee-node3:
-#     restart: unless-stopped
-#     entrypoint: committee
-#     depends_on:
-#       - omnirpc
-#       - chain_a
-#       - chain_b
-#       - chain_c
-#       - tracing
-#     build:
-#       context: ../../
-#       dockerfile: docker/devnet/committee.Dockerfile
-#     command:
-#       - committee-run
-#       - '--config'
-#       - '/config/committee-config.yml'
-#     environment:
-#       METRICS_HANDLER: jaeger
-#       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-#       GOLOG_LOG_LEVEL: debug
-#
-#
-#
+  committee-node1:
+    restart: unless-stopped
+    entrypoint: committee
+    depends_on:
+      - omnirpc
+      - chain_a
+      - chain_b
+      - chain_c
+      - tracing
+    build:
+      context: ../../
+      dockerfile: docker/devnet/committee.Dockerfile
+    command:
+      - committee-run
+      - '--config'
+      - '/config/committee-config.yml'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+
+
+  committee-node2:
+    restart: unless-stopped
+    entrypoint: committee
+    depends_on:
+      - omnirpc
+      - chain_a
+      - chain_b
+      - chain_c
+      - tracing
+    build:
+      context: ../../
+      dockerfile: docker/devnet/committee.Dockerfile
+    command:
+      - committee-run
+      - '--config'
+      - '/config/committee-config.yml'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+
+  committee-node3:
+    restart: unless-stopped
+    entrypoint: committee
+    depends_on:
+      - omnirpc
+      - chain_a
+      - chain_b
+      - chain_c
+      - tracing
+    build:
+      context: ../../
+      dockerfile: docker/devnet/committee.Dockerfile
+    command:
+      - committee-run
+      - '--config'
+      - '/config/committee-config.yml'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+
+
