@@ -7,8 +7,21 @@ sidebar_label: Relayer
 At a high level, the canonical implementation of the relayer has 3 different responsibilities.
 
 - **Quoting** - Keep track of balances on each chain as well as in-flight funds and continuously post-quotes with these balances using the config to adjust quotes to the solvers specifications and posting to the API.
-- **Relaying -** Fulfill users BridgeRequests [link to event] by relaying their funds on-chain. Once eligible, claim the users funds on the origin chain.
+- **Relaying -** Fulfill users [BridgeRequests](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested) by relaying their funds on-chain. Once eligible, claim the users funds on the origin chain.
 - **Rebalancing -** In order to handle the complexity of user flows, the Relayer provides an interface that allows funds to be rebalanced. This allows RFQ to be reflexive to cases where flows are mono-directional.
+
+### Architecture
+
+The relayer is a Golang application that polls for events on chain and uses a combo state (db status) and event (on-chain logs) driven architecture to process transactions. The relayer has 3 different event loops going at any given time, specified above and elaborated on below:
+
+**Quoting** - The quoting loop is comparitively simple and updates the api on each route it supports. Quotes are posted using the following formula:
+
+ - **Do not quote above available balance**: Available balance is determined by `balance on chain - in-flight funds`. If the token is the gas token, then the minimum gas token amount is subtracted. The relayer will also not post quotes below the `min_quote_amount` specified in the config.
+ - **Quote offset**: The quote offset is a percentage of the price of the token. This is used to ensure that the relayer is profitable. The quote offset is added to the price of the token to determine the quote price.
+ - **Fee**: The fee is determined by the `fixed_fee_multiplier` in the config. This is multiplied by the `origin_gas_estimate`  and `destination_gas_estimate` to determine the fee. This fee is added to the quote price.
+
+**Rebalancing** - The rebalancing loop is
+
 
 To facilitate this, the rfq relayer config is pretty complex. Here is a breakdown of an example config:
 
@@ -108,8 +121,6 @@ To facilitate this, the rfq relayer config is pretty complex. Here is a breakdow
 
   cctp_relayer_config:
     cctp_type: "circle"
-    scribe_port: 80
-    scribe_url: "scribe.scribe"
     circle_api_url: "https://iris-api.circle.com/v1/attestations"
     chains:
       - chain_id: 1
@@ -118,7 +129,7 @@ To facilitate this, the rfq relayer config is pretty complex. Here is a breakdow
       - chain_id: 10
         synapse_cctp_address: "0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E"
         token_messenger_address: "0x2B4069517957735bE00ceE0fadAE88a26365528f"
-    base_omnirpc_url: "http://omnirpc.omnirpc.svc.cluster.local"
+    base_omnirpc_url: "http://omnirpc"
     unbonded_signer:
       type: GCP
       file: /config/signer.txt

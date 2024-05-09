@@ -4,11 +4,11 @@ The CCTP relayer is an off-chain service aimed at fulfilling transactions reques
 
 ### Architecture
 
-The relayer is a Golang application that polls for events on chain using [Scribe](../Services/Scribe) and uses a combo state (db status) and event (on-chain logs) driven [architecture](https://medium.com/@matt.denobrega/state-vs-event-based-web-architectures-59ab1f47656b) to process transactions. The relayer is designed to be run by anyone and be easily observable.
+The relayer is a Golang application that polls for events on chain and uses a combo state (db status) and event (on-chain logs) driven [architecture](https://medium.com/@matt.denobrega/state-vs-event-based-web-architectures-59ab1f47656b) to process transactions. The relayer is designed to be run by anyone and be easily observable.
 
 At a high level, the relayer works like this:
 
-1. Poll for new transactions from the CCTP contracts using Scribe and add them to the database as [Pending](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState)
+1. Poll for new transactions from the CCTP contracts and add them to the database as [Pending](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState)
 2. Fetch the attestation from the Circle API. Once successful add attestation to the database and update status to be [Attested](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState)
 3. Submit the attestation to the CCTP contracts. Once the transaction has been added to [Submitter](../Services/Submitter.md), mark as [Submitted](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState)
 4. Poll for the transaction receipt and mark as [Confirmed](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState)
@@ -101,5 +101,7 @@ The CCTP Relayer is configured with a yaml file. The following is an example con
  - `host`: The host to run the relayer on (e.g. localhost). Note: this should not be publicly exposed
  - `http_backoff_initial_interval_ms`: The initial interval for the backoff in milliseconds.
  - `retry_interval_ms`: The interval to wait between attestation request retries in milliseconds. The [CCTP API Rate Limit](https://developers.circle.com/stablecoins/docs/limits) should be kept in mind.
- - `scribe_url`: The URL for the scribe service.
- - `scribe_port`: The port for the scribe service.
+
+### Observability
+
+The CCTP relayer implements open telemetry for both tracing and metrics. Please see the [Observability](../Observability.md) page for more info.
