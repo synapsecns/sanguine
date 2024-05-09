@@ -429,8 +429,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             revert InterchainClientV1__ReceiverZeroRequiredResponses(receiver);
         }
         // Verify against the Guard if the app opts in to use it
-        _assertNoGuardConflict(_getGuard(appConfig), entry);
-        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, entry, appConfig.optimisticPeriod);
+        address guard = _getGuard(appConfig);
+        _assertNoGuardConflict(guard, entry);
+        // Optimistic period is not used if there's no Guard configured
+        uint256 optimisticPeriod = guard == address(0) ? 0 : appConfig.optimisticPeriod;
+        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, entry, optimisticPeriod);
         if (finalizedResponses < appConfig.requiredResponses) {
             revert InterchainClientV1__ResponsesAmountBelowMin(finalizedResponses, appConfig.requiredResponses);
         }
