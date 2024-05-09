@@ -168,6 +168,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         );
     }
 
+    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
+        // TODO: implement
+    }
+
     /// @notice Writes the proof of execution for a transaction into the InterchainDB.
     /// @dev Will revert if the transaction has not been executed.
     /// @param transactionId    The ID of the transaction to write the proof for.
@@ -200,6 +204,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         bytes32 transactionId = keccak256(encodedTx);
         _assertExecutable(icTx, transactionId, proof);
         return true;
+    }
+
+    function isExecutable(bytes calldata encodedTx) external view returns (bool) {
+        // TODO: implement
     }
 
     /// @notice Returns the readiness status of a transaction to be executed.
@@ -254,6 +262,14 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 secondArg = 0;
             }
         }
+    }
+
+    function getTxReadinessV1(InterchainTransaction memory icTx)
+        external
+        view
+        returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg)
+    {
+        // TODO: implement
     }
 
     /// @notice Returns the address of the executor for a transaction that has been sent to the local chain.

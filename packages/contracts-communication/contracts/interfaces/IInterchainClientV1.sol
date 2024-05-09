@@ -64,6 +64,7 @@ interface IInterchainClientV1 {
         payable
         returns (InterchainTxDescriptor memory desc);
 
+    // TODO: remove functions with proof
     function interchainExecute(
         uint256 gasLimit,
         bytes calldata transaction,
@@ -71,6 +72,8 @@ interface IInterchainClientV1 {
     )
         external
         payable;
+
+    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable;
 
     function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex);
 
@@ -84,6 +87,13 @@ interface IInterchainClientV1 {
         external
         view
         returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg);
+
+    function isExecutable(bytes calldata transaction) external view returns (bool);
+    function getTxReadinessV1(InterchainTransaction memory icTx)
+        external
+        view
+        returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg);
+
     function getInterchainFee(
         uint64 dstChainId,
         address srcExecutionService,
