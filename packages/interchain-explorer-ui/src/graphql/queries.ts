@@ -36,7 +36,7 @@ const BATCH_INFO_FRAGMENT = gql`
     id
     status
     verifiedAt
-    appConfig {
+    appConfigV1 {
       id
       requiredResponses
       optimisticPeriod
