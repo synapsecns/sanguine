@@ -50,9 +50,9 @@ contract SynapseGasOracleV1GettersTest is Test {
         oracle = new SynapseGasOracleV1(address(this));
     }
 
-    function expectRevertNotRemoteChainId(uint64 chainId) internal {
+    function expectRevertChainIdNotRemote(uint64 chainId) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(ISynapseGasOracleV1.SynapseGasOracleV1__NotRemoteChainId.selector, chainId)
+            abi.encodeWithSelector(ISynapseGasOracleV1.SynapseGasOracleV1__ChainIdNotRemote.selector, chainId)
         );
     }
 
@@ -69,8 +69,8 @@ contract SynapseGasOracleV1GettersTest is Test {
         assertEq(oracle.convertRemoteValueToLocalUnits(REMOTE_CHAIN_ID, 3 ether), 12 ether);
     }
 
-    function test_convertRemoteValueToLocalUnits_revert_notRemoteChainId() public withLocalSetup withRemoteSetup {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+    function test_convertRemoteValueToLocalUnits_revert_ChainIdNotRemote() public withLocalSetup withRemoteSetup {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         oracle.convertRemoteValueToLocalUnits(LOCAL_CHAIN_ID, 1 ether);
     }
 
@@ -90,8 +90,8 @@ contract SynapseGasOracleV1GettersTest is Test {
         );
     }
 
-    function test_estimateTxCostInRemoteUnits_revert_notRemoteChainId() public withLocalSetup withRemoteSetup {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+    function test_estimateTxCostInRemoteUnits_revert_ChainIdNotRemote() public withLocalSetup withRemoteSetup {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         oracle.estimateTxCostInRemoteUnits(LOCAL_CHAIN_ID, MOCK_GAS_LIMIT, MOCK_CALLDATA_SIZE);
     }
 
@@ -107,8 +107,8 @@ contract SynapseGasOracleV1GettersTest is Test {
         );
     }
 
-    function test_estimateTxCostInLocalUnits_revert_notRemoteChainId() public withLocalSetup withRemoteSetup {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+    function test_estimateTxCostInLocalUnits_revert_ChainIdNotRemote() public withLocalSetup withRemoteSetup {
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         oracle.estimateTxCostInLocalUnits(LOCAL_CHAIN_ID, MOCK_GAS_LIMIT, MOCK_CALLDATA_SIZE);
     }
 

@@ -6,34 +6,33 @@ import {InterchainModule} from "./InterchainModule.sol";
 import {SynapseModuleEvents} from "../events/SynapseModuleEvents.sol";
 import {ISynapseGasOracle} from "../interfaces/ISynapseGasOracle.sol";
 import {ISynapseModule} from "../interfaces/ISynapseModule.sol";
-
 import {ThresholdECDSA} from "../libs/ThresholdECDSA.sol";
 
+import {ClaimableFees} from "../fees/ClaimableFees.sol";
+
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynapseModule {
+contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModuleEvents, ISynapseModule {
     // TODO: make sure this is a good enough default value
     uint256 public constant DEFAULT_VERIFY_GAS_LIMIT = 100_000;
 
-    uint256 internal constant MAX_CLAIM_FEE_FRACTION = 0.01e18; // 1%
-    uint256 internal constant FEE_PRECISION = 1e18;
-
     /// @dev Struct to hold the verifiers and the threshold for the module.
     ThresholdECDSA internal _verifiers;
-    /// @dev Claim fee fraction, 100% = 1e18
-    uint256 internal _claimFeeFraction;
-    /// @dev Gas limit for the verifyBatch function on the remote chain.
+
+    /// @dev Gas limit for the verifyEntry function on the remote chain.
     mapping(uint64 chainId => uint256 gasLimit) internal _verifyGasLimit;
     /// @dev Hash of the last gas data sent to the remote chain.
     mapping(uint64 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
     /// @dev Nonce of the last gas data received from the remote chain.
     mapping(uint64 chainId => uint64 gasDataNonce) internal _lastGasDataNonce;
 
-    /// @inheritdoc ISynapseModule
-    address public feeCollector;
-    /// @inheritdoc ISynapseModule
+    /// @dev Fraction of the fees to be paid to the claimer (100% = 1e18).
+    uint256 internal _claimerFraction;
+    /// @dev Recipient of the fees collected by the module.
+    address internal _feeRecipient;
+
+    /// @notice Address of the gas oracle used for estimating the verification fees.
     address public gasOracle;
 
     constructor(address interchainDB, address owner_) InterchainModule(interchainDB) Ownable(owner_) {
@@ -42,12 +41,14 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     // ═══════════════════════════════════════════════ PERMISSIONED ════════════════════════════════════════════════════
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Adds a new verifier to the module.
+    /// @dev Could be only called by the owner. Will revert if the verifier is already added.
     function addVerifier(address verifier) external onlyOwner {
         _addVerifier(verifier);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Adds a list of new verifiers to the module.
+    /// @dev Could be only called by the owner. Will revert if any of the verifiers is already added.
     function addVerifiers(address[] calldata verifiers) external onlyOwner {
         uint256 length = verifiers.length;
         for (uint256 i = 0; i < length; ++i) {
@@ -55,12 +56,14 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         }
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Removes a verifier from the module.
+    /// @dev Could be only called by the owner. Will revert if the verifier is not added.
     function removeVerifier(address verifier) external onlyOwner {
         _removeVerifier(verifier);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Removes a list of verifiers from the module.
+    /// @dev Could be only called by the owner. Will revert if any of the verifiers is not added.
     function removeVerifiers(address[] calldata verifiers) external onlyOwner {
         uint256 length = verifiers.length;
         for (uint256 i = 0; i < length; ++i) {
@@ -68,28 +71,36 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         }
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Sets the threshold of the module.
+    /// @dev Could be only called by the owner. Will revert if the threshold is zero.
     function setThreshold(uint256 threshold) external onlyOwner {
         _verifiers.modifyThreshold(threshold);
         emit ThresholdSet(threshold);
     }
 
-    /// @inheritdoc ISynapseModule
-    function setFeeCollector(address feeCollector_) external onlyOwner {
-        feeCollector = feeCollector_;
-        emit FeeCollectorSet(feeCollector_);
-    }
-
-    /// @inheritdoc ISynapseModule
-    function setClaimFeeFraction(uint256 claimFeeFraction) external onlyOwner {
-        if (claimFeeFraction > MAX_CLAIM_FEE_FRACTION) {
-            revert SynapseModule__ClaimFeeFractionExceedsMax(claimFeeFraction);
+    /// @notice Sets the address of the fee collector, which will have the verification fees forwarded to it.
+    /// @dev Could be only called by the owner.
+    function setFeeRecipient(address feeRecipient) external onlyOwner {
+        if (feeRecipient == address(0)) {
+            revert SynapseModule__FeeRecipientZeroAddress();
         }
-        _claimFeeFraction = claimFeeFraction;
-        emit ClaimFeeFractionSet(claimFeeFraction);
+        _feeRecipient = feeRecipient;
+        emit FeeRecipientSet(feeRecipient);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Sets the fraction of the accumulated fees to be paid to caller of `claimFees`.
+    /// This encourages rational actors to call the function as soon as claim fee is higher than the gas cost.
+    /// @dev Could be only called by the owner. Could not exceed 1% (1e16).
+    function setClaimerFraction(uint256 claimerFraction) external onlyOwner {
+        if (claimerFraction > MAX_CLAIMER_FRACTION) {
+            revert ClaimableFees__ClaimerFractionAboveMax(claimerFraction, MAX_CLAIMER_FRACTION);
+        }
+        _claimerFraction = claimerFraction;
+        emit ClaimerFractionSet(claimerFraction);
+    }
+
+    /// @notice Sets the address of the gas oracle to be used for estimating the verification fees.
+    /// @dev Could be only called by the owner. Will revert if the gas oracle is not a contract.
     function setGasOracle(address gasOracle_) external onlyOwner {
         if (gasOracle_.code.length == 0) {
             revert SynapseModule__GasOracleNotContract(gasOracle_);
@@ -98,7 +109,10 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         emit GasOracleSet(gasOracle_);
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Sets the estimated gas limit for verifying an entry on the given chain.
+    /// @dev Could be only called by the owner.
+    /// @param chainId      The chain ID for which to set the gas limit
+    /// @param gasLimit     The new gas limit for the verification on the specified chain
     function setVerifyGasLimit(uint64 chainId, uint256 gasLimit) external onlyOwner {
         _verifyGasLimit[chainId] = gasLimit;
         emit VerifyGasLimitSet(chainId, gasLimit);
@@ -106,61 +120,57 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
-    /// @inheritdoc ISynapseModule
-    function claimFees() external {
-        if (feeCollector == address(0)) {
-            revert SynapseModule__FeeCollectorNotSet();
-        }
-        if (address(this).balance == 0) {
-            revert SynapseModule__NoFeesToClaim();
-        }
-        uint256 claimFee = getClaimFeeAmount();
-        uint256 collectedFee = address(this).balance - claimFee;
-        Address.sendValue(payable(feeCollector), collectedFee);
-        Address.sendValue(payable(msg.sender), claimFee);
-        emit FeesClaimed(feeCollector, collectedFee, msg.sender, claimFee);
-    }
-
-    /// @inheritdoc ISynapseModule
-    function verifyRemoteBatch(bytes calldata encodedBatch, bytes calldata signatures) external {
-        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch));
+    /// @notice Verifies an entry from the remote chain using a set of verifier signatures.
+    /// If the threshold is met, the entry will be marked as verified in the Interchain DataBase.
+    /// @dev List of recovered signers from the signatures must be sorted in the ascending order.
+    /// @param encodedEntry The encoded entry to verify
+    /// @param signatures   Signatures used to verify the entry, concatenated
+    function verifyRemoteEntry(bytes calldata encodedEntry, bytes calldata signatures) external {
+        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
         _verifiers.verifySignedHash(ethSignedHash, signatures);
-        _verifyBatch(encodedBatch);
+        _verifyEntry(encodedEntry);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    /// @inheritdoc ISynapseModule
-    function getClaimFeeFraction() external view returns (uint256) {
-        return _claimFeeFraction;
-    }
-
-    /// @inheritdoc ISynapseModule
+    /// @notice Returns the list of verifiers for the module.
     function getVerifiers() external view returns (address[] memory) {
         return _verifiers.getSigners();
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Checks if the given account is a verifier for the module.
     function isVerifier(address account) external view returns (bool) {
         return _verifiers.isSigner(account);
     }
 
-    /// @inheritdoc ISynapseModule
-    function getClaimFeeAmount() public view returns (uint256) {
-        return address(this).balance * _claimFeeFraction / FEE_PRECISION;
-    }
-
-    /// @inheritdoc ISynapseModule
+    /// @notice Gets the threshold of the module. This is the minimum number of signatures required for verification.
     function getThreshold() public view returns (uint256) {
         return _verifiers.getThreshold();
     }
 
-    /// @inheritdoc ISynapseModule
+    /// @notice Returns the estimated gas limit for verifying an entry on the given chain.
+    /// Note: this defaults to DEFAULT_VERIFY_GAS_LIMIT if not set.
     function getVerifyGasLimit(uint64 chainId) public view override returns (uint256 gasLimit) {
         gasLimit = _verifyGasLimit[chainId];
         if (gasLimit == 0) {
             gasLimit = DEFAULT_VERIFY_GAS_LIMIT;
         }
+    }
+
+    /// @notice Returns the amount of fees that can be claimed.
+    function getClaimableAmount() public view override returns (uint256) {
+        return address(this).balance;
+    }
+
+    /// @notice Returns the fraction of the fees that the claimer will receive.
+    /// The result is in the range [0, 1e18], where 1e18 is 100%.
+    function getClaimerFraction() public view override returns (uint256) {
+        return _claimerFraction;
+    }
+
+    /// @notice Returns the address that will receive the claimed fees.
+    function getFeeRecipient() public view override returns (address) {
+        return _feeRecipient;
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -177,15 +187,15 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         emit VerifierRemoved(verifier);
     }
 
+    /// @dev Hook that is called before the fees are claimed.
+    /// Useful if the inheriting contract needs to manage the state when the fees are claimed.
+    // solhint-disable-next-line no-empty-blocks
+    function _beforeFeesClaimed(uint256, uint256) internal override {
+        // No op, as the claimable amount is tracked as the contract balance
+    }
+
     /// @dev Internal logic to fill the module data for the specified destination chain.
-    function _fillModuleData(
-        uint64 dstChainId,
-        uint64 // dbNonce
-    )
-        internal
-        override
-        returns (bytes memory moduleData)
-    {
+    function _fillModuleData(uint64 dstChainId) internal override returns (bytes memory moduleData) {
         moduleData = _getSynapseGasOracle().getLocalGasData();
         // Exit early if data is empty
         if (moduleData.length == 0) {
@@ -218,22 +228,14 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
-    /// @dev Internal logic to get the module fee for verifying an batch on the specified destination chain.
-    function _getModuleFee(
-        uint64 dstChainId,
-        uint64 // dbNonce
-    )
-        internal
-        view
-        override
-        returns (uint256)
-    {
-        // On the remote chain the verifyRemoteBatch(batch, signatures) function will be called.
+    /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
+    function _getModuleFee(uint64 dstChainId) internal view override returns (uint256) {
+        // On the remote chain the verifyRemoteEntry(entry, signatures) function will be called.
         // We need to figure out the calldata size for the remote call.
-        // selector (4 bytes) + batch + signatures
-        // batch is 32 (length) + 32*3 (fields) = 128
+        // selector (4 bytes) + entry + signatures
+        // entry is 32 (length) + 32*3 (fields) = 128
         // signatures: 32 (length) + 65*threshold (padded up to be a multiple of 32 bytes)
-        // Total formula is: 4 + 32 (batch offset) + 32 (signatures offset) + 128 + 32
+        // Total formula is: 4 + 32 (entry offset) + 32 (signatures offset) + 128 + 32
         return _getSynapseGasOracle().estimateTxCostInLocalUnits({
             remoteChainId: dstChainId,
             gasLimit: getVerifyGasLimit(dstChainId),
@@ -245,7 +247,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     function _getSynapseGasOracle() internal view returns (ISynapseGasOracle synapseGasOracle) {
         synapseGasOracle = ISynapseGasOracle(gasOracle);
         if (address(synapseGasOracle) == address(0)) {
-            revert SynapseModule__GasOracleNotSet();
+            revert SynapseModule__GasOracleZeroAddress();
         }
     }
 }

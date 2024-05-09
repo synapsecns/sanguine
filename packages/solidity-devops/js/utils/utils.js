@@ -4,6 +4,21 @@ const { execSync } = require('child_process')
 const { logCommand, logCommandError, logInfo } = require('./logger.js')
 
 /**
+ * Checks if two 0x addresses are equal, regardless of case.
+ * If either address is null, returns false.
+ *
+ * @param {string} addrA - The first address
+ * @param {string} addrB - The second address
+ * @returns {bool} Whether the addresses are equal
+ */
+const areEqualAddresses = (addrA, addrB) => {
+  if (!addrA || !addrB) {
+    return false
+  }
+  return addrA.toLowerCase() === addrB.toLowerCase()
+}
+
+/**
  * Asserts that a condition is true. If not, logs an error message and exits the process.
  *
  * @param {bool} condition - The condition to assert
@@ -90,6 +105,7 @@ const syncSleep = (seconds, reason) => {
 }
 
 module.exports = {
+  areEqualAddresses,
   assertCondition,
   createDir,
   exitWithError,

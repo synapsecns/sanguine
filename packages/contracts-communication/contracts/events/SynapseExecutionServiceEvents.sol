@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+// TODO: regenerate `sin-executor` before redeployment
 abstract contract SynapseExecutionServiceEvents {
     /// @notice Emitted when the executor EOA is set.
     /// This address will be getting the execution fees that the service earns.
@@ -21,5 +22,6 @@ abstract contract SynapseExecutionServiceEvents {
     /// @notice Emitted when the execution of a transaction is requested.
     /// @param transactionId The unique identifier of the transaction.
     /// @param client        The address of the Interchain Client that requested the execution.
-    event ExecutionRequested(bytes32 indexed transactionId, address client);
+    /// @param executionFee  The fee paid for the execution.
+    event ExecutionRequested(bytes32 indexed transactionId, address client, uint256 executionFee);
 }

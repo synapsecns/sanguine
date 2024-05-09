@@ -13,6 +13,7 @@ import {InterchainClientV1Mock} from "../mocks/InterchainClientV1Mock.sol";
 
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable ordering
 abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAppV1Events {
     bytes32 public constant IC_GOVERNOR_ROLE = keccak256("IC_GOVERNOR_ROLE");
 
@@ -20,6 +21,7 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
     uint64 public constant REMOTE_CHAIN_ID = 7331;
     uint64 public constant UNKNOWN_CHAIN_ID = 420;
     uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
+    uint256 public constant APP_REQUIRED_RESPONSES = 1;
 
     IInterchainAppV1Harness public appHarness;
     address public icClient;
@@ -29,8 +31,6 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
     address public execServiceMock = makeAddr("Execution Service Mock");
     address public linkedAppMock = makeAddr("Linked App Mock");
     bytes32 public linkedAppMockBytes32 = TypeCasts.addressToBytes32(linkedAppMock);
-
-    AppConfigV1 public appConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD});
 
     function setUp() public virtual {
         vm.chainId(LOCAL_CHAIN_ID);
@@ -45,9 +45,10 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
     /// privileges to setup its interchain configuration.
     function deployICAppV1() internal virtual returns (IInterchainAppV1Harness app);
 
+    // solhint-disable-next-line no-empty-blocks
     function configureICAppV1() internal virtual {}
 
-    function assertEq(AppConfigV1 memory config, AppConfigV1 memory expected) internal {
+    function assertEq(AppConfigV1 memory config, AppConfigV1 memory expected) internal pure {
         assertEq(config.requiredResponses, expected.requiredResponses);
         assertEq(config.optimisticPeriod, expected.optimisticPeriod);
     }
@@ -67,9 +68,9 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         emit LatestClientSet(client);
     }
 
-    function expectEventAppConfigV1Set(AppConfigV1 memory config) internal {
+    function expectEventAppConfigV1Set(uint256 requiredResponses, uint256 optimisticPeriod) internal {
         vm.expectEmit(address(appHarness));
-        emit AppConfigV1Set(config.requiredResponses, config.optimisticPeriod);
+        emit AppConfigV1Set(requiredResponses, optimisticPeriod);
     }
 
     function expectEventAppLinked(uint64 chainId, bytes32 remoteApp) internal {
@@ -92,16 +93,14 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         emit TrustedModuleRemoved(module);
     }
 
-    function expectRevertAppZeroAddress() internal {
-        vm.expectRevert(IInterchainAppV1.InterchainApp__AppZeroAddress.selector);
+    function expectRevertRemoteAppZeroAddress() internal {
+        vm.expectRevert(IInterchainAppV1.InterchainApp__RemoteAppZeroAddress.selector);
     }
 
-    function expectRevertInvalidAppConfig(AppConfigV1 memory config) internal {
+    function expectRevertAppConfigInvalid(uint256 requiredResponses, uint256 optimisticPeriod) internal {
         vm.expectRevert(
             abi.encodeWithSelector(
-                IInterchainAppV1.InterchainApp__InvalidAppConfig.selector,
-                config.requiredResponses,
-                config.optimisticPeriod
+                IInterchainAppV1.InterchainApp__AppConfigInvalid.selector, requiredResponses, optimisticPeriod
             )
         );
     }
@@ -118,41 +117,49 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         vm.expectRevert(IInterchainAppV1.InterchainApp__ModuleZeroAddress.selector);
     }
 
-    function expectRevertNotEVMLinkedApp(bytes32 linkedApp) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainAppV1.InterchainApp__NotEVMLinkedApp.selector, linkedApp));
+    function expectRevertLinkedAppNotEVM(bytes32 linkedApp) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainAppV1.InterchainApp__LinkedAppNotEVM.selector, linkedApp));
     }
 
-    function expectRevertAlreadyLatestClient(address client) internal {
-        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__AlreadyLatestClient.selector, client));
+    function expectRevertInterchainClientAlreadyLatest(address client) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(AbstractICApp.InterchainApp__InterchainClientAlreadyLatest.selector, client)
+        );
     }
 
-    function expectRevertBalanceTooLow(uint256 actual, uint256 required) internal {
-        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__BalanceTooLow.selector, actual, required));
+    function expectRevertBalanceBelowMin(uint256 balance, uint256 minValue) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(AbstractICApp.InterchainApp__BalanceBelowMin.selector, balance, minValue)
+        );
     }
 
-    function expectRevertClientAlreadyAdded(address client) internal {
-        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__ClientAlreadyAdded.selector, client));
+    function expectRevertInterchainClientAlreadyAdded(address client) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(AbstractICApp.InterchainApp__InterchainClientAlreadyAdded.selector, client)
+        );
     }
 
     function expectRevertInterchainClientZeroAddress() internal {
         vm.expectRevert(AbstractICApp.InterchainApp__InterchainClientZeroAddress.selector);
     }
 
-    function expectRevertNotInterchainClient(address account) internal {
-        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__NotInterchainClient.selector, account));
-    }
-
-    function expectRevertReceiverNotSet(uint64 chainId) internal {
-        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__ReceiverNotSet.selector, chainId));
-    }
-
-    function expectRevertSameChainId(uint64 chainId) internal {
-        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__SameChainId.selector, chainId));
-    }
-
-    function expectRevertSenderNotAllowed(uint64 srcChainId, bytes32 sender) internal {
+    function expectRevertCallerNotInterchainClient(address account) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(AbstractICApp.InterchainApp__SenderNotAllowed.selector, srcChainId, sender)
+            abi.encodeWithSelector(AbstractICApp.InterchainApp__CallerNotInterchainClient.selector, account)
+        );
+    }
+
+    function expectRevertReceiverZeroAddress(uint64 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__ReceiverZeroAddress.selector, chainId));
+    }
+
+    function expectRevertChainIdNotRemote(uint64 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__ChainIdNotRemote.selector, chainId));
+    }
+
+    function expectRevertSrcSenderNotAllowed(uint64 srcChainId, bytes32 sender) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(AbstractICApp.InterchainApp__SrcSenderNotAllowed.selector, srcChainId, sender)
         );
     }
 

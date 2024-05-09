@@ -6,6 +6,7 @@ import { ChainInfo } from '@components/misc/ChainInfo'
 import { timeAgo } from '@utils/timeAgo'
 import { getBridgeTransactionUrl } from '@urls'
 import { ellipsizeString } from '@utils/ellipsizeString'
+import { addressToSymbol } from '@utils/addressToSymbol'
 
 export function BridgeTransactionTable({ queryResult }) {
   const handlePending = (date) => {
@@ -37,7 +38,10 @@ export function BridgeTransactionTable({ queryResult }) {
         formattedValue={fromInfo.formattedValue}
         tokenAddress={fromInfo.tokenAddress}
         chainId={fromInfo.chainID}
-        tokenSymbol={fromInfo.tokenSymbol}
+        tokenSymbol={addressToSymbol({
+          tokenAddress: fromInfo.tokenAddress,
+          chainId: fromInfo.chainID,
+        }) || fromInfo.tokenSymbol}
         iconSize="w-4 h-4"
         textSize="text-sm"
         styledCoin={true}
@@ -48,8 +52,11 @@ export function BridgeTransactionTable({ queryResult }) {
         <IconAndAmount
           formattedValue={toInfo.formattedValue}
           tokenAddress={toInfo.tokenAddress}
-          chainId={toInfo.chainID}
-          tokenSymbol={toInfo.tokenSymbol}
+          chainId={fromInfo.destinationChainID}
+          tokenSymbol={addressToSymbol({
+            tokenAddress: toInfo.tokenAddress,
+            chainId: fromInfo.destinationChainID,
+            }) || toInfo.tokenSymbol}
           iconSize="w-4 h-4"
           textSize="text-sm"
           styledCoin={true}
@@ -96,7 +103,6 @@ export function BridgeTransactionTable({ queryResult }) {
         {ellipsizeString({ string: txn.kappa, limiter: 4 })}
       </a>,
     ]
-
     const row = {
       items,
       key: kappa,
