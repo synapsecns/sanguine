@@ -9,6 +9,8 @@ import {ICAppV1Harness} from "../harnesses/ICAppV1Harness.sol";
 
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 
+// solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract ICAppV1MessagingTest is InterchainAppV1MessagingTest {
     /// @dev This should deploy the Interchain App V1 contract and give `governor`
     /// privileges to setup its interchain configuration.

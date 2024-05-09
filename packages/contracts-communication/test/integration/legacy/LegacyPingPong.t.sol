@@ -8,7 +8,7 @@ import {LegacyMessageLib} from "../../../contracts/legacy/libs/LegacyMessage.sol
 import {LegacyOptionsLib} from "../../../contracts/legacy/libs/LegacyOptions.sol";
 import {TypeCasts} from "../../../contracts/libs/TypeCasts.sol";
 
-import {ICIntegrationTest, InterchainEntry, InterchainTransaction, OptionsV1} from "../ICIntegration.t.sol";
+import {ICIntegrationTest, InterchainTransaction, OptionsV1} from "../ICIntegration.t.sol";
 import {MessageBusHarness} from "../../harnesses/MessageBusHarness.sol";
 
 // solhint-disable custom-errors
