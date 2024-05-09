@@ -10,20 +10,63 @@ At a high level, the canonical implementation of the relayer has 3 different res
 - **Relaying -** Fulfill users [BridgeRequests](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested) by relaying their funds on-chain. Once eligible, claim the users funds on the origin chain.
 - **Rebalancing -** In order to handle the complexity of user flows, the Relayer provides an interface that allows funds to be rebalanced. This allows RFQ to be reflexive to cases where flows are mono-directional.
 
-### Architecture
+## Architecture
 
 The relayer is a Golang application that polls for events on chain and uses a combo state (db status) and event (on-chain logs) driven architecture to process transactions. The relayer has 3 different event loops going at any given time, specified above and elaborated on below:
 
-**Quoting** - The quoting loop is comparitively simple and updates the api on each route it supports. Quotes are posted using the following formula:
+### Quoting
+The quoting loop is comparitively simple and updates the api on each route it supports. Quotes are posted using the following formula:
 
  - **Do not quote above available balance**: Available balance is determined by `balance on chain - in-flight funds`. If the token is the gas token, then the minimum gas token amount is subtracted. The relayer will also not post quotes below the `min_quote_amount` specified in the config.
  - **Quote offset**: The quote offset is a percentage of the price of the token. This is used to ensure that the relayer is profitable. The quote offset is added to the price of the token to determine the quote price.
  - **Fee**: The fee is determined by the `fixed_fee_multiplier` in the config. This is multiplied by the `origin_gas_estimate`  and `destination_gas_estimate` to determine the fee. This fee is added to the quote price.
 
-**Rebalancing** - The rebalancing loop is
+### Rebalancing
 
+The rebalancing loop is more complex and is responsible for ensuring that the relayer has enough liquidity on each chain. Right now only the CCTP rebalancer is supported and works like this:
 
-To facilitate this, the rfq relayer config is pretty complex. Here is a breakdown of an example config:
+1. At `rebalance_interval`, check the `maintenance_balance_pct` of each token on each chain and compare it to the current balance. If the balance is below the `maintenance_balance_pct`, continue
+2. Calculate the amount to rebalance by taking the difference between the maintenance balance and the current balance and multiplying it by the `initial_balance_pct`.
+3. If the amount to rebalance is greater than the `max_rebalance_amount`, set the amount to rebalance to the `max_rebalance_amount`. If the amount to rebalance is less than the `min_rebalance_amount`, do not rebalance.
+4. Repeat after `rebalance_interval`
+
+### Relaying
+
+The relaying loop is the most complex and is responsible for relaying funds on-chain. The relayer listens to events on-chain and status updates in the database to take move transactions through the states. The states are as follows:
+
+1. An on-chain transaction emits the event [`BridgeRequested`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested). We store this event in the db with the status [`Seen`](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq/relayer/reldb#Seen).
+1. Check if the request is valid, If not, it is marked as [`WillNotProcess`](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq/relayer/reldb#WillNotProcess)
+1. Check if there's enough inventory, if not mark as [`NotEnoughInventory`](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq/relayer/reldb#NotEnoughInventory) and try again later.
+1. If these checks pass, it's stored as [`CommittedPending`](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq/relayer/reldb#CommittedPending). This will automatically reduce the next quote amount posted to the api since the relayers liquidity has been committed.
+1. Check the chain to see if transaction is finalized yet, if not wait until it is.
+1. Once the transaction is finalized on chain, update the status to [`CommitedConfirmed`](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq/relayer/reldb#CommitedConfirmed). This means the transaction is finalized on chain and we can now relay it to the destination chain.
+1. Call [`relay`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#relay) on the contract to relay the transaction and update the status to  [`RelayPending`](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq/relayer/reldb#RelayPending)
+1. Listen for the relay in the logs. Once we get it we mark the transaction as [`RelayComplete`](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq/relayer/reldb#RelayComplete)
+1. Call [`Prove()`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#prove) on the contract to prove that we relayed the transaction. Once this is done, we mark the transaction as [`ProvePosting`](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq/relayer/reldb#ProvePosting)
+1. Wait for the dispute period to expire. Once it does call [`claim`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#claim) mark the transaction as [`ClaimPending`](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq/relayer/reldb#ClaimPending)
+1. Wait for the dispute period to expire. Once it does mark the transaction as [`ClaimComplete`](https://pkg.go.dev/github.com/synapsecns/sanguine/services/rfq/relayer/reldb#ClaimComplete)
+
+## Running a Relayer
+
+### Building From Source
+
+To build the relayer from source, you will need to have Go installed. You can install Go by following the instructions [here](https://golang.org/doc/install). Once you have Go installed, you can build the relayer by running the following commands:
+
+1. `git clone https://github.com/synapsecns/sanguine --recursive`
+2. `cd sanguine/services/rfq/relayer`
+3. `go run main.go --config /path/to/config.yaml`
+
+### Running the Docker Image
+
+The relayer can also be run with docker. To do this, you will need to pull the [docker image](https://github.com/synapsecns/sanguine/pkgs/container/sanguine%2Frfq-relayer) and run it with the config file:
+
+```bash
+docker run ghcr.io/synapsecns/sanguine/rfq-relayer:latest --config /path/to/config
+```
+
+### Configuration
+
+The relayer is configured with a yaml file. The following is an example configuration:
 
 <details>
   <summary> example config</summary>
@@ -144,7 +187,7 @@ To facilitate this, the rfq relayer config is pretty complex. Here is a breakdow
  - `database` - The database settings for the API backend. A database is required to store quotes and other information. Using SQLite with a dsn set to a `/tmp/` directory is recommended for development.
    -  `type` - the database driver to use, can be `mysql` or `sqlite`.
    -  `dsn` - the dsn of your database. If using sqlite, this can be a path, if using mysql please see [here](https://dev.mysql.com/doc/connector-odbc/en/connector-odbc-configuration.html) for more information.
- - `screener_api_url` (optional) -  Please see [here](../../Services/Screener) for an api spec, this is used descision on wether to bridge to given addresses.
+ - `screener_api_url` (optional) -  Please see [here](https://github.com/synapsecns/sanguine/tree/master/contrib/screener-api#screening-api) for an api spec, this is used descision on wether to bridge to given addresses.
  - `rfq_url` - URL of the rfq api, please see the [API](../../API#API Urls) page for details and the mainnet/testnet urls.
  - `omnirpc_url` - URL of omnirpc to use, Please see [here](../../Services/Omnirpc) for details on running an omnirpc instance.
  - `rebalance_interval` - How often to rebalance, formatted as (s = seconds, m = minutes, h = hours)
@@ -164,7 +207,7 @@ To facilitate this, the rfq relayer config is pretty complex. Here is a breakdow
     - `decimals` - number of decimals this token uses. Please verify this against the token contract itself.
     - `min_quote_amount` - smallest amount to quote for a given chain. This should be balanced against expected gas spend for a relayer to be profitable. `min_quote_amount` is to be given in decimal units (so 1000.00 is 1000)
     - `rebalance_method` - rebalance method for this particular kind of token. Some tokens may not have a rebalance method. This is either cctp or token messenger.
-    - `maintenance_balance_pct` - percent of liquidity that should be maintained on the given chain for this token. If the balance is under this amount a rebalance is triggered/
+    - `maintenance_balance_pct` - percent of liquidity that should be maintained on the given chain for this token. If the balance is under this amount a rebalance is triggered.
     - `initial_balance_pct` - percent of liquidity to maintain after a rebalance.
     - `min_rebalance_amount` - amount of this token to try to rebalance
     - `max_rebalance_amount` - maximum amount of this token to try to rebalance at once
@@ -175,3 +218,7 @@ To facilitate this, the rfq relayer config is pretty complex. Here is a breakdow
     	- "1-0x01"
     ```
 - `cctp_relayer_config`: See the [CCTP page](../../CCTP/Relayer)
+
+### Observability
+
+The RFQ relayer implements open telemetry for both tracing and metrics. Please see the [Observability](../../Observability) page for more info.
