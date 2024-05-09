@@ -127,18 +127,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// This allows to execute the transactions with requested gas limit set too low.
     /// @param gasLimit          The gas limit to use for the execution.
     /// @param transaction       The transaction data.
-    /// @param proof             The Merkle proof for transaction execution, fetched from the source chain.
-    function interchainExecute(
-        uint256 gasLimit,
-        bytes calldata transaction,
-        bytes32[] calldata proof
-    )
-        external
-        payable
-    {
-        // TODO: remove
-    }
-
     function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
         InterchainTransaction memory icTx = _assertCorrectTransaction(transaction);
         bytes32 transactionId = keccak256(transaction);
@@ -190,17 +178,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @notice Determines if a transaction meets the criteria to be executed based on:
-    /// - If approved modules have verified the batch in the InterchainDB
+    /// - If approved modules have verified the entry in the InterchainDB
     /// - If the threshold of approved modules have been met
     /// - If the optimistic window has passed for all modules
-    /// - If the Guard module (if opted in) has not submitted a batch that conflicts with the approved modules
+    /// - If the Guard module (if opted in) has not submitted an entry that conflicts with the approved modules
     /// @dev Will revert with a specific error message if the transaction is not executable.
     /// @param encodedTx        The encoded transaction to check for executable status.
-    /// @param proof            The Merkle proof for the transaction, fetched from the source chain.
-    function isExecutable(bytes calldata encodedTx, bytes32[] calldata proof) external view returns (bool) {
-        // TODO: remove
-    }
-
     function isExecutable(bytes calldata encodedTx) external view returns (bool) {
         InterchainTransaction memory icTx = _assertCorrectTransaction(encodedTx);
         // Check that options could be decoded
@@ -208,17 +191,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         bytes32 transactionId = keccak256(encodedTx);
         _assertExecutable(icTx, transactionId);
         return true;
-    }
-
-    function getTxReadinessV1(
-        InterchainTransaction memory icTx,
-        bytes32[] calldata proof
-    )
-        external
-        view
-        returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg)
-    {
-        // TODO: remove
     }
 
     /// @notice Returns the readiness status of a transaction to be executed.

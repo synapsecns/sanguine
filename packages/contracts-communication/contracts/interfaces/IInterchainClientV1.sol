@@ -4,12 +4,9 @@ pragma solidity ^0.8.0;
 import {InterchainTransaction, InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 
 interface IInterchainClientV1 {
-    // TODO: remove batch-related
     enum TxReadiness {
         Ready,
         AlreadyExecuted,
-        BatchAwaitingResponses,
-        BatchConflict,
         EntryAwaitingResponses,
         EntryConflict,
         ReceiverNotICApp,
@@ -18,7 +15,6 @@ interface IInterchainClientV1 {
         UndeterminedRevert
     }
 
-    error InterchainClientV1__BatchConflict(address module);
     error InterchainClientV1__ChainIdNotLinked(uint64 chainId);
     error InterchainClientV1__ChainIdNotRemote(uint64 chainId);
     error InterchainClientV1__DstChainIdNotLocal(uint64 chainId);
@@ -64,29 +60,11 @@ interface IInterchainClientV1 {
         payable
         returns (InterchainTxDescriptor memory desc);
 
-    // TODO: remove functions with proof
-    function interchainExecute(
-        uint256 gasLimit,
-        bytes calldata transaction,
-        bytes32[] calldata proof
-    )
-        external
-        payable;
-
     function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable;
 
     function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce);
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
-
-    function isExecutable(bytes calldata transaction, bytes32[] calldata proof) external view returns (bool);
-    function getTxReadinessV1(
-        InterchainTransaction memory icTx,
-        bytes32[] calldata proof
-    )
-        external
-        view
-        returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg);
 
     function isExecutable(bytes calldata transaction) external view returns (bool);
     function getTxReadinessV1(InterchainTransaction memory icTx)
