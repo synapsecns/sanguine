@@ -285,7 +285,7 @@ export const Widget = ({
         )
       }
     } catch (error) {
-      console.error('Error approving: ', error)
+      console.error(`[Synapse Widget] Error while approving token: `, error)
     }
   }
 
@@ -339,7 +339,7 @@ export const Widget = ({
         }
       }
     } catch (error) {
-      console.log('Error bridging: ', error)
+      console.error('[Synapse Widget] Error bridging: ', error)
     }
   }
 
