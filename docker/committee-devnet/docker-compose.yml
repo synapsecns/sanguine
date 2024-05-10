@@ -24,7 +24,7 @@ services:
       - chain_a
       - chain_b
       - chain_c
-     # - tracing
+      - tracing
     build:
       context: ../../
       dockerfile: docker/committee-devnet/omnirpc.Dockerfile
@@ -113,11 +113,11 @@ services:
       - 9411:9411
     environment:
       SPAN_STORAGE_TYPE: 'badger'
-      BADGER_EPHEMERAL: 'false'
+      BADGER_EPHEMERAL: 'true'
       BADGER_DIRECTORY_VALUE: '/badger/data'
       BADGER_DIRECTORY_KEY: '/badger/key'
     volumes:
-      - badger-data:/badger
+      - badger-data:/data
 
   prometheus:
     restart: unless-stopped

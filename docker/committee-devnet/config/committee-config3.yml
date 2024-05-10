@@ -2,7 +2,7 @@ chains:
   42: '0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB'
   43: '0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB'
   44: '0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB'
-omnirpc_url: http://localhost:9001
+omnirpc_url: http://0.0.0.0:9001
 database:
   type: 'sqlite'
   dsn: '/tmp/committee'
@@ -27,4 +27,4 @@ bootstrap_peers:
   - /ip4/10.0.0.121/tcp/12347/p2p/16Uiu2HAkwb62r4YYGTW2RAm53QvYC4VExKNqWdRoZppKEm49vAH7
   - /ip4/127.0.0.1/tcp/12347/p2p/16Uiu2HAkwb62r4YYGTW2RAm53QvYC4VExKNqWdRoZppKEm49vAH7
 p2p_port: 12347
-use_peer_id: false
+use_peer_id: true
