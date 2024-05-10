@@ -195,11 +195,7 @@ func getDecimalsKey(addr common.Address, chainID uint32) string {
 }
 
 func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed, chainID int) error {
-	err := r.inventory.Rebalance(ctx, chainID, event.Token)
-	if err != nil {
-		logger.Errorf("could not rebalance: %v", err)
-	}
-	err = r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
+	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
