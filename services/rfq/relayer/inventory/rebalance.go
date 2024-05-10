@@ -188,5 +188,24 @@ func getRebalanceAmount(span trace.Span, cfg relconfig.Config, tokens map[int]ma
 			attribute.String("max_rebalance_amount", maxAmount.String()),
 		)
 	}
+
+	// make sure that the rebalance amount does not take origin below maintenance threshold
+	maintenancePctOrigin, err := cfg.GetMaintenanceBalancePct(originTokenData.ChainID, originTokenData.Addr.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
+	}
+	maintenanceThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePctOrigin/100)).Int(nil)
+	newBalanceOrigin := new(big.Int).Sub(originTokenData.Balance, amount)
+	if newBalanceOrigin.Cmp(maintenanceThreshOrigin) < 0 {
+		if span != nil {
+			span.SetAttributes(
+				attribute.Float64("maintenance_pct_origin", maintenancePctOrigin),
+				attribute.String("maintenance_thresh_origin", maintenanceThreshOrigin.String()),
+				attribute.String("new_balance_origin", newBalanceOrigin.String()),
+			)
+		}
+		return nil, nil
+	}
+
 	return amount, nil
 }
