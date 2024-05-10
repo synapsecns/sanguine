@@ -5,7 +5,7 @@ import {AbstractICApp, InterchainTxDescriptor} from "./AbstractICApp.sol";
 
 import {InterchainAppV1Events} from "../events/InterchainAppV1Events.sol";
 import {IInterchainAppV1} from "../interfaces/IInterchainAppV1.sol";
-import {AppConfigV1, APP_CONFIG_GUARD_DEFAULT} from "../libs/AppConfig.sol";
+import {AppConfigV1, APP_CONFIG_GUARD_DISABLED} from "../libs/AppConfig.sol";
 import {OptionsV1} from "../libs/Options.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
@@ -107,7 +107,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// - requiredResponses: the number of module responses required for accepting the message
     /// - optimisticPeriod: the minimum time after which the module responses are considered final
     function setAppConfigV1(uint256 requiredResponses, uint256 optimisticPeriod) external onlyRole(IC_GOVERNOR_ROLE) {
-        if (requiredResponses == 0 || optimisticPeriod == 0) {
+        if (requiredResponses == 0) {
             revert InterchainApp__AppConfigInvalid(requiredResponses, optimisticPeriod);
         }
         _requiredResponses = SafeCast.toUint16(requiredResponses);
@@ -253,9 +253,9 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     }
 
     /// @dev Returns the guard flag and address in the app config.
-    /// By default, the ICApp is using the Client-provided guard, but it can be overridden in the derived contract.
+    /// By default, the ICApp does not opt in for any guard, but it can be overridden in the derived contracts.
     function _getGuardConfig() internal view virtual returns (uint8 guardFlag, address guard) {
-        return (APP_CONFIG_GUARD_DEFAULT, address(0));
+        return (APP_CONFIG_GUARD_DISABLED, address(0));
     }
 
     /// @dev Returns the address of the Execution Service to use for sending messages.

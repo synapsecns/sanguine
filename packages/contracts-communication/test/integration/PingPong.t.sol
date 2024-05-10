@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 import {PingPongApp} from "../../contracts/apps/examples/PingPongApp.sol";
 
-import {ICIntegrationTest, InterchainEntry, InterchainTransaction} from "./ICIntegration.t.sol";
+import {ICIntegrationTest, InterchainTransaction} from "./ICIntegration.t.sol";
 
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
@@ -12,6 +12,8 @@ import {OptionsV1} from "../../contracts/libs/Options.sol";
 abstract contract PingPongIntegrationTest is ICIntegrationTest {
     uint256 public constant PING_PONG_BALANCE = 1000 ether;
     uint256 public constant COUNTER = 42;
+
+    uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
 
     OptionsV1 public ppOptions = OptionsV1({gasLimit: 500_000, gasAirdrop: 0});
 
@@ -75,5 +77,9 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
     /// @notice Message that destination chain PingPongApp sends back to source chain.
     function getDstMessage() internal pure override returns (bytes memory) {
         return abi.encode(COUNTER - 1);
+    }
+
+    function getAppOptimisticPeriod() internal pure override returns (uint256) {
+        return APP_OPTIMISTIC_PERIOD;
     }
 }
