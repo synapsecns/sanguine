@@ -1,6 +1,7 @@
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import * as path from "path";
 
 const config: Config = {
   title: 'Synapse Bridge Docs',
@@ -142,7 +143,20 @@ const config: Config = {
           },
         }
       },
-    ]
+    ],
+    () => ({
+      name: 'resolve-react',
+      configureWebpack() {
+        return {
+          resolve: {
+            alias: {
+              // assuming root node_modules is up from "./packages/<your-docusaurus>
+              react: path.resolve('../../node_modules/react'),
+            },
+          },
+        };
+      },
+    }),
   ],
 };
 

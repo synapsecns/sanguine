@@ -2,10 +2,11 @@
   "name": "sanguine",
   "version": "1.0.0",
   "private": "true",
-  "description": "Implementation of the Sanguine messaging standard",
+  "description": "Synapse bridge monorepo",
   "workspaces": {
     "packages": [
-      "packages/*"
+      "packages/*",
+      "docs/*"
     ],
     "nohoist": [
       "**/typechain",
