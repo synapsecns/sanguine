@@ -82,5 +82,14 @@
     "@changesets/cli": "2.22.0",
     "eslint-plugin-jsx": "^0.1.0"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "resolutions": {
+    "@docusaurus/core": "3.1.1",
+    "@docusaurus/theme-common": "3.1.1",
+    "@docusaurus/plugin-content-docs": "3.1.1",
+    "@docusaurus/utils-common": "3.1.1",
+    "@docusaurus/logger": "3.1.1",
+    "@docusaurus/utils-validation": "3.1.1",
+    "@docusaurus/utils": "3.1.1"
+  }
 }
