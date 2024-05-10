@@ -5,7 +5,8 @@
   "description": "Implementation of the Sanguine messaging standard",
   "workspaces": {
     "packages": [
-      "packages/*"
+      "packages/*",
+      "docs/*"
     ],
     "nohoist": [
       "**/typechain",
@@ -78,5 +79,9 @@
     "@changesets/cli": "2.22.0",
     "eslint-plugin-jsx": "^0.1.0"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "resolutions": {
+    "@docusaurus/core": "3.1.1",
+    "@docusaurus/theme-common": "3.1.1"
+  }
 }
