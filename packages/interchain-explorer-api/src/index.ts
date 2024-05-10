@@ -15,8 +15,8 @@ app.get('/api/hello', (req, res) => {
   res.json({ message: 'Hello World!' })
 })
 
-app.listen(3000, () => {
-  console.info('API server runs on http://localhost:3000')
-  console.info('REST requests go through http://localhost:3000/api')
-  console.info('GraphQL requests go through http://localhost:3000/graphql')
+app.listen(process.env.PORT, () => {
+  console.info('API server runs on http://localhost:3001')
+  console.info('REST requests go through http://localhost:3001/api')
+  console.info('GraphQL requests go through http://localhost:3001/graphql')
 })
