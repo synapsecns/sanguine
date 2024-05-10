@@ -300,7 +300,7 @@ const resolvers = {
           ...statusInfo,
           status: statusCode,
           firstArg: data[1],
-          secondArt: data[2],
+          secondArg: data[2],
         }
       }
     },
