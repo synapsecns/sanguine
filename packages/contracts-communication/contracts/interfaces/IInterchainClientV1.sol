@@ -10,7 +10,6 @@ interface IInterchainClientV1 {
         EntryAwaitingResponses,
         EntryConflict,
         ReceiverNotICApp,
-        ReceiverZeroRequiredResponses,
         TxWrongDstChainId,
         UndeterminedRevert
     }
@@ -28,7 +27,6 @@ interface IInterchainClientV1 {
     error InterchainClientV1__MsgValueMismatch(uint256 msgValue, uint256 required);
     error InterchainClientV1__ReceiverNotICApp(address receiver);
     error InterchainClientV1__ReceiverZeroAddress();
-    error InterchainClientV1__ReceiverZeroRequiredResponses(address receiver);
     error InterchainClientV1__ResponsesAmountBelowMin(uint256 responsesAmount, uint256 minRequired);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);

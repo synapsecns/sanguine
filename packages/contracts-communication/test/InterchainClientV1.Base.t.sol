@@ -149,14 +149,6 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertReceiverZeroRequiredResponses(address receiver) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                IInterchainClientV1.InterchainClientV1__ReceiverZeroRequiredResponses.selector, receiver
-            )
-        );
-    }
-
     function expectRevertTxAlreadyExecuted(bytes32 transactionId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__TxAlreadyExecuted.selector, transactionId)

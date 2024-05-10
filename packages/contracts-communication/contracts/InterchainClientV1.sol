@@ -221,7 +221,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     ///   - This is either one of the modules that the app trusts, or the Guard module used by the app.
     /// - ReceiverNotICApp: the receiver is not an Interchain app.
     ///  - `firstArg` is the receiver address.
-    /// - ReceiverZeroRequiredResponses: the app config requires zero responses for the transaction.
     /// - TxWrongDstChainId: the destination chain ID does not match the local chain ID.
     ///   - `firstArg` is the destination chain ID.
     /// - UndeterminedRevert: the transaction will revert for another reason.
@@ -247,8 +246,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 status = TxReadiness.EntryConflict;
             } else if (selector == InterchainClientV1__ReceiverNotICApp.selector) {
                 status = TxReadiness.ReceiverNotICApp;
-            } else if (selector == InterchainClientV1__ReceiverZeroRequiredResponses.selector) {
-                status = TxReadiness.ReceiverZeroRequiredResponses;
             } else if (selector == InterchainClientV1__DstChainIdNotLocal.selector) {
                 status = TxReadiness.TxWrongDstChainId;
             } else {
@@ -449,9 +446,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         });
         address receiver = icTx.dstReceiver.bytes32ToAddress();
         (AppConfigV1 memory appConfig, address[] memory approvedModules) = getAppReceivingConfigV1(receiver);
-        if (appConfig.requiredResponses == 0) {
-            revert InterchainClientV1__ReceiverZeroRequiredResponses(receiver);
-        }
+        // Note: appConfig.requiredResponses is never zero at this point, see fallbacks in `getAppReceivingConfigV1`
         // Verify against the Guard if the app opts in to use it
         address guard = _getGuard(appConfig);
         _assertNoGuardConflict(guard, entry);
