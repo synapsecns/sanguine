@@ -18,13 +18,15 @@ export const useStaleQuoteRefresher = (
   useEffect(() => {
     if (isValidQuote && !isLoadingQuote) {
       const timeDifference = calculateTimeBetween(currentTime, quoteTime)
+      const isStaleQuote = timeDifference >= staleTimeout
 
       console.log('timeDifference: ', timeDifference)
       console.log('staleTimeout: ', staleTimeout)
 
-      if (timeDifference >= staleTimeout) {
-        console.log('refresh quote')
-        refreshQuoteCallback()
+      if (isStaleQuote) {
+        document.addEventListener('mousemove', refreshQuoteCallback, {
+          once: true,
+        })
       }
     }
   }, [currentTime])
