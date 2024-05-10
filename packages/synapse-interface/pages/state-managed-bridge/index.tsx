@@ -153,6 +153,7 @@ const StateManagedBridge = () => {
 
     try {
       dispatch(setIsLoading(true))
+      const currentTimestamp: number = getTimeMinutesFromNow(0)
 
       const allQuotes = await synapseSDK.allBridgeQuotes(
         fromChainId,
@@ -273,6 +274,7 @@ const StateManagedBridge = () => {
             estimatedTime: estimatedTime,
             bridgeModuleName: bridgeModuleName,
             gasDropAmount: BigInt(gasDropAmount.toString()),
+            timestamp: currentTimestamp,
           })
         )
 
