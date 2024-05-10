@@ -74,6 +74,7 @@ import {
   getBridgeModuleNames,
 } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
+import { useStaleQuoteRefresher } from '../../utils/hooks/useStaleQuoteRefresher'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -315,6 +316,8 @@ const StateManagedBridge = () => {
       }
     }
   }
+
+  useRefresher(bridgeQuote, getAndSetBridgeQuote)
 
   const approveTxn = async () => {
     try {
