@@ -15,4 +15,3 @@ chains:
 port: 9001
 # expressed in seconds
 refreshInterval: 60
-client_type: 'resty'

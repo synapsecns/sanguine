@@ -10,7 +10,7 @@ volumes:
   guard_data:
   notary43_data:
   scribe_data:
-  prometheus-data:
+  # prometheus-data:
   badger-data:
   notary44_data:
   executor_data:
@@ -19,7 +19,6 @@ volumes:
 services:
   omnirpc:
     restart: unless-stopped
-    platform: linux/arm64
     depends_on:
       - chain_a
       - chain_b
@@ -54,6 +53,7 @@ services:
       --base-fee=1
       --gas-limit=100000000
       --state=/data/
+      --block-time 5
     ports:
       - '8042:8545'
     volumes:
@@ -73,6 +73,7 @@ services:
       --base-fee=1
       --gas-limit=100000000
       --state=/data/
+      --block-time 5
     ports:
       - '8043:8545'
     volumes:
@@ -92,6 +93,7 @@ services:
       --base-fee=1
       --gas-limit=100000000
       --state=/data/
+      --block-time 5
     ports:
       - '8044:8545'
     volumes:
@@ -119,15 +121,15 @@ services:
     volumes:
       - badger-data:/data
 
-  prometheus:
-    restart: unless-stopped
-    image: prom/prometheus:v2.46.0
-    ports:
-      - 9000:9090
-    volumes:
-      - '${PWD}/config/prometheus:/etc/prometheus'
-      - prometheus-data:/prometheus
-    command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
+  # prometheus:
+  #   restart: unless-stopped
+  #   image: prom/prometheus:v2.46.0
+  #   ports:
+  #     - 9000:9090
+  #   volumes:
+  #     - '${PWD}/config/prometheus:/etc/prometheus'
+  #     - prometheus-data:/prometheus
+  #   command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
 
   committee-node1:
     restart: unless-stopped
@@ -149,10 +151,10 @@ services:
       - run
       - '--config'
       - /config/committee-config1.yml
-    environment:
-      METRICS_HANDLER: jaeger
-      JAEGER_ENDPOINT: 'http://localhost:14268/api/traces'
-      GOLOG_LOG_LEVEL: debug
+    # environment:
+    #   METRICS_HANDLER: jaeger
+    #   JAEGER_ENDPOINT: 'http://localhost:14268/api/traces'
+    #   GOLOG_LOG_LEVEL: debug
 
 
   committee-node2:
