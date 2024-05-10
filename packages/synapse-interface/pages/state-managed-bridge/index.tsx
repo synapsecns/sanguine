@@ -11,7 +11,6 @@ import {
   getPublicClient,
   waitForTransactionReceipt,
 } from '@wagmi/core'
-
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
@@ -54,7 +53,6 @@ import { Token } from '@/utils/types'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { approveToken } from '@/utils/approveToken'
 import { stringToBigInt } from '@/utils/bigint/format'
-
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
@@ -74,7 +72,7 @@ import {
   getBridgeModuleNames,
 } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
-import { useStaleQuoteRefresher } from '../../utils/hooks/useStaleQuoteRefresher'
+import { useStaleQuoteRefresher } from '@/utils/hooks/useStaleQuoteRefresher'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
