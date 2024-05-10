@@ -4,7 +4,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "start": "npx prisma generate && tsx src/index.ts",
+    "dev": "npx prisma generate && tsx watch src/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.13.0",
