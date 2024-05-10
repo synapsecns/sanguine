@@ -6,6 +6,8 @@ import {
   InterchainTransaction,
   InterchainTransactionQueryFilter,
 } from '@/types'
+import { publicClient } from '@/utils/publicClient'
+import { InterchainClientV1Abi } from '@/abis/InterchainClientV1Abi'
 
 const prisma = new PrismaClient()
 
@@ -73,6 +75,14 @@ const typeDefs = `
     interchainTransaction: [InterchainTransaction!]!
   }
 
+  type TxReadinessType {
+    code: String
+    notes: [String]
+    status: String
+    firstArg: String
+    secondArg: String
+  }
+
   type InterchainTransaction {
     id: String!
     srcChainId: Int!
@@ -90,6 +100,7 @@ const typeDefs = `
     status: String
     interchainBatchId: String
     interchainBatch: InterchainBatch
+    txReadiness: TxReadinessType
   }
 
   type Query {
@@ -227,14 +238,61 @@ const resolvers = {
   },
   InterchainTransaction: {
     interchainTransactionSent: async (parent: InterchainTransaction) => {
+      if (!parent.interchainTransactionSentId) {
+        return null
+      }
       return await prisma.interchainTransactionSent.findUnique({
         where: { id: parent.interchainTransactionSentId },
       })
     },
     interchainTransactionReceived: async (parent: InterchainTransaction) => {
+      if (!parent.interchainTransactionReceivedId) {
+        return null
+      }
       return await prisma.interchainTransactionReceived.findUnique({
         where: { id: parent.interchainTransactionReceivedId },
       })
+    },
+    txReadiness: async (parent: InterchainTransaction) => {
+      const sentTxn = await prisma.interchainTransactionSent.findUnique({
+        where: { id: parent.interchainTransactionSentId },
+      })
+
+      if (sentTxn) {
+        const { srcChainId, dstChainId, srcSender, dstReceiver } = parent
+        const { dbNonce, entryIndex, options, message } = sentTxn
+
+        const viemClient = publicClient[dstChainId]
+
+        const data = await viemClient.readContract({
+          address: networkDetails[dstChainId].InterchainClientV1.address,
+          abi: InterchainClientV1Abi,
+          functionName: 'getTxReadinessV1',
+          args: [
+            [
+              srcChainId,
+              dstChainId,
+              dbNonce,
+              entryIndex,
+              srcSender,
+              dstReceiver,
+              options, // from interchainTxn sent
+              message, // from interchainTxn sent
+            ],
+            [],
+          ],
+        })
+
+        const statusCode = data[0]
+        const statusInfo = getTransactionStatusInfo(statusCode)
+
+        return {
+          ...statusInfo,
+          status: statusCode,
+          firstArg: data[1],
+          secondArt: data[2],
+        }
+      }
     },
   },
 }
@@ -243,3 +301,63 @@ export const schema = createSchema({
   typeDefs,
   resolvers,
 })
+
+export const networkDetails: any = {
+  11155111: {
+    name: 'ethSepolia',
+    InterchainClientV1: {
+      address: '0x6bAb7426099ba52ac37F309903169C4c0A5f7534',
+      abi: InterchainClientV1Abi,
+    },
+  },
+  421614: {
+    name: 'arbSepolia',
+    InterchainClientV1: {
+      address: '0x15ACDFd1F2027aE084B4d92da20D22cc945d07Ec',
+      abi: InterchainClientV1Abi,
+    },
+  },
+}
+
+function getTransactionStatusInfo(statusCode: number) {
+  const status = statusCode as TransactionStatus
+
+  const statusLabel = TransactionStatus[
+    status
+  ] as keyof typeof TransactionStatus
+  const notes = TransactionStatusNotes[status] || []
+  return { code: statusLabel, notes }
+}
+
+enum TransactionStatus {
+  Ready = 0,
+  AlreadyExecuted = 1,
+  EntryAwaitingResponses = 2,
+  EntryConflict = 3,
+  ReceiverNotICApp = 4,
+  ReceiverZeroRequiredResponses = 5,
+  TxWrongDstChainId = 6,
+  UndeterminedRevert = 7,
+}
+
+const TransactionStatusNotes: { [key in TransactionStatus]: string[] } = {
+  [TransactionStatus.Ready]: [],
+  [TransactionStatus.AlreadyExecuted]: ['`firstArg` is the transaction ID'],
+  [TransactionStatus.EntryAwaitingResponses]: [
+    '`firstArg` is the number of responses received',
+    '`secondArg` is the number of responses required',
+  ],
+  [TransactionStatus.EntryConflict]: [
+    '`firstArg` is the address of the module. This is either one of the modules that the app trusts, or the Guard module used by the app',
+  ],
+  [TransactionStatus.ReceiverNotICApp]: ['`firstArg` is the receiver address'],
+  [TransactionStatus.ReceiverZeroRequiredResponses]: [
+    'the app config requires zero responses for the transaction',
+  ],
+  [TransactionStatus.TxWrongDstChainId]: [
+    '`firstArg` is the destination chain ID',
+  ],
+  [TransactionStatus.UndeterminedRevert]: [
+    'the transaction will revert for another reason',
+  ],
+}
