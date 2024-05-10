@@ -16,7 +16,10 @@
   },
   "dependencies": {
     "@docusaurus/core": "3.1.1",
+    "@docusaurus/plugin-content-blog": "3.1.1",
+    "@docusaurus/plugin-content-docs": "3.1.1",
     "@docusaurus/preset-classic": "3.1.1",
+    "@docusaurus/theme-common": "3.1.1",
     "@mdx-js/react": "^3.0.0",
     "clsx": "^2.0.0",
     "docusaurus-plugin-openapi-docs": "3.0.0-beta.10",
@@ -45,5 +48,9 @@
   },
   "engines": {
     "node": ">=18.0"
+  },
+  "resolutions": {
+    "@docusaurus/core": "3.1.1",
+    "@docusaurus/theme-common": "3.1.1"
   }
 }
