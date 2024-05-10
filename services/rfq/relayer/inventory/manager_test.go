@@ -152,7 +152,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	// Set origin balance below maintenance threshold; need rebalance
 	usdcDataOrigin.Balance = big.NewInt(9e6)
 	usdcDataDest.Balance = big.NewInt(1e6)
-	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	rebalance, err = inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
 	i.NoError(err)
 	expected := &inventory.RebalanceData{
 		OriginMetadata: &usdcDataOrigin,
@@ -164,25 +164,25 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 
 	// Set rebalance methods to mismatch
 	cfg = getConfig("", "", relconfig.RebalanceMethodCircleCCTP, relconfig.RebalanceMethodSynapseCCTP)
-	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	rebalance, err = inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
 	i.NoError(err)
 	i.Nil(rebalance)
 
 	// Set one rebalance method to None
 	cfg = getConfig("", "", relconfig.RebalanceMethodNone, relconfig.RebalanceMethodSynapseCCTP)
-	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	rebalance, err = inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
 	i.NoError(err)
 	i.Nil(rebalance)
 
 	// Set min rebalance amount
 	cfgWithMax := getConfig("10", "1000000000", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
-	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, origin, usdcDataOrigin.Addr)
+	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, dest, usdcDataDest.Addr)
 	i.NoError(err)
 	i.Nil(rebalance)
 
 	// Set max rebalance amount
 	cfgWithMax = getConfig("0", "1.1", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
-	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, origin, usdcDataOrigin.Addr)
+	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, dest, usdcDataDest.Addr)
 	i.NoError(err)
 	expected = &inventory.RebalanceData{
 		OriginMetadata: &usdcDataOrigin,
@@ -196,7 +196,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	usdcDataOrigin.Balance = big.NewInt(2e6)
 	usdcDataDest.Balance = big.NewInt(1e6)
 	usdcDataExtra.Balance = big.NewInt(7e6)
-	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	rebalance, err = inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
 	i.NoError(err)
 	i.Nil(rebalance)
 }

@@ -65,10 +65,10 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 		return nil, nil
 	}
 
-	// if the given chain is not the origin of the rebalance, no need to do anything
-	if originTokenData.ChainID != chainID {
+	// if the given chain is not the destination of the rebalance, no need to do anything
+	if destTokenData.ChainID != chainID {
 		if span != nil {
-			span.SetAttributes(attribute.Int("rebalance_origin", originTokenData.ChainID))
+			span.SetAttributes(attribute.Int("rebalance_dest", destTokenData.ChainID))
 		}
 		return nil, nil
 	}
@@ -123,12 +123,12 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 
 // getRebalanceAmount calculates the amount to rebalance based on the configured thresholds.
 func getRebalanceAmount(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, originTokenData, destTokenData *TokenMetadata) (amount *big.Int, err error) {
-	// get the maintenance and initial values for the origin chain
-	maintenancePct, err := cfg.GetMaintenanceBalancePct(originTokenData.ChainID, originTokenData.Addr.Hex())
+	// get the maintenance and initial values for the destination chain
+	maintenancePct, err := cfg.GetMaintenanceBalancePct(destTokenData.ChainID, destTokenData.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
 	}
-	initialPct, err := cfg.GetInitialBalancePct(originTokenData.ChainID, originTokenData.Addr.Hex())
+	initialPct, err := cfg.GetInitialBalancePct(destTokenData.ChainID, destTokenData.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get initial pct: %w", err)
 	}
@@ -158,7 +158,7 @@ func getRebalanceAmount(span trace.Span, cfg relconfig.Config, tokens map[int]ma
 		return nil, nil
 	}
 
-	// calculate the amount to rebalance vs the initial threshold on origin
+	// calculate the amount to rebalance vs the initial threshold on destination
 	initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
 	amount = new(big.Int).Sub(originTokenData.Balance, initialThresh)
 
