@@ -1,6 +1,6 @@
-# Website
+# Synapse Bridge Docs
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+Note, because of [this](https://github.com/PaloAltoNetworks/docusaurus-openapi-docs/issues/580#issuecomment-2103047228) issue, docs currently live outside of the yarn workspace. This will be fixed in a future version.
 
 ## Generating API Docs
 
