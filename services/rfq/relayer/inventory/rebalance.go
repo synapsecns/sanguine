@@ -27,7 +27,10 @@ type RebalanceManager interface {
 	Execute(ctx context.Context, rebalance *RebalanceData) error
 }
 
-//nolint:cyclop,gocognit,nilnil
+// getRebalance builds a rebalance action based on current token balances and configured thresholds.
+// Note that only the given token is considered for rebalance.
+//
+//nolint:nilnil
 func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
 	// get rebalance method
 	method, err := cfg.GetRebalanceMethod(chainID, token.Hex())
@@ -90,7 +93,7 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	return rebalance, nil
 }
 
-// evaluate the origin and dest of the rebalance based on min/max token balances
+// getRebalanceMetadatas finds the origin and dest token metadata based on the configured rebalance method.
 func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, method relconfig.RebalanceMethod) (originTokenData, destTokenData *TokenMetadata) {
 	for _, tokenMap := range tokens {
 		for _, tokenData := range tokenMap {
@@ -118,6 +121,7 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 	return originTokenData, destTokenData
 }
 
+// getRebalanceAmount calculates the amount to rebalance based on the configured thresholds.
 func getRebalanceAmount(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, originTokenData, destTokenData *TokenMetadata) (amount *big.Int, err error) {
 	// get the maintenance and initial values for the origin chain
 	maintenancePct, err := cfg.GetMaintenanceBalancePct(originTokenData.ChainID, originTokenData.Addr.Hex())
