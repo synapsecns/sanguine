@@ -92,9 +92,9 @@ const StateManagedBridge = () => {
     fromToken,
     toToken,
     bridgeQuote,
-    isLoading: isLoadingQuote,
     debouncedFromValue,
     destinationAddress,
+    isLoading: isLoadingQuote,
   }: BridgeState = useBridgeState()
   const { showSettingsSlideOver, showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
