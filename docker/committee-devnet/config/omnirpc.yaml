@@ -1,16 +1,16 @@
 chains:
   42:
     rpcs:
-      - http://0.0.0.0:8042
-    confirmations: 0
+      - http://chain_a:8042
+    confirmations: 1
   43:
     rpcs:
-      - http://0.0.0.0:8043/
-    confirmations: 0
+      - http://chain_b:8043/
+    confirmations: 1
   44:
     rpcs:
-      - http://0.0.0.0:8044/
-    confirmations: 0
+      - http://chain_c:8044/
+    confirmations: 1
 # port to run on
 port: 9001
 # expressed in seconds

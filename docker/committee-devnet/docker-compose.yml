@@ -9,8 +9,8 @@ volumes:
   committee_data:
   guard_data:
   notary43_data:
-  scribe_data:
-  # prometheus-data:
+  scribe_data: # prometheus-data:
+
   badger-data:
   notary44_data:
   executor_data:
@@ -30,14 +30,12 @@ services:
     ports:
       - '9001:9001'
     command: >
-      omnirpc
-      server
-      --config=/config/omnirpc.yaml
+      omnirpc server --config=/config/omnirpc.yaml
     volumes:
       - '${PWD}/config/omnirpc.yaml:/config/omnirpc.yaml'
-   #environment:
-   #  METRICS_HANDLER: jaeger
-   #  JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+    #environment:
+    #  METRICS_HANDLER: jaeger
+    #  JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
 
   chain_a:
     restart: unless-stopped
@@ -45,15 +43,7 @@ services:
     entrypoint: anvil
     platform: linux/amd64
     command: >
-      --host=0.0.0.0
-      --chain-id=42
-      --allow-origin='*'
-      --steps-tracing
-      --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy'
-      --base-fee=1
-      --gas-limit=100000000
-      --state=/data/
-      --block-time 5
+      --host=0.0.0.0 --chain-id=42 --allow-origin='*' --steps-tracing --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy' --base-fee=1 --gas-limit=100000000 --state=/data/ --block-time 5
     ports:
       - '8042:8545'
     volumes:
@@ -65,15 +55,7 @@ services:
     entrypoint: anvil
     platform: linux/amd64
     command: >
-      --host=0.0.0.0
-      --chain-id=43
-      --allow-origin='*'
-      --steps-tracing
-      --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy'
-      --base-fee=1
-      --gas-limit=100000000
-      --state=/data/
-      --block-time 5
+      --host=0.0.0.0 --chain-id=43 --allow-origin='*' --steps-tracing --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy' --base-fee=1 --gas-limit=100000000 --state=/data/ --block-time 5
     ports:
       - '8043:8545'
     volumes:
@@ -85,15 +67,7 @@ services:
     entrypoint: anvil
     platform: linux/amd64
     command: >
-      --host=0.0.0.0
-      --chain-id=44
-      --allow-origin='*'
-      --steps-tracing
-      --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy'
-      --base-fee=1
-      --gas-limit=100000000
-      --state=/data/
-      --block-time 5
+      --host=0.0.0.0 --chain-id=44 --allow-origin='*' --steps-tracing --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy' --base-fee=1 --gas-limit=100000000 --state=/data/ --block-time 5
     ports:
       - '8044:8545'
     volumes:
@@ -151,11 +125,10 @@ services:
       - run
       - '--config'
       - /config/committee-config1.yml
-    # environment:
-    #   METRICS_HANDLER: jaeger
-    #   JAEGER_ENDPOINT: 'http://localhost:14268/api/traces'
-    #   GOLOG_LOG_LEVEL: debug
-
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
 
   committee-node2:
     restart: unless-stopped
@@ -175,7 +148,7 @@ services:
       - '/config/committee-config2.yml'
     environment:
       METRICS_HANDLER: jaeger
-      JAEGER_ENDPOINT: 'http://localhost:14268/api/traces'
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
 
   committee-node3:
@@ -196,7 +169,5 @@ services:
       - '/config/committee-config3.yml'
     environment:
       METRICS_HANDLER: jaeger
-      JAEGER_ENDPOINT: 'http://localhost:14268/api/traces'
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
-
-
