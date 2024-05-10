@@ -69,8 +69,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @notice Allows the contract owner to set the address of the default module.
     /// Note: this module will be used for the apps that define an empty module list in their config.
     /// @param module           The address of the default module.
-    function setDefaultModule(address module) external {
-        // TODO: implement
+    function setDefaultModule(address module) external onlyOwner {
+        if (module == address(0)) {
+            revert InterchainClientV1__ModuleZeroAddress();
+        }
+        defaultModule = module;
+        emit DefaultModuleSet(module);
     }
 
     /// @notice Sets the linked client for a specific chain ID.
