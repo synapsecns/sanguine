@@ -1,10 +1,10 @@
 import { createSchema } from 'graphql-yoga'
 import { PrismaClient } from '@prisma/client'
 import {
-  InterchainBatch,
-  InterchainBatchQueryFilter,
-  InterchainTransaction,
-  InterchainTransactionQueryFilter,
+  type InterchainBatch,
+  type InterchainBatchQueryFilter,
+  type InterchainTransaction,
+  type InterchainTransactionQueryFilter,
 } from '@/types'
 import { publicClient } from '@/utils/publicClient'
 import { InterchainClientV1Abi } from '@/abis/InterchainClientV1Abi'
@@ -225,6 +225,9 @@ const resolvers = {
       })
     },
     appConfigV1: async (parent: InterchainBatch) => {
+      if (!parent.appConfigV1Id) {
+        return null
+      }
       const appConfig = await prisma.appConfigV1.findUnique({
         where: { id: parent.appConfigV1Id },
       })
