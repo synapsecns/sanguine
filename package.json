@@ -15,7 +15,10 @@
       "**/@openzeppelin/contracts",
       "**/@synapsecns/solidity-devops",
       "**/ds-test",
-      "**/forge-std"
+      "**/forge-std",
+      "**/docusaurus-plugin-openapi-docs/@docusaurus/core",
+      "**/docusaurus-theme-openapi-docs/@docusaurus/core",
+      "**docusaurus**"
     ]
   },
   "repository": {
