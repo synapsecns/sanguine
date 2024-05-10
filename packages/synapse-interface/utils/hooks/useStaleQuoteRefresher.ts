@@ -27,5 +27,5 @@ export const useStaleQuoteRefresher = (
         refreshQuoteCallback()
       }
     }
-  }, [refreshQuoteCallback])
+  }, [currentTime])
 }
