@@ -368,10 +368,13 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
             return;
         }
         uint256 actual = 0;
-        if (timeA == justVerTS() || timeA == OVER_VERIFIED) {
+        // If the guard is disabled, the last accepted timestamp is the initial timestamp - 1.
+        // Otherwise, it's the "just verified" timestamp: initial timestamp - optimistic period - 1.
+        uint256 lastAcceptedTS = (guardFlag == GUARD_DISABLED) ? INITIAL_TS - 1 : justVerTS();
+        if (timeA <= lastAcceptedTS && timeA != NOT_VERIFIED) {
             actual++;
         }
-        if (timeB == justVerTS() || timeB == OVER_VERIFIED) {
+        if (timeB <= lastAcceptedTS && timeB != NOT_VERIFIED) {
             actual++;
         }
         if (actual >= required) {

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {TypeCasts} from "./TypeCasts.sol";
-
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @notice Struct representing an entry in the Interchain DataBase.
@@ -39,7 +37,8 @@ library InterchainEntryLib {
         view
         returns (InterchainEntry memory entry)
     {
-        return InterchainEntry({srcChainId: SafeCast.toUint64(block.chainid), dbNonce: dbNonce, entryValue: entryValue});
+        uint64 srcChainId = SafeCast.toUint64(block.chainid);
+        return InterchainEntry({srcChainId: srcChainId, dbNonce: dbNonce, entryValue: entryValue});
     }
 
     /// @notice Returns the value of the entry: writer + digest hashed together
