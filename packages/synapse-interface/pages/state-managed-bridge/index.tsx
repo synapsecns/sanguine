@@ -317,7 +317,7 @@ const StateManagedBridge = () => {
     }
   }
 
-  useRefresher(bridgeQuote, getAndSetBridgeQuote)
+  useStaleQuoteRefresher(bridgeQuote, getAndSetBridgeQuote)
 
   const approveTxn = async () => {
     try {
