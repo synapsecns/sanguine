@@ -15,7 +15,7 @@ At a high level, the relayer works like this:
 
 ### Modes
 
-As specified by the [cctp_type](#config), the CCTP relayer can be run in one of two modes. In [Synapse mode](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageType), the [Synapse CCTP](./Contracts.md)contracts are listened to and events relayed through there (including metadata). In [Circle Mode](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageType), raw [TokenMessenger](https://github.com/circlefin/evm-cctp-contracts/blob/817397db0a12963accc08ff86065491577bbc0e5/src/TokenMessenger.sol) events are relayed. This mode can only be used for USDC to USDC bridges and is not commonly used.
+As specified by the [cctp_type](#Configuration), the CCTP relayer can be run in one of two modes. In [Synapse mode](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageType), the [Synapse CCTP](./Contracts.md)contracts are listened to and events relayed through there (including metadata). In [Circle Mode](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageType), raw [TokenMessenger](https://github.com/circlefin/evm-cctp-contracts/blob/817397db0a12963accc08ff86065491577bbc0e5/src/TokenMessenger.sol) events are relayed. This mode can only be used for USDC to USDC bridges and is not commonly used.
 
 ## Running the Relayer
 

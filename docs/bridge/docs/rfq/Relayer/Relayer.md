@@ -196,7 +196,7 @@ The relayer is configured with a yaml file. The following is an example configur
  - `chains` - each chain has a different config that overrides base_chain_config. Here are the parameters for each chain
   - `rfq_address` - the address of the rfq contract on this chain. These addresses are available [here](../Contracts.md).
 
-  - `synapse_cctp_address` (optional) - this is only applicable if **rebalance_method** is set to synapse. This is the address of the CCTP contract available [here](../../../../CCTP/Contracts).
+  - `synapse_cctp_address` (optional) - this is only applicable if **rebalance_method** is set to synapse. This is the address of the CCTP contract available [here](../../CCTP/Contracts).
   - `token_messenger_address` (optional) -  this is only applicable if **rebalance_method** is set to cctp. Tells the relayer to use the token messenger instead of synapse.
       <aside>
       💡 The choice of wether to use synapse cctp or the circle token messenger is up to the user. Synapse will take a fee but unlike the token messenger, will not spend any of the users gas.
