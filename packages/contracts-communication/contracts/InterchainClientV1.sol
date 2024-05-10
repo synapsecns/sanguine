@@ -347,6 +347,15 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         bytes memory encodedConfig;
         (encodedConfig, modules) = abi.decode(returnData, (bytes, address[]));
         config = encodedConfig.decodeAppConfigV1();
+        // Fallback to the default module if the app has no modules
+        if (modules.length == 0) {
+            modules = new address[](1);
+            modules[0] = defaultModule;
+        }
+        // Fallback to "all responses" if the app requires zero responses
+        if (config.requiredResponses == 0) {
+            config.requiredResponses = modules.length;
+        }
     }
 
     /// @notice Encodes the transaction data into a bytes format.
