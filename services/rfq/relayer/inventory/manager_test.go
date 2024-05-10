@@ -67,18 +67,21 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 		Decimals: 6,
 		ChainID:  origin,
 		Addr:     common.HexToAddress("0x0000000000000000000000000000000000000123"),
+		Balance:  big.NewInt(0),
 	}
 	usdcDataDest := inventory.TokenMetadata{
 		Name:     "USDC",
 		Decimals: 6,
 		ChainID:  dest,
 		Addr:     common.HexToAddress("0x0000000000000000000000000000000000000456"),
+		Balance:  big.NewInt(0),
 	}
 	usdcDataExtra := inventory.TokenMetadata{
 		Name:     "USDC",
 		Decimals: 6,
 		ChainID:  extra,
 		Addr:     common.HexToAddress("0x0000000000000000000000000000000000000789"),
+		Balance:  big.NewInt(0),
 	}
 	tokens := map[int]map[common.Address]*inventory.TokenMetadata{
 		origin: {
@@ -86,6 +89,17 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 		},
 		dest: {
 			usdcDataDest.Addr: &usdcDataDest,
+		},
+	}
+	tokensWithExtra := map[int]map[common.Address]*inventory.TokenMetadata{
+		origin: {
+			usdcDataOrigin.Addr: &usdcDataOrigin,
+		},
+		dest: {
+			usdcDataDest.Addr: &usdcDataDest,
+		},
+		extra: {
+			usdcDataExtra.Addr: &usdcDataExtra,
 		},
 	}
 	getConfig := func(minRebalanceAmount, maxRebalanceAmount string, originMethod, destMethod relconfig.RebalanceMethod) relconfig.Config {
@@ -199,6 +213,64 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	rebalance, err = inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
 	i.NoError(err)
 	i.Nil(rebalance)
+
+	// Set origin as lowest balance, but mismatched rebalance method, so next lowest balance
+	// should be chosen
+	cfg = relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			origin: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:               usdcDataOrigin.Addr.Hex(),
+						Decimals:              6,
+						MaintenanceBalancePct: 20,
+						InitialBalancePct:     40,
+						MinRebalanceAmount:    "",
+						MaxRebalanceAmount:    "",
+						RebalanceMethod:       "synapsecctp",
+					},
+				},
+			},
+			dest: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:               usdcDataDest.Addr.Hex(),
+						Decimals:              6,
+						MaintenanceBalancePct: 20,
+						InitialBalancePct:     40,
+						MinRebalanceAmount:    "",
+						MaxRebalanceAmount:    "",
+						RebalanceMethod:       "circlecctp",
+					},
+				},
+			},
+			extra: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:               usdcDataExtra.Addr.Hex(),
+						Decimals:              6,
+						MaintenanceBalancePct: 20,
+						InitialBalancePct:     40,
+						MinRebalanceAmount:    "",
+						MaxRebalanceAmount:    "",
+						RebalanceMethod:       "circlecctp",
+					},
+				},
+			},
+		},
+	}
+	usdcDataOrigin.Balance = big.NewInt(0)
+	usdcDataDest.Balance = big.NewInt(1e6)
+	usdcDataExtra.Balance = big.NewInt(9e6)
+	rebalance, err = inventory.GetRebalance(cfg, tokensWithExtra, dest, usdcDataDest.Addr)
+	i.NoError(err)
+	expected = &inventory.RebalanceData{
+		OriginMetadata: &usdcDataExtra,
+		DestMetadata:   &usdcDataDest,
+		Amount:         big.NewInt(5e6),
+		Method:         relconfig.RebalanceMethodCircleCCTP,
+	}
+	i.Equal(expected, rebalance)
 }
 
 func (i *InventoryTestSuite) TestHasSufficientGas() {
