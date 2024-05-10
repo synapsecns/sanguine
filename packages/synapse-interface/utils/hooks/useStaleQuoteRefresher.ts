@@ -19,10 +19,6 @@ export const useStaleQuoteRefresher = (
     if (isValidQuote && !isLoadingQuote) {
       const timeDifference = calculateTimeBetween(currentTime, quoteTime)
       const isStaleQuote = timeDifference >= staleTimeout
-
-      console.log('timeDifference: ', timeDifference)
-      console.log('staleTimeout: ', staleTimeout)
-
       if (isStaleQuote) {
         document.addEventListener('mousemove', refreshQuoteCallback, {
           once: true,
