@@ -17,7 +17,7 @@ export const calculateTimeBetween = (
   timeBefore: number,
   timeAfter: number
 ): number => {
-  return (timeBefore - timeAfter) * 1000
+  return Math.abs(timeBefore - timeAfter) * 1000
 }
 
 export const formatDate = (date) => {

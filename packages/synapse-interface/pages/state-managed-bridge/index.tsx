@@ -92,6 +92,7 @@ const StateManagedBridge = () => {
     fromToken,
     toToken,
     bridgeQuote,
+    isLoading: isLoadingQuote,
     debouncedFromValue,
     destinationAddress,
   }: BridgeState = useBridgeState()
@@ -317,7 +318,7 @@ const StateManagedBridge = () => {
     }
   }
 
-  useStaleQuoteRefresher(bridgeQuote, getAndSetBridgeQuote)
+  useStaleQuoteRefresher(bridgeQuote, isLoadingQuote, getAndSetBridgeQuote)
 
   const approveTxn = async () => {
     try {
