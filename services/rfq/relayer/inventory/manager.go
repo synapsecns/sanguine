@@ -517,6 +517,15 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
 	}
 
+	// get rebalance method
+	method, err := cfg.GetRebalanceMethod(chainID, token.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("could not get rebalance method: %w", err)
+	}
+	if method == relconfig.RebalanceMethodNone {
+		return nil, nil
+	}
+
 	// get token metadata
 	var rebalanceTokenData *TokenMetadata
 	for address, tokenData := range tokens[chainID] {
@@ -531,6 +540,17 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	for _, tokenMap := range tokens {
 		for _, tokenData := range tokenMap {
 			if tokenData.Name == rebalanceTokenData.Name {
+				// make sure that the token is compatible with our rebalance method
+				tokenMethod, tokenErr := cfg.GetRebalanceMethod(tokenData.ChainID, tokenData.Addr.Hex())
+				if tokenErr != nil {
+					logger.Errorf("could not get token rebalance method: %v", tokenErr)
+					continue
+				}
+				if tokenMethod != method {
+					continue
+				}
+
+				// assign dest / origin metadata based on min / max balances
 				if destTokenData == nil || tokenData.Balance.Cmp(destTokenData.Balance) < 0 {
 					destTokenData = tokenData
 				}
@@ -542,37 +562,16 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	}
 
 	// if the given chain is not the origin of the rebalance, no need to do anything
-	defer func() {
-		if span != nil {
-			span.SetAttributes(
-				attribute.Int("rebalance_chain_id", chainID),
-				attribute.Int("rebalance_origin", originTokenData.ChainID),
-				attribute.Int("rebalance_dest", destTokenData.ChainID),
-			)
-		}
-	}()
-	if originTokenData.ChainID != chainID {
+	if originTokenData == nil {
+		span.SetAttributes(attribute.Bool("no_rebalance_origin", true))
 		return nil, nil
 	}
-
-	// validate the rebalance method pair
-	methodOrigin, err := cfg.GetRebalanceMethod(originTokenData.ChainID, originTokenData.Addr.Hex())
-	if err != nil {
-		return nil, fmt.Errorf("could not get origin rebalance method: %w", err)
+	if destTokenData == nil {
+		span.SetAttributes(attribute.Bool("no_rebalance_dest", true))
+		return nil, nil
 	}
-	methodDest, err := cfg.GetRebalanceMethod(destTokenData.ChainID, destTokenData.Addr.Hex())
-	if err != nil {
-		return nil, fmt.Errorf("could not get dest rebalance method: %w", err)
-	}
-	rebalanceMethod := relconfig.CoalesceRebalanceMethods(methodOrigin, methodDest)
-	defer func() {
-		if span != nil {
-			span.SetAttributes(attribute.Int("rebalance_method", int(rebalanceMethod)))
-			span.SetAttributes(attribute.Int("origin_rebalance_method", int(methodOrigin)))
-			span.SetAttributes(attribute.Int("dest_rebalance_method", int(methodDest)))
-		}
-	}()
-	if rebalanceMethod == relconfig.RebalanceMethodNone {
+	if originTokenData.ChainID != chainID {
+		span.SetAttributes(attribute.Int("rebalance_origin", originTokenData.ChainID))
 		return nil, nil
 	}
 
@@ -641,7 +640,7 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 		OriginMetadata: originTokenData,
 		DestMetadata:   destTokenData,
 		Amount:         amount,
-		Method:         rebalanceMethod,
+		Method:         method,
 	}
 	return rebalance, nil
 }
