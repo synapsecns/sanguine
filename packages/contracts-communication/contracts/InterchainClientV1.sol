@@ -41,6 +41,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// if the app opts in to use the Guard.
     address public defaultGuard;
 
+    /// @notice Address of the default module to use to verify the validity of entries.
+    /// Note: this module will be used for the apps that define an empty module list in their config.
+    address public defaultModule;
+
     /// @dev Address of the InterchainClient contract on the remote chain
     mapping(uint64 chainId => bytes32 remoteClient) internal _linkedClient;
     /// @dev Executor address that completed the transaction. Address(0) if not executed yet.
@@ -60,6 +64,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
         defaultGuard = guard;
         emit DefaultGuardSet(guard);
+    }
+
+    /// @notice Allows the contract owner to set the address of the default module.
+    /// Note: this module will be used for the apps that define an empty module list in their config.
+    /// @param module           The address of the default module.
+    function setDefaultModule(address module) external {
+        // TODO: implement
     }
 
     /// @notice Sets the linked client for a specific chain ID.
