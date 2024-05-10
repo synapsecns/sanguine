@@ -28,7 +28,7 @@ type RebalanceManager interface {
 }
 
 // getRebalance builds a rebalance action based on current token balances and configured thresholds.
-// Note that only the given token is considered for rebalance.
+// Note that only the given chain/token pair is considered for rebalance (as the destination chain).
 //
 //nolint:nilnil
 func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
