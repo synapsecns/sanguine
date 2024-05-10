@@ -1,7 +1,5 @@
 # Synapse Bridge Docs
 
-Note, because of [this](https://github.com/PaloAltoNetworks/docusaurus-openapi-docs/issues/580#issuecomment-2103047228) issue, docs currently live outside of the yarn workspace. This will be fixed in a future version.
-
 ## Generating API Docs
 
 `yarn docusaurus gen-api-docs all`: <!--todo: needs to be done from ci to ensure regenration is done-->
