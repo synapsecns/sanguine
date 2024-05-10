@@ -29,11 +29,6 @@ type RebalanceManager interface {
 
 //nolint:cyclop,gocognit,nilnil
 func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
-	maintenancePct, err := cfg.GetMaintenanceBalancePct(chainID, token.Hex())
-	if err != nil {
-		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
-	}
-
 	// get rebalance method
 	method, err := cfg.GetRebalanceMethod(chainID, token.Hex())
 	if err != nil {
@@ -53,10 +48,53 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	}
 
 	// evaluate the origin and dest of the rebalance based on min/max token balances
-	var destTokenData, originTokenData *TokenMetadata
+	originTokenData, destTokenData := getRebalanceMetadatas(cfg, tokens, rebalanceTokenData.Name, method)
+	if originTokenData == nil {
+		if span != nil {
+			span.SetAttributes(attribute.Bool("no_rebalance_origin", true))
+		}
+		return nil, nil
+	}
+	if destTokenData == nil {
+		if span != nil {
+			span.SetAttributes(attribute.Bool("no_rebalance_dest", true))
+		}
+		return nil, nil
+	}
+
+	// if the given chain is not the origin of the rebalance, no need to do anything
+	if originTokenData.ChainID != chainID {
+		if span != nil {
+			span.SetAttributes(attribute.Int("rebalance_origin", originTokenData.ChainID))
+		}
+		return nil, nil
+	}
+
+	amount, err := getRebalanceAmount(span, cfg, tokens, originTokenData, destTokenData)
+	if err != nil {
+		return nil, fmt.Errorf("could not get rebalance amount: %w", err)
+	}
+	if amount == nil {
+		if span != nil {
+			span.SetAttributes(attribute.Bool("no_rebalance_amount", true))
+		}
+		return nil, nil
+	}
+
+	rebalance = &RebalanceData{
+		OriginMetadata: originTokenData,
+		DestMetadata:   destTokenData,
+		Amount:         amount,
+		Method:         method,
+	}
+	return rebalance, nil
+}
+
+// evaluate the origin and dest of the rebalance based on min/max token balances
+func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, method relconfig.RebalanceMethod) (originTokenData, destTokenData *TokenMetadata) {
 	for _, tokenMap := range tokens {
 		for _, tokenData := range tokenMap {
-			if tokenData.Name == rebalanceTokenData.Name {
+			if tokenData.Name == tokenName {
 				// make sure that the token is compatible with our rebalance method
 				tokenMethod, tokenErr := cfg.GetRebalanceMethod(tokenData.ChainID, tokenData.Addr.Hex())
 				if tokenErr != nil {
@@ -67,42 +105,36 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 					continue
 				}
 
-				// assign dest / origin metadata based on min / max balances
-				if destTokenData == nil || tokenData.Balance.Cmp(destTokenData.Balance) < 0 {
-					destTokenData = tokenData
-				}
+				// assign origin / dest metadata based on min / max balances
 				if originTokenData == nil || tokenData.Balance.Cmp(originTokenData.Balance) > 0 {
 					originTokenData = tokenData
+				}
+				if destTokenData == nil || tokenData.Balance.Cmp(destTokenData.Balance) < 0 {
+					destTokenData = tokenData
 				}
 			}
 		}
 	}
+	return originTokenData, destTokenData
+}
 
-	// if the given chain is not the origin of the rebalance, no need to do anything
-	if originTokenData == nil {
-		span.SetAttributes(attribute.Bool("no_rebalance_origin", true))
-		return nil, nil
+func getRebalanceAmount(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, originTokenData, destTokenData *TokenMetadata) (amount *big.Int, err error) {
+	// get the maintenance and initial values for the origin chain
+	maintenancePct, err := cfg.GetMaintenanceBalancePct(originTokenData.ChainID, originTokenData.Addr.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
 	}
-	if destTokenData == nil {
-		span.SetAttributes(attribute.Bool("no_rebalance_dest", true))
-		return nil, nil
-	}
-	if originTokenData.ChainID != chainID {
-		span.SetAttributes(attribute.Int("rebalance_origin", originTokenData.ChainID))
-		return nil, nil
-	}
-
-	// get the initialPct for the origin chain
 	initialPct, err := cfg.GetInitialBalancePct(originTokenData.ChainID, originTokenData.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get initial pct: %w", err)
 	}
 
 	// calculate maintenance threshold relative to total balance
+	tokenName := originTokenData.Name
 	totalBalance := big.NewInt(0)
 	for _, tokenMap := range tokens {
 		for _, tokenData := range tokenMap {
-			if tokenData.Name == rebalanceTokenData.Name {
+			if tokenData.Name == tokenName {
 				totalBalance.Add(totalBalance, tokenData.Balance)
 			}
 		}
@@ -117,14 +149,14 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 		span.SetAttributes(attribute.String("maintenance_thresh", maintenanceThresh.String()))
 	}
 
-	// check if the minimum balance is below the threshold and trigger rebalance
+	// no need to rebalance if we are not below maintenance threshold on destination
 	if destTokenData.Balance.Cmp(maintenanceThresh) > 0 {
-		return rebalance, nil
+		return nil, nil
 	}
 
 	// calculate the amount to rebalance vs the initial threshold on origin
 	initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
-	amount := new(big.Int).Sub(originTokenData.Balance, initialThresh)
+	amount = new(big.Int).Sub(originTokenData.Balance, initialThresh)
 
 	// no need to rebalance since amount would not be positive
 	if amount.Cmp(big.NewInt(0)) <= 0 {
@@ -152,12 +184,5 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 			attribute.String("max_rebalance_amount", maxAmount.String()),
 		)
 	}
-
-	rebalance = &RebalanceData{
-		OriginMetadata: originTokenData,
-		DestMetadata:   destTokenData,
-		Amount:         amount,
-		Method:         method,
-	}
-	return rebalance, nil
+	return amount, nil
 }
