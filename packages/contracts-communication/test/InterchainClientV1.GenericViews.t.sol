@@ -18,10 +18,23 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
     address[] public oneModule;
     address[] public twoModules;
 
+    address[] public defaultModuleList;
+
+    AppConfigV1 public zeroResponses =
+        AppConfigV1({requiredResponses: 0, optimisticPeriod: 30, guardFlag: 2, guard: address(4)});
+
+    AppConfigV1 public oneResponse =
+        AppConfigV1({requiredResponses: 1, optimisticPeriod: 30, guardFlag: 2, guard: address(4)});
+
+    AppConfigV1 public twoResponses =
+        AppConfigV1({requiredResponses: 2, optimisticPeriod: 30, guardFlag: 2, guard: address(4)});
+
     function setUp() public override {
         super.setUp();
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
+        setDefaultModule(defaultModule);
         app = address(new InterchainAppMock());
+        defaultModuleList.push(defaultModule);
         oneModule.push(moduleA);
         twoModules.push(moduleA);
         twoModules.push(moduleB);
@@ -82,12 +95,75 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
         assertEq(decoded.gasAirdrop, options.gasAirdrop, "!gasAirdrop");
     }
 
-    function test_getAppReceivingConfigV1() public {
-        AppConfigV1 memory appConfig =
-            AppConfigV1({requiredResponses: 1, optimisticPeriod: 30, guardFlag: 2, guard: address(4)});
-        mockReceivingConfig(app, appConfig, twoModules);
+    function test_getAppReceivingConfigV1_zeroModules_zeroResponses() public {
+        mockReceivingConfig(app, zeroResponses, new address[](0));
         (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
-        assertEq(fetchedConfig, appConfig);
+        // Should use default module list and change the required responses to one
+        assertEq(fetchedConfig, oneResponse);
+        assertEq(fetchedModules, defaultModuleList);
+    }
+
+    function test_getAppReceivingConfigV1_zeroModules_oneResponse() public {
+        mockReceivingConfig(app, oneResponse, new address[](0));
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use default module list and leave the required responses as one
+        assertEq(fetchedConfig, oneResponse);
+        assertEq(fetchedModules, defaultModuleList);
+    }
+
+    function test_getAppReceivingConfigV1_zeroModules_twoResponses() public {
+        mockReceivingConfig(app, twoResponses, new address[](0));
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the default module and leave the required responses as two
+        assertEq(fetchedConfig, twoResponses);
+        assertEq(fetchedModules, defaultModuleList);
+    }
+
+    function test_getAppReceivingConfigV1_oneModule_zeroResponses() public {
+        mockReceivingConfig(app, zeroResponses, oneModule);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured module and change the required responses to one
+        assertEq(fetchedConfig, oneResponse);
+        assertEq(fetchedModules, oneModule);
+    }
+
+    function test_getAppReceivingConfigV1_oneModule_oneResponse() public {
+        mockReceivingConfig(app, oneResponse, oneModule);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured module and leave the required responses as one
+        assertEq(fetchedConfig, oneResponse);
+        assertEq(fetchedModules, oneModule);
+    }
+
+    function test_getAppReceivingConfigV1_oneModule_twoResponses() public {
+        mockReceivingConfig(app, twoResponses, oneModule);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured module and leave the required responses as two
+        assertEq(fetchedConfig, twoResponses);
+        assertEq(fetchedModules, oneModule);
+    }
+
+    function test_getAppReceivingConfigV1_twoModules_zeroResponses() public {
+        mockReceivingConfig(app, zeroResponses, twoModules);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured modules and change the required responses to two
+        assertEq(fetchedConfig, twoResponses);
+        assertEq(fetchedModules, twoModules);
+    }
+
+    function test_getAppReceivingConfigV1_twoModules_oneResponse() public {
+        mockReceivingConfig(app, oneResponse, twoModules);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured modules and leave the required responses as one
+        assertEq(fetchedConfig, oneResponse);
+        assertEq(fetchedModules, twoModules);
+    }
+
+    function test_getAppReceivingConfigV1_twoModules_twoResponses() public {
+        mockReceivingConfig(app, twoResponses, twoModules);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured modules and leave the required responses as two
+        assertEq(fetchedConfig, twoResponses);
         assertEq(fetchedModules, twoModules);
     }
 
