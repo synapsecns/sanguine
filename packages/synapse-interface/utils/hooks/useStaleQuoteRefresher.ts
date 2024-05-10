@@ -5,18 +5,23 @@ import { BridgeQuote } from '@/utils/types'
 import { calculateTimeBetween } from '@/utils/time'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
+/**
+ * Refreshes quotes based on selected stale timeout duration.
+ * Will refresh quote when browser is active and wallet prompt is not pending.
+ */
 export const useStaleQuoteRefresher = (
   quote: BridgeQuote,
-  isLoadingQuote: boolean,
   refreshQuoteCallback: () => Promise<void>,
-  staleTimeout: number = 15000
+  isQuoteLoading: boolean,
+  isWalletPending: boolean,
+  staleTimeout: number = 15000 // 15_000ms or 15s
 ) => {
   const quoteTime = quote?.timestamp
   const isValidQuote = isNumber(quoteTime) && !isNull(quoteTime)
   const currentTime = useIntervalTimer(staleTimeout, !isValidQuote)
 
   useEffect(() => {
-    if (isValidQuote && !isLoadingQuote) {
+    if (isValidQuote && !isQuoteLoading && !isWalletPending) {
       const timeDifference = calculateTimeBetween(currentTime, quoteTime)
       const isStaleQuote = timeDifference >= staleTimeout
       if (isStaleQuote) {
