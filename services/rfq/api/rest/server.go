@@ -81,7 +81,7 @@ func NewAPI(
 		)
 		roleCache := roles[chainID]
 
-		roleCache.Start()
+		go roleCache.Start()
 		go func() {
 			<-ctx.Done()
 			roleCache.Stop()
