@@ -101,6 +101,7 @@ const typeDefs = `
     interchainBatchId: String
     interchainBatch: InterchainBatch
     txReadiness: TxReadinessType
+    timeElapsed: Int
   }
 
   type Query {
@@ -255,6 +256,12 @@ const resolvers = {
       return await prisma.interchainTransactionReceived.findUnique({
         where: { id: parent.interchainTransactionReceivedId },
       })
+    },
+    timeElapsed: async (parent: InterchainTransaction) => {
+      const sentAt = Number(parent.sentAt)
+      const now = Math.floor(Date.now() / 1000)
+
+      return now - sentAt
     },
     txReadiness: async (parent: InterchainTransaction) => {
       const sentTxn = await prisma.interchainTransactionSent.findUnique({
