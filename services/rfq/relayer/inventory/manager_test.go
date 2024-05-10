@@ -148,129 +148,150 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 		}
 	}
 
-	// 10 USDC on both chains; no rebalance needed
-	cfg := getConfig("", "", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
-	usdcDataOrigin.Balance = big.NewInt(1e7)
-	usdcDataDest.Balance = big.NewInt(1e7)
-	rebalance, err := inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
-	i.NoError(err)
-	i.Nil(rebalance)
+	i.Run("EqualBalances", func() {
+		// 10 USDC on both chains; no rebalance needed
+		cfg := getConfig("", "", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
+		usdcDataOrigin.Balance = big.NewInt(1e7)
+		usdcDataDest.Balance = big.NewInt(1e7)
+		rebalance, err := inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+		i.NoError(err)
+		i.Nil(rebalance)
+	})
 
-	// Set balances to zero
-	usdcDataOrigin.Balance = big.NewInt(0)
-	usdcDataDest.Balance = big.NewInt(0)
-	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
-	i.NoError(err)
-	i.Nil(rebalance)
+	i.Run("ZeroBalances", func() {
+		// Set balances to zero
+		cfg := getConfig("", "", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
+		usdcDataOrigin.Balance = big.NewInt(0)
+		usdcDataDest.Balance = big.NewInt(0)
+		rebalance, err := inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+		i.NoError(err)
+		i.Nil(rebalance)
+	})
 
-	// Set origin balance below maintenance threshold; need rebalance
-	usdcDataOrigin.Balance = big.NewInt(9e6)
-	usdcDataDest.Balance = big.NewInt(1e6)
-	rebalance, err = inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
-	i.NoError(err)
-	expected := &inventory.RebalanceData{
-		OriginMetadata: &usdcDataOrigin,
-		DestMetadata:   &usdcDataDest,
-		Amount:         big.NewInt(4e6),
-		Method:         relconfig.RebalanceMethodSynapseCCTP,
-	}
-	i.Equal(expected, rebalance)
+	i.Run("BasicRebalance", func() {
+		// Set dest balance below maintenance threshold; need rebalance
+		cfg := getConfig("", "", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
+		usdcDataOrigin.Balance = big.NewInt(9e6)
+		usdcDataDest.Balance = big.NewInt(1e6)
+		rebalance, err := inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
+		i.NoError(err)
+		expected := &inventory.RebalanceData{
+			OriginMetadata: &usdcDataOrigin,
+			DestMetadata:   &usdcDataDest,
+			Amount:         big.NewInt(4e6),
+			Method:         relconfig.RebalanceMethodSynapseCCTP,
+		}
+		i.Equal(expected, rebalance)
+	})
 
-	// Set rebalance methods to mismatch
-	cfg = getConfig("", "", relconfig.RebalanceMethodCircleCCTP, relconfig.RebalanceMethodSynapseCCTP)
-	rebalance, err = inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
-	i.NoError(err)
-	i.Nil(rebalance)
+	i.Run("RebalanceMethodMismatch", func() {
+		// Set rebalance methods to mismatch
+		cfg := getConfig("", "", relconfig.RebalanceMethodCircleCCTP, relconfig.RebalanceMethodSynapseCCTP)
+		rebalance, err := inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
+		i.NoError(err)
+		i.Nil(rebalance)
+	})
 
-	// Set one rebalance method to None
-	cfg = getConfig("", "", relconfig.RebalanceMethodNone, relconfig.RebalanceMethodSynapseCCTP)
-	rebalance, err = inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
-	i.NoError(err)
-	i.Nil(rebalance)
+	i.Run("OneRebalanceMethodNone", func() {
+		// Set one rebalance method to None
+		cfg := getConfig("", "", relconfig.RebalanceMethodNone, relconfig.RebalanceMethodSynapseCCTP)
+		rebalance, err := inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
+		i.NoError(err)
+		i.Nil(rebalance)
+	})
 
-	// Set min rebalance amount
-	cfgWithMax := getConfig("10", "1000000000", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
-	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, dest, usdcDataDest.Addr)
-	i.NoError(err)
-	i.Nil(rebalance)
+	i.Run("BelowMinRebalanceAmount", func() {
+		// Set min rebalance amount
+		cfgWithMax := getConfig("10", "1000000000", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
+		rebalance, err := inventory.GetRebalance(cfgWithMax, tokens, dest, usdcDataDest.Addr)
+		i.NoError(err)
+		i.Nil(rebalance)
+	})
 
-	// Set max rebalance amount
-	cfgWithMax = getConfig("0", "1.1", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
-	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, dest, usdcDataDest.Addr)
-	i.NoError(err)
-	expected = &inventory.RebalanceData{
-		OriginMetadata: &usdcDataOrigin,
-		DestMetadata:   &usdcDataDest,
-		Amount:         big.NewInt(1.1e6),
-		Method:         relconfig.RebalanceMethodSynapseCCTP,
-	}
-	i.Equal(expected, rebalance)
+	i.Run("AboveMaxRebalanceAmount", func() {
+		// Set max rebalance amount
+		cfgWithMax := getConfig("0", "1.1", relconfig.RebalanceMethodSynapseCCTP, relconfig.RebalanceMethodSynapseCCTP)
+		rebalance, err := inventory.GetRebalance(cfgWithMax, tokens, dest, usdcDataDest.Addr)
+		i.NoError(err)
+		expected := &inventory.RebalanceData{
+			OriginMetadata: &usdcDataOrigin,
+			DestMetadata:   &usdcDataDest,
+			Amount:         big.NewInt(1.1e6),
+			Method:         relconfig.RebalanceMethodSynapseCCTP,
+		}
+		i.Equal(expected, rebalance)
+	})
 
-	// Increase initial threshold so that no rebalance can occur from origin
-	usdcDataOrigin.Balance = big.NewInt(2e6)
-	usdcDataDest.Balance = big.NewInt(1e6)
-	usdcDataExtra.Balance = big.NewInt(7e6)
-	rebalance, err = inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
-	i.NoError(err)
-	i.Nil(rebalance)
+	i.Run("BelowInitalThresholdOnOrigin", func() {
+		// Increase initial threshold so that no rebalance can occur from origin
+		cfg := getConfig("", "", relconfig.RebalanceMethodNone, relconfig.RebalanceMethodSynapseCCTP)
+		usdcDataOrigin.Balance = big.NewInt(2e6)
+		usdcDataDest.Balance = big.NewInt(1e6)
+		usdcDataExtra.Balance = big.NewInt(7e6)
+		rebalance, err := inventory.GetRebalance(cfg, tokens, dest, usdcDataDest.Addr)
+		i.NoError(err)
+		i.Nil(rebalance)
+	})
 
-	// Set origin as lowest balance, but mismatched rebalance method, so next lowest balance
-	// should be chosen
-	cfg = relconfig.Config{
-		Chains: map[int]relconfig.ChainConfig{
-			origin: {
-				Tokens: map[string]relconfig.TokenConfig{
-					"USDC": {
-						Address:               usdcDataOrigin.Addr.Hex(),
-						Decimals:              6,
-						MaintenanceBalancePct: 20,
-						InitialBalancePct:     40,
-						MinRebalanceAmount:    "",
-						MaxRebalanceAmount:    "",
-						RebalanceMethod:       "synapsecctp",
+	i.Run("SkipLowestBalanceWithMismatch", func() {
+		// Set origin as lowest balance, but mismatched rebalance method, so next lowest balance
+		// should be chosen
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				origin: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               usdcDataOrigin.Addr.Hex(),
+							Decimals:              6,
+							MaintenanceBalancePct: 20,
+							InitialBalancePct:     40,
+							MinRebalanceAmount:    "",
+							MaxRebalanceAmount:    "",
+							RebalanceMethod:       "synapsecctp",
+						},
+					},
+				},
+				dest: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               usdcDataDest.Addr.Hex(),
+							Decimals:              6,
+							MaintenanceBalancePct: 20,
+							InitialBalancePct:     40,
+							MinRebalanceAmount:    "",
+							MaxRebalanceAmount:    "",
+							RebalanceMethod:       "circlecctp",
+						},
+					},
+				},
+				extra: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               usdcDataExtra.Addr.Hex(),
+							Decimals:              6,
+							MaintenanceBalancePct: 20,
+							InitialBalancePct:     40,
+							MinRebalanceAmount:    "",
+							MaxRebalanceAmount:    "",
+							RebalanceMethod:       "circlecctp",
+						},
 					},
 				},
 			},
-			dest: {
-				Tokens: map[string]relconfig.TokenConfig{
-					"USDC": {
-						Address:               usdcDataDest.Addr.Hex(),
-						Decimals:              6,
-						MaintenanceBalancePct: 20,
-						InitialBalancePct:     40,
-						MinRebalanceAmount:    "",
-						MaxRebalanceAmount:    "",
-						RebalanceMethod:       "circlecctp",
-					},
-				},
-			},
-			extra: {
-				Tokens: map[string]relconfig.TokenConfig{
-					"USDC": {
-						Address:               usdcDataExtra.Addr.Hex(),
-						Decimals:              6,
-						MaintenanceBalancePct: 20,
-						InitialBalancePct:     40,
-						MinRebalanceAmount:    "",
-						MaxRebalanceAmount:    "",
-						RebalanceMethod:       "circlecctp",
-					},
-				},
-			},
-		},
-	}
-	usdcDataOrigin.Balance = big.NewInt(0)
-	usdcDataDest.Balance = big.NewInt(1e6)
-	usdcDataExtra.Balance = big.NewInt(9e6)
-	rebalance, err = inventory.GetRebalance(cfg, tokensWithExtra, dest, usdcDataDest.Addr)
-	i.NoError(err)
-	expected = &inventory.RebalanceData{
-		OriginMetadata: &usdcDataExtra,
-		DestMetadata:   &usdcDataDest,
-		Amount:         big.NewInt(5e6),
-		Method:         relconfig.RebalanceMethodCircleCCTP,
-	}
-	i.Equal(expected, rebalance)
+		}
+		usdcDataOrigin.Balance = big.NewInt(0)
+		usdcDataDest.Balance = big.NewInt(1e6)
+		usdcDataExtra.Balance = big.NewInt(9e6)
+		rebalance, err := inventory.GetRebalance(cfg, tokensWithExtra, dest, usdcDataDest.Addr)
+		i.NoError(err)
+		expected := &inventory.RebalanceData{
+			OriginMetadata: &usdcDataExtra,
+			DestMetadata:   &usdcDataDest,
+			Amount:         big.NewInt(5e6),
+			Method:         relconfig.RebalanceMethodCircleCCTP,
+		}
+		i.Equal(expected, rebalance)
+	})
 }
 
 func (i *InventoryTestSuite) TestHasSufficientGas() {
