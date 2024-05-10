@@ -19,6 +19,7 @@ volumes:
 services:
   omnirpc:
     restart: unless-stopped
+    platform: linux/arm64
     depends_on:
       - chain_a
       - chain_b
