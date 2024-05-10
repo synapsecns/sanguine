@@ -11,9 +11,28 @@ import {AppConfigV1, InterchainClientV1BaseTest, InterchainTransaction} from "./
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
+    address public moduleA = makeAddr("Module A");
+    address public moduleB = makeAddr("Module B");
+
+    address public app;
+    address[] public oneModule;
+    address[] public twoModules;
+
     function setUp() public override {
         super.setUp();
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
+        app = address(new InterchainAppMock());
+        oneModule.push(moduleA);
+        twoModules.push(moduleA);
+        twoModules.push(moduleB);
+    }
+
+    function assertEq(AppConfigV1 memory expected, AppConfigV1 memory actual) internal pure {
+        assertEq(expected.requiredResponses, actual.requiredResponses);
+        assertEq(expected.optimisticPeriod, actual.optimisticPeriod);
+        assertEq(expected.guardFlag, actual.guardFlag);
+        assertEq(expected.guard, actual.guard);
+        assertEq(abi.encode(expected), abi.encode(actual));
     }
 
     function test_getLinkedClient_chainIdKnown() public view {
@@ -65,30 +84,22 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
 
     function test_getAppReceivingConfigV1() public {
         AppConfigV1 memory appConfig =
-            AppConfigV1({requiredResponses: 1, optimisticPeriod: 2, guardFlag: 3, guard: address(4)});
-        address[] memory modules = new address[](2);
-        modules[0] = address(5);
-        modules[1] = address(6);
-        address app = address(new InterchainAppMock());
-        mockReceivingConfig(app, appConfig, modules);
+            AppConfigV1({requiredResponses: 1, optimisticPeriod: 30, guardFlag: 2, guard: address(4)});
+        mockReceivingConfig(app, appConfig, twoModules);
         (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
-        assertEq(fetchedConfig.requiredResponses, appConfig.requiredResponses);
-        assertEq(fetchedConfig.optimisticPeriod, appConfig.optimisticPeriod);
-        assertEq(fetchedConfig.guardFlag, appConfig.guardFlag);
-        assertEq(fetchedConfig.guard, appConfig.guard);
-        assertEq(abi.encode(fetchedConfig), abi.encode(appConfig));
-        assertEq(fetchedModules, modules);
+        assertEq(fetchedConfig, appConfig);
+        assertEq(fetchedModules, twoModules);
     }
 
     function test_getAppReceivingConfigV1_revert_receiverEOA() public {
-        address app = makeAddr("EOA");
-        expectRevertReceiverNotICApp(app);
-        icClient.getAppReceivingConfigV1(app);
+        address eoa = makeAddr("EOA");
+        expectRevertReceiverNotICApp(eoa);
+        icClient.getAppReceivingConfigV1(eoa);
     }
 
     function test_getAppReceivingConfigV1_revert_receiverNotICApp() public {
-        address app = address(new NoOpHarness());
-        expectRevertReceiverNotICApp(app);
-        icClient.getAppReceivingConfigV1(app);
+        address noOp = address(new NoOpHarness());
+        expectRevertReceiverNotICApp(noOp);
+        icClient.getAppReceivingConfigV1(noOp);
     }
 }
