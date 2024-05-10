@@ -144,6 +144,7 @@ const config: Config = {
         }
       },
     ],
+    // please see: https://github.com/facebook/docusaurus/issues/8091#issuecomment-1269112001 for an explanation.
     () => ({
       name: 'resolve-react',
       configureWebpack() {
