@@ -1,20 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {InterchainModuleEvents} from "../events/InterchainModuleEvents.sol";
 import {IInterchainDB} from "../interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "../interfaces/IInterchainModule.sol";
 
-import {InterchainEntry, InterchainEntryLib} from "../libs/InterchainEntry.sol";
-import {ModuleEntryLib} from "../libs/ModuleEntry.sol";
-import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
-
-import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-
 /// @notice Common logic for all Interchain Modules.
-abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule {
-    using VersionedPayloadLib for bytes;
-
+abstract contract InterchainModule is IInterchainModule {
     /// @notice The address of the Interchain DataBase contract: used for verifying the entries.
     address public immutable INTERCHAIN_DB;
 
@@ -40,11 +31,8 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         if (msg.value < requiredFee) {
             revert InterchainModule__FeeAmountBelowMin({feeAmount: msg.value, minRequired: requiredFee});
         }
-        bytes memory moduleData = _fillModuleData(dstChainId);
-        bytes memory encodedEntry = ModuleEntryLib.encodeVersionedModuleEntry(versionedEntry, moduleData);
-        bytes32 ethSignedEntryHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
-        _requestVerification(dstChainId, encodedEntry);
-        emit EntryVerificationRequested(dstChainId, encodedEntry, ethSignedEntryHash);
+        // Note: we don't emit an event here, the derived contract could emit an event if needed.
+        _relayDBEntry(dstChainId, versionedEntry);
     }
 
     /// @notice Get the Module fee for verifying an entry on the specified destination chain.
@@ -55,29 +43,19 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
 
     /// @dev Should be called once the Module has verified the entry and needs to signal this
     /// to the InterchainDB.
-    function _verifyEntry(bytes memory encodedModuleEntry) internal {
-        (bytes memory versionedEntry, bytes memory moduleData) =
-            ModuleEntryLib.decodeVersionedModuleEntry(encodedModuleEntry);
-        InterchainEntry memory entry = InterchainEntryLib.decodeEntryFromMemory(versionedEntry.getPayloadFromMemory());
-        if (entry.srcChainId == block.chainid) {
-            revert InterchainModule__ChainIdNotRemote(entry.srcChainId);
-        }
+    function _verifyRemoteEntry(bytes memory versionedEntry) internal {
         IInterchainDB(INTERCHAIN_DB).verifyRemoteEntry(versionedEntry);
-        _receiveModuleData(entry.srcChainId, entry.dbNonce, moduleData);
-        emit EntryVerified(
-            entry.srcChainId, encodedModuleEntry, MessageHashUtils.toEthSignedMessageHash(keccak256(encodedModuleEntry))
-        );
     }
 
     // solhint-disable no-empty-blocks
-    /// @dev Internal logic to request the verification of an entry on the destination chain.
-    function _requestVerification(uint64 dstChainId, bytes memory encodedEntry) internal virtual {}
-
-    /// @dev Internal logic to fill the module data for the specified destination chain.
-    function _fillModuleData(uint64 dstChainId) internal virtual returns (bytes memory) {}
-
-    /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
-    function _receiveModuleData(uint64 srcChainId, uint64 dbNonce, bytes memory moduleData) internal virtual {}
+    /// @dev Internal logic to relay a DB entry to the destination chain.
+    /// Following checks have been done at this point:
+    /// - Entry is a valid versioned entry coming from the Interchain DataBase.
+    /// - Enough fees have been paid for the verification.
+    ///
+    /// Derived contracts should implement the logic so that eventually the destination counterpart
+    /// of this module calls `_verifyRemoteEntry(versionedEntry)`.
+    function _relayDBEntry(uint64 dstChainId, bytes memory versionedEntry) internal virtual;
 
     /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
     function _getModuleFee(uint64 dstChainId) internal view virtual returns (uint256);

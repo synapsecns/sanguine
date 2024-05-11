@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-abstract contract SynapseModuleEvents {
+import {InterchainModuleEvents} from "./InterchainModuleEvents.sol";
+
+abstract contract SynapseModuleEvents is InterchainModuleEvents {
     /// @notice Emitted when a verifier is added. The verifier signatures are required to verify an entry.
     /// @param verifier         The address of the verifier.
     event VerifierAdded(address verifier);
