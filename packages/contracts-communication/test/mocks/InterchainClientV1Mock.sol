@@ -9,7 +9,9 @@ import {
 
 // solhint-disable no-empty-blocks
 contract InterchainClientV1Mock is IInterchainClientV1 {
-    function setDefaultGuard(address guard_) external {}
+    function setDefaultGuard(address guard) external {}
+
+    function setDefaultModule(address module) external {}
 
     function setLinkedClient(uint64 chainId, bytes32 client) external {}
 

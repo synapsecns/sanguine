@@ -10,7 +10,6 @@ interface IInterchainClientV1 {
         EntryAwaitingResponses,
         EntryConflict,
         ReceiverNotICApp,
-        ReceiverZeroRequiredResponses,
         TxWrongDstChainId,
         UndeterminedRevert
     }
@@ -24,16 +23,17 @@ interface IInterchainClientV1 {
     error InterchainClientV1__GasLeftBelowMin(uint256 gasLeft, uint256 minRequired);
     error InterchainClientV1__GuardZeroAddress();
     error InterchainClientV1__LinkedClientNotEVM(bytes32 client);
+    error InterchainClientV1__ModuleZeroAddress();
     error InterchainClientV1__MsgValueMismatch(uint256 msgValue, uint256 required);
     error InterchainClientV1__ReceiverNotICApp(address receiver);
     error InterchainClientV1__ReceiverZeroAddress();
-    error InterchainClientV1__ReceiverZeroRequiredResponses(address receiver);
     error InterchainClientV1__ResponsesAmountBelowMin(uint256 responsesAmount, uint256 minRequired);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
     error InterchainClientV1__TxVersionMismatch(uint16 txVersion, uint16 required);
 
-    function setDefaultGuard(address guard_) external;
+    function setDefaultGuard(address guard) external;
+    function setDefaultModule(address module) external;
     function setLinkedClient(uint64 chainId, bytes32 client) external;
 
     function interchainSend(
