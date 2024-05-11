@@ -4,6 +4,7 @@ import { BridgeProps } from 'types'
 import { Provider } from 'react-redux'
 import { Web3Provider } from 'providers/Web3Provider'
 import { SynapseProvider } from 'providers/SynapseProvider'
+import { useEffect, useState } from 'react'
 
 import { Widget } from '@/components/Widget'
 import { store } from '@/state/store'
@@ -12,6 +13,38 @@ import { CHAINS_ARRAY } from '@/constants/chains'
 import { BackgroundListenerProvider } from '@/providers/BackgroundListenerProvider'
 import { useBridgeSelectionData } from '@/hooks/useBridgeSelectionData'
 import { suppressSynapseConsoleErrors } from '@/utils/suppressSynapseConsoleErrors'
+
+const getSynapsePauseData = () => {
+  const fetchJSONData = async (url) => {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    return response.json()
+  }
+
+  const fetchPauseData = async () => {
+    const pausedChainsUrl =
+      'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json'
+    const pausedModulesUrl =
+      'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
+
+    try {
+      console.log('fetching and storing pause data in client browser')
+      const chainsData = await fetchJSONData(pausedChainsUrl)
+      const modulesData = await fetchJSONData(pausedModulesUrl)
+
+      localStorage.setItem('synapse-chain-pause', JSON.stringify(chainsData))
+      localStorage.setItem('synapse-module-pause', JSON.stringify(modulesData))
+    } catch (error) {
+      console.error('Failed to fetch paused chains/modules:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchPauseData()
+  }, [])
+}
 
 export const Bridge = ({
   web3Provider,
@@ -30,6 +63,8 @@ export const Bridge = ({
   if (hideConsoleErrors) {
     suppressSynapseConsoleErrors()
   }
+
+  getSynapsePauseData()
 
   return (
     <Web3Provider config={web3Provider}>
