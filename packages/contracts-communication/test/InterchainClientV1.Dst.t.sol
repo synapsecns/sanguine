@@ -392,6 +392,201 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
         }
     }
 
+    // ═════════════════════════════════════ APP CONFIG: 1 OUT OF 1 RESPONSES ══════════════════════════════════════════
+
+    function test_execute_1_1_noGuard(uint256 indexA) public {
+        checkScenario({required: 1, guardFlag: GUARD_DISABLED, modules: modulesA, timeIndices: toArr(indexA)});
+    }
+
+    /// @dev Guard conflict should not affect the behavior if the app didn't opt-in for the guard.
+    function test_execute_1_1_noGuard_guardConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        test_execute_1_1_noGuard(indexA);
+    }
+
+    function test_execute_1_1_defaultGuard(uint256 indexA) public {
+        checkScenario({required: 1, guardFlag: GUARD_DEFAULT, modules: modulesA, timeIndices: toArr(indexA)});
+    }
+
+    /// @dev Guard conflict should always revert the transaction if the app opted-in for the guard.
+    function test_execute_1_1_defaultGuard_guardConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        (InterchainTransaction memory icTx,) = prepareExecuteTest({
+            requiredResponses: 1,
+            guardFlag: GUARD_DEFAULT,
+            modules: modulesA,
+            times: toArr(getTimestampFixture(indexA))
+        });
+        checkEntryConflict({module: defaultGuard, icTx: icTx});
+    }
+
+    function test_execute_1_1_customGuard(uint256 indexA) public {
+        checkScenario({required: 1, guardFlag: GUARD_CUSTOM, modules: modulesA, timeIndices: toArr(indexA)});
+    }
+
+    /// @dev Custom guard conflict should always revert the transaction if the app opted-in for the custom guard.
+    function test_execute_1_1_customGuard_customGuardConflict(uint256 indexA) public {
+        addGuardConflict(customGuard);
+        (InterchainTransaction memory icTx,) = prepareExecuteTest({
+            requiredResponses: 1,
+            guardFlag: GUARD_CUSTOM,
+            modules: modulesA,
+            times: toArr(getTimestampFixture(indexA))
+        });
+        checkEntryConflict({module: customGuard, icTx: icTx});
+    }
+
+    /// @dev Default guard conflict should not affect the behavior if the app opted-in for a custom guard.
+    function test_execute_1_1_customGuard_defaultGuardConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        test_execute_1_1_customGuard(indexA);
+    }
+
+    /// @dev Default Guard conflict should be ignored if the app opted-in for a custom guard,
+    /// but the custom guard conflict should still revert the transaction.
+    function test_execute_1_1_customGuard_bothGuardsConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        addGuardConflict(customGuard);
+        (InterchainTransaction memory icTx,) = prepareExecuteTest({
+            requiredResponses: 1,
+            guardFlag: GUARD_CUSTOM,
+            modules: modulesA,
+            times: toArr(getTimestampFixture(indexA))
+        });
+        checkEntryConflict({module: customGuard, icTx: icTx});
+    }
+
+    // ════════════════════════════ APP CONFIG: 1 OUT OF 1 RESPONSES (WHEN SET TO ZERO) ════════════════════════════════
+
+    /// @notice If an app sets the required responses to zero, it should default to the amount of trusted modules (1).
+    function test_execute_0_1_noGuard(uint256 indexA) public {
+        checkScenario({required: 0, guardFlag: GUARD_DISABLED, modules: modulesA, timeIndices: toArr(indexA)});
+    }
+
+    /// @dev Guard conflict should not affect the behavior if the app didn't opt-in for the guard.
+    function test_execute_0_1_noGuard_guardConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        test_execute_0_1_noGuard(indexA);
+    }
+
+    function test_execute_0_1_defaultGuard(uint256 indexA) public {
+        checkScenario({required: 0, guardFlag: GUARD_DEFAULT, modules: modulesA, timeIndices: toArr(indexA)});
+    }
+
+    /// @dev Guard conflict should always revert the transaction if the app opted-in for the guard.
+    function test_execute_0_1_defaultGuard_guardConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        (InterchainTransaction memory icTx,) = prepareExecuteTest({
+            requiredResponses: 1,
+            guardFlag: GUARD_DEFAULT,
+            modules: modulesA,
+            times: toArr(getTimestampFixture(indexA))
+        });
+        checkEntryConflict({module: defaultGuard, icTx: icTx});
+    }
+
+    function test_execute_0_1_customGuard(uint256 indexA) public {
+        checkScenario({required: 0, guardFlag: GUARD_CUSTOM, modules: modulesA, timeIndices: toArr(indexA)});
+    }
+
+    /// @dev Custom guard conflict should always revert the transaction if the app opted-in for the custom guard.
+    function test_execute_0_1_customGuard_customGuardConflict(uint256 indexA) public {
+        addGuardConflict(customGuard);
+        (InterchainTransaction memory icTx,) = prepareExecuteTest({
+            requiredResponses: 1,
+            guardFlag: GUARD_CUSTOM,
+            modules: modulesA,
+            times: toArr(getTimestampFixture(indexA))
+        });
+        checkEntryConflict({module: customGuard, icTx: icTx});
+    }
+
+    /// @dev Default guard conflict should not affect the behavior if the app opted-in for a custom guard.
+    function test_execute_0_1_customGuard_defaultGuardConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        test_execute_0_1_customGuard(indexA);
+    }
+
+    /// @dev Default Guard conflict should be ignored if the app opted-in for a custom guard,
+    /// but the custom guard conflict should still revert the transaction.
+    function test_execute_0_1_customGuard_bothGuardsConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        addGuardConflict(customGuard);
+        (InterchainTransaction memory icTx,) = prepareExecuteTest({
+            requiredResponses: 1,
+            guardFlag: GUARD_CUSTOM,
+            modules: modulesA,
+            times: toArr(getTimestampFixture(indexA))
+        });
+        checkEntryConflict({module: customGuard, icTx: icTx});
+    }
+
+    // ═════════════════════════════════════ APP CONFIG: 2 OUT OF 1 RESPONSES ══════════════════════════════════════════
+
+    /// @notice If an app sets the required responses higher than the amount of trusted modules,
+    /// there will never be enough responses to execute the transaction.
+    function test_execute_2_1_noGuard(uint256 indexA) public {
+        checkScenario({required: 2, guardFlag: GUARD_DISABLED, modules: modulesA, timeIndices: toArr(indexA)});
+    }
+
+    /// @dev Guard conflict should not affect the behavior if the app didn't opt-in for the guard.
+    function test_execute_2_1_noGuard_guardConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        test_execute_2_1_noGuard(indexA);
+    }
+
+    function test_execute_2_1_defaultGuard(uint256 indexA) public {
+        checkScenario({required: 2, guardFlag: GUARD_DEFAULT, modules: modulesA, timeIndices: toArr(indexA)});
+    }
+
+    /// @dev Guard conflict should always revert the transaction if the app opted-in for the guard.
+    function test_execute_2_1_defaultGuard_guardConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        (InterchainTransaction memory icTx,) = prepareExecuteTest({
+            requiredResponses: 2,
+            guardFlag: GUARD_DEFAULT,
+            modules: modulesA,
+            times: toArr(getTimestampFixture(indexA))
+        });
+        checkEntryConflict({module: defaultGuard, icTx: icTx});
+    }
+
+    function test_execute_2_1_customGuard(uint256 indexA) public {
+        checkScenario({required: 2, guardFlag: GUARD_CUSTOM, modules: modulesA, timeIndices: toArr(indexA)});
+    }
+
+    /// @dev Custom guard conflict should always revert the transaction if the app opted-in for the custom guard.
+    function test_execute_2_1_customGuard_customGuardConflict(uint256 indexA) public {
+        addGuardConflict(customGuard);
+        (InterchainTransaction memory icTx,) = prepareExecuteTest({
+            requiredResponses: 2,
+            guardFlag: GUARD_CUSTOM,
+            modules: modulesA,
+            times: toArr(getTimestampFixture(indexA))
+        });
+        checkEntryConflict({module: customGuard, icTx: icTx});
+    }
+
+    /// @dev Default guard conflict should not affect the behavior if the app opted-in for a custom guard.
+    function test_execute_2_1_customGuard_defaultGuardConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        test_execute_2_1_customGuard(indexA);
+    }
+
+    /// @dev Default Guard conflict should be ignored if the app opted-in for a custom guard,
+    /// but the custom guard conflict should still revert the transaction.
+    function test_execute_2_1_customGuard_bothGuardsConflict(uint256 indexA) public {
+        addGuardConflict(defaultGuard);
+        addGuardConflict(customGuard);
+        (InterchainTransaction memory icTx,) = prepareExecuteTest({
+            requiredResponses: 2,
+            guardFlag: GUARD_CUSTOM,
+            modules: modulesA,
+            times: toArr(getTimestampFixture(indexA))
+        });
+        checkEntryConflict({module: customGuard, icTx: icTx});
+    }
+
     // ═════════════════════════════════════ APP CONFIG: 1 OUT OF 2 RESPONSES ══════════════════════════════════════════
 
     function test_execute_1_2_noGuard(uint256 indexA, uint256 indexB) public {
@@ -522,7 +717,7 @@ abstract contract InterchainClientV1DstTest is InterchainClientV1BaseTest {
 
     // ════════════════════════════ APP CONFIG: 2 OUT OF 2 RESPONSES (WHEN SET TO ZERO) ════════════════════════════════
 
-    /// @notice If an app sets the required responses to zero, it should default to the amount of trusted modules.
+    /// @notice If an app sets the required responses to zero, it should default to the amount of trusted modules (2).
     function test_execute_0_2_noGuard(uint256 indexA, uint256 indexB) public {
         checkScenario({required: 0, guardFlag: GUARD_DISABLED, modules: modulesAB, timeIndices: toArr(indexA, indexB)});
     }

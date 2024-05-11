@@ -278,7 +278,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
 
     // ═══════════════════════════════════════════════════ UTILS ═══════════════════════════════════════════════════════
 
-    function toArray(uint256 a) internal pure returns (uint256[] memory arr) {
+    function toArr(uint256 a) internal pure returns (uint256[] memory arr) {
         arr = new uint256[](1);
         arr[0] = a;
     }
