@@ -41,6 +41,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// if the app opts in to use the Guard.
     address public defaultGuard;
 
+    /// @notice Address of the default module to use to verify the validity of entries.
+    /// Note: this module will be used for the apps that define an empty module list in their config.
+    address public defaultModule;
+
     /// @dev Address of the InterchainClient contract on the remote chain
     mapping(uint64 chainId => bytes32 remoteClient) internal _linkedClient;
     /// @dev Executor address that completed the transaction. Address(0) if not executed yet.
@@ -60,6 +64,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
         defaultGuard = guard;
         emit DefaultGuardSet(guard);
+    }
+
+    /// @notice Allows the contract owner to set the address of the default module.
+    /// Note: this module will be used for the apps that define an empty module list in their config.
+    /// @param module           The address of the default module.
+    function setDefaultModule(address module) external onlyOwner {
+        if (module == address(0)) {
+            revert InterchainClientV1__ModuleZeroAddress();
+        }
+        defaultModule = module;
+        emit DefaultModuleSet(module);
     }
 
     /// @notice Sets the linked client for a specific chain ID.
@@ -206,7 +221,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     ///   - This is either one of the modules that the app trusts, or the Guard module used by the app.
     /// - ReceiverNotICApp: the receiver is not an Interchain app.
     ///  - `firstArg` is the receiver address.
-    /// - ReceiverZeroRequiredResponses: the app config requires zero responses for the transaction.
     /// - TxWrongDstChainId: the destination chain ID does not match the local chain ID.
     ///   - `firstArg` is the destination chain ID.
     /// - UndeterminedRevert: the transaction will revert for another reason.
@@ -232,8 +246,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 status = TxReadiness.EntryConflict;
             } else if (selector == InterchainClientV1__ReceiverNotICApp.selector) {
                 status = TxReadiness.ReceiverNotICApp;
-            } else if (selector == InterchainClientV1__ReceiverZeroRequiredResponses.selector) {
-                status = TxReadiness.ReceiverZeroRequiredResponses;
             } else if (selector == InterchainClientV1__DstChainIdNotLocal.selector) {
                 status = TxReadiness.TxWrongDstChainId;
             } else {
@@ -332,6 +344,15 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         bytes memory encodedConfig;
         (encodedConfig, modules) = abi.decode(returnData, (bytes, address[]));
         config = encodedConfig.decodeAppConfigV1();
+        // Fallback to the default module if the app has no modules
+        if (modules.length == 0) {
+            modules = new address[](1);
+            modules[0] = defaultModule;
+        }
+        // Fallback to "all responses" if the app requires zero responses
+        if (config.requiredResponses == 0) {
+            config.requiredResponses = modules.length;
+        }
     }
 
     /// @notice Encodes the transaction data into a bytes format.
@@ -425,12 +446,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         });
         address receiver = icTx.dstReceiver.bytes32ToAddress();
         (AppConfigV1 memory appConfig, address[] memory approvedModules) = getAppReceivingConfigV1(receiver);
-        if (appConfig.requiredResponses == 0) {
-            revert InterchainClientV1__ReceiverZeroRequiredResponses(receiver);
-        }
+        // Note: appConfig.requiredResponses is never zero at this point, see fallbacks in `getAppReceivingConfigV1`
         // Verify against the Guard if the app opts in to use it
-        _assertNoGuardConflict(_getGuard(appConfig), entry);
-        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, entry, appConfig.optimisticPeriod);
+        address guard = _getGuard(appConfig);
+        _assertNoGuardConflict(guard, entry);
+        // Optimistic period is not used if there's no Guard configured
+        uint256 optimisticPeriod = guard == address(0) ? 0 : appConfig.optimisticPeriod;
+        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, entry, optimisticPeriod);
         if (finalizedResponses < appConfig.requiredResponses) {
             revert InterchainClientV1__ResponsesAmountBelowMin(finalizedResponses, appConfig.requiredResponses);
         }

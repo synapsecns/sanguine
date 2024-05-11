@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.6.2...contracts-communication@1.7.0) (2024-05-11)
+
+
+### Features
+
+* **contracts-communication:** default values for modules/required respones ([#2612](https://github.com/synapsecns/sanguine/issues/2612)) ([2fcf06d](https://github.com/synapsecns/sanguine/commit/2fcf06dc2f74d610263973c028e233402e339312))
+
+
+
+
+
+## [1.6.2](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.6.1...contracts-communication@1.6.2) (2024-05-10)
+
+
+### Bug Fixes
+
+* **contracts-communication:** default settings for Guard service ([#2605](https://github.com/synapsecns/sanguine/issues/2605)) ([f4ee9d0](https://github.com/synapsecns/sanguine/commit/f4ee9d0260300289c5708586b5e75a53961a8ef2))
+
+
+
+
+
 ## [1.6.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.6.0...contracts-communication@1.6.1) (2024-05-09)
 
 
