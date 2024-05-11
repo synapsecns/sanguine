@@ -105,7 +105,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
 
-			err = r.handleDepositClaimed(ctx, event, chainID)
+			err = r.handleDepositClaimed(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle deposit claimed: %w", err)
 			}
@@ -194,12 +194,8 @@ func getDecimalsKey(addr common.Address, chainID uint32) string {
 	return fmt.Sprintf("%s-%d", addr.Hex(), chainID)
 }
 
-func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed, chainID int) error {
-	err := r.inventory.Rebalance(ctx, chainID, event.Token)
-	if err != nil {
-		logger.Errorf("could not rebalance: %v", err)
-	}
-	err = r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
+func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed) error {
+	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
