@@ -38,3 +38,8 @@ export interface InterchainTransactionQueryFilter {
   dstReceiver?: string
   id?: string
 }
+
+export interface CountsFilter {
+  srcChainId?: number
+  dstChainId?: number
+}

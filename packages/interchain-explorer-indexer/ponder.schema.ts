@@ -52,7 +52,6 @@ export default createSchema((p) => ({
       blockNumber: p.bigint(),
       transactionHash: p.string(),
       timestamp: p.bigint(),
-      count: p.int(),
     },
     {
       srcChainIdIndex: p.index('srcChainId'),
@@ -82,7 +81,6 @@ export default createSchema((p) => ({
       blockNumber: p.bigint(),
       transactionHash: p.string(),
       timestamp: p.bigint(),
-      count: p.int(),
     },
     {
       dstChainIdIndex: p.index('dstChainId'),
