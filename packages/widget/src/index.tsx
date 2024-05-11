@@ -36,14 +36,36 @@ const getSynapsePauseData = () => {
 
       localStorage.setItem('synapse-chain-pause', JSON.stringify(chainsData))
       localStorage.setItem('synapse-module-pause', JSON.stringify(modulesData))
+      localStorage.setItem('synapse-pause-timestamp', Date.now().toString())
     } catch (error) {
       console.error('Failed to fetch paused chains/modules:', error)
     }
   }
 
-  useEffect(() => {
+  const checkIsDataValid = () => {
+    const lastFetchTime = localStorage.getItem('synapse-pause-timestamp')
+
+    if (lastFetchTime) {
+      const previousTime = Number(lastFetchTime)
+      const currentTime = Date.now()
+
+      const millisecondsPerHour = 1000 * 60 * 60 // milliseconds in an hour
+      const timePastInHours = (currentTime - previousTime) / millisecondsPerHour
+
+      console.log('timePastInHours: ', timePastInHours)
+      console.log('timePastInHours >= 24: ', timePastInHours < 24)
+
+      return timePastInHours < 24
+    } else {
+      return false
+    }
+  }
+
+  const isValid = checkIsDataValid()
+
+  if (!isValid) {
     fetchPauseData()
-  }, [])
+  }
 }
 
 export const Bridge = ({
