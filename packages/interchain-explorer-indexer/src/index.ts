@@ -3,9 +3,6 @@ import { type Address, trim } from 'viem'
 import { ponder } from '@/generated'
 import { networkDetails } from '@/ponder.config'
 
-let sentCount = 0
-let receivedCount = 0
-
 /* ORIGIN CHAIN EVENTS */
 
 ponder.on(
@@ -39,9 +36,6 @@ ponder.on(
       },
     } = event
 
-    // Manually counting until we can do aggregations
-    sentCount = sentCount + 1
-
     const record = await InterchainTransactionSent.create({
       id: transactionId,
       data: {
@@ -61,7 +55,6 @@ ponder.on(
         blockNumber,
         transactionHash,
         timestamp,
-        count: sentCount,
       },
     })
 
@@ -280,9 +273,6 @@ ponder.on(
       },
     } = event
 
-    // Manually counting until we can do aggregations
-    receivedCount = receivedCount + 1
-
     const record = await InterchainTransactionReceived.create({
       id: transactionId,
       data: {
@@ -298,7 +288,6 @@ ponder.on(
         blockNumber,
         transactionHash,
         timestamp,
-        count: receivedCount,
       },
     })
 

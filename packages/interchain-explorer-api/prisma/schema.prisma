@@ -55,7 +55,6 @@ model InterchainTransactionSent {
   blockNumber       BigInt
   transactionHash   String
   timestamp         BigInt
-  count             Int
   interchainTransaction InterchainTransaction[]
 }
 
@@ -73,7 +72,6 @@ model InterchainTransactionReceived {
   blockNumber       BigInt
   transactionHash   String
   timestamp         BigInt
-  count             Int
   interchainTransaction InterchainTransaction[]
 }
 
