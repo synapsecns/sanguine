@@ -6,7 +6,7 @@ on:
   pull_request:
     paths:
       - 'packages/explorer-ui/**'
-      - 'packages/docs/**'
+      - 'docs/bridge/**'
       - 'packages/synapse-interface/**'
 jobs:
   changes:
@@ -21,14 +21,14 @@ jobs:
           fetch-depth: 0
           # if any of these packages use submodules in the future, please uncomment this line
           # submodules: 'recursive'
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter_ui
         with:
           #  make sure to update run-goreleaser when adding a new package here
           # also add to the get-project-id step
           filters: |
             explorer-ui: 'packages/explorer-ui/**'
-            docs: 'packages/docs/**'
+            docs: 'docs/bridge/**'
             synapse-interface: 'packages/synapse-interface/**'
       - id: length
         run: |
