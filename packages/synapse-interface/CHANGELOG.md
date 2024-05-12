@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.23.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.23.0...@synapsecns/synapse-interface@0.23.1) (2024-05-10)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.23.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.22.5...@synapsecns/synapse-interface@0.23.0) (2024-05-09)
+
+
+### Features
+
+* **synapse-interface:** bridge gas handler ([#2437](https://github.com/synapsecns/sanguine/issues/2437)) ([4fcfcab](https://github.com/synapsecns/sanguine/commit/4fcfcab4fd5de08788ad017fc9faf350391cf3e5)), closes [#2598](https://github.com/synapsecns/sanguine/issues/2598)
+
+
+
+
+
+## [0.22.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.22.4...@synapsecns/synapse-interface@0.22.5) (2024-05-09)
+
+
+### Reverts
+
+* Revert "update bl" ([3693110](https://github.com/synapsecns/sanguine/commit/3693110e0f9df6177935bbbfba5444df62b11866))
+
+
+
+
+
 ## [0.22.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.22.3...@synapsecns/synapse-interface@0.22.4) (2024-05-08)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

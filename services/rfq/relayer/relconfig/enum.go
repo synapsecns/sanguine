@@ -46,11 +46,3 @@ func (i RebalanceMethod) String() string {
 		return ""
 	}
 }
-
-// CoalesceRebalanceMethods coalesces two rebalance methods.
-func CoalesceRebalanceMethods(a, b RebalanceMethod) RebalanceMethod {
-	if a == b {
-		return a
-	}
-	return RebalanceMethodNone
-}

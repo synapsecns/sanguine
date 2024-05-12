@@ -9,8 +9,7 @@ import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
 import {AppConfigV1, AppConfigLib, APP_CONFIG_GUARD_DISABLED, APP_CONFIG_GUARD_DEFAULT} from "./libs/AppConfig.sol";
-import {BatchingV1Lib} from "./libs/BatchingV1.sol";
-import {InterchainBatch, BATCH_UNVERIFIED, BATCH_CONFLICT} from "./libs/InterchainBatch.sol";
+import {InterchainEntry, InterchainEntryLib, ENTRY_UNVERIFIED, ENTRY_CONFLICT} from "./libs/InterchainEntry.sol";
 import {
     InterchainTransaction, InterchainTxDescriptor, InterchainTransactionLib
 } from "./libs/InterchainTransaction.sol";
@@ -37,10 +36,14 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @notice Address of the InterchainDB contract, set at the time of deployment.
     address public immutable INTERCHAIN_DB;
 
-    /// @notice Address of the Guard module used to verify the validity of batches.
-    /// Note: batches marked as invalid by the Guard could not be used for message execution,
+    /// @notice Address of the Guard module used to verify the validity of entries.
+    /// Note: entries marked as invalid by the Guard could not be used for message execution,
     /// if the app opts in to use the Guard.
     address public defaultGuard;
+
+    /// @notice Address of the default module to use to verify the validity of entries.
+    /// Note: this module will be used for the apps that define an empty module list in their config.
+    address public defaultModule;
 
     /// @dev Address of the InterchainClient contract on the remote chain
     mapping(uint64 chainId => bytes32 remoteClient) internal _linkedClient;
@@ -52,7 +55,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     /// @notice Allows the contract owner to set the address of the Guard module.
-    /// Note: batches marked as invalid by the Guard could not be used for message execution,
+    /// Note: entries marked as invalid by the Guard could not be used for message execution,
     /// if the app opts in to use the Guard.
     /// @param guard            The address of the Guard module.
     function setDefaultGuard(address guard) external onlyOwner {
@@ -61,6 +64,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
         defaultGuard = guard;
         emit DefaultGuardSet(guard);
+    }
+
+    /// @notice Allows the contract owner to set the address of the default module.
+    /// Note: this module will be used for the apps that define an empty module list in their config.
+    /// @param module           The address of the default module.
+    function setDefaultModule(address module) external onlyOwner {
+        if (module == address(0)) {
+            revert InterchainClientV1__ModuleZeroAddress();
+        }
+        defaultModule = module;
+        emit DefaultModuleSet(module);
     }
 
     /// @notice Sets the linked client for a specific chain ID.
@@ -87,8 +101,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @param message              The message to be sent.
     /// @return desc                The descriptor of the sent transaction:
     /// - transactionId: the ID of the transaction that was sent.
-    /// - dbNonce: the database nonce of the batch containing the written entry for transaction.
-    /// - entryIndex: the index of the written entry for transaction within the batch.
+    /// - dbNonce: the database nonce of the entry containing the transaction.
     function interchainSend(
         uint64 dstChainId,
         bytes32 receiver,
@@ -122,25 +135,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     /// @notice Executes a transaction that has been sent via the Interchain Communication Protocol.
-    /// Note: The transaction must be proven to be included in one of the InterchainDB batches.
+    /// Note: The transaction must be proven to be included in one of the InterchainDB entries.
     /// Note: Transaction data includes the requested gas limit, but the executors could specify a different gas limit.
     /// If the specified gas limit is lower than requested, the requested gas limit will be used.
     /// Otherwise, the specified gas limit will be used.
     /// This allows to execute the transactions with requested gas limit set too low.
     /// @param gasLimit          The gas limit to use for the execution.
     /// @param transaction       The transaction data.
-    /// @param proof             The Merkle proof for transaction execution, fetched from the source chain.
-    function interchainExecute(
-        uint256 gasLimit,
-        bytes calldata transaction,
-        bytes32[] calldata proof
-    )
-        external
-        payable
-    {
+    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
         InterchainTransaction memory icTx = _assertCorrectTransaction(transaction);
         bytes32 transactionId = keccak256(transaction);
-        _assertExecutable(icTx, transactionId, proof);
+        _assertExecutable(icTx, transactionId);
         _txExecutor[transactionId] = msg.sender;
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
@@ -160,45 +165,46 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             srcChainId: icTx.srcChainId,
             sender: icTx.srcSender,
             dbNonce: icTx.dbNonce,
-            entryIndex: icTx.entryIndex,
             message: icTx.message
         });
-        emit InterchainTransactionReceived(
-            transactionId, icTx.dbNonce, icTx.entryIndex, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
-        );
+        emit InterchainTransactionReceived({
+            transactionId: transactionId,
+            dbNonce: icTx.dbNonce,
+            srcChainId: icTx.srcChainId,
+            srcSender: icTx.srcSender,
+            dstReceiver: icTx.dstReceiver
+        });
     }
 
     /// @notice Writes the proof of execution for a transaction into the InterchainDB.
     /// @dev Will revert if the transaction has not been executed.
     /// @param transactionId    The ID of the transaction to write the proof for.
-    /// @return dbNonce         The database nonce of the batch containing the written proof for transaction.
-    /// @return entryIndex      The index of the written proof for transaction within the batch.
-    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex) {
+    /// @return dbNonce         The database nonce of the entry containing the written proof for transaction.
+    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce) {
         address executor = _txExecutor[transactionId];
         if (executor == address(0)) {
             revert InterchainClientV1__TxNotExecuted(transactionId);
         }
         bytes memory proof = abi.encode(transactionId, executor);
-        (dbNonce, entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntry(keccak256(proof));
-        emit ExecutionProofWritten(transactionId, dbNonce, entryIndex, executor);
+        dbNonce = IInterchainDB(INTERCHAIN_DB).writeEntry(keccak256(proof));
+        emit ExecutionProofWritten({transactionId: transactionId, dbNonce: dbNonce, executor: executor});
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @notice Determines if a transaction meets the criteria to be executed based on:
-    /// - If approved modules have verified the batch in the InterchainDB
+    /// - If approved modules have verified the entry in the InterchainDB
     /// - If the threshold of approved modules have been met
     /// - If the optimistic window has passed for all modules
-    /// - If the Guard module (if opted in) has not submitted a batch that conflicts with the approved modules
+    /// - If the Guard module (if opted in) has not submitted an entry that conflicts with the approved modules
     /// @dev Will revert with a specific error message if the transaction is not executable.
     /// @param encodedTx        The encoded transaction to check for executable status.
-    /// @param proof            The Merkle proof for the transaction, fetched from the source chain.
-    function isExecutable(bytes calldata encodedTx, bytes32[] calldata proof) external view returns (bool) {
+    function isExecutable(bytes calldata encodedTx) external view returns (bool) {
         InterchainTransaction memory icTx = _assertCorrectTransaction(encodedTx);
         // Check that options could be decoded
         icTx.options.decodeOptionsV1();
         bytes32 transactionId = keccak256(encodedTx);
-        _assertExecutable(icTx, transactionId, proof);
+        _assertExecutable(icTx, transactionId);
         return true;
     }
 
@@ -207,31 +213,27 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// - Ready: the transaction is ready to be executed.
     /// - AlreadyExecuted: the transaction has already been executed.
     ///   - `firstArg` is the transaction ID.
-    /// - BatchAwaitingResponses: not enough responses have been received for the transaction.
+    /// - EntryAwaitingResponses: not enough responses have been received for the transaction.
     ///   - `firstArg` is the number of responses received.
     ///   - `secondArg` is the number of responses required.
-    /// - BatchConflict: one of the modules have submitted a conflicting batch.
+    /// - EntryConflict: one of the modules have submitted a conflicting entry.
     ///   - `firstArg` is the address of the module.
     ///   - This is either one of the modules that the app trusts, or the Guard module used by the app.
     /// - ReceiverNotICApp: the receiver is not an Interchain app.
     ///  - `firstArg` is the receiver address.
-    /// - ReceiverZeroRequiredResponses: the app config requires zero responses for the transaction.
     /// - TxWrongDstChainId: the destination chain ID does not match the local chain ID.
     ///   - `firstArg` is the destination chain ID.
     /// - UndeterminedRevert: the transaction will revert for another reason.
     ///
     /// Note: the arguments are abi-encoded bytes32 values (as their types could be different).
     // solhint-disable-next-line code-complexity
-    function getTxReadinessV1(
-        InterchainTransaction memory icTx,
-        bytes32[] calldata proof
-    )
+    function getTxReadinessV1(InterchainTransaction memory icTx)
         external
         view
         returns (TxReadiness status, bytes32 firstArg, bytes32 secondArg)
     {
         bytes memory encodedTx = encodeTransaction(icTx);
-        try this.isExecutable(encodedTx, proof) returns (bool) {
+        try this.isExecutable(encodedTx) returns (bool) {
             return (TxReadiness.Ready, 0, 0);
         } catch (bytes memory errorData) {
             bytes4 selector;
@@ -239,13 +241,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             if (selector == InterchainClientV1__TxAlreadyExecuted.selector) {
                 status = TxReadiness.AlreadyExecuted;
             } else if (selector == InterchainClientV1__ResponsesAmountBelowMin.selector) {
-                status = TxReadiness.BatchAwaitingResponses;
-            } else if (selector == InterchainClientV1__BatchConflict.selector) {
-                status = TxReadiness.BatchConflict;
+                status = TxReadiness.EntryAwaitingResponses;
+            } else if (selector == InterchainClientV1__EntryConflict.selector) {
+                status = TxReadiness.EntryConflict;
             } else if (selector == InterchainClientV1__ReceiverNotICApp.selector) {
                 status = TxReadiness.ReceiverNotICApp;
-            } else if (selector == InterchainClientV1__ReceiverZeroRequiredResponses.selector) {
-                status = TxReadiness.ReceiverZeroRequiredResponses;
             } else if (selector == InterchainClientV1__DstChainIdNotLocal.selector) {
                 status = TxReadiness.TxWrongDstChainId;
             } else {
@@ -344,6 +344,15 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         bytes memory encodedConfig;
         (encodedConfig, modules) = abi.decode(returnData, (bytes, address[]));
         config = encodedConfig.decodeAppConfigV1();
+        // Fallback to the default module if the app has no modules
+        if (modules.length == 0) {
+            modules = new address[](1);
+            modules[0] = defaultModule;
+        }
+        // Fallback to "all responses" if the app requires zero responses
+        if (config.requiredResponses == 0) {
+            config.requiredResponses = modules.length;
+        }
     }
 
     /// @notice Encodes the transaction data into a bytes format.
@@ -381,23 +390,22 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         if (msg.value < verificationFee) {
             revert InterchainClientV1__FeeAmountBelowMin(msg.value, verificationFee);
         }
-        (desc.dbNonce, desc.entryIndex) = IInterchainDB(INTERCHAIN_DB).getNextEntryIndex();
+        desc.dbNonce = IInterchainDB(INTERCHAIN_DB).getDBNonce();
         InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
             srcSender: msg.sender,
             dstReceiver: receiver,
             dstChainId: dstChainId,
             dbNonce: desc.dbNonce,
-            entryIndex: desc.entryIndex,
             options: options,
             message: message
         });
         desc.transactionId = keccak256(encodeTransaction(icTx));
         // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
         {
-            (uint64 dbNonce, uint64 entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{
-                value: verificationFee
-            }(icTx.dstChainId, desc.transactionId, srcModules);
-            assert(dbNonce == desc.dbNonce && entryIndex == desc.entryIndex);
+            uint64 dbNonce = IInterchainDB(INTERCHAIN_DB).writeEntryRequestVerification{value: verificationFee}(
+                icTx.dstChainId, desc.transactionId, srcModules
+            );
+            assert(dbNonce == desc.dbNonce);
         }
         uint256 executionFee;
         unchecked {
@@ -409,54 +417,42 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             transactionId: desc.transactionId,
             options: options
         });
-        emit InterchainTransactionSent(
-            desc.transactionId,
-            icTx.dbNonce,
-            icTx.entryIndex,
-            icTx.dstChainId,
-            icTx.srcSender,
-            icTx.dstReceiver,
-            verificationFee,
-            executionFee,
-            icTx.options,
-            icTx.message
-        );
+        emit InterchainTransactionSent({
+            transactionId: desc.transactionId,
+            dbNonce: desc.dbNonce,
+            dstChainId: icTx.dstChainId,
+            srcSender: icTx.srcSender,
+            dstReceiver: icTx.dstReceiver,
+            verificationFee: verificationFee,
+            executionFee: executionFee,
+            options: icTx.options,
+            message: icTx.message
+        });
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Asserts that the transaction is executable.
-    function _assertExecutable(
-        InterchainTransaction memory icTx,
-        bytes32 transactionId,
-        bytes32[] calldata proof
-    )
-        internal
-        view
-    {
+    function _assertExecutable(InterchainTransaction memory icTx, bytes32 transactionId) internal view {
         bytes32 linkedClient = _assertLinkedClient(icTx.srcChainId);
         if (_txExecutor[transactionId] != address(0)) {
             revert InterchainClientV1__TxAlreadyExecuted(transactionId);
         }
-        // Construct expected batch based on interchain transaction data
-        InterchainBatch memory batch = InterchainBatch({
+        // Construct expected entry based on interchain transaction data
+        InterchainEntry memory entry = InterchainEntry({
             srcChainId: icTx.srcChainId,
             dbNonce: icTx.dbNonce,
-            batchRoot: BatchingV1Lib.getBatchRoot({
-                srcWriter: linkedClient,
-                dataHash: transactionId,
-                entryIndex: icTx.entryIndex,
-                proof: proof
-            })
+            entryValue: InterchainEntryLib.getEntryValue({srcWriter: linkedClient, digest: transactionId})
         });
         address receiver = icTx.dstReceiver.bytes32ToAddress();
         (AppConfigV1 memory appConfig, address[] memory approvedModules) = getAppReceivingConfigV1(receiver);
-        if (appConfig.requiredResponses == 0) {
-            revert InterchainClientV1__ReceiverZeroRequiredResponses(receiver);
-        }
+        // Note: appConfig.requiredResponses is never zero at this point, see fallbacks in `getAppReceivingConfigV1`
         // Verify against the Guard if the app opts in to use it
-        _assertNoGuardConflict(_getGuard(appConfig), batch);
-        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, batch, appConfig.optimisticPeriod);
+        address guard = _getGuard(appConfig);
+        _assertNoGuardConflict(guard, entry);
+        // Optimistic period is not used if there's no Guard configured
+        uint256 optimisticPeriod = guard == address(0) ? 0 : appConfig.optimisticPeriod;
+        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedModules, entry, optimisticPeriod);
         if (finalizedResponses < appConfig.requiredResponses) {
             revert InterchainClientV1__ResponsesAmountBelowMin(finalizedResponses, appConfig.requiredResponses);
         }
@@ -473,12 +469,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
     }
 
-    /// @dev Asserts that the Guard has not submitted a conflicting batch.
-    function _assertNoGuardConflict(address guard, InterchainBatch memory batch) internal view {
+    /// @dev Asserts that the Guard has not submitted a conflicting entry.
+    function _assertNoGuardConflict(address guard, InterchainEntry memory entry) internal view {
         if (guard != address(0)) {
-            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(guard, batch);
-            if (confirmedAt == BATCH_CONFLICT) {
-                revert InterchainClientV1__BatchConflict(guard);
+            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkEntryVerification(guard, entry);
+            if (confirmedAt == ENTRY_CONFLICT) {
+                revert InterchainClientV1__EntryConflict(guard);
             }
         }
     }
@@ -494,11 +490,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return appConfig.guard;
     }
 
-    /// @dev Counts the number of finalized responses for the given batch.
-    /// Note: Reverts if a conflicting batch has been verified by any of the approved modules.
+    /// @dev Counts the number of finalized responses for the given entry.
+    /// Note: Reverts if a conflicting entry has been verified by any of the approved modules.
     function _getFinalizedResponsesCount(
         address[] memory approvedModules,
-        InterchainBatch memory batch,
+        InterchainEntry memory entry,
         uint256 optimisticPeriod
     )
         internal
@@ -507,16 +503,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         for (uint256 i = 0; i < approvedModules.length; ++i) {
             address module = approvedModules[i];
-            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(module, batch);
-            // No-op if the module has not verified anything with the same batch key
-            if (confirmedAt == BATCH_UNVERIFIED) {
+            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkEntryVerification(module, entry);
+            // No-op if the module has not verified anything with the same entry key
+            if (confirmedAt == ENTRY_UNVERIFIED) {
                 continue;
             }
-            // Revert if the module has verified a conflicting batch with the same batch key
-            if (confirmedAt == BATCH_CONFLICT) {
-                revert InterchainClientV1__BatchConflict(module);
+            // Revert if the module has verified a conflicting entry with the same entry key
+            if (confirmedAt == ENTRY_CONFLICT) {
+                revert InterchainClientV1__EntryConflict(module);
             }
-            // The module has verified this exact batch, check if optimistic period has passed
+            // The module has verified this exact entry, check if optimistic period has passed
             if (confirmedAt + optimisticPeriod < block.timestamp) {
                 unchecked {
                     ++finalizedResponses;
