@@ -132,7 +132,7 @@ services:
       GOLOG_LOG_LEVEL: debug
 
   committee-node2:
-    restart: unless-stopped
+    # restart: unless-stopped
     entrypoint: committee
     depends_on:
       - omnirpc
@@ -143,6 +143,10 @@ services:
     build:
       context: ../../
       dockerfile: docker/committee-devnet/committee.Dockerfile
+    volumes:
+      - '${PWD}/config/committee-config1.yml:/config/committee-config1.yml'
+      - '${PWD}/config/committee-signer1.txt:/config/committee-signer1.txt'
+      - committee_data:/config/synapse.db
     command:
       - committee run
       - '--config'
@@ -153,7 +157,7 @@ services:
       GOLOG_LOG_LEVEL: debug
 
   committee-node3:
-    restart: unless-stopped
+    # restart: unless-stopped
     entrypoint: committee
     depends_on:
       - omnirpc
@@ -164,6 +168,10 @@ services:
     build:
       context: ../../
       dockerfile: docker/committee-devnet/committee.Dockerfile
+    volumes:
+      - '${PWD}/config/committee-config1.yml:/config/committee-config1.yml'
+      - '${PWD}/config/committee-signer1.txt:/config/committee-signer1.txt'
+      - committee_data:/config/synapse.db
     command:
       - committee run
       - '--config'
