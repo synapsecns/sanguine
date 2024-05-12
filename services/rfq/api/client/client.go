@@ -5,14 +5,16 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
+	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 
-	"github.com/dubonzi/otelresty"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/go-resty/resty/v2"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -95,10 +97,17 @@ func NewUnauthenticatedClient(metricHandler metrics.Handler, rfqURL string) (Una
 			request.Header.Add(ginhelper.RequestIDHeader, uuid.New().String())
 			return nil
 		})
-
-	otelresty.TraceClient(client, otelresty.WithTracerProvider(metricHandler.GetTracerProvider()), otelresty.WithSpanNameFormatter(func(_ string, r *resty.Request) string {
-		return fmt.Sprintf("rfq-api %s", r.Method)
-	}))
+	client.SetTransport(
+		otelhttp.NewTransport(client.GetClient().Transport,
+			otelhttp.WithTracerProvider(
+				metricHandler.GetTracerProvider()),
+			otelhttp.WithSpanNameFormatter(
+				func(_ string, r *http.Request) string {
+					return fmt.Sprintf("rfq-api %s", r.Method)
+				},
+			),
+		),
+	)
 	return &unauthenticatedClient{client}, nil
 }
 
