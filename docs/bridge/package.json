@@ -12,6 +12,7 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "ci:lint": " ",
+    "test:coverage": " ",
     "build:go": " ",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc"
