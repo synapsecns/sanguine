@@ -6,7 +6,10 @@ import {InterchainModule} from "./InterchainModule.sol";
 import {SynapseModuleEvents} from "../events/SynapseModuleEvents.sol";
 import {ISynapseGasOracle} from "../interfaces/ISynapseGasOracle.sol";
 import {ISynapseModule} from "../interfaces/ISynapseModule.sol";
+import {InterchainEntry, InterchainEntryLib} from "../libs/InterchainEntry.sol";
+import {ModuleEntryLib} from "../libs/ModuleEntry.sol";
 import {ThresholdECDSA} from "../libs/ThresholdECDSA.sol";
+import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
 
 import {ClaimableFees} from "../fees/ClaimableFees.sol";
 
@@ -14,6 +17,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModuleEvents, ISynapseModule {
+    using VersionedPayloadLib for bytes;
+
     // TODO: make sure this is a good enough default value
     uint256 public constant DEFAULT_VERIFY_GAS_LIMIT = 100_000;
 
@@ -128,7 +133,14 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     function verifyRemoteEntry(bytes calldata encodedEntry, bytes calldata signatures) external {
         bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
         _verifiers.verifySignedHash(ethSignedHash, signatures);
-        _verifyEntry(encodedEntry);
+        (bytes memory versionedEntry, bytes memory data) = ModuleEntryLib.decodeVersionedModuleEntry(encodedEntry);
+        InterchainEntry memory entry = InterchainEntryLib.decodeEntryFromMemory(versionedEntry.getPayloadFromMemory());
+        if (entry.srcChainId == block.chainid) {
+            revert InterchainModule__ChainIdNotRemote(entry.srcChainId);
+        }
+        _verifyRemoteEntry(versionedEntry);
+        emit EntryVerified(entry.srcChainId, encodedEntry, ethSignedHash);
+        _receiveModuleData(entry.srcChainId, entry.dbNonce, data);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -194,8 +206,22 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
         // No op, as the claimable amount is tracked as the contract balance
     }
 
+    /// @dev Internal logic to request the verification of an entry on the destination chain.
+    /// Following checks have been done at this point:
+    /// - Entry is a valid versioned entry coming from the Interchain DataBase.
+    /// - Enough fees have been paid for the verification.
+    ///
+    /// Derived contracts should implement the logic to relay the entry to the destination chain:
+    /// the destination module counterpart should call `db.verifyRemoteEntry(versionedEntry)`.
+    function _relayDBEntry(uint64 dstChainId, bytes memory versionedEntry) internal override {
+        bytes memory moduleData = _fillModuleData(dstChainId);
+        bytes memory encodedEntry = ModuleEntryLib.encodeVersionedModuleEntry(versionedEntry, moduleData);
+        bytes32 ethSignedEntryHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
+        emit EntryVerificationRequested(dstChainId, encodedEntry, ethSignedEntryHash);
+    }
+
     /// @dev Internal logic to fill the module data for the specified destination chain.
-    function _fillModuleData(uint64 dstChainId) internal override returns (bytes memory moduleData) {
+    function _fillModuleData(uint64 dstChainId) internal returns (bytes memory moduleData) {
         moduleData = _getSynapseGasOracle().getLocalGasData();
         // Exit early if data is empty
         if (moduleData.length == 0) {
@@ -212,7 +238,7 @@ contract SynapseModule is InterchainModule, ClaimableFees, Ownable, SynapseModul
     }
 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
-    function _receiveModuleData(uint64 srcChainId, uint64 dbNonce, bytes memory moduleData) internal override {
+    function _receiveModuleData(uint64 srcChainId, uint64 dbNonce, bytes memory moduleData) internal {
         // Exit early if data is empty
         if (moduleData.length == 0) {
             return;
