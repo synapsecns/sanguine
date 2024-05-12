@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
           # if any of these packages use submodules in the future, please uncomment this line
           # submodules: 'recursive'
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter_ui
         with:
           #  make sure to update run-goreleaser when adding a new package here
