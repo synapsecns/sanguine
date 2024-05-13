@@ -1,9 +1,10 @@
-package privisoner
+package provisioner
 
 import (
 	"context"
-	"devnet/config"
 	"fmt"
+
+	"github.com/synapsecns/sanguine/committee/devnet/config"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

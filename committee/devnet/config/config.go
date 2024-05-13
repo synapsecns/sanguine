@@ -1,3 +1,4 @@
+// Package config provides the configuration for the Committee devnet.
 package config
 
 import "github.com/ethereum/go-ethereum/common"

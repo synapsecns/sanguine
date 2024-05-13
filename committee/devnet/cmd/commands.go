@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/synapsecns/sanguine/committee/config"
+	"github.com/synapsecns/sanguine/committee/devnet/config"
+	"github.com/synapsecns/sanguine/committee/devnet/provisioner"
 	"github.com/synapsecns/sanguine/core/commandline"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
 )
@@ -33,26 +33,21 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("could not read config file: %w", err)
 		}
 
-		metricsProvider := metrics.Get()
-		// get rid of this
-		_ = metricsProvider
-
 		var cfg config.Config
 		// TODO: consider moving this for marshal/unmarshall tests
 		err = yaml.Unmarshal(input, &cfg)
 		if err != nil {
 			return fmt.Errorf("could not unmarshal config: %w", err)
 		}
-		//
-		//		createdNode, err := node.NewNode(c.Context, metricsProvider, cfg)
-		//		if err != nil {
-		//			return fmt.Errorf("could not create devnet: %w", err)
-		//		}
-		//
-		//		err = createdNode.Start(c.Context)
-		//		if err != nil {
-		//			return fmt.Errorf("could not start node: %w", err)
-		//		}
+
+		fmt.Println("Hi")
+
+		provisioner, err := provisioner.NewProvisioner(c.Context, cfg)
+		if err != nil {
+			return fmt.Errorf("could not create provisioner: %w", err)
+		}
+
+		provisioner.Run(c.Context, cfg)
 		return nil
 	},
 }

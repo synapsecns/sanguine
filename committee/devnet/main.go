@@ -1,7 +1,14 @@
+// Package main contains the entrypoint for the committee devnet.
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/synapsecns/sanguine/committee/devnet/cmd"
+
+	"github.com/synapsecns/sanguine/committee/metadata"
+)
 
 func main() {
-	fmt.Println("Devnet initialization")
+	cmd.Start(os.Args, metadata.BuildInfo())
 }

@@ -14,7 +14,7 @@ import (
 func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
 	app.Name = buildInfo.Name()
-	app.Description = buildInfo.VersionString() + "committee provider for synapse"
+	app.Description = buildInfo.VersionString() + "committee devnet for synapse"
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
 
