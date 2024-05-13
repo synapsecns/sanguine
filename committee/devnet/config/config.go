@@ -8,5 +8,5 @@ type Config struct {
 	Chains map[int]string `yaml:"chains"`
 	// ValidatorAddresses is a list of addresses of the validators
 	// we want to add to the Synapse Module.
-	ValidatorAddresses []common.Address `yaml:"validatorAddresses"`
+	ValidatorAddresses []common.Address `yaml:"validator_addresses"`
 }

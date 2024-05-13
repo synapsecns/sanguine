@@ -14,9 +14,6 @@ import (
 
 type Provisioner struct {
 	*anvil.Backend
-	chain_a        *anvil.Client
-	chain_b        *anvil.Client
-	chain_c        *anvil.Client
 	synapseModules map[int]*synapsemodule.SynapseModule
 }
 
@@ -32,22 +29,7 @@ func NewProvisioner(ctx context.Context, cfg config.Config) (*Provisioner, error
 		synapseModuleDeployments[chainID] = synapseModuleDeployment
 	}
 
-	chaina, err := anvil.Dial(ctx, "http://localhost:8042")
-	if err != nil {
-		return nil, err
-	}
-	chainb, err := anvil.Dial(ctx, "http://localhost:8043")
-	if err != nil {
-		return nil, err
-	}
-	chainc, err := anvil.Dial(ctx, "http://localhost:8044")
-	if err != nil {
-		return nil, err
-	}
 	return &Provisioner{
-		chain_a:        chaina,
-		chain_b:        chainb,
-		chain_c:        chainc,
 		synapseModules: synapseModuleDeployments,
 	}, nil
 }
@@ -98,8 +80,6 @@ func (p *Provisioner) deleteVerifiers(ctx context.Context) error {
 }
 
 func (p *Provisioner) addVerifiers(ctx context.Context, cfg config.Config) error {
-
-	// impersonate vitalik, and send the fren some eth
 
 	for chainid, synapseModule := range p.synapseModules {
 		owner, err := p.getSynapseModuleOwner(chainid)
