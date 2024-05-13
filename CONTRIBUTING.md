@@ -4,6 +4,18 @@ Contributions should roughly follow the [uber style guide](https://github.com/ub
 
 <!-- todo: more-->
 
+## Adding a new JS/TS Package
+
+If you need to make a new JS/TS package, here are the steps to follow:
+
+ - If adding under `packages/*`, no need to do anything further.
+ - Otherwise, make sure you add the package to:
+   - `.github/workflows/lerna.yml` under paths. This will make sure that the package is built and tested in CI.
+   - `workspaces.packages` in packages.json. This will make sure that the package is built and tested locally.
+   - `lerna.json` under `packages` and `version` fields. This will make sure that the package is versioned correctly.
+ - If the package is a library that you'd like to publish, simply set the `private` field in `package.json` to `false` and the `publishConfig` access to public.
+ - If the package is a UI, please see [here](./.github/workflows/ui-preview.md) for instructions on configuring vercel. Make sure to update the paths there as well.
+
 ## Linting
 
 Linting for go is used using [golangci-lint](https://golangci-lint.run/) at the latest released version. Please upgrade or install using your package manager. and run `make lint` from your desired module.
