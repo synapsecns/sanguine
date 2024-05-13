@@ -7,6 +7,7 @@ import { useRiskEvent } from '@/utils/hooks/useRiskEvent'
 import { useTransactionListener } from '@/utils/hooks/useTransactionListener'
 import { use_TransactionsListener } from '@/utils/hooks/use_TransactionsListener'
 import { useFetchPricesOnInterval } from '@/utils/hooks/useFetchPricesOnInterval'
+import { useFetchGasDataOnInterval } from '@/utils/hooks/useFetchGasDataOnInterval'
 
 const BackgroundListenerContext = createContext(null)
 
@@ -18,6 +19,7 @@ export const BackgroundListenerProvider = ({ children }) => {
   useBridgeListener()
   useRiskEvent()
   useFetchPricesOnInterval()
+  useFetchGasDataOnInterval()
 
   return (
     <BackgroundListenerContext.Provider value={null}>

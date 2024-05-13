@@ -66,7 +66,7 @@ type Manager struct {
 	// quotableTokens is a map of token -> list of quotable tokens.
 	// should be removed in config overhaul
 	quotableTokens map[string][]string
-	// simpleScreener is used to screen addresses.
+	// screener is used to screen addresses.
 	screener client.ScreenerClient
 	// relayPaused is set when the RFQ API is found to be offline, which
 	// lets the quoter indicate that quotes should not be relayed.

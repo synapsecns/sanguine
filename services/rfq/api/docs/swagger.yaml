@@ -76,27 +76,22 @@ paths:
       - description: origin chain id to filter quotes by
         in: path
         name: originChainID
-        required: true
         type: integer
       - description: origin chain id to filter quotes by
         in: path
         name: originTokenAddr
-        required: true
         type: string
       - description: destination chain id to filter quotes by
         in: path
         name: destChainID
-        required: true
         type: integer
       - description: destination token address to filter quotes by
         in: path
         name: destTokenAddr
-        required: true
         type: string
       - description: relayer address to filter quotes by
         in: path
         name: relayerAddr
-        required: true
         type: string
       produces:
       - application/json
@@ -107,7 +102,7 @@ paths:
             items:
               $ref: '#/definitions/model.GetQuoteResponse'
             type: array
-      summary: get quotes from all relayers.
+      summary: Get quotes
       tags:
       - quotes
     put:
@@ -126,7 +121,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: get quotes from all relayers.
+      summary: Upsert quote
       tags:
       - quotes
 swagger: "2.0"

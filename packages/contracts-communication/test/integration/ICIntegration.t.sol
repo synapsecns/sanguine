@@ -8,10 +8,9 @@ import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEve
 
 import {IInterchainApp} from "../../contracts/interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV1.sol";
-import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
-import {ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
+import {ModuleEntryLib} from "../../contracts/libs/ModuleEntry.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
 import {ICSetup, TypeCasts} from "./ICSetup.t.sol";
@@ -25,20 +24,20 @@ abstract contract ICIntegrationTest is
     InterchainDBEvents,
     InterchainModuleEvents
 {
-    using TypeCasts for address;
-
-    function assertEq(InterchainBatch memory batch, InterchainBatch memory expected) internal pure {
-        assertEq(batch.srcChainId, expected.srcChainId);
-        assertEq(batch.dbNonce, expected.dbNonce);
-        assertEq(batch.batchRoot, expected.batchRoot);
+    struct FullEntry {
+        uint64 srcChainId;
+        uint64 dbNonce;
+        bytes32 entryValue;
+        bytes32 srcWriter;
+        bytes32 digest;
     }
+
+    using TypeCasts for address;
 
     function assertEq(InterchainEntry memory entry, InterchainEntry memory expected) internal pure {
         assertEq(entry.srcChainId, expected.srcChainId);
         assertEq(entry.dbNonce, expected.dbNonce);
-        assertEq(entry.entryIndex, expected.entryIndex);
-        assertEq(entry.srcWriter, expected.srcWriter);
-        assertEq(entry.dataHash, expected.dataHash);
+        assertEq(entry.entryValue, expected.entryValue);
     }
 
     function expectServiceEventExecutionRequested(bytes32 transactionId, uint256 executionFee) internal {
@@ -57,7 +56,6 @@ abstract contract ICIntegrationTest is
         emit InterchainTransactionSent({
             transactionId: getTxId(icTx),
             dbNonce: icTx.dbNonce,
-            entryIndex: icTx.entryIndex,
             dstChainId: icTx.dstChainId,
             srcSender: icTx.srcSender,
             dstReceiver: icTx.dstReceiver,
@@ -73,66 +71,58 @@ abstract contract ICIntegrationTest is
         emit InterchainTransactionReceived({
             transactionId: getTxId(icTx),
             dbNonce: icTx.dbNonce,
-            entryIndex: icTx.entryIndex,
             srcChainId: icTx.srcChainId,
             srcSender: icTx.srcSender,
             dstReceiver: icTx.dstReceiver
         });
     }
 
-    function expectDatabaseEventInterchainEntryWritten(InterchainEntry memory entry) internal {
+    function expectDatabaseEventInterchainEntryWritten(FullEntry memory fullEntry) internal {
         vm.expectEmit(address(icDB));
         emit InterchainEntryWritten({
-            dbNonce: entry.dbNonce,
-            entryIndex: entry.entryIndex,
-            srcWriter: entry.srcWriter,
-            dataHash: entry.dataHash
+            dbNonce: fullEntry.dbNonce,
+            srcWriter: fullEntry.srcWriter,
+            digest: fullEntry.digest,
+            entryValue: fullEntry.entryValue
         });
     }
 
-    function expectDatabaseEventInterchainBatchFinalized(InterchainBatch memory batch) internal {
+    function expectDatabaseEventInterchainEntryVerified(FullEntry memory fullEntry) internal {
         vm.expectEmit(address(icDB));
-        emit InterchainBatchFinalized({dbNonce: batch.dbNonce, batchRoot: batch.batchRoot});
-    }
-
-    function expectDatabaseEventInterchainBatchVerified(InterchainBatch memory batch) internal {
-        vm.expectEmit(address(icDB));
-        emit InterchainBatchVerified({
+        emit InterchainEntryVerified({
             module: address(module),
-            srcChainId: batch.srcChainId,
-            dbNonce: batch.dbNonce,
-            batchRoot: batch.batchRoot
+            srcChainId: fullEntry.srcChainId,
+            dbNonce: fullEntry.dbNonce,
+            entryValue: fullEntry.entryValue
         });
     }
 
-    function expectDatabaseEventInterchainBatchVerificationRequested(InterchainBatch memory batch) internal {
+    function expectDatabaseEventInterchainEntryVerificationRequested(FullEntry memory fullEntry) internal {
         vm.expectEmit(address(icDB));
-        emit InterchainBatchVerificationRequested({
+        emit InterchainEntryVerificationRequested({
             dstChainId: remoteChainId(),
-            dbNonce: batch.dbNonce,
-            batchRoot: batch.batchRoot,
+            dbNonce: fullEntry.dbNonce,
             srcModules: toArray(address(module))
         });
     }
 
-    function expectModuleEventBatchVerificationRequested(InterchainBatch memory batch) internal {
-        bytes memory encodedBatch = getModuleBatch(batch);
-        bytes32 digest = getEthSignedBatchHash(batch);
+    function expectModuleEventEntryVerificationRequested(FullEntry memory fullEntry) internal {
+        bytes memory encodedEntry = getModuleEntry(fullEntry);
+        bytes32 digest = getEthSignedEntryHash(fullEntry);
         vm.expectEmit(address(module));
-        emit BatchVerificationRequested({dstChainId: remoteChainId(), batch: encodedBatch, ethSignedBatchHash: digest});
+        emit EntryVerificationRequested({dstChainId: remoteChainId(), entry: encodedEntry, ethSignedEntryHash: digest});
     }
 
-    function expectModuleEventBatchVerified(InterchainBatch memory batch) internal {
-        bytes memory encodedBatch = getModuleBatch(batch);
-        bytes32 digest = getEthSignedBatchHash(batch);
+    function expectModuleEventEntryVerified(FullEntry memory fullEntry) internal {
+        bytes memory encodedEntry = getModuleEntry(fullEntry);
+        bytes32 digest = getEthSignedEntryHash(fullEntry);
         vm.expectEmit(address(module));
-        emit BatchVerified({srcChainId: batch.srcChainId, batch: encodedBatch, ethSignedBatchHash: digest});
+        emit EntryVerified({srcChainId: fullEntry.srcChainId, entry: encodedEntry, ethSignedEntryHash: digest});
     }
 
     function expectAppCall(InterchainTransaction memory icTx, OptionsV1 memory options) internal {
-        bytes memory expectedCalldata = abi.encodeCall(
-            IInterchainApp.appReceive, (icTx.srcChainId, icTx.srcSender, icTx.dbNonce, icTx.entryIndex, icTx.message)
-        );
+        bytes memory expectedCalldata =
+            abi.encodeCall(IInterchainApp.appReceive, (icTx.srcChainId, icTx.srcSender, icTx.dbNonce, icTx.message));
         vm.expectCall({
             callee: localApp(),
             msgValue: options.gasAirdrop,
@@ -146,26 +136,24 @@ abstract contract ICIntegrationTest is
 
     function expectEventsMessageSent(
         InterchainTransaction memory icTx,
-        InterchainEntry memory entry,
+        FullEntry memory fullEntry,
         uint256 verificationFee,
         uint256 executionFee
     )
         internal
     {
-        InterchainBatch memory batch = getInterchainBatch(entry);
-        InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
-        expectDatabaseEventInterchainEntryWritten(entry);
-        expectDatabaseEventInterchainBatchFinalized(batch);
-        expectModuleEventBatchVerificationRequested(batch);
-        expectDatabaseEventInterchainBatchVerificationRequested(batch);
+        InterchainTxDescriptor memory desc = getInterchainTxDescriptor(fullEntry);
+        expectDatabaseEventInterchainEntryWritten(fullEntry);
+        expectModuleEventEntryVerificationRequested(fullEntry);
+        expectDatabaseEventInterchainEntryVerificationRequested(fullEntry);
         expectServiceEventExecutionRequested(desc.transactionId, executionFee);
         expectClientEventInterchainTransactionSent(icTx, verificationFee, executionFee);
     }
 
     // ══════════════════════════════════════════════ EXPECT REVERTS ═══════════════════════════════════════════════════
 
-    function expectClientRevertBatchConflict(address module) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__BatchConflict.selector, module));
+    function expectClientRevertEntryConflict(address module) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__EntryConflict.selector, module));
     }
 
     function expectClientRevertResponsesAmountBelowMin(uint256 actual, uint256 required) internal {
@@ -184,45 +172,33 @@ abstract contract ICIntegrationTest is
         );
     }
 
-    function checkBatchLeafs(InterchainBatch memory batch, bytes32[] memory leafs) internal pure {
-        assertEq(leafs.length, 1);
-        assertEq(leafs[0], batch.batchRoot);
-    }
-
-    function checkDatabaseStateMsgSent(InterchainEntry memory entry, uint64 initialDBNonce) internal view {
-        InterchainBatch memory batch = getInterchainBatch(entry);
-        InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
+    function checkDatabaseStateMsgSent(FullEntry memory fullEntry, uint64 initialDBNonce) internal view {
+        InterchainEntry memory entry = getInterchainEntry(fullEntry);
+        InterchainTxDescriptor memory desc = getInterchainTxDescriptor(fullEntry);
         assertEq(desc.dbNonce, initialDBNonce);
         // Check getters related to the txs' dbNonce
-        checkBatchLeafs(batch, icDB.getBatchLeafs(desc.dbNonce));
-        checkBatchLeafs(batch, icDB.getBatchLeafsPaginated(desc.dbNonce, 0, 1));
-        assertEq(icDB.getBatchSize(desc.dbNonce), 1);
-        assertEq(icDB.getBatch(desc.dbNonce), batch);
-        assertEq(icDB.getEntryValue(desc.dbNonce, 0), batch.batchRoot);
-        assertEq(icDB.getEntryProof(desc.dbNonce, 0).length, 0);
+        assertEq(icDB.getEntry(desc.dbNonce), entry);
+        assertEq(icDB.getEntryValue(desc.dbNonce), entry.entryValue);
         // Check getters related to the next dbNonce
         assertEq(icDB.getDBNonce(), desc.dbNonce + 1);
-        (uint64 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
-        assertEq(dbNonce, desc.dbNonce + 1);
-        assertEq(entryIndex, 0);
     }
 
-    function markInvalidByGuard(InterchainBatch memory batch) internal {
-        InterchainBatch memory conflictingBatch = InterchainBatch({
-            srcChainId: batch.srcChainId,
-            dbNonce: batch.dbNonce,
-            batchRoot: keccak256("Some other data")
+    function markInvalidByGuard(FullEntry memory fullEntry) internal {
+        InterchainEntry memory conflictingEntry = InterchainEntry({
+            srcChainId: fullEntry.srcChainId,
+            dbNonce: fullEntry.dbNonce,
+            entryValue: keccak256("Some other data")
         });
-        bytes memory encodedBatch =
-            payloadLibHarness.encodeVersionedPayload(DB_VERSION, batchLibHarness.encodeBatch(conflictingBatch));
+        bytes memory encodedEntry =
+            payloadLibHarness.encodeVersionedPayload(DB_VERSION, entryLibHarness.encodeEntry(conflictingEntry));
         vm.prank(guard);
-        icDB.verifyRemoteBatch(encodedBatch);
+        icDB.verifyRemoteEntry(encodedEntry);
     }
 
     // ═══════════════════════════════════════════════ DATA HELPERS ════════════════════════════════════════════════════
 
-    function getModuleSignatures(InterchainBatch memory batch) internal view returns (bytes memory signatures) {
-        bytes32 digest = getEthSignedBatchHash(batch);
+    function getModuleSignatures(FullEntry memory fullEntry) internal view returns (bytes memory signatures) {
+        bytes32 digest = getEthSignedEntryHash(fullEntry);
         signatures = "";
         for (uint256 i = 0; i < signerPKs.length; i++) {
             (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPKs[i], digest);
@@ -230,54 +206,55 @@ abstract contract ICIntegrationTest is
         }
     }
 
-    function getEthSignedBatchHash(InterchainBatch memory batch) internal view returns (bytes32) {
-        bytes memory moduleBatch = getModuleBatch(batch);
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(moduleBatch)));
+    function getEthSignedEntryHash(FullEntry memory fullEntry) internal view returns (bytes32) {
+        bytes memory moduleEntry = getModuleEntry(fullEntry);
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(moduleEntry)));
     }
 
-    function getModuleBatch(InterchainBatch memory batch) internal view returns (bytes memory) {
-        bytes memory versionedBatch =
-            payloadLibHarness.encodeVersionedPayload(DB_VERSION, batchLibHarness.encodeBatch(batch));
-        return ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, new bytes(0));
+    function getModuleEntry(FullEntry memory fullEntry) internal view returns (bytes memory) {
+        bytes memory versionedEntry = payloadLibHarness.encodeVersionedPayload(
+            DB_VERSION, entryLibHarness.encodeEntry(getInterchainEntry(fullEntry))
+        );
+        return ModuleEntryLib.encodeVersionedModuleEntry(versionedEntry, new bytes(0));
     }
 
-    function getInterchainBatch(InterchainEntry memory entry) internal pure returns (InterchainBatch memory) {
-        return InterchainBatch({
-            srcChainId: entry.srcChainId,
-            dbNonce: entry.dbNonce,
-            batchRoot: keccak256(abi.encode(entry.srcWriter, entry.dataHash))
+    function getInterchainEntry(FullEntry memory fullEntry) internal pure returns (InterchainEntry memory) {
+        return InterchainEntry({
+            srcChainId: fullEntry.srcChainId,
+            dbNonce: fullEntry.dbNonce,
+            entryValue: fullEntry.entryValue
         });
     }
 
-    function getInterchainTxDescriptor(InterchainEntry memory entry)
+    function getInterchainTxDescriptor(FullEntry memory fullEntry)
         internal
         pure
         returns (InterchainTxDescriptor memory)
     {
-        return InterchainTxDescriptor({
-            dbNonce: entry.dbNonce,
-            entryIndex: entry.entryIndex,
-            transactionId: entry.dataHash
-        });
+        return InterchainTxDescriptor({dbNonce: fullEntry.dbNonce, transactionId: fullEntry.digest});
     }
 
-    function getSrcInterchainEntry() internal view returns (InterchainEntry memory) {
-        return InterchainEntry({
+    function getSrcFullEntry() internal view returns (FullEntry memory) {
+        bytes32 srcWriter = address(icClient).addressToBytes32();
+        bytes32 digest = getTxId(getSrcTransaction());
+        return FullEntry({
             srcChainId: SRC_CHAIN_ID,
             dbNonce: SRC_INITIAL_DB_NONCE,
-            entryIndex: 0,
-            srcWriter: address(icClient).addressToBytes32(),
-            dataHash: getTxId(getSrcTransaction())
+            entryValue: entryLibHarness.getEntryValue(srcWriter, digest),
+            srcWriter: srcWriter,
+            digest: digest
         });
     }
 
-    function getDstInterchainEntry() internal view returns (InterchainEntry memory) {
-        return InterchainEntry({
+    function getDstFullEntry() internal view returns (FullEntry memory) {
+        bytes32 srcWriter = address(icClient).addressToBytes32();
+        bytes32 digest = getTxId(getDstTransaction());
+        return FullEntry({
             srcChainId: DST_CHAIN_ID,
             dbNonce: DST_INITIAL_DB_NONCE,
-            entryIndex: 0,
-            srcWriter: address(icClient).addressToBytes32(),
-            dataHash: getTxId(getDstTransaction())
+            entryValue: entryLibHarness.getEntryValue(srcWriter, digest),
+            srcWriter: srcWriter,
+            digest: digest
         });
     }
 
@@ -296,7 +273,6 @@ abstract contract ICIntegrationTest is
             dstChainId: DST_CHAIN_ID,
             dstReceiver: address(dstApp).addressToBytes32(),
             dbNonce: SRC_INITIAL_DB_NONCE,
-            entryIndex: 0,
             options: getSrcOptions().encodeOptionsV1(),
             message: getSrcMessage()
         });
@@ -309,7 +285,6 @@ abstract contract ICIntegrationTest is
             dstChainId: SRC_CHAIN_ID,
             dstReceiver: address(srcApp).addressToBytes32(),
             dbNonce: DST_INITIAL_DB_NONCE,
-            entryIndex: 0,
             options: getDstOptions().encodeOptionsV1(),
             message: getDstMessage()
         });

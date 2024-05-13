@@ -12,6 +12,8 @@ const (
 	Submitted
 	// Complete indicates the USDC transfer has been completed on the destination chain.
 	Complete
+	// WillNotComplete  indicates the USDC transfer will not complete on the destination chain.
+	WillNotComplete
 )
 
 func (m MessageState) String() string {
@@ -24,6 +26,8 @@ func (m MessageState) String() string {
 		return "Submitted"
 	case Complete:
 		return "Complete"
+	case WillNotComplete:
+		return "WillNotComplete"
 	}
 	return ""
 }

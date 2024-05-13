@@ -4,6 +4,10 @@ import "time"
 
 // Config is the configuration for the screener.
 type Config struct {
+	// AppSecret is the app secret
+	AppSecret string `yaml:"app-secret"`
+	// AppID is the app id
+	AppID string `yaml:"app-id"`
 	// TRMKey is the api key for trmlabs
 	TRMKey string `yaml:"trm-key"`
 	// Rules of [caller_type]->risk_type

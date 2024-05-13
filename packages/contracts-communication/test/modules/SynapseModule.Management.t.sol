@@ -326,7 +326,9 @@ contract SynapseModuleManagementTest is Test, ClaimableFeesEvents, SynapseModule
     }
 
     function test_setGasOracle_revert_zeroAddress() public {
-        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__GasOracleNotContract.selector, address(0)));
+        bytes memory revertData =
+            abi.encodeWithSelector(ISynapseModule.SynapseModule__GasOracleNotContract.selector, address(0));
+        vm.expectRevert(revertData);
         vm.prank(owner);
         module.setGasOracle(address(0));
     }

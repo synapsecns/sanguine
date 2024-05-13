@@ -1,21 +1,19 @@
 import React, { useCallback } from 'react'
-import _ from 'lodash'
+import { zeroAddress } from 'viem'
+import { isNumber } from 'lodash'
+import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
-import {
-  setFromChainId,
-  setFromToken,
-  updateFromValue,
-} from '@/slices/bridge/reducer'
+import { setFromChainId, setFromToken } from '@/slices/bridge/reducer'
 import { Token } from '@/utils/types'
 import { inputRef } from '../../StateManagedBridge/InputContainer'
-import Image from 'next/image'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
-import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
-import { zeroAddress } from 'viem'
-import GasIcon from '@/components/icons/GasIcon'
-import { HoverTooltip } from './HoverTooltip'
+import { HoverTooltip } from '@/components/HoverTooltip'
 import { getParsedBalance } from '@/utils/getParsedBalance'
+import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
+import GasIcon from '@/components/icons/GasIcon'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+import { formatAmount } from '@/utils/formatAmount'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()
@@ -37,30 +35,26 @@ export const PortfolioTokenAsset = ({
   const dispatch = useAppDispatch()
   const { fromChainId, fromToken } = useBridgeState()
   const { icon, symbol, decimals, addresses } = token
-
-  const tokenDecimals = _.isNumber(decimals)
+  const tokenAddress = addresses[portfolioChainId]
+  const tokenDecimals = isNumber(decimals)
     ? decimals
     : decimals[portfolioChainId]
 
-  const parsedBalance = getParsedBalance(balance, tokenDecimals, 3)
-  const parsedBalanceLong = getParsedBalance(balance, tokenDecimals, 8)
+  const parsedBalance = getParsedBalance(balance, tokenDecimals)
+  const formattedBalance = formatAmount(parsedBalance)
 
   const isDisabled = false
-  const isTokenSelected =
-    fromToken === token && fromChainId === portfolioChainId
+  const isPortfolioChainSelected = fromChainId === portfolioChainId
+  const isTokenSelected = isPortfolioChainSelected && fromToken === token
+  const isGasToken = tokenAddress === zeroAddress
 
-  const handleFromSelectionCallback = useCallback(() => {
+  const { maxBridgeableGas } = useGasEstimator()
+
+  const handleFromSelectionCallback = useCallback(async () => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
     handleFocusOnBridgeInput()
-    dispatch(
-      updateFromValue(
-        trimTrailingZeroesAfterDecimal(getParsedBalance(balance, tokenDecimals))
-      )
-    )
-  }, [token, balance, portfolioChainId])
-
-  const isBridgeableGasToken = addresses[portfolioChainId] === zeroAddress
+  }, [token, portfolioChainId])
 
   return (
     <div
@@ -70,14 +64,7 @@ export const PortfolioTokenAsset = ({
         ${isTokenSelected ? 'bg-tint border-surface' : 'border-transparent'}
       `}
     >
-      <div
-        onClick={handleFromSelectionCallback}
-        className={`
-          flex items-center gap-2
-          pl-2 pr-4 py-2 cursor-pointer rounded
-          hover:bg-surface active:opacity-70
-        `}
-      >
+      <div className="flex items-center gap-2 py-2 pl-2 pr-4 rounded cursor-default">
         <Image
           loading="lazy"
           alt={`${symbol} img`}
@@ -86,23 +73,31 @@ export const PortfolioTokenAsset = ({
         />
         <HoverTooltip
           hoverContent={
-            <div className="whitespace-nowrap">
-              {parsedBalanceLong} {symbol}
-            </div>
+            isPortfolioChainSelected && isGasToken && maxBridgeableGas ? (
+              <div className="whitespace-nowrap">
+                Available:{' '}
+                {trimTrailingZeroesAfterDecimal(maxBridgeableGas.toFixed(8))}{' '}
+                {symbol}
+              </div>
+            ) : (
+              <div className="whitespace-nowrap">
+                {parsedBalance} {symbol}
+              </div>
+            )
           }
         >
           <div>
-            {parsedBalance} {symbol}
+            {formattedBalance} {symbol}
           </div>
         </HoverTooltip>
 
-        {isBridgeableGasToken ? (
+        {isGasToken && (
           <HoverTooltip
             hoverContent={<div className="whitespace-nowrap">Gas token</div>}
           >
             <GasIcon className="pt-0.5 m-auto fill-secondary" />
           </HoverTooltip>
-        ) : null}
+        )}
       </div>
       <PortfolioAssetActionButton
         selectCallback={handleFromSelectionCallback}

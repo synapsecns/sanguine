@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.5](https://github.com/synapsecns/sanguine/compare/FastBridge@0.2.4...FastBridge@0.2.5) (2024-05-12)
+
+
+### Reverts
+
+* Revert "update bl" ([3693110](https://github.com/synapsecns/sanguine/commit/3693110e0f9df6177935bbbfba5444df62b11866))
+
+
+
+
+
 ## [0.2.4](https://github.com/synapsecns/sanguine/compare/FastBridge@0.2.3...FastBridge@0.2.4) (2024-05-06)
 
 **Note:** Version bump only for package FastBridge

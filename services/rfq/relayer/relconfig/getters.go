@@ -410,45 +410,33 @@ func (c Config) GetHTTPTimeout() time.Duration {
 	return time.Duration(timeoutMs) * time.Millisecond
 }
 
-func (c Config) getTokenConfigByAddr(chainID int, tokenAddr string) (cfg TokenConfig, name string, err error) {
+func (c Config) getTokenConfigByAddr(chainID int, tokenAddr string) (cfg TokenConfig, err error) {
 	chainConfig, ok := c.Chains[chainID]
 	if !ok {
-		return cfg, name, fmt.Errorf("no chain config for chain %d", chainID)
+		return cfg, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	for tokenName, tokenConfig := range chainConfig.Tokens {
+	for _, tokenConfig := range chainConfig.Tokens {
 		if common.HexToAddress(tokenConfig.Address).Hex() == common.HexToAddress(tokenAddr).Hex() {
-			return tokenConfig, tokenName, nil
+			return tokenConfig, nil
 		}
 	}
-	return cfg, name, fmt.Errorf("no token config for chain %d and address %s", chainID, tokenAddr)
+	return cfg, fmt.Errorf("no token config for chain %d and address %s", chainID, tokenAddr)
 }
 
-// GetRebalanceMethod returns the rebalance method for the given chain and token address.
+// GetRebalanceMethod returns the rebalance method for the given chain path and token address.
+// This method will error if there is a rebalance method mismatch, and neither methods correspond to
+// RebalanceMethodNone.
 func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method RebalanceMethod, err error) {
-	tokenConfig, tokenName, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	tokenCfg, err := c.getTokenConfigByAddr(chainID, tokenAddr)
 	if err != nil {
 		return 0, err
 	}
-	if tokenConfig.RebalanceMethod == "" {
-		return RebalanceMethodNone, nil
+
+	method, err = RebalanceMethodFromString(tokenCfg.RebalanceMethod)
+	if err != nil {
+		return 0, err
 	}
-	for cid, chainCfg := range c.Chains {
-		tokenCfg, ok := chainCfg.Tokens[tokenName]
-		if ok {
-			if tokenConfig.RebalanceMethod != tokenCfg.RebalanceMethod {
-				return RebalanceMethodNone, fmt.Errorf("rebalance method mismatch for token %s on chains %d and %d", tokenName, chainID, cid)
-			}
-		}
-	}
-	switch tokenConfig.RebalanceMethod {
-	case "synapsecctp":
-		return RebalanceMethodSynapseCCTP, nil
-	case "circlecctp":
-		return RebalanceMethodCircleCCTP, nil
-	case "native":
-		return RebalanceMethodNative, nil
-	}
-	return RebalanceMethodNone, nil
+	return method, nil
 }
 
 // GetRebalanceMethods returns all rebalance methods present in the config.
@@ -470,7 +458,7 @@ func (c Config) GetRebalanceMethods() (methods map[RebalanceMethod]bool, err err
 
 // GetMaintenanceBalancePct returns the maintenance balance percentage for the given chain and token address.
 func (c Config) GetMaintenanceBalancePct(chainID int, tokenAddr string) (float64, error) {
-	tokenConfig, _, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	tokenConfig, err := c.getTokenConfigByAddr(chainID, tokenAddr)
 	if err != nil {
 		return 0, err
 	}
@@ -482,7 +470,7 @@ func (c Config) GetMaintenanceBalancePct(chainID int, tokenAddr string) (float64
 
 // GetInitialBalancePct returns the initial balance percentage for the given chain and token address.
 func (c Config) GetInitialBalancePct(chainID int, tokenAddr string) (float64, error) {
-	tokenConfig, _, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	tokenConfig, err := c.getTokenConfigByAddr(chainID, tokenAddr)
 	if err != nil {
 		return 0, err
 	}
@@ -594,7 +582,7 @@ var defaultMinRebalanceAmount = big.NewInt(1000)
 //
 //nolint:dupl
 func (c Config) GetMinRebalanceAmount(chainID int, addr common.Address) *big.Int {
-	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	tokenCfg, err := c.getTokenConfigByAddr(chainID, addr.Hex())
 	if err != nil {
 		return defaultMaxRebalanceAmount
 	}
@@ -616,7 +604,7 @@ var defaultMaxRebalanceAmount = abi.MaxInt256
 //
 //nolint:dupl
 func (c Config) GetMaxRebalanceAmount(chainID int, addr common.Address) *big.Int {
-	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	tokenCfg, err := c.getTokenConfigByAddr(chainID, addr.Hex())
 	if err != nil {
 		return defaultMaxRebalanceAmount
 	}

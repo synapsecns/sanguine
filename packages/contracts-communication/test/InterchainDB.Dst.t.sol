@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainDB, InterchainBatch, IInterchainDB, InterchainDBEvents} from "../contracts/InterchainDB.sol";
+import {InterchainDB, InterchainEntry, IInterchainDB, InterchainDBEvents} from "../contracts/InterchainDB.sol";
 
-import {InterchainBatchLibHarness} from "./harnesses/InterchainBatchLibHarness.sol";
+import {InterchainEntryLibHarness} from "./harnesses/InterchainEntryLibHarness.sol";
 import {VersionedPayloadLibHarness} from "./harnesses/VersionedPayloadLibHarness.sol";
 import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
 
@@ -20,9 +20,9 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
 
     uint16 public constant DB_VERSION = 1;
 
-    uint256 public constant BATCH_CONFLICT = type(uint256).max;
+    uint256 public constant ENTRY_CONFLICT = type(uint256).max;
 
-    InterchainBatchLibHarness public batchLibHarness;
+    InterchainEntryLibHarness public entryLibHarness;
     VersionedPayloadLibHarness public payloadLibHarness;
 
     InterchainDB public icDB;
@@ -31,97 +31,93 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
 
     address public writerT = makeAddr("Test Writer");
 
-    mapping(address module => mapping(bytes32 batchHash => uint256 timestamp)) public verifiedAt;
+    mapping(address module => mapping(bytes32 entryHash => uint256 timestamp)) public verifiedAt;
 
     function setUp() public {
         vm.chainId(DST_CHAIN_ID);
         icDB = new InterchainDB();
         moduleA = new InterchainModuleMock();
         moduleB = new InterchainModuleMock();
-        batchLibHarness = new InterchainBatchLibHarness();
+        entryLibHarness = new InterchainEntryLibHarness();
         payloadLibHarness = new VersionedPayloadLibHarness();
         // Format is {chainId: nonce}
-        // Verify some batches with module A
+        // Verify some entries with module A
         // A: {0: 0}, {0: 10}, {1: 10}
-        verifyBatch(moduleA, getVersionedBatch(getMockBatch(SRC_CHAIN_ID_0, 0)));
-        verifyBatch(moduleA, getVersionedBatch(getMockBatch(SRC_CHAIN_ID_0, 10)));
-        verifyBatch(moduleA, getVersionedBatch(getMockBatch(SRC_CHAIN_ID_1, 10)));
-        // Verify some batches with module B
+        verifyEntry(moduleA, getVersionedEntry(getMockEntry(SRC_CHAIN_ID_0, 0)));
+        verifyEntry(moduleA, getVersionedEntry(getMockEntry(SRC_CHAIN_ID_0, 10)));
+        verifyEntry(moduleA, getVersionedEntry(getMockEntry(SRC_CHAIN_ID_1, 10)));
+        // Verify some entries with module B
         // B: {1: 0}, {1: 10}
-        verifyBatch(moduleB, getVersionedBatch(getMockBatch(SRC_CHAIN_ID_1, 0)));
-        verifyBatch(moduleB, getVersionedBatch(getMockBatch(SRC_CHAIN_ID_1, 10)));
+        verifyEntry(moduleB, getVersionedEntry(getMockEntry(SRC_CHAIN_ID_1, 0)));
+        verifyEntry(moduleB, getVersionedEntry(getMockEntry(SRC_CHAIN_ID_1, 10)));
     }
 
-    function getVersionedBatch(InterchainBatch memory batch) internal view returns (bytes memory) {
-        return payloadLibHarness.encodeVersionedPayload(DB_VERSION, batchLibHarness.encodeBatch(batch));
+    function getVersionedEntry(InterchainEntry memory entry) internal view returns (bytes memory) {
+        return payloadLibHarness.encodeVersionedPayload(DB_VERSION, entryLibHarness.encodeEntry(entry));
     }
 
-    function verifyBatch(InterchainModuleMock module, bytes memory versionedBatch) internal {
+    function verifyEntry(InterchainModuleMock module, bytes memory versionedEntry) internal {
         skip(1 minutes);
-        verifiedAt[address(module)][keccak256(abi.encode(versionedBatch))] = block.timestamp;
-        module.mockVerifyRemoteBatch(address(icDB), versionedBatch);
+        verifiedAt[address(module)][keccak256(abi.encode(versionedEntry))] = block.timestamp;
+        module.mockVerifyRemoteEntry(address(icDB), versionedEntry);
     }
 
     function introduceConflicts() public {
-        // Have module A verify a different batch {1:0} (already verified by module B)
-        verifyBatch(moduleA, getVersionedBatch(getFakeBatch(SRC_CHAIN_ID_1, 0)));
-        // Have module B verify a different batch {0:10} (already verified by module A)
-        verifyBatch(moduleB, getVersionedBatch(getFakeBatch(SRC_CHAIN_ID_0, 10)));
+        // Have module A verify a different entry {1:0} (already verified by module B)
+        verifyEntry(moduleA, getVersionedEntry(getFakeEntry(SRC_CHAIN_ID_1, 0)));
+        // Have module B verify a different entry {0:10} (already verified by module A)
+        verifyEntry(moduleB, getVersionedEntry(getFakeEntry(SRC_CHAIN_ID_0, 10)));
     }
 
-    function introduceEmptyBatches() public {
-        // Have module A verify an empty batch for batches that module B has not verified
+    function introduceEmptyEntries() public {
+        // Have module A verify an empty entry for entries that module B has not verified
         // {0: 20}
-        verifyBatch(moduleA, getVersionedBatch(getEmptyBatch(SRC_CHAIN_ID_0, 20)));
-        // Have module A verify an empty batch for batches that module B has verified
+        verifyEntry(moduleA, getVersionedEntry(getEmptyEntry(SRC_CHAIN_ID_0, 20)));
+        // Have module A verify an empty entry for entries that module B has verified
         // {1: 0}
-        verifyBatch(moduleA, getVersionedBatch(getEmptyBatch(SRC_CHAIN_ID_1, 0)));
-        // Have module B verify an empty batch for batches that module A has not verified
+        verifyEntry(moduleA, getVersionedEntry(getEmptyEntry(SRC_CHAIN_ID_1, 0)));
+        // Have module B verify an empty entry for entries that module A has not verified
         // {0: 30}
-        verifyBatch(moduleB, getVersionedBatch(getEmptyBatch(SRC_CHAIN_ID_0, 30)));
-        // Have module B verify an empty batch for batches that module A has verified
+        verifyEntry(moduleB, getVersionedEntry(getEmptyEntry(SRC_CHAIN_ID_0, 30)));
+        // Have module B verify an empty entry for entries that module A has verified
         // {0: 10}
-        verifyBatch(moduleB, getVersionedBatch(getEmptyBatch(SRC_CHAIN_ID_0, 10)));
+        verifyEntry(moduleB, getVersionedEntry(getEmptyEntry(SRC_CHAIN_ID_0, 10)));
     }
 
-    function introduceEqualEmptyBatches() public {
+    function introduceEqualEmptyEntries() public {
         // {0: 20}
-        verifyBatch(moduleA, getVersionedBatch(getEmptyBatch(SRC_CHAIN_ID_0, 20)));
-        verifyBatch(moduleB, getVersionedBatch(getEmptyBatch(SRC_CHAIN_ID_0, 20)));
+        verifyEntry(moduleA, getVersionedEntry(getEmptyEntry(SRC_CHAIN_ID_0, 20)));
+        verifyEntry(moduleB, getVersionedEntry(getEmptyEntry(SRC_CHAIN_ID_0, 20)));
     }
 
     // ══════════════════════════════════════════════ DATA GENERATION ══════════════════════════════════════════════════
 
-    function getMockBatchRoot(uint64 nonce) internal view returns (bytes32) {
-        return keccak256(abi.encode(writerT, getMockDataHash(nonce)));
+    function getMockEntryValue(uint64 nonce) internal view returns (bytes32) {
+        return entryLibHarness.getEntryValue(writerT, getMockDigest(nonce));
     }
 
-    function getMockBatch(uint64 srcChainId, uint64 dbNonce) internal view returns (InterchainBatch memory batch) {
-        return InterchainBatch(srcChainId, dbNonce, getMockBatchRoot(dbNonce));
+    function getMockEntry(uint64 srcChainId, uint64 dbNonce) internal view returns (InterchainEntry memory entry) {
+        return InterchainEntry(srcChainId, dbNonce, getMockEntryValue(dbNonce));
     }
 
-    function getMockDataHash(uint64 nonce) internal pure returns (bytes32) {
+    function getMockDigest(uint64 nonce) internal pure returns (bytes32) {
         return keccak256(abi.encode(nonce));
     }
 
-    function getFakeBatchRoot(uint64 nonce) internal view returns (bytes32) {
-        return keccak256(abi.encode(writerT, getFakeDataHash(nonce)));
+    function getFakeEntryValue(uint64 nonce) internal view returns (bytes32) {
+        return entryLibHarness.getEntryValue(writerT, getFakeDigest(nonce));
     }
 
-    function getFakeBatch(uint64 srcChainId, uint64 dbNonce) internal view returns (InterchainBatch memory batch) {
-        return InterchainBatch(srcChainId, dbNonce, getFakeBatchRoot(dbNonce));
+    function getFakeEntry(uint64 srcChainId, uint64 dbNonce) internal view returns (InterchainEntry memory entry) {
+        return InterchainEntry(srcChainId, dbNonce, getFakeEntryValue(dbNonce));
     }
 
-    function getFakeDataHash(uint64 nonce) internal pure returns (bytes32) {
+    function getFakeDigest(uint64 nonce) internal pure returns (bytes32) {
         return keccak256(abi.encode(nonce, "Fake data"));
     }
 
-    function getEmptyBatchRoot() internal view returns (bytes32) {
-        return keccak256(abi.encode(writerT, 0));
-    }
-
-    function getEmptyBatch(uint64 srcChainId, uint64 dbNonce) internal pure returns (InterchainBatch memory batch) {
-        return InterchainBatch({srcChainId: srcChainId, dbNonce: dbNonce, batchRoot: 0});
+    function getEmptyEntry(uint64 srcChainId, uint64 dbNonce) internal pure returns (InterchainEntry memory entry) {
+        return InterchainEntry({srcChainId: srcChainId, dbNonce: dbNonce, entryValue: 0});
     }
 
     function addressToBytes32(address addr) internal pure returns (bytes32) {
@@ -132,52 +128,44 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
 
     function assertCorrectInitialVerificationTime(
         InterchainModuleMock module,
-        InterchainBatch memory batch
+        InterchainEntry memory entry
     )
         internal
         view
     {
-        bytes memory versionedBatch = getVersionedBatch(batch);
-        uint256 savedVerificationTime = verifiedAt[address(module)][keccak256(abi.encode(versionedBatch))];
+        bytes memory versionedEntry = getVersionedEntry(entry);
+        uint256 savedVerificationTime = verifiedAt[address(module)][keccak256(abi.encode(versionedEntry))];
         // We never save 0 as a verification time during initial setup
         assertGt(savedVerificationTime, 0);
-        checkVerification(module, batch, savedVerificationTime);
+        checkVerification(module, entry, savedVerificationTime);
     }
 
     function checkVerification(
         InterchainModuleMock module,
-        InterchainBatch memory batch,
+        InterchainEntry memory entry,
         uint256 expectedVerificationTime
     )
         internal
         view
     {
-        uint256 timestamp = icDB.checkBatchVerification(address(module), batch);
+        uint256 timestamp = icDB.checkEntryVerification(address(module), entry);
         assertEq(timestamp, expectedVerificationTime);
     }
 
-    function expectEventBatchVerified(InterchainModuleMock module, InterchainBatch memory batch) internal {
+    function expectEventEntryVerified(InterchainModuleMock module, InterchainEntry memory entry) internal {
         vm.expectEmit(address(icDB));
-        emit InterchainBatchVerified(address(module), batch.srcChainId, batch.dbNonce, batch.batchRoot);
+        emit InterchainEntryVerified(address(module), entry.srcChainId, entry.dbNonce, entry.entryValue);
     }
 
-    function expectRevertBatchConflict(
-        InterchainModuleMock module,
-        InterchainBatch memory existingBatch,
-        InterchainBatch memory newBatch
-    )
-        internal
-    {
+    function expectRevertEntryConflict(InterchainModuleMock module, InterchainEntry memory newEntry) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(
-                IInterchainDB.InterchainDB__BatchConflict.selector, address(module), existingBatch.batchRoot, newBatch
-            )
+            abi.encodeWithSelector(IInterchainDB.InterchainDB__EntryConflict.selector, address(module), newEntry)
         );
     }
 
-    function expectRevertBatchVersionMismatch(uint16 version, uint16 required) internal {
+    function expectRevertEntryVersionMismatch(uint16 version, uint16 required) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainDB.InterchainDB__BatchVersionMismatch.selector, version, required)
+            abi.encodeWithSelector(IInterchainDB.InterchainDB__EntryVersionMismatch.selector, version, required)
         );
     }
 
@@ -185,323 +173,321 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__ChainIdNotRemote.selector, chainId));
     }
 
-    // ═════════════════════════════════════════ TESTS: VERIFYING BATCHES ══════════════════════════════════════════════
+    // ═════════════════════════════════════════ TESTS: VERIFYING ENTRIES ══════════════════════════════════════════════
 
-    function test_verifyBatch_newKey_nonEmptyRoot() public {
+    function test_verifyEntry_newKey_nonEmptyRoot() public {
         skip(1 days);
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 20);
-        bytes memory versionedBatch = getVersionedBatch(batch);
-        expectEventBatchVerified(moduleA, batch);
-        verifyBatch(moduleA, versionedBatch);
-        checkVerification(moduleA, batch, block.timestamp);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 20);
+        bytes memory versionedEntry = getVersionedEntry(entry);
+        expectEventEntryVerified(moduleA, entry);
+        verifyEntry(moduleA, versionedEntry);
+        checkVerification(moduleA, entry, block.timestamp);
     }
 
-    function test_verifyBatch_newKey_emptyRoot() public {
+    function test_verifyEntry_newKey_emptyRoot() public {
         skip(1 days);
-        InterchainBatch memory batch = getEmptyBatch(SRC_CHAIN_ID_0, 20);
-        bytes memory versionedBatch = getVersionedBatch(batch);
-        expectEventBatchVerified(moduleA, batch);
-        verifyBatch(moduleA, versionedBatch);
-        checkVerification(moduleA, batch, block.timestamp);
+        InterchainEntry memory entry = getEmptyEntry(SRC_CHAIN_ID_0, 20);
+        bytes memory versionedEntry = getVersionedEntry(entry);
+        expectEventEntryVerified(moduleA, entry);
+        verifyEntry(moduleA, versionedEntry);
+        checkVerification(moduleA, entry, block.timestamp);
     }
 
-    function test_verifyBatch_sameKey_diffModule_prevEmptyRoot_emptyRoot() public {
-        introduceEmptyBatches();
-        skip(1 days);
-        // {0: 30} was verified as "empty" by module B, but not by module A
-        InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 30);
-        bytes memory versionedEmptyBatch = getVersionedBatch(emptyBatch);
-        expectEventBatchVerified(moduleA, emptyBatch);
-        verifyBatch(moduleA, versionedEmptyBatch);
-        // Should save the verification time for A and not overwrite the existing verification time for B
-        checkVerification(moduleA, emptyBatch, block.timestamp);
-        assertCorrectInitialVerificationTime(moduleB, emptyBatch);
-    }
-
-    function test_verifyBatch_sameKey_diffModule_prevEmptyRoot_nonEmptyRoot() public {
-        introduceEmptyBatches();
+    function test_verifyEntry_sameKey_diffModule_prevEmptyRoot_emptyRoot() public {
+        introduceEmptyEntries();
         skip(1 days);
         // {0: 30} was verified as "empty" by module B, but not by module A
-        InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 30);
-        InterchainBatch memory mockBatch = getMockBatch(SRC_CHAIN_ID_0, 30);
-        bytes memory versionedBatch = getVersionedBatch(mockBatch);
-        expectEventBatchVerified(moduleA, mockBatch);
-        verifyBatch(moduleA, versionedBatch);
+        InterchainEntry memory emptyEntry = getEmptyEntry(SRC_CHAIN_ID_0, 30);
+        bytes memory versionedEmptyEntry = getVersionedEntry(emptyEntry);
+        expectEventEntryVerified(moduleA, emptyEntry);
+        verifyEntry(moduleA, versionedEmptyEntry);
         // Should save the verification time for A and not overwrite the existing verification time for B
-        checkVerification(moduleA, mockBatch, block.timestamp);
-        assertCorrectInitialVerificationTime(moduleB, emptyBatch);
+        checkVerification(moduleA, emptyEntry, block.timestamp);
+        assertCorrectInitialVerificationTime(moduleB, emptyEntry);
     }
 
-    function test_verifyBatch_sameKey_diffModule_prevNonEmptyRoot_emptyRoot() public {
+    function test_verifyEntry_sameKey_diffModule_prevEmptyRoot_nonEmptyRoot() public {
+        introduceEmptyEntries();
+        skip(1 days);
+        // {0: 30} was verified as "empty" by module B, but not by module A
+        InterchainEntry memory emptyEntry = getEmptyEntry(SRC_CHAIN_ID_0, 30);
+        InterchainEntry memory mockEntry = getMockEntry(SRC_CHAIN_ID_0, 30);
+        bytes memory versionedEntry = getVersionedEntry(mockEntry);
+        expectEventEntryVerified(moduleA, mockEntry);
+        verifyEntry(moduleA, versionedEntry);
+        // Should save the verification time for A and not overwrite the existing verification time for B
+        checkVerification(moduleA, mockEntry, block.timestamp);
+        assertCorrectInitialVerificationTime(moduleB, emptyEntry);
+    }
+
+    function test_verifyEntry_sameKey_diffModule_prevNonEmptyRoot_emptyRoot() public {
         skip(1 days);
         // {1: 0} was verified by module B, but not by module A
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_1, 0);
-        InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_1, 0);
-        bytes memory versionedEmptyBatch = getVersionedBatch(emptyBatch);
-        expectEventBatchVerified(moduleA, emptyBatch);
-        verifyBatch(moduleA, versionedEmptyBatch);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_1, 0);
+        InterchainEntry memory emptyEntry = getEmptyEntry(SRC_CHAIN_ID_1, 0);
+        bytes memory versionedEmptyEntry = getVersionedEntry(emptyEntry);
+        expectEventEntryVerified(moduleA, emptyEntry);
+        verifyEntry(moduleA, versionedEmptyEntry);
         // Should save the verification time for A and not overwrite the existing verification time for B
-        checkVerification(moduleA, emptyBatch, block.timestamp);
-        assertCorrectInitialVerificationTime(moduleB, batch);
+        checkVerification(moduleA, emptyEntry, block.timestamp);
+        assertCorrectInitialVerificationTime(moduleB, entry);
     }
 
-    function test_verifyBatch_sameKey_diffModule_prevNonEmptyRoot_diffNonEmptyRoot() public {
+    function test_verifyEntry_sameKey_diffModule_prevNonEmptyRoot_diffNonEmptyRoot() public {
         skip(1 days);
         // {1: 0} was verified by module B, but not by module A
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_1, 0);
-        InterchainBatch memory conflictingBatch = getFakeBatch(SRC_CHAIN_ID_1, 0);
-        bytes memory versionedConflictingBatch = getVersionedBatch(conflictingBatch);
-        expectEventBatchVerified(moduleA, conflictingBatch);
-        verifyBatch(moduleA, versionedConflictingBatch);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_1, 0);
+        InterchainEntry memory conflictingEntry = getFakeEntry(SRC_CHAIN_ID_1, 0);
+        bytes memory versionedConflictingEntry = getVersionedEntry(conflictingEntry);
+        expectEventEntryVerified(moduleA, conflictingEntry);
+        verifyEntry(moduleA, versionedConflictingEntry);
         // Should save the verification time for A and not overwrite the existing verification time for B
-        checkVerification(moduleA, conflictingBatch, block.timestamp);
-        assertCorrectInitialVerificationTime(moduleB, batch);
+        checkVerification(moduleA, conflictingEntry, block.timestamp);
+        assertCorrectInitialVerificationTime(moduleB, entry);
     }
 
-    function test_verifyBatch_sameKey_diffModule_prevNonEmptyRoot_sameNonEmptyRoot() public {
+    function test_verifyEntry_sameKey_diffModule_prevNonEmptyRoot_sameNonEmptyRoot() public {
         skip(1 days);
         // {1: 0} was verified by module B, but not by module A
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_1, 0);
-        bytes memory versionedBatch = getVersionedBatch(batch);
-        expectEventBatchVerified(moduleA, batch);
-        verifyBatch(moduleA, versionedBatch);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_1, 0);
+        bytes memory versionedEntry = getVersionedEntry(entry);
+        expectEventEntryVerified(moduleA, entry);
+        verifyEntry(moduleA, versionedEntry);
         // Should save the verification time for A and not overwrite the existing verification time for B
-        checkVerification(moduleA, batch, block.timestamp);
-        assertCorrectInitialVerificationTime(moduleB, batch);
+        checkVerification(moduleA, entry, block.timestamp);
+        assertCorrectInitialVerificationTime(moduleB, entry);
     }
 
-    function test_verifyBatch_sameKey_sameModule_prevEmptyRoot_emptyRoot() public {
-        introduceEmptyBatches();
+    function test_verifyEntry_sameKey_sameModule_prevEmptyRoot_emptyRoot() public {
+        introduceEmptyEntries();
         skip(1 days);
         // {0: 20} was verified as "empty" by module A
-        InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 20);
-        bytes memory versionedEmptyBatch = getVersionedBatch(emptyBatch);
+        InterchainEntry memory emptyEntry = getEmptyEntry(SRC_CHAIN_ID_0, 20);
+        bytes memory versionedEmptyEntry = getVersionedEntry(emptyEntry);
         // Should emit no event and not update the verification time
-        uint256 moduleAVerificationTime = verifiedAt[address(moduleA)][keccak256(abi.encode(versionedEmptyBatch))];
+        uint256 moduleAVerificationTime = verifiedAt[address(moduleA)][keccak256(abi.encode(versionedEmptyEntry))];
         vm.recordLogs();
-        verifyBatch(moduleA, versionedEmptyBatch);
+        verifyEntry(moduleA, versionedEmptyEntry);
         assertEq(vm.getRecordedLogs().length, 0);
-        checkVerification(moduleA, emptyBatch, moduleAVerificationTime);
+        checkVerification(moduleA, emptyEntry, moduleAVerificationTime);
     }
 
-    function test_verifyBatch_sameKey_sameModule_prevEmptyRoot_nonEmptyRoot() public {
-        introduceEmptyBatches();
+    function test_verifyEntry_sameKey_sameModule_prevEmptyRoot_nonEmptyRoot() public {
+        introduceEmptyEntries();
         skip(1 days);
         // {0: 20} was verified as "empty" by module A
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 20);
-        bytes memory versionedBatch = getVersionedBatch(batch);
-        // Overwriting an empty batch with a non-empty one is allowed
-        expectEventBatchVerified(moduleA, batch);
-        verifyBatch(moduleA, versionedBatch);
-        checkVerification(moduleA, batch, block.timestamp);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 20);
+        bytes memory versionedEntry = getVersionedEntry(entry);
+        // Overwriting an empty entry with a non-empty one is allowed
+        expectEventEntryVerified(moduleA, entry);
+        verifyEntry(moduleA, versionedEntry);
+        checkVerification(moduleA, entry, block.timestamp);
     }
 
-    function test_verifyBatch_sameKey_sameModule_prevNonEmptyRoot_sameNonEmptyRoot() public {
+    function test_verifyEntry_sameKey_sameModule_prevNonEmptyRoot_sameNonEmptyRoot() public {
         skip(1 days);
         // {0: 10} was verified by module A
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 10);
-        bytes memory versionedBatch = getVersionedBatch(batch);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 10);
+        bytes memory versionedEntry = getVersionedEntry(entry);
         // Should emit no event and not update the verification time
-        uint256 moduleAVerificationTime = verifiedAt[address(moduleA)][keccak256(abi.encode(versionedBatch))];
+        uint256 moduleAVerificationTime = verifiedAt[address(moduleA)][keccak256(abi.encode(versionedEntry))];
         vm.recordLogs();
-        verifyBatch(moduleA, versionedBatch);
+        verifyEntry(moduleA, versionedEntry);
         assertEq(vm.getRecordedLogs().length, 0);
-        checkVerification(moduleA, batch, moduleAVerificationTime);
+        checkVerification(moduleA, entry, moduleAVerificationTime);
     }
 
-    // ════════════════════════════════════ TESTS: VERIFYING BATCHES (REVERTS) ═════════════════════════════════════════
+    // ════════════════════════════════════ TESTS: VERIFYING ENTRIES (REVERTS) ═════════════════════════════════════════
 
-    function test_verifyBatch_sameKey_sameModule_prevNonEmptyRoot_emptyRoot_revert() public {
+    function test_verifyEntry_sameKey_sameModule_prevNonEmptyRoot_emptyRoot_revert() public {
         // {0: 0} was verified by module A
-        InterchainBatch memory existingBatch = getMockBatch(SRC_CHAIN_ID_0, 0);
-        InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 0);
-        bytes memory versionedEmptyBatch = getVersionedBatch(emptyBatch);
-        expectRevertBatchConflict(moduleA, existingBatch, emptyBatch);
-        verifyBatch(moduleA, versionedEmptyBatch);
+        InterchainEntry memory emptyEntry = getEmptyEntry(SRC_CHAIN_ID_0, 0);
+        bytes memory versionedEmptyEntry = getVersionedEntry(emptyEntry);
+        expectRevertEntryConflict(moduleA, emptyEntry);
+        verifyEntry(moduleA, versionedEmptyEntry);
     }
 
-    function test_verifyBatch_sameKey_sameModule_prevNonEmptyRoot_diffNonEmptyRoot_revert() public {
+    function test_verifyEntry_sameKey_sameModule_prevNonEmptyRoot_diffNonEmptyRoot_revert() public {
         // {0: 0} was verified by module A
-        InterchainBatch memory existingBatch = getMockBatch(SRC_CHAIN_ID_0, 0);
-        InterchainBatch memory conflictingBatch = getFakeBatch(SRC_CHAIN_ID_0, 0);
-        bytes memory versionedConflictingBatch = getVersionedBatch(conflictingBatch);
-        expectRevertBatchConflict(moduleA, existingBatch, conflictingBatch);
-        verifyBatch(moduleA, versionedConflictingBatch);
+        InterchainEntry memory conflictingEntry = getFakeEntry(SRC_CHAIN_ID_0, 0);
+        bytes memory versionedConflictingEntry = getVersionedEntry(conflictingEntry);
+        expectRevertEntryConflict(moduleA, conflictingEntry);
+        verifyEntry(moduleA, versionedConflictingEntry);
     }
 
-    function test_verifyBatch_revert_ChainIdNotRemote() public {
-        // Try to verify batch coming from the same chain
-        InterchainBatch memory batch = getMockBatch(DST_CHAIN_ID, 0);
-        bytes memory versionedBatch = getVersionedBatch(batch);
+    function test_verifyEntry_revert_ChainIdNotRemote() public {
+        // Try to verify entry coming from the same chain
+        InterchainEntry memory entry = getMockEntry(DST_CHAIN_ID, 0);
+        bytes memory versionedEntry = getVersionedEntry(entry);
         expectChainIdNotRemote(DST_CHAIN_ID);
-        verifyBatch(moduleA, versionedBatch);
+        verifyEntry(moduleA, versionedEntry);
     }
 
-    function test_verifyBatch_revert_wrongVersion(uint16 version) public {
+    function test_verifyEntry_revert_wrongVersion(uint16 version) public {
         vm.assume(version != DB_VERSION);
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
-        bytes memory versionedBatch =
-            payloadLibHarness.encodeVersionedPayload(version, batchLibHarness.encodeBatch(batch));
-        expectRevertBatchVersionMismatch(version, DB_VERSION);
-        moduleA.mockVerifyRemoteBatch(address(icDB), versionedBatch);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 0);
+        bytes memory versionedEntry =
+            payloadLibHarness.encodeVersionedPayload(version, entryLibHarness.encodeEntry(entry));
+        expectRevertEntryVersionMismatch(version, DB_VERSION);
+        moduleA.mockVerifyRemoteEntry(address(icDB), versionedEntry);
     }
 
-    // ══════════════════════════════════════════ TESTS: READING BATCHES ═══════════════════════════════════════════════
+    // ══════════════════════════════════════════ TESTS: READING ENTRIES ═══════════════════════════════════════════════
 
     function test_checkVerification_existingA_existingB() public view {
         // {1: 10} was verified by module A and module B
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_1, 10);
-        assertCorrectInitialVerificationTime(moduleA, batch);
-        assertCorrectInitialVerificationTime(moduleB, batch);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_1, 10);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        assertCorrectInitialVerificationTime(moduleB, entry);
     }
 
     function test_checkVerification_existingA_unknownB() public view {
         // {0: 0} was verified by module A, but not by module B
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
-        assertCorrectInitialVerificationTime(moduleA, batch);
-        checkVerification(moduleB, batch, 0);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 0);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        checkVerification(moduleB, entry, 0);
     }
 
     function test_checkVerification_existingA_differentB() public {
         introduceConflicts();
-        // {0: 10} was verified by module A, but a "fake" batch was verified by module B
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 10);
-        assertCorrectInitialVerificationTime(moduleA, batch);
-        checkVerification(moduleB, batch, BATCH_CONFLICT);
+        // {0: 10} was verified by module A, but a "fake" entry was verified by module B
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 10);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        checkVerification(moduleB, entry, ENTRY_CONFLICT);
     }
 
     function test_checkVerification_existingA_emptyB() public {
-        introduceEmptyBatches();
-        // {0: 10} was verified by module A, but an "empty" batch was verified by module B
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 10);
-        assertCorrectInitialVerificationTime(moduleA, batch);
-        checkVerification(moduleB, batch, BATCH_CONFLICT);
+        introduceEmptyEntries();
+        // {0: 10} was verified by module A, but an "empty" entry was verified by module B
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 10);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        checkVerification(moduleB, entry, ENTRY_CONFLICT);
     }
 
     function test_checkVerification_unknownA_existingB() public view {
         // {1: 0} was verified by module B, but not by module A
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_1, 0);
-        checkVerification(moduleA, batch, 0);
-        assertCorrectInitialVerificationTime(moduleB, batch);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_1, 0);
+        checkVerification(moduleA, entry, 0);
+        assertCorrectInitialVerificationTime(moduleB, entry);
     }
 
     function test_checkVerification_unknownA_unknownB() public view {
         // {0: 20} was not verified by any module
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 20);
-        checkVerification(moduleA, batch, 0);
-        checkVerification(moduleB, batch, 0);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 20);
+        checkVerification(moduleA, entry, 0);
+        checkVerification(moduleB, entry, 0);
     }
 
     function test_checkVerification_unknownA_differentB() public view {
         // {1: 0} was verified by module B, but not by module A
-        // Check the fake batch that neither module verified
-        InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_1, 0);
-        checkVerification(moduleA, fakeBatch, 0);
-        checkVerification(moduleB, fakeBatch, BATCH_CONFLICT);
+        // Check the fake entry that neither module verified
+        InterchainEntry memory fakeEntry = getFakeEntry(SRC_CHAIN_ID_1, 0);
+        checkVerification(moduleA, fakeEntry, 0);
+        checkVerification(moduleB, fakeEntry, ENTRY_CONFLICT);
     }
 
     function test_checkVerification_unknownA_emptyB() public {
-        introduceEmptyBatches();
-        // {0: 30} was not verified by module A, but an "empty" batch was verified by module B
-        InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 30);
-        checkVerification(moduleA, emptyBatch, 0);
-        assertCorrectInitialVerificationTime(moduleB, emptyBatch);
+        introduceEmptyEntries();
+        // {0: 30} was not verified by module A, but an "empty" entry was verified by module B
+        InterchainEntry memory emptyEntry = getEmptyEntry(SRC_CHAIN_ID_0, 30);
+        checkVerification(moduleA, emptyEntry, 0);
+        assertCorrectInitialVerificationTime(moduleB, emptyEntry);
     }
 
     function test_checkVerification_differentA_existingB() public {
         introduceConflicts();
-        // {0: 10} was verified by module A, but a "fake" batch was verified by module B
-        // Check the fake batch that A never verified
-        InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_0, 10);
-        checkVerification(moduleA, fakeBatch, BATCH_CONFLICT);
-        assertCorrectInitialVerificationTime(moduleB, fakeBatch);
+        // {0: 10} was verified by module A, but a "fake" entry was verified by module B
+        // Check the fake entry that A never verified
+        InterchainEntry memory fakeEntry = getFakeEntry(SRC_CHAIN_ID_0, 10);
+        checkVerification(moduleA, fakeEntry, ENTRY_CONFLICT);
+        assertCorrectInitialVerificationTime(moduleB, fakeEntry);
     }
 
     function test_checkVerification_differentA_unknownB() public view {
         // {0: 10} was verified by module A, but not by module B
-        // Check the fake batch that neither module verified
-        InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_0, 10);
-        checkVerification(moduleA, fakeBatch, BATCH_CONFLICT);
-        checkVerification(moduleB, fakeBatch, 0);
+        // Check the fake entry that neither module verified
+        InterchainEntry memory fakeEntry = getFakeEntry(SRC_CHAIN_ID_0, 10);
+        checkVerification(moduleA, fakeEntry, ENTRY_CONFLICT);
+        checkVerification(moduleB, fakeEntry, 0);
     }
 
     function test_checkVerification_differentA_differentB() public view {
         // {1: 10} was verified by module A and module B
-        // Check the fake batch that neither module verified
-        InterchainBatch memory fakeBatch = getFakeBatch(SRC_CHAIN_ID_1, 10);
-        checkVerification(moduleA, fakeBatch, BATCH_CONFLICT);
-        checkVerification(moduleB, fakeBatch, BATCH_CONFLICT);
+        // Check the fake entry that neither module verified
+        InterchainEntry memory fakeEntry = getFakeEntry(SRC_CHAIN_ID_1, 10);
+        checkVerification(moduleA, fakeEntry, ENTRY_CONFLICT);
+        checkVerification(moduleB, fakeEntry, ENTRY_CONFLICT);
     }
 
     function test_checkVerification_differentA_emptyB() public {
-        introduceEmptyBatches();
-        // {0: 10} was verified by module A, but an "empty" batch was verified by module B
-        InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 10);
-        checkVerification(moduleA, emptyBatch, BATCH_CONFLICT);
-        assertCorrectInitialVerificationTime(moduleB, emptyBatch);
+        introduceEmptyEntries();
+        // {0: 10} was verified by module A, but an "empty" entry was verified by module B
+        InterchainEntry memory emptyEntry = getEmptyEntry(SRC_CHAIN_ID_0, 10);
+        checkVerification(moduleA, emptyEntry, ENTRY_CONFLICT);
+        assertCorrectInitialVerificationTime(moduleB, emptyEntry);
     }
 
     function test_checkVerification_emptyA_existingB() public {
-        introduceEmptyBatches();
-        // {1: 0} was verified by module B, but an "empty" batch was verified by module A
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_1, 0);
-        checkVerification(moduleA, batch, BATCH_CONFLICT);
-        assertCorrectInitialVerificationTime(moduleB, batch);
+        introduceEmptyEntries();
+        // {1: 0} was verified by module B, but an "empty" entry was verified by module A
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_1, 0);
+        checkVerification(moduleA, entry, ENTRY_CONFLICT);
+        assertCorrectInitialVerificationTime(moduleB, entry);
     }
 
     function test_checkVerification_emptyA_unknownB() public {
-        introduceEmptyBatches();
+        introduceEmptyEntries();
         // {0: 20} was verified as "empty" by module A, but not by module B
-        InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 20);
-        assertCorrectInitialVerificationTime(moduleA, emptyBatch);
-        checkVerification(moduleB, emptyBatch, 0);
+        InterchainEntry memory emptyEntry = getEmptyEntry(SRC_CHAIN_ID_0, 20);
+        assertCorrectInitialVerificationTime(moduleA, emptyEntry);
+        checkVerification(moduleB, emptyEntry, 0);
     }
 
     function test_checkVerification_emptyA_differentB() public {
-        introduceEmptyBatches();
-        // {1: 0} was verified by module B, but an "empty" batch was verified by module A
-        InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_1, 0);
-        assertCorrectInitialVerificationTime(moduleA, emptyBatch);
-        checkVerification(moduleB, emptyBatch, BATCH_CONFLICT);
+        introduceEmptyEntries();
+        // {1: 0} was verified by module B, but an "empty" entry was verified by module A
+        InterchainEntry memory emptyEntry = getEmptyEntry(SRC_CHAIN_ID_1, 0);
+        assertCorrectInitialVerificationTime(moduleA, emptyEntry);
+        checkVerification(moduleB, emptyEntry, ENTRY_CONFLICT);
     }
 
     function test_checkVerification_emptyA_emptyB() public {
-        introduceEqualEmptyBatches();
+        introduceEqualEmptyEntries();
         // {0: 20} was verified as "empty" by module A and module B
-        InterchainBatch memory emptyBatch = getEmptyBatch(SRC_CHAIN_ID_0, 20);
-        assertCorrectInitialVerificationTime(moduleA, emptyBatch);
-        assertCorrectInitialVerificationTime(moduleB, emptyBatch);
+        InterchainEntry memory emptyEntry = getEmptyEntry(SRC_CHAIN_ID_0, 20);
+        assertCorrectInitialVerificationTime(moduleA, emptyEntry);
+        assertCorrectInitialVerificationTime(moduleB, emptyEntry);
     }
 
     function test_checkVerification_modifySrcChainId() public view {
-        // Valid batch
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
-        assertCorrectInitialVerificationTime(moduleA, batch);
-        batch.srcChainId ^= 1;
-        checkVerification(moduleA, batch, 0);
+        // Valid entry
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 0);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        entry.srcChainId ^= 1;
+        checkVerification(moduleA, entry, 0);
     }
 
     function test_checkVerification_modifyDbNonce() public view {
-        // Valid batch
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
-        assertCorrectInitialVerificationTime(moduleA, batch);
-        batch.dbNonce ^= 1;
-        checkVerification(moduleA, batch, 0);
-    }
-
-    function test_checkVerification_modifyBatchRoot() public view {
         // Valid entry
-        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
-        assertCorrectInitialVerificationTime(moduleA, batch);
-        batch.batchRoot ^= bytes32(uint256(1));
-        checkVerification(moduleA, batch, BATCH_CONFLICT);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 0);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        entry.dbNonce ^= 1;
+        checkVerification(moduleA, entry, 0);
     }
 
-    // ═════════════════════════════════════ TESTS: READING BATCHES (REVERTS) ══════════════════════════════════════════
+    function test_checkVerification_modifyEntryValue() public view {
+        // Valid entry
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 0);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        entry.entryValue ^= bytes32(uint256(1));
+        checkVerification(moduleA, entry, ENTRY_CONFLICT);
+    }
+
+    // ═════════════════════════════════════ TESTS: READING ENTRIES (REVERTS) ══════════════════════════════════════════
 
     function test_checkVerification_revert_ChainIdNotRemote() public {
-        InterchainBatch memory batch = getMockBatch(DST_CHAIN_ID, 0);
+        InterchainEntry memory entry = getMockEntry(DST_CHAIN_ID, 0);
         expectChainIdNotRemote(DST_CHAIN_ID);
-        icDB.checkBatchVerification(address(moduleA), batch);
+        icDB.checkEntryVerification(address(moduleA), entry);
     }
 }

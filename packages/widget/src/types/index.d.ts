@@ -68,6 +68,9 @@ export interface BridgeProps {
 
   /* Custom name prop for consumer protocol */
   protocolName?: string
+
+  /* Supress Consumer browser console errors */
+  hideConsoleErrors?: boolean
 }
 
 export interface Chain {

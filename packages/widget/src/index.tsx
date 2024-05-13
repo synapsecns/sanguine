@@ -11,6 +11,7 @@ import * as BRIDGEABLE from '@/constants/bridgeable'
 import { CHAINS_ARRAY } from '@/constants/chains'
 import { BackgroundListenerProvider } from '@/providers/BackgroundListenerProvider'
 import { useBridgeSelectionData } from '@/hooks/useBridgeSelectionData'
+import { suppressSynapseConsoleErrors } from '@/utils/suppressSynapseConsoleErrors'
 
 export const Bridge = ({
   web3Provider,
@@ -20,9 +21,14 @@ export const Bridge = ({
   targetChainIds,
   targetTokens,
   protocolName,
+  hideConsoleErrors,
 }: BridgeProps) => {
   if (!web3Provider) {
     return null
+  }
+
+  if (hideConsoleErrors) {
+    suppressSynapseConsoleErrors()
   }
 
   return (

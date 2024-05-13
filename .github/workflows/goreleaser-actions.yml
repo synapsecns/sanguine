@@ -27,7 +27,7 @@ jobs:
         with:
           key: docker-release-${{ runner.os }}-${{ matrix.package }}
 
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         name: check if any changes warrant a new build of goreleaser-cgo-cross-compiler
         id: changes
         with:

@@ -2,6 +2,7 @@ package base
 
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
+	listenerDB "github.com/synapsecns/sanguine/ethergo/listener/db"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db"
@@ -11,6 +12,7 @@ import (
 
 // Store is a store that implements an underlying gorm db.
 type Store struct {
+	listenerDB.ChainListenerDB
 	db             *gorm.DB
 	metrics        metrics.Handler
 	submitterStore submitterDB.Service
@@ -19,7 +21,7 @@ type Store struct {
 // NewStore creates a new store.
 func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
 	txDB := txdb.NewTXStore(db, metrics)
-	return &Store{db: db, metrics: metrics, submitterStore: txDB}
+	return &Store{ChainListenerDB: listenerDB.NewChainListenerStore(db, metrics), db: db, metrics: metrics, submitterStore: txDB}
 }
 
 // DB gets the database object for mutation outside of the lib.
@@ -36,6 +38,7 @@ func (s Store) SubmitterDB() submitterDB.Service {
 // see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels, txdb.GetAllModels()...)
+	allModels = append(allModels, listenerDB.GetAllModels()...)
 	allModels = append(allModels, &types.Message{})
 	return allModels
 }

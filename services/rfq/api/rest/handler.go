@@ -27,7 +27,7 @@ func NewHandler(db db.APIDB) *Handler {
 // PUT /quotes
 // @dev Protected Method: Authentication is handled through middleware in server.go.
 // nolint: cyclop
-// @Summary get quotes from all relayers.
+// @Summary Upsert quote
 // @Schemes
 // @Description upsert a quote from relayer.
 // @Param request body model.PutQuoteRequest true "query params"
@@ -95,13 +95,13 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 // GET /quotes.
 // nolint: cyclop
 // PingExample godoc
-// @Summary get quotes from all relayers.
+// @Summary Get quotes
 // @Schemes
-// @Param   originChainID     path    int     true        "origin chain id to filter quotes by"
-// @Param   originTokenAddr   path    string     true        "origin chain id to filter quotes by"
-// @Param   destChainID     path    int     true        "destination chain id to filter quotes by"
-// @Param   destTokenAddr   path    string     true        "destination token address to filter quotes by"
-// @Param   relayerAddr   path    string     true        "relayer address to filter quotes by"
+// @Param   originChainID     path    int     false        "origin chain id to filter quotes by"
+// @Param   originTokenAddr   path    string     false        "origin chain id to filter quotes by"
+// @Param   destChainID     path    int     false        "destination chain id to filter quotes by"
+// @Param   destTokenAddr   path    string     false        "destination token address to filter quotes by"
+// @Param   relayerAddr   path    string     false        "relayer address to filter quotes by"
 // @Description get quotes from all relayers.
 // @Tags quotes
 // @Accept json

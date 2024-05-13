@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
@@ -104,7 +105,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
 
-			err = r.handleDepositClaimed(ctx, event, chainID)
+			err = r.handleDepositClaimed(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle deposit claimed: %w", err)
 			}
@@ -119,10 +120,10 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 	return nil
 }
 
-const ethDecimals = 18
+var ethDecimals uint8 = 18
 
 // getDecimals gets the decimals for the origin and dest tokens.
-func (r *Relayer) getDecimals(parentCtx context.Context, bridgeTx fastbridge.IFastBridgeBridgeTransaction) (_ *decimalsRes, err error) {
+func (r *Relayer) getDecimalsFromBridgeTx(parentCtx context.Context, bridgeTx fastbridge.IFastBridgeBridgeTransaction) (originDecimals *uint8, destDecimals *uint8, err error) {
 	ctx, span := r.metrics.Tracer().Start(parentCtx, "getDecimals", trace.WithAttributes(
 		attribute.String("sender", bridgeTx.OriginSender.String()),
 	))
@@ -131,83 +132,70 @@ func (r *Relayer) getDecimals(parentCtx context.Context, bridgeTx fastbridge.IFa
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// TODO: add a cache for decimals.
-	var originERC20, destERC20 *ierc20.IERC20
-	res := decimalsRes{}
-
-	if bridgeTx.OriginToken == chain.EthAddress {
-		res.originDecimals = ethDecimals
-	} else {
-		// TODO: cleanup duplication, but keep paralellism.
-		// this is  a bit of a pain since it deals w/ 3 different fields, but shouldn't take too long
-		originClient, err := r.client.GetChainClient(ctx, int(bridgeTx.OriginChainId))
-		if err != nil {
-			return nil, fmt.Errorf("could not get origin client: %w", err)
-		}
-		originERC20, err = ierc20.NewIERC20(bridgeTx.OriginToken, originClient)
-		if err != nil {
-			return nil, fmt.Errorf("could not get origin token")
-		}
-	}
-
-	if bridgeTx.DestToken == chain.EthAddress {
-		res.destDecimals = ethDecimals
-	} else {
-		destClient, err := r.client.GetChainClient(ctx, int(bridgeTx.DestChainId))
-		if err != nil {
-			return nil, fmt.Errorf("could not get dest client: %w", err)
-		}
-		destERC20, err = ierc20.NewIERC20(bridgeTx.DestToken, destClient)
-		if err != nil {
-			return nil, fmt.Errorf("could not get dest token")
-		}
-	}
-
-	// return early if both dest and origin are ETH.
-	if originERC20 == nil && destERC20 == nil {
-		return &res, nil
-	}
-
-	// do rpc calls to fetch the erc20 decimals.
+	// fetch the token decimals in parallel
 	g, ctx := errgroup.WithContext(ctx)
-	if originERC20 != nil {
-		g.Go(func() error {
-			res.originDecimals, err = originERC20.Decimals(&bind.CallOpts{Context: ctx})
-			if err != nil {
-				return fmt.Errorf("could not get dest decimals: %w", err)
-			}
-			return nil
-		})
-	}
-
-	if destERC20 != nil {
-		g.Go(func() error {
-			res.destDecimals, err = destERC20.Decimals(&bind.CallOpts{Context: ctx})
-			if err != nil {
-				return fmt.Errorf("could not get origin decimals: %w", err)
-			}
-			return nil
-		})
-	}
-
+	g.Go(func() error {
+		originDecimals, err = r.getDecimals(ctx, bridgeTx.OriginToken, bridgeTx.OriginChainId)
+		if err != nil {
+			return fmt.Errorf("could not get origin decimals: %w", err)
+		}
+		return nil
+	})
+	g.Go(func() error {
+		destDecimals, err = r.getDecimals(ctx, bridgeTx.DestToken, bridgeTx.DestChainId)
+		if err != nil {
+			return fmt.Errorf("could not get dest decimals: %w", err)
+		}
+		return nil
+	})
 	err = g.Wait()
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not get decimals: %w", err)
+	}
+
+	return originDecimals, destDecimals, nil
+}
+
+// getDecimals gets the decimals for a token on a chain.
+// It will attempt to load a result from the cache first.
+// The cache will be updated if the result is fetched from RPC.
+func (r *Relayer) getDecimals(ctx context.Context, addr common.Address, chainID uint32) (decimals *uint8, err error) {
+	// attempt to load decimal from cache
+	key := getDecimalsKey(addr, chainID)
+	decimals, ok := r.decimalsCache.Load(key)
+	if ok {
+		return decimals, nil
+	}
+
+	if addr == chain.EthAddress {
+		return &ethDecimals, nil
+	}
+
+	// fetch decimals from RPC
+	client, err := r.client.GetChainClient(ctx, int(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("could not get client for chain %d: %w", chainID, err)
+	}
+	erc20, err := ierc20.NewIERC20(addr, client)
+	if err != nil {
+		return nil, fmt.Errorf("could not get token at %s: %w", addr.String(), err)
+	}
+	dec, err := erc20.Decimals(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("could not get decimals: %w", err)
 	}
 
-	return &res, nil
+	// update the cache
+	r.decimalsCache.Store(key, &dec)
+	return &dec, nil
 }
 
-type decimalsRes struct {
-	originDecimals, destDecimals uint8
+func getDecimalsKey(addr common.Address, chainID uint32) string {
+	return fmt.Sprintf("%s-%d", addr.Hex(), chainID)
 }
 
-func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed, chainID int) error {
-	err := r.inventory.Rebalance(ctx, chainID, event.Token)
-	if err != nil {
-		logger.Errorf("could not rebalance: %v", err)
-	}
-	err = r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
+func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed) error {
+	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
