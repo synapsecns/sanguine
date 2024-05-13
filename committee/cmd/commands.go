@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/synapsecns/sanguine/committee/config"
 	"github.com/synapsecns/sanguine/committee/node"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
-	"os"
-	"path/filepath"
 )
 
 var configFlag = &cli.StringFlag{
