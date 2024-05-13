@@ -43,8 +43,8 @@ services:
       - '8042:8545'
     volumes:
       - chain_a_data:/data
-    logging:
-      driver: none
+#    logging:
+#      driver: none
 
   chain_b:
     restart: unless-stopped
@@ -57,8 +57,8 @@ services:
       - '8043:8546'
     volumes:
       - chain_b_data:/data
-    logging:
-      driver: none
+#    logging:
+#      driver: none
 
   chain_c:
     restart: unless-stopped
@@ -71,8 +71,8 @@ services:
       - '8044:8547'
     volumes:
       - chain_c_data:/data
-    logging:
-      driver: none
+#    logging:
+#      driver: none
 
   tracing:
     restart: unless-stopped
@@ -107,8 +107,10 @@ services:
   #   command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
 
   committee-node1:
-    # restart: unless-stopped
+    restart: unless-stopped
     entrypoint: committee
+    ports:
+      - '12345:12345'
     depends_on:
       - omnirpc
       - chain_a
@@ -132,7 +134,7 @@ services:
       GOLOG_LOG_LEVEL: debug
 
   committee-node2:
-    # restart: unless-stopped
+    restart: unless-stopped
     entrypoint: committee
     depends_on:
       - omnirpc
@@ -140,6 +142,8 @@ services:
       - chain_b
       - chain_c
       - tracing
+    ports:
+      - '12347:12347'
     build:
       context: ../../
       dockerfile: docker/committee-devnet/committee.Dockerfile
@@ -148,7 +152,7 @@ services:
       - '${PWD}/config/committee-signer2.txt:/config/committee-signer2.txt'
       - committee_data:/config/synapse2.db
     command:
-      - committee run
+      - run
       - '--config'
       - '/config/committee-config2.yml'
     environment:
@@ -157,8 +161,10 @@ services:
       GOLOG_LOG_LEVEL: debug
 
   committee-node3:
-    # restart: unless-stopped
+    restart: unless-stopped
     entrypoint: committee
+    ports:
+      - '12346:12346'
     depends_on:
       - omnirpc
       - chain_a
@@ -173,7 +179,7 @@ services:
       - '${PWD}/config/committee-signer3.txt:/config/committee-signer3.txt'
       - committee_data:/config/synapse3.db
     command:
-      - committee run
+      - run
       - '--config'
       - '/config/committee-config3.yml'
     environment:
