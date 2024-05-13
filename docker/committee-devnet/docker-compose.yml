@@ -6,14 +6,9 @@ volumes:
   chain_a_data:
   chain_b_data:
   chain_c_data:
-  committee_data:
-  guard_data:
-  notary43_data:
-  scribe_data: # prometheus-data:
+  committee_data: # prometheus-data:
 
   badger-data:
-  notary44_data:
-  executor_data:
 
 
 services:
@@ -44,11 +39,12 @@ services:
     platform: linux/amd64
     command: >
       --host=0.0.0.0 --port 8545 --chain-id=42 --allow-origin='*' --steps-tracing --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy' --base-fee=1 --gas-limit=100000000 --state=/data/ --block-time 5 --fork-url https://rpc.omnirpc.io/rpc/11155111 --fork-block-number 5883074
-
     ports:
       - '8042:8545'
     volumes:
       - chain_a_data:/data
+    logging:
+      driver: none
 
   chain_b:
     restart: unless-stopped
@@ -61,6 +57,8 @@ services:
       - '8043:8546'
     volumes:
       - chain_b_data:/data
+    logging:
+      driver: none
 
   chain_c:
     restart: unless-stopped
@@ -73,6 +71,8 @@ services:
       - '8044:8547'
     volumes:
       - chain_c_data:/data
+    logging:
+      driver: none
 
   tracing:
     restart: unless-stopped
@@ -128,8 +128,7 @@ services:
       - /config/committee-config1.yml
     environment:
       METRICS_HANDLER: jaeger
-      # JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-      JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
 
   committee-node2:
@@ -145,17 +144,16 @@ services:
       context: ../../
       dockerfile: docker/committee-devnet/committee.Dockerfile
     volumes:
-      - '${PWD}/config/committee-config1.yml:/config/committee-config2.yml'
-      - '${PWD}/config/committee-signer1.txt:/config/committee-signer2.txt'
-      - committee_data:/config/synapse.db
+      - '${PWD}/config/committee-config2.yml:/config/committee-config2.yml'
+      - '${PWD}/config/committee-signer2.txt:/config/committee-signer2.txt'
+      - committee_data:/config/synapse2.db
     command:
       - committee run
       - '--config'
       - '/config/committee-config2.yml'
     environment:
       METRICS_HANDLER: jaeger
-      # JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-      JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
 
   committee-node3:
@@ -171,15 +169,14 @@ services:
       context: ../../
       dockerfile: docker/committee-devnet/committee.Dockerfile
     volumes:
-      - '${PWD}/config/committee-config1.yml:/config/committee-config3.yml'
-      - '${PWD}/config/committee-signer1.txt:/config/committee-signer3.txt'
-      - committee_data:/config/synapse.db
+      - '${PWD}/config/committee-config3.yml:/config/committee-config3.yml'
+      - '${PWD}/config/committee-signer3.txt:/config/committee-signer3.txt'
+      - committee_data:/config/synapse3.db
     command:
       - committee run
       - '--config'
       - '/config/committee-config3.yml'
     environment:
       METRICS_HANDLER: jaeger
-      # JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-      JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
