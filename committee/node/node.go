@@ -53,6 +53,7 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 		cfg:     cfg,
 	}
 
+	fmt.Println("a")
 	node.client = omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
@@ -65,6 +66,8 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 		return nil, fmt.Errorf("could not make db: %w", err)
 	}
 
+	fmt.Println("b")
+
 	node.chainListeners = make(map[int]listener.ContractListener)
 	node.interchainContracts = make(map[int]*synapsemodule.SynapseModuleRef)
 
@@ -74,6 +77,8 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
+
+		fmt.Println("c")
 
 		latestBlock, err := chainClient.BlockNumber(ctx)
 		if err != nil {
@@ -85,6 +90,8 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
 		node.chainListeners[chainID] = chainListener
+
+		fmt.Println("d")
 
 		node.interchainContracts[chainID], err = synapsemodule.NewSynapseModuleRef(synapseModule, chainClient)
 		if err != nil {

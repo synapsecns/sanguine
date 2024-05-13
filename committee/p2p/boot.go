@@ -172,7 +172,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	fmt.Println("eth address:")
 	fmt.Println(l.address)
 
-	l.initMDNS(ctx, l.host, dbTopic)
+	//l.initMDNS(ctx, l.host, dbTopic)
 	l.ipfs.Bootstrap(peers)
 	for _, p := range peers {
 		l.host.ConnManager().TagPeer(p.ID, "keep", 100)

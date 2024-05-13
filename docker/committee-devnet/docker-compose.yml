@@ -43,8 +43,8 @@ services:
       - '8042:8545'
     volumes:
       - chain_a_data:/data
-#    logging:
-#      driver: none
+    logging:
+      driver: none
 
   chain_b:
     restart: unless-stopped
@@ -57,8 +57,8 @@ services:
       - '8043:8546'
     volumes:
       - chain_b_data:/data
-#    logging:
-#      driver: none
+    logging:
+      driver: none
 
   chain_c:
     restart: unless-stopped
@@ -71,8 +71,8 @@ services:
       - '8044:8547'
     volumes:
       - chain_c_data:/data
-#    logging:
-#      driver: none
+    logging:
+      driver: none
 
   tracing:
     restart: unless-stopped
@@ -107,6 +107,7 @@ services:
   #   command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
 
   committee-node1:
+    network_mode: host
     restart: unless-stopped
     entrypoint: committee
     ports:
@@ -130,11 +131,12 @@ services:
       - /config/committee-config1.yml
     environment:
       METRICS_HANDLER: jaeger
-      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
 
   committee-node2:
     restart: unless-stopped
+    network_mode: host
     entrypoint: committee
     depends_on:
       - omnirpc
@@ -157,12 +159,13 @@ services:
       - '/config/committee-config2.yml'
     environment:
       METRICS_HANDLER: jaeger
-      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
 
   committee-node3:
     restart: unless-stopped
     entrypoint: committee
+    network_mode: host
     ports:
       - '12346:12346'
     depends_on:
@@ -184,5 +187,5 @@ services:
       - '/config/committee-config3.yml'
     environment:
       METRICS_HANDLER: jaeger
-      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
