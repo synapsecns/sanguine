@@ -2,7 +2,7 @@ chains:
   42: '0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B'
   43: '0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B'
   44: '0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B'
-omnirpc_url: http://host.docker.internal:9001
+omnirpc_url: http://omnirpc:9001
 database:
   type: 'sqlite'
   dsn: '/tmp/committee'
@@ -24,11 +24,11 @@ submitter_config:
       gas_estimate: 7500000
 should_relay: true
 bootstrap_peers:
-  # - /ip4/127.0.0.1/tcp/12345/p2p/???
-  # - /ip4/192.168.176.7/tcp/12345/p2p/???
-  - /ip4/127.0.0.1/tcp/12346/p2p/16Uiu2HAm48u7E6mDZbTRiuBD3ug54o4HHmeTsQAyG2yUWGoDp3g3
-  - /ip4/127.0.0.1/tcp/12347/p2p/16Uiu2HAkwb62r4YYGTW2RAm53QvYC4VExKNqWdRoZppKEm49vAH7
-  # - /ip4/127.0.0.1/tcp/12346/p2p/16Uiu2HAm7ZkqeQb5thdRitUM8pSqRFdoFGeF1TKZKgWYXmdFyqFb
-  # - /ip4/127.0.0.1/tcp/12347/p2p/16Uiu2HAm7ZkqeQb5thdRitUM8pSqRFdoFGeF1TKZKgWYXmdFyqFb
+  # - /dns4/127.0.0.1/tcp/12345/p2p/???
+  # - /dns4/192.168.176.7/tcp/12345/p2p/???
+  - /dns4/committee-node2/tcp/12346/p2p/16Uiu2HAm48u7E6mDZbTRiuBD3ug54o4HHmeTsQAyG2yUWGoDp3g3
+  - /dns4/committee-node3/tcp/12347/p2p/16Uiu2HAkwb62r4YYGTW2RAm53QvYC4VExKNqWdRoZppKEm49vAH7
+  # - /dns4/0.0.0.0/tcp/12346/p2p/16Uiu2HAm7ZkqeQb5thdRitUM8pSqRFdoFGeF1TKZKgWYXmdFyqFb
+  # - /dns4/127.0.0.1/tcp/12347/p2p/16Uiu2HAm7ZkqeQb5thdRitUM8pSqRFdoFGeF1TKZKgWYXmdFyqFb
 p2p_port: 12345
 use_peer_id: true
