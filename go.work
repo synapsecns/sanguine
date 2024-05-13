@@ -4,6 +4,7 @@ go 1.21.4
 use (
 	// ./agents
 	./committee
+	./committee/devnet
 	./contrib/git-changes-action
 	./contrib/promexporter
 	./contrib/release-copier-action

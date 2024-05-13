@@ -53,7 +53,6 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 		cfg:     cfg,
 	}
 
-	fmt.Println("a")
 	node.client = omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
