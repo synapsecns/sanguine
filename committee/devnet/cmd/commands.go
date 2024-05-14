@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/committee/devnet/config"
 	"github.com/synapsecns/sanguine/committee/devnet/provisioner"
 	"github.com/synapsecns/sanguine/core/commandline"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
 )
@@ -40,9 +41,9 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("could not unmarshal config: %w", err)
 		}
 
-		fmt.Println("Hi")
+		metricsProvider := metrics.Get()
 
-		provisioner, err := provisioner.NewProvisioner(c.Context, cfg)
+		provisioner, err := provisioner.NewProvisioner(c.Context, metricsProvider, cfg)
 		if err != nil {
 			return fmt.Errorf("could not create provisioner: %w", err)
 		}
