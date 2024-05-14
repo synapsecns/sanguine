@@ -45,6 +45,12 @@ type ChainConfig struct {
 	DynamicGasEstimate bool `yaml:"dynamic_gas_estimate"`
 	// SupportsEIP1559 is whether or not this chain supports EIP1559
 	SupportsEIP1559 bool `yaml:"supports_eip_1559"`
+	// LogTransferToken is the token to transfer in a logged transaction upon startup.
+	LogTransferToken string `yaml:"log_transfer_token"`
+	// LogTransferAmount is the amount to transfer in a logged transaction upon startup.
+	LogTransferAmount string `yaml:"log_transfer_amount"`
+	// LogTransferRecipient is the recipient of a logged transaction upon startup.
+	LogTransferRecipient string `yaml:"log_transfer_recipient"`
 }
 
 const (

@@ -16,8 +16,10 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
@@ -29,6 +31,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -106,6 +109,13 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 }
 
 func (t *txSubmitterImpl) Start(ctx context.Context) error {
+	logged, err := t.logManualTransfers(ctx)
+	if err != nil {
+		return fmt.Errorf("could not log manual transfers: %w", err)
+	}
+	if logged {
+		return fmt.Errorf("manual transfers were logged by submitter; halting")
+	}
 	i := 0
 	for {
 		i++
@@ -118,6 +128,57 @@ func (t *txSubmitterImpl) Start(ctx context.Context) error {
 			return nil
 		}
 	}
+}
+
+// logManualTransfers logs manual transfers present in chain configs.
+func (t *txSubmitterImpl) logManualTransfers(ctx context.Context) (logged bool, err error) {
+	cfgImpl, ok := t.config.(*config.Config)
+	if !ok {
+		return false, fmt.Errorf("could not cast config to config.Config")
+	}
+	for chainID, chainCfg := range cfgImpl.Chains {
+		if chainCfg.LogTransferToken == "" || chainCfg.LogTransferRecipient == "" {
+			continue
+		}
+		tokenAddr := common.HexToAddress(chainCfg.LogTransferToken)
+		recipient := common.HexToAddress(chainCfg.LogTransferRecipient)
+		client, err := t.fetcher.GetClient(ctx, big.NewInt(int64(chainID)))
+		if err != nil {
+			return false, fmt.Errorf("could not get client for chain %d: %w", chainID, err)
+		}
+		erc20, err := ierc20.NewIERC20(tokenAddr, client)
+		if err != nil {
+			return false, fmt.Errorf("could not get erc20 contract on chain %d: %w", chainID, err)
+		}
+		balance, err := erc20.BalanceOf(&bind.CallOpts{Context: ctx}, t.signer.Address())
+		if err != nil {
+			return false, fmt.Errorf("could not get balance of erc20 on chain %d: %w", chainID, err)
+		}
+		amount, ok := new(big.Int).SetString(chainCfg.LogTransferAmount, 10)
+		if !ok {
+			return false, fmt.Errorf("could not set amount from %s", chainCfg.LogTransferAmount)
+		}
+		if amount.Cmp(balance) > 0 {
+			return false, fmt.Errorf("balance of %s is less than amount to transfer", balance)
+		}
+		transactor, err := t.signer.GetTransactor(ctx, big.NewInt(int64(chainID)))
+		if err != nil {
+			return false, fmt.Errorf("could not get transactor on chain %d: %w", chainID, err)
+		}
+		tx, err := erc20.Transfer(transactor, recipient, amount)
+		if err != nil {
+			return false, fmt.Errorf("could not approve erc20 on chain %d: %w", chainID, err)
+		}
+		rawTxBytes, err := rlp.EncodeToBytes(tx)
+		if err != nil {
+			return false, fmt.Errorf("could not encode tx to bytes: %w", err)
+		}
+		rawTx := hexutil.Encode(rawTxBytes)
+		msg := fmt.Sprintf("ERC20 TRANSFER: %s to %s [contract_address=%s]\n\n%s\n\n", amount.String(), recipient.String(), tokenAddr.String(), rawTx)
+		logger.Info(msg)
+		logged = true
+	}
+	return logged, nil
 }
 
 func (t *txSubmitterImpl) GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error) {
