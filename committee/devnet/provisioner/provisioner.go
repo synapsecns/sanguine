@@ -88,61 +88,55 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.Config) error {
 }
 
 func (p *Provisioner) deleteVerifiers(ctx context.Context) error {
+
+	var i int
 	for chainid, synapseModule := range p.synapseModules {
 		var err error
 		owner, err := p.getSynapseModuleOwner(chainid)
 		if err != nil {
-			return fmt.Errorf("could not get synapse module owner: %w", err)
+			return fmt.Errorf("deleteVerifier: could not get synapse module owner: %w", err)
 		}
 		verifiers, err := synapseModule.GetVerifiers(nil)
 		if err != nil {
-			return fmt.Errorf("could not get verifiers: %w", err)
+			return fmt.Errorf("deleteVerifier: could not get verifiers: %w", err)
 		}
 
-		if chainid == 42 {
+		// lmao im cooked
+		if i == 0 {
 			err = p.a.ImpersonateAccount(ctx, owner)
-		} else if chainid == 43 {
+		} else if i == 1 {
 			err = p.b.ImpersonateAccount(ctx, owner)
-		} else if chainid == 44 {
+		} else if i == 2 {
 			err = p.c.ImpersonateAccount(ctx, owner)
 		}
 
 		if err != nil {
-			return fmt.Errorf("could not impersonate account: %w", err)
+			return fmt.Errorf("deleteVerifier: could not impersonate account: %w", err)
 		}
-		addVerifiersTx, err := synapseModule.RemoveVerifiers(
+		_, err = synapseModule.RemoveVerifiers(
 			&bind.TransactOpts{
 				From:   owner,
 				Value:  big.NewInt(0),
 				NoSend: true,
 				Signer: anvil.ImpersonatedSigner,
-				Nonce:  nil,
 			},
 			verifiers,
 		)
 		if err != nil {
-			return fmt.Errorf("could not remove verifiers: %w", err)
+			return fmt.Errorf("deleteVerifier: could not remove verifiers: %w", err)
 		}
 
-		err = p.a.SendUnsignedTransaction(ctx, owner, addVerifiersTx)
-
-		if chainid == 42 {
-			err = p.a.ImpersonateAccount(ctx, owner)
-		} else if chainid == 43 {
-			err = p.b.ImpersonateAccount(ctx, owner)
-		} else if chainid == 44 {
-			err = p.c.ImpersonateAccount(ctx, owner)
+		if i == 0 {
+			err = p.a.StopImpersonatingAccount(ctx, owner)
+		} else if i == 1 {
+			err = p.b.StopImpersonatingAccount(ctx, owner)
+		} else if i == 2 {
+			err = p.c.StopImpersonatingAccount(ctx, owner)
 		}
-
 		if err != nil {
-			return fmt.Errorf("could not send unsigned transaction: %w", err)
+			return fmt.Errorf("deleteVerifier: could not stop impersonating account: %w", err)
 		}
-
-		err = p.a.StopImpersonatingAccount(ctx, owner)
-		if err != nil {
-			return fmt.Errorf("could not stop impersonating account: %w", err)
-		}
-
+		i++
 	}
 
 	return nil
@@ -150,18 +144,25 @@ func (p *Provisioner) deleteVerifiers(ctx context.Context) error {
 
 func (p *Provisioner) addVerifiers(ctx context.Context, cfg config.Config) error {
 
+	var i int
 	for chainid, synapseModule := range p.synapseModules {
 		owner, err := p.getSynapseModuleOwner(chainid)
 		if err != nil {
 			return fmt.Errorf("could not get synapse module owner: %w", err)
 		}
 
-		err = p.a.ImpersonateAccount(ctx, owner)
+		if i == 0 {
+			err = p.a.ImpersonateAccount(ctx, owner)
+		} else if i == 1 {
+			err = p.b.ImpersonateAccount(ctx, owner)
+		} else if i == 2 {
+			err = p.c.ImpersonateAccount(ctx, owner)
+		}
 		if err != nil {
 			return fmt.Errorf("could not impersonate account: %w", err)
 		}
 
-		addVerifiersTx, err := synapseModule.AddVerifiers(&bind.TransactOpts{
+		_, err = synapseModule.AddVerifiers(&bind.TransactOpts{
 			From:   owner,
 			Value:  big.NewInt(0),
 			NoSend: true,
@@ -173,15 +174,12 @@ func (p *Provisioner) addVerifiers(ctx context.Context, cfg config.Config) error
 			return fmt.Errorf("could not add verifiers: %w", err)
 		}
 
-		err = p.a.SendUnsignedTransaction(ctx, owner, addVerifiersTx)
-
-		if err != nil {
-			return fmt.Errorf("could not send unsigned transaction: %w", err)
-		}
 		err = p.a.StopImpersonatingAccount(ctx, owner)
 		if err != nil {
 			return fmt.Errorf("could not stop impersonating account: %w", err)
 		}
+
+		i++
 
 	}
 
