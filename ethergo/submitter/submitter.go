@@ -165,6 +165,7 @@ func (t *txSubmitterImpl) logManualTransfers(ctx context.Context) (logged bool, 
 		if err != nil {
 			return false, fmt.Errorf("could not get transactor on chain %d: %w", chainID, err)
 		}
+		transactor.NoSend = true
 		tx, err := erc20.Transfer(transactor, recipient, amount)
 		if err != nil {
 			return false, fmt.Errorf("could not approve erc20 on chain %d: %w", chainID, err)
