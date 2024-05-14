@@ -74,6 +74,6 @@ curl --location --request POST 'http://localhost:5000/rpc/1' \
 }'
 ```
 
-A full postman collection can be found [here](https://github.com/synapsecns/sanguine/blob/master/services/omnirpc/swagger/collection.json) or at the `/collection.json endpoint`
+A full postman collection can be found [here](https://github.com/synapsecns/sanguine/blob/master/services/omnirpc/swagger/collection.json) or at the `/collection.json endpoint`. Swagger docs are also available at `/swagger`.
 
 Not all requests are confirmable. Please see [here](https://pkg.go.dev/github.com/synapsecns/sanguine/services/omnirpc#section-readme) for details.

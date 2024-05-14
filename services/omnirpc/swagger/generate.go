@@ -1,27 +1,12 @@
-// package main generates a static swagger collection for use in documentation. This differs from collection which dynamically generates a collection for serving.
-// this is purely meant for static linking in the repo.
-package main
+// Package swagger registers the swagger generated spec.
+package swagger
 
-import (
-	"github.com/synapsecns/sanguine/services/omnirpc/collection"
-	"os"
-)
+import _ "embed" // embed is required for go:embed
 
-//go:generate go run github.com/synapsecns/sanguine/services/omnirpc/swagger
+//go:generate go run github.com/synapsecns/sanguine/services/omnirpc/swagger/generator
+//go:generate ./gen.sh
 
-func main() {
-	res, err := collection.CreateCollection()
-	if err != nil {
-		panic(err)
-	}
-
-	file, err := os.Create("collection.json")
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = file.Write(res)
-	if err != nil {
-		panic(err)
-	}
-}
+// OpenAPI is the openapi specification for the omnirpc service.
+//
+//go:embed openapi.yaml
+var OpenAPI []byte

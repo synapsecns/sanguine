@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/eth/filters"
+	"github.com/flowchartsman/swaggerui"
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/ginhelper"
@@ -19,6 +20,7 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
+	"github.com/synapsecns/sanguine/services/omnirpc/swagger"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -70,6 +72,8 @@ func (r *HarmonyProxy) Run(_ context.Context) error {
 			})
 		}
 	})
+
+	router.Any("/swagger/*any", gin.WrapH(http.StripPrefix("/swagger", swaggerui.Handler(swagger.OpenAPI))))
 
 	router.GET("/collection.json", func(c *gin.Context) {
 		res, err := collection.CreateCollection()
