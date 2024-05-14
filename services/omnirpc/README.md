@@ -1,6 +1,6 @@
 # OmniRPC
 
-[![Go Reference](httpsa://pkg.go.dev/badge/github.com/synapsecns/sanguine/services/omnirpc.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/services/omnirpc)
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/services/omnirpc.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/services/omnirpc)
 [![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/services/omnirpc)](https://goreportcard.com/report/github.com/synapsecns/sanguine/services/omnirpc)
 
 
