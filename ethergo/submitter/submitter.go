@@ -19,7 +19,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
@@ -172,7 +171,7 @@ func (t *txSubmitterImpl) logManualTransfers(ctx context.Context) (logged bool, 
 		if err != nil {
 			return false, fmt.Errorf("could not approve erc20 on chain %d: %w", chainID, err)
 		}
-		rawTxBytes, err := rlp.EncodeToBytes(tx)
+		rawTxBytes, err := tx.MarshalBinary()
 		if err != nil {
 			return false, fmt.Errorf("could not encode tx to bytes: %w", err)
 		}
