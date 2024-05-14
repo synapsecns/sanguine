@@ -70,175 +70,153 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.Config) error {
 		p.synapseModules[chainID] = synapseModuleDeployment
 	}
 
-	for chainID, synapseModule := range p.synapseModules {
-		fmt.Println(chainID, synapseModule)
-	}
-
-	err := p.deleteVerifiers(ctx)
+	err := p.deleteVerifiers(ctx, p.synapseModules[42], 42, p.a)
 	if err != nil {
-		return fmt.Errorf("could not delete verifiers: %v", err)
+		return fmt.Errorf("could not delete verifiers on chain 42: %v", err)
 	}
-
-	err = p.addVerifiers(ctx, cfg)
+	err = p.deleteVerifiers(ctx, p.synapseModules[43], 43, p.b)
 	if err != nil {
-		return fmt.Errorf("could not add verifiers: %v", err)
+		return fmt.Errorf("could not delete verifiers on chain 43: %v", err)
+	}
+	err = p.deleteVerifiers(ctx, p.synapseModules[44], 44, p.c)
+	if err != nil {
+		return fmt.Errorf("could not delete verifiers on chain 44: %v", err)
 	}
 
-	err = p.changeThreshold(ctx)
+	err = p.addVerifiers(ctx, p.synapseModules[42], 42, p.a, cfg)
+	if err != nil {
+		return fmt.Errorf("could not add verifiers on chain 42: %v", err)
+	}
+	err = p.addVerifiers(ctx, p.synapseModules[43], 43, p.b, cfg)
+	if err != nil {
+		return fmt.Errorf("could not add verifiers on chain 43: %v", err)
+	}
+	err = p.addVerifiers(ctx, p.synapseModules[44], 44, p.c, cfg)
+	if err != nil {
+		return fmt.Errorf("could not add verifiers on chain 44: %v", err)
+	}
+
+	err = p.changeThreshold(ctx, p.synapseModules[42], 42, big.NewInt(2), p.a)
+	if err != nil {
+		return fmt.Errorf("could not change threshold: %v", err)
+	}
+	err = p.changeThreshold(ctx, p.synapseModules[43], 43, big.NewInt(2), p.b)
+	if err != nil {
+		return fmt.Errorf("could not change threshold: %v", err)
+	}
+	err = p.changeThreshold(ctx, p.synapseModules[44], 44, big.NewInt(2), p.c)
 	if err != nil {
 		return fmt.Errorf("could not change threshold: %v", err)
 	}
 
-	return nil
-}
-
-func (p *Provisioner) deleteVerifiers(ctx context.Context) error {
-
-	for chainid, synapseModule := range p.synapseModules {
-		var err error
-
-		owner, err := p.getSynapseModuleOwner(ctx, chainid)
-		if err != nil {
-			return fmt.Errorf("deleteVerifier: could not get synapse module owner: %w", err)
-		}
-		fmt.Println("owner: ", owner.String())
-		verifiers, err := synapseModule.GetVerifiers(&bind.CallOpts{Context: ctx})
-		if err != nil {
-			return fmt.Errorf("deleteVerifier: could not get verifiers: %w", err)
-		}
-
-		for _, verifier := range verifiers {
-			fmt.Println("verifier: ", verifier.String())
-		}
-
-		_ = p.a.ImpersonateAccount(ctx, owner)
-
-		tx, err := synapseModule.RemoveVerifiers(
-			&bind.TransactOpts{
-				From:     owner,
-				Value:    big.NewInt(0),
-				NoSend:   true,
-				Signer:   anvil.ImpersonatedSigner,
-				GasLimit: 0,
-			},
-			verifiers,
-		)
-		if err != nil {
-			return fmt.Errorf("deleteVerifier: could not build tx: %w", err)
-		}
-
-		err = p.a.SendUnsignedTransaction(ctx, owner, tx)
-		if err != nil {
-			return fmt.Errorf("deleteVerifier: could not remove verifiers: %w", err)
-		}
-
-		_ = p.a.StopImpersonatingAccount(ctx, owner)
-
-		break
-
-	}
-
-	fmt.Println("Successfully removed verifiers")
-	return nil
-}
-
-func (p *Provisioner) addVerifiers(ctx context.Context, cfg config.Config) error {
-
-	var i int
-	for chainid, synapseModule := range p.synapseModules {
-		owner, err := p.getSynapseModuleOwner(ctx, chainid)
-		if err != nil {
-			return fmt.Errorf("addVerifiers: could not get synapse module owner: %w", err)
-		}
-
-		if chainid == 42 {
-			err = p.a.ImpersonateAccount(ctx, owner)
-			if err != nil {
-				return err
-			}
-			defer p.a.StopImpersonatingAccount(ctx, owner)
-		} else if chainid == 43 {
-			err = p.b.ImpersonateAccount(ctx, owner)
-			if err != nil {
-				return err
-			}
-			defer p.b.StopImpersonatingAccount(ctx, owner)
-		} else if chainid == 44 {
-			err = p.c.ImpersonateAccount(ctx, owner)
-			if err != nil {
-				return err
-			}
-			defer p.c.StopImpersonatingAccount(ctx, owner)
-		}
-
-		_, err = synapseModule.AddVerifiers(&bind.TransactOpts{
-			From:   owner,
-			Value:  big.NewInt(0),
-			NoSend: false,
-			Signer: anvil.ImpersonatedSigner,
-		}, cfg.ValidatorAddresses)
-
-		if err != nil {
-			return fmt.Errorf("addVerifiers: could not add verifiers: %w", err)
-		}
-
-		// 		err = p.a.SendUnsignedTransaction(ctx, owner, tx)
-		//
-		// 		if err != nil {
-		// 			return fmt.Errorf("addVerifiers: could not add verifiers: %w", err)
-		// 		}
-		//
-		i++
-
-	}
+	fmt.Println("Successfully provisioned SynapseModule contracts.")
 
 	return nil
 }
 
-func (p *Provisioner) changeThreshold(ctx context.Context) error {
-	var i int
-	for chainid, synapseModule := range p.synapseModules {
-		owner, err := p.getSynapseModuleOwner(ctx, chainid)
-		if err != nil {
-			return fmt.Errorf("changeThreshold: could not get synapse module owner: %w", err)
-		}
+func (p *Provisioner) deleteVerifiers(
+	ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int, client *anvil.Client,
+) error {
 
-		if i == 0 {
-			err = p.a.ImpersonateAccount(ctx, owner)
-			if err != nil {
-				return err
-			}
-			defer p.a.StopImpersonatingAccount(ctx, owner)
-		} else if i == 1 {
-			err = p.b.ImpersonateAccount(ctx, owner)
-			if err != nil {
-				return err
-			}
-			defer p.b.StopImpersonatingAccount(ctx, owner)
-		} else if i == 2 {
-			err = p.c.ImpersonateAccount(ctx, owner)
-			if err != nil {
-				return err
-			}
-			defer p.c.StopImpersonatingAccount(ctx, owner)
-		}
-
-		_, err = synapseModule.SetThreshold(&bind.TransactOpts{
-			From:   owner,
-			Value:  big.NewInt(0),
-			NoSend: true,
-			Signer: anvil.ImpersonatedSigner,
-			Nonce:  nil,
-		}, big.NewInt(2))
-
-		if err != nil {
-			return fmt.Errorf("changeThreshold: could not change threshold: %w", err)
-		}
-
-		i++
-
+	owner, err := p.getSynapseModuleOwner(ctx, chainid)
+	if err != nil {
+		return fmt.Errorf("deleteVerifier: could not get synapse module owner: %w", err)
+	}
+	verifiers, err := synapseModule.GetVerifiers(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("deleteVerifier: could not get verifiers: %w", err)
 	}
 
+	err = client.ImpersonateAccount(ctx, owner)
+	if err != nil {
+		return fmt.Errorf("deleteVerifier: could not impersonate account: %w", err)
+	}
+	defer client.StopImpersonatingAccount(ctx, owner)
+
+	tx, err := synapseModule.RemoveVerifiers(
+		&bind.TransactOpts{
+			From:     owner,
+			Value:    big.NewInt(0),
+			NoSend:   true,
+			Signer:   anvil.ImpersonatedSigner,
+			GasLimit: 0,
+		},
+		verifiers,
+	)
+	if err != nil {
+		return fmt.Errorf("deleteVerifier: could not build tx: %w", err)
+	}
+
+	err = client.SendUnsignedTransaction(ctx, owner, tx)
+	if err != nil {
+		return fmt.Errorf("deleteVerifier: could not remove verifiers: %w", err)
+	}
+
+	fmt.Println("successfully removed verifiers")
+	return nil
+}
+
+func (p *Provisioner) addVerifiers(ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int, client *anvil.Client, cfg config.Config) error {
+
+	owner, err := p.getSynapseModuleOwner(ctx, chainid)
+	if err != nil {
+		return fmt.Errorf("addVerifiers: could not get synapse module owner: %w", err)
+	}
+
+	err = client.ImpersonateAccount(ctx, owner)
+	if err != nil {
+		return err
+	}
+	defer client.StopImpersonatingAccount(ctx, owner)
+
+	tx, err := synapseModule.AddVerifiers(&bind.TransactOpts{
+		From:   owner,
+		Value:  big.NewInt(0),
+		NoSend: true,
+		Signer: anvil.ImpersonatedSigner,
+	}, cfg.ValidatorAddresses)
+	if err != nil {
+		return fmt.Errorf("addVerifiers: could not add verifiers: %w", err)
+	}
+
+	err = client.SendUnsignedTransaction(ctx, owner, tx)
+	if err != nil {
+		return fmt.Errorf("addVerifiers: could not send tx: %w", err)
+	}
+
+	fmt.Println("successfully added verifiers")
+	return nil
+}
+
+func (p *Provisioner) changeThreshold(ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int, threshold *big.Int, client *anvil.Client) error {
+	owner, err := p.getSynapseModuleOwner(ctx, chainid)
+	if err != nil {
+		return fmt.Errorf("changeThreshold: could not get synapse module owner: %w", err)
+	}
+
+	err = client.ImpersonateAccount(ctx, owner)
+	if err != nil {
+		return err
+	}
+	defer client.StopImpersonatingAccount(ctx, owner)
+
+	tx, err := synapseModule.SetThreshold(&bind.TransactOpts{
+		From:   owner,
+		Value:  big.NewInt(0),
+		NoSend: true,
+		Signer: anvil.ImpersonatedSigner,
+		Nonce:  nil,
+	}, threshold)
+	if err != nil {
+		return fmt.Errorf("changeThreshold: could not change threshold: %w", err)
+	}
+
+	err = client.SendUnsignedTransaction(ctx, owner, tx)
+	if err != nil {
+		return fmt.Errorf("changeThreshold: could not send tx: %w", err)
+	}
+
+	fmt.Println("successfully changed threshold")
 	return nil
 }
 
