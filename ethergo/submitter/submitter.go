@@ -132,11 +132,13 @@ func (t *txSubmitterImpl) Start(ctx context.Context) error {
 
 // logManualTransfers logs manual transfers present in chain configs.
 func (t *txSubmitterImpl) logManualTransfers(ctx context.Context) (logged bool, err error) {
+	fmt.Println("logManualTransfers")
 	cfgImpl, ok := t.config.(*config.Config)
 	if !ok {
 		return false, fmt.Errorf("could not cast config to config.Config")
 	}
 	for chainID, chainCfg := range cfgImpl.Chains {
+		fmt.Printf("parsing chain config on chain %d: %v\n", chainID, chainCfg)
 		if chainCfg.LogTransferToken == "" || chainCfg.LogTransferRecipient == "" {
 			continue
 		}
@@ -177,6 +179,7 @@ func (t *txSubmitterImpl) logManualTransfers(ctx context.Context) (logged bool, 
 		rawTx := hexutil.Encode(rawTxBytes)
 		msg := fmt.Sprintf("ERC20 TRANSFER: %s to %s [contract_address=%s]\n\n%s\n\n", amount.String(), recipient.String(), tokenAddr.String(), rawTx)
 		logger.Info(msg)
+		fmt.Println(msg)
 		logged = true
 	}
 	return logged, nil
