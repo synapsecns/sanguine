@@ -9,3 +9,30 @@ Package `provisioner` sets up the development network with the addresses of your
 # Sender
 
 Package `sender` sends verification requests to the `SynapseModule`, which will then be picked up by Verifier nodes in the network for verification in the network.
+
+# Setup
+
+## Node setup
+
+`cd docker/committee-devnet`
+`docker compose build`
+`docker compose up` to run the devnet containers, which are
+
+1. Anvil Chain A Chain Id 42 (default: `http://localhost:8042`)
+2. Anvil Chain B Chain ID 43 (default RPC url: `http://localhost:8042`)
+3. Anvil Chain C: Chain ID 44 (default RPC url: `http://localhost:8042`)
+
+OmniRPC will set up a proxy for these three chains so they're all accessible under one endpoint (`http://localhost:9001/rpc/<chain_id>`), please refer to the OmniRPC documentation for more.
+
+## Provisioner setup
+
+Navigate to the `committee/devnet` and run
+
+`go run main.go`
+
+Once the interactive shell comes up, run
+`run --config=<PATH_TO_CONFIG> `
+
+## Sender setup (optional)
+
+Simply add the additional flags `--sender --senderconfig=<PATH_TO_SENDER_CONFIG>` to the command above in the Provisioner setup
