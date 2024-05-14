@@ -188,7 +188,7 @@ The relayer is configured with a yaml file. The following is an example configur
    -  `type` - the database driver to use, can be `mysql` or `sqlite`.
    -  `dsn` - the dsn of your database. If using sqlite, this can be a path, if using mysql please see [here](https://dev.mysql.com/doc/connector-odbc/en/connector-odbc-configuration.html) for more information.
  - `screener_api_url` (optional) -  Please see [here](https://github.com/synapsecns/sanguine/tree/master/contrib/screener-api#screening-api) for an api spec, this is used descision on wether to bridge to given addresses.
- - `rfq_url` - URL of the rfq api, please see the [API](../../API#API Urls) page for details and the mainnet/testnet urls.
+ - `rfq_url` - URL of the rfq api, please see the [API](../API#api-urls) page for details and the mainnet/testnet urls.
  - `omnirpc_url` - URL of omnirpc to use, Please see [here](../../Services/Omnirpc) for details on running an omnirpc instance.
  - `rebalance_interval` - How often to rebalance, formatted as (s = seconds, m = minutes, h = hours)
  - `relayer_api_port` - the relayer api is used to control the relayer. <!--TODO: more info here--> This api should be secured/not public.
@@ -221,4 +221,6 @@ The relayer is configured with a yaml file. The following is an example configur
 
 ### Observability
 
-The RFQ relayer implements open telemetry for both tracing and metrics. Please see the [Observability](../../Observability) page for more info.
+The RFQ relayer implements open telemetry for both tracing and metrics. Please see the [Observability](../../Observability) page for more info. There is also a custom [grafana dashboard](https://github.com/synapsecns/sanguine/tree/master/services/rfq/relayer/dashboards/grafana.json) available for the relayer.
+
+![Relayer Grafana Dashboard](dashboard.png)
