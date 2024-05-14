@@ -70,6 +70,7 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.Config) error {
 		p.synapseModules[chainID] = synapseModuleDeployment
 	}
 
+	// TODO: make this cleaner
 	err := p.deleteVerifiers(ctx, p.synapseModules[42], 42, p.a)
 	if err != nil {
 		return fmt.Errorf("could not delete verifiers on chain 42: %v", err)
