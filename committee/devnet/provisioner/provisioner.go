@@ -127,6 +127,7 @@ func (p *Provisioner) deleteVerifiers(ctx context.Context) error {
 			return fmt.Errorf("deleteVerifier: could not remove verifiers: %w", err)
 		}
 
+		// cooked
 		if i == 0 {
 			err = p.a.StopImpersonatingAccount(ctx, owner)
 		} else if i == 1 {
