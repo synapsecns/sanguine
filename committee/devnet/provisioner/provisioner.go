@@ -23,7 +23,7 @@ type Provisioner struct {
 	synapseModules map[int]*synapsemodule.SynapseModule
 }
 
-func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.Config) (*Provisioner, error) {
+func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.ProvisionerConfig) (*Provisioner, error) {
 
 	a, err := anvil.Dial(ctx, "http://localhost:9001/rpc/42")
 	if err != nil {
@@ -54,7 +54,7 @@ func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.Con
 }
 
 // Run removes verifiers from the synapse module by impersonating the owner, and adds our own.
-func (p *Provisioner) Run(ctx context.Context, cfg config.Config) error {
+func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) error {
 
 	for chainID, address := range cfg.Chains {
 		chainClient, err := p.client.GetChainClient(ctx, chainID)
@@ -157,7 +157,7 @@ func (p *Provisioner) deleteVerifiers(
 	return nil
 }
 
-func (p *Provisioner) addVerifiers(ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int, client *anvil.Client, cfg config.Config) error {
+func (p *Provisioner) addVerifiers(ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int, client *anvil.Client, cfg config.ProvisionerConfig) error {
 
 	owner, err := p.getSynapseModuleOwner(ctx, chainid)
 	if err != nil {
