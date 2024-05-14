@@ -47,7 +47,6 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("could not create provisioner: %w", err)
 		}
 
-		provisioner.Run(c.Context, cfg)
-		return nil
+		return provisioner.Run(c.Context, cfg)
 	},
 }
