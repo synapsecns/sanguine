@@ -85,6 +85,11 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.Config) error {
 		return fmt.Errorf("could not add verifiers: %v", err)
 	}
 
+	err = p.changeThreshold(ctx)
+	if err != nil {
+		return fmt.Errorf("could not change threshold: %v", err)
+	}
+
 	return nil
 }
 
@@ -174,6 +179,49 @@ func (p *Provisioner) addVerifiers(ctx context.Context, cfg config.Config) error
 
 		if err != nil {
 			return fmt.Errorf("could not add verifiers: %w", err)
+		}
+
+		err = p.a.StopImpersonatingAccount(ctx, owner)
+		if err != nil {
+			return fmt.Errorf("could not stop impersonating account: %w", err)
+		}
+
+		i++
+
+	}
+
+	return nil
+}
+
+func (p *Provisioner) changeThreshold(ctx context.Context) error {
+	var i int
+	for chainid, synapseModule := range p.synapseModules {
+		owner, err := p.getSynapseModuleOwner(chainid)
+		if err != nil {
+			return fmt.Errorf("could not get synapse module owner: %w", err)
+		}
+
+		if i == 0 {
+			err = p.a.ImpersonateAccount(ctx, owner)
+		} else if i == 1 {
+			err = p.b.ImpersonateAccount(ctx, owner)
+		} else if i == 2 {
+			err = p.c.ImpersonateAccount(ctx, owner)
+		}
+		if err != nil {
+			return fmt.Errorf("could not impersonate account: %w", err)
+		}
+
+		_, err = synapseModule.SetThreshold(&bind.TransactOpts{
+			From:   owner,
+			Value:  big.NewInt(0),
+			NoSend: true,
+			Signer: anvil.ImpersonatedSigner,
+			Nonce:  nil,
+		}, big.NewInt(2))
+
+		if err != nil {
+			return fmt.Errorf("could not change threshold: %w", err)
 		}
 
 		err = p.a.StopImpersonatingAccount(ctx, owner)
