@@ -60,6 +60,8 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
+import { useMaintenanceComponents } from './Maintenance/Maintenance'
+import { getSynapsePauseData } from '@/utils/getSynapsePauseData'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -84,6 +86,10 @@ export const Widget = ({
   const web3Context = useContext(Web3Context)
   const { connectedAddress, signer, provider, networkId } =
     web3Context.web3Provider
+
+  const { chainPause, modulePause } = getSynapsePauseData()
+  const { MaintenanceWarningMessages, useMaintenanceCountdownProgresses } =
+    useMaintenanceComponents(chainPause, modulePause)
 
   const [inputAmount, setInputAmount] = useState('')
 
@@ -440,6 +446,7 @@ export const Widget = ({
             />
           </div>
         </section>
+        <MaintenanceWarningMessages />
         <Receipt
           quote={bridgeQuote ?? null}
           send={formatBigIntToString(
