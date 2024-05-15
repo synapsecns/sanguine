@@ -100,8 +100,11 @@ func (s *Sender) sendWriteEntryWithVerification(ctx context.Context, cfg config.
 		sha256.Sum256([]byte("fat")),
 		[]common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)},
 	)
+	if err != nil {
+		return nil, fmt.Errorf("could not create entry with verification: %w", err)
+	}
 
-	s.originClient.SendUnsignedTransaction(
+	err = s.originClient.SendUnsignedTransaction(
 		ctx,
 		richAddr,
 		tx,
@@ -125,5 +128,6 @@ func (s *Sender) getInterchainFee(ctx context.Context, destChainID uint64) (*big
 	if err != nil {
 		return nil, fmt.Errorf("could not get interchain fee: %w", err)
 	}
+	fmt.Printf("interchain fee for %d: %d\n", destChainID, fee.Uint64())
 	return fee, nil
 }

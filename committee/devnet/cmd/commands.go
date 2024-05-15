@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/synapsecns/sanguine/committee/devnet/config"
+	"github.com/synapsecns/sanguine/committee/devnet/manager"
 	"github.com/synapsecns/sanguine/committee/devnet/provisioner"
 	"github.com/synapsecns/sanguine/committee/devnet/sender"
 	"github.com/synapsecns/sanguine/core/commandline"
@@ -48,18 +49,20 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("could not read config file: %w", err)
 		}
 
-		var cfg config.ProvisionerConfig
+		var provisionerCfg config.ProvisionerConfig
 		// TODO: consider moving this for marshal/unmarshall tests
-		err = yaml.Unmarshal(input, &cfg)
+		err = yaml.Unmarshal(input, &provisionerCfg)
 		if err != nil {
 			return fmt.Errorf("could not unmarshal config: %w", err)
 		}
 
 		metricsProvider := metrics.Get()
-		provisioner, err := provisioner.NewProvisioner(c.Context, metricsProvider, cfg)
+		provisioner, err := provisioner.NewProvisioner(c.Context, metricsProvider, provisionerCfg)
 		if err != nil {
 			return fmt.Errorf("could not create provisioner: %w", err)
 		}
+
+		mgr := manager.NewManager(provisioner, nil)
 
 		var sendr *sender.Sender
 		var senderCfg config.SenderConfig
@@ -78,12 +81,12 @@ var runCommand = &cli.Command{
 			if err != nil {
 				return fmt.Errorf("could not create sender: %w", err)
 			}
-			go sendr.Start(c.Context, senderCfg)
+			mgr.Sender = sendr
 		}
 
 		if err != nil {
 			return fmt.Errorf("could not start sender: %w", err)
 		}
-		return provisioner.Run(c.Context, cfg)
+		return mgr.Start(c.Context, provisionerCfg, senderCfg)
 	},
 }
