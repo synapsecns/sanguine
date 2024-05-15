@@ -1,9 +1,8 @@
-import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 import { isChainIncluded } from '@/utils/isChainIncluded'
 
 /**
- * Displays a warning message based on selected chains for Bridge / Swap.
+ * Displays a warning message based on selected chains in Bridge Input
  * Able to specify which chains to display warning messages for.
  *
  * @param startDate Start time to display message

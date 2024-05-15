@@ -4,7 +4,6 @@ import { BridgeProps } from 'types'
 import { Provider } from 'react-redux'
 import { Web3Provider } from 'providers/Web3Provider'
 import { SynapseProvider } from 'providers/SynapseProvider'
-import { useEffect, useState } from 'react'
 
 import { Widget } from '@/components/Widget'
 import { store } from '@/state/store'
