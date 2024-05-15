@@ -52,7 +52,7 @@ export const WarningMessage = ({
   message?: React.ReactNode
 }) => {
   return (
-    <div className="flex flex-col bg-[--synapse-surface] text-[--synapse-text] text-sm p-3 rounded-md">
+    <div className="flex flex-col bg-[--synapse-surface] text-[--synapse-text] p-3 rounded-md">
       {header && <div className="mb-2 font-bold">{header}</div>}
       {message && <div>{message}</div>}
     </div>
