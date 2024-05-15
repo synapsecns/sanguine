@@ -81,11 +81,11 @@ export const EventCountdownProgressBar = ({
           text-[--synapse-text] text-xs md:text-base
         `}
       >
-        <div className="flex justify-between px-3 pt-2">
+        <div className="flex justify-between px-3 py-2">
           <div className="text-sm">{eventLabel}</div>
           {isIndefinite ? null : <div>{timeRemaining} remaining</div>}
         </div>
-        <div className="px-1">
+        <div className="flex px-1">
           <LinearAnimatedProgressBar
             id="event-countdown-progress-bar"
             startDate={startDate}
