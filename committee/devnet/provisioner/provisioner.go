@@ -133,21 +133,21 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 	// ================== Gas Oracle ==================
 	err = p.setLocalNativePrice(ctx, p.gasOracles[42], 42, big.NewInt(params.Ether), p.a)
 	if err != nil {
-		return fmt.Errorf("could not add remote chain gas price: %v", err)
+		return fmt.Errorf("could not add local native price: %v", err)
 	}
 	err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(params.Ether), p.b)
 	if err != nil {
-		return fmt.Errorf("could not add remote chain gas price: %v", err)
+		return fmt.Errorf("could not add local native price: %v", err)
 	}
 
-	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(0), p.a)
-	if err != nil {
-		return fmt.Errorf("could not add remote chain gas price: %v", err)
-	}
-	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(0), p.b)
-	if err != nil {
-		return fmt.Errorf("could not add remote chain gas price: %v", err)
-	}
+	// err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(0), p.a)
+	// if err != nil {
+	// 	return fmt.Errorf("could not set remote calldata price: %v", err)
+	// }
+	// err = p.setRemoteCallDataPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(0), p.b)
+	// if err != nil {
+	// 	return fmt.Errorf("could not set remote calldata price %v", err)
+	// }
 
 	err = p.setRemoteGasPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(1000000), p.a)
 	if err != nil {
@@ -160,11 +160,11 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 
 	err = p.setRemoteNativePrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(params.Ether), p.a)
 	if err != nil {
-		return fmt.Errorf("could not add remote chain gas price: %v", err)
+		return fmt.Errorf("could not add remote native price: %v", err)
 	}
 	err = p.setRemoteNativePrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(params.Ether), p.b)
 	if err != nil {
-		return fmt.Errorf("could not add remote chain gas price: %v", err)
+		return fmt.Errorf("could not add remote native price: %v", err)
 	}
 
 	fmt.Println("Successfully provisioned SynapseModule contracts.")
