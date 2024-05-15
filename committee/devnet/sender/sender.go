@@ -32,7 +32,7 @@ type Sender struct {
 }
 
 func NewSender(ctx context.Context, cfg config.SenderConfig, handler metrics.Handler) (*Sender, error) {
-	originClient, err := anvil.Dial(ctx, "http://localhost:8042")
+	originClient, err := anvil.Dial(ctx, "http://localhost:9001/rpc/42")
 	if err != nil {
 		return nil, fmt.Errorf("could not dial origin client: %w", err)
 	}
@@ -74,7 +74,10 @@ func (s *Sender) Start(ctx context.Context, cfg config.SenderConfig) error {
 	}
 }
 
-func (s *Sender) sendWriteEntryWithVerification(ctx context.Context, cfg config.SenderConfig) (*types.Transaction, error) {
+func (s *Sender) sendWriteEntryWithVerification(
+	ctx context.Context,
+	cfg config.SenderConfig,
+) (*types.Transaction, error) {
 	fee, err := s.getInterchainFee(ctx, uint64(cfg.DestinationChainID))
 	if err != nil {
 		return nil, fmt.Errorf("could not get interchain fee: %w", err)
@@ -87,14 +90,14 @@ func (s *Sender) sendWriteEntryWithVerification(ctx context.Context, cfg config.
 	if err != nil {
 		return nil, fmt.Errorf("could not impersonate account: %w", err)
 	}
+	defer s.originClient.StopImpersonatingAccount(ctx, richAddr)
 
 	tx, err := s.originDB.WriteEntryWithVerification(
 		&bind.TransactOpts{
-			From:     richAddr,
-			Value:    core.CopyBigInt(fee),
-			NoSend:   true,
-			Signer:   anvil.ImpersonatedSigner,
-			GasLimit: 0,
+			From:   richAddr,
+			Value:  core.CopyBigInt(fee),
+			NoSend: true,
+			Signer: anvil.ImpersonatedSigner,
 		},
 		uint64(cfg.DestinationChainID),
 		sha256.Sum256([]byte("fat")),
@@ -104,11 +107,7 @@ func (s *Sender) sendWriteEntryWithVerification(ctx context.Context, cfg config.
 		return nil, fmt.Errorf("could not create entry with verification: %w", err)
 	}
 
-	err = s.originClient.SendUnsignedTransaction(
-		ctx,
-		richAddr,
-		tx,
-	)
+	err = s.originClient.SendUnsignedTransaction(ctx, richAddr, tx)
 	if err != nil {
 		return nil, fmt.Errorf("could not write entry with verification: %w", err)
 	}

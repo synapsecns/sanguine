@@ -1,4 +1,4 @@
-chains:
+synapse_module_deployments:
   42: '0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B'
   43: '0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B'
   44: '0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B'

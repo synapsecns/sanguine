@@ -61,13 +61,13 @@ func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.Pro
 // Run removes verifiers from the synapse module by impersonating the owner, and adds our own.
 func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) error {
 
-	for chainID, address := range cfg.Chains {
+	for chainID, deployedSynapseModule := range cfg.SynapseModuleDeployments {
 		chainClient, err := p.client.GetChainClient(ctx, chainID)
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
 		synapseModuleDeployment, err := synapsemodule.NewSynapseModule(
-			common.HexToAddress(address), chainClient,
+			common.HexToAddress(deployedSynapseModule), chainClient,
 		)
 		if err != nil {
 			return fmt.Errorf("could not create synapse module: %w", err)
@@ -210,7 +210,7 @@ func (p *Provisioner) deleteVerifiers(
 		return fmt.Errorf("deleteVerifier: could not remove verifiers: %w", err)
 	}
 
-	fmt.Println("successfully removed verifiers")
+	fmt.Printf("Successfully removed verifiers %v on chain %d\n", verifiers, chainid)
 	return nil
 }
 
@@ -248,7 +248,7 @@ func (p *Provisioner) addVerifiers(
 		return fmt.Errorf("addVerifiers: could not send tx: %w", err)
 	}
 
-	fmt.Println("successfully added verifiers")
+	fmt.Printf("Successfully added verifiers %v on chain %d\n", cfg.ValidatorAddresses, chainid)
 	return nil
 }
 
@@ -286,7 +286,7 @@ func (p *Provisioner) changeThreshold(
 		return fmt.Errorf("changeThreshold: could not send tx: %w", err)
 	}
 
-	fmt.Println("successfully changed threshold")
+	fmt.Printf("successfully changed threshold to %d on chain %d\n", threshold, chainid)
 	return nil
 }
 
@@ -326,7 +326,7 @@ func (p *Provisioner) setLocalNativePrice(
 		return fmt.Errorf("setLocalNativePrice: could not send tx: %w", err)
 	}
 
-	fmt.Println("successfully set local native price")
+	fmt.Printf("Successfully set local native price to %d on chain %d\n", gasPrice, originChainId)
 
 	return nil
 }
@@ -366,7 +366,7 @@ func (p *Provisioner) setRemoteCallDataPrice(
 		return fmt.Errorf("setRemoteCallDataPrice: could not send tx: %w", err)
 	}
 
-	fmt.Println("successfully set remote call data price")
+	fmt.Printf("Successfully set remote call data price to %d on chain %d\n", gasPrice, remoteChainId)
 	return nil
 }
 
@@ -405,7 +405,7 @@ func (p *Provisioner) setRemoteGasPrice(
 		return fmt.Errorf("setRemoteGasPrice: could not send tx: %w", err)
 	}
 
-	fmt.Println("successfully set remote gas price")
+	fmt.Printf("Successfully set remote gas price to %d on chain %d\n", gasPrice, remoteChainId)
 	return nil
 }
 
@@ -444,7 +444,7 @@ func (p *Provisioner) setRemoteNativePrice(
 		return fmt.Errorf("setRemoteNativePrice: could not send tx: %w", err)
 	}
 
-	fmt.Println("successfully set remote native price")
+	fmt.Printf("Successfully set remote native price to %d on chain %d\n", gasPrice, remoteChainId)
 
 	return nil
 }

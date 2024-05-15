@@ -6,7 +6,7 @@ import "github.com/ethereum/go-ethereum/common"
 // Config is the config for the Synapse module.
 type ProvisionerConfig struct {
 	// Chains is a map of chain IDs to deployed Synapse Modules.
-	Chains map[int]string `yaml:"chains"`
+	SynapseModuleDeployments map[int]string `yaml:"synapse_module_deployments"`
 	// GasOracleDeployments is a map of chain IDs to deployed Gas Oracles
 	GasOracleDeployments map[int]string `yaml:"gas_oracle_deployments"`
 	// ValidatorAddresses is a list of addresses of the validators we want to add to the Synapse Module.
