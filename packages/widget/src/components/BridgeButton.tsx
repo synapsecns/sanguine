@@ -14,6 +14,7 @@ interface BridgeButtonProps {
   handleBridge: () => any
   isApprovalPending: boolean
   isBridgePending: boolean
+  isBridgePaused: boolean
 }
 
 export const BridgeButton = ({
@@ -23,6 +24,7 @@ export const BridgeButton = ({
   handleBridge,
   isApprovalPending,
   isBridgePending,
+  isBridgePaused,
 }: BridgeButtonProps) => {
   const web3Context = useContext(Web3Context)
 
@@ -59,6 +61,14 @@ export const BridgeButton = ({
           Connect Wallet
         </button>
       </Tooltip>
+    )
+  }
+
+  if (isBridgePaused) {
+    return (
+      <button className={buttonClassName} style={buttonStyle} disabled>
+        Bridge paused
+      </button>
     )
   }
 
