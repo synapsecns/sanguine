@@ -7,6 +7,8 @@ import "github.com/ethereum/go-ethereum/common"
 type ProvisionerConfig struct {
 	// Chains is a map of chain IDs to deployed Synapse Modules.
 	Chains map[int]string `yaml:"chains"`
+	// GasOracleDeployments is a map of chain IDs to deployed Gas Oracles
+	GasOracleDeployments map[int]string `yaml:"gas_oracle_deployments"`
 	// ValidatorAddresses is a list of addresses of the validators we want to add to the Synapse Module.
 	ValidatorAddresses []common.Address `yaml:"validator_addresses"`
 	// OmniRPCURL is the url for OmniRPC

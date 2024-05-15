@@ -78,10 +78,9 @@ var runCommand = &cli.Command{
 			if err != nil {
 				return fmt.Errorf("could not create sender: %w", err)
 			}
-
+			go sendr.Start(c.Context, senderCfg)
 		}
 
-		err = sendr.Start(c.Context, senderCfg)
 		if err != nil {
 			return fmt.Errorf("could not start sender: %w", err)
 		}

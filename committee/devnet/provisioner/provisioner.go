@@ -6,10 +6,12 @@ import (
 	"math/big"
 
 	"github.com/synapsecns/sanguine/committee/devnet/config"
+	"github.com/synapsecns/sanguine/committee/devnet/contracts/gasoracle"
 	"github.com/synapsecns/sanguine/core/metrics"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
@@ -21,6 +23,7 @@ type Provisioner struct {
 	c              *anvil.Client
 	client         omnirpcClient.RPCClient
 	synapseModules map[int]*synapsemodule.SynapseModule
+	gasOracles     map[int]*gasoracle.SynapseGasOracleV1
 }
 
 func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.ProvisionerConfig) (*Provisioner, error) {
@@ -41,6 +44,7 @@ func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.Pro
 	}
 
 	synapseModules := make(map[int]*synapsemodule.SynapseModule)
+	gasOracles := make(map[int]*gasoracle.SynapseGasOracleV1)
 
 	client := omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
 
@@ -49,6 +53,7 @@ func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.Pro
 		b:              b,
 		c:              c,
 		synapseModules: synapseModules,
+		gasOracles:     gasOracles,
 		client:         client,
 	}, nil
 }
@@ -68,6 +73,20 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 			return fmt.Errorf("could not create synapse module: %w", err)
 		}
 		p.synapseModules[chainID] = synapseModuleDeployment
+	}
+
+	for chainID, gasOracleAddress := range cfg.GasOracleDeployments {
+		chainClient, err := p.client.GetChainClient(ctx, chainID)
+		if err != nil {
+			return fmt.Errorf("could not get chain client: %w", err)
+		}
+		gasOracle, err := gasoracle.NewSynapseGasOracleV1(
+			common.HexToAddress(gasOracleAddress), chainClient,
+		)
+		if err != nil {
+			return fmt.Errorf("could not create gas oracle: %w", err)
+		}
+		p.gasOracles[chainID] = gasOracle
 	}
 
 	// TODO: make this cleaner
@@ -108,6 +127,43 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 	err = p.changeThreshold(ctx, p.synapseModules[44], 44, big.NewInt(2), p.c)
 	if err != nil {
 		return fmt.Errorf("could not change threshold: %v", err)
+	}
+
+	// ================== Gas Oracle ==================
+	err = p.setLocalNativePrice(ctx, p.gasOracles[42], 42, big.NewInt(params.Ether), p.a)
+	if err != nil {
+		return fmt.Errorf("could not add remote chain gas price: %v", err)
+	}
+	err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(params.Ether), p.b)
+	if err != nil {
+		return fmt.Errorf("could not add remote chain gas price: %v", err)
+	}
+
+	//	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(1), p.a)
+	//	if err != nil {
+	//		return fmt.Errorf("could not add remote chain gas price: %v", err)
+	//	}
+	//	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(1), p.b)
+	//	if err != nil {
+	//		return fmt.Errorf("could not add remote chain gas price: %v", err)
+	//	}
+
+	// err = p.setRemoteGasPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(1), p.a)
+	// if err != nil {
+	// 	return fmt.Errorf("could not add remote chain gas price: %v", err)
+	// }
+	// err = p.setRemoteGasPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(1), p.b)
+	// if err != nil {
+	// 	return fmt.Errorf("could not add remote chain gas price: %v", err)
+	// }
+
+	err = p.setRemoteNativePrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(params.Ether), p.a)
+	if err != nil {
+		return fmt.Errorf("could not add remote chain gas price: %v", err)
+	}
+	err = p.setRemoteNativePrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(params.Ether), p.b)
+	if err != nil {
+		return fmt.Errorf("could not add remote chain gas price: %v", err)
 	}
 
 	fmt.Println("Successfully provisioned SynapseModule contracts.")
@@ -157,7 +213,13 @@ func (p *Provisioner) deleteVerifiers(
 	return nil
 }
 
-func (p *Provisioner) addVerifiers(ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int, client *anvil.Client, cfg config.ProvisionerConfig) error {
+func (p *Provisioner) addVerifiers(
+	ctx context.Context,
+	synapseModule *synapsemodule.SynapseModule,
+	chainid int,
+	client *anvil.Client,
+	cfg config.ProvisionerConfig,
+) error {
 
 	owner, err := p.getSynapseModuleOwner(ctx, chainid)
 	if err != nil {
@@ -189,7 +251,13 @@ func (p *Provisioner) addVerifiers(ctx context.Context, synapseModule *synapsemo
 	return nil
 }
 
-func (p *Provisioner) changeThreshold(ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int, threshold *big.Int, client *anvil.Client) error {
+func (p *Provisioner) changeThreshold(
+	ctx context.Context,
+	synapseModule *synapsemodule.SynapseModule,
+	chainid int,
+	threshold *big.Int,
+	client *anvil.Client,
+) error {
 	owner, err := p.getSynapseModuleOwner(ctx, chainid)
 	if err != nil {
 		return fmt.Errorf("changeThreshold: could not get synapse module owner: %w", err)
@@ -221,11 +289,173 @@ func (p *Provisioner) changeThreshold(ctx context.Context, synapseModule *synaps
 	return nil
 }
 
-func (p *Provisioner) addRemoteChainGasPrice(ctx context.Context, chainid int, gasPrice *big.Int) error {
+func (p *Provisioner) setLocalNativePrice(
+	ctx context.Context,
+	originGasOracle *gasoracle.SynapseGasOracleV1,
+	originChainId int,
+	gasPrice *big.Int,
+	client *anvil.Client,
+) error {
 
 	// call the gasprice oracle and update for the respective chainids
+	owner, err := p.getGasOracleOwner(ctx, originChainId)
+	if err != nil {
+		return fmt.Errorf("addVerifiers: could not get synapse module owner: %w", err)
+	}
+
+	err = client.ImpersonateAccount(ctx, owner)
+	if err != nil {
+		return err
+	}
+	defer client.StopImpersonatingAccount(ctx, owner)
+
+	tx, err := originGasOracle.SetLocalNativePrice(
+		&bind.TransactOpts{
+			From:   owner,
+			Value:  big.NewInt(0),
+			NoSend: true,
+			Signer: anvil.ImpersonatedSigner,
+			Nonce:  nil,
+		}, gasPrice)
+	if err != nil {
+		return fmt.Errorf("setLocalNativePrice: could not build tx: %w", err)
+	}
+	err = client.SendUnsignedTransaction(ctx, owner, tx)
+	if err != nil {
+		return fmt.Errorf("setLocalNativePrice: could not send tx: %w", err)
+	}
+
+	fmt.Println("successfully set local native price")
 
 	return nil
+}
+
+func (p *Provisioner) setRemoteCallDataPrice(
+	ctx context.Context,
+	originGasOracle *gasoracle.SynapseGasOracleV1,
+	originChainId int,
+	remoteChainId int,
+	gasPrice *big.Int,
+	client *anvil.Client,
+) error {
+
+	owner, err := p.getGasOracleOwner(ctx, originChainId)
+	if err != nil {
+		return err
+	}
+	err = client.ImpersonateAccount(ctx, owner)
+	if err != nil {
+		return err
+	}
+	defer client.StopImpersonatingAccount(ctx, owner)
+
+	tx, err := originGasOracle.SetRemoteCallDataPrice(
+		&bind.TransactOpts{
+			From:   owner,
+			Value:  big.NewInt(0),
+			NoSend: true,
+			Signer: anvil.ImpersonatedSigner,
+			Nonce:  nil,
+		}, uint64(remoteChainId), gasPrice)
+	if err != nil {
+		return fmt.Errorf("setRemoteCallDataPrice: could not build tx: %w", err)
+	}
+	err = client.SendUnsignedTransaction(ctx, owner, tx)
+	if err != nil {
+		return fmt.Errorf("setRemoteCallDataPrice: could not send tx: %w", err)
+	}
+
+	fmt.Println("successfully set remote call data price")
+	return nil
+}
+
+func (p *Provisioner) setRemoteGasPrice(
+	ctx context.Context,
+	originGasOracle *gasoracle.SynapseGasOracleV1,
+	originChainId int,
+	remoteChainId int,
+	gasPrice *big.Int,
+	client *anvil.Client,
+) error {
+
+	owner, err := p.getGasOracleOwner(ctx, originChainId)
+	if err != nil {
+		return err
+	}
+	err = client.ImpersonateAccount(ctx, owner)
+	if err != nil {
+		return err
+	}
+	defer client.StopImpersonatingAccount(ctx, owner)
+
+	tx, err := originGasOracle.SetRemoteGasPrice(
+		&bind.TransactOpts{
+			From:   owner,
+			Value:  big.NewInt(0),
+			NoSend: true,
+			Signer: anvil.ImpersonatedSigner,
+			Nonce:  nil,
+		}, uint64(remoteChainId), gasPrice)
+	if err != nil {
+		return fmt.Errorf("setRemoteGasPrice: could not build tx: %w", err)
+	}
+	err = client.SendUnsignedTransaction(ctx, owner, tx)
+	if err != nil {
+		return fmt.Errorf("setRemoteGasPrice: could not send tx: %w", err)
+	}
+
+	fmt.Println("successfully set remote gas price")
+	return nil
+}
+
+func (p *Provisioner) setRemoteNativePrice(
+	ctx context.Context,
+	originGasOracle *gasoracle.SynapseGasOracleV1,
+	originChainId int,
+	remoteChainId int,
+	gasPrice *big.Int,
+	client *anvil.Client,
+) error {
+
+	owner, err := p.getGasOracleOwner(ctx, originChainId)
+	if err != nil {
+		return err
+	}
+	err = client.ImpersonateAccount(ctx, owner)
+	if err != nil {
+		return err
+	}
+	defer client.StopImpersonatingAccount(ctx, owner)
+
+	tx, err := originGasOracle.SetRemoteNativePrice(
+		&bind.TransactOpts{
+			From:   owner,
+			Value:  big.NewInt(0),
+			NoSend: true,
+			Signer: anvil.ImpersonatedSigner,
+			Nonce:  nil,
+		}, uint64(remoteChainId), gasPrice)
+	if err != nil {
+		return fmt.Errorf("setRemoteNativePrice: could not build tx: %w", err)
+	}
+	err = client.SendUnsignedTransaction(ctx, owner, tx)
+	if err != nil {
+		return fmt.Errorf("setRemoteNativePrice: could not send tx: %w", err)
+	}
+
+	fmt.Println("successfully set remote native price")
+
+	return nil
+}
+
+func (p *Provisioner) getGasOracleOwner(ctx context.Context, chainid int) (common.Address, error) {
+	owner, err := p.gasOracles[chainid].Owner(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return common.Address{}, err
+	}
+
+	fmt.Println("gas price oracle owner", owner)
+	return owner, nil
 }
 
 func (p *Provisioner) getSynapseModuleOwner(ctx context.Context, chainid int) (common.Address, error) {

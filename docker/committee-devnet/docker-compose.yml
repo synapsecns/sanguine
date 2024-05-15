@@ -18,7 +18,7 @@ services:
       - chain_a
       - chain_b
       - chain_c
-      - tracing
+      # - tracing
     build:
       context: ../../
       dockerfile: docker/committee-devnet/omnirpc.Dockerfile
@@ -68,27 +68,27 @@ services:
     volumes:
       - chain_c_data:/data
 
-  tracing:
-    restart: unless-stopped
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - 6831:6831/udp
-      - 6832:6832/udp
-      - 5778:5778
-      - 16686:16686
-      - 4317:4317
-      - 4318:4318
-      - 14250:14250
-      - 14268:14268
-      - 14269:14269
-      - 9411:9411
-    environment:
-      SPAN_STORAGE_TYPE: 'badger'
-      BADGER_EPHEMERAL: 'true'
-      BADGER_DIRECTORY_VALUE: '/badger/data'
-      BADGER_DIRECTORY_KEY: '/badger/key'
-    volumes:
-      - badger-data:/data
+  # tracing:
+  #   restart: unless-stopped
+  #   image: jaegertracing/all-in-one:latest
+  #   ports:
+  #     - 6831:6831/udp
+  #     - 6832:6832/udp
+  #     - 5778:5778
+  #     - 16686:16686
+  #     - 4317:4317
+  #     - 4318:4318
+  #     - 14250:14250
+  #     - 14268:14268
+  #     - 14269:14269
+  #     - 9411:9411
+  #   environment:
+  #     SPAN_STORAGE_TYPE: 'badger'
+  #     BADGER_EPHEMERAL: 'true'
+  #     BADGER_DIRECTORY_VALUE: '/badger/data'
+  #     BADGER_DIRECTORY_KEY: '/badger/key'
+  #   volumes:
+  #     - badger-data:/data
 
   # prometheus:
   #   restart: unless-stopped
@@ -110,7 +110,7 @@ services:
       - chain_a
       - chain_b
       - chain_c
-      - tracing
+    # - tracing
     build:
       context: ../../
       dockerfile: docker/committee-devnet/committee.Dockerfile
@@ -135,7 +135,7 @@ services:
       - chain_a
       - chain_b
       - chain_c
-      - tracing
+    # - tracing
     ports:
       - '12346:12346'
     build:
@@ -164,7 +164,7 @@ services:
       - chain_a
       - chain_b
       - chain_c
-      - tracing
+      # - tracing
     build:
       context: ../../
       dockerfile: docker/committee-devnet/committee.Dockerfile
@@ -180,21 +180,20 @@ services:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
-
-    devnet:
-      restart: unless-stopped
-      entrypot: devnet
-      build:
-        context: ../../
-        dockerfile: docker/committee-devnet/devnet.Dockerfile
-      command:
-        - run
-        - '--config'
-        - '/config/devnet-config.yml'
-        - '--sender'
-        - '--sender-config'
-        - '/config/devnet-sender-config.yml'
-      environment:
-        METRICS_HANDLER: jaeger
-        JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
-        GOLOG_LOG_LEVEL: debug
+  #devnet:
+  #  restart: unless-stopped
+  #  entrypot: devnet
+  #  build:
+  #    context: ../../
+  #    dockerfile: docker/committee-devnet/devnet.Dockerfile
+  #  command:
+  #    - run
+  #    - '--config'
+  #    - '/config/devnet-config.yml'
+  #    - '--sender'
+  #    - '--sender-config'
+  #    - '/config/devnet-sender-config.yml'
+  #  environment:
+  #    METRICS_HANDLER: jaeger
+  #    JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
+  #    GOLOG_LOG_LEVEL: debug
