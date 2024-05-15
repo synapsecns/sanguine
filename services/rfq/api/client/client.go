@@ -34,6 +34,7 @@ type UnauthenticatedClient interface {
 	GetAllQuotes(ctx context.Context) ([]*model.GetQuoteResponse, error)
 	GetSpecificQuote(ctx context.Context, q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error)
 	GetQuoteByRelayerAddress(ctx context.Context, relayerAddr string) ([]*model.GetQuoteResponse, error)
+	GetRelayAck(ctx context.Context, txID string) (*model.GetRelayAckResponse, error)
 	resty() *resty.Client
 }
 
@@ -187,4 +188,25 @@ func (c *unauthenticatedClient) GetQuoteByRelayerAddress(ctx context.Context, re
 	}
 
 	return quotes, nil
+}
+
+func (c *unauthenticatedClient) GetRelayAck(ctx context.Context, txID string) (*model.GetRelayAckResponse, error) {
+	var ack *model.GetRelayAckResponse
+	resp, err := c.rClient.R().
+		SetContext(ctx).
+		SetQueryParams(map[string]string{
+			"id": txID,
+		}).
+		SetResult(&ack).
+		Get(rest.AckRoute)
+
+	if err != nil {
+		return nil, fmt.Errorf("error from server: %s %w", resp.Status(), err)
+	}
+
+	if resp.IsError() {
+		return nil, fmt.Errorf("error from server: %s", resp.Status())
+	}
+
+	return ack, nil
 }
