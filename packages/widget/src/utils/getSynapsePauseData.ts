@@ -1,5 +1,5 @@
 const PAUSED_CHAINS_URL =
-  'https://raw.githubusercontent.com/synapsecns/sanguine/527d855ce9b1d908874760628d35fb2c4a6ec5dc/packages/synapse-interface/public/pauses/v1/paused-chains.json'
+  'https://raw.githubusercontent.com/synapsecns/sanguine/test/pauses/packages/synapse-interface/public/pauses/v1/paused-chains.json'
 const PAUSED_MODULES_URL =
   'https://raw.githubusercontent.com/synapsecns/sanguine/527d855ce9b1d908874760628d35fb2c4a6ec5dc/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
 
@@ -12,7 +12,7 @@ enum LocalStorageKey {
 export const getSynapsePauseData = () => {
   const fetchData = async () => {
     try {
-      console.log('fetching and storing pause data in client browser')
+      console.log('[Synapse Widget] Fetching pause data')
       const chainsData = await fetchJSONData(PAUSED_CHAINS_URL)
       const modulesData = await fetchJSONData(PAUSED_MODULES_URL)
 
@@ -26,7 +26,10 @@ export const getSynapsePauseData = () => {
       )
       localStorage.setItem(LocalStorageKey.TIMESTAMP, Date.now().toString())
     } catch (error) {
-      console.error('Failed to fetch paused chains/modules:', error)
+      console.error(
+        '[Synapse Widget] Failed to fetch paused chains/modules: ',
+        error
+      )
     }
   }
 
@@ -51,8 +54,7 @@ export const getSynapsePauseData = () => {
       const millisecondsPerHour = 1000 * 60 * 60 // milliseconds in an hour
       const timePastInHours = (currentTime - previousTime) / millisecondsPerHour
 
-      // return timePastInHours < 24
-      return false
+      return timePastInHours < 24
     } else {
       return false
     }
@@ -61,7 +63,6 @@ export const getSynapsePauseData = () => {
   const isValid = checkIsDataValid()
 
   if (!isValid) {
-    console.log('refetching synapse pause data')
     fetchData()
   }
 

@@ -36,8 +36,6 @@ export const useMaintenanceComponents = (
     }
   })
 
-  console.log('pausedChainsList: ', pausedChainsList)
-
   const pausedModulesList: BridgeModulePause[] = pausedModules.map((route) => {
     if (!isValidBridgeModule(route.bridgeModuleName)) {
       throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
@@ -76,27 +74,19 @@ export const useMaintenanceComponents = (
     )
   }
 
-  /**
-   * Hook that maps through pausedChainsList to apply the single event countdown progress logic to each.
-   *
-   * @returns A list of objects containing maintenance status and components for each paused chain.
-   */
   const useMaintenanceCountdownProgresses = () => {
-    const {
-      originChainId: bridgeFromChainId,
-      destinationChainId: bridgeToChainId,
-    } = useBridgeState()
+    const { originChainId, destinationChainId } = useBridgeState()
 
     return pausedChainsList?.map((event) => {
       return useMaintenanceCountdownProgress({
-        originChainId: bridgeFromChainId,
-        destinationChainId: bridgeToChainId,
+        originChainId,
+        destinationChainId,
         startDate: event.startTimePauseChain,
         endDate: event.endTimePauseChain,
         pausedFromChains: event.pausedFromChains,
         pausedToChains: event.pausedToChains,
         progressBarMessage: event.progressBarMessage,
-        disabled: event.disableCountdown || !event.pauseBridge,
+        disabled: event.disableCountdown,
       })
     })
   }

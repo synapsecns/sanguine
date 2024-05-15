@@ -2,12 +2,11 @@ import { useEventCountdownProgressBar } from './EventCountdownProgressBar'
 import { isChainIncluded } from '@/utils/isChainIncluded'
 
 /**
- * A hook that will return a constructed progress bar instance
- * and Event status checks to use for pausing Bridge / Swap.
+ * A hook that will return a constructed progress bar instance and event status.
  *
  * @param startDate Start time of event to track
  * @param endDate End time of event to track
- * @param pausedChains A list of chain IDs that is paused for Bridge / Swap
+ * @param pausedChains A list of chain IDs that are paused
  * @param progressBarMessage The message to be displayed alongside the Progress Bar
  */
 export const useMaintenanceCountdownProgress = ({

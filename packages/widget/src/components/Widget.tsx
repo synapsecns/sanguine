@@ -94,9 +94,6 @@ export const Widget = ({
     useMaintenanceCountdownProgresses,
   } = useMaintenanceComponents(chainPause, modulePause)
 
-  console.log('chainPause: ', chainPause)
-  console.log('modulePause:', modulePause)
-
   const maintenanceCountdownProgressInstances =
     useMaintenanceCountdownProgresses()
 

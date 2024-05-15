@@ -54,6 +54,14 @@ export const BridgeButton = ({
 
   const tooltipPositionStyle = '-top-8'
 
+  if (isBridgePaused) {
+    return (
+      <button className={buttonClassName} style={buttonStyle} disabled>
+        Bridge paused
+      </button>
+    )
+  }
+
   if (!provider || !connectedAddress) {
     return (
       <Tooltip hoverText="Connect Wallet" positionStyles={tooltipPositionStyle}>
@@ -61,14 +69,6 @@ export const BridgeButton = ({
           Connect Wallet
         </button>
       </Tooltip>
-    )
-  }
-
-  if (isBridgePaused) {
-    return (
-      <button className={buttonClassName} style={buttonStyle} disabled>
-        Bridge paused
-      </button>
     )
   }
 
