@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.24.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.23.2...@synapsecns/synapse-interface@0.24.0) (2024-05-15)
+
+
+### Features
+
+* **synapse-interface:** Adds Scroll via RFQ ([#2526](https://github.com/synapsecns/sanguine/issues/2526)) ([102a010](https://github.com/synapsecns/sanguine/commit/102a010232a5cebb1c1e66c82b7026292d1fffb8))
+
+
+
+
+
 ## [0.23.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.23.1...@synapsecns/synapse-interface@0.23.2) (2024-05-15)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
