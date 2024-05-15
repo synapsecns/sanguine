@@ -21,6 +21,7 @@ import (
 	cctpSql "github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
@@ -40,6 +41,7 @@ type Relayer struct {
 	client         omniClient.RPCClient
 	chainListeners map[int]listener.ContractListener
 	apiServer      *relapi.RelayerAPIServer
+	apiClient      rfqAPIClient.UnauthenticatedClient
 	inventory      inventory.Manager
 	quoter         quoter.Quoter
 	submitter      submitter.TransactionSubmitter
@@ -120,6 +122,11 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get api server: %w", err)
 	}
 
+	apiClient, err := rfqAPIClient.NewUnauthenticatedClient(metricHandler, cfg.GetRfqAPIURL())
+	if err != nil {
+		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
+	}
+
 	cache := ttlcache.New[common.Hash, bool](ttlcache.WithTTL[common.Hash, bool](time.Second * 30))
 	rel := Relayer{
 		db:             store,
@@ -134,6 +141,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		signer:         sg,
 		chainListeners: chainListeners,
 		apiServer:      apiServer,
+		apiClient:      apiClient,
 	}
 	return &rel, nil
 }
