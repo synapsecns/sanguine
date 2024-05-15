@@ -180,3 +180,21 @@ services:
       METRICS_HANDLER: jaeger
       JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
+
+    devnet:
+      restart: unless-stopped
+      entrypot: devnet
+      build:
+        context: ../../
+        dockerfile: docker/committee-devnet/devnet.Dockerfile
+      command:
+        - run
+        - '--config'
+        - '/config/devnet-config.yml'
+        - '--sender'
+        - '--sender-config'
+        - '/config/devnet-sender-config.yml'
+      environment:
+        METRICS_HANDLER: jaeger
+        JAEGER_ENDPOINT: 'http://host.docker.internal:14268/api/traces'
+        GOLOG_LOG_LEVEL: debug
