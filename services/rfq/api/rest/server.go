@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/ipfs/go-log"
@@ -41,6 +42,8 @@ type QuoterAPIServer struct {
 	// relayAckCache contains a set of transactionID values that reflect
 	// transactions that have been acked for relay
 	relayAckCache *ttlcache.Cache[string, bool]
+	// ackMux is a mutex used to ensure that only one transaction id can be acked at a time.
+	ackMux sync.Mutex
 }
 
 // NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -85,21 +88,22 @@ func NewAPI(
 		)
 		roleCache := roles[chainID]
 		go roleCache.Start()
-
-		// create the relay ack cache
-		relayAckCache := ttlcache.New[string, bool](
-			ttlcache.WithTTL[string, bool](cfg.GetRelayAckTimeout()),
-			ttlcache.WithDisableTouchOnHit[string, bool](),
-		)
-		go relayAckCache.Start()
-
 		go func() {
 			<-ctx.Done()
 			roleCache.Stop()
-			relayAckCache.Stop()
 		}()
-
 	}
+
+	// create the relay ack cache
+	relayAckCache := ttlcache.New[string, bool](
+		ttlcache.WithTTL[string, bool](cfg.GetRelayAckTimeout()),
+		ttlcache.WithDisableTouchOnHit[string, bool](),
+	)
+	go relayAckCache.Start()
+	go func() {
+		<-ctx.Done()
+		relayAckCache.Stop()
+	}()
 
 	return &QuoterAPIServer{
 		cfg:                 cfg,
@@ -108,6 +112,8 @@ func NewAPI(
 		handler:             handler,
 		fastBridgeContracts: bridges,
 		roleCache:           roles,
+		relayAckCache:       relayAckCache,
+		ackMux:              sync.Mutex{},
 	}, nil
 }
 
@@ -214,11 +220,13 @@ func (r *QuoterAPIServer) GetRelayAck(c *gin.Context) {
 
 	// If the tx id is already in the cache, it should not be relayed.
 	// Otherwise, insert into the cache.
+	r.ackMux.Lock()
 	ack := r.relayAckCache.Get(transactionID)
 	shouldRelay := ack == nil
 	if shouldRelay {
 		r.relayAckCache.Set(transactionID, true, ttlcache.DefaultTTL)
 	}
+	r.ackMux.Unlock()
 
 	resp := relapi.GetRelayAckResponse{
 		TxID:        transactionID,
