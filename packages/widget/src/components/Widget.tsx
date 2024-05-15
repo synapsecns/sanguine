@@ -88,8 +88,12 @@ export const Widget = ({
     web3Context.web3Provider
 
   const { chainPause, modulePause } = getSynapsePauseData()
-  const { MaintenanceWarningMessages, useMaintenanceCountdownProgresses } =
-    useMaintenanceComponents(chainPause, modulePause)
+  const {
+    pausedModules,
+    MaintenanceWarningMessages,
+    useMaintenanceCountdownProgresses,
+  } = useMaintenanceComponents(chainPause, modulePause)
+
   const maintenanceCountdownProgressInstances =
     useMaintenanceCountdownProgresses()
 
@@ -218,6 +222,7 @@ export const Widget = ({
             debouncedInputAmount,
             synapseSDK,
             requestId: thisRequestId,
+            pausedModules,
           })
         )
       }
@@ -483,6 +488,7 @@ export const Widget = ({
             approveTxnStatus === ApproveTransactionStatus.PENDING
           }
           isBridgePending={bridgeTxnStatus === BridgeTransactionStatus.PENDING}
+          isBridgePaused={isBridgePaused}
         />
       </div>
     </div>

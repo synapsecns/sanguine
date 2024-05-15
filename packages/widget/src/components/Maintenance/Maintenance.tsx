@@ -85,7 +85,7 @@ export const useMaintenanceComponents = (
       destinationChainId: bridgeToChainId,
     } = useBridgeState()
 
-    return pausedChainsList.map((event) => {
+    return pausedChainsList?.map((event) => {
       return useMaintenanceCountdownProgress({
         originChainId: bridgeFromChainId,
         destinationChainId: bridgeToChainId,

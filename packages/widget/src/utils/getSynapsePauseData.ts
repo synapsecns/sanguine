@@ -9,9 +9,12 @@ export const getSynapsePauseData = () => {
 
   const fetchPauseData = async () => {
     const pausedChainsUrl =
-      'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json'
+      // 'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json'
+      'https://raw.githubusercontent.com/synapsecns/sanguine/195b48fbb6251ef920b2f102426e80909a7d7531/packages/synapse-interface/public/pauses/v1/paused-chains.json'
+
     const pausedModulesUrl =
-      'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
+      // 'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
+      'https://raw.githubusercontent.com/synapsecns/sanguine/195b48fbb6251ef920b2f102426e80909a7d7531/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
 
     try {
       console.log('fetching and storing pause data in client browser')
@@ -43,8 +46,7 @@ export const getSynapsePauseData = () => {
       const millisecondsPerHour = 1000 * 60 * 60 // milliseconds in an hour
       const timePastInHours = (currentTime - previousTime) / millisecondsPerHour
 
-      // return timePastInHours < 24
-      return false
+      return timePastInHours < 24
     } else {
       return false
     }
