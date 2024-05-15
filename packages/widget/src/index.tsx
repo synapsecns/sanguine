@@ -42,6 +42,13 @@ const getSynapsePauseData = () => {
     }
   }
 
+  const readPauseData = () => {
+    const chainPause = JSON.parse(localStorage.getItem('synapse-chain-pause'))
+    const modulePause = JSON.parse(localStorage.getItem('synapse-module-pause'))
+
+    return { chainPause, modulePause }
+  }
+
   const checkIsDataValid = () => {
     const lastFetchTime = localStorage.getItem('synapse-pause-timestamp')
 
@@ -52,9 +59,6 @@ const getSynapsePauseData = () => {
       const millisecondsPerHour = 1000 * 60 * 60 // milliseconds in an hour
       const timePastInHours = (currentTime - previousTime) / millisecondsPerHour
 
-      console.log('timePastInHours: ', timePastInHours)
-      console.log('timePastInHours >= 24: ', timePastInHours < 24)
-
       return timePastInHours < 24
     } else {
       return false
@@ -64,8 +68,11 @@ const getSynapsePauseData = () => {
   const isValid = checkIsDataValid()
 
   if (!isValid) {
+    console.log('refetching synapse pause')
     fetchPauseData()
   }
+
+  return readPauseData()
 }
 
 export const Bridge = ({
@@ -86,7 +93,7 @@ export const Bridge = ({
     suppressSynapseConsoleErrors()
   }
 
-  getSynapsePauseData()
+  const { chainPause, modulePause } = getSynapsePauseData()
 
   return (
     <Web3Provider config={web3Provider}>
