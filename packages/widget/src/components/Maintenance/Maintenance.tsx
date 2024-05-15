@@ -31,8 +31,8 @@ export const useMaintenanceComponents = (
       endTimePauseChain: pause.endTimePauseChain
         ? new Date(pause.endTimePauseChain)
         : null,
-      inputWarningMessage: <p>{pause.inputWarningMessage}</p>,
-      progressBarMessage: <p>{pause.progressBarMessage}</p>,
+      inputWarningMessage: <div>{pause.inputWarningMessage}</div>,
+      progressBarMessage: <div>{pause.progressBarMessage}</div>,
     }
   })
 
