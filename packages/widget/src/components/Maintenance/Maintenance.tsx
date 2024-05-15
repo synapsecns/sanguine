@@ -36,6 +36,8 @@ export const useMaintenanceComponents = (
     }
   })
 
+  console.log('pausedChainsList: ', pausedChainsList)
+
   const pausedModulesList: BridgeModulePause[] = pausedModules.map((route) => {
     if (!isValidBridgeModule(route.bridgeModuleName)) {
       throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
