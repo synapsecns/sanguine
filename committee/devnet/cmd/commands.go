@@ -36,6 +36,8 @@ var runCommand = &cli.Command{
 	Description: "run the committee devnet",
 	Flags: []cli.Flag{
 		configFlag,
+		senderFlag,
+		senderConfigFlag,
 		&commandline.LogLevel,
 	},
 	Action: func(c *cli.Context) error {
@@ -53,14 +55,20 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("could not unmarshal config: %w", err)
 		}
 
+		metricsProvider := metrics.Get()
+		provisioner, err := provisioner.NewProvisioner(c.Context, metricsProvider, cfg)
+		if err != nil {
+			return fmt.Errorf("could not create provisioner: %w", err)
+		}
+
 		var sendr *sender.Sender
+		var senderCfg config.SenderConfig
 		if c.Bool(senderFlag.Name) {
 			senderInput, err := os.ReadFile(filepath.Clean(c.String(senderConfigFlag.Name)))
 			if err != nil {
 				return fmt.Errorf("could not read sender config file: %w", err)
 			}
 
-			var senderCfg config.SenderConfig // Assuming there's a SenderConfig struct in your config package
 			err = yaml.Unmarshal(senderInput, &senderCfg)
 			if err != nil {
 				return fmt.Errorf("could not unmarshal sender config: %w", err)
@@ -71,16 +79,12 @@ var runCommand = &cli.Command{
 				return fmt.Errorf("could not create sender: %w", err)
 			}
 
-			go sendr.Start(c.Context, senderCfg)
 		}
 
-		metricsProvider := metrics.Get()
-
-		provisioner, err := provisioner.NewProvisioner(c.Context, metricsProvider, cfg)
+		err = sendr.Start(c.Context, senderCfg)
 		if err != nil {
-			return fmt.Errorf("could not create provisioner: %w", err)
+			return fmt.Errorf("could not start sender: %w", err)
 		}
-
 		return provisioner.Run(c.Context, cfg)
 	},
 }

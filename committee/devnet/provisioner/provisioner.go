@@ -221,6 +221,13 @@ func (p *Provisioner) changeThreshold(ctx context.Context, synapseModule *synaps
 	return nil
 }
 
+func (p *Provisioner) addRemoteChainGasPrice(ctx context.Context, chainid int, gasPrice *big.Int) error {
+
+	// call the gasprice oracle and update for the respective chainids
+
+	return nil
+}
+
 func (p *Provisioner) getSynapseModuleOwner(ctx context.Context, chainid int) (common.Address, error) {
 	owner, err := p.synapseModules[chainid].Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {

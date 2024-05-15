@@ -9,26 +9,33 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/committee/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/committee/devnet/config"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 )
 
 const (
 	InterchainDBSepoliaAddress  = "0x8d50e833331A0D01d6F286881ce2C3A5DAD12e26"
 	SynapseModuleSepoliaAddress = "0x93391bD1De68aFBAB10BB94BF3d36a4484B60eA2"
+	RichGuy                     = "0x9B984D5a03980D8dc0a24506c968465424c81DbE"
 )
 
 // TODO: make this an interface
 type Sender struct {
 	originDB     *interchaindb.InterchainDB
-	transactOpts *bind.TransactOpts
+	originClient *anvil.Client
 	client       omnirpcClient.RPCClient
 }
 
 func NewSender(ctx context.Context, cfg config.SenderConfig, handler metrics.Handler) (*Sender, error) {
+	originClient, err := anvil.Dial(ctx, "http://localhost:8042")
+	if err != nil {
+		return nil, fmt.Errorf("could not dial origin client: %w", err)
+	}
 
 	// set up omnirpc
 	client := omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
@@ -46,52 +53,74 @@ func NewSender(ctx context.Context, cfg config.SenderConfig, handler metrics.Han
 	}
 
 	return &Sender{
-		client:   client,
-		originDB: originInterchainDB,
+		client:       client,
+		originDB:     originInterchainDB,
+		originClient: originClient,
 	}, nil
 }
 
 func (s *Sender) Start(ctx context.Context, cfg config.SenderConfig) error {
 	// send verificationrequests every 5 seconds
 	for {
-		err := s.sendWriteEntryWithVerification(ctx, cfg)
+		tx, err := s.sendWriteEntryWithVerification(ctx, cfg)
 		if err != nil {
 			return fmt.Errorf("could not send write entry with verification: %w", err)
 
 		}
+		fmt.Println("transaction sent", tx.Hash())
 		// wait for it
 		// todo; better way to do it
 		time.Sleep(5 * time.Second)
 	}
 }
 
-func (s *Sender) sendWriteEntryWithVerification(ctx context.Context, cfg config.SenderConfig) error {
-	if fee, err := s.getInterchainFee(ctx, uint64(cfg.DestinationChainID)); err != nil {
-		s.transactOpts.Value = core.CopyBigInt(fee)
-	} else {
-		return fmt.Errorf("could not get interchain fee: %w", err)
+func (s *Sender) sendWriteEntryWithVerification(ctx context.Context, cfg config.SenderConfig) (*types.Transaction, error) {
+	fee, err := s.getInterchainFee(ctx, uint64(cfg.DestinationChainID))
+	if err != nil {
+		return nil, fmt.Errorf("could not get interchain fee: %w", err)
 	}
 
+	richAddr := common.HexToAddress(RichGuy)
+
 	//test a single verification
-	_, err := s.originDB.WriteEntryWithVerification(
-		s.transactOpts,
+	err = s.originClient.ImpersonateAccount(ctx, richAddr)
+	if err != nil {
+		return nil, fmt.Errorf("could not impersonate account: %w", err)
+	}
+
+	tx, err := s.originDB.WriteEntryWithVerification(
+		&bind.TransactOpts{
+			From:     richAddr,
+			Value:    core.CopyBigInt(fee),
+			NoSend:   true,
+			Signer:   anvil.ImpersonatedSigner,
+			GasLimit: 0,
+		},
 		uint64(cfg.DestinationChainID),
 		sha256.Sum256([]byte("fat")),
 		[]common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)},
 	)
+
+	s.originClient.SendUnsignedTransaction(
+		ctx,
+		richAddr,
+		tx,
+	)
 	if err != nil {
-		return fmt.Errorf("could not write entry with verification: %w", err)
+		return nil, fmt.Errorf("could not write entry with verification: %w", err)
 	}
 
-	return nil
+	return tx, nil
 
 }
 
+// gets the interchain fee for the destination chain
 func (s *Sender) getInterchainFee(ctx context.Context, destChainID uint64) (*big.Int, error) {
+	addy := common.HexToAddress(SynapseModuleSepoliaAddress)
 	fee, err := s.originDB.GetInterchainFee(
 		&bind.CallOpts{Context: ctx},
 		destChainID,
-		[]common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)},
+		[]common.Address{addy},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not get interchain fee: %w", err)
