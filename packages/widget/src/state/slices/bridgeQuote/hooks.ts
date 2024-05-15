@@ -8,6 +8,7 @@ import { stringToBigInt } from '@/utils/stringToBigInt'
 import { powBigInt } from '@/utils/powBigInt'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
+import { getBridgeModuleNames } from '@/components/Maintenance/Maintenance'
 
 export const useBridgeQuoteState = (): RootState['bridgeQuote'] => {
   return useAppSelector((state) => state.bridgeQuote)
@@ -24,6 +25,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     debouncedInputAmount,
     synapseSDK,
     requestId,
+    pausedModules,
   }: {
     originChainId: number
     destinationChainId: number
@@ -33,6 +35,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     debouncedInputAmount: string
     synapseSDK: any
     requestId: number
+    pausedModules: any
   }) => {
     const allQuotes = await synapseSDK.allBridgeQuotes(
       originChainId,
@@ -40,6 +43,18 @@ export const fetchBridgeQuote = createAsyncThunk(
       originToken.addresses[originChainId],
       destinationToken.addresses[destinationChainId],
       amount
+    )
+
+    const pausedBridgeModules = new Set(
+      pausedModules
+        .filter((module) =>
+          module.chainId ? module.chainId === originChainId : true
+        )
+        .flatMap(getBridgeModuleNames)
+    )
+
+    const activeQuotes = allQuotes.filter(
+      (fetchedQuote) => !pausedBridgeModules.has(fetchedQuote.bridgeModuleName)
     )
 
     const rfqQuote = allQuotes.find((q) => q.bridgeModuleName === 'SynapseRFQ')
@@ -50,7 +65,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       quote = rfqQuote
     } else {
       /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-      quote = allQuotes[0]
+      quote = activeQuotes[0]
     }
 
     const {
