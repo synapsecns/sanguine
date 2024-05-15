@@ -25,6 +25,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/docs"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 )
 
 // QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -37,6 +38,9 @@ type QuoterAPIServer struct {
 	handler             metrics.Handler
 	fastBridgeContracts map[uint32]*fastbridge.FastBridge
 	roleCache           map[uint32]*ttlcache.Cache[string, bool]
+	// relayAckCache contains a set of transactionID values that reflect
+	// transactions that have been acked for relay
+	relayAckCache *ttlcache.Cache[string, bool]
 }
 
 // NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -80,12 +84,21 @@ func NewAPI(
 			ttlcache.WithTTL[string, bool](cacheInterval),
 		)
 		roleCache := roles[chainID]
-
 		go roleCache.Start()
+
+		// create the relay ack cache
+		relayAckCache := ttlcache.New[string, bool](
+			ttlcache.WithTTL[string, bool](cfg.GetRelayAckTimeout()),
+			ttlcache.WithDisableTouchOnHit[string, bool](),
+		)
+		go relayAckCache.Start()
+
 		go func() {
 			<-ctx.Done()
 			roleCache.Stop()
+			relayAckCache.Stop()
 		}()
+
 	}
 
 	return &QuoterAPIServer{
@@ -187,4 +200,27 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		c.Set("relayerAddr", addressRecovered.Hex())
 		c.Next()
 	}
+}
+
+// GetRelayAck checks if a relay is pending or not.
+func (r *QuoterAPIServer) GetRelayAck(c *gin.Context) {
+	transactionID := c.Query("transaction_id")
+	if transactionID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'txID'"})
+		return
+	}
+
+	// If the tx id is already in the cache, it should not be relayed.
+	// Otherwise, insert into the cache.
+	ack := r.relayAckCache.Get(transactionID)
+	shouldRelay := ack == nil
+	if shouldRelay {
+		r.relayAckCache.Set(transactionID, true, ttlcache.DefaultTTL)
+	}
+
+	resp := relapi.GetRelayAckResponse{
+		TxID:        transactionID,
+		ShouldRelay: shouldRelay,
+	}
+	c.JSON(http.StatusOK, resp)
 }
