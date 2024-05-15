@@ -138,7 +138,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return fmt.Errorf("could not get committable balance: %w", err)
 	}
 
-	// if committableBalance > destAmount
+	// check if we have enough inventory to handle the request
 	if committableBalance.Cmp(request.Transaction.DestAmount) < 0 {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory)
 		if err != nil {
@@ -146,6 +146,17 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		}
 		return nil
 	}
+
+	// get ack from API to synchronize calls with other relayers and avoid reverts
+	resp, err := q.apiClient.GetRelayAck(ctx, hexutil.Encode(request.TransactionID[:]))
+	if err != nil {
+		return fmt.Errorf("could not get relay ack: %w", err)
+	}
+	if !resp.ShouldRelay {
+		span.SetAttributes(attribute.Bool("should_relay", false))
+		return nil
+	}
+
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
