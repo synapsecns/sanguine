@@ -6,5 +6,9 @@
   {
     "chainId": 10,
     "bridgeModuleName": "SynapseRFQ"
+  },
+  {
+    "chainId": 43114,
+    "bridgeModuleName": "ALL"
   }
 ]
