@@ -114,6 +114,7 @@ func NewAPI(
 // QuoteRoute is the API endpoint for handling quote related requests.
 const (
 	QuoteRoute    = "/quotes"
+	AckRoute      = "/ack"
 	cacheInterval = time.Minute
 )
 
@@ -133,6 +134,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// GET routes without the AuthMiddleware
 	// engine.PUT("/quotes", h.ModifyQuote)
 	engine.GET(QuoteRoute, h.GetQuotes)
+	engine.GET(AckRoute, r.GetRelayAck)
 
 	r.engine = engine
 
