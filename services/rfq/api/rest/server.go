@@ -212,9 +212,9 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 
 // GetRelayAck checks if a relay is pending or not.
 func (r *QuoterAPIServer) GetRelayAck(c *gin.Context) {
-	transactionID := c.Query("transaction_id")
+	transactionID := c.Query("id")
 	if transactionID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'txID'"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'id'"})
 		return
 	}
 

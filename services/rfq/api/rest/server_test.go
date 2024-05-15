@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 )
 
 func (c *ServerSuite) TestNewQuoterAPIServer() {
@@ -201,6 +202,50 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 		}
 	}
 	c.Assert().True(found, "Newly added quote not found")
+}
+
+func (c *ServerSuite) TestGetAck() {
+	c.startQuoterAPIServer()
+
+	// Send GET request
+	client := &http.Client{}
+	testTxID := "0x123"
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/ack?id=%s", c.port, testTxID), nil)
+	c.Require().NoError(err)
+	resp, err := client.Do(req)
+	c.Require().NoError(err)
+	c.Equal(http.StatusOK, resp.StatusCode)
+
+	// Expect ack with shouldRelay=true
+	var result relapi.GetRelayAckResponse
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	c.Require().NoError(err)
+	expectedResult := relapi.GetRelayAckResponse{
+		TxID:        testTxID,
+		ShouldRelay: true,
+	}
+	c.Equal(expectedResult, result)
+	err = resp.Body.Close()
+	c.Require().NoError(err)
+
+	// Send another request with same txID
+	req, err = http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/ack?id=%s", c.port, testTxID), nil)
+	c.Require().NoError(err)
+	resp, err = client.Do(req)
+	c.Require().NoError(err)
+	c.Equal(http.StatusOK, resp.StatusCode)
+
+	// Expect ack with shouldRelay=false
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	c.Require().NoError(err)
+	expectedResult = relapi.GetRelayAckResponse{
+		TxID:        testTxID,
+		ShouldRelay: false,
+	}
+	c.Equal(expectedResult, result)
+	err = resp.Body.Close()
+	c.Require().NoError(err)
+	c.GetTestContext().Done()
 }
 
 // startQuoterAPIServer starts the API server and waits for it to initialize.
