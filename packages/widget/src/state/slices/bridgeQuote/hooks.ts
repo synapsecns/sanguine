@@ -57,7 +57,9 @@ export const fetchBridgeQuote = createAsyncThunk(
       (fetchedQuote) => !pausedBridgeModules.has(fetchedQuote.bridgeModuleName)
     )
 
-    const rfqQuote = allQuotes.find((q) => q.bridgeModuleName === 'SynapseRFQ')
+    const rfqQuote = activeQuotes.find(
+      (q) => q.bridgeModuleName === 'SynapseRFQ'
+    )
 
     let quote
 
