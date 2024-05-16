@@ -1,6 +1,9 @@
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
 import { isValidBridgeModule } from './helpers/isValidBridgeModule'
+import { getSynapsePauseData } from '@/utils/getSynapsePauseData'
+import { isChainIncluded } from '@/utils/isChainIncluded'
+import { useEventCountdownProgressBar } from '@/components/Maintenance/hooks/useEventCountdownProgressBar'
 
 interface ChainPause {
   id: string
@@ -20,9 +23,11 @@ interface BridgeModulePause {
   bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 
-export const getMaintenanceData = (pausedChains: any, pausedModules: any) => {
-  const pausedChainsList: ChainPause[] = pausedChains
-    ? pausedChains?.map((pause: ChainPause) => {
+export const getMaintenanceData = () => {
+  const { pausedChainsData, pausedModulesData } = getSynapsePauseData()
+
+  const pausedChainsList: ChainPause[] = pausedChainsData
+    ? pausedChainsData?.map((pause: ChainPause) => {
         return {
           ...pause,
           startTimePauseChain: new Date(pause.startTimePauseChain),
@@ -35,8 +40,8 @@ export const getMaintenanceData = (pausedChains: any, pausedModules: any) => {
       })
     : []
 
-  const pausedModulesList: BridgeModulePause[] = pausedModules
-    ? pausedModules?.map((route: BridgeModulePause) => {
+  const pausedModulesList: BridgeModulePause[] = pausedModulesData
+    ? pausedModulesData?.map((route: BridgeModulePause) => {
         if (!isValidBridgeModule(route.bridgeModuleName)) {
           throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
         }
@@ -55,5 +60,47 @@ export const getMaintenanceData = (pausedChains: any, pausedModules: any) => {
   return {
     pausedChainsList,
     pausedModulesList,
+  }
+}
+
+export const useMaintenance = () => {
+  const { originChainId, destinationChainId } = useBridgeState()
+  const { pausedChainsList, pausedModulesList } = getMaintenanceData()
+
+  const activePause = pausedChainsList.find(
+    (pauseData) =>
+      isChainIncluded(pauseData?.pausedFromChains, [originChainId]) ||
+      isChainIncluded(pauseData?.pausedToChains, [destinationChainId])
+  )
+
+  const { isPending: isBridgePaused, EventCountdownProgressBar } =
+    useEventCountdownProgressBar(
+      activePause?.progressBarMessage,
+      activePause?.startTimePauseChain,
+      activePause?.endTimePauseChain,
+      activePause?.disableCountdown
+    )
+
+  const BridgeMaintenanceProgressBar = () => EventCountdownProgressBar
+
+  const BridgeMaintenanceWarningMessage = () => (
+    <MaintenanceWarningMessage
+      originChainId={originChainId}
+      destinationChainId={destinationChainId}
+      startDate={activePause?.startTimePauseChain}
+      endDate={activePause?.endTimePauseChain}
+      pausedOriginChains={activePause?.pausedFromChains}
+      pausedDestinationChains={activePause?.pausedToChains}
+      warningMessage={activePause?.inputWarningMessage}
+      disabled={activePause?.disableWarning}
+    />
+  )
+
+  return {
+    isBridgePaused,
+    pausedChainsList,
+    pausedModulesList,
+    BridgeMaintenanceProgressBar,
+    BridgeMaintenanceWarningMessage,
   }
 }
