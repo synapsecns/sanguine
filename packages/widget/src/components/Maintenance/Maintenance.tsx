@@ -20,10 +20,7 @@ interface BridgeModulePause {
   bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 
-export const useMaintenanceComponents = (
-  pausedChains: any,
-  pausedModules: any
-) => {
+export const getMaintenanceData = (pausedChains: any, pausedModules: any) => {
   const pausedChainsList: ChainPause[] = pausedChains
     ? pausedChains?.map((pause: ChainPause) => {
         return {
@@ -55,33 +52,8 @@ export const useMaintenanceComponents = (
       })
     : []
 
-  const MaintenanceWarningMessages = () => {
-    const { originChainId, destinationChainId } = useBridgeState()
-
-    return (
-      <>
-        {pausedChainsList?.map((event) => {
-          return (
-            <MaintenanceWarningMessage
-              key={event.id}
-              originChainId={originChainId}
-              destinationChainId={destinationChainId}
-              startDate={event.startTimePauseChain}
-              endDate={event.endTimePauseChain}
-              pausedOriginChains={event.pausedFromChains}
-              pausedDestinationChains={event.pausedToChains}
-              warningMessage={event.inputWarningMessage}
-              disabled={event.disableWarning || !event.pauseBridge}
-            />
-          )
-        })}
-      </>
-    )
-  }
-
   return {
     pausedChainsList,
     pausedModulesList,
-    MaintenanceWarningMessages,
   }
 }
