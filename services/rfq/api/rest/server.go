@@ -207,7 +207,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 }
 
 func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (addressRecovered common.Address, err error) {
-	bridge, ok := r.fastBridgeContracts[uint32(destChainID)]
+	bridge, ok := r.fastBridgeContracts[destChainID]
 	if !ok {
 		err = fmt.Errorf("dest chain id not supported: %d", destChainID)
 		return addressRecovered, err
@@ -220,16 +220,16 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 	deadline := time.Now().Unix() - 1000 // TODO: Replace with some type of r.cfg.AuthExpiryDelta
 	addressRecovered, err = EIP191Auth(c, deadline)
 	if err != nil {
-		err = fmt.Errorf("unable to authenticate relayer: %v", err)
+		err = fmt.Errorf("unable to authenticate relayer: %w", err)
 		return addressRecovered, err
 	}
 
-	hasRole := r.roleCache[uint32(destChainID)].Get(addressRecovered.Hex())
+	hasRole := r.roleCache[destChainID].Get(addressRecovered.Hex())
 
 	if hasRole == nil || hasRole.IsExpired() {
 		has, roleErr := bridge.HasRole(ops, relayerRole, addressRecovered)
 		if roleErr == nil {
-			r.roleCache[uint32(destChainID)].Set(addressRecovered.Hex(), has, cacheInterval)
+			r.roleCache[destChainID].Set(addressRecovered.Hex(), has, cacheInterval)
 		}
 
 		if roleErr != nil {
@@ -271,7 +271,11 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
 		return
 	}
-	relayerAddr := rawRelayerAddr.(string)
+	relayerAddr, ok := rawRelayerAddr.(string)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid relayer address type"})
+		return
+	}
 	ackReq, ok := req.(*model.PutAckRequest)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request type"})
