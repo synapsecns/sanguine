@@ -135,7 +135,7 @@ services:
       - chain_a
       - chain_b
       - chain_c
-      - tracing
+    #  - tracing
     ports:
       - '12346:12346'
     build:
