@@ -34,14 +34,16 @@ export const getSynapsePauseData = () => {
   }
 
   const readData = () => {
-    const chainPause = JSON.parse(
-      sessionStorage.getItem(SessionStorageKey.CHAIN_PAUSE)
-    )
-    const modulePause = JSON.parse(
-      sessionStorage.getItem(SessionStorageKey.MODULE_PAUSE)
-    )
-
-    return { chainPause, modulePause }
+    if (sessionStorage) {
+      const chainPause = JSON.parse(
+        sessionStorage.getItem(SessionStorageKey.CHAIN_PAUSE)
+      )
+      const modulePause = JSON.parse(
+        sessionStorage.getItem(SessionStorageKey.MODULE_PAUSE)
+      )
+      return { chainPause, modulePause }
+    }
+    return { chainPause: null, modulePause: null }
   }
 
   const checkIsDataValid = (): boolean => {
