@@ -1,7 +1,12 @@
+// const PAUSED_CHAINS_URL =
+//   'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json'
+// const PAUSED_MODULES_URL =
+//   'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
+
 const PAUSED_CHAINS_URL =
-  'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json'
+  'https://raw.githubusercontent.com/synapsecns/sanguine/test/pauses/packages/synapse-interface/public/pauses/v1/paused-chains.json'
 const PAUSED_MODULES_URL =
-  'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
+  'https://raw.githubusercontent.com/synapsecns/sanguine/test/pauses/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
 
 enum SessionStorageKey {
   CHAIN_PAUSE = 'synapse-paused-chains',

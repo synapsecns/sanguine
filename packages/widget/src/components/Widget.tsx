@@ -60,10 +60,11 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
-import { useMaintenanceComponents } from './Maintenance/Maintenance'
+import { getMaintenanceData } from './Maintenance/Maintenance'
 import { getSynapsePauseData } from '@/utils/getSynapsePauseData'
 import { isChainIncluded } from '@/utils/isChainIncluded'
 import { useEventCountdownProgressBar } from '@/components/Maintenance/hooks/useEventCountdownProgressBar'
+import { MaintenanceWarningMessage } from './Maintenance/components/MaintenanceWarningMessage'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -100,14 +101,19 @@ export const Widget = ({
   } = useBridgeState()
 
   const { chainPause, modulePause } = getSynapsePauseData()
-  const { pausedChainsList, pausedModulesList, MaintenanceWarningMessages } =
-    useMaintenanceComponents(chainPause, modulePause)
+  const { pausedChainsList, pausedModulesList } = getMaintenanceData(
+    chainPause,
+    modulePause
+  )
 
   const activePause = pausedChainsList.find(
     (pauseData) =>
       isChainIncluded(pauseData?.pausedFromChains, [originChainId]) ||
       isChainIncluded(pauseData?.pausedToChains, [destinationChainId])
   )
+
+  console.log('pausedChainList:', pausedChainsList)
+  console.log('activePause: ', activePause)
 
   const { isPending: isBridgePaused, EventCountdownProgressBar } =
     useEventCountdownProgressBar(
@@ -466,7 +472,16 @@ export const Widget = ({
             />
           </div>
         </section>
-        <MaintenanceWarningMessages />
+        <MaintenanceWarningMessage
+          originChainId={originChainId}
+          destinationChainId={destinationChainId}
+          startDate={activePause?.startTimePauseChain}
+          endDate={activePause?.endTimePauseChain}
+          pausedOriginChains={activePause?.pausedFromChains}
+          pausedDestinationChains={activePause?.pausedToChains}
+          warningMessage={activePause?.inputWarningMessage}
+          disabled={activePause?.disableWarning}
+        />
         <Receipt
           quote={bridgeQuote ?? null}
           send={formatBigIntToString(
