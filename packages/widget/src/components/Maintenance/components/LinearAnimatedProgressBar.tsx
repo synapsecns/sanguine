@@ -21,15 +21,15 @@ export const LinearAnimatedProgressBar = memo(
     startDate: Date
     endDate: Date | null
   }) => {
-    const isIndefinite = isNull(endDate)
-
-    const progressId = `progress-${id}`
-    const maskId = `mask-${id}`
     const height = 3
-    const synapsePurple = 'hsl(265deg 100% 75%)'
-    const tailwindGreen400 = 'rgb(74 222 128)'
+    const maskId = `mask-${id}`
+    const progressId = `progress-${id}`
+    const greenColor = 'rgb(74 222 128)'
+    const purpleColor = 'hsl(265deg 100% 75%)'
 
-    let duration
+    let duration: string | number
+
+    const isIndefinite = isNull(endDate)
 
     if (isIndefinite) {
       duration = 'infinite'
@@ -49,10 +49,10 @@ export const LinearAnimatedProgressBar = memo(
               x1="0"
               x2="1"
             >
-              <stop stopColor={synapsePurple} />
-              <stop stopColor={synapsePurple} offset=".25" />
-              <stop stopColor={synapsePurple} stopOpacity=".67" offset=".75" />
-              <stop stopColor={synapsePurple} stopOpacity=".67" offset="1" />
+              <stop stopColor={purpleColor} />
+              <stop stopColor={purpleColor} offset=".25" />
+              <stop stopColor={purpleColor} stopOpacity=".67" offset=".75" />
+              <stop stopColor={purpleColor} stopOpacity=".67" offset="1" />
               <animate
                 attributeName="x1"
                 values="0%; -6%"
@@ -116,10 +116,10 @@ export const LinearAnimatedProgressBar = memo(
               x1="0"
               x2="1"
             >
-              <stop stopColor={synapsePurple} />
-              <stop stopColor={synapsePurple} offset=".25" />
-              <stop stopColor={synapsePurple} stopOpacity=".67" offset=".75" />
-              <stop stopColor={synapsePurple} stopOpacity=".67" offset="1" />
+              <stop stopColor={purpleColor} />
+              <stop stopColor={purpleColor} offset=".25" />
+              <stop stopColor={purpleColor} stopOpacity=".67" offset=".75" />
+              <stop stopColor={purpleColor} stopOpacity=".67" offset="1" />
               <animate
                 attributeName="x1"
                 values="0%; -6%"
@@ -154,7 +154,7 @@ export const LinearAnimatedProgressBar = memo(
             {isComplete && (
               <animate
                 attributeName="fill"
-                values={`${synapsePurple}; hsl(185deg 100% 40%); ${tailwindGreen400}`}
+                values={`${purpleColor}; hsl(185deg 100% 40%); ${greenColor}`}
                 keyTimes="0; .5; 1"
                 dur={duration}
                 fill="freeze"
