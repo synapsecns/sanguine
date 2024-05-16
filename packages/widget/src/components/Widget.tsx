@@ -60,12 +60,7 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
-import { getMaintenanceData } from './Maintenance/Maintenance'
-import { getSynapsePauseData } from '@/utils/getSynapsePauseData'
-import { isChainIncluded } from '@/utils/isChainIncluded'
-import { useEventCountdownProgressBar } from '@/components/Maintenance/hooks/useEventCountdownProgressBar'
-import { MaintenanceWarningMessage } from './Maintenance/components/MaintenanceWarningMessage'
-import { useMaintenance } from './Maintenance/Maintenance'
+import { useMaintenance } from '@/components/Maintenance/Maintenance'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables

@@ -25,7 +25,6 @@ export const getCountdownTimeStatus = (
   }
 
   const currentDate = new Date()
-
   const currentTimeInSeconds = Math.floor(currentDate.getTime() / 1000)
   const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
 
@@ -85,11 +84,10 @@ export const getCountdownTimeStatus = (
     isPending,
   }
 }
+
 const calculateTimeUntilTarget = (targetDate: Date) => {
   const currentDate = new Date()
-
   const timeDifference = targetDate.getTime() - currentDate.getTime()
-
   const isComplete = timeDifference <= 0
 
   const daysRemaining = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
