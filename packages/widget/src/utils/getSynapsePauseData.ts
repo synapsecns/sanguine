@@ -55,7 +55,6 @@ export const getSynapsePauseData = () => {
       const timePastInHours = (currentTime - previousTime) / millisecondsPerHour
 
       return false
-      return timePastInHours < 24
     } else {
       return false
     }
