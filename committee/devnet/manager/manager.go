@@ -6,7 +6,6 @@ import (
 	"github.com/synapsecns/sanguine/committee/devnet/config"
 	"github.com/synapsecns/sanguine/committee/devnet/provisioner"
 	"github.com/synapsecns/sanguine/committee/devnet/sender"
-	"golang.org/x/sync/errgroup"
 )
 
 // Manager provisions the contracts and submits verifications to the network.
@@ -24,19 +23,12 @@ func NewManager(provisioner *provisioner.Provisioner, sender *sender.Sender) *Ma
 }
 
 func (m *Manager) Start(ctx context.Context, pc config.ProvisionerConfig, sc config.SenderConfig) error {
-	g, ctx := errgroup.WithContext(ctx)
 
-	g.Go(func() error {
-		return m.Provisioner.Run(ctx, pc)
-	})
-
-	if m.Sender != nil {
-		g.Go(func() error {
-			return m.Sender.Start(ctx, sc)
-		})
+	if err := m.Provisioner.Run(ctx, pc); err != nil {
+		return err
 	}
 
-	if err := g.Wait(); err != nil {
+	if err := m.Sender.Start(ctx, sc); err != nil {
 		return err
 	}
 

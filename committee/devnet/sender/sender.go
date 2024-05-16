@@ -12,9 +12,9 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/committee/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/committee/devnet/config"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	ethergoClient "github.com/synapsecns/sanguine/ethergo/client"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 )
 
@@ -29,6 +29,7 @@ type Sender struct {
 	originDB     *interchaindb.InterchainDB
 	originClient *anvil.Client
 	client       omnirpcClient.RPCClient
+	evmClient    ethergoClient.EVM
 }
 
 func NewSender(ctx context.Context, cfg config.SenderConfig, handler metrics.Handler) (*Sender, error) {
@@ -52,10 +53,15 @@ func NewSender(ctx context.Context, cfg config.SenderConfig, handler metrics.Han
 		return nil, fmt.Errorf("could not create interchaindb: %w", err)
 	}
 
+	e, err := ethergoClient.DialBackend(ctx, "http://localhost:9001/rpc/42", handler)
+	if err != nil {
+		return nil, fmt.Errorf("could not dial ethergo backend: %w", err)
+	}
 	return &Sender{
 		client:       client,
 		originDB:     originInterchainDB,
 		originClient: originClient,
+		evmClient:    e,
 	}, nil
 }
 
@@ -67,10 +73,15 @@ func (s *Sender) Start(ctx context.Context, cfg config.SenderConfig) error {
 			return fmt.Errorf("could not send write entry with verification: %w", err)
 
 		}
-		fmt.Println("transaction sent", tx.Hash())
+		fmt.Println("Verification Request Tx sent", tx.Hash())
 		// wait for it
 		// todo; better way to do it
 		time.Sleep(5 * time.Second)
+		receipt, err := s.evmClient.TransactionReceipt(ctx, tx.Hash())
+		if err != nil {
+			return fmt.Errorf("could not get transaction receipt: %w", err)
+		}
+		fmt.Println("Verification Request Tx receipt", receipt)
 	}
 }
 
@@ -85,23 +96,24 @@ func (s *Sender) sendWriteEntryWithVerification(
 
 	richAddr := common.HexToAddress(RichGuy)
 
-	//test a single verification
 	err = s.originClient.ImpersonateAccount(ctx, richAddr)
 	if err != nil {
 		return nil, fmt.Errorf("could not impersonate account: %w", err)
 	}
 	defer s.originClient.StopImpersonatingAccount(ctx, richAddr)
 
+	hash := sha256.Sum256([]byte("fat"))
+	modules := []common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)}
 	tx, err := s.originDB.WriteEntryWithVerification(
 		&bind.TransactOpts{
 			From:   richAddr,
-			Value:  core.CopyBigInt(fee),
+			Value:  fee,
 			NoSend: true,
 			Signer: anvil.ImpersonatedSigner,
 		},
 		uint64(cfg.DestinationChainID),
-		sha256.Sum256([]byte("fat")),
-		[]common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)},
+		hash,
+		modules,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not create entry with verification: %w", err)
@@ -127,6 +139,5 @@ func (s *Sender) getInterchainFee(ctx context.Context, destChainID uint64) (*big
 	if err != nil {
 		return nil, fmt.Errorf("could not get interchain fee: %w", err)
 	}
-	fmt.Printf("interchain fee for %d: %d\n", destChainID, fee.Uint64())
 	return fee, nil
 }

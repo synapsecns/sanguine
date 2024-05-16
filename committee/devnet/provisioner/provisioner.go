@@ -135,28 +135,28 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 	if err != nil {
 		return fmt.Errorf("could not add local native price: %v", err)
 	}
-	// err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(params.Ether), p.b)
-	// if err != nil {
-	// 	return fmt.Errorf("could not add local native price: %v", err)
-	// }
+	err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(params.Ether), p.b)
+	if err != nil {
+		return fmt.Errorf("could not add local native price: %v", err)
+	}
 
-	// err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(0), p.a)
-	// if err != nil {
-	// 	return fmt.Errorf("could not set remote calldata price: %v", err)
-	// }
-	// err = p.setRemoteCallDataPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(0), p.b)
-	// if err != nil {
-	// 	return fmt.Errorf("could not set remote calldata price %v", err)
-	// }
+	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(0), p.a)
+	if err != nil {
+		return fmt.Errorf("could not set remote calldata price: %v", err)
+	}
+	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(0), p.b)
+	if err != nil {
+		return fmt.Errorf("could not set remote calldata price %v", err)
+	}
 
-	// err = p.setRemoteGasPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(1000000), p.a)
-	// if err != nil {
-	// 	return fmt.Errorf("could not add remote chain gas price: %v", err)
-	// }
-	// err = p.setRemoteGasPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(1000000), p.b)
-	// if err != nil {
-	// 	return fmt.Errorf("could not add remote chain gas price: %v", err)
-	// }
+	err = p.setRemoteGasPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(1000000), p.a)
+	if err != nil {
+		return fmt.Errorf("could not add remote chain gas price: %v", err)
+	}
+	err = p.setRemoteGasPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(1000000), p.b)
+	if err != nil {
+		return fmt.Errorf("could not add remote chain gas price: %v", err)
+	}
 
 	err = p.setRemoteNativePrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(params.Ether), p.a)
 	if err != nil {
@@ -270,6 +270,15 @@ func (p *Provisioner) changeThreshold(
 	}
 	defer client.StopImpersonatingAccount(ctx, owner)
 
+	received, err := synapseModule.GetThreshold(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("changeThreshold: could not get threshold: %w", err)
+	}
+	if received.Cmp(threshold) == 0 {
+		fmt.Printf("threshold is already %d on chain %d\n", threshold, chainid)
+		return nil
+	}
+
 	tx, err := synapseModule.SetThreshold(&bind.TransactOpts{
 		From:   owner,
 		Value:  big.NewInt(0),
@@ -309,6 +318,15 @@ func (p *Provisioner) setLocalNativePrice(
 		return err
 	}
 	defer client.StopImpersonatingAccount(ctx, owner)
+
+	nativePrice, err := originGasOracle.GetLocalNativePrice(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("setLocalNativePrice: could not get local native price: %w", err)
+	}
+	if nativePrice.Cmp(gasPrice) == 0 {
+		fmt.Printf("local native price is already %d on chain %d\n", gasPrice, originChainId)
+		return nil
+	}
 
 	tx, err := originGasOracle.SetLocalNativePrice(
 		&bind.TransactOpts{
@@ -350,6 +368,18 @@ func (p *Provisioner) setRemoteCallDataPrice(
 	}
 	defer client.StopImpersonatingAccount(ctx, owner)
 
+	remoteGasData, err := originGasOracle.GetRemoteGasData(
+		&bind.CallOpts{Context: ctx},
+		uint64(remoteChainId),
+	)
+	if err != nil {
+		return fmt.Errorf("setRemoteGasPrice: could not get remote gas price: %w", err)
+	}
+	if remoteGasData.CalldataPrice.Cmp(gasPrice) == 0 {
+		fmt.Printf("remote gas price is already %d on chain %d\n", gasPrice, remoteChainId)
+		return nil
+	}
+
 	tx, err := originGasOracle.SetRemoteCallDataPrice(
 		&bind.TransactOpts{
 			From:   owner,
@@ -389,6 +419,18 @@ func (p *Provisioner) setRemoteGasPrice(
 	}
 	defer client.StopImpersonatingAccount(ctx, owner)
 
+	remoteGasData, err := originGasOracle.GetRemoteGasData(
+		&bind.CallOpts{Context: ctx},
+		uint64(remoteChainId),
+	)
+	if err != nil {
+		return fmt.Errorf("setRemoteGasPrice: could not get remote gas price: %w", err)
+	}
+	if remoteGasData.GasPrice.Cmp(gasPrice) == 0 {
+		fmt.Printf("remote gas price is already %d on chain %d\n", gasPrice, remoteChainId)
+		return nil
+	}
+
 	tx, err := originGasOracle.SetRemoteGasPrice(
 		&bind.TransactOpts{
 			From:   owner,
@@ -427,6 +469,18 @@ func (p *Provisioner) setRemoteNativePrice(
 		return err
 	}
 	defer client.StopImpersonatingAccount(ctx, owner)
+
+	remoteGasData, err := originGasOracle.GetRemoteGasData(
+		&bind.CallOpts{Context: ctx},
+		uint64(remoteChainId),
+	)
+	if err != nil {
+		return fmt.Errorf("setRemoteGasPrice: could not get remote gas price: %w", err)
+	}
+	if remoteGasData.NativePrice.Cmp(gasPrice) == 0 {
+		fmt.Printf("remote gas price is already %d on chain %d\n", gasPrice, remoteChainId)
+		return nil
+	}
 
 	tx, err := originGasOracle.SetRemoteNativePrice(
 		&bind.TransactOpts{
