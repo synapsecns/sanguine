@@ -161,28 +161,39 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 // AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.
 func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var addressRecovered common.Address
+		var loggedRequest interface{}
+		var destChainID uint32
 		var err error
 
+		fmt.Printf("PATH: %v\n", c.Request.URL.Path)
 		switch c.Request.URL.Path {
 		case QuoteRoute:
 			var req model.PutQuoteRequest
-			if err := c.BindJSON(&req); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				c.Abort()
-				return
+			err = c.BindJSON(&req)
+			if err == nil {
+				destChainID = uint32(req.DestChainID)
+				loggedRequest = &req
 			}
-			addressRecovered, err = r.checkRole(c, uint32(req.DestChainID))
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
-				c.Abort()
-				return
-			}
-			c.Set("putRequest", &req)
+		default:
+			err = fmt.Errorf("unexpected request path: %s", c.Request.URL.Path)
+		}
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+
+		// Authenticate and fetch the address from the request
+		addressRecovered, err := r.checkRole(c, destChainID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+			c.Abort()
+			return
 		}
 
 		// Log and pass to the next middleware if authentication succeeds
 		// Store the request in context after binding and validation
+		c.Set("putRequest", loggedRequest)
 		c.Set("relayerAddr", addressRecovered.Hex())
 		c.Next()
 	}
