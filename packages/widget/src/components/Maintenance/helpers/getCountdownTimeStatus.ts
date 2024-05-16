@@ -1,9 +1,29 @@
 import { isNull } from 'lodash'
 
 export const getCountdownTimeStatus = (
-  startDate: Date,
+  startDate: Date | null,
   endDate: Date | null
 ) => {
+  if (!startDate && !endDate) {
+    return {
+      currentDate: null,
+      currentTimeInSeconds: null,
+      startTimeInSeconds: null,
+      endTimeInSeconds: null,
+      totalTimeInSeconds: null,
+      totalTimeElapsedInSeconds: null,
+      totalTimeRemainingInSeconds: null,
+      totalTimeRemainingInMinutes: null,
+      daysRemaining: null,
+      hoursRemaining: null,
+      minutesRemaining: null,
+      secondsRemaining: null,
+      isStarted: false,
+      isComplete: false,
+      isPending: false,
+    }
+  }
+
   const currentDate = new Date()
 
   const currentTimeInSeconds = Math.floor(currentDate.getTime() / 1000)
