@@ -11,7 +11,6 @@ import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findValidToken } from '@/utils/findValidTokens'
 import { getFromChainIds } from '@/utils/routeMaker/getFromChainIds'
-import { useMaintenanceComponents } from '@/components/Maintenance/Maintenance'
 
 export interface BridgeState {
   debouncedInputAmount: string

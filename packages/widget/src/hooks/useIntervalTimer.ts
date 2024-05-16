@@ -3,11 +3,10 @@ import { useState, useEffect } from 'react'
 import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 
 /**
- * Hook for setting an interval based timer
+ * A hook for setting an interval based timer.
  *
- * @param intervalInMs number, in ms (1000ms = 1s)
- * @param isDisabled boolean, determines if we update at intervals
- * returns current time in minutes, unix
+ * @param intervalInMs - The duration between intervals, in ms.
+ * @param isDisabled - A boolean that determines if timer runs.
  */
 export const useIntervalTimer = (
   intervalInMs: number,
@@ -17,7 +16,6 @@ export const useIntervalTimer = (
     getTimeMinutesFromNow(0)
   )
 
-  /** Update time at set intervals if not disabled */
   useEffect(() => {
     if (!isDisabled) {
       const interval = setInterval(() => {
@@ -26,7 +24,7 @@ export const useIntervalTimer = (
       }, intervalInMs)
 
       return () => {
-        clearInterval(interval) // Clear the interval when the component unmounts
+        clearInterval(interval)
       }
     }
   }, [isDisabled])
