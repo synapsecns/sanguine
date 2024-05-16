@@ -41,7 +41,7 @@ type QuoterAPIServer struct {
 	roleCache           map[uint32]*ttlcache.Cache[string, bool]
 	// relayAckCache contains a set of transactionID values that reflect
 	// transactions that have been acked for relay
-	relayAckCache *ttlcache.Cache[string, bool]
+	relayAckCache *ttlcache.Cache[string, string]
 	// ackMux is a mutex used to ensure that only one transaction id can be acked at a time.
 	ackMux sync.Mutex
 }
@@ -95,9 +95,9 @@ func NewAPI(
 	}
 
 	// create the relay ack cache
-	relayAckCache := ttlcache.New[string, bool](
-		ttlcache.WithTTL[string, bool](cfg.GetRelayAckTimeout()),
-		ttlcache.WithDisableTouchOnHit[string, bool](),
+	relayAckCache := ttlcache.New[string, string](
+		ttlcache.WithTTL[string, string](cfg.GetRelayAckTimeout()),
+		ttlcache.WithDisableTouchOnHit[string, string](),
 	)
 	go relayAckCache.Start()
 	go func() {
@@ -262,6 +262,12 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Request not found"})
 		return
 	}
+	rawRelayerAddr, exists := c.Get("relayerAddr")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
+		return
+	}
+	relayerAddr := rawRelayerAddr.(string)
 	ackReq, ok := req.(*model.PutAckRequest)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request type"})
@@ -269,18 +275,21 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 	}
 
 	// If the tx id is already in the cache, it should not be relayed.
-	// Otherwise, insert into the cache.
+	// Otherwise, insert the current relayer's address into the cache.
 	r.ackMux.Lock()
 	ack := r.relayAckCache.Get(ackReq.TxID)
 	shouldRelay := ack == nil
 	if shouldRelay {
-		r.relayAckCache.Set(ackReq.TxID, true, ttlcache.DefaultTTL)
+		r.relayAckCache.Set(ackReq.TxID, relayerAddr, ttlcache.DefaultTTL)
+	} else {
+		relayerAddr = ack.Value()
 	}
 	r.ackMux.Unlock()
 
 	resp := relapi.PutRelayAckResponse{
-		TxID:        ackReq.TxID,
-		ShouldRelay: shouldRelay,
+		TxID:           ackReq.TxID,
+		ShouldRelay:    shouldRelay,
+		RelayerAddress: relayerAddr,
 	}
 	c.JSON(http.StatusOK, resp)
 }
