@@ -27,7 +27,7 @@ type Config struct {
 	RelayAckTimeout time.Duration     `yaml:"relay_ack_timeout"`
 }
 
-const defaultRelayAckTimeout = 5 * time.Second
+const defaultRelayAckTimeout = 10 * time.Second
 
 // GetRelayAckTimeout returns the relay ack timeout.
 func (c Config) GetRelayAckTimeout() time.Duration {
