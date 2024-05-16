@@ -165,10 +165,17 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		var destChainID uint32
 		var err error
 
-		fmt.Printf("PATH: %v\n", c.Request.URL.Path)
+		// Parse the dest chain id from the request
 		switch c.Request.URL.Path {
 		case QuoteRoute:
 			var req model.PutQuoteRequest
+			err = c.BindJSON(&req)
+			if err == nil {
+				destChainID = uint32(req.DestChainID)
+				loggedRequest = &req
+			}
+		case AckRoute:
+			var req model.PutAckRequest
 			err = c.BindJSON(&req)
 			if err == nil {
 				destChainID = uint32(req.DestChainID)
