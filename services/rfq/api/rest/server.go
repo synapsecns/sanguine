@@ -117,9 +117,10 @@ func NewAPI(
 	}, nil
 }
 
-// QuoteRoute is the API endpoint for handling quote related requests.
 const (
-	QuoteRoute    = "/quotes"
+	// QuoteRoute is the API endpoint for handling quote related requests.
+	QuoteRoute = "/quotes"
+	// AckRoute is the API endpoint for handling relay ack related requests.
 	AckRoute      = "/ack"
 	cacheInterval = time.Minute
 )
@@ -133,14 +134,17 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	h := NewHandler(r.db)
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	// Apply AuthMiddleware only to the PUT route
+	// Apply AuthMiddleware only to the PUT routes
 	quotesPut := engine.Group(QuoteRoute)
 	quotesPut.Use(r.AuthMiddleware())
 	quotesPut.PUT("", h.ModifyQuote)
+	ackPut := engine.Group(AckRoute)
+	ackPut.Use(r.AuthMiddleware())
+	ackPut.PUT("", r.PutRelayAck)
+
 	// GET routes without the AuthMiddleware
 	// engine.PUT("/quotes", h.ModifyQuote)
 	engine.GET(QuoteRoute, h.GetQuotes)
-	engine.GET(AckRoute, r.GetRelayAck)
 
 	r.engine = engine
 
@@ -210,8 +214,8 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-// GetRelayAck checks if a relay is pending or not.
-func (r *QuoterAPIServer) GetRelayAck(c *gin.Context) {
+// PutRelayAck checks if a relay is pending or not.
+func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 	transactionID := c.Query("id")
 	if transactionID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'id'"})
@@ -228,7 +232,7 @@ func (r *QuoterAPIServer) GetRelayAck(c *gin.Context) {
 	}
 	r.ackMux.Unlock()
 
-	resp := relapi.GetRelayAckResponse{
+	resp := relapi.PutRelayAckResponse{
 		TxID:        transactionID,
 		ShouldRelay: shouldRelay,
 	}
