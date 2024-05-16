@@ -78,15 +78,11 @@ type Manager struct {
 }
 
 // NewQuoterManager creates a new QuoterManager.
-func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, inventoryManager inventory.Manager, relayerSigner signer.Signer, feePricer pricer.FeePricer) (Quoter, error) {
-	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricsHandler, config.GetRfqAPIURL(), relayerSigner)
-	if err != nil {
-		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
-	}
-
+func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, inventoryManager inventory.Manager, relayerSigner signer.Signer, feePricer pricer.FeePricer, apiClient rfqAPIClient.AuthenticatedClient) (Quoter, error) {
 	qt := make(map[string][]string)
 
 	// fix any casing issues.
+	var err error
 	for tokenID, destTokenIDs := range config.QuotableTokens {
 		processedDestTokens := make([]string, len(destTokenIDs))
 		for i := range destTokenIDs {

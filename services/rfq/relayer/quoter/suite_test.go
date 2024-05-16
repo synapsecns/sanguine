@@ -116,7 +116,7 @@ func (s *QuoterSuite) SetupTest() {
 
 	inventoryManager := new(inventoryMocks.Manager)
 	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
-	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer)
+	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer, nil)
 	s.NoError(err)
 
 	var ok bool
