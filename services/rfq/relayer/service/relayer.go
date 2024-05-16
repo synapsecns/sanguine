@@ -112,7 +112,12 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	priceFetcher := pricer.NewCoingeckoPriceFetcher(cfg.GetHTTPTimeout())
 	fp := pricer.NewFeePricer(cfg, omniClient, priceFetcher, metricHandler)
 
-	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp)
+	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricHandler, cfg.GetRfqAPIURL(), sg)
+	if err != nil {
+		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
+	}
+
+	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp, apiClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not get quoter")
 	}
@@ -120,11 +125,6 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	apiServer, err := relapi.NewRelayerAPI(ctx, cfg, metricHandler, omniClient, store, sm)
 	if err != nil {
 		return nil, fmt.Errorf("could not get api server: %w", err)
-	}
-
-	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricHandler, cfg.GetRfqAPIURL(), sg)
-	if err != nil {
-		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
 	}
 
 	cache := ttlcache.New[common.Hash, bool](ttlcache.WithTTL[common.Hash, bool](time.Second * 30))
