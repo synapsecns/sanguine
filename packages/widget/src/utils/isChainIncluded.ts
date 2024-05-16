@@ -7,5 +7,5 @@
  */
 
 export const isChainIncluded = (chainList: number[], hasChains: number[]) => {
-  return hasChains.some((chainId) => chainList.includes(chainId))
+  return hasChains?.some((chainId) => chainList.includes(chainId))
 }

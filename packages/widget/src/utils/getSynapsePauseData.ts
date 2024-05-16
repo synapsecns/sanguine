@@ -3,7 +3,7 @@ const PAUSED_CHAINS_URL =
 const PAUSED_MODULES_URL =
   'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
 
-enum LocalStorageKey {
+enum SessionStorageKey {
   CHAIN_PAUSE = 'synapse-paused-chains',
   MODULE_PAUSE = 'synapse-paused-modules',
   TIMESTAMP = 'synapse-paused-data-timestamp',
@@ -16,15 +16,15 @@ export const getSynapsePauseData = () => {
       const chainsData = await fetchJSONData(PAUSED_CHAINS_URL)
       const modulesData = await fetchJSONData(PAUSED_MODULES_URL)
 
-      localStorage.setItem(
-        LocalStorageKey.CHAIN_PAUSE,
+      sessionStorage.setItem(
+        SessionStorageKey.CHAIN_PAUSE,
         JSON.stringify(chainsData)
       )
-      localStorage.setItem(
-        LocalStorageKey.MODULE_PAUSE,
+      sessionStorage.setItem(
+        SessionStorageKey.MODULE_PAUSE,
         JSON.stringify(modulesData)
       )
-      localStorage.setItem(LocalStorageKey.TIMESTAMP, Date.now().toString())
+      sessionStorage.setItem(SessionStorageKey.TIMESTAMP, Date.now().toString())
     } catch (error) {
       console.error(
         '[Synapse Widget] Failed to fetch paused chains/modules: ',
@@ -35,17 +35,17 @@ export const getSynapsePauseData = () => {
 
   const readData = () => {
     const chainPause = JSON.parse(
-      localStorage.getItem(LocalStorageKey.CHAIN_PAUSE)
+      sessionStorage.getItem(SessionStorageKey.CHAIN_PAUSE)
     )
     const modulePause = JSON.parse(
-      localStorage.getItem(LocalStorageKey.MODULE_PAUSE)
+      sessionStorage.getItem(SessionStorageKey.MODULE_PAUSE)
     )
 
     return { chainPause, modulePause }
   }
 
   const checkIsDataValid = (): boolean => {
-    const lastFetchTime = localStorage.getItem(LocalStorageKey.TIMESTAMP)
+    const lastFetchTime = sessionStorage.getItem(SessionStorageKey.TIMESTAMP)
 
     if (lastFetchTime) {
       const previousTime = Number(lastFetchTime)
