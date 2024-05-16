@@ -244,6 +244,18 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 }
 
 // PutRelayAck checks if a relay is pending or not.
+//
+// PUT /ack.
+// @dev Protected Method: Authentication is handled through middleware in server.go.
+// @Summary Relay ack
+// @Schemes
+// @Description cache an ack request to synchronize relayer actions.
+// @Param request body model.PutQuoteRequest true "query params"
+// @Tags ack
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /ack [put].
 func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 	req, exists := c.Get("putRequest")
 	if !exists {

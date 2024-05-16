@@ -67,6 +67,26 @@ definitions:
 info:
   contact: {}
 paths:
+  /ack:
+    put:
+      consumes:
+      - application/json
+      description: cache an ack request to synchronize relayer actions.
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PutQuoteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Relay ack
+      tags:
+      - ack
   /quotes:
     get:
       consumes:
