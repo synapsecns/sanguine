@@ -97,8 +97,8 @@ export const Widget = ({
   const maintenanceCountdownProgressInstances =
     useMaintenanceCountdownProgresses()
 
-  const isBridgePaused = maintenanceCountdownProgressInstances.some(
-    (instance) => instance.isCurrentChainDisabled
+  const isBridgePaused = maintenanceCountdownProgressInstances?.some(
+    (instance) => instance?.isCurrentChainDisabled
   )
 
   const [inputAmount, setInputAmount] = useState('')
@@ -402,7 +402,7 @@ export const Widget = ({
         className={`grid gap-2 text-[--synapse-text] w-full ${containerStyle}`}
         style={{ background: 'var(--synapse-root)' }}
       >
-        {maintenanceCountdownProgressInstances.map((instance) => (
+        {maintenanceCountdownProgressInstances?.map((instance) => (
           <>{instance.MaintenanceCountdownProgressBar}</>
         ))}
         <Transactions connectedAddress={connectedAddress} />

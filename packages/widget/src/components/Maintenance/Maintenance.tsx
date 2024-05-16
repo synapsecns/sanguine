@@ -25,39 +25,43 @@ export const useMaintenanceComponents = (
   pausedChains: any,
   pausedModules: any
 ) => {
-  const pausedChainsList: ChainPause[] = pausedChains.map((pause) => {
-    return {
-      ...pause,
-      startTimePauseChain: new Date(pause.startTimePauseChain),
-      endTimePauseChain: pause.endTimePauseChain
-        ? new Date(pause.endTimePauseChain)
-        : null,
-      inputWarningMessage: <div>{pause.inputWarningMessage}</div>,
-      progressBarMessage: <div>{pause.progressBarMessage}</div>,
+  const pausedChainsList: ChainPause[] = pausedChains?.map(
+    (pause: ChainPause) => {
+      return {
+        ...pause,
+        startTimePauseChain: new Date(pause.startTimePauseChain),
+        endTimePauseChain: pause.endTimePauseChain
+          ? new Date(pause.endTimePauseChain)
+          : null,
+        inputWarningMessage: <div>{pause.inputWarningMessage}</div>,
+        progressBarMessage: <div>{pause.progressBarMessage}</div>,
+      }
     }
-  })
+  )
 
-  const pausedModulesList: BridgeModulePause[] = pausedModules.map((route) => {
-    if (!isValidBridgeModule(route.bridgeModuleName)) {
-      throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
-    }
+  const pausedModulesList: BridgeModulePause[] = pausedModules?.map(
+    (route: BridgeModulePause) => {
+      if (!isValidBridgeModule(route.bridgeModuleName)) {
+        throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
+      }
 
-    return {
-      ...route,
-      bridgeModuleName: route.bridgeModuleName as
-        | 'SynapseBridge'
-        | 'SynapseRFQ'
-        | 'SynapseCCTP'
-        | 'ALL',
+      return {
+        ...route,
+        bridgeModuleName: route.bridgeModuleName as
+          | 'SynapseBridge'
+          | 'SynapseRFQ'
+          | 'SynapseCCTP'
+          | 'ALL',
+      }
     }
-  })
+  )
 
   const MaintenanceWarningMessages = () => {
     const { originChainId, destinationChainId } = useBridgeState()
 
     return (
       <>
-        {pausedChainsList.map((event) => {
+        {pausedChainsList?.map((event) => {
           return (
             <MaintenanceWarningMessage
               originChainId={originChainId}
