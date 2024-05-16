@@ -34,7 +34,7 @@ type UnauthenticatedClient interface {
 	GetAllQuotes(ctx context.Context) ([]*model.GetQuoteResponse, error)
 	GetSpecificQuote(ctx context.Context, q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error)
 	GetQuoteByRelayerAddress(ctx context.Context, relayerAddr string) ([]*model.GetQuoteResponse, error)
-	GetRelayAck(ctx context.Context, txID string) (*model.GetRelayAckResponse, error)
+	GetRelayAck(ctx context.Context, txID string) (*model.PutRelayAckResponse, error)
 	resty() *resty.Client
 }
 
@@ -190,8 +190,8 @@ func (c *unauthenticatedClient) GetQuoteByRelayerAddress(ctx context.Context, re
 	return quotes, nil
 }
 
-func (c *unauthenticatedClient) GetRelayAck(ctx context.Context, txID string) (*model.GetRelayAckResponse, error) {
-	var ack *model.GetRelayAckResponse
+func (c *unauthenticatedClient) GetRelayAck(ctx context.Context, txID string) (*model.PutRelayAckResponse, error) {
+	var ack *model.PutRelayAckResponse
 	resp, err := c.rClient.R().
 		SetContext(ctx).
 		SetQueryParams(map[string]string{

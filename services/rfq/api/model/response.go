@@ -26,8 +26,8 @@ type GetQuoteResponse struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-// GetRelayAckResponse contains the schema for a GET /relay/ack response.
-type GetRelayAckResponse struct {
+// PutRelayAckResponse contains the schema for a PUT /relay/ack response.
+type PutRelayAckResponse struct {
 	// TxID is the transaction ID
 	TransactionID string `json:"tx_id"`
 	// ShouldRelay is a boolean indicating whether the transaction should be relayed

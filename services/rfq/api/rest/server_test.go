@@ -217,10 +217,10 @@ func (c *ServerSuite) TestGetAck() {
 	c.Equal(http.StatusOK, resp.StatusCode)
 
 	// Expect ack with shouldRelay=true
-	var result relapi.GetRelayAckResponse
+	var result relapi.PutRelayAckResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
-	expectedResult := relapi.GetRelayAckResponse{
+	expectedResult := relapi.PutRelayAckResponse{
 		TxID:        testTxID,
 		ShouldRelay: true,
 	}
@@ -238,7 +238,7 @@ func (c *ServerSuite) TestGetAck() {
 	// Expect ack with shouldRelay=false
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
-	expectedResult = relapi.GetRelayAckResponse{
+	expectedResult = relapi.PutRelayAckResponse{
 		TxID:        testTxID,
 		ShouldRelay: false,
 	}
