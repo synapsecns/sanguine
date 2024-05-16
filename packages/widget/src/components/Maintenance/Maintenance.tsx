@@ -64,6 +64,7 @@ export const useMaintenanceComponents = (
         {pausedChainsList?.map((event) => {
           return (
             <MaintenanceWarningMessage
+              key={event.id}
               originChainId={originChainId}
               destinationChainId={destinationChainId}
               startDate={event.startTimePauseChain}
@@ -83,16 +84,18 @@ export const useMaintenanceComponents = (
     const { originChainId, destinationChainId } = useBridgeState()
 
     return pausedChainsList?.map((event) => {
-      return useMaintenanceCountdownProgress({
-        originChainId,
-        destinationChainId,
-        startDate: event.startTimePauseChain,
-        endDate: event.endTimePauseChain,
-        pausedFromChains: event.pausedFromChains,
-        pausedToChains: event.pausedToChains,
-        progressBarMessage: event.progressBarMessage,
-        disabled: event.disableCountdown,
-      })
+      if (event) {
+        return useMaintenanceCountdownProgress({
+          originChainId,
+          destinationChainId,
+          startDate: event.startTimePauseChain,
+          endDate: event.endTimePauseChain,
+          pausedFromChains: event.pausedFromChains,
+          pausedToChains: event.pausedToChains,
+          progressBarMessage: event.progressBarMessage,
+          disabled: event.disableCountdown,
+        })
+      }
     })
   }
 
