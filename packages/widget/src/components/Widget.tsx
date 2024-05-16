@@ -63,7 +63,6 @@ import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { useMaintenanceComponents } from './Maintenance/Maintenance'
 import { getSynapsePauseData } from '@/utils/getSynapsePauseData'
 import { isChainIncluded } from '@/utils/isChainIncluded'
-import { MaintenanceCountdownProgress } from './Maintenance/MaintenanceCountdownProgress'
 import { useEventCountdownProgressBar } from '@/components/Maintenance/hooks/useEventCountdownProgressBar'
 
 interface WidgetProps {
@@ -101,37 +100,24 @@ export const Widget = ({
   } = useBridgeState()
 
   const { chainPause, modulePause } = getSynapsePauseData()
-  const {
-    pausedChains,
-    pausedModules,
-    MaintenanceWarningMessages,
-    // useMaintenanceCountdownProgresses,
-  } = useMaintenanceComponents(chainPause, modulePause)
+  const { pausedChainsList, pausedModulesList, MaintenanceWarningMessages } =
+    useMaintenanceComponents(chainPause, modulePause)
 
-  const currentChainPause = pausedChains.find((pauseData) => {
-    return isChainIncluded(
-      [...pauseData?.pausedFromChains, ...pauseData?.pausedToChains],
-      [originChainId, destinationChainId]
-    )
-  })
-
-  const {
-    isPending: isBridgeDisabled,
-    EventCountdownProgressBar: MaintenanceCountdownProgressBar,
-  } = useEventCountdownProgressBar(
-    currentChainPause?.progressBarMessage,
-    currentChainPause?.startTimePauseChain,
-    currentChainPause?.endTimePauseChain
+  const activePause = pausedChainsList.find(
+    (pauseData) =>
+      isChainIncluded(pauseData?.pausedFromChains, [originChainId]) ||
+      isChainIncluded(pauseData?.pausedToChains, [destinationChainId])
   )
 
-  console.log('currentChainPause: ', currentChainPause)
+  const { isPending: isBridgePaused, EventCountdownProgressBar } =
+    useEventCountdownProgressBar(
+      activePause?.progressBarMessage,
+      activePause?.startTimePauseChain,
+      activePause?.endTimePauseChain,
+      activePause?.disableCountdown
+    )
 
-  // const maintenanceCountdownProgressInstances =
-  //   useMaintenanceCountdownProgresses()
-
-  // const isBridgePaused = maintenanceCountdownProgressInstances?.some(
-  //   (instance) => instance?.isCurrentChainDisabled
-  // )
+  const BridgeMaintenanceProgressBar = () => EventCountdownProgressBar
 
   const allTokens = useMemo(() => {
     return getFromTokens({
@@ -244,7 +230,7 @@ export const Widget = ({
             debouncedInputAmount,
             synapseSDK,
             requestId: thisRequestId,
-            pausedModules,
+            pausedModules: pausedModulesList,
           })
         )
       }
@@ -424,19 +410,7 @@ export const Widget = ({
         className={`grid gap-2 text-[--synapse-text] w-full ${containerStyle}`}
         style={{ background: 'var(--synapse-root)' }}
       >
-        {/* {maintenanceCountdownProgressInstances?.map((instance) => (
-          <>{instance.MaintenanceCountdownProgressBar}</>
-        ))} */}
-        <MaintenanceCountdownProgress
-          originChainId={originChainId}
-          destinationChainId={destinationChainId}
-          startDate={currentChainPause?.startTimePauseChain}
-          endDate={currentChainPause?.endTimePauseChain}
-          pausedFromChains={currentChainPause?.pausedFromChains}
-          pausedToChains={currentChainPause?.pausedToChains}
-          progressBarMessage={currentChainPause?.progressBarMessage}
-          disabled={currentChainPause?.disableCountdown}
-        />
+        <BridgeMaintenanceProgressBar />
         <Transactions connectedAddress={connectedAddress} />
         <section
           className={cardStyle}
@@ -520,8 +494,7 @@ export const Widget = ({
             approveTxnStatus === ApproveTransactionStatus.PENDING
           }
           isBridgePending={bridgeTxnStatus === BridgeTransactionStatus.PENDING}
-          isBridgePaused={isBridgeDisabled}
-          // isBridgePaused={false}
+          isBridgePaused={isBridgePaused}
         />
       </div>
     </div>
