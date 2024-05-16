@@ -29,5 +29,5 @@ export const MaintenanceCountdownProgress = ({
     EventCountdownProgressBar: MaintenanceCountdownProgressBar,
   } = useEventCountdownProgressBar(progressBarMessage, startDate, endDate)
 
-  return MaintenanceCountdownProgressBar
+  return disabled ? null : MaintenanceCountdownProgressBar
 }
