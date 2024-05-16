@@ -24,7 +24,7 @@ export const useEventCountdownProgressBar = (
   const { totalTimeRemainingInMinutes, hoursRemaining, isComplete, isPending } =
     getCountdownTimeStatus(startDate, endDate)
 
-  useIntervalTimer(60000, isComplete)
+  useIntervalTimer(60000, isComplete || !startDate)
 
   const timeRemaining: string =
     totalTimeRemainingInMinutes > 90

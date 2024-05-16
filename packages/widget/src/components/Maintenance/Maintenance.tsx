@@ -9,15 +9,15 @@ interface ChainPause {
   pausedToChains: number[]
   pauseBridge: boolean
   startTimePauseChain: Date
-  endTimePauseChain: Date | null // If null, pause chain indefinitely
-  inputWarningMessage: JSX.Element
-  progressBarMessage: JSX.Element
+  endTimePauseChain: Date | null
+  inputWarningMessage: string
+  progressBarMessage: string
   disableWarning: boolean
   disableCountdown: boolean
 }
 
 interface BridgeModulePause {
-  chainId?: number // If undefined, pause module for all chains
+  chainId: number | undefined
   bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 
@@ -33,8 +33,8 @@ export const useMaintenanceComponents = (
           endTimePauseChain: pause.endTimePauseChain
             ? new Date(pause.endTimePauseChain)
             : null,
-          inputWarningMessage: <div>{pause.inputWarningMessage}</div>,
-          progressBarMessage: <div>{pause.progressBarMessage}</div>,
+          inputWarningMessage: pause.inputWarningMessage,
+          progressBarMessage: pause.progressBarMessage,
         }
       })
     : []
@@ -80,27 +80,27 @@ export const useMaintenanceComponents = (
     )
   }
 
-  const useMaintenanceCountdownProgresses = () => {
-    const { originChainId, destinationChainId } = useBridgeState()
+  // const useMaintenanceCountdownProgresses = () => {
+  //   const { originChainId, destinationChainId } = useBridgeState()
 
-    return pausedChainsList?.map((event) => {
-      return useMaintenanceCountdownProgress({
-        originChainId,
-        destinationChainId,
-        startDate: event.startTimePauseChain,
-        endDate: event.endTimePauseChain,
-        pausedFromChains: event.pausedFromChains,
-        pausedToChains: event.pausedToChains,
-        progressBarMessage: event.progressBarMessage,
-        disabled: event.disableCountdown,
-      })
-    })
-  }
+  //   return pausedChainsList?.map((event) => {
+  //     return useMaintenanceCountdownProgress({
+  //       originChainId,
+  //       destinationChainId,
+  //       startDate: event.startTimePauseChain,
+  //       endDate: event.endTimePauseChain,
+  //       pausedFromChains: event.pausedFromChains,
+  //       pausedToChains: event.pausedToChains,
+  //       progressBarMessage: event.progressBarMessage,
+  //       disabled: event.disableCountdown,
+  //     })
+  //   })
+  // }
 
   return {
     pausedChains: pausedChainsList,
     pausedModules: pausedModulesList,
     MaintenanceWarningMessages,
-    useMaintenanceCountdownProgresses,
+    // useMaintenanceCountdownProgresses,
   }
 }

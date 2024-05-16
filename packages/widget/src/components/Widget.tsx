@@ -63,6 +63,8 @@ import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { useMaintenanceComponents } from './Maintenance/Maintenance'
 import { getSynapsePauseData } from '@/utils/getSynapsePauseData'
 import { isChainIncluded } from '@/utils/isChainIncluded'
+import { MaintenanceCountdownProgress } from './Maintenance/MaintenanceCountdownProgress'
+import { useEventCountdownProgressBar } from '@/components/Maintenance/hooks/useEventCountdownProgressBar'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -103,7 +105,7 @@ export const Widget = ({
     pausedChains,
     pausedModules,
     MaintenanceWarningMessages,
-    useMaintenanceCountdownProgresses,
+    // useMaintenanceCountdownProgresses,
   } = useMaintenanceComponents(chainPause, modulePause)
 
   const currentChainPause = pausedChains.find((pauseData) => {
@@ -112,6 +114,15 @@ export const Widget = ({
       [originChainId, destinationChainId]
     )
   })
+
+  const {
+    isPending: isBridgeDisabled,
+    EventCountdownProgressBar: MaintenanceCountdownProgressBar,
+  } = useEventCountdownProgressBar(
+    currentChainPause?.progressBarMessage,
+    currentChainPause?.startTimePauseChain,
+    currentChainPause?.endTimePauseChain
+  )
 
   console.log('currentChainPause: ', currentChainPause)
 
@@ -416,6 +427,16 @@ export const Widget = ({
         {/* {maintenanceCountdownProgressInstances?.map((instance) => (
           <>{instance.MaintenanceCountdownProgressBar}</>
         ))} */}
+        <MaintenanceCountdownProgress
+          originChainId={originChainId}
+          destinationChainId={destinationChainId}
+          startDate={currentChainPause?.startTimePauseChain}
+          endDate={currentChainPause?.endTimePauseChain}
+          pausedFromChains={currentChainPause?.pausedFromChains}
+          pausedToChains={currentChainPause?.pausedToChains}
+          progressBarMessage={currentChainPause?.progressBarMessage}
+          disabled={currentChainPause?.disableCountdown}
+        />
         <Transactions connectedAddress={connectedAddress} />
         <section
           className={cardStyle}
@@ -499,8 +520,8 @@ export const Widget = ({
             approveTxnStatus === ApproveTransactionStatus.PENDING
           }
           isBridgePending={bridgeTxnStatus === BridgeTransactionStatus.PENDING}
-          // isBridgePaused={isBridgePaused}
-          isBridgePaused={false}
+          isBridgePaused={isBridgeDisabled}
+          // isBridgePaused={false}
         />
       </div>
     </div>
