@@ -65,7 +65,7 @@ var runCommand = &cli.Command{
 		mgr := manager.NewManager(provisioner, nil)
 
 		var sendr *sender.Sender
-		var senderCfg config.SenderConfig
+		var senderCfg *config.SenderConfig
 		if c.Bool(senderFlag.Name) {
 			senderInput, err := os.ReadFile(filepath.Clean(c.String(senderConfigFlag.Name)))
 			if err != nil {

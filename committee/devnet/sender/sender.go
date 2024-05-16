@@ -21,7 +21,7 @@ import (
 const (
 	InterchainDBSepoliaAddress  = "0x8d50e833331A0D01d6F286881ce2C3A5DAD12e26"
 	SynapseModuleSepoliaAddress = "0x93391bD1De68aFBAB10BB94BF3d36a4484B60eA2"
-	RichGuy                     = "0x9B984D5a03980D8dc0a24506c968465424c81DbE"
+	RichGuy                     = "0xaBD7F11c1BF37c966D59924553F0437B33C791dc"
 )
 
 // TODO: make this an interface
@@ -32,7 +32,7 @@ type Sender struct {
 	evmClient    ethergoClient.EVM
 }
 
-func NewSender(ctx context.Context, cfg config.SenderConfig, handler metrics.Handler) (*Sender, error) {
+func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Handler) (*Sender, error) {
 	originClient, err := anvil.Dial(ctx, "http://localhost:9001/rpc/42")
 	if err != nil {
 		return nil, fmt.Errorf("could not dial origin client: %w", err)
@@ -65,7 +65,7 @@ func NewSender(ctx context.Context, cfg config.SenderConfig, handler metrics.Han
 	}, nil
 }
 
-func (s *Sender) Start(ctx context.Context, cfg config.SenderConfig) error {
+func (s *Sender) Start(ctx context.Context, cfg *config.SenderConfig) error {
 	// send verificationrequests every 5 seconds
 	for {
 		tx, err := s.sendWriteEntryWithVerification(ctx, cfg)
@@ -87,7 +87,7 @@ func (s *Sender) Start(ctx context.Context, cfg config.SenderConfig) error {
 
 func (s *Sender) sendWriteEntryWithVerification(
 	ctx context.Context,
-	cfg config.SenderConfig,
+	cfg *config.SenderConfig,
 ) (*types.Transaction, error) {
 	fee, err := s.getInterchainFee(ctx, uint64(cfg.DestinationChainID))
 	if err != nil {
@@ -125,7 +125,6 @@ func (s *Sender) sendWriteEntryWithVerification(
 	}
 
 	return tx, nil
-
 }
 
 // gets the interchain fee for the destination chain
