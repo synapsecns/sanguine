@@ -6,7 +6,7 @@ import (
 
 	"github.com/synapsecns/sanguine/committee/devnet/cmd"
 
-	"github.com/synapsecns/sanguine/committee/metadata"
+	"github.com/synapsecns/sanguine/committee/devnet/metadata"
 )
 
 func main() {

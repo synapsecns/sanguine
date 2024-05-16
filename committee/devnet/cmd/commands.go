@@ -27,7 +27,7 @@ var senderFlag = &cli.BoolFlag{
 }
 
 var senderConfigFlag = &cli.StringFlag{
-	Name:      "senderconfig",
+	Name:      "sender-config",
 	Usage:     "path to the sender config file",
 	TakesFile: true,
 }
