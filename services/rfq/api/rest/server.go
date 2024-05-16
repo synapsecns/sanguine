@@ -245,24 +245,29 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 
 // PutRelayAck checks if a relay is pending or not.
 func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
-	transactionID := c.Query("id")
-	if transactionID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'id'"})
+	req, exists := c.Get("putRequest")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Request not found"})
+		return
+	}
+	ackReq, ok := req.(*model.PutAckRequest)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request type"})
 		return
 	}
 
 	// If the tx id is already in the cache, it should not be relayed.
 	// Otherwise, insert into the cache.
 	r.ackMux.Lock()
-	ack := r.relayAckCache.Get(transactionID)
+	ack := r.relayAckCache.Get(ackReq.TxID)
 	shouldRelay := ack == nil
 	if shouldRelay {
-		r.relayAckCache.Set(transactionID, true, ttlcache.DefaultTTL)
+		r.relayAckCache.Set(ackReq.TxID, true, ttlcache.DefaultTTL)
 	}
 	r.ackMux.Unlock()
 
 	resp := relapi.PutRelayAckResponse{
-		TxID:        transactionID,
+		TxID:        ackReq.TxID,
 		ShouldRelay: shouldRelay,
 	}
 	c.JSON(http.StatusOK, resp)

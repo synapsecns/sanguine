@@ -41,7 +41,7 @@ type Relayer struct {
 	client         omniClient.RPCClient
 	chainListeners map[int]listener.ContractListener
 	apiServer      *relapi.RelayerAPIServer
-	apiClient      rfqAPIClient.UnauthenticatedClient
+	apiClient      rfqAPIClient.AuthenticatedClient
 	inventory      inventory.Manager
 	quoter         quoter.Quoter
 	submitter      submitter.TransactionSubmitter
@@ -122,7 +122,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get api server: %w", err)
 	}
 
-	apiClient, err := rfqAPIClient.NewUnauthenticatedClient(metricHandler, cfg.GetRfqAPIURL())
+	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricHandler, cfg.GetRfqAPIURL(), sg)
 	if err != nil {
 		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
 	}

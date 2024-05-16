@@ -44,7 +44,7 @@ type QuoteRequestHandler struct {
 	// metrics is the metrics handler.
 	metrics metrics.Handler
 	// apiClient is used to get acks before submitting a relay transaction.
-	apiClient client.UnauthenticatedClient
+	apiClient client.AuthenticatedClient
 }
 
 // Handler is the handler for a quote request.
