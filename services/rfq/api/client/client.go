@@ -26,6 +26,7 @@ import (
 // It provides methods for creating, retrieving and updating quotes.
 type AuthenticatedClient interface {
 	PutQuote(ctx context.Context, q *model.PutQuoteRequest) error
+	PutRelayAck(ctx context.Context, req *model.PutAckRequest) (*model.PutRelayAckResponse, error)
 	UnauthenticatedClient
 }
 
@@ -34,7 +35,6 @@ type UnauthenticatedClient interface {
 	GetAllQuotes(ctx context.Context) ([]*model.GetQuoteResponse, error)
 	GetSpecificQuote(ctx context.Context, q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error)
 	GetQuoteByRelayerAddress(ctx context.Context, relayerAddr string) ([]*model.GetQuoteResponse, error)
-	GetRelayAck(ctx context.Context, txID string) (*model.PutRelayAckResponse, error)
 	resty() *resty.Client
 }
 
@@ -125,6 +125,25 @@ func (c *clientImpl) PutQuote(ctx context.Context, q *model.PutQuoteRequest) err
 	return err
 }
 
+func (c *clientImpl) PutRelayAck(ctx context.Context, req *model.PutAckRequest) (*model.PutRelayAckResponse, error) {
+	var ack *model.PutRelayAckResponse
+	resp, err := c.rClient.R().
+		SetContext(ctx).
+		SetBody(req).
+		SetResult(&ack).
+		Put(rest.AckRoute)
+
+	if err != nil {
+		return nil, fmt.Errorf("error from server: %s %w", resp.Status(), err)
+	}
+
+	if resp.IsError() {
+		return nil, fmt.Errorf("error from server: %s", resp.Status())
+	}
+
+	return ack, nil
+}
+
 // GetAllQuotes retrieves all quotes from the RFQ quoting API.
 func (c *unauthenticatedClient) GetAllQuotes(ctx context.Context) ([]*model.GetQuoteResponse, error) {
 	var quotes []*model.GetQuoteResponse
@@ -188,25 +207,4 @@ func (c *unauthenticatedClient) GetQuoteByRelayerAddress(ctx context.Context, re
 	}
 
 	return quotes, nil
-}
-
-func (c *unauthenticatedClient) GetRelayAck(ctx context.Context, txID string) (*model.PutRelayAckResponse, error) {
-	var ack *model.PutRelayAckResponse
-	resp, err := c.rClient.R().
-		SetContext(ctx).
-		SetQueryParams(map[string]string{
-			"id": txID,
-		}).
-		SetResult(&ack).
-		Get(rest.AckRoute)
-
-	if err != nil {
-		return nil, fmt.Errorf("error from server: %s %w", resp.Status(), err)
-	}
-
-	if resp.IsError() {
-		return nil, fmt.Errorf("error from server: %s", resp.Status())
-	}
-
-	return ack, nil
 }

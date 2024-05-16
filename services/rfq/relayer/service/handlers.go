@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -148,7 +149,11 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 	}
 
 	// get ack from API to synchronize calls with other relayers and avoid reverts
-	resp, err := q.apiClient.GetRelayAck(ctx, hexutil.Encode(request.TransactionID[:]))
+	req := model.PutAckRequest{
+		TxID:        hexutil.Encode(request.TransactionID[:]),
+		DestChainID: int(request.Transaction.DestChainId),
+	}
+	resp, err := q.apiClient.PutRelayAck(ctx, &req)
 	if err != nil {
 		return fmt.Errorf("could not get relay ack: %w", err)
 	}
