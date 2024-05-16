@@ -1,14 +1,9 @@
-import { getCountdownTimeStatus } from './EventCountdownProgressBar'
+import { getCountdownTimeStatus } from '../helpers/getCountdownTimeStatus'
 import { isChainIncluded } from '@/utils/isChainIncluded'
 
 /**
- * Displays a warning message based on selected chains in Bridge Input
- * Able to specify which chains to display warning messages for.
- *
- * @param startDate Start time to display message
- * @param endDate End time to remove message
- * @param pausedChains A list of chainIds to display warning messages for
- * @param warningMessage Message to display if User is connected to paused chainIds
+ * Displays warning message triggered by start and end time.
+ * Renders for selected origin and/or destination chain IDs.
  */
 export const MaintenanceWarningMessage = ({
   originChainId,

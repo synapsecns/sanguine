@@ -1,6 +1,7 @@
-import { MaintenanceWarningMessage } from './MaintenanceWarningMessage'
-import { useMaintenanceCountdownProgress } from './useMaintenanceCountdownProgress'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
+import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
+import { useMaintenanceCountdownProgress } from './hooks/useMaintenanceCountdownProgress'
+import { isValidBridgeModule } from './helpers/isValidBridgeModule'
 
 interface ChainPause {
   id: string
@@ -8,7 +9,7 @@ interface ChainPause {
   pausedToChains: number[]
   pauseBridge: boolean
   startTimePauseChain: Date
-  endTimePauseChain: Date | null // If null, pause indefinitely
+  endTimePauseChain: Date | null // If null, pause chain indefinitely
   inputWarningMessage: JSX.Element
   progressBarMessage: JSX.Element
   disableWarning: boolean
@@ -16,7 +17,7 @@ interface ChainPause {
 }
 
 interface BridgeModulePause {
-  chainId?: number // Will pause for all chains if undefined
+  chainId?: number // If undefined, pause module for all chains
   bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 
@@ -96,17 +97,4 @@ export const useMaintenanceComponents = (
     MaintenanceWarningMessages,
     useMaintenanceCountdownProgresses,
   }
-}
-
-const isValidBridgeModule = (
-  module: any
-): module is 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL' => {
-  return ['SynapseBridge', 'SynapseRFQ', 'SynapseCCTP', 'ALL'].includes(module)
-}
-
-export const getBridgeModuleNames = (module) => {
-  if (module.bridgeModuleName === 'ALL') {
-    return ['SynapseRFQ', 'SynapseCCTP', 'SynapseBridge']
-  }
-  return [module.bridgeModuleName]
 }

@@ -8,7 +8,7 @@ import { stringToBigInt } from '@/utils/stringToBigInt'
 import { powBigInt } from '@/utils/powBigInt'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { getBridgeModuleNames } from '@/components/Maintenance/Maintenance'
+import { getBridgeModuleNames } from '@/components/Maintenance/helpers/getBridgeModuleNames'
 
 export const useBridgeQuoteState = (): RootState['bridgeQuote'] => {
   return useAppSelector((state) => state.bridgeQuote)
