@@ -32,4 +32,6 @@ type PutRelayAckResponse struct {
 	TransactionID string `json:"tx_id"`
 	// ShouldRelay is a boolean indicating whether the transaction should be relayed
 	ShouldRelay bool `json:"should_relay"`
+	// RelayerAddress is the address of the relayer that is currently acked
+	RelayerAddress string `json:"relayer_address"`
 }

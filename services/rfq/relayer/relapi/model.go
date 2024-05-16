@@ -18,6 +18,7 @@ type GetTxRetryResponse struct {
 
 // PutRelayAckResponse contains the schema for a POST /relay/ack response.
 type PutRelayAckResponse struct {
-	TxID        string `json:"tx_id"`
-	ShouldRelay bool   `json:"should_relay"`
+	TxID           string `json:"tx_id"`
+	ShouldRelay    bool   `json:"should_relay"`
+	RelayerAddress string `json:"relayer_address"`
 }

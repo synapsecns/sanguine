@@ -220,8 +220,9 @@ func (c *ServerSuite) TestPutAck() {
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
 	expectedResult := relapi.PutRelayAckResponse{
-		TxID:        testTxID,
-		ShouldRelay: true,
+		TxID:           testTxID,
+		ShouldRelay:    true,
+		RelayerAddress: c.testWallet.Address().Hex(),
 	}
 	c.Equal(expectedResult, result)
 	err = resp.Body.Close()
@@ -238,8 +239,9 @@ func (c *ServerSuite) TestPutAck() {
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
 	expectedResult = relapi.PutRelayAckResponse{
-		TxID:        testTxID,
-		ShouldRelay: false,
+		TxID:           testTxID,
+		ShouldRelay:    false,
+		RelayerAddress: c.testWallet.Address().Hex(),
 	}
 	c.Equal(expectedResult, result)
 	err = resp.Body.Close()
