@@ -13,7 +13,8 @@ import { EventCountdownProgressBar } from '../components/EventCountdownProgressB
 export const useEventCountdownProgressBar = (
   eventLabel: string,
   startDate: Date,
-  endDate: Date | null
+  endDate: Date | null,
+  hideProgress?: boolean
 ): {
   isPending: boolean
   isComplete: boolean
@@ -42,7 +43,7 @@ export const useEventCountdownProgressBar = (
   return {
     isPending,
     isComplete,
-    EventCountdownProgressBar: (
+    EventCountdownProgressBar: !hideProgress && (
       <EventCountdownProgressBar
         eventLabel={eventLabel}
         startDate={startDate}

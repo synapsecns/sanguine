@@ -1,6 +1,5 @@
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
-import { useMaintenanceCountdownProgress } from './hooks/useMaintenanceCountdownProgress'
 import { isValidBridgeModule } from './helpers/isValidBridgeModule'
 
 interface ChainPause {
@@ -80,27 +79,9 @@ export const useMaintenanceComponents = (
     )
   }
 
-  // const useMaintenanceCountdownProgresses = () => {
-  //   const { originChainId, destinationChainId } = useBridgeState()
-
-  //   return pausedChainsList?.map((event) => {
-  //     return useMaintenanceCountdownProgress({
-  //       originChainId,
-  //       destinationChainId,
-  //       startDate: event.startTimePauseChain,
-  //       endDate: event.endTimePauseChain,
-  //       pausedFromChains: event.pausedFromChains,
-  //       pausedToChains: event.pausedToChains,
-  //       progressBarMessage: event.progressBarMessage,
-  //       disabled: event.disableCountdown,
-  //     })
-  //   })
-  // }
-
   return {
-    pausedChains: pausedChainsList,
-    pausedModules: pausedModulesList,
+    pausedChainsList,
+    pausedModulesList,
     MaintenanceWarningMessages,
-    // useMaintenanceCountdownProgresses,
   }
 }
