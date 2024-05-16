@@ -25,36 +25,36 @@ export const useMaintenanceComponents = (
   pausedChains: any,
   pausedModules: any
 ) => {
-  const pausedChainsList: ChainPause[] = pausedChains?.map(
-    (pause: ChainPause) => {
-      return {
-        ...pause,
-        startTimePauseChain: new Date(pause.startTimePauseChain),
-        endTimePauseChain: pause.endTimePauseChain
-          ? new Date(pause.endTimePauseChain)
-          : null,
-        inputWarningMessage: <div>{pause.inputWarningMessage}</div>,
-        progressBarMessage: <div>{pause.progressBarMessage}</div>,
-      }
-    }
-  )
+  const pausedChainsList: ChainPause[] = pausedChains
+    ? pausedChains?.map((pause: ChainPause) => {
+        return {
+          ...pause,
+          startTimePauseChain: new Date(pause.startTimePauseChain),
+          endTimePauseChain: pause.endTimePauseChain
+            ? new Date(pause.endTimePauseChain)
+            : null,
+          inputWarningMessage: <div>{pause.inputWarningMessage}</div>,
+          progressBarMessage: <div>{pause.progressBarMessage}</div>,
+        }
+      })
+    : []
 
-  const pausedModulesList: BridgeModulePause[] = pausedModules?.map(
-    (route: BridgeModulePause) => {
-      if (!isValidBridgeModule(route.bridgeModuleName)) {
-        throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
-      }
+  const pausedModulesList: BridgeModulePause[] = pausedModules
+    ? pausedModules?.map((route: BridgeModulePause) => {
+        if (!isValidBridgeModule(route.bridgeModuleName)) {
+          throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
+        }
 
-      return {
-        ...route,
-        bridgeModuleName: route.bridgeModuleName as
-          | 'SynapseBridge'
-          | 'SynapseRFQ'
-          | 'SynapseCCTP'
-          | 'ALL',
-      }
-    }
-  )
+        return {
+          ...route,
+          bridgeModuleName: route.bridgeModuleName as
+            | 'SynapseBridge'
+            | 'SynapseRFQ'
+            | 'SynapseCCTP'
+            | 'ALL',
+        }
+      })
+    : []
 
   const MaintenanceWarningMessages = () => {
     const { originChainId, destinationChainId } = useBridgeState()
@@ -84,22 +84,21 @@ export const useMaintenanceComponents = (
     const { originChainId, destinationChainId } = useBridgeState()
 
     return pausedChainsList?.map((event) => {
-      if (event) {
-        return useMaintenanceCountdownProgress({
-          originChainId,
-          destinationChainId,
-          startDate: event.startTimePauseChain,
-          endDate: event.endTimePauseChain,
-          pausedFromChains: event.pausedFromChains,
-          pausedToChains: event.pausedToChains,
-          progressBarMessage: event.progressBarMessage,
-          disabled: event.disableCountdown,
-        })
-      }
+      return useMaintenanceCountdownProgress({
+        originChainId,
+        destinationChainId,
+        startDate: event.startTimePauseChain,
+        endDate: event.endTimePauseChain,
+        pausedFromChains: event.pausedFromChains,
+        pausedToChains: event.pausedToChains,
+        progressBarMessage: event.progressBarMessage,
+        disabled: event.disableCountdown,
+      })
     })
   }
 
   return {
+    pausedChains: pausedChainsList,
     pausedModules: pausedModulesList,
     MaintenanceWarningMessages,
     useMaintenanceCountdownProgresses,

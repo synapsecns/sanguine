@@ -62,6 +62,7 @@ import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { useMaintenanceComponents } from './Maintenance/Maintenance'
 import { getSynapsePauseData } from '@/utils/getSynapsePauseData'
+import { isChainIncluded } from '@/utils/isChainIncluded'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -87,20 +88,6 @@ export const Widget = ({
   const { connectedAddress, signer, provider, networkId } =
     web3Context.web3Provider
 
-  const { chainPause, modulePause } = getSynapsePauseData()
-  const {
-    pausedModules,
-    MaintenanceWarningMessages,
-    useMaintenanceCountdownProgresses,
-  } = useMaintenanceComponents(chainPause, modulePause)
-
-  const maintenanceCountdownProgressInstances =
-    useMaintenanceCountdownProgresses()
-
-  const isBridgePaused = maintenanceCountdownProgressInstances?.some(
-    (instance) => instance?.isCurrentChainDisabled
-  )
-
   const [inputAmount, setInputAmount] = useState('')
 
   const {
@@ -110,6 +97,30 @@ export const Widget = ({
     destinationChainId,
     destinationToken,
   } = useBridgeState()
+
+  const { chainPause, modulePause } = getSynapsePauseData()
+  const {
+    pausedChains,
+    pausedModules,
+    MaintenanceWarningMessages,
+    useMaintenanceCountdownProgresses,
+  } = useMaintenanceComponents(chainPause, modulePause)
+
+  const currentChainPause = pausedChains.find((pauseData) => {
+    return isChainIncluded(
+      [...pauseData?.pausedFromChains, ...pauseData?.pausedToChains],
+      [originChainId, destinationChainId]
+    )
+  })
+
+  console.log('currentChainPause: ', currentChainPause)
+
+  // const maintenanceCountdownProgressInstances =
+  //   useMaintenanceCountdownProgresses()
+
+  // const isBridgePaused = maintenanceCountdownProgressInstances?.some(
+  //   (instance) => instance?.isCurrentChainDisabled
+  // )
 
   const allTokens = useMemo(() => {
     return getFromTokens({
@@ -402,9 +413,9 @@ export const Widget = ({
         className={`grid gap-2 text-[--synapse-text] w-full ${containerStyle}`}
         style={{ background: 'var(--synapse-root)' }}
       >
-        {maintenanceCountdownProgressInstances?.map((instance) => (
+        {/* {maintenanceCountdownProgressInstances?.map((instance) => (
           <>{instance.MaintenanceCountdownProgressBar}</>
-        ))}
+        ))} */}
         <Transactions connectedAddress={connectedAddress} />
         <section
           className={cardStyle}
@@ -488,7 +499,8 @@ export const Widget = ({
             approveTxnStatus === ApproveTransactionStatus.PENDING
           }
           isBridgePending={bridgeTxnStatus === BridgeTransactionStatus.PENDING}
-          isBridgePaused={isBridgePaused}
+          // isBridgePaused={isBridgePaused}
+          isBridgePaused={false}
         />
       </div>
     </div>
