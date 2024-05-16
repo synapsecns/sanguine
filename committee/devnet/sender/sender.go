@@ -76,7 +76,7 @@ func (s *Sender) Start(ctx context.Context, cfg *config.SenderConfig) error {
 		fmt.Println("Verification Request Tx sent", tx.Hash())
 		// wait for it
 		// todo; better way to do it
-		time.Sleep(5 * time.Second)
+		time.Sleep(10 * time.Second)
 		receipt, err := s.evmClient.TransactionReceipt(ctx, tx.Hash())
 		if err != nil {
 			return fmt.Errorf("could not get transaction receipt: %w", err)
@@ -107,7 +107,7 @@ func (s *Sender) sendWriteEntryWithVerification(
 	tx, err := s.originDB.WriteEntryWithVerification(
 		&bind.TransactOpts{
 			From:   richAddr,
-			Value:  fee,
+			Value:  fee.Add(fee, big.NewInt(10000000)),
 			NoSend: true,
 			Signer: anvil.ImpersonatedSigner,
 		},
