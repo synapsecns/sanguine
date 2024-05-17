@@ -12,17 +12,14 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/committee/contracts/interchaindb"
-	"github.com/synapsecns/sanguine/committee/db"
 	"github.com/synapsecns/sanguine/committee/devnet/config"
-	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	ethergoClient "github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 
-	"github.com/synapsecns/sanguine/committee/db/connect"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 const (
@@ -36,9 +33,8 @@ type Sender struct {
 	originAnvilClient *anvil.Client
 	originEVMClient   ethergoClient.EVM
 
-	submitter submitter.TransactionSubmitter
-	address   common.Address
-	db        db.Service
+	signer  signer.Signer
+	address common.Address
 }
 
 func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Handler) (*Sender, error) {
@@ -56,16 +52,6 @@ func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Ha
 		return nil, fmt.Errorf("could not get chain client: %w", err)
 	}
 
-	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
-	if err != nil {
-		return nil, fmt.Errorf("could not get db type: %w", err)
-	}
-
-	s.db, err = connect.Connect(ctx, dbType, cfg.Database.DSN, handler)
-	if err != nil {
-		return nil, fmt.Errorf("could not make db: %w", err)
-	}
-
 	// get the origin DB
 	originInterchainDB, err := interchaindb.NewInterchainDB(
 		common.HexToAddress(InterchainDBSepoliaAddress), chainClient,
@@ -74,29 +60,23 @@ func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Ha
 		return nil, fmt.Errorf("could not create interchaindb: %w", err)
 	}
 
-	signer, err := signerConfig.SignerFromConfig(ctx, cfg.SignerConfig)
+	signer, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
 	if err != nil {
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
-	submitter := submitter.NewTransactionSubmitter(
-		handler,
-		signer,
-		client,
-		s.db.SubmitterDB(),
-		&cfg.SubmitterConfig,
-	)
-
+	fmt.Println(signer)
+	fmt.Println(signer.Address())
 	e, err := ethergoClient.DialBackend(ctx, "http://localhost:9001/rpc/42", handler)
 	if err != nil {
 		return nil, fmt.Errorf("could not dial ethergo backend: %w", err)
 	}
-	return &Sender{
-		originDB:          originInterchainDB,
-		originAnvilClient: originAnvilClient,
-		originEVMClient:   e,
-		submitter:         submitter,
-		address:           signer.Address(),
-	}, nil
+	s.originDB = originInterchainDB
+	s.originAnvilClient = originAnvilClient
+	s.originEVMClient = e
+	s.signer = signer
+	s.address = signer.Address()
+
+	return s, nil
 }
 
 func (s *Sender) Start(ctx context.Context, cfg *config.SenderConfig) error {
@@ -106,12 +86,12 @@ func (s *Sender) Start(ctx context.Context, cfg *config.SenderConfig) error {
 		s.address,
 		uint64(bal),
 	)
-	go func() {
-		err := s.submitter.Start(ctx)
-		if err != nil {
-			fmt.Printf("submitter error: %v", err)
-		}
-	}()
+	// go func() {
+	// 	err := s.submitter.Start(ctx)
+	// 	if err != nil {
+	// 		fmt.Printf("submitter error: %v", err)
+	// 	}
+	// }()
 
 	tx, err := s.sendWriteEntryWithVerification(ctx, cfg)
 	if err != nil {
@@ -141,24 +121,42 @@ func (s *Sender) sendWriteEntryWithVerification(
 		return nil, fmt.Errorf("could not get interchain fee: %w", err)
 	}
 
-	_, err = s.submitter.SubmitTransaction(
-		ctx,
-		big.NewInt(int64(cfg.OriginChainID)),
-		func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-			transactor.Value = fee
-			return s.originDB.WriteEntryWithVerification(
-				transactor,
-				uint64(cfg.DestinationChainID),
-				sha256.Sum256([]byte("fat")),
-				[]common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)},
-			)
-		},
+	txOpts, err := s.signer.GetTransactor(ctx, big.NewInt(int64(cfg.OriginChainID)))
+	if err != nil {
+		return nil, fmt.Errorf("could not get transactor: %w", err)
+	}
+	fmt.Println(txOpts == nil)
+	fmt.Println("txOpts", txOpts)
+	txOpts.Value = fee
+
+	tx, err := s.originDB.WriteEntryWithVerification(
+		txOpts,
+		uint64(cfg.DestinationChainID),
+		sha256.Sum256([]byte("fat")),
+		[]common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("could not submit transaction: %w", err)
+		return nil, fmt.Errorf("could not write entry with verification: %w", err)
 	}
 
-	fmt.Printf("sent transaction %s\n", tx.Hash().Hex())
+	// _, err = s.submitter.SubmitTransaction(
+	// 	ctx,
+	// 	big.NewInt(int64(cfg.OriginChainID)),
+	// 	func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	// 		transactor.Value = fee
+	// 		return s.originDB.WriteEntryWithVerification(
+	// 			transactor,
+	// 			uint64(cfg.DestinationChainID),
+	// 			sha256.Sum256([]byte("fat")),
+	// 			[]common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)},
+	// 		)
+	// 	},
+	// )
+	// if err != nil {
+	// 	return nil, fmt.Errorf("could not submit transaction: %w", err)
+	// }
+
+	// fmt.Printf("sent transaction %s\n", tx.Hash().Hex())
 	return tx, nil
 }
 

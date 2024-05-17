@@ -4,6 +4,3 @@ destination_chain_id: 43
 signer_config:
   type: File
   file: ./signer/sender-signer.txt
-database:
-  type: sqlite
-  dsn: /tmp/sender.db
