@@ -130,38 +130,38 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 	}
 
 	// ================== Gas Oracle ==================
-	err = p.setLocalNativePrice(ctx, p.gasOracles[42], 42, big.NewInt(100), p.a)
+	err = p.setLocalNativePrice(ctx, p.gasOracles[42], 42, big.NewInt(10000000), p.a)
 	if err != nil {
 		return fmt.Errorf("could not add local native price: %v", err)
 	}
-	err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(100), p.b)
+	err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(10000000), p.b)
 	if err != nil {
 		return fmt.Errorf("could not add local native price: %v", err)
 	}
 
-	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(100), p.a)
+	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(1), p.a)
 	if err != nil {
 		return fmt.Errorf("could not set remote calldata price: %v", err)
 	}
-	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(100), p.b)
+	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(1), p.b)
 	if err != nil {
 		return fmt.Errorf("could not set remote calldata price %v", err)
 	}
 
-	err = p.setRemoteGasPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(100), p.a)
+	err = p.setRemoteGasPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(10), p.a)
 	if err != nil {
 		return fmt.Errorf("could not add remote chain gas price: %v", err)
 	}
-	err = p.setRemoteGasPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(100), p.b)
+	err = p.setRemoteGasPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(10), p.b)
 	if err != nil {
 		return fmt.Errorf("could not add remote chain gas price: %v", err)
 	}
 
-	err = p.setRemoteNativePrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(100), p.a)
+	err = p.setRemoteNativePrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(10), p.a)
 	if err != nil {
 		return fmt.Errorf("could not add remote native price: %v", err)
 	}
-	err = p.setRemoteNativePrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(100), p.b)
+	err = p.setRemoteNativePrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(10), p.b)
 	if err != nil {
 		return fmt.Errorf("could not add remote native price: %v", err)
 	}

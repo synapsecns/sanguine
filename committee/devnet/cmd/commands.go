@@ -87,6 +87,6 @@ var runCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("could not start sender: %w", err)
 		}
-		return mgr.Start(c.Context, provisionerCfg, senderCfg)
+		return mgr.Start(c.Context, provisionerCfg, senderCfg, false)
 	},
 }

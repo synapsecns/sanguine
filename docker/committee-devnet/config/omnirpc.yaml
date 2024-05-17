@@ -5,11 +5,11 @@ chains:
     confirmations: 1
   43:
     rpcs:
-      - http://chain_b:8546/
+      - http://chain_b:8546
     confirmations: 1
   44:
     rpcs:
-      - http://chain_c:8547/
+      - http://chain_c:8547
     confirmations: 1
 # port to run on
 port: 9001
