@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// Start starts the committee node.
+// Start starts the Devnet.
 func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
 	app.Name = buildInfo.Name()

@@ -23,14 +23,12 @@ func NewManager(provisioner *provisioner.Provisioner, sender *sender.Sender) *Ma
 	}
 }
 
-func (m *Manager) Start(parentContext context.Context, pc config.ProvisionerConfig, sc *config.SenderConfig, runProvisioner bool) error {
+func (m *Manager) Start(parentContext context.Context, pc config.ProvisionerConfig, sc *config.SenderConfig) error {
 
 	g, ctx := errgroup.WithContext(parentContext)
 
-	if runProvisioner {
-		if err := m.Provisioner.Run(ctx, pc); err != nil {
-			return err
-		}
+	if err := m.Provisioner.Run(ctx, pc); err != nil {
+		return err
 	}
 
 	g.Go(func() error {

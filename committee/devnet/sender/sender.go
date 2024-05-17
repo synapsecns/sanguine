@@ -31,28 +31,29 @@ const (
 type Sender struct {
 	originDB          *interchaindb.InterchainDB
 	originAnvilClient *anvil.Client
-	originEVMClient   ethergoClient.EVM
 
 	signer  signer.Signer
 	address common.Address
+
+	handler metrics.Handler
 }
 
 func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Handler) (*Sender, error) {
-	s := &Sender{}
 
+	// Get the origin chain's Anvil Client
 	originAnvilClient, err := anvil.Dial(ctx, "http://localhost:9001/rpc/42")
 	if err != nil {
 		return nil, fmt.Errorf("could not dial origin client: %w", err)
 	}
 
-	// set up omnirpc
+	// Set up OmniRPC to interact with the chains
 	client := omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
-	chainClient, err := client.GetChainClient(ctx, 42)
+	chainClient, err := client.GetChainClient(ctx, cfg.OriginChainID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get chain client: %w", err)
 	}
 
-	// get the origin DB
+	// Get bindings for InterchainDB on the Origin chain
 	originInterchainDB, err := interchaindb.NewInterchainDB(
 		common.HexToAddress(InterchainDBSepoliaAddress), chainClient,
 	)
@@ -60,56 +61,39 @@ func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Ha
 		return nil, fmt.Errorf("could not create interchaindb: %w", err)
 	}
 
+	// Get the signer to send Verification Requests
 	signer, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
 	if err != nil {
 		return nil, fmt.Errorf("could not create signer: %w", err)
 	}
-	fmt.Println(signer)
-	fmt.Println(signer.Address())
-	e, err := ethergoClient.DialBackend(ctx, "http://localhost:9001/rpc/42", handler)
-	if err != nil {
-		return nil, fmt.Errorf("could not dial ethergo backend: %w", err)
-	}
-	s.originDB = originInterchainDB
-	s.originAnvilClient = originAnvilClient
-	s.originEVMClient = e
-	s.signer = signer
-	s.address = signer.Address()
 
-	return s, nil
+	return &Sender{
+		originDB:          originInterchainDB,
+		originAnvilClient: originAnvilClient,
+		signer:            signer,
+		address:           signer.Address(),
+		handler:           handler,
+	}, nil
 }
 
 func (s *Sender) Start(ctx context.Context, cfg *config.SenderConfig) error {
 	bal := params.Ether * 100_000_000
-	s.originAnvilClient.SetBalance(
-		ctx,
-		s.address,
-		uint64(bal),
-	)
-	// go func() {
-	// 	err := s.submitter.Start(ctx)
-	// 	if err != nil {
-	// 		fmt.Printf("submitter error: %v", err)
-	// 	}
-	// }()
+	s.originAnvilClient.SetBalance(ctx, s.address, uint64(bal))
 
-	tx, err := s.sendWriteEntryWithVerification(ctx, cfg)
-	if err != nil {
-		return fmt.Errorf("could not send write entry with verification: %w", err)
+	for {
+		tx, err := s.sendWriteEntryWithVerification(ctx, cfg)
+		if err != nil {
+			return fmt.Errorf("could not send write entry with verification: %w", err)
+		}
+
+		if receipt, err := s.waitForReceipt(ctx, tx, s.handler); err != nil {
+			return fmt.Errorf("could not wait for receipt: %w", err)
+		} else {
+			fmt.Println("Verification Request sent! 🎉")
+			fmt.Println("Transaction hash:", receipt.TxHash.Hex())
+		}
 	}
 
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	fmt.Println("waiting for the tx.... 🕰️")
-	receipt, err := bind.WaitMined(ctxWithTimeout, s.originEVMClient, tx)
-	if err != nil {
-		return fmt.Errorf("could not get transaction receipt: %w", err)
-	}
-
-	fmt.Printf("Tx %s status: %d", receipt.TxHash.Hex(), receipt.Status)
-
-	return nil
 }
 
 func (s *Sender) sendWriteEntryWithVerification(
@@ -125,8 +109,6 @@ func (s *Sender) sendWriteEntryWithVerification(
 	if err != nil {
 		return nil, fmt.Errorf("could not get transactor: %w", err)
 	}
-	fmt.Println(txOpts == nil)
-	fmt.Println("txOpts", txOpts)
 	txOpts.Value = fee
 
 	tx, err := s.originDB.WriteEntryWithVerification(
@@ -139,24 +121,6 @@ func (s *Sender) sendWriteEntryWithVerification(
 		return nil, fmt.Errorf("could not write entry with verification: %w", err)
 	}
 
-	// _, err = s.submitter.SubmitTransaction(
-	// 	ctx,
-	// 	big.NewInt(int64(cfg.OriginChainID)),
-	// 	func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-	// 		transactor.Value = fee
-	// 		return s.originDB.WriteEntryWithVerification(
-	// 			transactor,
-	// 			uint64(cfg.DestinationChainID),
-	// 			sha256.Sum256([]byte("fat")),
-	// 			[]common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)},
-	// 		)
-	// 	},
-	// )
-	// if err != nil {
-	// 	return nil, fmt.Errorf("could not submit transaction: %w", err)
-	// }
-
-	// fmt.Printf("sent transaction %s\n", tx.Hash().Hex())
 	return tx, nil
 }
 
@@ -171,4 +135,25 @@ func (s *Sender) getInterchainFee(ctx context.Context, destChainID uint64) (*big
 		return nil, fmt.Errorf("could not get interchain fee: %w", err)
 	}
 	return fee, nil
+}
+
+func (s *Sender) waitForReceipt(parentCtx context.Context, tx *types.Transaction, handler metrics.Handler) (*types.Receipt, error) {
+	fmt.Println("waiting for the tx.... 🕰️")
+
+	// wait a couple blocks at most
+	ctxWithTimeout, cancel := context.WithTimeout(parentCtx, 30*time.Second)
+	defer cancel()
+
+	// Get the EVM client
+	e, err := ethergoClient.DialBackend(parentCtx, "http://localhost:9001/rpc/42", handler)
+	if err != nil {
+		return nil, fmt.Errorf("could not dial ethergo backend: %w", err)
+	}
+
+	receipt, err := bind.WaitMined(ctxWithTimeout, e, tx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get transaction receipt: %w", err)
+	}
+
+	return receipt, nil
 }
