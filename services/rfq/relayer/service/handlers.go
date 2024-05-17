@@ -157,8 +157,13 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 	if err != nil {
 		return fmt.Errorf("could not get relay ack: %w", err)
 	}
+	span.SetAttributes(
+		attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
+		attribute.Bool("should_relay", resp.ShouldRelay),
+		attribute.String("relayer_address", resp.RelayerAddress),
+	)
 	if !resp.ShouldRelay {
-		span.SetAttributes(attribute.Bool("should_relay", false))
+		span.AddEvent("not relaying due to ack")
 		return nil
 	}
 
