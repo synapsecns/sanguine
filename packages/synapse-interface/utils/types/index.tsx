@@ -7,7 +7,6 @@ export type Chain = {
   chainSymbol: string
   name: string
   altName?: string
-  codeName: string
   chainImg: any
   layer: number
   rpcUrls: { primary: string; fallback: string }
@@ -24,6 +23,7 @@ export type Chain = {
   }
   priorityRank?: number
   color?: string
+  isNew?: boolean
 }
 export type PoolToken = {
   symbol: string

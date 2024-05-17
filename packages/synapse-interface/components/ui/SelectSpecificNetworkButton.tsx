@@ -8,6 +8,7 @@ import {
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { joinClassNames } from '@/utils/joinClassNames'
+import { NewTag } from '@/components/ui/NewTag'
 
 export const SelectSpecificNetworkButton = ({
   itemChainId,
@@ -80,7 +81,10 @@ function ButtonContent({
           />
           {chain.name}
         </span>
-        {isOrigin && <ChainTokens balanceTokens={balanceTokens} />}
+        {chain.isNew && <NewTag />}
+        {isOrigin && balanceTokens?.length > 0 && (
+          <ChainTokens balanceTokens={balanceTokens} />
+        )}
       </div>
     )
   )

@@ -3,6 +3,7 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"github.com/flowchartsman/swaggerui"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -10,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"github.com/synapsecns/sanguine/services/omnirpc/swagger"
 	"go.opentelemetry.io/otel/trace"
 	"net/http"
 	"strconv"
@@ -95,6 +97,8 @@ func (r *RPCProxy) Run(ctx context.Context) {
 	router.GET("/chain-ids", func(c *gin.Context) {
 		c.JSON(http.StatusOK, r.chainManager.GetChainIDs())
 	})
+
+	router.Any("/swagger/*any", gin.WrapH(http.StripPrefix("/swagger", swaggerui.Handler(swagger.OpenAPI))))
 
 	router.GET("/collection.json", func(c *gin.Context) {
 		res, err := collection.CreateCollection()

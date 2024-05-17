@@ -1360,3 +1360,22 @@ export const USDB: BridgeableToken = {
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/usdb.33190604.svg',
 }
+
+export const SPECTRAL: BridgeableToken = {
+  priorityRank: 600,
+  addresses: {
+    [CHAINS.ETHEREUM.id]: '0xAdF7C35560035944e805D98fF17d58CDe2449389',
+    [CHAINS.BASE.id]: '0x96419929d7949D6A801A6909c145C8EEf6A40431',
+  },
+  decimals: {
+    [CHAINS.ETHEREUM.id]: 18,
+    [CHAINS.BASE.id]: 18,
+  },
+  symbol: 'SPEC',
+  name: 'Spectral Token',
+  swapableType: 'SPEC',
+  color: 'blue',
+  routeSymbol: 'SPEC',
+  imgUrl:
+    'https://105bc697.sanguine-fe.pages.dev/_next/static/media/spectral.6d51750c.svg',
+}

@@ -102,6 +102,7 @@ type DateResultByChain struct {
 	Dogechain *float64 `json:"dogechain,omitempty"`
 	Base      *float64 `json:"base,omitempty"`
 	Blast     *float64 `json:"blast,omitempty"`
+	Scroll    *float64 `json:"scroll,omitempty"`
 	Total     *float64 `json:"total,omitempty"`
 }
 
