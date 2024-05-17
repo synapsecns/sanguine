@@ -95,9 +95,6 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 	}
 
 	executor.submitter = submitter.NewTransactionSubmitter(handler, executor.signer, executor.client, executor.db.SubmitterDB(), &executor.cfg.SubmitterConfig)
-	if err != nil {
-		return nil, fmt.Errorf("could not get submitter: %w", err)
-	}
 
 	return executor, nil
 }

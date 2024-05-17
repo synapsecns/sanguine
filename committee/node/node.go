@@ -65,8 +65,6 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 		return nil, fmt.Errorf("could not make db: %w", err)
 	}
 
-	fmt.Println("b")
-
 	node.chainListeners = make(map[int]listener.ContractListener)
 	node.interchainContracts = make(map[int]*synapsemodule.SynapseModuleRef)
 
@@ -76,8 +74,6 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
-
-		fmt.Println("c")
 
 		latestBlock, err := chainClient.BlockNumber(ctx)
 		if err != nil {

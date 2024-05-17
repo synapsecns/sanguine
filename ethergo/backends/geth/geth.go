@@ -2,11 +2,12 @@ package geth
 
 import (
 	"context"
-	"github.com/synapsecns/sanguine/ethergo/client"
 	"math/big"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/synapsecns/sanguine/ethergo/client"
 
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"

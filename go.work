@@ -2,7 +2,7 @@ go 1.21.4
 
 // note: new paths should be added as flags to the .codecov.yaml
 use (
-	 ./agents
+	./agents
 	./committee
 	./contrib/git-changes-action
 	./contrib/promexporter

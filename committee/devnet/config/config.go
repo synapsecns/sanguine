@@ -1,7 +1,12 @@
 // Package config provides the configuration for the Committee devnet.
 package config
 
-import "github.com/ethereum/go-ethereum/common"
+import (
+	"github.com/ethereum/go-ethereum/common"
+	dbconfig "github.com/synapsecns/sanguine/committee/config"
+	"github.com/synapsecns/sanguine/ethergo/signer/config"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
+)
 
 // Config is the config for the Synapse module.
 type ProvisionerConfig struct {
@@ -22,4 +27,10 @@ type SenderConfig struct {
 	OriginChainID int `yaml:"origin_chain_id"`
 	// DestinationChainID is the chain ID of the destination chain.
 	DestinationChainID int `yaml:"destination_chain_id"`
+	// Signer is the signer config.
+	SignerConfig config.SignerConfig `yaml:"signer_config"`
+	// Submitter is the submitter config.
+	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
+	// Database is the database config.
+	Database dbconfig.DatabaseConfig `yaml:"database"`
 }

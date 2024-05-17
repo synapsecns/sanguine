@@ -2,27 +2,32 @@ package sender
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"math/big"
 	"time"
 
-	"crypto/sha256"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/synapsecns/sanguine/committee/contracts/interchaindb"
+	"github.com/synapsecns/sanguine/committee/db"
 	"github.com/synapsecns/sanguine/committee/devnet/config"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	ethergoClient "github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+
+	"github.com/synapsecns/sanguine/committee/db/connect"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 )
 
 const (
 	InterchainDBSepoliaAddress  = "0x8d50e833331A0D01d6F286881ce2C3A5DAD12e26"
 	SynapseModuleSepoliaAddress = "0x93391bD1De68aFBAB10BB94BF3d36a4484B60eA2"
-	RichGuy                     = "0xc6e2459991BfE27cca6d86722F35da23A1E4Cb97"
 )
 
 // TODO: make this an interface
@@ -30,9 +35,15 @@ type Sender struct {
 	originDB          *interchaindb.InterchainDB
 	originAnvilClient *anvil.Client
 	originEVMClient   ethergoClient.EVM
+
+	submitter submitter.TransactionSubmitter
+	address   common.Address
+	db        db.Service
 }
 
 func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Handler) (*Sender, error) {
+	s := &Sender{}
+
 	originAnvilClient, err := anvil.Dial(ctx, "http://localhost:9001/rpc/42")
 	if err != nil {
 		return nil, fmt.Errorf("could not dial origin client: %w", err)
@@ -45,6 +56,16 @@ func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Ha
 		return nil, fmt.Errorf("could not get chain client: %w", err)
 	}
 
+	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
+	if err != nil {
+		return nil, fmt.Errorf("could not get db type: %w", err)
+	}
+
+	s.db, err = connect.Connect(ctx, dbType, cfg.Database.DSN, handler)
+	if err != nil {
+		return nil, fmt.Errorf("could not make db: %w", err)
+	}
+
 	// get the origin DB
 	originInterchainDB, err := interchaindb.NewInterchainDB(
 		common.HexToAddress(InterchainDBSepoliaAddress), chainClient,
@@ -52,6 +73,18 @@ func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Ha
 	if err != nil {
 		return nil, fmt.Errorf("could not create interchaindb: %w", err)
 	}
+
+	signer, err := signerConfig.SignerFromConfig(ctx, cfg.SignerConfig)
+	if err != nil {
+		return nil, fmt.Errorf("could not create signer: %w", err)
+	}
+	submitter := submitter.NewTransactionSubmitter(
+		handler,
+		signer,
+		client,
+		s.db.SubmitterDB(),
+		&cfg.SubmitterConfig,
+	)
 
 	e, err := ethergoClient.DialBackend(ctx, "http://localhost:9001/rpc/42", handler)
 	if err != nil {
@@ -61,32 +94,42 @@ func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Ha
 		originDB:          originInterchainDB,
 		originAnvilClient: originAnvilClient,
 		originEVMClient:   e,
+		submitter:         submitter,
+		address:           signer.Address(),
 	}, nil
 }
 
 func (s *Sender) Start(ctx context.Context, cfg *config.SenderConfig) error {
-	// send verificationrequests every 5 seconds
-	for {
-		fmt.Println("sending entry with verification")
-		_, err := s.sendWriteEntryWithVerification(ctx, cfg)
+	bal := params.Ether * 100_000_000
+	s.originAnvilClient.SetBalance(
+		ctx,
+		s.address,
+		uint64(bal),
+	)
+	go func() {
+		err := s.submitter.Start(ctx)
 		if err != nil {
-			return fmt.Errorf("could not send write entry with verification: %w", err)
-
+			fmt.Printf("submitter error: %v", err)
 		}
+	}()
 
-		// ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
-		// defer cancel()
-
-		// fmt.Println("waiting for the tx.... 🕰️")
-		// receipt, err := bind.WaitMined(ctxWithTimeout, s.originEVMClient, tx)
-		// if err != nil {
-		// 	return fmt.Errorf("could not get transaction receipt: %w", err)
-		// }
-
-		// fmt.Printf("Tx %s status: %d", receipt.TxHash.Hex(), receipt.Status)
-		time.Sleep(5 * time.Second)
+	tx, err := s.sendWriteEntryWithVerification(ctx, cfg)
+	if err != nil {
+		return fmt.Errorf("could not send write entry with verification: %w", err)
 	}
 
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	fmt.Println("waiting for the tx.... 🕰️")
+	receipt, err := bind.WaitMined(ctxWithTimeout, s.originEVMClient, tx)
+	if err != nil {
+		return fmt.Errorf("could not get transaction receipt: %w", err)
+	}
+
+	fmt.Printf("Tx %s status: %d", receipt.TxHash.Hex(), receipt.Status)
+
+	return nil
 }
 
 func (s *Sender) sendWriteEntryWithVerification(
@@ -97,34 +140,22 @@ func (s *Sender) sendWriteEntryWithVerification(
 	if err != nil {
 		return nil, fmt.Errorf("could not get interchain fee: %w", err)
 	}
-	richAddr := common.HexToAddress(RichGuy)
 
-	err = s.originAnvilClient.ImpersonateAccount(ctx, richAddr)
-	if err != nil {
-		return nil, fmt.Errorf("could not impersonate account: %w", err)
-	}
-	defer s.originAnvilClient.StopImpersonatingAccount(ctx, richAddr)
-
-	tx, err := s.originDB.WriteEntryWithVerification(
-		&bind.TransactOpts{
-			From:     richAddr,
-			Value:    fee,
-			NoSend:   true,
-			Signer:   anvil.ImpersonatedSigner,
-			GasLimit: 10_000_000,
-			GasPrice: big.NewInt(100000000),
+	_, err = s.submitter.SubmitTransaction(
+		ctx,
+		big.NewInt(int64(cfg.OriginChainID)),
+		func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+			transactor.Value = fee
+			return s.originDB.WriteEntryWithVerification(
+				transactor,
+				uint64(cfg.DestinationChainID),
+				sha256.Sum256([]byte("fat")),
+				[]common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)},
+			)
 		},
-		uint64(cfg.DestinationChainID),
-		sha256.Sum256([]byte("fat")),
-		[]common.Address{common.HexToAddress(SynapseModuleSepoliaAddress)},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("could not create entry with verification: %w", err)
-	}
-
-	err = s.originAnvilClient.SendUnsignedTransaction(ctx, richAddr, tx)
-	if err != nil {
-		return nil, fmt.Errorf("could not send unsigned transaction: %w", err)
+		return nil, fmt.Errorf("could not submit transaction: %w", err)
 	}
 
 	fmt.Printf("sent transaction %s\n", tx.Hash().Hex())
