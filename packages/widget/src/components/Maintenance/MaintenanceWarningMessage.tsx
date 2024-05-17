@@ -1,4 +1,4 @@
-import { getCountdownTimeStatus } from '../helpers/getCountdownTimeStatus'
+import { getCountdownTimeStatus } from '@/utils/getCountdownTimeStatus'
 import { isChainIncluded } from '@/utils/isChainIncluded'
 
 /**

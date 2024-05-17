@@ -1,9 +1,9 @@
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { isChainIncluded } from '@/utils/isChainIncluded'
-import { useEventCountdownProgressBar } from './hooks/useEventCountdownProgressBar'
-import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
-import { getSynapsePauseData } from './helpers/getSynapsePauseData'
-import { isValidBridgeModule } from './helpers/isValidBridgeModule'
+import { useEventCountdownProgressBar } from '@/hooks/useEventCountdownProgressBar'
+import { MaintenanceWarningMessage } from './MaintenanceWarningMessage'
+import { getSynapsePauseData } from '@/utils/getSynapsePauseData'
+import { isValidBridgeModule } from '@/utils/isValidBridgeModule'
 
 interface ChainPause {
   id: string

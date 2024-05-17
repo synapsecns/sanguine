@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { isNull } from 'lodash'
 
-import { getCountdownTimeStatus } from '../helpers/getCountdownTimeStatus'
+import { getCountdownTimeStatus } from '@/utils/getCountdownTimeStatus'
 
 /**
  * Constructs animated progress bar visualizing time progress of an event.
