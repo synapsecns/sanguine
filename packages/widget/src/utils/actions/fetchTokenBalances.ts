@@ -1,7 +1,7 @@
 import { Contract, ethers, AbiCoder, ZeroAddress } from 'ethers'
 import { BridgeableToken } from 'types'
 
-import { formatBigIntToString } from '../formatBigIntToString'
+import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import multicallAbi from '../../constants/abis/multicall.json'
 import erc20Abi from '../../constants/abis/erc20.json'
 

@@ -1,7 +1,5 @@
-const PAUSED_CHAINS_URL =
-  'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json'
-const PAUSED_MODULES_URL =
-  'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
+import { PAUSED_CHAINS_URL, PAUSED_MODULES_URL } from '@/constants/index'
+import { fetchJSONData } from '@/utils/fetchJsonData'
 
 enum SessionStorageKey {
   CHAIN_PAUSE = 'synapse-paused-chains',
@@ -10,7 +8,7 @@ enum SessionStorageKey {
 }
 
 export const getSynapsePauseData = () => {
-  const fetchData = async () => {
+  const fetchAndStoreData = async () => {
     try {
       console.log('[Synapse Widget] Fetching pause data')
       const chainsData = await fetchJSONData(PAUSED_CHAINS_URL)
@@ -65,16 +63,8 @@ export const getSynapsePauseData = () => {
   const isValid = checkIsDataValid()
 
   if (!isValid) {
-    fetchData()
+    fetchAndStoreData()
   }
 
   return readData()
-}
-
-const fetchJSONData = async (url: string): Promise<any> => {
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-  return response.json()
 }

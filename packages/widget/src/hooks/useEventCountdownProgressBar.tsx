@@ -1,6 +1,6 @@
 import { useIntervalTimer } from '@/hooks/useIntervalTimer'
-import { getCountdownTimeStatus } from '../helpers/getCountdownTimeStatus'
-import { EventCountdownProgressBar } from '../components/EventCountdownProgressBar'
+import { getCountdownTimeStatus } from '@/utils/getCountdownTimeStatus'
+import { EventCountdownProgressBar } from '@/components/Maintenance/EventCountdownProgressBar'
 
 /**
  * A hook that constructs a progress bar with a custom message and countdown timer.
