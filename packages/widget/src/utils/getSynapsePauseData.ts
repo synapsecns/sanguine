@@ -7,10 +7,15 @@ enum SessionStorageKey {
   TIMESTAMP = 'synapse-paused-data-timestamp',
 }
 
+let isFetching = false
+
 export const getSynapsePauseData = () => {
   const fetchAndStoreData = async () => {
+    if (isFetching) {
+      return
+    }
     try {
-      console.log('[Synapse Widget] Fetching pause data')
+      isFetching = true
       const chainsData = await fetchJSONData(PAUSED_CHAINS_URL)
       const modulesData = await fetchJSONData(PAUSED_MODULES_URL)
 
@@ -28,6 +33,10 @@ export const getSynapsePauseData = () => {
         '[Synapse Widget] Failed to fetch paused chains/modules: ',
         error
       )
+    } finally {
+      setTimeout(() => {
+        isFetching = false
+      }, 1000)
     }
   }
 
@@ -44,27 +53,7 @@ export const getSynapsePauseData = () => {
     return { pausedChainsData: null, pausedModulesData: null }
   }
 
-  const checkIsDataValid = (): boolean => {
-    const lastFetchTime = sessionStorage.getItem(SessionStorageKey.TIMESTAMP)
-
-    if (lastFetchTime) {
-      const previousTime = Number(lastFetchTime)
-      const currentTime = Date.now()
-
-      const msPerHr = 1000 * 60 * 60
-      const timeElapsedInHrs = (currentTime - previousTime) / msPerHr
-
-      return timeElapsedInHrs < 1
-    } else {
-      return false
-    }
-  }
-
-  const isValid = checkIsDataValid()
-
-  if (!isValid) {
-    fetchAndStoreData()
-  }
+  fetchAndStoreData()
 
   return readData()
 }
