@@ -11,5 +11,5 @@ var (
 
 // BuildInfo returns the build info for the service.
 func BuildInfo() config.BuildInfo {
-	return config.NewBuildInfo(version, commit, "committee", date)
+	return config.NewBuildInfo(version, commit, "committee-devnet", date)
 }
