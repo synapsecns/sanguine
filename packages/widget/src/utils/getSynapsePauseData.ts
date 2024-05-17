@@ -4,7 +4,6 @@ import { fetchJSONData } from '@/utils/fetchJsonData'
 enum SessionStorageKey {
   CHAIN_PAUSE = 'synapse-paused-chains',
   MODULE_PAUSE = 'synapse-paused-modules',
-  TIMESTAMP = 'synapse-paused-data-timestamp',
 }
 
 let isFetching = false
@@ -27,7 +26,6 @@ export const getSynapsePauseData = () => {
         SessionStorageKey.MODULE_PAUSE,
         JSON.stringify(modulesData)
       )
-      sessionStorage.setItem(SessionStorageKey.TIMESTAMP, Date.now().toString())
     } catch (error) {
       console.error(
         '[Synapse Widget] Failed to fetch paused chains/modules: ',
