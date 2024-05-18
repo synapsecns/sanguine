@@ -17,12 +17,11 @@ import (
 )
 
 type Provisioner struct {
-	a              *anvil.Client
-	b              *anvil.Client
-	c              *anvil.Client
-	client         omnirpcClient.RPCClient
-	synapseModules map[int]*synapsemodule.SynapseModule
-	gasOracles     map[int]*gasoracle.SynapseGasOracleV1
+	a          *anvil.Client
+	b          *anvil.Client
+	c          *anvil.Client
+	client     omnirpcClient.RPCClient
+	gasOracles map[int]*gasoracle.SynapseGasOracleV1
 }
 
 func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.ProvisionerConfig) (*Provisioner, error) {
@@ -102,32 +101,67 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 		p.gasOracles[chainID] = gasOracle
 	}
 
-	//
 	// 	// ================== Gas Oracle ==================
 
-	err := p.setLocalNativePrice(ctx, p.gasOracles[42], 42, big.NewInt(100), p.a)
-	if err != nil {
-		return fmt.Errorf("could not add local native price: %v", err)
-	}
-	err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(100), p.b)
-	if err != nil {
-		return fmt.Errorf("could not add local native price: %v", err)
+	chainids := make([]int, 0, len(p.gasOracles))
+	for chainid := range p.gasOracles {
+		chainids = append(chainids, chainid)
 	}
 
-	gasData := gasoracle.ISynapseGasOracleV1RemoteGasData{
-		GasPrice:      big.NewInt(10),
-		CalldataPrice: big.NewInt(1),
-		NativePrice:   big.NewInt(10),
+	for i := 0; i < len(chainids); i++ {
+		for j := 0; j < len(chainids); j++ {
+			if i != j {
+				anvilClient, err := anvil.Dial(ctx, fmt.Sprintf("http://localhost:9001/rpc/%d", chainids[i]))
+				if err != nil {
+					return fmt.Errorf("could not get anvil client: %w", err)
+				}
+
+				err = p.setLocalNativePrice(ctx, p.gasOracles[chainids[i]], chainids[j], big.NewInt(100), anvilClient)
+				if err != nil {
+					return fmt.Errorf("could not add local native price: %v", err)
+				}
+
+				err = p.setRemoteGasData(
+					ctx,
+					p.gasOracles[chainids[i]],
+					chainids[j],
+					gasoracle.ISynapseGasOracleV1RemoteGasData{
+						GasPrice:      big.NewInt(10),
+						CalldataPrice: big.NewInt(1),
+						NativePrice:   big.NewInt(10),
+					},
+					anvilClient,
+				)
+				if err != nil {
+					return fmt.Errorf("could not set remote gas data: %v", err)
+				}
+			}
+		}
 	}
 
-	err = p.setRemoteGasData(ctx, p.gasOracles[42], 43, gasData, p.a)
-	if err != nil {
-		return fmt.Errorf("could not set remote gas data: %v", err)
-	}
-	err = p.setRemoteGasData(ctx, p.gasOracles[43], 42, gasData, p.b)
-	if err != nil {
-		return fmt.Errorf("could not set remote gas data: %v", err)
-	}
+	// err := p.setLocalNativePrice(ctx, p.gasOracles[42], 42, big.NewInt(100), p.a)
+	// if err != nil {
+	// 	return fmt.Errorf("could not add local native price: %v", err)
+	// }
+	// err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(100), p.b)
+	// if err != nil {
+	// 	return fmt.Errorf("could not add local native price: %v", err)
+	// }
+
+	// gasData := gasoracle.ISynapseGasOracleV1RemoteGasData{
+	// 	GasPrice:      big.NewInt(10),
+	// 	CalldataPrice: big.NewInt(1),
+	// 	NativePrice:   big.NewInt(10),
+	// }
+
+	// err = p.setRemoteGasData(ctx, p.gasOracles[42], 43, gasData, p.a)
+	// if err != nil {
+	// 	return fmt.Errorf("could not set remote gas data: %v", err)
+	// }
+	// err = p.setRemoteGasData(ctx, p.gasOracles[43], 42, gasData, p.b)
+	// if err != nil {
+	// 	return fmt.Errorf("could not set remote gas data: %v", err)
+	// }
 
 	// err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(1), p.a)
 	// if err != nil {
@@ -165,7 +199,7 @@ func (p *Provisioner) deleteVerifiers(
 	ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int, client *anvil.Client,
 ) error {
 
-	owner, err := p.getSynapseModuleOwner(ctx, synapseModule, chainid)
+	owner, err := p.getSynapseModuleOwner(ctx, synapseModule)
 	if err != nil {
 		return fmt.Errorf("deleteVerifier: could not get synapse module owner: %w", err)
 	}
@@ -211,7 +245,7 @@ func (p *Provisioner) addVerifiers(
 	cfg config.ProvisionerConfig,
 ) error {
 
-	owner, err := p.getSynapseModuleOwner(ctx, synapseModule, chainid)
+	owner, err := p.getSynapseModuleOwner(ctx, synapseModule)
 	if err != nil {
 		return fmt.Errorf("addVerifiers: could not get synapse module owner: %w", err)
 	}
@@ -248,7 +282,7 @@ func (p *Provisioner) changeThreshold(
 	threshold *big.Int,
 	client *anvil.Client,
 ) error {
-	owner, err := p.getSynapseModuleOwner(ctx, synapseModule, chainid)
+	owner, err := p.getSynapseModuleOwner(ctx, synapseModule)
 	if err != nil {
 		return fmt.Errorf("changeThreshold: could not get synapse module owner: %w", err)
 	}
@@ -258,15 +292,6 @@ func (p *Provisioner) changeThreshold(
 		return err
 	}
 	defer client.StopImpersonatingAccount(ctx, owner)
-
-	received, err := synapseModule.GetThreshold(&bind.CallOpts{Context: ctx})
-	if err != nil {
-		return fmt.Errorf("changeThreshold: could not get threshold: %w", err)
-	}
-	if received.Cmp(threshold) == 0 {
-		fmt.Printf("threshold is already %d on chain %d\n", threshold, chainid)
-		return nil
-	}
 
 	tx, err := synapseModule.SetThreshold(&bind.TransactOpts{
 		From:   owner,
@@ -378,160 +403,6 @@ func (p *Provisioner) setRemoteGasData(
 	return nil
 }
 
-func (p *Provisioner) setRemoteCallDataPrice(
-	ctx context.Context,
-	originGasOracle *gasoracle.SynapseGasOracleV1,
-	originChainId int,
-	remoteChainId int,
-	gasPrice *big.Int,
-	client *anvil.Client,
-) error {
-
-	owner, err := p.getGasOracleOwner(ctx, originChainId)
-	if err != nil {
-		return err
-	}
-	err = client.ImpersonateAccount(ctx, owner)
-	if err != nil {
-		return err
-	}
-	defer client.StopImpersonatingAccount(ctx, owner)
-
-	remoteGasData, err := originGasOracle.GetRemoteGasData(
-		&bind.CallOpts{Context: ctx},
-		uint64(remoteChainId),
-	)
-	if err != nil {
-		return fmt.Errorf("setRemoteGasPrice: could not get remote gas price: %w", err)
-	}
-	if remoteGasData.CalldataPrice.Cmp(gasPrice) == 0 {
-		fmt.Printf("remote gas price is already %d on chain %d\n", gasPrice, remoteChainId)
-		return nil
-	}
-
-	tx, err := originGasOracle.SetRemoteCallDataPrice(
-		&bind.TransactOpts{
-			From:   owner,
-			Value:  big.NewInt(0),
-			NoSend: true,
-			Signer: anvil.ImpersonatedSigner,
-			Nonce:  nil,
-		}, uint64(remoteChainId), gasPrice)
-	if err != nil {
-		return fmt.Errorf("setRemoteCallDataPrice: could not build tx: %w", err)
-	}
-	err = client.SendUnsignedTransaction(ctx, owner, tx)
-	if err != nil {
-		return fmt.Errorf("setRemoteCallDataPrice: could not send tx: %w", err)
-	}
-
-	fmt.Printf("Successfully set remote call data price to %d on chain %d\n", gasPrice, remoteChainId)
-	return nil
-}
-
-func (p *Provisioner) setRemoteGasPrice(
-	ctx context.Context,
-	originGasOracle *gasoracle.SynapseGasOracleV1,
-	originChainId int,
-	remoteChainId int,
-	gasPrice *big.Int,
-	client *anvil.Client,
-) error {
-
-	owner, err := p.getGasOracleOwner(ctx, originChainId)
-	if err != nil {
-		return err
-	}
-	err = client.ImpersonateAccount(ctx, owner)
-	if err != nil {
-		return err
-	}
-	defer client.StopImpersonatingAccount(ctx, owner)
-
-	remoteGasData, err := originGasOracle.GetRemoteGasData(
-		&bind.CallOpts{Context: ctx},
-		uint64(remoteChainId),
-	)
-	if err != nil {
-		return fmt.Errorf("setRemoteGasPrice: could not get remote gas price: %w", err)
-	}
-	if remoteGasData.GasPrice.Cmp(gasPrice) == 0 {
-		fmt.Printf("remote gas price is already %d on chain %d\n", gasPrice, remoteChainId)
-		return nil
-	}
-
-	tx, err := originGasOracle.SetRemoteGasPrice(
-		&bind.TransactOpts{
-			From:   owner,
-			Value:  big.NewInt(0),
-			NoSend: true,
-			Signer: anvil.ImpersonatedSigner,
-			Nonce:  nil,
-		}, uint64(remoteChainId), gasPrice)
-	if err != nil {
-		return fmt.Errorf("setRemoteGasPrice: could not build tx: %w", err)
-	}
-	err = client.SendUnsignedTransaction(ctx, owner, tx)
-	if err != nil {
-		return fmt.Errorf("setRemoteGasPrice: could not send tx: %w", err)
-	}
-
-	fmt.Printf("Successfully set remote gas price to %d on chain %d\n", gasPrice, remoteChainId)
-	return nil
-}
-
-func (p *Provisioner) setRemoteNativePrice(
-	ctx context.Context,
-	originGasOracle *gasoracle.SynapseGasOracleV1,
-	originChainId int,
-	remoteChainId int,
-	gasPrice *big.Int,
-	client *anvil.Client,
-) error {
-
-	owner, err := p.getGasOracleOwner(ctx, originChainId)
-	if err != nil {
-		return err
-	}
-	err = client.ImpersonateAccount(ctx, owner)
-	if err != nil {
-		return err
-	}
-	defer client.StopImpersonatingAccount(ctx, owner)
-
-	remoteGasData, err := originGasOracle.GetRemoteGasData(
-		&bind.CallOpts{Context: ctx},
-		uint64(remoteChainId),
-	)
-	if err != nil {
-		return fmt.Errorf("setRemoteGasPrice: could not get remote gas price: %w", err)
-	}
-	if remoteGasData.NativePrice.Cmp(gasPrice) == 0 {
-		fmt.Printf("remote gas price is already %d on chain %d\n", gasPrice, remoteChainId)
-		return nil
-	}
-
-	tx, err := originGasOracle.SetRemoteNativePrice(
-		&bind.TransactOpts{
-			From:   owner,
-			Value:  big.NewInt(0),
-			NoSend: true,
-			Signer: anvil.ImpersonatedSigner,
-			Nonce:  nil,
-		}, uint64(remoteChainId), gasPrice)
-	if err != nil {
-		return fmt.Errorf("setRemoteNativePrice: could not build tx: %w", err)
-	}
-	err = client.SendUnsignedTransaction(ctx, owner, tx)
-	if err != nil {
-		return fmt.Errorf("setRemoteNativePrice: could not send tx: %w", err)
-	}
-
-	fmt.Printf("Successfully set remote native price to %d on chain %d\n", gasPrice, remoteChainId)
-
-	return nil
-}
-
 func (p *Provisioner) getGasOracleOwner(ctx context.Context, chainid int) (common.Address, error) {
 	owner, err := p.gasOracles[chainid].Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
@@ -541,7 +412,7 @@ func (p *Provisioner) getGasOracleOwner(ctx context.Context, chainid int) (commo
 	return owner, nil
 }
 
-func (p *Provisioner) getSynapseModuleOwner(ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int) (common.Address, error) {
+func (p *Provisioner) getSynapseModuleOwner(ctx context.Context, synapseModule *synapsemodule.SynapseModule) (common.Address, error) {
 	owner, err := synapseModule.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return common.Address{}, err
