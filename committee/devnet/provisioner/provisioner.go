@@ -26,7 +26,6 @@ type Provisioner struct {
 }
 
 func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.ProvisionerConfig) (*Provisioner, error) {
-
 	a, err := anvil.Dial(ctx, "http://localhost:9001/rpc/42")
 	if err != nil {
 		return nil, err
@@ -42,36 +41,52 @@ func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.Pro
 		return nil, err
 	}
 
-	synapseModules := make(map[int]*synapsemodule.SynapseModule)
 	gasOracles := make(map[int]*gasoracle.SynapseGasOracleV1)
 
 	client := omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
 
 	return &Provisioner{
-		a:              a,
-		b:              b,
-		c:              c,
-		synapseModules: synapseModules,
-		gasOracles:     gasOracles,
-		client:         client,
+		a:          a,
+		b:          b,
+		c:          c,
+		gasOracles: gasOracles,
+		client:     client,
 	}, nil
 }
 
 // Run removes verifiers from the synapse module by impersonating the owner, and adds our own.
 func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) error {
 
-	for chainID, deployedSynapseModule := range cfg.SynapseModuleDeployments {
+	// TODO: make this cleaner
+	for chainID, synapseModuleAddress := range cfg.SynapseModuleDeployments {
 		chainClient, err := p.client.GetChainClient(ctx, chainID)
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-		synapseModuleDeployment, err := synapsemodule.NewSynapseModule(
-			common.HexToAddress(deployedSynapseModule), chainClient,
-		)
+
+		anvilClient, err := anvil.Dial(ctx, fmt.Sprintf("http://localhost:9001/rpc/%d", chainID))
+		if err != nil {
+			return fmt.Errorf("could not get anvil client: %w", err)
+		}
+
+		synapseModule, err := synapsemodule.NewSynapseModule(common.HexToAddress(synapseModuleAddress), chainClient)
 		if err != nil {
 			return fmt.Errorf("could not create synapse module: %w", err)
 		}
-		p.synapseModules[chainID] = synapseModuleDeployment
+
+		if err = p.deleteVerifiers(ctx, synapseModule, chainID, anvilClient); err != nil {
+			return fmt.Errorf("could not delete verifiers on chain %d: %v", chainID, err)
+		}
+
+		if err = p.addVerifiers(ctx, synapseModule, chainID, anvilClient, cfg); err != nil {
+			return fmt.Errorf("could not add verifiers on chain %d: %v", chainID, err)
+		}
+
+		if err = p.changeThreshold(ctx, synapseModule, chainID, big.NewInt(1), anvilClient); err != nil {
+			return fmt.Errorf("could not change threshold on chain %d: %v", chainID, err)
+		}
+
+		fmt.Println("---------------------------------------------------------")
 	}
 
 	for chainID, gasOracleAddress := range cfg.GasOracleDeployments {
@@ -79,92 +94,67 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-		gasOracle, err := gasoracle.NewSynapseGasOracleV1(
-			common.HexToAddress(gasOracleAddress), chainClient,
-		)
+
+		gasOracle, err := gasoracle.NewSynapseGasOracleV1(common.HexToAddress(gasOracleAddress), chainClient)
 		if err != nil {
 			return fmt.Errorf("could not create gas oracle: %w", err)
 		}
 		p.gasOracles[chainID] = gasOracle
 	}
 
-	// TODO: make this cleaner
-	// do it programmatically, for now idc bbecause jus twantti tto work
-	err := p.deleteVerifiers(ctx, p.synapseModules[42], 42, p.a)
-	if err != nil {
-		return fmt.Errorf("could not delete verifiers on chain 42: %v", err)
-	}
-	err = p.deleteVerifiers(ctx, p.synapseModules[43], 43, p.b)
-	if err != nil {
-		return fmt.Errorf("could not delete verifiers on chain 43: %v", err)
-	}
-	err = p.deleteVerifiers(ctx, p.synapseModules[44], 44, p.c)
-	if err != nil {
-		return fmt.Errorf("could not delete verifiers on chain 44: %v", err)
-	}
+	//
+	// 	// ================== Gas Oracle ==================
 
-	err = p.addVerifiers(ctx, p.synapseModules[42], 42, p.a, cfg)
-	if err != nil {
-		return fmt.Errorf("could not add verifiers on chain 42: %v", err)
-	}
-	err = p.addVerifiers(ctx, p.synapseModules[43], 43, p.b, cfg)
-	if err != nil {
-		return fmt.Errorf("could not add verifiers on chain 43: %v", err)
-	}
-	err = p.addVerifiers(ctx, p.synapseModules[44], 44, p.c, cfg)
-	if err != nil {
-		return fmt.Errorf("could not add verifiers on chain 44: %v", err)
-	}
-
-	err = p.changeThreshold(ctx, p.synapseModules[42], 42, big.NewInt(1), p.a)
-	if err != nil {
-		return fmt.Errorf("could not change threshold: %v", err)
-	}
-	err = p.changeThreshold(ctx, p.synapseModules[43], 43, big.NewInt(1), p.b)
-	if err != nil {
-		return fmt.Errorf("could not change threshold: %v", err)
-	}
-	err = p.changeThreshold(ctx, p.synapseModules[44], 44, big.NewInt(1), p.c)
-	if err != nil {
-		return fmt.Errorf("could not change threshold: %v", err)
-	}
-
-	// ================== Gas Oracle ==================
-	err = p.setLocalNativePrice(ctx, p.gasOracles[42], 42, big.NewInt(10000000), p.a)
+	err := p.setLocalNativePrice(ctx, p.gasOracles[42], 42, big.NewInt(100), p.a)
 	if err != nil {
 		return fmt.Errorf("could not add local native price: %v", err)
 	}
-	err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(10000000), p.b)
+	err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(100), p.b)
 	if err != nil {
 		return fmt.Errorf("could not add local native price: %v", err)
 	}
 
-	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(1), p.a)
-	if err != nil {
-		return fmt.Errorf("could not set remote calldata price: %v", err)
-	}
-	err = p.setRemoteCallDataPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(1), p.b)
-	if err != nil {
-		return fmt.Errorf("could not set remote calldata price %v", err)
+	gasData := gasoracle.ISynapseGasOracleV1RemoteGasData{
+		GasPrice:      big.NewInt(10),
+		CalldataPrice: big.NewInt(1),
+		NativePrice:   big.NewInt(10),
 	}
 
-	err = p.setRemoteGasPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(10), p.a)
+	err = p.setRemoteGasData(ctx, p.gasOracles[42], 43, gasData, p.a)
 	if err != nil {
-		return fmt.Errorf("could not add remote chain gas price: %v", err)
+		return fmt.Errorf("could not set remote gas data: %v", err)
 	}
-	err = p.setRemoteGasPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(10), p.b)
+	err = p.setRemoteGasData(ctx, p.gasOracles[43], 42, gasData, p.b)
 	if err != nil {
-		return fmt.Errorf("could not add remote chain gas price: %v", err)
+		return fmt.Errorf("could not set remote gas data: %v", err)
 	}
 
-	err = p.setRemoteNativePrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(10), p.a)
-	if err != nil {
-		return fmt.Errorf("could not add remote native price: %v", err)
-	}
-	err = p.setRemoteNativePrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(10), p.b)
-	if err != nil {
-		return fmt.Errorf("could not add remote native price: %v", err)
-	}
+	// err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(1), p.a)
+	// if err != nil {
+	// return fmt.Errorf("could not set remote calldata price: %v", err)
+	// }
+	// err = p.setRemoteCallDataPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(1), p.b)
+	// if err != nil {
+	// return fmt.Errorf("could not set remote calldata price %v", err)
+	// }
+
+	// err = p.setRemoteGasPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(10), p.a)
+	// if err != nil {
+	// return fmt.Errorf("could not add remote chain gas price: %v", err)
+	// }
+	// err = p.setRemoteGasPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(10), p.b)
+	// if err != nil {
+	// return fmt.Errorf("could not add remote chain gas price: %v", err)
+	// }
+
+	// err = p.setRemoteNativePrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(10), p.a)
+	// if err != nil {
+	// return fmt.Errorf("could not add remote native price: %v", err)
+	// }
+	// err = p.setRemoteNativePrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(10), p.b)
+	// if err != nil {
+	// return fmt.Errorf("could not add remote native price: %v", err)
+	// }
 
 	fmt.Println("Successfully provisioned SynapseModule contracts.")
 
@@ -175,7 +165,7 @@ func (p *Provisioner) deleteVerifiers(
 	ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int, client *anvil.Client,
 ) error {
 
-	owner, err := p.getSynapseModuleOwner(ctx, chainid)
+	owner, err := p.getSynapseModuleOwner(ctx, synapseModule, chainid)
 	if err != nil {
 		return fmt.Errorf("deleteVerifier: could not get synapse module owner: %w", err)
 	}
@@ -221,7 +211,7 @@ func (p *Provisioner) addVerifiers(
 	cfg config.ProvisionerConfig,
 ) error {
 
-	owner, err := p.getSynapseModuleOwner(ctx, chainid)
+	owner, err := p.getSynapseModuleOwner(ctx, synapseModule, chainid)
 	if err != nil {
 		return fmt.Errorf("addVerifiers: could not get synapse module owner: %w", err)
 	}
@@ -258,7 +248,7 @@ func (p *Provisioner) changeThreshold(
 	threshold *big.Int,
 	client *anvil.Client,
 ) error {
-	owner, err := p.getSynapseModuleOwner(ctx, chainid)
+	owner, err := p.getSynapseModuleOwner(ctx, synapseModule, chainid)
 	if err != nil {
 		return fmt.Errorf("changeThreshold: could not get synapse module owner: %w", err)
 	}
@@ -345,6 +335,46 @@ func (p *Provisioner) setLocalNativePrice(
 
 	fmt.Printf("Successfully set local native price to %d on chain %d\n", gasPrice, originChainId)
 
+	return nil
+}
+
+func (p *Provisioner) setRemoteGasData(
+	ctx context.Context,
+	originGasOracle *gasoracle.SynapseGasOracleV1,
+	remoteChainId int,
+	data gasoracle.ISynapseGasOracleV1RemoteGasData,
+	client *anvil.Client,
+) error {
+	owner, err := p.getGasOracleOwner(ctx, 42)
+	if err != nil {
+		return fmt.Errorf("addVerifiers: could not get synapse module owner: %w", err)
+	}
+
+	err = client.ImpersonateAccount(ctx, owner)
+	if err != nil {
+		return err
+	}
+	defer client.StopImpersonatingAccount(ctx, owner)
+
+	tx, err := originGasOracle.SetRemoteGasData(
+		&bind.TransactOpts{
+			From:   owner,
+			Value:  big.NewInt(0),
+			NoSend: true,
+			Signer: anvil.ImpersonatedSigner,
+			Nonce:  nil,
+		}, uint64(remoteChainId), data)
+
+	if err != nil {
+		return fmt.Errorf("setRemoteGasData: could not build tx: %w", err)
+	}
+
+	err = client.SendUnsignedTransaction(ctx, owner, tx)
+	if err != nil {
+		return fmt.Errorf("setRemoteGasData: could not send tx: %w", err)
+	}
+
+	fmt.Printf("Successfully set remote gas data to %v on chain %d\n", data, remoteChainId)
 	return nil
 }
 
@@ -511,8 +541,8 @@ func (p *Provisioner) getGasOracleOwner(ctx context.Context, chainid int) (commo
 	return owner, nil
 }
 
-func (p *Provisioner) getSynapseModuleOwner(ctx context.Context, chainid int) (common.Address, error) {
-	owner, err := p.synapseModules[chainid].Owner(&bind.CallOpts{Context: ctx})
+func (p *Provisioner) getSynapseModuleOwner(ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int) (common.Address, error) {
+	owner, err := synapseModule.Owner(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return common.Address{}, err
 	}
