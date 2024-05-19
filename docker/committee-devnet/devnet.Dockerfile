@@ -17,7 +17,7 @@ COPY ./.git /app/.git
 WORKDIR /app/committee/devnet
 
 RUN --mount=type=cache,target=/root/go/pkg/mod GOPROXY=https://proxy.golang.org go mod download -x
-RUN --mount=type=cache,target=/root/go/pkg/mod  --mount=type=cache,target=/root/.cache/go-build CC=gcc CXX=g++ go build -tags=netgo,osusergo -ldflags="-s -w -extldflags '-static'" -o /app/bin/devnet  main.go
+RUN --mount=type=cache,target=/root/go/pkg/mod  --mount=type=cache,target=/root/.cache/go-build CC=gcc CXX=g++ go build -tags=netgo,osusergo -ldflags="-s -w -extldflags '-static'" -o /app/bin/devnet main.go
 
 FROM ubuntu:20.04
 

@@ -6,4 +6,4 @@ validator_addresses:
   - '0xc9ab908cbbaa18246f9290dfa25f3bbce33fa215'
   - '0x571bb941a060fdea907b20024233b7aac37dbe3d'
   - '0x2368416ee9cb38b926d75f9fa7191ec6b7ee6bb2'
-omnirpc_url: 'http://localhost:9001'
+omnirpc_url: 'http://omnirpc:9001'

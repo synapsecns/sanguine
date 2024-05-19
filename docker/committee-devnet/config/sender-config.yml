@@ -1,6 +1,6 @@
-omnirpc_url: 'http://localhost:9001'
+omnirpc_url: 'http://omnirpc:9001'
 origin_chain_id: 42
 destination_chain_id: 43
 signer_config:
   type: File
-  file: ./config/sender-signer.txt
+  file: /config/sender-signer.txt

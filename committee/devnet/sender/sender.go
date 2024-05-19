@@ -41,7 +41,7 @@ type Sender struct {
 func NewSender(ctx context.Context, cfg *config.SenderConfig, handler metrics.Handler) (*Sender, error) {
 
 	// Get the origin chain's Anvil Client
-	originAnvilClient, err := anvil.Dial(ctx, "http://localhost:9001/rpc/42")
+	originAnvilClient, err := anvil.Dial(ctx, "http://omnirpc:9001/rpc/42")
 	if err != nil {
 		return nil, fmt.Errorf("could not dial origin client: %w", err)
 	}
@@ -145,7 +145,7 @@ func (s *Sender) waitForReceipt(parentCtx context.Context, tx *types.Transaction
 	defer cancel()
 
 	// Get the EVM client
-	e, err := ethergoClient.DialBackend(parentCtx, "http://localhost:9001/rpc/42", handler)
+	e, err := ethergoClient.DialBackend(parentCtx, "http://omnirpc:9001/rpc/42", handler)
 	if err != nil {
 		return nil, fmt.Errorf("could not dial ethergo backend: %w", err)
 	}

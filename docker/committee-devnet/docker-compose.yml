@@ -7,7 +7,7 @@ volumes:
   chain_b_data:
   chain_c_data:
   committee_data: # prometheus-data:
-
+  devnet_data:
   badger-data:
 
 
@@ -181,23 +181,33 @@ services:
       JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
       GOLOG_LOG_LEVEL: debug
 
-#  devnet:
-#    restart: unless-stopped
-#    entrypoint: devnet
-#    build:
-#      context: ../../
-#      dockerfile: docker/committee-devnet/devnet.Dockerfile
-#    command:
-#      - run
-#      - '--config'
-#      - '/config/devnet-config.yml'
-#      - '--sender'
-#      - '--sender-config'
-#      - '/config/devnet-sender-config.yml'
-#    environment:
-#      METRICS_HANDLER: jaeger
-#      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
-#      GOLOG_LOG_LEVEL: debug
-#    volumes:
-#      - '${PWD}/config/devnet-config.yml:/config/devnet-config.yml'
-#      - '${PWD}/config/devnet-sender-config.yml:/config/devnet-sender-config.yml'
+  devnet:
+    restart: unless-stopped
+    entrypoint: devnet
+    depends_on:
+      - omnirpc
+      - chain_a
+      - chain_b
+      - chain_c
+      - committee-node1
+      - committee-node2
+      - committee-node3
+    build:
+      context: ../../
+      dockerfile: docker/committee-devnet/devnet.Dockerfile
+    volumes:
+      - '${PWD}/config/provisioner-config.yml:/config/provisioner-config.yml'
+      - '${PWD}/config/sender-config.yml:/config/sender-config.yml'
+      - ${PWD}/config/sender-signer.txt:/config/sender-signer.txt
+      - devnet_data:/config/devnet.db
+    command:
+      - run
+      - '--config'
+      - '/config/provisioner-config.yml'
+      - '--sender'
+      - '--sender-config'
+      - '/config/sender-config.yml'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug

@@ -17,37 +17,17 @@ import (
 )
 
 type Provisioner struct {
-	a          *anvil.Client
-	b          *anvil.Client
-	c          *anvil.Client
 	client     omnirpcClient.RPCClient
 	gasOracles map[int]*gasoracle.SynapseGasOracleV1
 }
 
 func NewProvisioner(ctx context.Context, handler metrics.Handler, cfg config.ProvisionerConfig) (*Provisioner, error) {
-	a, err := anvil.Dial(ctx, "http://localhost:9001/rpc/42")
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := anvil.Dial(ctx, "http://localhost:9001/rpc/43")
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := anvil.Dial(ctx, "http://localhost:9001/rpc/44")
-	if err != nil {
-		return nil, err
-	}
 
 	gasOracles := make(map[int]*gasoracle.SynapseGasOracleV1)
 
 	client := omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
 
 	return &Provisioner{
-		a:          a,
-		b:          b,
-		c:          c,
 		gasOracles: gasOracles,
 		client:     client,
 	}, nil
@@ -63,7 +43,7 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		anvilClient, err := anvil.Dial(ctx, fmt.Sprintf("http://localhost:9001/rpc/%d", chainID))
+		anvilClient, err := anvil.Dial(ctx, fmt.Sprintf("http://omnirpc:9001/rpc/%d", chainID))
 		if err != nil {
 			return fmt.Errorf("could not get anvil client: %w", err)
 		}
@@ -88,6 +68,7 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 		fmt.Println("---------------------------------------------------------")
 	}
 
+	// map each chain to a gas oracle
 	for chainID, gasOracleAddress := range cfg.GasOracleDeployments {
 		chainClient, err := p.client.GetChainClient(ctx, chainID)
 		if err != nil {
@@ -101,17 +82,17 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 		p.gasOracles[chainID] = gasOracle
 	}
 
-	// 	// ================== Gas Oracle ==================
-
+	// ================== Gas Oracle ==================
 	chainids := make([]int, 0, len(p.gasOracles))
 	for chainid := range p.gasOracles {
 		chainids = append(chainids, chainid)
 	}
 
+	// chain a <> chain b pairwise gas oracle setup
 	for i := 0; i < len(chainids); i++ {
 		for j := 0; j < len(chainids); j++ {
 			if i != j {
-				anvilClient, err := anvil.Dial(ctx, fmt.Sprintf("http://localhost:9001/rpc/%d", chainids[i]))
+				anvilClient, err := anvil.Dial(ctx, fmt.Sprintf("http://omnirpc:9001/rpc/%d", chainids[i]))
 				if err != nil {
 					return fmt.Errorf("could not get anvil client: %w", err)
 				}
@@ -139,57 +120,6 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 		}
 	}
 
-	// err := p.setLocalNativePrice(ctx, p.gasOracles[42], 42, big.NewInt(100), p.a)
-	// if err != nil {
-	// 	return fmt.Errorf("could not add local native price: %v", err)
-	// }
-	// err = p.setLocalNativePrice(ctx, p.gasOracles[43], 43, big.NewInt(100), p.b)
-	// if err != nil {
-	// 	return fmt.Errorf("could not add local native price: %v", err)
-	// }
-
-	// gasData := gasoracle.ISynapseGasOracleV1RemoteGasData{
-	// 	GasPrice:      big.NewInt(10),
-	// 	CalldataPrice: big.NewInt(1),
-	// 	NativePrice:   big.NewInt(10),
-	// }
-
-	// err = p.setRemoteGasData(ctx, p.gasOracles[42], 43, gasData, p.a)
-	// if err != nil {
-	// 	return fmt.Errorf("could not set remote gas data: %v", err)
-	// }
-	// err = p.setRemoteGasData(ctx, p.gasOracles[43], 42, gasData, p.b)
-	// if err != nil {
-	// 	return fmt.Errorf("could not set remote gas data: %v", err)
-	// }
-
-	// err = p.setRemoteCallDataPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(1), p.a)
-	// if err != nil {
-	// return fmt.Errorf("could not set remote calldata price: %v", err)
-	// }
-	// err = p.setRemoteCallDataPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(1), p.b)
-	// if err != nil {
-	// return fmt.Errorf("could not set remote calldata price %v", err)
-	// }
-
-	// err = p.setRemoteGasPrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(10), p.a)
-	// if err != nil {
-	// return fmt.Errorf("could not add remote chain gas price: %v", err)
-	// }
-	// err = p.setRemoteGasPrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(10), p.b)
-	// if err != nil {
-	// return fmt.Errorf("could not add remote chain gas price: %v", err)
-	// }
-
-	// err = p.setRemoteNativePrice(ctx, p.gasOracles[42], 42, 43, big.NewInt(10), p.a)
-	// if err != nil {
-	// return fmt.Errorf("could not add remote native price: %v", err)
-	// }
-	// err = p.setRemoteNativePrice(ctx, p.gasOracles[43], 43, 42, big.NewInt(10), p.b)
-	// if err != nil {
-	// return fmt.Errorf("could not add remote native price: %v", err)
-	// }
-
 	fmt.Println("Successfully provisioned SynapseModule contracts.")
 
 	return nil
@@ -198,7 +128,6 @@ func (p *Provisioner) Run(ctx context.Context, cfg config.ProvisionerConfig) err
 func (p *Provisioner) deleteVerifiers(
 	ctx context.Context, synapseModule *synapsemodule.SynapseModule, chainid int, client *anvil.Client,
 ) error {
-
 	owner, err := p.getSynapseModuleOwner(ctx, synapseModule)
 	if err != nil {
 		return fmt.Errorf("deleteVerifier: could not get synapse module owner: %w", err)
@@ -244,7 +173,6 @@ func (p *Provisioner) addVerifiers(
 	client *anvil.Client,
 	cfg config.ProvisionerConfig,
 ) error {
-
 	owner, err := p.getSynapseModuleOwner(ctx, synapseModule)
 	if err != nil {
 		return fmt.Errorf("addVerifiers: could not get synapse module owner: %w", err)
@@ -320,7 +248,6 @@ func (p *Provisioner) setLocalNativePrice(
 	gasPrice *big.Int,
 	client *anvil.Client,
 ) error {
-
 	// call the gasprice oracle and update for the respective chainids
 	owner, err := p.getGasOracleOwner(ctx, originChainId)
 	if err != nil {
@@ -353,6 +280,7 @@ func (p *Provisioner) setLocalNativePrice(
 	if err != nil {
 		return fmt.Errorf("setLocalNativePrice: could not build tx: %w", err)
 	}
+
 	err = client.SendUnsignedTransaction(ctx, owner, tx)
 	if err != nil {
 		return fmt.Errorf("setLocalNativePrice: could not send tx: %w", err)
