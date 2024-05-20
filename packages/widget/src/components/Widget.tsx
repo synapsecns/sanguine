@@ -60,6 +60,7 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
+import { useMaintenance } from '@/components/Maintenance/Maintenance'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -94,6 +95,12 @@ export const Widget = ({
     destinationChainId,
     destinationToken,
   } = useBridgeState()
+  const {
+    isBridgePaused,
+    pausedModulesList,
+    BridgeMaintenanceProgressBar,
+    BridgeMaintenanceWarningMessage,
+  } = useMaintenance()
 
   const allTokens = useMemo(() => {
     return getFromTokens({
@@ -206,6 +213,7 @@ export const Widget = ({
             debouncedInputAmount,
             synapseSDK,
             requestId: thisRequestId,
+            pausedModules: pausedModulesList,
           })
         )
       }
@@ -385,6 +393,7 @@ export const Widget = ({
         className={`grid gap-2 text-[--synapse-text] w-full ${containerStyle}`}
         style={{ background: 'var(--synapse-root)' }}
       >
+        <BridgeMaintenanceProgressBar />
         <Transactions connectedAddress={connectedAddress} />
         <section
           className={cardStyle}
@@ -440,6 +449,7 @@ export const Widget = ({
             />
           </div>
         </section>
+        <BridgeMaintenanceWarningMessage />
         <Receipt
           quote={bridgeQuote ?? null}
           send={formatBigIntToString(
@@ -467,6 +477,7 @@ export const Widget = ({
             approveTxnStatus === ApproveTransactionStatus.PENDING
           }
           isBridgePending={bridgeTxnStatus === BridgeTransactionStatus.PENDING}
+          isBridgePaused={isBridgePaused}
         />
       </div>
     </div>
