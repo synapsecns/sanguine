@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 )
 
 func (c *ServerSuite) TestNewQuoterAPIServer() {
@@ -44,7 +45,7 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature() {
 	}
 
 	// Perform a PUT request to the API server with the authorization header.
-	resp, err := c.sendPutRequest(header)
+	resp, err := c.sendPutQuoteRequest(header)
 	if err != nil {
 		c.Error(err)
 		return
@@ -77,7 +78,7 @@ func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
 	}
 
 	// Perform a PUT request to the API server with the incorrect authorization header.
-	resp, err := c.sendPutRequest(header)
+	resp, err := c.sendPutQuoteRequest(header)
 	if err != nil {
 		c.Error(err)
 		return
@@ -104,7 +105,7 @@ func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
 	c.Require().NoError(err)
 
 	// Perform a PUT request to the API server with the authorization header.
-	resp, err := c.sendPutRequest(header)
+	resp, err := c.sendPutQuoteRequest(header)
 	c.Require().NoError(err)
 	defer func() {
 		_ = resp.Body.Close()
@@ -126,7 +127,7 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 	c.Require().NoError(err)
 
 	// Send PUT request
-	putResp, err := c.sendPutRequest(header)
+	putResp, err := c.sendPutQuoteRequest(header)
 	c.Require().NoError(err)
 	defer func() {
 		err = putResp.Body.Close()
@@ -168,7 +169,7 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 	c.Require().NoError(err)
 
 	// Send PUT request
-	putResp, err := c.sendPutRequest(header)
+	putResp, err := c.sendPutQuoteRequest(header)
 	c.Require().NoError(err)
 	defer func() {
 		err = putResp.Body.Close()
@@ -203,6 +204,51 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 	c.Assert().True(found, "Newly added quote not found")
 }
 
+func (c *ServerSuite) TestPutAck() {
+	c.startQuoterAPIServer()
+
+	// Send GET request
+	testTxID := "0x123"
+	header, err := c.prepareAuthHeader(c.testWallet)
+	c.Require().NoError(err)
+	resp, err := c.sendPutAckRequest(header, testTxID)
+	c.Require().NoError(err)
+	c.Equal(http.StatusOK, resp.StatusCode)
+
+	// Expect ack with shouldRelay=true
+	var result relapi.PutRelayAckResponse
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	c.Require().NoError(err)
+	expectedResult := relapi.PutRelayAckResponse{
+		TxID:           testTxID,
+		ShouldRelay:    true,
+		RelayerAddress: c.testWallet.Address().Hex(),
+	}
+	c.Equal(expectedResult, result)
+	err = resp.Body.Close()
+	c.Require().NoError(err)
+
+	// Send another request with same txID
+	header, err = c.prepareAuthHeader(c.testWallet)
+	c.Require().NoError(err)
+	resp, err = c.sendPutAckRequest(header, testTxID)
+	c.Require().NoError(err)
+	c.Equal(http.StatusOK, resp.StatusCode)
+
+	// Expect ack with shouldRelay=false
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	c.Require().NoError(err)
+	expectedResult = relapi.PutRelayAckResponse{
+		TxID:           testTxID,
+		ShouldRelay:    false,
+		RelayerAddress: c.testWallet.Address().Hex(),
+	}
+	c.Equal(expectedResult, result)
+	err = resp.Body.Close()
+	c.Require().NoError(err)
+	c.GetTestContext().Done()
+}
+
 // startQuoterAPIServer starts the API server and waits for it to initialize.
 func (c *ServerSuite) startQuoterAPIServer() {
 	go func() {
@@ -232,8 +278,8 @@ func (c *ServerSuite) prepareAuthHeader(wallet wallet.Wallet) (string, error) {
 	return now + ":" + signature, nil
 }
 
-// sendPutRequest sends a PUT request to the server with the given authorization header.
-func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
+// sendPutQuoteRequest sends a PUT request to the server with the given authorization header.
+func (c *ServerSuite) sendPutQuoteRequest(header string) (*http.Response, error) {
 	// Prepare the PUT request with JSON data.
 	client := &http.Client{}
 	putData := model.PutQuoteRequest{
@@ -251,6 +297,34 @@ func (c *ServerSuite) sendPutRequest(header string) (*http.Response, error) {
 	}
 
 	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodPut, fmt.Sprintf("http://localhost:%d/quotes", c.port), bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create PUT request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", header)
+
+	// Send the request to the server.
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send PUT request: %w", err)
+	}
+	return resp, nil
+}
+
+// sendPutAckRequest sends a PUT request to the server with the given authorization header.
+func (c *ServerSuite) sendPutAckRequest(header string, txID string) (*http.Response, error) {
+	// Prepare the PUT request.
+	client := &http.Client{}
+	putData := model.PutAckRequest{
+		TxID:        txID,
+		DestChainID: 42161,
+	}
+	jsonData, err := json.Marshal(putData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal putData: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodPut, fmt.Sprintf("http://localhost:%d/ack", c.port), bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PUT request: %w", err)
 	}
