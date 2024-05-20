@@ -11,9 +11,41 @@ import {AppConfigV1, InterchainClientV1BaseTest, InterchainTransaction} from "./
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
+    address public moduleA = makeAddr("Module A");
+    address public moduleB = makeAddr("Module B");
+
+    address public app;
+    address[] public oneModule;
+    address[] public twoModules;
+
+    address[] public defaultModuleList;
+
+    AppConfigV1 public zeroResponses =
+        AppConfigV1({requiredResponses: 0, optimisticPeriod: 30, guardFlag: 2, guard: address(4)});
+
+    AppConfigV1 public oneResponse =
+        AppConfigV1({requiredResponses: 1, optimisticPeriod: 30, guardFlag: 2, guard: address(4)});
+
+    AppConfigV1 public twoResponses =
+        AppConfigV1({requiredResponses: 2, optimisticPeriod: 30, guardFlag: 2, guard: address(4)});
+
     function setUp() public override {
         super.setUp();
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
+        setDefaultModule(defaultModule);
+        app = address(new InterchainAppMock());
+        defaultModuleList.push(defaultModule);
+        oneModule.push(moduleA);
+        twoModules.push(moduleA);
+        twoModules.push(moduleB);
+    }
+
+    function assertEq(AppConfigV1 memory expected, AppConfigV1 memory actual) internal pure {
+        assertEq(expected.requiredResponses, actual.requiredResponses);
+        assertEq(expected.optimisticPeriod, actual.optimisticPeriod);
+        assertEq(expected.guardFlag, actual.guardFlag);
+        assertEq(expected.guard, actual.guard);
+        assertEq(abi.encode(expected), abi.encode(actual));
     }
 
     function test_getLinkedClient_chainIdKnown() public view {
@@ -25,7 +57,7 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
     }
 
     function test_getLinkedClient_revert_chainIdLocal() public {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         icClient.getLinkedClient(LOCAL_CHAIN_ID);
     }
 
@@ -39,12 +71,12 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
     }
 
     function test_getLinkedClientEVM_revert_chainIdLocal() public {
-        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        expectRevertChainIdNotRemote(LOCAL_CHAIN_ID);
         icClient.getLinkedClientEVM(LOCAL_CHAIN_ID);
     }
 
     function test_getLinkedClientEVM_revert_clientNotEVM() public {
-        expectRevertNotEVMClient(MOCK_REMOTE_CLIENT);
+        expectRevertLinkedClientNotEVM(MOCK_REMOTE_CLIENT);
         icClient.getLinkedClientEVM(REMOTE_CHAIN_ID);
     }
 
@@ -63,32 +95,87 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
         assertEq(decoded.gasAirdrop, options.gasAirdrop, "!gasAirdrop");
     }
 
-    function test_getAppReceivingConfigV1() public {
-        AppConfigV1 memory appConfig =
-            AppConfigV1({requiredResponses: 1, optimisticPeriod: 2, guardFlag: 3, guard: address(4)});
-        address[] memory modules = new address[](2);
-        modules[0] = address(5);
-        modules[1] = address(6);
-        address app = address(new InterchainAppMock());
-        mockReceivingConfig(app, appConfig, modules);
+    function test_getAppReceivingConfigV1_zeroModules_zeroResponses() public {
+        mockReceivingConfig(app, zeroResponses, new address[](0));
         (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
-        assertEq(fetchedConfig.requiredResponses, appConfig.requiredResponses);
-        assertEq(fetchedConfig.optimisticPeriod, appConfig.optimisticPeriod);
-        assertEq(fetchedConfig.guardFlag, appConfig.guardFlag);
-        assertEq(fetchedConfig.guard, appConfig.guard);
-        assertEq(abi.encode(fetchedConfig), abi.encode(appConfig));
-        assertEq(fetchedModules, modules);
+        // Should use default module list and change the required responses to one
+        assertEq(fetchedConfig, oneResponse);
+        assertEq(fetchedModules, defaultModuleList);
+    }
+
+    function test_getAppReceivingConfigV1_zeroModules_oneResponse() public {
+        mockReceivingConfig(app, oneResponse, new address[](0));
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use default module list and leave the required responses as one
+        assertEq(fetchedConfig, oneResponse);
+        assertEq(fetchedModules, defaultModuleList);
+    }
+
+    function test_getAppReceivingConfigV1_zeroModules_twoResponses() public {
+        mockReceivingConfig(app, twoResponses, new address[](0));
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the default module and leave the required responses as two
+        assertEq(fetchedConfig, twoResponses);
+        assertEq(fetchedModules, defaultModuleList);
+    }
+
+    function test_getAppReceivingConfigV1_oneModule_zeroResponses() public {
+        mockReceivingConfig(app, zeroResponses, oneModule);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured module and change the required responses to one
+        assertEq(fetchedConfig, oneResponse);
+        assertEq(fetchedModules, oneModule);
+    }
+
+    function test_getAppReceivingConfigV1_oneModule_oneResponse() public {
+        mockReceivingConfig(app, oneResponse, oneModule);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured module and leave the required responses as one
+        assertEq(fetchedConfig, oneResponse);
+        assertEq(fetchedModules, oneModule);
+    }
+
+    function test_getAppReceivingConfigV1_oneModule_twoResponses() public {
+        mockReceivingConfig(app, twoResponses, oneModule);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured module and leave the required responses as two
+        assertEq(fetchedConfig, twoResponses);
+        assertEq(fetchedModules, oneModule);
+    }
+
+    function test_getAppReceivingConfigV1_twoModules_zeroResponses() public {
+        mockReceivingConfig(app, zeroResponses, twoModules);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured modules and change the required responses to two
+        assertEq(fetchedConfig, twoResponses);
+        assertEq(fetchedModules, twoModules);
+    }
+
+    function test_getAppReceivingConfigV1_twoModules_oneResponse() public {
+        mockReceivingConfig(app, oneResponse, twoModules);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured modules and leave the required responses as one
+        assertEq(fetchedConfig, oneResponse);
+        assertEq(fetchedModules, twoModules);
+    }
+
+    function test_getAppReceivingConfigV1_twoModules_twoResponses() public {
+        mockReceivingConfig(app, twoResponses, twoModules);
+        (AppConfigV1 memory fetchedConfig, address[] memory fetchedModules) = icClient.getAppReceivingConfigV1(app);
+        // Should use the configured modules and leave the required responses as two
+        assertEq(fetchedConfig, twoResponses);
+        assertEq(fetchedModules, twoModules);
     }
 
     function test_getAppReceivingConfigV1_revert_receiverEOA() public {
-        address app = makeAddr("EOA");
-        expectRevertReceiverNotICApp(app);
-        icClient.getAppReceivingConfigV1(app);
+        address eoa = makeAddr("EOA");
+        expectRevertReceiverNotICApp(eoa);
+        icClient.getAppReceivingConfigV1(eoa);
     }
 
     function test_getAppReceivingConfigV1_revert_receiverNotICApp() public {
-        address app = address(new NoOpHarness());
-        expectRevertReceiverNotICApp(app);
-        icClient.getAppReceivingConfigV1(app);
+        address noOp = address(new NoOpHarness());
+        expectRevertReceiverNotICApp(noOp);
+        icClient.getAppReceivingConfigV1(noOp);
     }
 }

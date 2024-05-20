@@ -7,7 +7,6 @@ import (
 	"github.com/synapsecns/sanguine/sin-executor/contracts/executionservice"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
-	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/executionfeesmock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/gasoraclemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainapp"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
@@ -61,8 +60,6 @@ const (
 	OptionsLib // OptionsLib
 	// ExecutionService is the execution service mock.
 	ExecutionService // ExecutionService
-	// ExecutionFeesMock is the execution fees mock.
-	ExecutionFeesMock // ExecutionFeesMock
 	// GasOracleMock is the gas oracle mock.
 	GasOracleMock // GasOracleMock
 )
@@ -103,8 +100,6 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return optionslibexport.Contracts["solidity/OptionsLibExport.sol:OptionsLibMocks"]
 	case ExecutionService:
 		return executionservice.Contracts["solidity/SynapseExecutionServiceV1Harness.sol:SynapseExecutionServiceV1Harness"]
-	case ExecutionFeesMock:
-		return executionfeesmock.Contracts["solidity/ExecutionFeesMock.sol:ExecutionFeesMock"]
 	case GasOracleMock:
 		return gasoraclemock.Contracts["solidity/SynapseGasOracleMock.sol:SynapseGasOracleMock"]
 	}

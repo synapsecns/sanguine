@@ -8,7 +8,7 @@ import {LegacyMessageLib} from "../../../contracts/legacy/libs/LegacyMessage.sol
 import {LegacyOptionsLib} from "../../../contracts/legacy/libs/LegacyOptions.sol";
 import {TypeCasts} from "../../../contracts/libs/TypeCasts.sol";
 
-import {ICIntegrationTest, InterchainEntry, InterchainTransaction, OptionsV1} from "../ICIntegration.t.sol";
+import {ICIntegrationTest, InterchainTransaction, OptionsV1} from "../ICIntegration.t.sol";
 import {MessageBusHarness} from "../../harnesses/MessageBusHarness.sol";
 
 // solhint-disable custom-errors
@@ -25,6 +25,8 @@ abstract contract LegacyPingPongIntegrationTest is ICIntegrationTest {
 
     uint64 public constant SRC_MSG_BUS_NONCE = 5;
     uint64 public constant DST_MSG_BUS_NONCE = 15;
+
+    uint256 public constant APP_OPTIMISTIC_PERIOD = 0;
 
     OptionsV1 public icOptions = OptionsV1({gasLimit: GAS_LIMIT, gasAirdrop: 0});
     bytes public legacyOptions = LegacyOptionsLib.encodeLegacyOptions(APP_GAS_LIMIT);
@@ -97,13 +99,13 @@ abstract contract LegacyPingPongIntegrationTest is ICIntegrationTest {
     function expectEventsPingSent(
         uint256 counter,
         InterchainTransaction memory icTx,
-        InterchainEntry memory entry,
+        FullEntry memory fullEntry,
         uint256 verificationFee,
         uint256 executionFee
     )
         internal
     {
-        expectEventsMessageSent(icTx, entry, verificationFee, executionFee);
+        expectEventsMessageSent(icTx, fullEntry, verificationFee, executionFee);
         expectPingPongEventPingSent(counter);
     }
 
@@ -153,5 +155,9 @@ abstract contract LegacyPingPongIntegrationTest is ICIntegrationTest {
 
     function getDstLegacyMessage() internal pure returns (bytes memory) {
         return abi.encode(COUNTER - 1);
+    }
+
+    function getAppOptimisticPeriod() internal pure override returns (uint256) {
+        return APP_OPTIMISTIC_PERIOD;
     }
 }

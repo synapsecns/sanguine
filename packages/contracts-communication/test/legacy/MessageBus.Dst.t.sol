@@ -7,7 +7,6 @@ import {MessageBusBaseTest, LegacyMessage, LegacyReceiverMock} from "./MessageBu
 // solhint-disable ordering
 contract MessageBusDstTest is MessageBusBaseTest {
     uint64 public constant MOCK_DB_NONCE = 1_234_567;
-    uint64 public constant MOCK_ENTRY_INDEX = 4321;
 
     LegacyMessage public legacyMsg;
     bytes public encodedLegacyMsg;
@@ -25,7 +24,6 @@ contract MessageBusDstTest is MessageBusBaseTest {
             srcChainId: REMOTE_CHAIN_ID,
             sender: remoteMessageBusBytes32,
             dbNonce: MOCK_DB_NONCE,
-            entryIndex: MOCK_ENTRY_INDEX,
             message: encodedLegacyMsg
         });
     }
