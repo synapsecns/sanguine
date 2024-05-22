@@ -43,7 +43,7 @@ func NewCircleCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRel
 		if err != nil {
 			return nil, fmt.Errorf("could not get client: %w", err)
 		}
-		transmitterAddr, err := GetMessageTransmitterAddress(ctx, chain.GetTokenMessengerAddress(), cl)
+		transmitterAddr, err := GetMessageTransmitterAddress(ctx, chain.GetCCTPAddress(), cl)
 		if err != nil {
 			return nil, fmt.Errorf("could not get message transmitter address: %w", err)
 		}
@@ -56,6 +56,7 @@ func NewCircleCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRel
 	if err != nil {
 		return nil, fmt.Errorf("could not make cctp signer: %w", err)
 	}
+
 	return &circleCCTPHandler{
 		cfg:                      cfg,
 		db:                       db,
@@ -333,7 +334,7 @@ func (c *circleCCTPHandler) getMessagePayload(ctx context.Context, txHash common
 	if err != nil {
 		return nil, fmt.Errorf("could not get chain config: %w", err)
 	}
-	transmitterAddr, err := GetMessageTransmitterAddress(ctx, chainCfg.GetTokenMessengerAddress(), ethClient)
+	transmitterAddr, err := GetMessageTransmitterAddress(ctx, chainCfg.GetCCTPAddress(), ethClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not get message transmitter address: %w", err)
 	}

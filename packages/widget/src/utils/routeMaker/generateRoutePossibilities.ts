@@ -1,12 +1,12 @@
 import _ from 'lodash'
 import { BridgeableToken } from 'types'
 
-import { flattenPausedTokens } from '../flattenPausedTokens'
-import { getToChainIds } from './getToChainIds'
-import { getFromChainIds } from './getFromChainIds'
-import { getFromTokens } from './getFromTokens'
-import { getToTokens } from './getToTokens'
-import { findTokenByRouteSymbol } from '../findTokenByRouteSymbol'
+import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
+import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
+import { getFromChainIds } from '@/utils/routeMaker/getFromChainIds'
+import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
+import { getToTokens } from '@/utils/routeMaker/getToTokens'
+import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 
 export const PAUSED_TO_CHAIN_IDS = [2000]
 

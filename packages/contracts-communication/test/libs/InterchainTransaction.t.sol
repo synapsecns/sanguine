@@ -27,22 +27,19 @@ contract InterchainTransactionLibTest is Test {
         uint64 dstChainId,
         bytes32 dstReceiver,
         uint64 dbNonce,
-        uint64 entryIndex,
         bytes memory options,
         bytes memory message
     )
         public
     {
         vm.chainId(srcChainId);
-        InterchainTransaction memory icTx = libHarness.constructLocalTransaction(
-            srcSender, dstChainId, dstReceiver, dbNonce, entryIndex, options, message
-        );
+        InterchainTransaction memory icTx =
+            libHarness.constructLocalTransaction(srcSender, dstChainId, dstReceiver, dbNonce, options, message);
         assertEq(icTx.srcChainId, srcChainId, "!srcChainId");
         assertEq(icTx.srcSender, bytes32(uint256(uint160(srcSender))), "!srcSender");
         assertEq(icTx.dstChainId, dstChainId, "!dstChainId");
         assertEq(icTx.dstReceiver, dstReceiver, "!dstReceiver");
         assertEq(icTx.dbNonce, dbNonce, "!dbNonce");
-        assertEq(icTx.entryIndex, entryIndex, "!entryIndex");
         assertEq(icTx.options, options, "!options");
         assertEq(icTx.message, message, "!message");
     }
@@ -55,7 +52,6 @@ contract InterchainTransactionLibTest is Test {
         assertEq(decoded.dstChainId, icTx.dstChainId, "!dstChainId");
         assertEq(decoded.dstReceiver, icTx.dstReceiver, "!dstReceiver");
         assertEq(decoded.dbNonce, icTx.dbNonce, "!dbNonce");
-        assertEq(decoded.entryIndex, icTx.entryIndex, "!entryIndex");
         assertEq(decoded.options, icTx.options, "!options");
         assertEq(decoded.message, icTx.message, "!message");
     }
@@ -73,21 +69,11 @@ contract InterchainTransactionLibTest is Test {
         test_payloadSize(icTx);
     }
 
-    function test_encodeTxHeader_roundTrip(
-        uint64 srcChainId,
-        uint64 dstChainId,
-        uint64 dbNonce,
-        uint64 entryIndex
-    )
-        public
-        view
-    {
-        ICTxHeader header = libHarness.encodeTxHeader(srcChainId, dstChainId, dbNonce, entryIndex);
-        (uint64 decodedSrcChainId, uint64 decodedDstChainId, uint64 decodedDbNonce, uint64 decodedEntryIndex) =
-            libHarness.decodeTxHeader(header);
+    function test_encodeTxHeader_roundTrip(uint64 srcChainId, uint64 dstChainId, uint64 dbNonce) public view {
+        ICTxHeader header = libHarness.encodeTxHeader(srcChainId, dstChainId, dbNonce);
+        (uint64 decodedSrcChainId, uint64 decodedDstChainId, uint64 decodedDbNonce) = libHarness.decodeTxHeader(header);
         assertEq(decodedSrcChainId, srcChainId, "!srcChainId");
         assertEq(decodedDstChainId, dstChainId, "!dstChainId");
         assertEq(decodedDbNonce, dbNonce, "!dbNonce");
-        assertEq(decodedEntryIndex, entryIndex, "!entryIndex");
     }
 }
