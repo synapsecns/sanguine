@@ -1,7 +1,23 @@
-# .github/workflows/deploy.yml
+name: UI Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+  push:
+    branches:
+      - main
+      - master
+
 jobs:
   deploy:
-    # ... existing configuration ...
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        package: ['explorer-ui']
+
     steps:
       - uses: actions/checkout@v4
       - name: Setup NodeJS
