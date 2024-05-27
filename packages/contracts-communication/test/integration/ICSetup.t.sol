@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {ExecutionFees} from "../../contracts/ExecutionFees.sol";
 import {InterchainClientV1} from "../../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../../contracts/InterchainDB.sol";
-import {PingPongApp} from "../../contracts/apps/examples/PingPongApp.sol";
+import {ICAppV1} from "../../contracts/apps/ICAppV1.sol";
 import {SynapseExecutionServiceV1} from "../../contracts/execution/SynapseExecutionServiceV1.sol";
 import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
@@ -12,6 +12,9 @@ import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/S
 
 import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 
+import {InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
+import {InterchainTransactionLibHarness} from "../harnesses/InterchainTransactionLibHarness.sol";
+import {VersionedPayloadLibHarness} from "../harnesses/VersionedPayloadLibHarness.sol";
 import {ProxyTest} from "../proxy/ProxyTest.t.sol";
 
 // solhint-disable custom-errors
@@ -19,17 +22,22 @@ import {ProxyTest} from "../proxy/ProxyTest.t.sol";
 abstract contract ICSetup is ProxyTest {
     using TypeCasts for address;
 
-    uint256 public constant SRC_CHAIN_ID = 1337;
-    uint256 public constant DST_CHAIN_ID = 7331;
+    uint64 public constant SRC_CHAIN_ID = 1337;
+    uint64 public constant DST_CHAIN_ID = 7331;
 
-    uint256 public constant SRC_INITIAL_DB_NONCE = 10;
-    uint256 public constant DST_INITIAL_DB_NONCE = 20;
+    uint16 public constant DB_VERSION = 1;
+    uint16 public constant CLIENT_VERSION = 1;
 
-    uint256 public constant PING_PONG_BALANCE = 1000 ether;
+    uint64 public constant SRC_INITIAL_DB_NONCE = 10;
+    uint64 public constant DST_INITIAL_DB_NONCE = 20;
 
     uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
 
     uint256 public constant INITIAL_TS = 1_704_067_200; // 2024-01-01 00:00:00 UTC
+
+    InterchainBatchLibHarness public batchLibHarness;
+    InterchainTransactionLibHarness public txLibHarness;
+    VersionedPayloadLibHarness public payloadLibHarness;
 
     ExecutionFees public executionFees;
     address public executionServiceImpl;
@@ -40,7 +48,8 @@ abstract contract ICSetup is ProxyTest {
     SynapseModule public module;
     SynapseGasOracleV1 public gasOracle;
 
-    PingPongApp public pingPongApp;
+    address public srcApp;
+    address public dstApp;
 
     address public executor = makeAddr("Executor");
     address public feeCollector = makeAddr("FeeCollector");
@@ -53,10 +62,21 @@ abstract contract ICSetup is ProxyTest {
     function setUp() public virtual {
         vm.chainId(localChainId());
         vm.warp(INITIAL_TS);
+        deployLibraryHarnesses();
         deployInterchainContracts();
+        srcApp = deployApp();
+        vm.label(srcApp, "Src App");
+        dstApp = deployApp();
+        vm.label(dstApp, "Dst App");
         configureInterchainContracts();
+        configureLocalApp();
         initDBNonce();
-        dealEther();
+    }
+
+    function deployLibraryHarnesses() internal virtual {
+        batchLibHarness = new InterchainBatchLibHarness();
+        txLibHarness = new InterchainTransactionLibHarness();
+        payloadLibHarness = new VersionedPayloadLibHarness();
     }
 
     function deployInterchainContracts() internal virtual {
@@ -67,8 +87,10 @@ abstract contract ICSetup is ProxyTest {
         icClient = new InterchainClientV1({interchainDB: address(icDB), owner_: address(this)});
         module = new SynapseModule({interchainDB: address(icDB), owner_: address(this)});
         gasOracle = new SynapseGasOracleV1(address(this));
-        pingPongApp = new PingPongApp(address(this));
     }
+
+    /// @dev Should deploy the tested app and return its address.
+    function deployApp() internal virtual returns (address);
 
     function configureInterchainContracts() internal virtual {
         configureExecutionFees();
@@ -76,7 +98,6 @@ abstract contract ICSetup is ProxyTest {
         configureInterchainClient();
         configureSynapseModule();
         configureSynapseGasOracle();
-        configurePingPongApp();
     }
 
     function configureExecutionFees() internal virtual {
@@ -114,13 +135,14 @@ abstract contract ICSetup is ProxyTest {
         gasOracle.setRemoteGasData(remoteChainId(), getGasDataFixture(remoteChainId()));
     }
 
-    function configurePingPongApp() internal virtual {
+    function configureLocalApp() internal virtual {
+        address app = localApp();
         // For simplicity, we assume that the apps are deployed to the same address on both chains.
-        pingPongApp.linkRemoteAppEVM(remoteChainId(), address(pingPongApp));
-        pingPongApp.addTrustedModule(address(module));
-        pingPongApp.setAppConfigV1(AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD}));
-        pingPongApp.setExecutionService(address(executionService));
-        pingPongApp.addInterchainClient({client: address(icClient), updateLatest: true});
+        ICAppV1(app).linkRemoteAppEVM(remoteChainId(), remoteApp());
+        ICAppV1(app).addTrustedModule(address(module));
+        ICAppV1(app).setAppConfigV1(AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD}));
+        ICAppV1(app).setExecutionService(address(executionService));
+        ICAppV1(app).addInterchainClient({client: address(icClient), updateLatest: true});
     }
 
     function initDBNonce() internal virtual {
@@ -137,11 +159,7 @@ abstract contract ICSetup is ProxyTest {
         require(icDB.getDBNonce() == end, "DB nonce not increased");
     }
 
-    function dealEther() internal virtual {
-        deal(address(pingPongApp), PING_PONG_BALANCE);
-    }
-
-    function getGasDataFixture(uint256 chainId)
+    function getGasDataFixture(uint64 chainId)
         internal
         view
         virtual
@@ -162,7 +180,7 @@ abstract contract ICSetup is ProxyTest {
         return isSourceChain(localChainId());
     }
 
-    function isSourceChain(uint256 chainId) internal pure returns (bool) {
+    function isSourceChain(uint64 chainId) internal pure returns (bool) {
         if (chainId == SRC_CHAIN_ID) {
             return true;
         } else if (chainId == DST_CHAIN_ID) {
@@ -172,8 +190,16 @@ abstract contract ICSetup is ProxyTest {
         }
     }
 
+    function localApp() internal view returns (address) {
+        return isSourceChainTest() ? srcApp : dstApp;
+    }
+
+    function remoteApp() internal view returns (address) {
+        return isSourceChainTest() ? dstApp : srcApp;
+    }
+
     /// @notice Should return either `SRC_CHAIN_ID` or `DST_CHAIN_ID`.
-    function localChainId() internal view virtual returns (uint256);
+    function localChainId() internal view virtual returns (uint64);
     /// @notice Should return either `SRC_CHAIN_ID` or `DST_CHAIN_ID`.
-    function remoteChainId() internal view virtual returns (uint256);
+    function remoteChainId() internal view virtual returns (uint64);
 }

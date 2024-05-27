@@ -45,7 +45,7 @@ type Manager interface {
 	// ApproveAllTokens approves all tokens for the relayer address.
 	ApproveAllTokens(ctx context.Context) error
 	// HasSufficientGas checks if there is sufficient gas for a given route.
-	HasSufficientGas(ctx context.Context, origin, dest int) (bool, error)
+	HasSufficientGas(ctx context.Context, chainID int, gasValue *big.Int) (bool, error)
 	// Rebalance checks whether a given token should be rebalanced, and
 	// executes the rebalance if necessary.
 	Rebalance(ctx context.Context, chainID int, token common.Address) error
@@ -328,7 +328,20 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 }
 
 // approve submits an ERC20 approval for a given token and contract address.
-func (i *inventoryManagerImpl) approve(ctx context.Context, tokenAddr, contractAddr common.Address, backendClient client.EVM) (err error) {
+func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, contractAddr common.Address, backendClient client.EVM) (err error) {
+	ctx, span := i.handler.Tracer().Start(parentCtx, "approve", trace.WithAttributes(
+		attribute.String("token_address", tokenAddr.Hex()),
+		attribute.String("contract_address", contractAddr.Hex()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	if contractAddr == (common.Address{}) {
+		span.AddEvent("not approving to zero address")
+		return nil
+	}
+
 	erc20, err := ierc20.NewIERC20(tokenAddr, backendClient)
 	if err != nil {
 		return fmt.Errorf("could not get erc20: %w", err)
@@ -352,21 +365,36 @@ func (i *inventoryManagerImpl) approve(ctx context.Context, tokenAddr, contractA
 }
 
 // HasSufficientGas checks if there is sufficient gas for a given route.
-func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, dest int) (sufficient bool, err error) {
-	gasThresh, err := i.cfg.GetMinGasToken(dest)
+func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chainID int, gasValue *big.Int) (sufficient bool, err error) {
+	ctx, span := i.handler.Tracer().Start(parentCtx, "HasSufficientGas", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, chainID),
+	))
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
+	gasThreshRaw, err := i.cfg.GetMinGasToken(chainID)
 	if err != nil {
-		return false, fmt.Errorf("error getting min gas token: %w", err)
+		return false, fmt.Errorf("error getting min gas token on origin: %w", err)
 	}
-	gasOrigin, err := i.GetCommittableBalance(ctx, origin, chain.EthAddress)
+	gasThresh := core.CopyBigInt(gasThreshRaw)
+	if gasValue != nil {
+		gasThresh = new(big.Int).Add(gasThresh, gasValue)
+		span.SetAttributes(attribute.String("gas_value", gasValue.String()))
+	}
+
+	gasBalance, err := i.GetCommittableBalance(ctx, chainID, chain.EthAddress)
 	if err != nil {
 		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
 	}
-	gasDest, err := i.GetCommittableBalance(ctx, dest, chain.EthAddress)
-	if err != nil {
-		return false, fmt.Errorf("error getting committable gas on dest: %w", err)
-	}
 
-	sufficient = gasOrigin.Cmp(gasThresh) >= 0 && gasDest.Cmp(gasThresh) >= 0
+	sufficient = gasBalance.Cmp(gasThresh) >= 0
+	span.SetAttributes(
+		attribute.String("gas_threshold_raw", gasThreshRaw.String()),
+		attribute.String("gas_threshold", gasThresh.String()),
+		attribute.String("gas_balance", gasBalance.String()),
+		attribute.Bool("sufficient", sufficient),
+	)
 	return sufficient, nil
 }
 

@@ -1,9 +1,9 @@
 {
-  "address": "0xc46bf3759CD170b90Eb71fad8958936d11FeDCdE",
+  "address": "0x0fD219B1FabBb32ab9d7FcA3A5bF91C74bBCD32B",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xefea31247fe62b885ebd7f9f75dfa1b29f147a7182ff6f0eebe4ba41044935e7",
-    "blockNumber": 5586578
+    "hash": "0xbdead5adc2bf95d810b99cfdef3d2129809c99a3e753321c60b98a4555f34be0",
+    "blockNumber": 5712792
   },
   "abi": [
     {
@@ -68,8 +68,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "transactionId",
@@ -99,8 +99,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "transactionId",
@@ -184,8 +184,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "transactionId",
@@ -207,8 +207,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "transactionId",
@@ -305,9 +305,9 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "transactionId",
@@ -368,9 +368,9 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "transactionId",
@@ -500,8 +500,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "transactionId",

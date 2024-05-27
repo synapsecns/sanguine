@@ -3,6 +3,7 @@ package inventory
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -12,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
@@ -206,7 +206,7 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 		case cctp.CircleRequestSentTopic:
 			parsedEvent, err := parser.ParseCircleRequestSent(log)
 			if err != nil {
-				logger.Warnf("could not parse circle request sent: %w", err)
+				logger.Warnf("could not parse circle request sent: %v", err)
 				return nil
 			}
 			if parsedEvent.Sender != c.relayerAddress {
@@ -227,13 +227,13 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 			}
 			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
 			if err != nil {
-				logger.Warnf("could not update rebalance status: %w", err)
+				logger.Warnf("could not update rebalance status: %v", err)
 				return nil
 			}
 		case cctp.CircleRequestFulfilledTopic:
 			parsedEvent, err := parser.ParseCircleRequestFulfilled(log)
 			if err != nil {
-				logger.Warnf("could not parse circle request fulfilled: %w", err)
+				logger.Warnf("could not parse circle request fulfilled: %v", err)
 				return nil
 			}
 			if parsedEvent.Recipient != c.relayerAddress {
@@ -253,7 +253,7 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 			}
 			err = c.db.UpdateRebalance(parentCtx, rebalanceModel, false)
 			if err != nil {
-				logger.Warnf("could not update rebalance status: %w", err)
+				logger.Warnf("could not update rebalance status: %v", err)
 				return nil
 			}
 		default:

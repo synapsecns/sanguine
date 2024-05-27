@@ -47,14 +47,13 @@ func (s *Store) DBTransaction(parentCtx context.Context, f db.TransactionFunc) (
 	})
 }
 
-// MarkAllBeforeOrAtNonceReplacedOrConfirmed marks all transactions before or at the given nonce as replaced or confirmed.
-func (s *Store) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error {
+// MarkAllBeforeNonceReplacedOrConfirmed marks all transactions before or at the given nonce as replaced or confirmed.
+func (s *Store) MarkAllBeforeNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error {
 	dbTX := s.db.WithContext(ctx).Model(&ETHTX{}).
 		Where(fmt.Sprintf("%s = ?", chainIDFieldName), chainID.Uint64()).
-		Where(fmt.Sprintf("%s <= ?", nonceFieldName), nonce).
+		Where(fmt.Sprintf("%s < ?", nonceFieldName), nonce).
 		Where(fmt.Sprintf("`%s` = ?", fromFieldName), signer.String()).
 		// just in case we're updating a tx already marked as confirmed
-		Where(fmt.Sprintf("%s IN ?", statusFieldName), []int{int(db.Pending.Int()), int(db.Stored.Int()), int(db.Submitted.Int()), int(db.FailedSubmit.Int())}).
 		Updates(map[string]interface{}{statusFieldName: db.ReplacedOrConfirmed.Int()})
 
 	if dbTX.Error != nil {
@@ -67,7 +66,8 @@ func (s *Store) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, s
 // MaxResultsPerChain is the maximum number of transactions to return per chain id.
 // it is exported for testing.
 // TODO: this should be an option passed to the GetTXs function.
-const MaxResultsPerChain = 50
+// TODO: temporarily reduced from 50 to 1 to increase resiliency.
+const MaxResultsPerChain = 1
 
 func statusToArgs(matchStatuses ...db.Status) []int {
 	inArgs := make([]int, len(matchStatuses))

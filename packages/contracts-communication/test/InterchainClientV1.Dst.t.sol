@@ -3,13 +3,11 @@ pragma solidity 0.8.20;
 
 import {AppConfigV1} from "../contracts/libs/AppConfig.sol";
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
-import {OptionsV1, OptionsLib} from "../contracts/libs/Options.sol";
+import {OptionsV1} from "../contracts/libs/Options.sol";
+import {VersionedPayloadLib} from "../contracts/libs/VersionedPayload.sol";
 
 import {
-    InterchainClientV1,
-    InterchainClientV1BaseTest,
-    InterchainTransaction,
-    InterchainTxDescriptor
+    InterchainClientV1BaseTest, InterchainTransaction, InterchainTxDescriptor
 } from "./InterchainClientV1.Base.t.sol";
 
 import {InterchainAppMock} from "./mocks/InterchainAppMock.sol";
@@ -30,10 +28,10 @@ import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 /// 4. Execute the transaction by passing the message to the recipient.
 /// 5. Mark transaction as executed and emit an event.
 contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
-    uint256 public constant MOCK_DB_NONCE = 444;
+    uint64 public constant MOCK_DB_NONCE = 444;
     uint64 public constant MOCK_ENTRY_INDEX = 4;
 
-    uint256 public constant MOCK_LOCAL_DB_NONCE = 123;
+    uint64 public constant MOCK_LOCAL_DB_NONCE = 123;
     uint64 public constant MOCK_LOCAL_ENTRY_INDEX = 5;
 
     uint256 public constant MOCK_GAS_LIMIT = 100_000;
@@ -48,8 +46,8 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     OptionsV1 public optionsAirdrop = OptionsV1({gasLimit: MOCK_GAS_LIMIT, gasAirdrop: MOCK_GAS_AIRDROP});
     OptionsV1 public optionsNoAirdrop = OptionsV1({gasLimit: MOCK_GAS_LIMIT, gasAirdrop: 0});
 
-    bytes public invalidOptionsV0 = OptionsLib.encodeVersionedOptions(0, abi.encode(optionsAirdrop));
-    bytes public invalidOptionsV1 = OptionsLib.encodeVersionedOptions(1, abi.encode(optionsAirdrop.gasLimit));
+    bytes public invalidOptionsV0 = VersionedPayloadLib.encodeVersionedPayload(0, abi.encode(optionsAirdrop));
+    bytes public invalidOptionsV1 = VersionedPayloadLib.encodeVersionedPayload(1, abi.encode(optionsAirdrop.gasLimit));
 
     AppConfigV1 public oneConfNoOP = AppConfigV1({requiredResponses: 1, optimisticPeriod: 0});
     AppConfigV1 public oneConfWithOP = AppConfigV1({requiredResponses: 1, optimisticPeriod: MOCK_OPTIMISTIC_PERIOD});
@@ -123,7 +121,7 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     }
 
     /// @dev Override the local DB's returned next entry index (both for reads and writes)
-    function mockLocalNextEntryIndex(uint256 dbNonce, uint64 entryIndex) internal {
+    function mockLocalNextEntryIndex(uint64 dbNonce, uint64 entryIndex) internal {
         bytes memory returnData = abi.encode(dbNonce, entryIndex);
         // Use partial calldata to override return values for calls to these functions with any arguments.
         vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.getNextEntryIndex.selector), returnData);
@@ -150,7 +148,7 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         desc = InterchainTxDescriptor({
             dbNonce: MOCK_DB_NONCE,
             entryIndex: MOCK_ENTRY_INDEX,
-            transactionId: icTx.transactionId()
+            transactionId: keccak256(getEncodedTx(icTx))
         });
     }
 
@@ -171,18 +169,11 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     }
 
     function assertExecutorSaved(InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) internal {
-        assertEq(icClient.getExecutor(abi.encode(icTx)), executor, "!getExecutor");
+        assertEq(icClient.getExecutor(getEncodedTx(icTx)), executor, "!getExecutor");
         assertEq(icClient.getExecutorById(desc.transactionId), executor, "!getExecutorById");
     }
 
-    function executeTransaction(
-        InterchainTransaction memory icTx,
-        OptionsV1 memory options,
-        bytes32[] memory proof
-    )
-        internal
-    {
-        bytes memory encodedTx = abi.encode(icTx);
+    function executeTransaction(bytes memory encodedTx, OptionsV1 memory options, bytes32[] memory proof) internal {
         deal(executor, options.gasAirdrop);
         vm.prank(executor);
         icClient.interchainExecute{value: options.gasAirdrop}(options.gasLimit, encodedTx, proof);
@@ -218,7 +209,8 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
             modules: oneModuleA,
             verificationTimes: toArray(JUST_VERIFIED)
         });
-        executeTransaction(icTx, options, emptyProof);
+        bytes memory encodedTx = getEncodedTx(icTx);
+        executeTransaction(encodedTx, options, emptyProof);
         skip(1 days);
     }
 
@@ -232,8 +224,9 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     {
         expectAppReceiveCall(options);
         expectEventInterchainTransactionReceived(icTx, desc);
-        assertTrue(icClient.isExecutable(abi.encode(icTx), proof));
-        executeTransaction(icTx, options, proof);
+        bytes memory encodedTx = getEncodedTx(icTx);
+        assertTrue(icClient.isExecutable(encodedTx, proof));
+        executeTransaction(encodedTx, options, proof);
         assertExecutorSaved(icTx, desc);
     }
 
@@ -286,10 +279,11 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
             modules: oneModuleA,
             verificationTimes: verificationTimes
         });
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertNotEnoughResponses({actual: actualConfirmations, required: appConfig.requiredResponses});
-        icClient.isExecutable(abi.encode(icTx), emptyProof);
+        icClient.isExecutable(encodedTx, emptyProof);
         expectRevertNotEnoughResponses({actual: actualConfirmations, required: appConfig.requiredResponses});
-        executeTransaction(icTx, options, emptyProof);
+        executeTransaction(encodedTx, options, emptyProof);
     }
 
     function checkNotEnoughConfirmationsAB(
@@ -307,10 +301,11 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
             modules: twoModules,
             verificationTimes: verificationTimes
         });
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertNotEnoughResponses({actual: actualConfirmations, required: appConfig.requiredResponses});
-        icClient.isExecutable(abi.encode(icTx), emptyProof);
+        icClient.isExecutable(encodedTx, emptyProof);
         expectRevertNotEnoughResponses({actual: actualConfirmations, required: appConfig.requiredResponses});
-        executeTransaction(icTx, options, emptyProof);
+        executeTransaction(encodedTx, options, emptyProof);
     }
 
     // ══════════════════════════════════════════ REQUIRED: 1, MODULES: A ══════════════════════════════════════════════
@@ -757,70 +752,121 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         checkSuccessAB(optionsAirdrop, twoConfNoOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
     }
 
+    // ═══════════════════════════════════════════ TESTS: GET APP CONFIG ═══════════════════════════════════════════════
+
+    function test_getAppReceivingConfigV1_oneModule() public {
+        mockReceivingConfig(oneConfWithOP, oneModuleA);
+        (AppConfigV1 memory config, address[] memory modules) = icClient.getAppReceivingConfigV1(dstReceiver);
+        assertEq(config.requiredResponses, oneConfWithOP.requiredResponses);
+        assertEq(config.optimisticPeriod, oneConfWithOP.optimisticPeriod);
+        assertEq(modules, oneModuleA);
+    }
+
+    function test_getAppReceivingConfigV1_twoModules() public {
+        mockReceivingConfig(twoConfWithOP, twoModules);
+        (AppConfigV1 memory config, address[] memory modules) = icClient.getAppReceivingConfigV1(dstReceiver);
+        assertEq(config.requiredResponses, twoConfWithOP.requiredResponses);
+        assertEq(config.optimisticPeriod, twoConfWithOP.optimisticPeriod);
+        assertEq(modules, twoModules);
+    }
+
     // ═══════════════════════════════════════════ EXECUTE: MISC REVERTS ═══════════════════════════════════════════════
 
     function prepareExecutableTx(InterchainTransaction memory icTx) internal {
         InterchainTxDescriptor memory desc = InterchainTxDescriptor({
             dbNonce: icTx.dbNonce,
             entryIndex: icTx.entryIndex,
-            transactionId: icTx.transactionId()
+            transactionId: keccak256(getEncodedTx(icTx))
         });
         mockReceivingConfig(oneConfWithOP, oneModuleA);
         mockCheckVerification(icModuleA, desc, new bytes32[](0), JUST_VERIFIED);
+    }
+
+    function test_interchainExecute_revert_invalidTransactionVersion(uint16 version) public {
+        vm.assume(version != CLIENT_VERSION);
+        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
+        bytes memory invalidVersionTx = VersionedPayloadLib.encodeVersionedPayload(version, abi.encode(icTx));
+        InterchainTxDescriptor memory desc = InterchainTxDescriptor({
+            dbNonce: icTx.dbNonce,
+            entryIndex: icTx.entryIndex,
+            transactionId: keccak256(invalidVersionTx)
+        });
+        mockReceivingConfig(oneConfWithOP, oneModuleA);
+        mockCheckVerification(icModuleA, desc, new bytes32[](0), JUST_VERIFIED);
+        expectRevertInvalidTransactionVersion(version);
+        vm.prank(executor);
+        icClient.interchainExecute(optionsNoAirdrop.gasLimit, invalidVersionTx, new bytes32[](0));
     }
 
     function test_interchainExecute_revert_srcChainNotRemote() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
         mockReceivingConfig(oneConfWithOP, oneModuleA);
         icTx.srcChainId = LOCAL_CHAIN_ID;
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
-        executeTransaction(icTx, optionsNoAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
     }
 
     function test_interchainExecute_revert_srcChainNotLinked() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
         mockReceivingConfig(oneConfWithOP, oneModuleA);
         icTx.srcChainId = UNKNOWN_CHAIN_ID;
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
-        executeTransaction(icTx, optionsNoAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
     }
 
     function test_interchainExecute_revert_dstChainIncorrect() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
         mockReceivingConfig(oneConfWithOP, oneModuleA);
         icTx.dstChainId = UNKNOWN_CHAIN_ID;
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
-        executeTransaction(icTx, optionsNoAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
     }
 
     function test_interchainExecute_revert_emptyOptions() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx("");
+        bytes memory encodedTx = getEncodedTx(icTx);
         prepareExecutableTx(icTx);
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
         vm.expectRevert();
-        executeTransaction(icTx, optionsNoAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
     }
 
     function test_interchainExecute_revert_invalidOptionsV0() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV0);
+        bytes memory encodedTx = getEncodedTx(icTx);
         prepareExecutableTx(icTx);
         expectRevertIncorrectVersion(0);
-        executeTransaction(icTx, optionsNoAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
     }
 
     function test_interchainExecute_revert_invalidOptionsV1() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV1);
+        bytes memory encodedTx = getEncodedTx(icTx);
         prepareExecutableTx(icTx);
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
         vm.expectRevert();
-        executeTransaction(icTx, optionsNoAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
+    }
+
+    function test_interchainExecute_revert_notEnoughGasSupplied() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
+        bytes memory encodedTx = getEncodedTx(icTx);
+        prepareExecutableTx(icTx);
+        expectRevertNotEnoughGasSupplied();
+        vm.prank(executor);
+        // Limiting gas for the whole transaction leads to application getting as much gas as it requested.
+        icClient.interchainExecute{gas: MOCK_GAS_LIMIT}(MOCK_GAS_LIMIT, encodedTx, emptyProof);
     }
 
     function test_interchainExecute_revert_alreadyExecuted() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareAlreadyExecutedTest(optionsNoAirdrop);
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertTxAlreadyExecuted(desc.transactionId);
-        executeTransaction(icTx, optionsNoAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
     }
 
     function test_interchainExecute_revert_withAirdrop_zeroMsgValue() public {
@@ -831,10 +877,11 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
             modules: oneModuleA,
             verificationTimes: toArray(JUST_VERIFIED)
         });
+        bytes memory encodedTx = getEncodedTx(icTx);
         uint256 requiredValue = optionsAirdrop.gasAirdrop;
         optionsAirdrop.gasAirdrop = 0;
         expectRevertIncorrectMsgValue({actual: 0, required: requiredValue});
-        executeTransaction(icTx, optionsAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsAirdrop, emptyProof);
     }
 
     function test_interchainExecute_revert_withAirdrop_lowerMsgValue() public {
@@ -845,10 +892,11 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
             modules: oneModuleA,
             verificationTimes: toArray(JUST_VERIFIED)
         });
+        bytes memory encodedTx = getEncodedTx(icTx);
         uint256 requiredValue = optionsAirdrop.gasAirdrop;
         optionsAirdrop.gasAirdrop = requiredValue - 1;
         expectRevertIncorrectMsgValue({actual: requiredValue - 1, required: requiredValue});
-        executeTransaction(icTx, optionsAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsAirdrop, emptyProof);
     }
 
     function test_interchainExecute_revert_withAirdrop_higherMsgValue() public {
@@ -859,10 +907,11 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
             modules: oneModuleA,
             verificationTimes: toArray(JUST_VERIFIED)
         });
+        bytes memory encodedTx = getEncodedTx(icTx);
         uint256 requiredValue = optionsAirdrop.gasAirdrop;
         optionsAirdrop.gasAirdrop = requiredValue + 1;
         expectRevertIncorrectMsgValue({actual: requiredValue + 1, required: requiredValue});
-        executeTransaction(icTx, optionsAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsAirdrop, emptyProof);
     }
 
     function test_interchainExecute_revert_noAirdrop_nonZeroMsgValue() public {
@@ -873,9 +922,10 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
             modules: oneModuleA,
             verificationTimes: toArray(JUST_VERIFIED)
         });
+        bytes memory encodedTx = getEncodedTx(icTx);
         optionsNoAirdrop.gasAirdrop = MOCK_GAS_AIRDROP;
         expectRevertIncorrectMsgValue({actual: MOCK_GAS_AIRDROP, required: 0});
-        executeTransaction(icTx, optionsNoAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
     }
 
     function test_interchainExecute_revert_zeroRequiredResponses() public {
@@ -888,62 +938,78 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
             modules: oneModuleA,
             verificationTimes: toArray(JUST_VERIFIED)
         });
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertZeroRequiredResponses();
-        executeTransaction(icTx, optionsNoAirdrop, emptyProof);
+        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
+    }
+
+    function test_isExecutable_revert_invalidTransactionVersion(uint16 version) public {
+        vm.assume(version != CLIENT_VERSION);
+        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
+        bytes memory invalidVersionTx = VersionedPayloadLib.encodeVersionedPayload(version, abi.encode(icTx));
+        expectRevertInvalidTransactionVersion(version);
+        icClient.isExecutable(invalidVersionTx, emptyProof);
     }
 
     function test_isExecutable_revert_srcChainNotRemote() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
         mockReceivingConfig(oneConfWithOP, oneModuleA);
         icTx.srcChainId = LOCAL_CHAIN_ID;
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
-        icClient.isExecutable(abi.encode(icTx), emptyProof);
+        icClient.isExecutable(encodedTx, emptyProof);
     }
 
     function test_isExecutable_revert_srcChainNotLinked() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
         mockReceivingConfig(oneConfWithOP, oneModuleA);
         icTx.srcChainId = UNKNOWN_CHAIN_ID;
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
-        icClient.isExecutable(abi.encode(icTx), emptyProof);
+        icClient.isExecutable(encodedTx, emptyProof);
     }
 
     function test_isExecutable_revert_dstChainIncorrect() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
         mockReceivingConfig(oneConfWithOP, oneModuleA);
         icTx.dstChainId = UNKNOWN_CHAIN_ID;
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
-        icClient.isExecutable(abi.encode(icTx), emptyProof);
+        icClient.isExecutable(encodedTx, emptyProof);
     }
 
     function test_isExecutable_revert_emptyOptions() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx("");
+        bytes memory encodedTx = getEncodedTx(icTx);
         prepareExecutableTx(icTx);
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
         vm.expectRevert();
-        icClient.isExecutable(abi.encode(icTx), emptyProof);
+        icClient.isExecutable(encodedTx, emptyProof);
     }
 
     function test_isExecutable_revert_invalidOptionsV0() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV0);
+        bytes memory encodedTx = getEncodedTx(icTx);
         prepareExecutableTx(icTx);
         expectRevertIncorrectVersion(0);
-        icClient.isExecutable(abi.encode(icTx), emptyProof);
+        icClient.isExecutable(encodedTx, emptyProof);
     }
 
     function test_isExecutable_revert_invalidOptionsV1() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx(invalidOptionsV1);
+        bytes memory encodedTx = getEncodedTx(icTx);
         prepareExecutableTx(icTx);
         // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
         vm.expectRevert();
-        icClient.isExecutable(abi.encode(icTx), emptyProof);
+        icClient.isExecutable(encodedTx, emptyProof);
     }
 
     function test_isExecutable_revert_alreadyExecuted() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareAlreadyExecutedTest(optionsNoAirdrop);
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertTxAlreadyExecuted(desc.transactionId);
-        icClient.isExecutable(abi.encode(icTx), emptyProof);
+        icClient.isExecutable(encodedTx, emptyProof);
     }
 
     function test_isExecutable_revert_zeroRequiredResponses() public {
@@ -956,8 +1022,9 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
             modules: oneModuleA,
             verificationTimes: toArray(JUST_VERIFIED)
         });
+        bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertZeroRequiredResponses();
-        icClient.isExecutable(abi.encode(icTx), emptyProof);
+        icClient.isExecutable(encodedTx, emptyProof);
     }
 
     // ═══════════════════════════════════════ TESTS: WRITE EXECUTION PROOF ════════════════════════════════════════════

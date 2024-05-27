@@ -4,22 +4,22 @@ pragma solidity 0.8.20;
 import {InterchainBatch, ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
 
 contract ModuleBatchLibHarness {
-    function encodeModuleBatch(
-        InterchainBatch memory batch,
+    function encodeVersionedModuleBatch(
+        bytes memory versionedBatch,
         bytes memory moduleData
     )
         external
         pure
         returns (bytes memory)
     {
-        return ModuleBatchLib.encodeModuleBatch(batch, moduleData);
+        return ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, moduleData);
     }
 
-    function decodeModuleBatch(bytes memory encodedModuleBatch)
+    function decodeVersionedModuleBatch(bytes memory encodedModuleBatch)
         external
         pure
-        returns (InterchainBatch memory, bytes memory)
+        returns (bytes memory, bytes memory)
     {
-        return ModuleBatchLib.decodeModuleBatch(encodedModuleBatch);
+        return ModuleBatchLib.decodeVersionedModuleBatch(encodedModuleBatch);
     }
 }

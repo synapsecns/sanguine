@@ -1,9 +1,17 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 
-import { initialState, updateFromValue } from '@/slices/bridge/reducer'
+import {
+  initialState,
+  setFromChainId,
+  setFromToken,
+  updateFromValue,
+} from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
+import { ChainSelector } from '@/components/ui/ChainSelector'
+import { TokenSelector } from '@/components/ui/TokenSelector'
+import { AmountInput } from '@/components/ui/AmountInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -11,10 +19,13 @@ import {
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
-import { FromChainSelector } from './FromChainSelector'
-import { FromTokenSelector } from './FromTokenSelector'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { useFromChainListArray } from './hooks/useFromChainListArray'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
+import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
+import { useFromTokenListArray } from './hooks/useFromTokenListArray'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -31,7 +42,7 @@ export const InputContainer = () => {
   }, [])
 
   const { isConnected } = useAccount()
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
 
   const dispatch = useDispatch()
 
@@ -83,88 +94,69 @@ export const InputContainer = () => {
   const connectedStatus = useMemo(() => {
     if (hasMounted && !isConnected) {
       return <ConnectWalletButton />
-    } else if (hasMounted && isConnected && fromChainId === chain.id) {
+    } else if (hasMounted && isConnected && fromChainId === chain?.id) {
       return <ConnectedIndicator />
-    } else if (hasMounted && isConnected && fromChainId !== chain.id) {
+    } else if (hasMounted && isConnected && fromChainId !== chain?.id) {
       return <ConnectToNetworkButton chainId={fromChainId} />
     }
   }, [chain, fromChainId, isConnected, hasMounted])
 
   return (
-    <div
-      data-test-id="input-container"
-      className="text-left rounded-md p-md bg-bgLight"
-    >
-      <div className="flex items-center justify-between mb-3">
+    <BridgeSectionContainer>
+      <div className="flex items-center justify-between">
         <FromChainSelector />
         {connectedStatus}
       </div>
-      <div className="flex h-16 mb-2 space-x-2">
-        <div
-          className={`
-            flex flex-grow items-center justify-between
-            pl-md
-            w-full h-16
-            rounded-md
-            border border-white border-opacity-20
-          `}
-        >
-          <div className="flex items-center">
-            <FromTokenSelector />
-            <div className="flex flex-col justify-between ml-4">
-              <div style={{ display: 'table' }}>
-                <input
-                  ref={inputRef}
-                  pattern="^[0-9]*[.,]?[0-9]*$"
-                  disabled={false}
-                  className={`
-                    focus:outline-none
-                    focus:ring-0
-                    focus:border-none
-                    border-none
-                    bg-transparent
-                    max-w-[190px]
-                    p-0
-                    placeholder:text-[#88818C]
-                    text-white text-opacity-80 text-xl md:text-2xl font-medium
-                  `}
-                  placeholder="0.0000"
-                  onChange={handleFromValueChange}
-                  value={showValue}
-                  name="inputRow"
-                  autoComplete="off"
-                  minLength={1}
-                  maxLength={79}
-                  style={{ display: 'table-cell', width: '100%' }}
-                />
-              </div>
-              {hasMounted && isConnected && (
-                <label
-                  htmlFor="inputRow"
-                  className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-                  onClick={onMaxBalance}
-                >
-                  {parsedBalance ?? '0.0'}
-                  <span className="text-opacity-50 text-secondaryTextColor">
-                    {' '}
-                    available
-                  </span>
-                </label>
-              )}
-            </div>
-          </div>
-          <div>
-            {hasMounted && isConnected && (
-              <div className="m">
-                <MiniMaxButton
-                  disabled={!balance || balance === 0n ? true : false}
-                  onClickBalance={onMaxBalance}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+      <BridgeAmountContainer>
+        <FromTokenSelector />
+        <AmountInput
+          inputRef={inputRef}
+          hasMounted={hasMounted}
+          isConnected={isConnected}
+          showValue={showValue}
+          handleFromValueChange={handleFromValueChange}
+          parsedBalance={parsedBalance}
+          onMaxBalance={onMaxBalance}
+        />
+        {hasMounted && isConnected && (
+          <MiniMaxButton
+            disabled={!balance || balance === 0n ? true : false}
+            onClickBalance={onMaxBalance}
+          />
+        )}
+      </BridgeAmountContainer>
+    </BridgeSectionContainer>
+  )
+}
+
+const FromChainSelector = () => {
+  const { fromChainId } = useBridgeState()
+
+  return (
+    <ChainSelector
+      dataTestId="bridge-origin-chain"
+      selectedItem={CHAINS_BY_ID[fromChainId]}
+      isOrigin={true}
+      label="From"
+      itemListFunction={useFromChainListArray}
+      setFunction={setFromChainId}
+      action="Bridge"
+    />
+  )
+}
+
+const FromTokenSelector = () => {
+  const { fromToken } = useBridgeState()
+
+  return (
+    <TokenSelector
+      dataTestId="bridge-origin-token"
+      selectedItem={fromToken}
+      isOrigin={true}
+      placeholder="Out"
+      itemListFunction={useFromTokenListArray}
+      setFunction={setFromToken}
+      action="Bridge"
+    />
   )
 }

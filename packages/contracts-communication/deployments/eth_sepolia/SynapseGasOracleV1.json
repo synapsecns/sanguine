@@ -1,9 +1,9 @@
 {
-  "address": "0x960262363A4768466a2Da2469B0C6AE8841a21Ed",
+  "address": "0x3BfcE077Cf306E1C7C3300E72aF6eE79AC997eCc",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xc5616e0ac6811cb46efd2295b6a0449ad49d3e095ac5631e3903faf2d47167fb",
-    "blockNumber": 5586659
+    "hash": "0x4b36c6953f669d7dc4d5384fac566b25751cab81704318401e2e1ca830219a6c",
+    "blockNumber": 5712777
   },
   "abi": [
     {
@@ -23,8 +23,8 @@
       "inputs": [
         {
           "name": "remoteChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "value",
@@ -47,8 +47,8 @@
       "inputs": [
         {
           "name": "remoteChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "gasLimit",
@@ -76,8 +76,8 @@
       "inputs": [
         {
           "name": "remoteChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "gasLimit",
@@ -131,8 +131,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -180,8 +180,8 @@
       "inputs": [
         {
           "name": "srcChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "data",
@@ -218,8 +218,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "calldataPrice",
@@ -236,8 +236,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "data",
@@ -271,8 +271,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "gasPrice",
@@ -289,8 +289,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "nativePrice",
@@ -320,9 +320,9 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": true,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "calldataPrice",
@@ -339,9 +339,9 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": true,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "gasPrice",
@@ -358,9 +358,9 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": true,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "nativePrice",
@@ -414,12 +414,28 @@
     },
     {
       "type": "error",
+      "name": "SafeCastOverflowedUintDowncast",
+      "inputs": [
+        {
+          "name": "bits",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
       "name": "SynapseGasOracleV1__NativePriceNotSet",
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -434,8 +450,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     }

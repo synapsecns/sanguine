@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {OptionsV1, OptionsLib} from "../contracts/libs/Options.sol";
+import {OptionsV1} from "../contracts/libs/Options.sol";
+import {VersionedPayloadLib} from "../contracts/libs/VersionedPayload.sol";
 
 import {
-    InterchainClientV1,
-    InterchainClientV1BaseTest,
-    InterchainTransaction,
-    InterchainTxDescriptor
+    InterchainClientV1BaseTest, InterchainTransaction, InterchainTxDescriptor
 } from "./InterchainClientV1.Base.t.sol";
 
 import {ExecutionFeesMock} from "./mocks/ExecutionFeesMock.sol";
@@ -39,14 +37,14 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     uint256 public constant MOCK_EXECUTION_FEE = 1 ether;
     uint256 public constant MOCK_INTERCHAIN_FEE = 0.5 ether;
 
-    uint256 public constant MOCK_DB_NONCE = 444;
+    uint64 public constant MOCK_DB_NONCE = 444;
     uint64 public constant MOCK_ENTRY_INDEX = 4;
 
     OptionsV1 public options = OptionsV1({gasLimit: 100_000, gasAirdrop: 1 ether});
     bytes public encodedOptions = options.encodeOptionsV1();
 
-    bytes public invalidOptionsV0 = OptionsLib.encodeVersionedOptions(0, abi.encode(options));
-    bytes public invalidOptionsV1 = OptionsLib.encodeVersionedOptions(1, abi.encode(options.gasLimit));
+    bytes public invalidOptionsV0 = VersionedPayloadLib.encodeVersionedPayload(0, abi.encode(options));
+    bytes public invalidOptionsV1 = VersionedPayloadLib.encodeVersionedPayload(1, abi.encode(options.gasLimit));
 
     bytes public message = "Hello, World!";
 
@@ -69,15 +67,15 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     }
 
     /// @dev Override the DB's returned interchain fee for the given destination chain and modules.
-    function mockInterchainFee(uint256 dstChainId, address[] memory modules, uint256 interchainFee) internal {
+    function mockInterchainFee(uint64 dstChainId, address[] memory modules, uint256 interchainFee) internal {
         vm.mockCall(
             icDB, abi.encodeCall(InterchainDBMock.getInterchainFee, (dstChainId, modules)), abi.encode(interchainFee)
         );
     }
 
     /// @dev Override the ExecutionService's returned execution fee for the given destination chain and transaction.
-    function mockExecutionFee(uint256 dstChainId, InterchainTransaction memory icTx, uint256 executionFee) internal {
-        uint256 txPayloadSize = abi.encode(icTx).length;
+    function mockExecutionFee(uint64 dstChainId, InterchainTransaction memory icTx, uint256 executionFee) internal {
+        uint256 txPayloadSize = getEncodedTx(icTx).length;
         vm.mockCall(
             execService,
             abi.encodeCall(ExecutionServiceMock.getExecutionFee, (dstChainId, txPayloadSize, icTx.options)),
@@ -86,7 +84,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     }
 
     /// @dev Override the DB's returned next entry index (both for reads and writes)
-    function mockNextEntryIndex(uint256 dbNonce, uint64 entryIndex) internal {
+    function mockNextEntryIndex(uint64 dbNonce, uint64 entryIndex) internal {
         bytes memory returnData = abi.encode(dbNonce, entryIndex);
         // Use partial calldata to override return values for calls to these functions with any arguments.
         vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.getNextEntryIndex.selector), returnData);
@@ -111,7 +109,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             message: message
         });
         desc = InterchainTxDescriptor({
-            transactionId: icTx.transactionId(),
+            transactionId: keccak256(getEncodedTx(icTx)),
             dbNonce: MOCK_DB_NONCE,
             entryIndex: MOCK_ENTRY_INDEX
         });
@@ -160,7 +158,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     )
         internal
     {
-        uint256 txPayloadSize = abi.encode(icTx).length;
+        uint256 txPayloadSize = getEncodedTx(icTx).length;
         bytes memory expectedCalldata = abi.encodeCall(
             ExecutionServiceMock.requestExecution,
             (icTx.dstChainId, txPayloadSize, desc.transactionId, executionFee, icTx.options)

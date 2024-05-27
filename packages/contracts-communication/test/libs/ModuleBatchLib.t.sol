@@ -19,10 +19,11 @@ contract ModuleBatchLibTest is Test {
         assertEq(actual.batchRoot, expected.batchRoot, "!batchRoot");
     }
 
-    function test_roundTrip(InterchainBatch memory batch, bytes memory moduleData) public {
-        bytes memory encoded = libHarness.encodeModuleBatch(batch, moduleData);
-        (InterchainBatch memory decodedBatch, bytes memory decodedModuleData) = libHarness.decodeModuleBatch(encoded);
-        assertEq(decodedBatch, batch);
+    function test_encodeVersionedModuleBatch_roundTrip(bytes memory versionedBatch, bytes memory moduleData) public {
+        bytes memory encoded = libHarness.encodeVersionedModuleBatch(versionedBatch, moduleData);
+        (bytes memory decodedVersionedBatch, bytes memory decodedModuleData) =
+            libHarness.decodeVersionedModuleBatch(encoded);
+        assertEq(decodedVersionedBatch, versionedBatch);
         assertEq(decodedModuleData, moduleData);
     }
 }

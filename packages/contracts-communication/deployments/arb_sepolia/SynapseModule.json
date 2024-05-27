@@ -1,0 +1,840 @@
+{
+  "address": "0xC13e2b478f6531Ef096FF05733Ed65E3bc7fC5AF",
+  "constructorArgs": "0x0000000000000000000000004361f461c5df0dcf109ba2cf0e46dfa26e73f54f000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "receipt": {
+    "hash": "0xf175001a19ff7c0f377fffa3d6c5c178a8cc4beba5301dc73b849ba0b5920c10",
+    "blockNumber": 34357595
+  },
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "interchainDB",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "owner_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "DEFAULT_VERIFY_GAS_LIMIT",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "INTERCHAIN_DB",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "addVerifier",
+      "inputs": [
+        {
+          "name": "verifier",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "addVerifiers",
+      "inputs": [
+        {
+          "name": "verifiers",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "claimFees",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "feeCollector",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "gasOracle",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getClaimFeeAmount",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getClaimFeeFraction",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getModuleFee",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getThreshold",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getVerifiers",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getVerifyGasLimit",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "gasLimit",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "isVerifier",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "removeVerifier",
+      "inputs": [
+        {
+          "name": "verifier",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "removeVerifiers",
+      "inputs": [
+        {
+          "name": "verifiers",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "renounceOwnership",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "requestBatchVerification",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        },
+        {
+          "name": "versionedBatch",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "setClaimFeeFraction",
+      "inputs": [
+        {
+          "name": "claimFeeFraction",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setFeeCollector",
+      "inputs": [
+        {
+          "name": "feeCollector_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setGasOracle",
+      "inputs": [
+        {
+          "name": "gasOracle_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setThreshold",
+      "inputs": [
+        {
+          "name": "threshold",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setVerifyGasLimit",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        },
+        {
+          "name": "gasLimit",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "verifyRemoteBatch",
+      "inputs": [
+        {
+          "name": "encodedBatch",
+          "type": "bytes",
+          "internalType": "bytes"
+        },
+        {
+          "name": "signatures",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "BatchVerificationRequested",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
+        },
+        {
+          "name": "batch",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        },
+        {
+          "name": "ethSignedBatchHash",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "BatchVerified",
+      "inputs": [
+        {
+          "name": "srcChainId",
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
+        },
+        {
+          "name": "batch",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        },
+        {
+          "name": "ethSignedBatchHash",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ClaimFeeFractionSet",
+      "inputs": [
+        {
+          "name": "claimFeeFraction",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "FeeCollectorSet",
+      "inputs": [
+        {
+          "name": "feeCollector",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "FeesClaimed",
+      "inputs": [
+        {
+          "name": "feeCollector",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "collectedFees",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "claimer",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "claimerFee",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "GasDataReceived",
+      "inputs": [
+        {
+          "name": "srcChainId",
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "GasDataSent",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "GasOracleSet",
+      "inputs": [
+        {
+          "name": "gasOracle",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "previousOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ThresholdSet",
+      "inputs": [
+        {
+          "name": "threshold",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "VerifierAdded",
+      "inputs": [
+        {
+          "name": "verifier",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "VerifierRemoved",
+      "inputs": [
+        {
+          "name": "verifier",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "VerifyGasLimitSet",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
+        },
+        {
+          "name": "gasLimit",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "AddressInsufficientBalance",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "FailedInnerCall",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InterchainModule__IncorrectSourceChainId",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainModule__InsufficientFee",
+      "inputs": [
+        {
+          "name": "actual",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "required",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainModule__NotInterchainDB",
+      "inputs": [
+        {
+          "name": "caller",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainModule__SameChainId",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "OwnableInvalidOwner",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "OwnableUnauthorizedAccount",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SynapseModule__ClaimFeeFractionExceedsMax",
+      "inputs": [
+        {
+          "name": "claimFeeFraction",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SynapseModule__FeeCollectorNotSet",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SynapseModule__GasOracleNotContract",
+      "inputs": [
+        {
+          "name": "gasOracle",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SynapseModule__GasOracleNotSet",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SynapseModule__NoFeesToClaim",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__AlreadySigner",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__IncorrectSignaturesLength",
+      "inputs": [
+        {
+          "name": "length",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__InvalidSignature",
+      "inputs": [
+        {
+          "name": "signature",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__NotEnoughSignatures",
+      "inputs": [
+        {
+          "name": "provided",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "threshold",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__NotSigner",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__RecoveredSignersNotSorted",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__ZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__ZeroThreshold",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__PrecompileFailed",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__TooShort",
+      "inputs": [
+        {
+          "name": "versionedPayload",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ]
+    }
+  ]
+}

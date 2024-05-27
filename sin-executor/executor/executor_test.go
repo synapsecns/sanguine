@@ -19,11 +19,11 @@ func (i *InterchainSuite) TestE2E() {
 	message := []byte("hello")
 
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.originChain)
-	messageFee, err := appMock.GetMessageFee(&bind.CallOpts{Context: i.GetTestContext()}, i.destChain.GetBigChainID(), gasLimit, gasAirdrop, message)
+	messageFee, err := appMock.GetMessageFee(&bind.CallOpts{Context: i.GetTestContext()}, i.destChain.GetBigChainID().Uint64(), gasLimit, gasAirdrop, message)
 	i.Require().NoError(err)
 
 	auth.TransactOpts.Value = messageFee
-	tx, err := appMock.SendMessage(auth.TransactOpts, i.destChain.GetBigChainID(), gasLimit, gasAirdrop, message)
+	tx, err := appMock.SendMessage(auth.TransactOpts, i.destChain.GetBigChainID().Uint64(), gasLimit, gasAirdrop, message)
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -46,8 +46,8 @@ func (i *InterchainSuite) TestE2E() {
 		_, destDB := i.deployManager.GetInterchainDB(i.GetTestContext(), i.destChain)
 
 		destContext := i.destChain.GetTxContext(i.GetTestContext(), nil)
-		mockTX, err := destModule.MockVerifyRemoteBatch(destContext.TransactOpts, destDB.Address(), interchainmodulemock.InterchainBatch{
-			SrcChainId: i.originChain.GetBigChainID(),
+		mockTX, err := destModule.MockVerifyRemoteBatchStruct(destContext.TransactOpts, destDB.Address(), interchainmodulemock.InterchainBatch{
+			SrcChainId: i.originChain.GetBigChainID().Uint64(),
 			DbNonce:    written.DbNonce,
 			BatchRoot:  written.BatchRoot,
 		})
@@ -69,10 +69,16 @@ func (i *InterchainSuite) TestE2E() {
 		}
 	}()
 
+	_, destApp := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.destChain)
+
 	i.Eventually(func() bool {
 		status, err := i.executor.DB().GetInterchainTXsByStatus(i.GetTestContext(), db.Executed)
 		i.Require().NoError(err)
 
-		return 1 == len(status)
+		// Destination App balance should match the airdrop amount
+		balance, err := i.destChain.BalanceAt(i.GetTestContext(), destApp.Address(), nil)
+		i.Require().NoError(err)
+
+		return len(status) == 1 && balance.Cmp(gasAirdrop) == 0
 	})
 }

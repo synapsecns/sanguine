@@ -15,13 +15,11 @@ type IConfig interface {
 	GetBatch(chainID int) bool
 	// GetMaxGasPrice returns the maximum gas price to use for transactions.
 	GetMaxGasPrice(chainID int) (maxPrice *big.Int)
-	// GetBaseGasPrice returns the maximum gas price to use for transactions.
-	GetBaseGasPrice(chainID int) (basePrice *big.Int)
+	// GetMinGasPrice returns the minimum gas price to use for transactions.
+	GetMinGasPrice(chainID int) (minPrice *big.Int)
 	// GetBumpInterval returns the number of seconds to wait before bumping a transaction
 	// TODO: test this method.
 	GetBumpInterval(chainID int) time.Duration
-	// IsL2 returns whether or not this chain is an L2 chain.
-	IsL2(chainID int) bool
 	// GetGasBumpPercentage returns the percentage to bump the gas price by
 	// TODO: test this method.
 	GetGasBumpPercentage(chainID int) (gasBumpPercentage int)
@@ -35,8 +33,8 @@ type IConfig interface {
 	SupportsEIP1559(chainID int) bool
 	// SetGlobalMaxGasPrice is a helper function that sets the global gas price.
 	SetGlobalMaxGasPrice(maxPrice *big.Int)
-	// SetBaseGasPrice is a helper function that sets the base gas price.
-	SetBaseGasPrice(basePrice *big.Int)
+	// SetMinGasPrice is a helper function that sets the base gas price.
+	SetMinGasPrice(basePrice *big.Int)
 	// SetGlobalEIP1559Support is a helper function that sets the global EIP1559 support.
 	SetGlobalEIP1559Support(supportsEIP1559 bool)
 }

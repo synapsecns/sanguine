@@ -1,9 +1,9 @@
 {
-  "address": "0x86ea76bDa086F9d7912651f766a5A4512c7062EE",
+  "address": "0xE424490d88562F8123AC756f9A7ffa173630DB4E",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x0a8e2041f40fd1d4831ba3dcff554eed2701ca03db3dbc9f5197ba749e45474d",
-    "blockNumber": 5586583
+    "hash": "0x221171644ba5b06767d060e6e1d69657b686346f97b3c49847c2dfa8b5a5ca67",
+    "blockNumber": 5712784
   },
   "abi": [
     {
@@ -82,8 +82,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "txPayloadSize",
@@ -216,8 +216,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "txPayloadSize",
@@ -502,8 +502,8 @@
       "inputs": [
         {
           "name": "version",
-          "type": "uint8",
-          "internalType": "uint8"
+          "type": "uint16",
+          "internalType": "uint16"
         }
       ]
     },
@@ -534,8 +534,8 @@
       "inputs": [
         {
           "name": "version",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint16",
+          "internalType": "uint16"
         }
       ]
     },
@@ -543,6 +543,22 @@
       "type": "error",
       "name": "SynapseExecutionService__ZeroAddress",
       "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__PrecompileFailed",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__TooShort",
+      "inputs": [
+        {
+          "name": "versionedPayload",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ]
     }
   ]
 }

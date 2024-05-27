@@ -15,6 +15,12 @@ const (
 	Nonce = "nonce"
 	// TxHash is the metric name for the transaction hash.
 	TxHash = "tx_hash"
+	// BlockHash is the metric name for the block hash.
+	BlockHash = "block_hash"
+	// FromBlock is the metric name for the block number.
+	FromBlock = "from_block"
+	// ToBlock is the metric name for the to block.
+	ToBlock = "to_block"
 	// Page is the metric name for the page.
 	Page = "page"
 	// Contract is the metric name for the contract.

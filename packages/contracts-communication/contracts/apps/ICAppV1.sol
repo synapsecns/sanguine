@@ -11,6 +11,7 @@ import {TypeCasts} from "../libs/TypeCasts.sol";
 
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainAppV1Events, IInterchainAppV1 {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -21,12 +22,14 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     bytes32 public constant IC_GOVERNOR_ROLE = keccak256("IC_GOVERNOR_ROLE");
 
     /// @dev Address of the latest Interchain Client, used for sending messages.
+    /// Note: packed in a single storage slot with the `_requiredResponses` and `_optimisticPeriod`.
     address private _latestClient;
-
     /// @dev Required responses and optimistic period for the module responses.
-    AppConfigV1 private _appConfigV1;
+    uint16 private _requiredResponses;
+    uint48 private _optimisticPeriod;
+
     /// @dev Address of the linked app deployed on the remote chain.
-    mapping(uint256 chainId => bytes32 remoteApp) private _linkedApp;
+    mapping(uint64 chainId => bytes32 remoteApp) private _linkedApp;
     /// @dev Interchain Clients allowed to send messages to this app.
     EnumerableSet.AddressSet private _interchainClients;
     /// @dev Trusted Interchain modules.
@@ -54,12 +57,12 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     }
 
     /// @inheritdoc IInterchainAppV1
-    function linkRemoteApp(uint256 chainId, bytes32 remoteApp) external onlyRole(IC_GOVERNOR_ROLE) {
+    function linkRemoteApp(uint64 chainId, bytes32 remoteApp) external onlyRole(IC_GOVERNOR_ROLE) {
         _linkRemoteApp(chainId, remoteApp);
     }
 
     /// @inheritdoc IInterchainAppV1
-    function linkRemoteAppEVM(uint256 chainId, address remoteApp) external onlyRole(IC_GOVERNOR_ROLE) {
+    function linkRemoteAppEVM(uint64 chainId, address remoteApp) external onlyRole(IC_GOVERNOR_ROLE) {
         _linkRemoteApp(chainId, remoteApp.addressToBytes32());
     }
 
@@ -89,7 +92,8 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
         if (appConfig.requiredResponses == 0 || appConfig.optimisticPeriod == 0) {
             revert InterchainApp__InvalidAppConfig(appConfig.requiredResponses, appConfig.optimisticPeriod);
         }
-        _appConfigV1 = appConfig;
+        _requiredResponses = SafeCast.toUint16(appConfig.requiredResponses);
+        _optimisticPeriod = SafeCast.toUint48(appConfig.optimisticPeriod);
         emit AppConfigV1Set(appConfig.requiredResponses, appConfig.optimisticPeriod);
     }
 
@@ -102,11 +106,12 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainAppV1
-    function getAppConfigV1() external view returns (AppConfigV1 memory) {
-        return _appConfigV1;
+    function getAppConfigV1() public view returns (AppConfigV1 memory) {
+        return AppConfigV1({requiredResponses: _requiredResponses, optimisticPeriod: _optimisticPeriod});
     }
 
     /// @inheritdoc IInterchainAppV1
+    // solhint-disable-next-line ordering
     function getExecutionService() external view returns (address) {
         return _executionService;
     }
@@ -122,12 +127,12 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     }
 
     /// @inheritdoc IInterchainAppV1
-    function getLinkedApp(uint256 chainId) external view returns (bytes32) {
+    function getLinkedApp(uint64 chainId) external view returns (bytes32) {
         return _linkedApp[chainId];
     }
 
     /// @inheritdoc IInterchainAppV1
-    function getLinkedAppEVM(uint256 chainId) external view returns (address linkedAppEVM) {
+    function getLinkedAppEVM(uint64 chainId) external view returns (address linkedAppEVM) {
         bytes32 linkedApp = _linkedApp[chainId];
         linkedAppEVM = linkedApp.bytes32ToAddress();
         if (linkedAppEVM.addressToBytes32() != linkedApp) {
@@ -145,7 +150,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     /// @dev Links the remote app to the current app.
     /// Will revert if the chainId is the same as the chainId of the local app.
     /// Note: Should be guarded with permissions check.
-    function _linkRemoteApp(uint256 chainId, bytes32 remoteApp) internal {
+    function _linkRemoteApp(uint64 chainId, bytes32 remoteApp) internal {
         if (chainId == block.chainid) {
             revert InterchainApp__SameChainId(chainId);
         }
@@ -181,7 +186,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     /// @dev Thin wrapper around _sendInterchainMessage to send the message to the linked app.
     function _sendToLinkedApp(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 messageFee,
         OptionsV1 memory options,
         bytes memory message
@@ -197,7 +202,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     /// @dev Returns the fee to send a message to the linked app on the remote chain.
     function _getMessageFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         OptionsV1 memory options,
         uint256 messageLen
     )
@@ -211,7 +216,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     /// @dev Returns the configuration of the app for validating the received messages.
     function _getAppConfig() internal view override returns (bytes memory) {
-        return _appConfigV1.encodeAppConfigV1();
+        return getAppConfigV1().encodeAppConfigV1();
     }
 
     /// @dev Returns the address of the Execution Service to use for sending messages.
@@ -230,7 +235,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     }
 
     /// @dev Checks if the sender is allowed to send messages to this app.
-    function _isAllowedSender(uint256 srcChainId, bytes32 sender) internal view override returns (bool) {
+    function _isAllowedSender(uint64 srcChainId, bytes32 sender) internal view override returns (bool) {
         return _linkedApp[srcChainId] == sender;
     }
 
