@@ -184,6 +184,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
 		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
@@ -194,6 +195,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
 		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
@@ -233,16 +235,23 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 
 		c.Request.Body = io.NopCloser(strings.NewReader(bodyStr))
 
-		span.SetAttributes(attribute.String("appId", appID))
-		span.SetAttributes(attribute.String("timestamp", timestamp))
-		span.SetAttributes(attribute.String("nonce", nonce))
-		span.SetAttributes(attribute.String("signature", signature))
-		span.SetAttributes(attribute.String("bodyString", bodyStr))
+		span.SetAttributes(
+			attribute.String("appId", appID),
+			attribute.String("timestamp", timestamp),
+			attribute.String("nonce", nonce),
+			attribute.String("signature", signature),
+			attribute.String("queryString", queryString),
+			attribute.String("bodyString", bodyStr),
+		)
 
 		message := fmt.Sprintf("%s%s%s%s%s%s%s",
 			appID, timestamp, nonce, "POST", "/api/data/sync/", queryString, bodyStr)
 
+		span.AddEvent("message", trace.WithAttributes(attribute.String("message", message)))
+
 		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
+
+		span.AddEvent("generated_signature", trace.WithAttributes(attribute.String("expectedSignature", expectedSignature)))
 
 		if expectedSignature != signature {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", "Invalid signature")))
@@ -250,6 +259,8 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		span.AddEvent("signature_validated")
 		c.Next()
 	}
 }
