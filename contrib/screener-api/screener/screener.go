@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -93,8 +94,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router.Use(screener.metrics.Gin())
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
 
-	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
-
+	screener.router.POST("/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
 	screener.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	return &screener, nil
@@ -190,6 +190,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 	case "update":
 		if err := s.db.UpdateBlacklistedAddress(c, blacklistedAddress.ID, blacklistedAddress); err != nil {
+			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -199,6 +200,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 	case "delete":
 		if err := s.db.DeleteBlacklistedAddress(c, blacklistedAddress.Address); err != nil {
+			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -207,6 +209,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		return
 
 	default:
+		span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
 		return
 	}
@@ -216,34 +219,27 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 // compare it with the signature provided. If they match, the request is allowed to pass through.
 func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var blacklistBody client.BlackListBody
+		appID := c.Request.Header.Get("Appid")
+		timestamp := c.Request.Header.Get("Timestamp")
+		nonce := c.Request.Header.Get("Nonce")
+		signature := c.Request.Header.Get("Signature")
 
-		if err := c.ShouldBindBodyWith(&blacklistBody, binding.JSON); err != nil {
-			c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		bodyBytes, _ := io.ReadAll(c.Request.Body)
+		bodyString := string(bodyBytes)
+
+		c.Request.Body = io.NopCloser(strings.NewReader(bodyString))
+
+		message := fmt.Sprintf("%s%s%s%s%s%s",
+			appID, timestamp, nonce, "POST", client.BlacklistEndpoint, bodyString)
+
+		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
+
+		if expectedSignature != signature {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid signature"})
 			c.Abort()
 			return
 		}
 
-		appid := cfg.AppID
-		appsecret := cfg.AppSecret
-
-		nonce := c.GetHeader("nonce")
-		timestamp := c.GetHeader("timestamp")
-		queryString := c.GetHeader("queryString")
-		if nonce == "" || timestamp == "" || appid == "" {
-			c.JSON(http.StatusConflict, gin.H{"error": "missing headers"})
-			c.Abort()
-			return
-		}
-
-		// reconstruct signature
-		expected := client.GenerateSignature(appsecret, appid, timestamp, nonce, queryString, blacklistBody)
-
-		if c.GetHeader("Signature") != expected {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-			c.Abort()
-			return
-		}
 		c.Next()
 	}
 }

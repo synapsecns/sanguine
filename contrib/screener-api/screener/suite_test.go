@@ -80,7 +80,7 @@ func (s *ScreenerSuite) TestScreener() {
 	s.T().Setenv("TRM_URL", "")
 
 	cfg := config.Config{
-		AppSecret: "appsecret",
+		AppSecret: "secret",
 		AppID:     "appid",
 		TRMKey:    "",
 		Rulesets: map[string]config.RulesetConfig{
