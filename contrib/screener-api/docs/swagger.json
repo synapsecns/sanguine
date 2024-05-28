@@ -149,7 +149,7 @@
                 "tag": {
                     "type": "string"
                 },
-                "typereq": {
+                "type": {
                     "type": "string"
                 },
                 "updatedAt": {
