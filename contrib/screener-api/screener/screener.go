@@ -184,27 +184,28 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
 	case "update":
-		if err := s.db.UpdateBlacklistedAddress(c, blacklistedAddress.ID, blacklistedAddress); err != nil {
+		if err := s.db.UpdateBlacklistedAddress(ctx, blacklistedAddress.ID, blacklistedAddress); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
 	case "delete":
-		if err := s.db.DeleteBlacklistedAddress(c, blacklistedAddress.Address); err != nil {
+		if err := s.db.DeleteBlacklistedAddress(ctx, blacklistedAddress.Address); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
@@ -220,6 +221,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		_, span := s.metrics.Tracer().Start(c.Request.Context(), "authMiddleware")
+		defer span.End()
 
 		appID := c.Request.Header.Get("AppID")
 		timestamp := c.Request.Header.Get("Timestamp")
@@ -243,11 +245,11 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
 
 		if expectedSignature != signature {
+			span.AddEvent("error", trace.WithAttributes(attribute.String("error", "Invalid signature")))
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid signature"})
 			c.Abort()
 			return
 		}
-
 		c.Next()
 	}
 }
