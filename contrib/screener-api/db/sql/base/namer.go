@@ -10,7 +10,7 @@ func init() {
 	addressName = namer.GetConsistentName("Address")
 	indicatorName = namer.GetConsistentName("Indicators")
 
-	typeReqName = namer.GetConsistentName("TypeReq")
+	typeName = namer.GetConsistentName("Type")
 	idName = namer.GetConsistentName("ID")
 	dataName = namer.GetConsistentName("Data")
 	networkName = namer.GetConsistentName("Network")
@@ -22,7 +22,7 @@ var (
 	addressName   string
 	indicatorName string
 
-	typeReqName string
+	typeName    string
 	idName      string
 	dataName    string
 	networkName string

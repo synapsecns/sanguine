@@ -94,7 +94,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router.Use(screener.metrics.Gin())
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
 
-	screener.router.POST("/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
+	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
 	screener.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	return &screener, nil
