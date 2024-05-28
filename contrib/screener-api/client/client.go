@@ -88,7 +88,7 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appi
 
 	bodyBz, err := json.Marshal(body)
 	if err != nil {
-		return "", fmt.Errorf("error marshalling body: %w", err)
+		return "", fmt.Errorf("error marshaling body: %w", err)
 	}
 
 	message := fmt.Sprintf("%s%s%s%s%s%s%s",
