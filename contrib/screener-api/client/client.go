@@ -65,7 +65,7 @@ func (c clientImpl) ScreenAddress(ctx context.Context, ruleset, address string) 
 
 // BlackListBody is the json payload that represents a blacklisted address.
 type BlackListBody struct {
-	TypeReq string `json:"typereq"`
+	Type    string `json:"type"`
 	ID      string `json:"id"`
 	Data    string `json:"data"`
 	Address string `json:"address"`

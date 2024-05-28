@@ -159,7 +159,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		return
 	}
 
-	span.SetAttributes(attribute.String("type", blacklistBody.TypeReq))
+	span.SetAttributes(attribute.String("type", blacklistBody.Type))
 	span.SetAttributes(attribute.String("id", blacklistBody.ID))
 	span.SetAttributes(attribute.String("data", blacklistBody.Data))
 	span.SetAttributes(attribute.String("network", blacklistBody.Network))
@@ -168,7 +168,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	span.SetAttributes(attribute.String("address", blacklistBody.Address))
 
 	blacklistedAddress := db.BlacklistedAddress{
-		TypeReq: blacklistBody.TypeReq,
+		Type:    blacklistBody.Type,
 		ID:      blacklistBody.ID,
 		Data:    blacklistBody.Data,
 		Network: blacklistBody.Network,
@@ -177,7 +177,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		Address: strings.ToLower(blacklistBody.Address),
 	}
 
-	switch blacklistBody.TypeReq {
+	switch blacklistBody.Type {
 	case "create":
 		if err := s.db.PutBlacklistedAddress(ctx, blacklistedAddress); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
