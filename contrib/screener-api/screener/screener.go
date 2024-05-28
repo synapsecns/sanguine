@@ -219,18 +219,26 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 // compare it with the signature provided. If they match, the request is allowed to pass through.
 func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		appID := c.Request.Header.Get("Appid")
+		_, span := s.metrics.Tracer().Start(c.Request.Context(), "authMiddleware")
+
+		appID := c.Request.Header.Get("AppID")
 		timestamp := c.Request.Header.Get("Timestamp")
 		nonce := c.Request.Header.Get("Nonce")
 		signature := c.Request.Header.Get("Signature")
-
+		queryString := c.Request.Header.Get("QueryString")
 		bodyBytes, _ := io.ReadAll(c.Request.Body)
-		bodyString := string(bodyBytes)
+		bodyStr := string(bodyBytes)
 
-		c.Request.Body = io.NopCloser(strings.NewReader(bodyString))
+		c.Request.Body = io.NopCloser(strings.NewReader(bodyStr))
 
-		message := fmt.Sprintf("%s%s%s%s%s%s",
-			appID, timestamp, nonce, "POST", client.BlacklistEndpoint, bodyString)
+		span.SetAttributes(attribute.String("appId", appID))
+		span.SetAttributes(attribute.String("timestamp", timestamp))
+		span.SetAttributes(attribute.String("nonce", nonce))
+		span.SetAttributes(attribute.String("signature", signature))
+		span.SetAttributes(attribute.String("bodyString", bodyStr))
+
+		message := fmt.Sprintf("%s%s%s%s%s%s%s",
+			appID, timestamp, nonce, "POST", "/api/data/sync/", queryString, bodyStr)
 
 		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
 

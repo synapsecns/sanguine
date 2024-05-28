@@ -18,11 +18,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 )
 
-var (
-	// BlacklistEndpoint is the endpoint for blacklisting an address.
-	BlacklistEndpoint = "/api/data/sync/"
-)
-
 // ScreenerClient is an interface for the Screener API.
 type ScreenerClient interface {
 	ScreenAddress(ctx context.Context, ruleset, address string) (blocked bool, err error)
@@ -95,24 +90,23 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appi
 	if err != nil {
 		return "", fmt.Errorf("error marshalling body: %w", err)
 	}
-	bodyStr := string(bodyBz)
 
 	message := fmt.Sprintf("%s%s%s%s%s%s%s",
-		appid, timestamp, nonce, "POST", BlacklistEndpoint, queryString, bodyStr)
+		appid, timestamp, nonce, "POST", "/api/data/sync/", queryString, string(bodyBz))
 
 	signature := GenerateSignature(appsecret, message)
 
 	resp, err := c.rClient.R().
 		SetContext(ctx).
 		SetHeader("Content-Type", "application/json").
-		SetHeader("Appid", appid).
+		SetHeader("AppID", appid).
 		SetHeader("Timestamp", timestamp).
 		SetHeader("Nonce", nonce).
 		SetHeader("QueryString", queryString).
 		SetHeader("Signature", signature).
 		SetBody(body).
 		SetResult(&blacklistRes).
-		Post(BlacklistEndpoint)
+		Post("/api/data/sync/")
 
 	if err != nil {
 		return resp.Status(), fmt.Errorf("error from server: %s: %w", resp.String(), err)

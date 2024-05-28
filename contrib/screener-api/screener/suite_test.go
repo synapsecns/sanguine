@@ -166,6 +166,7 @@ func (s *ScreenerSuite) TestScreener() {
 
 	// post to the blacklist
 	status, err := apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
+	fmt.Println(status)
 	Equal(s.T(), "success", status)
 	Nil(s.T(), err)
 
@@ -174,6 +175,7 @@ func (s *ScreenerSuite) TestScreener() {
 	blacklistBody.Remark = "new remark"
 
 	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
+	fmt.Println(status)
 	Equal(s.T(), "success", status)
 	Nil(s.T(), err)
 
@@ -182,11 +184,13 @@ func (s *ScreenerSuite) TestScreener() {
 	blacklistBody.ID = "1"
 
 	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
+	fmt.Println(status)
 	Equal(s.T(), "success", status)
 	Nil(s.T(), err)
 
 	// unauthorized
 	status, err = apiClient.BlacklistAddress(s.GetTestContext(), "bad", cfg.AppID, blacklistBody)
+	fmt.Println(status)
 	NotEqual(s.T(), "success", status)
 	NotNil(s.T(), err)
 }
