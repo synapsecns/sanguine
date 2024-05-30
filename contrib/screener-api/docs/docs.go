@@ -160,7 +160,7 @@ const docTemplate = `{
                 "tag": {
                     "type": "string"
                 },
-                "typereq": {
+                "type": {
                     "type": "string"
                 },
                 "updatedAt": {

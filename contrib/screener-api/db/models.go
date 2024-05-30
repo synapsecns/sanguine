@@ -20,7 +20,7 @@ type BlacklistedAddress struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 
-	TypeReq string `gorm:"column:typereq"        json:"typereq"`
+	Type    string `gorm:"column:type"           json:"type"`
 	ID      string `gorm:"column:id;primary_key" json:"id"`
 	Data    string `gorm:"column:data"           json:"data"`
 	Address string `gorm:"column:address"        json:"address"`
