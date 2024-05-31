@@ -127,7 +127,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 		} else {
 			c.backoff.Reset()
 		}
-		c.pollInterval = c.backoff.Duration()
+		c.pollInterval = c.backoff.Duration() + c.pollIntervalSetting
 	}()
 
 	c.latestBlock, err = c.client.BlockNumber(ctx)
