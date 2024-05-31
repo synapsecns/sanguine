@@ -86,6 +86,7 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 		return fmt.Errorf("could not get metadata: %w", err)
 	}
 
+	oldPollInterval := c.pollInterval
 	c.pollInterval = time.Duration(0)
 
 	for {
@@ -93,6 +94,7 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(c.pollInterval):
+			c.pollInterval = oldPollInterval
 			err = c.doPoll(ctx, handler)
 			if err != nil {
 				logger.Warn(err)
