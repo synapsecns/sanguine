@@ -1,0 +1,108 @@
+definitions:
+  db.BlacklistedAddress:
+    properties:
+      address:
+        type: string
+      createdAt:
+        type: string
+      data:
+        type: string
+      id:
+        type: string
+      network:
+        type: string
+      remark:
+        type: string
+      tag:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/data/sync:
+    post:
+      consumes:
+      - application/json
+      description: blacklist an address
+      parameters:
+      - description: Application ID
+        in: header
+        name: appid
+        required: true
+        type: string
+      - description: Timestamp of the request
+        in: header
+        name: timestamp
+        required: true
+        type: string
+      - description: A unique nonce for the request
+        in: header
+        name: nonce
+        required: true
+        type: string
+      - description: Query string parameters included in the request
+        in: header
+        name: queryString
+        required: true
+        type: string
+      - description: Signature for request validation
+        in: header
+        name: signature
+        required: true
+        type: string
+      - description: Blacklist request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/db.BlacklistedAddress'
+      produces:
+      - application/json
+      responses: {}
+      summary: blacklist an address
+  /screen/{ruleset}/{address}:
+    get:
+      consumes:
+      - application/json
+      description: Assess the risk associated with a given address using specified
+        rulesets.
+      parameters:
+      - description: Ruleset to use for screening the address
+        in: query
+        name: ruleset
+        required: true
+        type: string
+      - description: Address to be screened
+        in: query
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the risk assessment result
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: Returns error if the required parameters are missing or invalid
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Returns error if there are problems processing the indicators
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Screen address for risk
+      tags:
+      - address
+swagger: "2.0"
