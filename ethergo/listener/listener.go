@@ -29,6 +29,8 @@ type ContractListener interface {
 	LatestBlock() uint64
 	// Address gets the address of the contract this listener is listening to
 	Address() common.Address
+	// SetPollInterval sets the poll interval for the listener.
+	SetPollInterval(duration time.Duration)
 }
 
 // HandleLog is the handler for a log event
@@ -45,8 +47,7 @@ type chainListener struct {
 	// IMPORTANT! These fields cannot be used until they has been set. They are NOT
 	// set in the constructor
 	startBlock, chainID, latestBlock uint64
-	// TODO! do not export me, add an option.
-	PollInterval time.Duration
+	pollInterval                     time.Duration
 	// latestBlock         uint64
 }
 
@@ -75,19 +76,23 @@ const (
 	maxGetLogsRange     = 2000
 )
 
+func (c *chainListener) SetPollInterval(duration time.Duration) {
+	c.pollInterval = duration
+}
+
 func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err error) {
 	c.startBlock, c.chainID, err = c.getMetadata(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get metadata: %w", err)
 	}
 
-	c.PollInterval = time.Duration(0)
+	c.pollInterval = time.Duration(0)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(c.PollInterval):
+		case <-time.After(c.pollInterval):
 			err = c.doPoll(ctx, handler)
 			if err != nil {
 				logger.Warn(err)
@@ -106,7 +111,7 @@ func (c *chainListener) LatestBlock() uint64 {
 
 func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "doPoll", trace.WithAttributes(attribute.Int(metrics.ChainID, int(c.chainID))))
-	c.PollInterval = defaultPollInterval
+	c.pollInterval = defaultPollInterval
 
 	// Note: in the case of an error, you don't have to handle the poll interval by calling b.duration.
 	var endBlock uint64
@@ -122,7 +127,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 		} else {
 			c.backoff.Reset()
 		}
-		c.PollInterval = c.backoff.Duration()
+		c.pollInterval = c.backoff.Duration()
 	}()
 
 	c.latestBlock, err = c.client.BlockNumber(ctx)
@@ -143,7 +148,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 		endBlock = c.startBlock + maxGetLogsRange
 		// This will be used as the bottom of the range in the next iteration
 		lastUnconfirmedBlock = endBlock
-		c.PollInterval = 0
+		c.pollInterval = 0
 	}
 
 	filterQuery := c.buildFilterQuery(c.startBlock, endBlock)
