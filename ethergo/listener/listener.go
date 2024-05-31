@@ -46,8 +46,8 @@ type chainListener struct {
 	backoff      *backoff.Backoff
 	// IMPORTANT! These fields cannot be used until they has been set. They are NOT
 	// set in the constructor
-	startBlock, chainID, latestBlock uint64
-	pollInterval                     time.Duration
+	startBlock, chainID, latestBlock  uint64
+	pollInterval, pollIntervalSetting time.Duration
 	// latestBlock         uint64
 }
 
@@ -77,7 +77,7 @@ const (
 )
 
 func (c *chainListener) SetPollInterval(duration time.Duration) {
-	c.pollInterval = duration
+	c.pollIntervalSetting = duration
 }
 
 func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err error) {
@@ -86,7 +86,6 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 		return fmt.Errorf("could not get metadata: %w", err)
 	}
 
-	oldPollInterval := c.pollInterval
 	c.pollInterval = time.Duration(0)
 
 	for {
@@ -94,7 +93,6 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 		case <-ctx.Done():
 			return fmt.Errorf("context canceled: %w", ctx.Err())
 		case <-time.After(c.pollInterval):
-			c.pollInterval = oldPollInterval
 			err = c.doPoll(ctx, handler)
 			if err != nil {
 				logger.Warn(err)
@@ -113,7 +111,7 @@ func (c *chainListener) LatestBlock() uint64 {
 
 func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "doPoll", trace.WithAttributes(attribute.Int(metrics.ChainID, int(c.chainID))))
-	c.pollInterval = defaultPollInterval
+	c.pollInterval = c.pollIntervalSetting
 
 	// Note: in the case of an error, you don't have to handle the poll interval by calling b.duration.
 	var endBlock uint64
