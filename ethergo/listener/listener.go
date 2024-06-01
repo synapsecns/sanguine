@@ -29,8 +29,6 @@ type ContractListener interface {
 	LatestBlock() uint64
 	// Address gets the address of the contract this listener is listening to
 	Address() common.Address
-	// SetPollInterval sets the poll interval for the listener.
-	SetPollInterval(duration time.Duration)
 }
 
 // HandleLog is the handler for a log event
@@ -61,12 +59,13 @@ var (
 // NewChainListener creates a new chain listener.
 func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB, address common.Address, initialBlock uint64, handler metrics.Handler, options ...Option) (ContractListener, error) {
 	c := &chainListener{
-		handler:      handler,
-		address:      address,
-		initialBlock: initialBlock,
-		store:        store,
-		client:       omnirpcClient,
-		backoff:      newBackoffConfig(),
+		handler:             handler,
+		address:             address,
+		initialBlock:        initialBlock,
+		store:               store,
+		client:              omnirpcClient,
+		backoff:             newBackoffConfig(),
+		pollIntervalSetting: time.Millisecond * 50,
 	}
 
 	for _, option := range options {
@@ -80,10 +79,6 @@ func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB
 const (
 	maxGetLogsRange = 2000
 )
-
-func (c *chainListener) SetPollInterval(duration time.Duration) {
-	c.pollIntervalSetting = duration
-}
 
 func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err error) {
 	c.startBlock, c.chainID, err = c.getMetadata(ctx)
