@@ -73,5 +73,5 @@ func (c *CoingeckoPriceFetcherImpl) GetPrice(ctx context.Context, token string) 
 	if !ok {
 		return price, fmt.Errorf("could not get price from coingecko response: %v", resp)
 	}
-	return price, nil
+	return price / 2, nil
 }
