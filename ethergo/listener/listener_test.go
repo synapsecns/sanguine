@@ -2,6 +2,7 @@ package listener_test
 
 import (
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/listener"
@@ -39,7 +40,10 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 	startBlock, err := handle.DeployBlock(&bind.CallOpts{Context: l.GetTestContext()})
 	l.NoError(err)
 
-	cl, err := listener.NewChainListener(l.backend, l.store, handle.Address(), uint64(startBlock.Int64()), l.metrics)
+	cl, err := listener.NewChainListener(l.backend, l.store, handle.Address(), uint64(startBlock.Int64()), l.metrics, listener.WithNewBlockHandler(func(ctx context.Context, block uint64) error {
+		fmt.Println(block)
+		return nil
+	}))
 	l.NoError(err)
 
 	eventCount := 0
