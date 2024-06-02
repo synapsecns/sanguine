@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.5...@synapsecns/solidity-devops@0.4.0) (2024-06-02)
+
+
+### Features
+
+* **solidity-devops:** environment-specific configs ([#2658](https://github.com/synapsecns/sanguine/issues/2658)) ([df0d899](https://github.com/synapsecns/sanguine/commit/df0d899cf02d8741443c1910d94d8bb4adb8f12c))
+
+
+
+
+
 ## [0.3.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.4...@synapsecns/solidity-devops@0.3.5) (2024-05-12)
 
 
