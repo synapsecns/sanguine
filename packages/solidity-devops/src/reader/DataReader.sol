@@ -69,14 +69,27 @@ abstract contract DataReader is PathFinder {
     /// @dev Returns an empty string or reverts if the artifact is not found based on the flag.
     function readGlobalDeployConfig(
         string memory contractName,
-        string memory globalProperty,
+        string memory environment,
         bool revertIfNotFound
     )
         internal
         view
         returns (string memory deployConfig)
     {
-        return readFile(getGlobalDeployConfigFN(contractName, globalProperty), revertIfNotFound);
+        return readFile(getGlobalDeployConfigFN(contractName, environment), revertIfNotFound);
+    }
+
+    /// @notice Returns the global deployment configuration JSON for the production environment.
+    /// @dev Returns an empty string or reverts if the artifact is not found based on the flag.
+    function readGlobalDeployProdConfig(
+        string memory contractName,
+        bool revertIfNotFound
+    )
+        internal
+        view
+        returns (string memory deployConfig)
+    {
+        return readFile(getGlobalDeployConfigFN(contractName, ENVIRONMENT_PROD), revertIfNotFound);
     }
 
     // ════════════════════════════════════════════ SPECIFIC DATA READS ════════════════════════════════════════════════
