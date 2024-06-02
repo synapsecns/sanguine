@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.0...@synapsecns/solidity-devops@0.4.1) (2024-06-02)
+
+
+### Bug Fixes
+
+* **solidity-devops:** allow verifier fo be omitted for a chain ([#2659](https://github.com/synapsecns/sanguine/issues/2659)) ([972afed](https://github.com/synapsecns/sanguine/commit/972afeda19e45ae54f868f45f95eb058ea30482c))
+
+
+
+
+
 # [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.5...@synapsecns/solidity-devops@0.4.0) (2024-06-02)
 
 
