@@ -7,8 +7,8 @@ const {
   hasCodeRPC,
 } = require('./cast.js')
 const { tryReadConfigValue } = require('./config.js')
-const { readEnv } = require('./env.js')
-const { logError, logInfo } = require('./logger.js')
+const { readEnv, tryReadEnv } = require('./env.js')
+const { logInfo } = require('./logger.js')
 const { readWalletAddress, readWalletType } = require('./wallet.js')
 
 const OPTION_AUTO_FILL_GAS_PRICE_LEGACY = '--auto-gas-legacy'
@@ -29,6 +29,20 @@ const readChainRPC = (chainName) => {
 }
 
 /**
+ * Checks if any verifier is enabled for the given chain.
+ *
+ * This function determines if a verifier (like Etherscan, Blockscout, or Sourcify)
+ * is configured and enabled for the specified chain by checking if the verifier
+ * settings are present in the environment variables.
+ *
+ * @param {string} chainName - The name of the chain to check for verifier settings
+ * @returns {boolean} True if a verifier is enabled, false otherwise
+ */
+const isVerifierEnabled = (chainName) => {
+  return readChainVerificationOptions(chainName).length > 0
+}
+
+/**
  * Reads chain specific options from the devops configuration.
  * If no options are found, returns an empty string.
  *
@@ -41,7 +55,7 @@ const readChainSpecificOptions = (chainName) => {
 }
 
 const readChainVerificationOptions = (chainName) => {
-  const verifier = readEnv(chainName, 'VERIFIER')
+  const verifier = tryReadEnv(chainName, 'VERIFIER')
   switch (verifier) {
     case VERIFIER_ETHERSCAN:
       return readEtherscanOptions(chainName)
@@ -50,8 +64,7 @@ const readChainVerificationOptions = (chainName) => {
     case VERIFIER_SOURCIFY:
       return readSourcifyOptions(chainName)
     default:
-      logError(`Unknown verifier: ${verifier}`)
-      return null
+      return ''
   }
 }
 
@@ -140,6 +153,7 @@ const logWallet = (chainName, walletName) => {
 }
 
 module.exports = {
+  isVerifierEnabled,
   readChainRPC,
   readChainSpecificOptions,
   readChainVerificationOptions,

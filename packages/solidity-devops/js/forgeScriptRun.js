@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 const fs = require('fs')
 
-const { readChainSpecificOptions, logWallet } = require('./utils/chain.js')
+const {
+  readChainSpecificOptions,
+  logWallet,
+  isVerifierEnabled,
+} = require('./utils/chain.js')
 const {
   createDeploymentDirs,
   getNewDeployments,
@@ -42,7 +46,7 @@ let forgeOptions = addOptions(
 )
 forgeOptions = addOptions(forgeOptions, readChainSpecificOptions(chainName))
 forgeOptions = addOptions(forgeOptions, options)
-if (isBroadcast) {
+if (isBroadcast && isVerifierEnabled(chainName)) {
   forgeOptions = addVerifyOptions(forgeOptions)
 }
 

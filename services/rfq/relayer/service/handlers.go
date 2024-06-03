@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -138,7 +139,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return fmt.Errorf("could not get committable balance: %w", err)
 	}
 
-	// if committableBalance > destAmount
+	// check if we have enough inventory to handle the request
 	if committableBalance.Cmp(request.Transaction.DestAmount) < 0 {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory)
 		if err != nil {
@@ -146,6 +147,26 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		}
 		return nil
 	}
+
+	// get ack from API to synchronize calls with other relayers and avoid reverts
+	req := model.PutAckRequest{
+		TxID:        hexutil.Encode(request.TransactionID[:]),
+		DestChainID: int(request.Transaction.DestChainId),
+	}
+	resp, err := q.apiClient.PutRelayAck(ctx, &req)
+	if err != nil {
+		return fmt.Errorf("could not get relay ack: %w", err)
+	}
+	span.SetAttributes(
+		attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
+		attribute.Bool("should_relay", resp.ShouldRelay),
+		attribute.String("relayer_address", resp.RelayerAddress),
+	)
+	if !resp.ShouldRelay {
+		span.AddEvent("not relaying due to ack")
+		return nil
+	}
+
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)

@@ -44,9 +44,10 @@ type chainListener struct {
 	backoff      *backoff.Backoff
 	// IMPORTANT! These fields cannot be used until they has been set. They are NOT
 	// set in the constructor
-	startBlock, chainID, latestBlock uint64
-	pollInterval                     time.Duration
-	// latestBlock         uint64
+	startBlock, chainID, latestBlock  uint64
+	pollInterval, pollIntervalSetting time.Duration
+	// newBlockHandler is an optional handler that is called when a new block is detected.
+	newBlockHandler NewBlockHandler
 }
 
 var (
@@ -56,22 +57,27 @@ var (
 )
 
 // NewChainListener creates a new chain listener.
-func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB, address common.Address, initialBlock uint64, handler metrics.Handler) (ContractListener, error) {
-	return &chainListener{
-		handler:      handler,
-		address:      address,
-		initialBlock: initialBlock,
-		store:        store,
-		client:       omnirpcClient,
-		backoff:      newBackoffConfig(),
-	}, nil
+func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB, address common.Address, initialBlock uint64, handler metrics.Handler, options ...Option) (ContractListener, error) {
+	c := &chainListener{
+		handler:             handler,
+		address:             address,
+		initialBlock:        initialBlock,
+		store:               store,
+		client:              omnirpcClient,
+		backoff:             newBackoffConfig(),
+		pollIntervalSetting: time.Millisecond * 50,
+	}
+
+	for _, option := range options {
+		option(c)
+	}
+
+	return c, nil
 }
 
 // defaultPollInterval.
 const (
-	// TODO: replace w/ config param if needed.
-	defaultPollInterval = 4
-	maxGetLogsRange     = 2000
+	maxGetLogsRange = 2000
 )
 
 func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err error) {
@@ -103,9 +109,10 @@ func (c *chainListener) LatestBlock() uint64 {
 	return c.latestBlock
 }
 
+// nolint: cyclop
 func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "doPoll", trace.WithAttributes(attribute.Int(metrics.ChainID, int(c.chainID))))
-	c.pollInterval = defaultPollInterval
+	c.pollInterval = c.pollIntervalSetting
 
 	// Note: in the case of an error, you don't have to handle the poll interval by calling b.duration.
 	var endBlock uint64
@@ -121,9 +128,10 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 		} else {
 			c.backoff.Reset()
 		}
-		c.pollInterval = c.backoff.Duration()
+		c.pollInterval = c.backoff.Duration() + c.pollIntervalSetting
 	}()
 
+	oldLatestBlock := c.latestBlock
 	c.latestBlock, err = c.client.BlockNumber(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get block number: %w", err)
@@ -132,6 +140,14 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	// Check if latest block is the same as start block (for chains with slow block times)
 	if c.latestBlock == c.startBlock {
 		return nil
+	}
+
+	// check if there's a new block
+	if c.newBlockHandler != nil && c.latestBlock != oldLatestBlock {
+		err = c.newBlockHandler(ctx, c.latestBlock)
+		if err != nil {
+			return fmt.Errorf("new block handler failed: %w", err)
+		}
 	}
 
 	// Handle if the listener is more than one get logs range behind the head

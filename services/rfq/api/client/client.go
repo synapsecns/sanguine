@@ -26,6 +26,7 @@ import (
 // It provides methods for creating, retrieving and updating quotes.
 type AuthenticatedClient interface {
 	PutQuote(ctx context.Context, q *model.PutQuoteRequest) error
+	PutRelayAck(ctx context.Context, req *model.PutAckRequest) (*model.PutRelayAckResponse, error)
 	UnauthenticatedClient
 }
 
@@ -122,6 +123,25 @@ func (c *clientImpl) PutQuote(ctx context.Context, q *model.PutQuoteRequest) err
 	_ = res
 
 	return err
+}
+
+func (c *clientImpl) PutRelayAck(ctx context.Context, req *model.PutAckRequest) (*model.PutRelayAckResponse, error) {
+	var ack *model.PutRelayAckResponse
+	resp, err := c.rClient.R().
+		SetContext(ctx).
+		SetBody(req).
+		SetResult(&ack).
+		Put(rest.AckRoute)
+
+	if err != nil {
+		return nil, fmt.Errorf("error from server: %s %w", resp.Status(), err)
+	}
+
+	if resp.IsError() {
+		return nil, fmt.Errorf("error from server: %s", resp.Status())
+	}
+
+	return ack, nil
 }
 
 // GetAllQuotes retrieves all quotes from the RFQ quoting API.

@@ -1,6 +1,6 @@
 {
   "name": "contracts-communication",
-  "version": "1.7.2",
+  "version": "1.7.4",
   "private": true,
   "files": [
     "contracts/*.sol"
@@ -21,7 +21,7 @@
     "@openzeppelin/contracts-upgradeable": "5.0.1"
   },
   "devDependencies": {
-    "@synapsecns/solidity-devops": "^0.3.5",
+    "@synapsecns/solidity-devops": "^0.4.1",
     "solhint": "^4.1.1"
   }
 }

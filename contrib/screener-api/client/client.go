@@ -6,6 +6,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -15,11 +16,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
-)
-
-var (
-	// BlacklistEndpoint is the endpoint for blacklisting an address.
-	BlacklistEndpoint = "/api/data/sync/"
 )
 
 // ScreenerClient is an interface for the Screener API.
@@ -69,7 +65,7 @@ func (c clientImpl) ScreenAddress(ctx context.Context, ruleset, address string) 
 
 // BlackListBody is the json payload that represents a blacklisted address.
 type BlackListBody struct {
-	TypeReq string `json:"typereq"`
+	Type    string `json:"type"`
 	ID      string `json:"id"`
 	Data    string `json:"data"`
 	Address string `json:"address"`
@@ -90,19 +86,27 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appi
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
 	queryString := ""
 
-	signature := GenerateSignature(appsecret, appid, timestamp, nonce, queryString, body)
+	bodyBz, err := json.Marshal(body)
+	if err != nil {
+		return "", fmt.Errorf("error marshaling body: %w", err)
+	}
+
+	message := fmt.Sprintf("%s%s%s%s%s%s%s",
+		appid, timestamp, nonce, "POST", "/api/data/sync/", queryString, string(bodyBz))
+
+	signature := GenerateSignature(appsecret, message)
 
 	resp, err := c.rClient.R().
 		SetContext(ctx).
 		SetHeader("Content-Type", "application/json").
-		SetHeader("appid", appid).
-		SetHeader("timestamp", timestamp).
-		SetHeader("nonce", nonce).
-		SetHeader("queryString", queryString).
-		SetHeader("signature", signature).
-		SetResult(&blacklistRes).
+		SetHeader("AppID", appid).
+		SetHeader("Timestamp", timestamp).
+		SetHeader("Nonce", nonce).
+		SetHeader("QueryString", queryString).
+		SetHeader("Signature", signature).
 		SetBody(body).
-		Post(BlacklistEndpoint)
+		SetResult(&blacklistRes).
+		Post("/api/data/sync/")
 
 	if err != nil {
 		return resp.Status(), fmt.Errorf("error from server: %s: %w", resp.String(), err)
@@ -113,6 +117,17 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appi
 	}
 
 	return blacklistRes.Status, nil
+}
+
+// GenerateSignature generates a signature for the request.
+func GenerateSignature(
+	secret,
+	message string,
+) string {
+	key := []byte(secret)
+	h := hmac.New(sha256.New, key)
+	h.Write([]byte(message))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 // NewNoOpClient creates a new no-op client for the Screener API.
@@ -129,34 +144,6 @@ func (n noOpClient) ScreenAddress(_ context.Context, _, _ string) (bool, error) 
 
 func (n noOpClient) BlacklistAddress(_ context.Context, _ string, _ string, _ BlackListBody) (string, error) {
 	return "", nil
-}
-
-// GenerateSignature generates a signature for the request.
-func GenerateSignature(secret string,
-	appid string,
-	timestamp string,
-	nonce string,
-	queryString string,
-	body BlackListBody,
-) string {
-	key := []byte(secret)
-
-	// Concatenate the body.
-	message := fmt.Sprintf(
-		"%s%s%s%s%s%s%s",
-		appid,
-		timestamp,
-		nonce,
-		"POST",
-		BlacklistEndpoint,
-		queryString,
-		body,
-	)
-
-	h := hmac.New(sha256.New, key)
-	h.Write([]byte(message))
-
-	return strings.ToLower(hex.EncodeToString(h.Sum(nil)))
 }
 
 var _ ScreenerClient = noOpClient{}
