@@ -337,3 +337,28 @@ func (c *chainQueue) updateOldTxStatuses(parentCtx context.Context) {
 		return nil
 	})
 }
+
+func (c *chainQueue) hasSufficientGas(parentCtx context.Context) (sufficient bool, err error) {
+	ctx, span := c.metrics.Tracer().Start(parentCtx, "hasSufficientGas")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	minGasBalance := c.config.GetMinGasBalance(c.chainIDInt())
+	if minGasBalance == nil || minGasBalance.Cmp(big.NewInt(0)) == 0 {
+		return true, nil
+	}
+
+	gasBalance, err := c.client.BalanceAt(ctx, c.signer.Address(), nil)
+	if err != nil {
+		return false, fmt.Errorf("could not get gas balance: %w", err)
+	}
+	sufficient = gasBalance.Cmp(minGasBalance) >= 0
+
+	span.SetAttributes(
+		attribute.String("min_gas_balance", minGasBalance.String()),
+		attribute.String("gas_balance", gasBalance.String()),
+		attribute.Bool("sufficient", sufficient),
+	)
+	return sufficient, nil
+}

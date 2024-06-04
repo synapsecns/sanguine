@@ -31,6 +31,8 @@ type IConfig interface {
 	GetDynamicGasEstimate(chainID int) bool
 	// SupportsEIP1559 returns whether or not this chain supports EIP1559.
 	SupportsEIP1559(chainID int) bool
+	// GetMinGasBalance returns the minimum gas balance needed to bump a transaction.
+	GetMinGasBalance(chainID int) *big.Int
 	// SetGlobalMaxGasPrice is a helper function that sets the global gas price.
 	SetGlobalMaxGasPrice(maxPrice *big.Int)
 	// SetMinGasPrice is a helper function that sets the base gas price.
