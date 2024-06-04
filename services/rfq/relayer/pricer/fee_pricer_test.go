@@ -279,7 +279,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the total fee [quote].
-	fee, err := feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", false)
+	fee, err := feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
 	s.NoError(err)
 
 	// The expected fee should be the sum of the Origin and Destination fees, i.e. 200_500_000.
@@ -287,7 +287,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	s.Equal(expectedFee, fee)
 
 	// Calculate the total fee [relay].
-	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", false)
 	s.NoError(err)
 
 	// The expected fee should be the sum of the Origin and Destination fees, i.e. 401_000_000.
@@ -306,7 +306,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the total fee.
-	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", false)
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
 	s.NoError(err)
 
 	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_250_000.
@@ -325,7 +325,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the total fee.
-	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", false)
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
 	s.NoError(err)
 
 	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_250_000.
