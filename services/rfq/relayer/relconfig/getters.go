@@ -13,13 +13,14 @@ import (
 
 // DefaultChainConfig is the default chain config.
 var DefaultChainConfig = ChainConfig{
-	DeadlineBufferSeconds: 600,
-	OriginGasEstimate:     160000,
-	DestGasEstimate:       100000,
-	MinGasToken:           "100000000000000000", // 1 ETH
-	QuotePct:              100,
-	QuoteWidthBps:         0,
-	FixedFeeMultiplier:    1,
+	DeadlineBufferSeconds:   600,
+	OriginGasEstimate:       160000,
+	DestGasEstimate:         100000,
+	MinGasToken:             "100000000000000000", // 1 ETH
+	QuotePct:                100,
+	QuoteWidthBps:           0,
+	QuoteFixedFeeMultiplier: 1,
+	RelayFixedFeeMultiplier: 1,
 }
 
 // getChainConfigValue gets the value of a field from ChainConfig.
@@ -314,19 +315,36 @@ func (c Config) GetQuoteWidthBps(chainID int) (value float64, err error) {
 	return value, nil
 }
 
-// GetFixedFeeMultiplier returns the FixedFeeMultiplier for the given chainID.
-func (c Config) GetFixedFeeMultiplier(chainID int) (value float64, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "FixedFeeMultiplier")
+// GetQuoteFixedFeeMultiplier returns the QuoteFixedFeeMultiplier for the given chainID.
+func (c Config) GetQuoteFixedFeeMultiplier(chainID int) (value float64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "QuoteFixedFeeMultiplier")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(float64)
 	if !ok {
-		return value, fmt.Errorf("failed to cast FixedFeeMultiplier to int")
+		return value, fmt.Errorf("failed to cast QuoteFixedFeeMultiplier to int")
 	}
 	if value <= 0 {
-		value = DefaultChainConfig.FixedFeeMultiplier
+		value = DefaultChainConfig.QuoteFixedFeeMultiplier
+	}
+	return value, nil
+}
+
+// GetRelayFixedFeeMultiplier returns the RelayFixedFeeMultiplier for the given chainID.
+func (c Config) GetRelayFixedFeeMultiplier(chainID int) (value float64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "RelayFixedFeeMultiplier")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(float64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast RelayFixedFeeMultiplier to int")
+	}
+	if value <= 0 {
+		value = DefaultChainConfig.RelayFixedFeeMultiplier
 	}
 	return value, nil
 }

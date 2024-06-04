@@ -86,8 +86,10 @@ type ChainConfig struct {
 	// QuoteWidthBps is the number of basis points to deduct from the dest amount.
 	// Note that this parameter is applied on a chain level and must be positive.
 	QuoteWidthBps float64 `yaml:"quote_width_bps"`
-	// FixedFeeMultiplier is the multiplier for the fixed fee.
-	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
+	// QuoteFixedFeeMultiplier is the multiplier for the fixed fee, applied when generating quotes.
+	QuoteFixedFeeMultiplier float64 `yaml:"quote_fixed_fee_multiplier"`
+	// RelayFixedFeeMultiplier is the multiplier for the fixed fee, applied when relaying.
+	RelayFixedFeeMultiplier float64 `yaml:"relay_fixed_fee_multiplier"`
 	// CCTP start block is the block at which the chain listener will listen for CCTP events.
 	CCTPStartBlock uint64 `yaml:"cctp_start_block"`
 }
