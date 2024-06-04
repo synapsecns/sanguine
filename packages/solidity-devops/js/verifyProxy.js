@@ -12,7 +12,7 @@ loadEnv()
 
 const { positionalArgs } = parseCommandLineArgs({
   requiredArgsCount: 2,
-  usage: 'Usage: "yarn vp <chain-name> <contract-alias>"',
+  usage: 'Usage: "npx vp <chain-name> <contract-alias>"',
 })
 const [chainName, contractAlias] = positionalArgs
 const deployment = getSavedDeployment(chainName, contractAlias)

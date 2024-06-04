@@ -13,7 +13,7 @@ loadEnv()
 
 const { positionalArgs, options } = parseCommandLineArgs({
   requiredArgsCount: 2,
-  usage: 'Usage: "yarn fvc <chain-name> <contract-alias> [<options>]"',
+  usage: 'Usage: "npx fvc <chain-name> <contract-alias> [<options>]"',
 })
 const [chainName, contractAlias] = positionalArgs
 const contractName = getContractName(contractAlias)
