@@ -344,7 +344,11 @@ func (c Config) GetRelayFixedFeeMultiplier(chainID int) (value float64, err erro
 		return value, fmt.Errorf("failed to cast RelayFixedFeeMultiplier to int")
 	}
 	if value <= 0 {
-		value = DefaultChainConfig.RelayFixedFeeMultiplier
+		// If the value is not set, we default to the quote fixed fee multiplier.
+		value, err = c.GetQuoteFixedFeeMultiplier(chainID)
+		if err != nil {
+			return value, err
+		}
 	}
 	return value, nil
 }
