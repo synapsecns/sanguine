@@ -353,6 +353,7 @@ func (c *chainQueue) hasSufficientGas(parentCtx context.Context) (sufficient boo
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	// assume that if we don't have a min gas balance, we have enough gas.
 	minGasBalance := c.config.GetMinGasBalance(c.chainIDInt())
 	if minGasBalance == nil || minGasBalance.Cmp(big.NewInt(0)) == 0 {
 		return true, nil
