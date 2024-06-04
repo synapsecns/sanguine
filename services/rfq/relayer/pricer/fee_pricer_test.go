@@ -261,7 +261,8 @@ func (s *PricerSuite) TestGetGasPrice() {
 
 func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	// Override the fixed fee multiplier to greater than 1.
-	s.config.BaseChainConfig.FixedFeeMultiplier = 2
+	s.config.BaseChainConfig.QuoteFixedFeeMultiplier = 2
+	s.config.BaseChainConfig.RelayFixedFeeMultiplier = 4
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
@@ -277,16 +278,24 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
-	// Calculate the total fee.
-	fee, err := feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	// Calculate the total fee [quote].
+	fee, err := feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", false)
 	s.NoError(err)
 
 	// The expected fee should be the sum of the Origin and Destination fees, i.e. 200_500_000.
 	expectedFee := big.NewInt(200_500_000) // 200.50 usd
 	s.Equal(expectedFee, fee)
 
+	// Calculate the total fee [relay].
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	s.NoError(err)
+
+	// The expected fee should be the sum of the Origin and Destination fees, i.e. 401_000_000.
+	expectedFee = big.NewInt(401_000_000) // 401 usd
+	s.Equal(expectedFee, fee)
+
 	// Override the fixed fee multiplier to less than 1; should default to 1.
-	s.config.BaseChainConfig.FixedFeeMultiplier = -1
+	s.config.BaseChainConfig.QuoteFixedFeeMultiplier = -1
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.SuggestGasPrice), mock.Anything).Once().Return(headerOrigin, nil)
@@ -297,7 +306,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the total fee.
-	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", false)
 	s.NoError(err)
 
 	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_250_000.
@@ -305,7 +314,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	s.Equal(expectedFee, fee)
 
 	// Reset the fixed fee multiplier to zero; should default to 1
-	s.config.BaseChainConfig.FixedFeeMultiplier = 0
+	s.config.BaseChainConfig.QuoteFixedFeeMultiplier = 0
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.SuggestGasPrice), mock.Anything).Once().Return(headerOrigin, nil)
@@ -316,7 +325,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the total fee.
-	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true)
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", false)
 	s.NoError(err)
 
 	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_250_000.
