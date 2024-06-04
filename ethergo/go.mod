@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	cloud.google.com/go/kms v1.15.5
-	github.com/DenrianWeiss/tracely v0.0.0-20220624070317-49cf8afaaf18
+	github.com/DenrianWeiss/tracely v0.0.0-20240320084351-309c1780e6e1
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3
 	github.com/aws/aws-sdk-go-v2 v1.21.2
