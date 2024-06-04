@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.1...@synapsecns/solidity-devops@0.4.2) (2024-06-04)
+
+
+### Bug Fixes
+
+* **solidity-devops:** update README ([#2666](https://github.com/synapsecns/sanguine/issues/2666)) ([ebcc94c](https://github.com/synapsecns/sanguine/commit/ebcc94c6d98a0ac302c9e41f0247c95d6fe93a37))
+* **solidity-devops:** use npx to run the binaries ([b7cb945](https://github.com/synapsecns/sanguine/commit/b7cb945b793b88789d4220a75b15dcc311afa104))
+
+
+
+
+
 ## [0.4.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.0...@synapsecns/solidity-devops@0.4.1) (2024-06-02)
 
 
