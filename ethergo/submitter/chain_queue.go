@@ -81,11 +81,18 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		client:          chainClient,
 	}
 
+	sufficientGas, err := cq.hasSufficientGas(gCtx)
+	if err != nil {
+		return fmt.Errorf("could not check gas balance: %w", err)
+	}
+	span.SetAttributes(attribute.Bool("sufficient_gas", sufficientGas))
+
 	// so now, we have a list of transactions that need to be resubmitted.
 	// these are already ordered by nonce and we should have at most one per nonce, so we can just iterate through them.
 	// we need to figure out which ones are still valid, and which ones need to be bumped.
-	// once this is done, we'll be ready to submit them
-	// we're going to handle this by updating txes in place
+	// once this is done, we'll be ready to submit them.
+	// we're going to handle this by updating txes in place.
+	// note that if we do not have sufficient gas on this chain, no txes will be bumped.
 	for i := range txes {
 		tx := txes[i]
 
@@ -94,7 +101,9 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 			continue
 		}
 
-		cq.bumpTX(gCtx, tx)
+		if sufficientGas {
+			cq.bumpTX(gCtx, tx)
+		}
 	}
 	cq.updateOldTxStatuses(gCtx)
 
