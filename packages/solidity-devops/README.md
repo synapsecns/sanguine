@@ -112,17 +112,17 @@ See the [Foundry Book](https://book.getfoundry.sh/config/) for more information.
 
 ### Running scripts
 
-Your main point of entry for running the scripts should be the `yarn fsr` [command](./js/forgeScriptRun.js).
+Your main point of entry for running the scripts should be the `npx fsr` [command](./js/forgeScriptRun.js).
 
 > Note: `fsr` is a shorthand for `forge script run`.
 
 ```bash
-# yarn fsr <path-to-script> <chain-name> <wallet-name> [<options>]
+# npx fsr <path-to-script> <chain-name> <wallet-name> [<options>]
 # To simulate the script without broadcasting, using wallet named "chad"
-yarn fsr script/DeployBasicContract.s.sol eth_sepolia chad
+npx fsr script/DeployBasicContract.s.sol eth_sepolia chad
 # To broadcast the script using wallet named "chad"
 # NOTE: there is no need to add --verify option, as it is automatically added for the broadcasted scripts.
-yarn fsr script/DeployBasicContract.s.sol eth_sepolia chad --broadcast
+npx fsr script/DeployBasicContract.s.sol eth_sepolia chad --broadcast
 ```
 
 This command is responsible for the following:
@@ -134,54 +134,54 @@ This command is responsible for the following:
   - `--verify` option is added if the script is broadcasted.
 - Collecting the receipts for the newly deployed contracts, and saving their deployment artifacts.
 
-You can also utilize the `yarn fsr-str` [command](./js/forgeScriptRunString.js) to provide a single string argument for the running script:
+You can also utilize the `npx fsr-str` [command](./js/forgeScriptRunString.js) to provide a single string argument for the running script:
 
 - This executes the `run(string memory arg)` method of the script, passing the provided string argument.
 
 ```bash
-# yarn fsr-str <path-to-script> <chain-name> <wallet-name> <string-arg> [<options>]
+# npx fsr-str <path-to-script> <chain-name> <wallet-name> <string-arg> [<options>]
 # To simulate the script without broadcasting, using wallet named "chad"
-yarn fsr-str script/DeployBasicContract.s.sol eth_sepolia chad "AAAAAAAA"
+npx fsr-str script/DeployBasicContract.s.sol eth_sepolia chad "AAAAAAAA"
 # To broadcast the script using wallet named "chad"
 # NOTE: there is no need to add --verify option, as it is automatically added for the broadcasted scripts.
-yarn fsr-str script/DeployBasicContract.s.sol eth_sepolia chad "AAAAAAAA" --broadcast
+npx fsr-str script/DeployBasicContract.s.sol eth_sepolia chad "AAAAAAAA" --broadcast
 ```
 
 ### Managing deployments
 
-If for whatever reason the deployment script was interrupted, you can use `yarn sd` [command](./js/saveDeployment.js) to save the deployment artifacts.
+If for whatever reason the deployment script was interrupted, you can use `npx sd` [command](./js/saveDeployment.js) to save the deployment artifacts.
 
 > Note: `sd` is a shorthand for `save deployment`.
 
 ```bash
-# yarn sd <chain-name> <contract-alias>
-yarn sd eth_sepolia BasicContract
+# npx sd <chain-name> <contract-alias>
+npx sd eth_sepolia BasicContract
 # Or, if the contract alias is used
-yarn sd eth_sepolia BasicContract.Alias
+npx sd eth_sepolia BasicContract.Alias
 ```
 
 ### Contract verification
 
-You can verify the contracts with the saved deployment artifacts using the `yarn fvc` [command](./js/forgeVerifyContract.js).
+You can verify the contracts with the saved deployment artifacts using the `npx fvc` [command](./js/forgeVerifyContract.js).
 
 > Note: `fvc` is a shorthand for `forge verify contract`.
 
 ```bash
-# yarn fvc <chain-name> <contract-alias>
-yarn fvc eth_sepolia BasicContract
+# npx fvc <chain-name> <contract-alias>
+npx fvc eth_sepolia BasicContract
 # Or, if the contract alias is used
-yarn fvc eth_sepolia BasicContract.Alias
+npx fvc eth_sepolia BasicContract.Alias
 ```
 
 ### Proxy verification
 
-You can verify the proxy's implementation in Etherscan-alike explorers using the `yarn vp` [command](./js/verifyProxy.js).
+You can verify the proxy's implementation in Etherscan-alike explorers using the `npx vp` [command](./js/verifyProxy.js).
 
 > Note: `vp` is a shorthand for `verify proxy`.
 
 ```bash
-# yarn vp <chain-name> <contract-alias>
-yarn vp eth_sepolia BasicContract
+# npx vp <chain-name> <contract-alias>
+npx vp eth_sepolia BasicContract
 # Or, if the contract alias is used
-yarn vp eth_sepolia TransparentUpgradeableProxy.BasicContract
+npx vp eth_sepolia TransparentUpgradeableProxy.BasicContract
 ```
