@@ -297,7 +297,12 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	return nil
 }
 
-func (r *Relayer) processDB(ctx context.Context) error {
+func (r *Relayer) processDB(parentCtx context.Context) (err error) {
+	ctx, span := r.metrics.Tracer().Start(parentCtx, "processDB")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayCompleted, reldb.ProvePosted, reldb.NotEnoughInventory)
 	if err != nil {
 		return fmt.Errorf("could not get quote results: %w", err)
