@@ -204,10 +204,11 @@ var receiptsProxy = &cli.Command{
 		rpcFlag,
 		backupRPCFlag,
 		portFlag,
+		chainIDFlag,
 		recieptsTimeoutFlag,
 	},
 	Action: func(c *cli.Context) error {
-		simpleProxy := receiptsbackup.NewProxy(c.String(rpcFlag.Name), c.String(backupRPCFlag.Name), c.Duration(recieptsTimeoutFlag.Name), metrics.Get(), c.Int(portFlag.Name))
+		simpleProxy := receiptsbackup.NewProxy(c.String(rpcFlag.Name), c.String(backupRPCFlag.Name), c.Duration(recieptsTimeoutFlag.Name), metrics.Get(), c.Int(portFlag.Name), c.Int(chainIDFlag.Name))
 
 		err := simpleProxy.Run(c.Context)
 		if err != nil {

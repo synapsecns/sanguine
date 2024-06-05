@@ -50,7 +50,7 @@ type receiptsProxyImpl struct {
 }
 
 // NewProxy creates a new simply proxy.
-func NewProxy(proxyURL, backupURL string, receiptTimeout time.Duration, handler metrics.Handler, port, maxSubmitAhead, chainID int) ReceiptsProxy {
+func NewProxy(proxyURL, backupURL string, receiptTimeout time.Duration, handler metrics.Handler, port, chainID int) ReceiptsProxy {
 	return &receiptsProxyImpl{
 		proxyURL:       proxyURL,
 		backupURL:      backupURL,
