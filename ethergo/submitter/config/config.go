@@ -45,8 +45,6 @@ type ChainConfig struct {
 	DynamicGasEstimate bool `yaml:"dynamic_gas_estimate"`
 	// SupportsEIP1559 is whether or not this chain supports EIP1559
 	SupportsEIP1559 bool `yaml:"supports_eip_1559"`
-	// MinGasBalance is the minimum gas balance needed to bump a transaction
-	MinGasBalance *big.Int `yaml:"min_gas_balance"`
 }
 
 const (
@@ -200,15 +198,6 @@ func (c *Config) SupportsEIP1559(chainID int) bool {
 		return chainConfig.SupportsEIP1559
 	}
 	return c.ChainConfig.SupportsEIP1559
-}
-
-// GetMinGasBalance returns the minimum gas balance needed to bump a transaction.
-func (c *Config) GetMinGasBalance(chainID int) *big.Int {
-	chainConfig, ok := c.Chains[chainID]
-	if ok {
-		return chainConfig.MinGasBalance
-	}
-	return c.MinGasBalance
 }
 
 // SetGlobalMaxGasPrice is a helper function that sets the global gas price.
