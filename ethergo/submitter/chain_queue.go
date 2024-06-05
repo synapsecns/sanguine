@@ -81,18 +81,17 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		client:          chainClient,
 	}
 
-	sufficientGas, err := cq.hasSufficientGas(gCtx)
-	if err != nil {
-		return fmt.Errorf("could not check gas balance: %w", err)
-	}
-	span.SetAttributes(attribute.Bool("sufficient_gas", sufficientGas))
-
 	// so now, we have a list of transactions that need to be resubmitted.
 	// these are already ordered by nonce and we should have at most one per nonce, so we can just iterate through them.
 	// we need to figure out which ones are still valid, and which ones need to be bumped.
 	// once this is done, we'll be ready to submit them.
 	// we're going to handle this by updating txes in place.
 	// note that if we do not have sufficient gas on this chain, no txes will be bumped.
+	gasBalance, err := chainClient.BalanceAt(ctx, t.signer.Address(), nil)
+	if err != nil {
+		return fmt.Errorf("could not get gas balance: %w", err)
+	}
+	span.SetAttributes(attribute.String("gas_balance", gasBalance.String()))
 	for i := range txes {
 		tx := txes[i]
 
@@ -101,9 +100,12 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 			continue
 		}
 
-		if sufficientGas {
-			cq.bumpTX(gCtx, tx)
+		if tx.Cost().Cmp(gasBalance) > 0 {
+			span.SetAttributes(attribute.Bool("out_of_gas", true))
+			span.AddEvent("tx out of gas", trace.WithAttributes(txToAttributes(tx.Transaction, tx.UUID)...))
+			break
 		}
+		cq.bumpTX(gCtx, tx)
 	}
 	cq.updateOldTxStatuses(gCtx)
 
@@ -345,30 +347,4 @@ func (c *chainQueue) updateOldTxStatuses(parentCtx context.Context) {
 		}
 		return nil
 	})
-}
-
-func (c *chainQueue) hasSufficientGas(parentCtx context.Context) (sufficient bool, err error) {
-	ctx, span := c.metrics.Tracer().Start(parentCtx, "hasSufficientGas")
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
-
-	// assume that if we don't have a min gas balance, we have enough gas.
-	minGasBalance := c.config.GetMinGasBalance(c.chainIDInt())
-	if minGasBalance == nil || minGasBalance.Cmp(big.NewInt(0)) == 0 {
-		return true, nil
-	}
-
-	gasBalance, err := c.client.BalanceAt(ctx, c.signer.Address(), nil)
-	if err != nil {
-		return false, fmt.Errorf("could not get gas balance: %w", err)
-	}
-	sufficient = gasBalance.Cmp(minGasBalance) >= 0
-
-	span.SetAttributes(
-		attribute.String("min_gas_balance", minGasBalance.String()),
-		attribute.String("gas_balance", gasBalance.String()),
-		attribute.Bool("sufficient", sufficient),
-	)
-	return sufficient, nil
 }
