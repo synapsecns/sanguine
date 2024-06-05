@@ -3,7 +3,7 @@
   "version": "0.24.2",
   "private": true,
   "engines": {
-    "node": ">=18.17.0"
+    "node": ">=18.18.0"
   },
   "scripts": {
     "cf:build": "npx @cloudflare/next-on-pages",
