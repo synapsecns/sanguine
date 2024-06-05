@@ -1,4 +1,5 @@
 import {
+  type SimulateContractParameters,
   simulateContract,
   waitForTransactionReceipt,
   writeContract,
@@ -36,7 +37,7 @@ export const approveErc20Token = async ({
     abi,
     functionName: 'approve',
     args: [spender, amount ?? MAX_UINT256],
-  })
+  } as SimulateContractParameters)
 
   const hash = await writeContract(wagmiConfig, request)
 
