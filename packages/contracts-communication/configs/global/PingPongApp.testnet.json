@@ -4,8 +4,8 @@
   "latestInterchainClient": "InterchainClientV1",
   "trustedModules": ["SynapseModule"],
   "appConfig": {
-    "requiredResponses": 1,
-    "optimisticPeriod": 30
+    "0_requiredResponses": 1,
+    "1_optimisticPeriod": 30
   },
   "gasLimit": 500000
 }

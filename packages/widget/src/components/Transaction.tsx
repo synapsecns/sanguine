@@ -17,8 +17,8 @@ import { TimeRemaining } from '@/components/TimeRemaining'
 import { DropdownMenu } from '@/components/ui/DropdownMenu'
 import { MenuItem } from '@/components/ui/MenuItem'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { TransactionSupport } from '@/components/TransactionSupport'
-import { AnimatedProgressBar } from '@/components/AnimatedProgressBar'
+import { TransactionSupport } from './TransactionSupport'
+import { AnimatedProgressBar } from './AnimatedProgressBar'
 
 export const Transaction = ({
   connectedAddress,

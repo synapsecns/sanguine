@@ -42,7 +42,7 @@ export const Web3Provider = ({
           provider: config,
         })
       } catch (e) {
-        console.error('[Synapse Widget] Error setting up Provider: ', e)
+        console.log('Error', e)
       }
     }
 

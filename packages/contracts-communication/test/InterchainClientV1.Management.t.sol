@@ -11,13 +11,17 @@ contract InterchainClientV1ManagementTest is InterchainClientV1BaseTest {
         assertEq(icClient.owner(), owner);
     }
 
-    function test_setDefaultGuard() public {
-        expectEventDefaultGuardSet(defaultGuard);
+    function test_setDefaultGuard_emitsEvent() public {
+        expectEventGuardSet(defaultGuard);
+        setDefaultGuard(defaultGuard);
+    }
+
+    function test_setDefaultGuard_setsGuard() public {
         setDefaultGuard(defaultGuard);
         assertEq(icClient.defaultGuard(), defaultGuard);
     }
 
-    function test_setDefaultGuard_revert_zeroAddress() public {
+    function test_setDefaultGuard_zeroAddress() public {
         expectRevertGuardZeroAddress();
         setDefaultGuard(address(0));
     }
@@ -29,34 +33,14 @@ contract InterchainClientV1ManagementTest is InterchainClientV1BaseTest {
         icClient.setDefaultGuard(defaultGuard);
     }
 
-    function test_setDefaultModule() public {
-        expectEventDefaultModuleSet(defaultModule);
-        setDefaultModule(defaultModule);
-        assertEq(icClient.defaultModule(), defaultModule);
-    }
-
-    function test_setDefaultModule_revert_zeroAddress() public {
-        expectRevertModuleZeroAddress();
-        setDefaultModule(address(0));
-    }
-
-    function test_setDefaultModule_revert_notOwner(address caller) public {
-        vm.assume(caller != owner);
-        expectRevertOwnableUnauthorizedAccount(caller);
-        vm.prank(caller);
-        icClient.setDefaultModule(defaultModule);
-    }
-
-    function test_setLinkedClient() public {
+    function test_setLinkedClient_emitsEvent() public {
         expectEventLinkedClientSet(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
-        assertEq(icClient.getLinkedClient(REMOTE_CHAIN_ID), MOCK_REMOTE_CLIENT);
     }
 
-    function test_setLinkedClient_success_zeroClient() public {
-        expectEventLinkedClientSet(REMOTE_CHAIN_ID, 0);
-        setLinkedClient(REMOTE_CHAIN_ID, 0);
-        assertEq(icClient.getLinkedClient(REMOTE_CHAIN_ID), 0);
+    function test_setLinkedClient_setsLinkedClient() public {
+        setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
+        assertEq(icClient.getLinkedClient(REMOTE_CHAIN_ID), MOCK_REMOTE_CLIENT);
     }
 
     function test_setLinkedClient_revert_notOwner(address caller) public {

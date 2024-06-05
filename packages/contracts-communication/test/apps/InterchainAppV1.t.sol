@@ -127,10 +127,8 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         );
     }
 
-    function expectRevertBalanceBelowMin(uint256 balance, uint256 minValue) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(AbstractICApp.InterchainApp__BalanceBelowMin.selector, balance, minValue)
-        );
+    function expectRevertBalanceBelowMin(uint256 actual, uint256 required) internal {
+        vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__BalanceBelowMin.selector, actual, required));
     }
 
     function expectRevertInterchainClientAlreadyAdded(address client) internal {

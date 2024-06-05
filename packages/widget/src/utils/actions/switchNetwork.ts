@@ -11,6 +11,6 @@ export const switchNetwork = async (chainId: number, provider: any) => {
     const hexChainId: string = toHexStr(chainId)
     await provider.send('wallet_switchEthereumChain', [{ chainId: hexChainId }])
   } catch (error) {
-    console.error('[Synapse Widget] Error switching networks: ', error)
+    console.error('switchNetwork: ', error)
   }
 }

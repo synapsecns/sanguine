@@ -15,37 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/ack": {
-            "put": {
-                "description": "cache an ack request to synchronize relayer actions.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ack"
-                ],
-                "summary": "Relay ack",
-                "parameters": [
-                    {
-                        "description": "query params",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.PutQuoteRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
         "/quotes": {
             "get": {
                 "description": "get quotes from all relayers.",
@@ -58,37 +27,42 @@ const docTemplate = `{
                 "tags": [
                     "quotes"
                 ],
-                "summary": "Get quotes",
+                "summary": "get quotes from all relayers.",
                 "parameters": [
                     {
                         "type": "integer",
                         "description": "origin chain id to filter quotes by",
                         "name": "originChainID",
-                        "in": "path"
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "type": "string",
                         "description": "origin chain id to filter quotes by",
                         "name": "originTokenAddr",
-                        "in": "path"
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "type": "integer",
                         "description": "destination chain id to filter quotes by",
                         "name": "destChainID",
-                        "in": "path"
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "type": "string",
                         "description": "destination token address to filter quotes by",
                         "name": "destTokenAddr",
-                        "in": "path"
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "type": "string",
                         "description": "relayer address to filter quotes by",
                         "name": "relayerAddr",
-                        "in": "path"
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -114,7 +88,7 @@ const docTemplate = `{
                 "tags": [
                     "quotes"
                 ],
-                "summary": "Upsert quote",
+                "summary": "get quotes from all relayers.",
                 "parameters": [
                     {
                         "description": "query params",

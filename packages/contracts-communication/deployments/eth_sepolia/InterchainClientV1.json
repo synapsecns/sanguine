@@ -1,9 +1,9 @@
 {
-  "address": "0x6bAb7426099ba52ac37F309903169C4c0A5f7534",
-  "constructorArgs": "0x0000000000000000000000008d50e833331a0d01d6f286881ce2c3a5dad12e26000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "address": "0xfcb988E117dbAa8c8b48047afd7c22d4a8321bCA",
+  "constructorArgs": "0x0000000000000000000000001ce3a9d87a26ae56a43a5bb1d5e9a8d14550d0a4000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xed5ce09fc0316bff5d6f4046e6337b5ce510e75629b1073c61c9d1c7fc4763b0",
-    "blockNumber": 5847938
+    "hash": "0xddb503be3046c579c38d71df13ac6eda25a43a54adbc7ae1796df99ef419a769",
+    "blockNumber": 5712788
   },
   "abi": [
     {
@@ -81,19 +81,6 @@
     },
     {
       "type": "function",
-      "name": "defaultGuard",
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
       "name": "encodeTransaction",
       "inputs": [
         {
@@ -155,6 +142,19 @@
     },
     {
       "type": "function",
+      "name": "executionFees",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
       "name": "getAppReceivingConfigV1",
       "inputs": [
         {
@@ -178,16 +178,6 @@
               "name": "optimisticPeriod",
               "type": "uint256",
               "internalType": "uint256"
-            },
-            {
-              "name": "guardFlag",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "guard",
-              "type": "address",
-              "internalType": "address"
             }
           ]
         },
@@ -310,82 +300,6 @@
           "name": "linkedClientEVM",
           "type": "address",
           "internalType": "address"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "getTxReadinessV1",
-      "inputs": [
-        {
-          "name": "icTx",
-          "type": "tuple",
-          "internalType": "struct InterchainTransaction",
-          "components": [
-            {
-              "name": "srcChainId",
-              "type": "uint64",
-              "internalType": "uint64"
-            },
-            {
-              "name": "dstChainId",
-              "type": "uint64",
-              "internalType": "uint64"
-            },
-            {
-              "name": "dbNonce",
-              "type": "uint64",
-              "internalType": "uint64"
-            },
-            {
-              "name": "entryIndex",
-              "type": "uint64",
-              "internalType": "uint64"
-            },
-            {
-              "name": "srcSender",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            },
-            {
-              "name": "dstReceiver",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            },
-            {
-              "name": "options",
-              "type": "bytes",
-              "internalType": "bytes"
-            },
-            {
-              "name": "message",
-              "type": "bytes",
-              "internalType": "bytes"
-            }
-          ]
-        },
-        {
-          "name": "proof",
-          "type": "bytes32[]",
-          "internalType": "bytes32[]"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "status",
-          "type": "uint8",
-          "internalType": "enum IInterchainClientV1.TxReadiness"
-        },
-        {
-          "name": "firstArg",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        },
-        {
-          "name": "secondArg",
-          "type": "bytes32",
-          "internalType": "bytes32"
         }
       ],
       "stateMutability": "view"
@@ -581,10 +495,10 @@
     },
     {
       "type": "function",
-      "name": "setDefaultGuard",
+      "name": "setExecutionFees",
       "inputs": [
         {
-          "name": "guard",
+          "name": "executionFees_",
           "type": "address",
           "internalType": "address"
         }
@@ -649,10 +563,10 @@
     },
     {
       "type": "event",
-      "name": "DefaultGuardSet",
+      "name": "ExecutionFeesSet",
       "inputs": [
         {
-          "name": "guard",
+          "name": "executionFees",
           "type": "address",
           "indexed": false,
           "internalType": "address"
@@ -841,7 +755,7 @@
     },
     {
       "type": "error",
-      "name": "AppConfigLib__VersionInvalid",
+      "name": "AppConfigLib__IncorrectVersion",
       "inputs": [
         {
           "name": "version",
@@ -852,123 +766,10 @@
     },
     {
       "type": "error",
-      "name": "BatchingV1__EntryIndexNotZero",
+      "name": "InterchainClientV1__FeeAmountTooLow",
       "inputs": [
         {
-          "name": "entryIndex",
-          "type": "uint64",
-          "internalType": "uint64"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "BatchingV1__ProofNotEmpty",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__BatchConflict",
-      "inputs": [
-        {
-          "name": "module",
-          "type": "address",
-          "internalType": "address"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__ChainIdNotLinked",
-      "inputs": [
-        {
-          "name": "chainId",
-          "type": "uint64",
-          "internalType": "uint64"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__ChainIdNotRemote",
-      "inputs": [
-        {
-          "name": "chainId",
-          "type": "uint64",
-          "internalType": "uint64"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__DstChainIdNotLocal",
-      "inputs": [
-        {
-          "name": "chainId",
-          "type": "uint64",
-          "internalType": "uint64"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__ExecutionServiceZeroAddress",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__FeeAmountBelowMin",
-      "inputs": [
-        {
-          "name": "feeAmount",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "minRequired",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__GasLeftBelowMin",
-      "inputs": [
-        {
-          "name": "gasLeft",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "minRequired",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__GuardZeroAddress",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__LinkedClientNotEVM",
-      "inputs": [
-        {
-          "name": "client",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__MsgValueMismatch",
-      "inputs": [
-        {
-          "name": "msgValue",
+          "name": "actual",
           "type": "uint256",
           "internalType": "uint256"
         },
@@ -981,44 +782,93 @@
     },
     {
       "type": "error",
-      "name": "InterchainClientV1__ReceiverNotICApp",
+      "name": "InterchainClientV1__IncorrectDstChainId",
       "inputs": [
         {
-          "name": "receiver",
-          "type": "address",
-          "internalType": "address"
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
     {
       "type": "error",
-      "name": "InterchainClientV1__ReceiverZeroAddress",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__ReceiverZeroRequiredResponses",
+      "name": "InterchainClientV1__IncorrectMsgValue",
       "inputs": [
         {
-          "name": "receiver",
-          "type": "address",
-          "internalType": "address"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainClientV1__ResponsesAmountBelowMin",
-      "inputs": [
-        {
-          "name": "responsesAmount",
+          "name": "actual",
           "type": "uint256",
           "internalType": "uint256"
         },
         {
-          "name": "minRequired",
+          "name": "required",
           "type": "uint256",
           "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__InvalidTransactionVersion",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint16",
+          "internalType": "uint16"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__NoLinkedClient",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__NotEVMClient",
+      "inputs": [
+        {
+          "name": "client",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__NotEnoughGasSupplied",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__NotEnoughResponses",
+      "inputs": [
+        {
+          "name": "actual",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "required",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__NotRemoteChainId",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -1046,23 +896,17 @@
     },
     {
       "type": "error",
-      "name": "InterchainClientV1__TxVersionMismatch",
-      "inputs": [
-        {
-          "name": "txVersion",
-          "type": "uint16",
-          "internalType": "uint16"
-        },
-        {
-          "name": "required",
-          "type": "uint16",
-          "internalType": "uint16"
-        }
-      ]
+      "name": "InterchainClientV1__ZeroReceiver",
+      "inputs": []
     },
     {
       "type": "error",
-      "name": "OptionsLib__VersionInvalid",
+      "name": "InterchainClientV1__ZeroRequiredResponses",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "OptionsLib__IncorrectVersion",
       "inputs": [
         {
           "name": "version",
@@ -1111,7 +955,12 @@
     },
     {
       "type": "error",
-      "name": "VersionedPayload__PayloadTooShort",
+      "name": "VersionedPayload__PrecompileFailed",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__TooShort",
       "inputs": [
         {
           "name": "versionedPayload",
@@ -1119,11 +968,6 @@
           "internalType": "bytes"
         }
       ]
-    },
-    {
-      "type": "error",
-      "name": "VersionedPayload__PrecompileFailed",
-      "inputs": []
     }
   ]
 }

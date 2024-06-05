@@ -4,13 +4,10 @@
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "eslint.workingDirectories": [
-    {
-      "directory": "packages/contracts",
-      "changeProcessCWD": true
-    }
+    { "directory": "packages/contracts", "changeProcessCWD": true }
   ],
   "eslint.nodePath": "./node_modules/eslint/bin/",
   "eslint.format.enable": true,
@@ -18,7 +15,6 @@
   "files.trimTrailingWhitespace": true,
   "solidity.packageDefaultDependenciesContractsDirectory": "contracts",
   "solidity.packageDefaultDependenciesDirectory": "lib",
-  "solidity.compileUsingRemoteVersion": "v0.8.17+commit.8df45f5f",
-  "solidity.formatter": "prettier",
-  "solidity.defaultCompiler": "remote"
+  "solidity.compileUsingRemoteVersion": "v0.8.17",
+  "solidity.formatter": "prettier"
 }

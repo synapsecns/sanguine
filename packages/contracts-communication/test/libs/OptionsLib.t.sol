@@ -39,9 +39,9 @@ contract OptionsLibTest is Test {
 
     function test_decodeOptionsV1_revertLowerVersion() public {
         OptionsV1 memory options = OptionsV1(200_000, 100_000);
-        uint16 versionInvalid = OptionsLib.OPTIONS_V1 - 1;
-        bytes memory encoded = VersionedPayloadLib.encodeVersionedPayload(versionInvalid, abi.encode(options));
-        vm.expectRevert(abi.encodeWithSelector(OptionsLib.OptionsLib__VersionInvalid.selector, versionInvalid));
+        uint16 VersionInvalid = OptionsLib.OPTIONS_V1 - 1;
+        bytes memory encoded = VersionedPayloadLib.encodeVersionedPayload(VersionInvalid, abi.encode(options));
+        vm.expectRevert(abi.encodeWithSelector(OptionsLib.OptionsLib__VersionInvalid.selector, VersionInvalid));
         libHarness.decodeOptionsV1(encoded);
     }
 }

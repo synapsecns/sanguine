@@ -80,9 +80,7 @@ func (s *ScreenerSuite) TestScreener() {
 	s.T().Setenv("TRM_URL", "")
 
 	cfg := config.Config{
-		AppSecret: "secret",
-		AppID:     "appid",
-		TRMKey:    "",
+		TRMKey: "",
 		Rulesets: map[string]config.RulesetConfig{
 			"testrule": {
 				Filename: s.makeTestCSV([]screener.Set{
@@ -111,7 +109,7 @@ func (s *ScreenerSuite) TestScreener() {
 
 	realScreener, err := screener.NewTestScreener(s.GetTestContext(), cfg, s.metrics)
 	Nil(s.T(), err)
-	NotNil(s.T(), realScreener)
+
 	go func() {
 		err = realScreener.Start(s.GetTestContext())
 		if !errors.Is(err, context.Canceled) {
@@ -152,47 +150,6 @@ func (s *ScreenerSuite) TestScreener() {
 	out, err = apiClient.ScreenAddress(s.GetTestContext(), "testrule", "0x00")
 	Nil(s.T(), err)
 	False(s.T(), out)
-
-	// now test crud screener
-	blacklistBody := client.BlackListBody{
-		Type:    "create",
-		ID:      "1",
-		Data:    "{\"test\":\"data\"}",
-		Address: "0x123",
-		Network: "eth",
-		Tag:     "tag",
-		Remark:  "remark",
-	}
-
-	// post to the blacklist
-	status, err := apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	Equal(s.T(), "success", status)
-	Nil(s.T(), err)
-
-	// update an address on the blacklist
-	blacklistBody.Type = "update"
-	blacklistBody.Remark = "new remark"
-
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	Equal(s.T(), "success", status)
-	Nil(s.T(), err)
-
-	// delete the address on the blacklist
-	blacklistBody.Type = "delete"
-	blacklistBody.ID = "1"
-
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	Equal(s.T(), "success", status)
-	Nil(s.T(), err)
-
-	// unauthorized
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), "bad", cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	NotEqual(s.T(), "success", status)
-	NotNil(s.T(), err)
 }
 
 type mockClient struct {

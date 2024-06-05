@@ -5,16 +5,14 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/http"
+	"github.com/google/uuid"
 	"strconv"
 	"time"
-
-	"github.com/google/uuid"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 
+	"github.com/dubonzi/otelresty"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/go-resty/resty/v2"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -26,7 +24,6 @@ import (
 // It provides methods for creating, retrieving and updating quotes.
 type AuthenticatedClient interface {
 	PutQuote(ctx context.Context, q *model.PutQuoteRequest) error
-	PutRelayAck(ctx context.Context, req *model.PutAckRequest) (*model.PutRelayAckResponse, error)
 	UnauthenticatedClient
 }
 
@@ -54,7 +51,7 @@ type clientImpl struct {
 // NewAuthenticatedClient creates a new client for the RFQ quoting API.
 // TODO: @aurelius,  you don't actually need to be authed for GET Requests.
 func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, reqSigner signer.Signer) (AuthenticatedClient, error) {
-	unauthedClient, err := NewUnauthenticatedClient(metrics, rfqURL)
+	unauthedClient, err := NewUnauthenticaedClient(metrics, rfqURL)
 	if err != nil {
 		return nil, fmt.Errorf("could not create unauthenticated client: %w", err)
 	}
@@ -90,25 +87,18 @@ func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, reqSigner si
 	}, nil
 }
 
-// NewUnauthenticatedClient creates a new client for the RFQ quoting API.
-func NewUnauthenticatedClient(metricHandler metrics.Handler, rfqURL string) (UnauthenticatedClient, error) {
+// NewUnauthenticaedClient creates a new client for the RFQ quoting API.
+func NewUnauthenticaedClient(metricHandler metrics.Handler, rfqURL string) (UnauthenticatedClient, error) {
 	client := resty.New().
 		SetBaseURL(rfqURL).
 		OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
 			request.Header.Add(ginhelper.RequestIDHeader, uuid.New().String())
 			return nil
 		})
-	client.SetTransport(
-		otelhttp.NewTransport(client.GetClient().Transport,
-			otelhttp.WithTracerProvider(
-				metricHandler.GetTracerProvider()),
-			otelhttp.WithSpanNameFormatter(
-				func(_ string, r *http.Request) string {
-					return fmt.Sprintf("rfq-api %s", r.Method)
-				},
-			),
-		),
-	)
+
+	otelresty.TraceClient(client, otelresty.WithTracerProvider(metricHandler.GetTracerProvider()), otelresty.WithSpanNameFormatter(func(_ string, r *resty.Request) string {
+		return fmt.Sprintf("rfq-api %s", r.Method)
+	}))
 	return &unauthenticatedClient{client}, nil
 }
 
@@ -123,25 +113,6 @@ func (c *clientImpl) PutQuote(ctx context.Context, q *model.PutQuoteRequest) err
 	_ = res
 
 	return err
-}
-
-func (c *clientImpl) PutRelayAck(ctx context.Context, req *model.PutAckRequest) (*model.PutRelayAckResponse, error) {
-	var ack *model.PutRelayAckResponse
-	resp, err := c.rClient.R().
-		SetContext(ctx).
-		SetBody(req).
-		SetResult(&ack).
-		Put(rest.AckRoute)
-
-	if err != nil {
-		return nil, fmt.Errorf("error from server: %s %w", resp.Status(), err)
-	}
-
-	if resp.IsError() {
-		return nil, fmt.Errorf("error from server: %s", resp.Status())
-	}
-
-	return ack, nil
 }
 
 // GetAllQuotes retrieves all quotes from the RFQ quoting API.

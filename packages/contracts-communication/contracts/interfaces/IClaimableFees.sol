@@ -8,8 +8,6 @@ interface IClaimableFees {
 
     function claimFees() external;
 
-    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
-
     function getClaimableAmount() external view returns (uint256);
     function getClaimerFraction() external view returns (uint256);
     function getClaimerReward() external view returns (uint256);

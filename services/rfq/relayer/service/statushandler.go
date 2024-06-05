@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
@@ -43,8 +42,6 @@ type QuoteRequestHandler struct {
 	RelayerAddress common.Address
 	// metrics is the metrics handler.
 	metrics metrics.Handler
-	// apiClient is used to get acks before submitting a relay transaction.
-	apiClient client.AuthenticatedClient
 }
 
 // Handler is the handler for a quote request.
@@ -71,7 +68,6 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		metrics:        r.metrics,
 		RelayerAddress: r.signer.Address(),
 		claimCache:     r.claimCache,
-		apiClient:      r.apiClient,
 	}
 
 	qr.handlers[reldb.Seen] = r.deadlineMiddleware(r.gasMiddleware(qr.handleSeen))

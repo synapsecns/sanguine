@@ -1,9 +1,9 @@
 {
-  "address": "0xda3b7cB145EE712b10a00a7A8da33580EB784f1B",
+  "address": "0x8CdBa6b4de7553E36ed9C755d726b0D02D1873EF",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0x4a925d88a4d24e6fe2eb5e08c128d0af5790955f2ab65382dd3515a603b9746b",
-    "blockNumber": 5847953
+    "hash": "0xbac2066b26a5464f307b155855ae7e401c3995d0beb13611fd9cf82b8e7b2428",
+    "blockNumber": 5712808
   },
   "abi": [
     {
@@ -336,7 +336,7 @@
     },
     {
       "type": "error",
-      "name": "LegacyReceiver__BalanceBelowMin",
+      "name": "LegacyReceiver__BalanceTooLow",
       "inputs": [
         {
           "name": "actual",
@@ -352,7 +352,7 @@
     },
     {
       "type": "error",
-      "name": "LegacyReceiver__CallerNotMessageBus",
+      "name": "LegacyReceiver__NotMessageBus",
       "inputs": [
         {
           "name": "caller",
@@ -363,18 +363,7 @@
     },
     {
       "type": "error",
-      "name": "LegacyReceiver__ChainIdNotRemote",
-      "inputs": [
-        {
-          "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "LegacyReceiver__SrcCallerNotTrusted",
+      "name": "LegacyReceiver__NotTrustedRemote",
       "inputs": [
         {
           "name": "chainId",
@@ -390,7 +379,18 @@
     },
     {
       "type": "error",
-      "name": "LegacyReceiver__TrustedRemoteZeroAddress",
+      "name": "LegacyReceiver__SameChainId",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "LegacyReceiver__TrustedRemoteNotSet",
       "inputs": [
         {
           "name": "chainId",

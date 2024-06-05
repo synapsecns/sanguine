@@ -24,9 +24,6 @@ export const getTxSynapseExplorerLink = ({
     return `${SYNAPSE_EXPLORER}txs?hash=${txHash}`
   }
 
-  console.error(
-    '[Synapse Widget] Error retrieving Synapse Explorer Transaction URL: Transaction Hash or Synapse Transaction ID missing'
-  )
-
+  console.error('Transaction Hash and Synapse Transaction ID missing')
   return null
 }

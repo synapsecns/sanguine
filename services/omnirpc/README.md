@@ -73,7 +73,7 @@ This is because chains might have different states for "latest", resulting in fa
 
 You can also query using a customizable number of confirmations using (for 2 confirmations on eth): `http://localhost:5000/confirmations/2/rpc/1`.
 
-A full postman collection can be found [here](https://github.com/synapsecns/sanguine/blob/master/services/omnirpc/swagger/collection.json) or at the `/collection.json endpoint`
+A postman collection is also available at `/collection.json`
 
 Confirmable only when latest or pending are not passed:
 
@@ -122,4 +122,3 @@ You can also quickly start a server running against all public chainlist rpcs wi
 ## Additional functionality
 
 Please see [modules/README.md](modules/README.md) for additional functionality.
-

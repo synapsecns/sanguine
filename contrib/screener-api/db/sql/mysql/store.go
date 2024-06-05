@@ -3,10 +3,9 @@ package mysql
 import (
 	"context"
 	"fmt"
-	"time"
-
 	"github.com/synapsecns/sanguine/contrib/screener-api/db"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql/base"
+	"time"
 
 	"github.com/ipfs/go-log"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
@@ -65,4 +64,3 @@ var MaxIdleConns = 10
 var NamingStrategy = schema.NamingStrategy{}
 
 var _ db.RuleDB = &Store{}
-var _ db.BlacklistedAddressDB = &Store{}

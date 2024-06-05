@@ -15,7 +15,7 @@ export const ViewSearchAddressBanner = ({
       id="view-search-address-banner"
       className={`
         flex justify-between p-3 mb-3
-        border border-fuchsia-400 rounded-sm
+        border border-synapsePurple rounded-sm
       `}
       style={{
         background:

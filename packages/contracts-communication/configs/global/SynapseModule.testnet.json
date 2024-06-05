@@ -1,6 +1,6 @@
 {
   "claimFeeBPS": 10,
-  "feeRecipient": "0xAe61329Ce0AfFA55A7174916214fC2560a1CdD9f",
+  "feeCollector": "0xAe61329Ce0AfFA55A7174916214fC2560a1CdD9f",
   "gasOracleName": "SynapseGasOracleV1",
   "threshold": 6,
   "verifiers": [

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/ethereum/go-ethereum/common"
-	listenerDB "github.com/synapsecns/sanguine/ethergo/listener/db"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 
 	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
@@ -35,5 +34,4 @@ type CCTPRelayerDB interface {
 	CCTPRelayerDBReader
 	CCTPRelayerDBWriter
 	SubmitterDB() submitterDB.Service
-	listenerDB.ChainListenerDB
 }

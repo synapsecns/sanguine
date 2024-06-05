@@ -2,7 +2,6 @@ ignore: |
   **/node_modules/**
   **/charts/**
   **/swagger.yaml
-  **/openapi.yaml
 
 rules:
   document-start:

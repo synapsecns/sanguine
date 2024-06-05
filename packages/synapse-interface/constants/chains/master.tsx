@@ -18,7 +18,6 @@ import moonbeamImg from '@assets/chains/moonbeam.svg'
 import moonriverImg from '@assets/chains/moonriver.svg'
 import optimismImg from '@assets/chains/optimism.svg'
 import polygonImg from '@assets/chains/polygon.svg'
-import scrollImg from '@assets/chains/scroll.svg'
 
 import ethExplorerImg from '@assets/explorer/etherscan.svg'
 import arbitrumExplorerImg from '@assets/explorer/arbiscan.svg'
@@ -36,6 +35,7 @@ export const ETH: Chain = {
   id: 1,
   chainSymbol: 'ETH',
   name: 'Ethereum',
+  codeName: 'Ethereum',
   chainImg: ethImg,
   layer: 1,
   rpcUrls: {
@@ -64,6 +64,7 @@ export const ARBITRUM: Chain = {
   name: 'Arbitrum',
   chainImg: arbitrumImg,
   layer: 2,
+  codeName: 'arbitrum',
   blockTime: 300,
   rpcUrls: {
     primary:
@@ -91,6 +92,7 @@ export const BNB: Chain = {
   chainImg: bscImg,
   altName: 'BNB',
   layer: 1,
+  codeName: 'bsc',
   blockTime: 3000,
   rpcUrls: {
     primary: 'https://bsc-dataseed1.ninicoin.io/',
@@ -116,6 +118,7 @@ export const AVALANCHE: Chain = {
   name: 'Avalanche',
   chainImg: avalancheImg,
   layer: 1,
+  codeName: 'avalanche',
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://api.avax.network/ext/bc/C/rpc',
@@ -141,6 +144,7 @@ export const CANTO: Chain = {
   name: 'Canto',
   chainImg: cantoImg,
   layer: 1,
+  codeName: 'canto',
   blockTime: 6000,
   rpcUrls: {
     primary: 'https://mainnode.plexnode.org:8545',
@@ -166,6 +170,7 @@ export const OPTIMISM: Chain = {
   name: 'Optimism',
   chainImg: optimismImg,
   layer: 2,
+  codeName: 'optimism',
   blockTime: 2000,
   rpcUrls: {
     primary:
@@ -192,6 +197,7 @@ export const POLYGON: Chain = {
   name: 'Polygon',
   chainImg: polygonImg,
   layer: 2,
+  codeName: 'polygon',
   blockTime: 2000,
   rpcUrls: {
     primary:
@@ -218,6 +224,7 @@ export const DFK: Chain = {
   name: 'DFK Chain',
   chainImg: dfkImg,
   layer: 1,
+  codeName: 'dfk',
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
@@ -243,6 +250,7 @@ export const KLAYTN: Chain = {
   name: 'Klaytn',
   chainImg: klaytnImg,
   layer: 1,
+  codeName: 'klaytn',
   blockTime: 1000,
   rpcUrls: {
     primary: 'https://klaytn.blockpi.network/v1/rpc/public',
@@ -268,6 +276,7 @@ export const FANTOM: Chain = {
   name: 'Fantom',
   chainImg: fantomImg,
   layer: 1,
+  codeName: 'fantom',
   blockTime: 1000,
   rpcUrls: {
     primary: 'https://rpc.ftm.tools',
@@ -293,6 +302,7 @@ export const CRONOS: Chain = {
   name: 'Cronos',
   chainImg: cronosImg,
   layer: 1,
+  codeName: 'cronos',
   blockTime: 6000,
   rpcUrls: {
     primary: 'https://evm-cronos.crypto.org',
@@ -318,6 +328,7 @@ export const BOBA: Chain = {
   name: 'Boba Chain',
   chainImg: bobaImg,
   layer: 2,
+  codeName: 'boba',
   blockTime: 1000,
   rpcUrls: {
     primary: 'https://mainnet.boba.network',
@@ -343,6 +354,7 @@ export const METIS: Chain = {
   name: 'Metis',
   chainImg: metisImg,
   layer: 2,
+  codeName: 'metis',
   blockTime: 4000,
   rpcUrls: {
     primary: 'https://andromeda.metis.io/?owner=1088',
@@ -368,6 +380,7 @@ export const AURORA: Chain = {
   name: 'Aurora',
   chainImg: auroraImg,
   layer: 1,
+  codeName: 'aurora',
   blockTime: 1000,
   rpcUrls: {
     primary: 'https://mainnet.aurora.dev',
@@ -393,6 +406,7 @@ export const HARMONY: Chain = {
   name: 'Harmony',
   chainImg: harmonyImg,
   layer: 1,
+  codeName: 'harmony',
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://api.harmony.one',
@@ -418,6 +432,7 @@ export const MOONBEAM: Chain = {
   name: 'Moonbeam',
   chainImg: moonbeamImg,
   layer: 1,
+  codeName: 'moonbeam',
   blockTime: 12000,
   rpcUrls: {
     primary: 'https://rpc.api.moonbeam.network',
@@ -443,6 +458,7 @@ export const MOONRIVER: Chain = {
   name: 'Moonriver',
   chainImg: moonriverImg,
   layer: 1,
+  codeName: 'moonriver',
   blockTime: 12000,
   rpcUrls: {
     primary: 'https://rpc.api.moonriver.moonbeam.network',
@@ -468,6 +484,7 @@ export const DOGE: Chain = {
   name: 'Dogechain',
   chainImg: dogechainImg,
   layer: 1,
+  codeName: 'dogechain',
   blockTime: 2000,
   rpcUrls: {
     primary: 'https://rpc.dogechain.dog',
@@ -491,6 +508,7 @@ export const BASE: Chain = {
   id: 8453,
   chainSymbol: 'BASE',
   name: 'Base',
+  codeName: 'base',
   chainImg: baseImg,
   layer: 2,
   rpcUrls: {
@@ -517,6 +535,7 @@ export const BLAST: Chain = {
   id: 81457,
   chainSymbol: 'BLAST',
   name: 'Blast',
+  codeName: 'blast',
   chainImg: blastImg,
   layer: 2,
   rpcUrls: {
@@ -536,30 +555,4 @@ export const BLAST: Chain = {
     icon: blastImg,
   },
   color: 'yellow',
-}
-
-export const SCROLL: Chain = {
-  priorityRank: 90,
-  id: 534352,
-  chainSymbol: 'SCROLL',
-  name: 'Scroll',
-  chainImg: scrollImg,
-  layer: 2,
-  rpcUrls: {
-    primary: 'https://rpc.scroll.io/',
-    fallback: 'https://scroll.blockpi.network/v1/rpc/public',
-  },
-  explorerUrl: 'https://scrollscan.com',
-  explorerName: 'Scrollscan',
-  explorerImg: scrollImg,
-  blockTime: 3000,
-  nativeCurrency: {
-    name: 'Ethereum',
-    symbol: 'ETH',
-    decimals: 18,
-    address: zeroAddress,
-    icon: scrollImg,
-  },
-  color: 'orange',
-  isNew: true,
 }

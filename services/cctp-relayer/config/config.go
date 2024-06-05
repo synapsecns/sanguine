@@ -29,8 +29,13 @@ type Config struct {
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// BaseOmnirpcURL is the base url for omnirpc.
-	// The format is "https://omnirpc.url/".
+	// The format is "https://omnirpc.url/". Notice the lack of "confirmations" on the URL
+	// in comparison to what `Scribe` uses.
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
+	// ScribePort is the port for the scribe server.
+	ScribePort uint `yaml:"scribe_port"`
+	// ScribeURL is the URL for the scribe server.
+	ScribeURL string `yaml:"scribe_url"`
 	// Signer contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
 	Signer ethConfig.SignerConfig `yaml:"unbonded_signer"`
@@ -40,8 +45,6 @@ type Config struct {
 	HTTPBackoffMaxElapsedTimeMs int `yaml:"http_backoff_max_elapsed_time_ms"`
 	// SubmitterConfig is the config for the transaction submitter
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
-	// ScreenerAPIUrl is the TRM API url.
-	ScreenerAPIUrl string `yaml:"screener_api_url"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

@@ -11,16 +11,20 @@ import (
 // ChainConfig defines the config for a specific chain.
 type ChainConfig struct { // ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
-	// CCTPAddress is the address of the CCTP contract.
-	// This will correspond to SynapseCCTP or TokenMessenger depending on the CCTPType.
-	CCTPAddress string `yaml:"cctp_address"`
-	// CCTP start block is the block at which the chain listener will listen for CCTP events.
-	CCTPStartBlock uint64 `yaml:"cctp_start_block"`
+	// SynapseCCTPAddress is the address of the SynapseCCTP contract.
+	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
+	// TokenMessengerAddress is the address of the TokenMessenger contract.
+	TokenMessengerAddress string `yaml:"token_messenger_address"`
 }
 
-// GetCCTPAddress returns the CCTP address.
-func (c ChainConfig) GetCCTPAddress() common.Address {
-	return common.HexToAddress(c.CCTPAddress)
+// GetSynapseCCTPAddress returns the SynapseCCTP address.
+func (c ChainConfig) GetSynapseCCTPAddress() common.Address {
+	return common.HexToAddress(c.SynapseCCTPAddress)
+}
+
+// GetTokenMessengerAddress returns the TokenMessenger address.
+func (c ChainConfig) GetTokenMessengerAddress() common.Address {
+	return common.HexToAddress(c.TokenMessengerAddress)
 }
 
 // ChainConfigs contains an array of ChainConfigs.
@@ -36,8 +40,12 @@ func (c ChainConfigs) IsValid(_ context.Context) (ok bool, err error) {
 		}
 		intSet.Add(cfg.ChainID)
 
-		if len(cfg.CCTPAddress) > 0 && !common.IsHexAddress(cfg.CCTPAddress) {
-			return false, fmt.Errorf("invalid address %s: %s", cfg.CCTPAddress, "invalid address")
+		if len(cfg.SynapseCCTPAddress) > 0 && !common.IsHexAddress(cfg.SynapseCCTPAddress) {
+			return false, fmt.Errorf("invalid address %s: %s", cfg.SynapseCCTPAddress, "invalid address")
+		}
+
+		if len(cfg.TokenMessengerAddress) > 0 && !common.IsHexAddress(cfg.TokenMessengerAddress) {
+			return false, fmt.Errorf("invalid address %s: %s", cfg.TokenMessengerAddress, "invalid address")
 		}
 	}
 
@@ -50,8 +58,8 @@ func (c ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
 		return false, fmt.Errorf("%s: chain ID cannot be 0", "invalid chain id")
 	}
 
-	if c.CCTPAddress == "" {
-		return false, fmt.Errorf("a CCTP address is required")
+	if c.SynapseCCTPAddress == "" && c.TokenMessengerAddress == "" {
+		return false, fmt.Errorf("at least one of SynapseCCTPAddress and TokenMessengerAddress is required")
 	}
 
 	return true, nil

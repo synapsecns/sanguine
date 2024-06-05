@@ -1,9 +1,9 @@
 {
-  "address": "0x93391bD1De68aFBAB10BB94BF3d36a4484B60eA2",
-  "constructorArgs": "0x0000000000000000000000008d50e833331a0d01d6f286881ce2c3a5dad12e26000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "address": "0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B",
+  "constructorArgs": "0x0000000000000000000000001ce3a9d87a26ae56a43a5bb1d5e9a8d14550d0a4000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0x0283d44cd3da1dbf1b8ceccf1afa57789ef55c57feb03dd9745d05dc437aea40",
-    "blockNumber": 5847925
+    "hash": "0x5347793c4471a1d31ce1de3fe07a61ee2f5933e49353ada4673adb4f106e99f3",
+    "blockNumber": 5712781
   },
   "abi": [
     {
@@ -83,6 +83,19 @@
     },
     {
       "type": "function",
+      "name": "feeCollector",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
       "name": "gasOracle",
       "inputs": [],
       "outputs": [
@@ -96,7 +109,7 @@
     },
     {
       "type": "function",
-      "name": "getClaimableAmount",
+      "name": "getClaimFeeAmount",
       "inputs": [],
       "outputs": [
         {
@@ -109,39 +122,13 @@
     },
     {
       "type": "function",
-      "name": "getClaimerFraction",
+      "name": "getClaimFeeFraction",
       "inputs": [],
       "outputs": [
         {
           "name": "",
           "type": "uint256",
           "internalType": "uint256"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "getClaimerReward",
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
-      "name": "getFeeRecipient",
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "",
-          "type": "address",
-          "internalType": "address"
         }
       ],
       "stateMutability": "view"
@@ -290,11 +277,6 @@
           "internalType": "uint64"
         },
         {
-          "name": "batchNonce",
-          "type": "uint64",
-          "internalType": "uint64"
-        },
-        {
           "name": "versionedBatch",
           "type": "bytes",
           "internalType": "bytes"
@@ -305,10 +287,10 @@
     },
     {
       "type": "function",
-      "name": "setClaimerFraction",
+      "name": "setClaimFeeFraction",
       "inputs": [
         {
-          "name": "claimerFraction",
+          "name": "claimFeeFraction",
           "type": "uint256",
           "internalType": "uint256"
         }
@@ -318,10 +300,10 @@
     },
     {
       "type": "function",
-      "name": "setFeeRecipient",
+      "name": "setFeeCollector",
       "inputs": [
         {
-          "name": "feeRecipient",
+          "name": "feeCollector_",
           "type": "address",
           "internalType": "address"
         }
@@ -456,10 +438,10 @@
     },
     {
       "type": "event",
-      "name": "ClaimerFractionSet",
+      "name": "ClaimFeeFractionSet",
       "inputs": [
         {
-          "name": "claimerFraction",
+          "name": "claimFeeFraction",
           "type": "uint256",
           "indexed": false,
           "internalType": "uint256"
@@ -469,10 +451,10 @@
     },
     {
       "type": "event",
-      "name": "FeeRecipientSet",
+      "name": "FeeCollectorSet",
       "inputs": [
         {
-          "name": "feeRecipient",
+          "name": "feeCollector",
           "type": "address",
           "indexed": false,
           "internalType": "address"
@@ -485,13 +467,13 @@
       "name": "FeesClaimed",
       "inputs": [
         {
-          "name": "feeRecipient",
+          "name": "feeCollector",
           "type": "address",
           "indexed": false,
           "internalType": "address"
         },
         {
-          "name": "claimedFees",
+          "name": "collectedFees",
           "type": "uint256",
           "indexed": false,
           "internalType": "uint256"
@@ -503,7 +485,7 @@
           "internalType": "address"
         },
         {
-          "name": "claimerReward",
+          "name": "claimerFee",
           "type": "uint256",
           "indexed": false,
           "internalType": "uint256"
@@ -652,49 +634,12 @@
     },
     {
       "type": "error",
-      "name": "ClaimableFees__ClaimerFractionAboveMax",
-      "inputs": [
-        {
-          "name": "claimerFraction",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "maxAllowed",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "ClaimableFees__FeeAmountZero",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "ClaimableFees__FeeRecipientZeroAddress",
-      "inputs": []
-    },
-    {
-      "type": "error",
       "name": "FailedInnerCall",
       "inputs": []
     },
     {
       "type": "error",
-      "name": "InterchainModule__CallerNotInterchainDB",
-      "inputs": [
-        {
-          "name": "caller",
-          "type": "address",
-          "internalType": "address"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainModule__ChainIdNotRemote",
+      "name": "InterchainModule__IncorrectSourceChainId",
       "inputs": [
         {
           "name": "chainId",
@@ -705,17 +650,39 @@
     },
     {
       "type": "error",
-      "name": "InterchainModule__FeeAmountBelowMin",
+      "name": "InterchainModule__InsufficientFee",
       "inputs": [
         {
-          "name": "feeAmount",
+          "name": "actual",
           "type": "uint256",
           "internalType": "uint256"
         },
         {
-          "name": "minRequired",
+          "name": "required",
           "type": "uint256",
           "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainModule__NotInterchainDB",
+      "inputs": [
+        {
+          "name": "caller",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainModule__SameChainId",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -743,7 +710,18 @@
     },
     {
       "type": "error",
-      "name": "SynapseModule__FeeRecipientZeroAddress",
+      "name": "SynapseModule__ClaimFeeFractionExceedsMax",
+      "inputs": [
+        {
+          "name": "claimFeeFraction",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SynapseModule__FeeCollectorNotSet",
       "inputs": []
     },
     {
@@ -759,20 +737,53 @@
     },
     {
       "type": "error",
-      "name": "SynapseModule__GasOracleZeroAddress",
+      "name": "SynapseModule__GasOracleNotSet",
       "inputs": []
     },
     {
       "type": "error",
-      "name": "ThresholdECDSA__RecoveredSignersNotSorted",
+      "name": "SynapseModule__NoFeesToClaim",
       "inputs": []
     },
     {
       "type": "error",
-      "name": "ThresholdECDSA__SignaturesAmountBelowThreshold",
+      "name": "ThresholdECDSA__AlreadySigner",
       "inputs": [
         {
-          "name": "signaturesAmount",
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__IncorrectSignaturesLength",
+      "inputs": [
+        {
+          "name": "length",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__InvalidSignature",
+      "inputs": [
+        {
+          "name": "signature",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ThresholdECDSA__NotEnoughSignatures",
+      "inputs": [
+        {
+          "name": "provided",
           "type": "uint256",
           "internalType": "uint256"
         },
@@ -785,18 +796,7 @@
     },
     {
       "type": "error",
-      "name": "ThresholdECDSA__SignaturesPayloadLengthInvalid",
-      "inputs": [
-        {
-          "name": "length",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "ThresholdECDSA__SignerAlreadyAdded",
+      "name": "ThresholdECDSA__NotSigner",
       "inputs": [
         {
           "name": "account",
@@ -807,39 +807,27 @@
     },
     {
       "type": "error",
-      "name": "ThresholdECDSA__SignerNotAdded",
-      "inputs": [
-        {
-          "name": "account",
-          "type": "address",
-          "internalType": "address"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "ThresholdECDSA__SignerRecoveryFailed",
-      "inputs": [
-        {
-          "name": "signature",
-          "type": "bytes",
-          "internalType": "bytes"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "ThresholdECDSA__SignerZeroAddress",
+      "name": "ThresholdECDSA__RecoveredSignersNotSorted",
       "inputs": []
     },
     {
       "type": "error",
-      "name": "ThresholdECDSA__ThresholdZero",
+      "name": "ThresholdECDSA__ZeroAddress",
       "inputs": []
     },
     {
       "type": "error",
-      "name": "VersionedPayload__PayloadTooShort",
+      "name": "ThresholdECDSA__ZeroThreshold",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__PrecompileFailed",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__TooShort",
       "inputs": [
         {
           "name": "versionedPayload",
@@ -847,11 +835,6 @@
           "internalType": "bytes"
         }
       ]
-    },
-    {
-      "type": "error",
-      "name": "VersionedPayload__PrecompileFailed",
-      "inputs": []
     }
   ]
 }

@@ -117,10 +117,7 @@ export abstract class Router implements SynapseModule {
       // Don't filter anything, as the amount of returned queries should match the amount of symbols
       return this.getOriginAmountOut(tokenIn, tokenSymbols, amountIn)
     } catch (error) {
-      console.error(
-        '[SynapseSDK: Router] Failed to fetch origin queries',
-        error
-      )
+      console.error('Failed to fetch origin queries', error)
       throw error
     }
   }
@@ -141,10 +138,7 @@ export abstract class Router implements SynapseModule {
       // Don't filter anything, as the amount of returned queries should match the amount of requests
       return this.getDestinationAmountOut(requests, tokenOut)
     } catch (error) {
-      console.error(
-        '[SynapseSDK: Router] Failed to fetch destination queries',
-        error
-      )
+      console.error('Failed to fetch destination queries', error)
       throw error
     }
   }

@@ -36,10 +36,7 @@ export const useBridgeTxStatus = ({
 
       return kappa
     } catch (error) {
-      console.error(
-        '[Synapse Widget] Error retrieving Synapse Transaction ID: ',
-        error
-      )
+      console.error('Error in getKappa:', error)
       return null
     }
   }
@@ -59,10 +56,7 @@ export const useBridgeTxStatus = ({
       )
       return status
     } catch (error) {
-      console.error(
-        '[Synapse Widget] Error resolving Bridge Transaction status: ',
-        error
-      )
+      console.error('Error in getBridgeTxStatus:', error)
       return null
     }
   }

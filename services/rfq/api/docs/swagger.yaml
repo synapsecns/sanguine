@@ -67,26 +67,6 @@ definitions:
 info:
   contact: {}
 paths:
-  /ack:
-    put:
-      consumes:
-      - application/json
-      description: cache an ack request to synchronize relayer actions.
-      parameters:
-      - description: query params
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/model.PutQuoteRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Relay ack
-      tags:
-      - ack
   /quotes:
     get:
       consumes:
@@ -96,22 +76,27 @@ paths:
       - description: origin chain id to filter quotes by
         in: path
         name: originChainID
+        required: true
         type: integer
       - description: origin chain id to filter quotes by
         in: path
         name: originTokenAddr
+        required: true
         type: string
       - description: destination chain id to filter quotes by
         in: path
         name: destChainID
+        required: true
         type: integer
       - description: destination token address to filter quotes by
         in: path
         name: destTokenAddr
+        required: true
         type: string
       - description: relayer address to filter quotes by
         in: path
         name: relayerAddr
+        required: true
         type: string
       produces:
       - application/json
@@ -122,7 +107,7 @@ paths:
             items:
               $ref: '#/definitions/model.GetQuoteResponse'
             type: array
-      summary: Get quotes
+      summary: get quotes from all relayers.
       tags:
       - quotes
     put:
@@ -141,7 +126,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Upsert quote
+      summary: get quotes from all relayers.
       tags:
       - quotes
 swagger: "2.0"

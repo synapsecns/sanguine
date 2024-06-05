@@ -18,6 +18,7 @@ yarn fsr-str script/config/ConfigureSynapseModule.s.sol "$chainName" "$walletNam
 yarn fsr-str script/config/ConfigureSynapseExecutionServiceV1.s.sol "$chainName" "$walletName" testnet "$@"
 # Client contracts
 yarn fsr-str script/config/ConfigureClientV1.s.sol "$chainName" "$walletName" testnet "$@"
+yarn fsr script/config/ConfigureExecutionFees.s.sol "$chainName" "$walletName" "$@"
 # Ping-Pong App
 yarn fsr-str script/config/ConfigurePingPongApp.s.sol "$chainName" "$walletName" testnet "$@"
 # Legacy contracts

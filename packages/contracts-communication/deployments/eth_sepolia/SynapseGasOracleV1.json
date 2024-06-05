@@ -1,9 +1,9 @@
 {
-  "address": "0x9AaA36c80F6824c674419Bd0C5F6d76f865295ca",
+  "address": "0x3BfcE077Cf306E1C7C3300E72aF6eE79AC997eCc",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xe0719b81a125e39e9e6b9ee0e0e46777d28752fbab4e03a81a1da3a8c0dbd0e0",
-    "blockNumber": 5847922
+    "hash": "0x4b36c6953f669d7dc4d5384fac566b25751cab81704318401e2e1ca830219a6c",
+    "blockNumber": 5712777
   },
   "abi": [
     {
@@ -430,17 +430,6 @@
     },
     {
       "type": "error",
-      "name": "SynapseGasOracleV1__ChainIdNotRemote",
-      "inputs": [
-        {
-          "name": "chainId",
-          "type": "uint64",
-          "internalType": "uint64"
-        }
-      ]
-    },
-    {
-      "type": "error",
       "name": "SynapseGasOracleV1__NativePriceNotSet",
       "inputs": [
         {
@@ -454,6 +443,17 @@
       "type": "error",
       "name": "SynapseGasOracleV1__NativePriceZero",
       "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SynapseGasOracleV1__NotRemoteChainId",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
     }
   ]
 }

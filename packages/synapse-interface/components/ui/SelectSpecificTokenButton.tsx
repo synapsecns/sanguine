@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { memo, useRef } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import Image from 'next/image'
 
 import { type Token, type ActionTypes } from '@/utils/types'
@@ -10,8 +10,6 @@ import { findChainIdsWithPausedToken } from '@/constants/tokens'
 import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
 import { joinClassNames } from '@/utils/joinClassNames'
 import { useSwapState } from '@/slices/swap/hooks'
-import { formatAmount } from '@/utils/formatAmount'
-import { getParsedBalance } from '@/utils/getParsedBalance'
 
 export const SelectSpecificTokenButton = ({
   showAllChains,
@@ -83,13 +81,9 @@ const ButtonContent = memo(
   }) => {
     const portfolioBalances = usePortfolioBalances()
 
-    const tokenData = portfolioBalances[chainId]?.find(
+    const parsedBalance = portfolioBalances[chainId]?.find(
       (tb) => tb.token.addresses[chainId] === token.addresses[chainId]
-    )
-    const decimals = tokenData?.token?.decimals[chainId]
-    const balance = tokenData?.balance
-    const parsedBalance = getParsedBalance(balance, decimals)
-    const formattedBalance = formatAmount(parsedBalance)
+    )?.parsedBalance
 
     return (
       <div data-test-id="button-content" className="">
@@ -97,7 +91,7 @@ const ButtonContent = memo(
           token={token}
           showAllChains={showAllChains}
           isOrigin={isOrigin}
-          parsedBalance={formattedBalance}
+          parsedBalance={parsedBalance}
         />
       </div>
     )

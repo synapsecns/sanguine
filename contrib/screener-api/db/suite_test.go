@@ -3,14 +3,13 @@ package db_test
 import (
 	dbSQL "database/sql"
 	"fmt"
-	"os"
-	"sync"
-	"testing"
-
 	"github.com/synapsecns/sanguine/contrib/screener-api/db"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql/mysql"
 	"github.com/synapsecns/sanguine/contrib/screener-api/metadata"
+	"os"
+	"sync"
+	"testing"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -25,7 +24,7 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs     []db.DB
+	dbs     []db.RuleDB
 	metrics metrics.Handler
 }
 
@@ -34,7 +33,7 @@ func NewDBSuite(tb testing.TB) *DBSuite {
 	tb.Helper()
 	return &DBSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
-		dbs:       []db.DB{},
+		dbs:       []db.RuleDB{},
 	}
 }
 func (d *DBSuite) SetupSuite() {
@@ -61,7 +60,7 @@ func (d *DBSuite) SetupTest() {
 	sqliteStore, err := sql.Connect(d.GetTestContext(), dbcommon.Sqlite, filet.TmpDir(d.T(), ""), d.metrics)
 	Nil(d.T(), err)
 
-	d.dbs = []db.DB{sqliteStore}
+	d.dbs = []db.RuleDB{sqliteStore}
 	d.setupMysqlDB()
 }
 
@@ -90,14 +89,14 @@ func (d *DBSuite) setupMysqlDB() {
 	d.dbs = append(d.dbs, mysqlStore)
 }
 
-func (d *DBSuite) RunOnAllDBs(testFunc func(testDB db.DB)) {
+func (d *DBSuite) RunOnAllDBs(testFunc func(testDB db.RuleDB)) {
 	d.T().Helper()
 
 	wg := sync.WaitGroup{}
 	for _, testDB := range d.dbs {
 		wg.Add(1)
 		// capture the value
-		go func(testDB db.DB) {
+		go func(testDB db.RuleDB) {
 			defer wg.Done()
 			testFunc(testDB)
 		}(testDB)

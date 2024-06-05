@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getCountdownTimeStatus } from './EventCountdownProgressBar'
+import { isNull } from 'lodash'
 
 /**
  * Generic Message Banner that appears between defined start and end time.

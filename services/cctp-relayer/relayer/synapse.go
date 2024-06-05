@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"math/big"
 
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
@@ -17,7 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/messagetransmitter"
+	messagetransmitter "github.com/synapsecns/sanguine/services/cctp-relayer/contracts/messagetransmitter"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/attribute"
@@ -32,44 +31,30 @@ type synapseCCTPHandler struct {
 	boundSynapseCCTPs map[uint32]*cctp.SynapseCCTP
 	txSubmitter       submitter.TransactionSubmitter
 	handler           metrics.Handler
-	// screener is used to screen addresses.
-	screener client.ScreenerClient
 }
 
 // NewSynapseCCTPHandler creates a new SynapseCCTPHandler.
-func NewSynapseCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRelayerDB, omniRPCClient omniClient.RPCClient, txSubmitter submitter.TransactionSubmitter, handler metrics.Handler) (_ CCTPHandler, err error) {
+func NewSynapseCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRelayerDB, omniRPCClient omniClient.RPCClient, txSubmitter submitter.TransactionSubmitter, handler metrics.Handler) (CCTPHandler, error) {
 	boundSynapseCCTPs := make(map[uint32]*cctp.SynapseCCTP)
 	for _, chain := range cfg.Chains {
 		cl, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
 		if err != nil {
 			return nil, fmt.Errorf("could not get client: %w", err)
 		}
-		boundSynapseCCTPs[chain.ChainID], err = cctp.NewSynapseCCTP(chain.GetCCTPAddress(), cl)
+		boundSynapseCCTPs[chain.ChainID], err = cctp.NewSynapseCCTP(chain.GetSynapseCCTPAddress(), cl)
 		if err != nil {
 			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
 	}
-
-	var ss client.ScreenerClient
-	if cfg.ScreenerAPIUrl != "" {
-		ss, err = client.NewClient(handler, cfg.ScreenerAPIUrl)
-		if err != nil {
-			return nil, fmt.Errorf("error creating screener client: %w", err)
-		}
-	}
-
 	return &synapseCCTPHandler{
 		cfg:               cfg,
 		db:                db,
-		screener:          ss,
 		omniRPCClient:     omniRPCClient,
 		boundSynapseCCTPs: boundSynapseCCTPs,
 		txSubmitter:       txSubmitter,
 		handler:           handler,
 	}, nil
 }
-
-const screenerRuleset = "cctp"
 
 func (s *synapseCCTPHandler) HandleLog(ctx context.Context, log *types.Log, chainID uint32) (processQueue bool, err error) {
 	if log == nil {
@@ -202,18 +187,6 @@ func (s *synapseCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context,
 
 	// Store the requested message.
 	rawMsg.State = relayTypes.Pending
-
-	if s.screener != nil {
-		blocked, err := s.screener.ScreenAddress(ctx, screenerRuleset, circleRequestSentEvent.Sender.String())
-		if err != nil {
-			return nil, fmt.Errorf("error screening address: %w", err)
-		}
-
-		if blocked {
-			rawMsg.State = relayTypes.WillNotComplete
-		}
-	}
-
 	err = s.db.StoreMessage(ctx, rawMsg)
 	if err != nil {
 		return nil, fmt.Errorf("could not store pending message: %w", err)

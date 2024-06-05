@@ -78,7 +78,7 @@ export const SelectorWrapper = ({
   const itemName = selectedItem?.['symbol' in selectedItem ? 'symbol' : 'name']
 
   return (
-    <div className="relative min-w-fit" ref={parentRef}>
+    <div className="relative" ref={parentRef}>
       <button
         data-test-id={`${dataTestId}-button`}
         className={buttonClassName}

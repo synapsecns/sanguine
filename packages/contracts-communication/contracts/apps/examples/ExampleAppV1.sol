@@ -9,8 +9,8 @@ import {OptionsV1} from "../../libs/Options.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 contract ExampleAppV1 is ICAppV1 {
-    event MessageReceived(uint64 srcChainId, bytes32 sender, uint64 dbNonce, bytes message);
-    event MessageSent(uint64 dstChainId, uint64 dbNonce, bytes32 transactionId);
+    event MessageReceived(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message);
+    event MessageSent(uint64 dstChainId, uint64 dbNonce, uint64 entryIndex, bytes32 transactionId);
 
     constructor(address admin) ICAppV1(admin) {
         _grantRole(IC_GOVERNOR_ROLE, admin);
@@ -37,7 +37,7 @@ contract ExampleAppV1 is ICAppV1 {
             options: OptionsV1({gasLimit: gasLimit, gasAirdrop: gasAirdrop}),
             message: message
         });
-        emit MessageSent(dstChainId, desc.dbNonce, desc.transactionId);
+        emit MessageSent(dstChainId, desc.dbNonce, desc.entryIndex, desc.transactionId);
     }
 
     /// @notice Returns the fee required to send a message using `sendMessage`.
@@ -59,11 +59,12 @@ contract ExampleAppV1 is ICAppV1 {
         uint64 srcChainId,
         bytes32 sender,
         uint64 dbNonce,
+        uint64 entryIndex,
         bytes calldata message
     )
         internal
         override
     {
-        emit MessageReceived(srcChainId, sender, dbNonce, message);
+        emit MessageReceived(srcChainId, sender, dbNonce, entryIndex, message);
     }
 }

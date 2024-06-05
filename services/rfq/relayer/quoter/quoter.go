@@ -66,7 +66,7 @@ type Manager struct {
 	// quotableTokens is a map of token -> list of quotable tokens.
 	// should be removed in config overhaul
 	quotableTokens map[string][]string
-	// screener is used to screen addresses.
+	// simpleScreener is used to screen addresses.
 	screener client.ScreenerClient
 	// relayPaused is set when the RFQ API is found to be offline, which
 	// lets the quoter indicate that quotes should not be relayed.
@@ -78,11 +78,15 @@ type Manager struct {
 }
 
 // NewQuoterManager creates a new QuoterManager.
-func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, inventoryManager inventory.Manager, relayerSigner signer.Signer, feePricer pricer.FeePricer, apiClient rfqAPIClient.AuthenticatedClient) (Quoter, error) {
+func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, inventoryManager inventory.Manager, relayerSigner signer.Signer, feePricer pricer.FeePricer) (Quoter, error) {
+	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricsHandler, config.GetRfqAPIURL(), relayerSigner)
+	if err != nil {
+		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
+	}
+
 	qt := make(map[string][]string)
 
 	// fix any casing issues.
-	var err error
 	for tokenID, destTokenIDs := range config.QuotableTokens {
 		processedDestTokens := make([]string, len(destTokenIDs))
 		for i := range destTokenIDs {

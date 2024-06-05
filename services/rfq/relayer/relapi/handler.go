@@ -60,7 +60,7 @@ func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
 func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
 	txIDStr := c.Query("id")
 	if txIDStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'id'"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'txID'"})
 		return
 	}
 

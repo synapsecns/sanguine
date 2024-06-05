@@ -98,7 +98,7 @@ func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetc
 
 // GetRetryInterval returns the retry interval for the transaction submitter.
 func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
-	retryInterval := time.Second * 2
+	retryInterval := time.Second * 10
 	t.retryOnce.Do(func() {
 		retryInterval = time.Duration(0)
 	})

@@ -1,9 +1,9 @@
 {
-  "address": "0x64118e2E5581FeC4496ef6886Abd24027A7f31A8",
+  "address": "0x8CeFD8163CaBd9BF67071E68668a959CFC50D5E2",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xfbd3d645cb9117dd0e0918fb0f5112e61fd5df2d6a811e169dbdc3b252e70607",
-    "blockNumber": 41157647
+    "hash": "0x682484b618db694da7d564f30f320ecb4ea3ebd39f62a2221ad373a208c9a459",
+    "blockNumber": 34689167
   },
   "abi": [
     {
@@ -192,16 +192,6 @@
               "name": "optimisticPeriod",
               "type": "uint256",
               "internalType": "uint256"
-            },
-            {
-              "name": "guardFlag",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "guard",
-              "type": "address",
-              "internalType": "address"
             }
           ]
         }
@@ -577,14 +567,21 @@
       "name": "setAppConfigV1",
       "inputs": [
         {
-          "name": "requiredResponses",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "optimisticPeriod",
-          "type": "uint256",
-          "internalType": "uint256"
+          "name": "appConfig",
+          "type": "tuple",
+          "internalType": "struct AppConfigV1",
+          "components": [
+            {
+              "name": "requiredResponses",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "optimisticPeriod",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
         }
       ],
       "outputs": [],
@@ -999,61 +996,7 @@
     },
     {
       "type": "error",
-      "name": "InterchainApp__AppConfigInvalid",
-      "inputs": [
-        {
-          "name": "requiredResponses",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "optimisticPeriod",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainApp__BalanceBelowMin",
-      "inputs": [
-        {
-          "name": "balance",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "minRequired",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainApp__CallerNotInterchainClient",
-      "inputs": [
-        {
-          "name": "caller",
-          "type": "address",
-          "internalType": "address"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainApp__ChainIdNotRemote",
-      "inputs": [
-        {
-          "name": "chainId",
-          "type": "uint64",
-          "internalType": "uint64"
-        }
-      ]
-    },
-    {
-      "type": "error",
-      "name": "InterchainApp__InterchainClientAlreadyAdded",
+      "name": "InterchainApp__AlreadyLatestClient",
       "inputs": [
         {
           "name": "client",
@@ -1064,7 +1007,28 @@
     },
     {
       "type": "error",
-      "name": "InterchainApp__InterchainClientAlreadyLatest",
+      "name": "InterchainApp__AppZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InterchainApp__BalanceTooLow",
+      "inputs": [
+        {
+          "name": "actual",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "required",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainApp__ClientAlreadyAdded",
       "inputs": [
         {
           "name": "client",
@@ -1080,12 +1044,17 @@
     },
     {
       "type": "error",
-      "name": "InterchainApp__LinkedAppNotEVM",
+      "name": "InterchainApp__InvalidAppConfig",
       "inputs": [
         {
-          "name": "linkedApp",
-          "type": "bytes32",
-          "internalType": "bytes32"
+          "name": "requiredResponses",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "optimisticPeriod",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ]
     },
@@ -1118,7 +1087,29 @@
     },
     {
       "type": "error",
-      "name": "InterchainApp__ReceiverZeroAddress",
+      "name": "InterchainApp__NotEVMLinkedApp",
+      "inputs": [
+        {
+          "name": "linkedApp",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainApp__NotInterchainClient",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainApp__ReceiverNotSet",
       "inputs": [
         {
           "name": "chainId",
@@ -1129,12 +1120,18 @@
     },
     {
       "type": "error",
-      "name": "InterchainApp__RemoteAppZeroAddress",
-      "inputs": []
+      "name": "InterchainApp__SameChainId",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
     },
     {
       "type": "error",
-      "name": "InterchainApp__SrcSenderNotAllowed",
+      "name": "InterchainApp__SenderNotAllowed",
       "inputs": [
         {
           "name": "srcChainId",
@@ -1150,7 +1147,7 @@
     },
     {
       "type": "error",
-      "name": "LegacyOptionsLib__PayloadInvalid",
+      "name": "LegacyOptionsLib__InvalidOptions",
       "inputs": [
         {
           "name": "legacyOpts",
@@ -1161,7 +1158,7 @@
     },
     {
       "type": "error",
-      "name": "MessageBus__ReceiverNotEVM",
+      "name": "MessageBus__NotEVMReceiver",
       "inputs": [
         {
           "name": "receiver",

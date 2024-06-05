@@ -2,7 +2,6 @@ package inventory
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -83,9 +82,6 @@ type inventoryManagerImpl struct {
 	pendingHist metric.Float64Histogram
 }
 
-// ErrUnsupportedChain is the error for an unsupported chain.
-var ErrUnsupportedChain = errors.New("could not get gas balance for unsupported chain")
-
 // GetCommittableBalance gets the committable balances.
 func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error) {
 	committableBalances, err := i.GetCommittableBalances(ctx, options...)
@@ -98,7 +94,7 @@ func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainI
 	if balance == nil && token == chain.EthAddress {
 		gasBalance, ok := i.gasBalances[chainID]
 		if !ok || gasBalance == nil {
-			return nil, ErrUnsupportedChain
+			return nil, fmt.Errorf("could not get gas balance for chain %d", chainID)
 		}
 		balance = i.gasBalances[chainID]
 	}
@@ -429,19 +425,19 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 // will be rebalanced.
 //
 //nolint:cyclop
-func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) (err error) {
-	// short circuit if origin does not specify a rebalance method
-	methodOrigin, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
+func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) error {
+	// evaluate the rebalance method
+	method, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
 	if err != nil {
-		return fmt.Errorf("could not get origin rebalance method: %w", err)
+		return fmt.Errorf("could not get rebalance method: %w", err)
 	}
-	if methodOrigin == relconfig.RebalanceMethodNone {
+	if method == relconfig.RebalanceMethodNone {
 		return nil
 	}
-
 	ctx, span := i.handler.Tracer().Start(parentCtx, "Rebalance", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, chainID),
 		attribute.String("token", token.Hex()),
+		attribute.String("rebalance_method", method.String()),
 	))
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
@@ -479,9 +475,9 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	}
 
 	// execute the rebalance
-	manager, ok := i.rebalanceManagers[rebalance.Method]
+	manager, ok := i.rebalanceManagers[method]
 	if !ok {
-		return fmt.Errorf("no rebalance manager for method: %s", methodOrigin)
+		return fmt.Errorf("no rebalance manager for method: %s", method)
 	}
 	err = manager.Execute(ctx, rebalance)
 	if err != nil {
@@ -508,6 +504,106 @@ func (i *inventoryManagerImpl) registerPendingRebalance(ctx context.Context, reb
 	}
 	i.pendingHist.Record(ctx, core.BigToDecimals(rebalance.OriginAmount, tokenMetadata.Decimals), metric.WithAttributeSet(attributes))
 	return nil
+}
+
+//nolint:cyclop,gocognit
+func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
+	maintenancePct, err := cfg.GetMaintenanceBalancePct(chainID, token.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
+	}
+
+	// get token metadata
+	var rebalanceTokenData *TokenMetadata
+	for address, tokenData := range tokens[chainID] {
+		if address == token {
+			rebalanceTokenData = tokenData
+			break
+		}
+	}
+
+	// get total balance for given token across all chains
+	totalBalance := big.NewInt(0)
+	for _, tokenMap := range tokens {
+		for _, tokenData := range tokenMap {
+			if tokenData.Name == rebalanceTokenData.Name {
+				totalBalance.Add(totalBalance, tokenData.Balance)
+			}
+		}
+	}
+
+	// check if any balances are below maintenance threshold
+	var minTokenData, maxTokenData *TokenMetadata
+	for _, tokenMap := range tokens {
+		for _, tokenData := range tokenMap {
+			if tokenData.Name == rebalanceTokenData.Name {
+				if minTokenData == nil || tokenData.Balance.Cmp(minTokenData.Balance) < 0 {
+					minTokenData = tokenData
+				}
+				if maxTokenData == nil || tokenData.Balance.Cmp(maxTokenData.Balance) > 0 {
+					maxTokenData = tokenData
+				}
+			}
+		}
+	}
+
+	// get the initialPct for the origin chain
+	initialPct, err := cfg.GetInitialBalancePct(maxTokenData.ChainID, maxTokenData.Addr.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("could not get initial pct: %w", err)
+	}
+	maintenanceThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePct/100)).Int(nil)
+	if span != nil {
+		span.SetAttributes(attribute.Float64("maintenance_pct", maintenancePct))
+		span.SetAttributes(attribute.Float64("initial_pct", initialPct))
+		span.SetAttributes(attribute.String("max_token_balance", maxTokenData.Balance.String()))
+		span.SetAttributes(attribute.String("min_token_balance", minTokenData.Balance.String()))
+		span.SetAttributes(attribute.String("total_balance", totalBalance.String()))
+		span.SetAttributes(attribute.String("maintenance_thresh", maintenanceThresh.String()))
+	}
+
+	// check if the minimum balance is below the threshold and trigger rebalance
+	if minTokenData.Balance.Cmp(maintenanceThresh) > 0 {
+		return rebalance, nil
+	}
+
+	// calculate the amount to rebalance vs the initial threshold on origin
+	initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
+	amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
+
+	// no need to rebalance since amount would not be positive
+	if amount.Cmp(big.NewInt(0)) <= 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	// filter the rebalance amount by the configured min
+	minAmount := cfg.GetMinRebalanceAmount(maxTokenData.ChainID, maxTokenData.Addr)
+	if amount.Cmp(minAmount) < 0 {
+		// no need to rebalance
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	// clip the rebalance amount by the configured max
+	maxAmount := cfg.GetMaxRebalanceAmount(maxTokenData.ChainID, maxTokenData.Addr)
+	if amount.Cmp(maxAmount) > 0 {
+		amount = maxAmount
+	}
+	if span != nil {
+		span.SetAttributes(
+			attribute.String("initial_thresh", initialThresh.String()),
+			attribute.String("rebalance_amount", amount.String()),
+			attribute.String("max_rebalance_amount", maxAmount.String()),
+		)
+	}
+
+	rebalance = &RebalanceData{
+		OriginMetadata: maxTokenData,
+		DestMetadata:   minTokenData,
+		Amount:         amount,
+	}
+	return rebalance, nil
 }
 
 func (i *inventoryManagerImpl) GetTokenMetadata(chainID int, token common.Address) (*TokenMetadata, error) {

@@ -6,10 +6,10 @@ import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEve
 import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
 import {IClaimableFees} from "../../contracts/interfaces/IClaimableFees.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
-import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
+import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
-import {InterchainEntryLibHarness} from "../harnesses/InterchainEntryLibHarness.sol";
+import {InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
 import {VersionedPayloadLibHarness} from "../harnesses/VersionedPayloadLibHarness.sol";
 import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
 
@@ -18,7 +18,7 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleEvents, SynapseModuleEvents {
-    InterchainEntryLibHarness public entryLibHarness;
+    InterchainBatchLibHarness public batchLibHarness;
     VersionedPayloadLibHarness public payloadLibHarness;
 
     SynapseModule public module;
@@ -38,15 +38,15 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
 
     uint256 public constant FEE = 100;
 
-    InterchainEntry public mockEntry =
-        InterchainEntry({srcChainId: SRC_CHAIN_ID, dbNonce: 2, entryValue: bytes32(uint256(3))});
+    InterchainBatch public mockBatch =
+        InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: 2, batchRoot: bytes32(uint256(3))});
     bytes public mockModuleData = "";
 
     function setUp() public {
         vm.chainId(SRC_CHAIN_ID);
         module = new SynapseModule(interchainDB, owner);
         gasOracle = new SynapseGasOracleMock();
-        entryLibHarness = new InterchainEntryLibHarness();
+        batchLibHarness = new InterchainBatchLibHarness();
         payloadLibHarness = new VersionedPayloadLibHarness();
         vm.startPrank(owner);
         module.setGasOracle(address(gasOracle));
@@ -63,25 +63,25 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         );
     }
 
-    function getVersionedEntry(InterchainEntry memory entry) internal view returns (bytes memory) {
-        return payloadLibHarness.encodeVersionedPayload(MOCK_DB_VERSION, entryLibHarness.encodeEntry(entry));
+    function getVersionedBatch(InterchainBatch memory batch) internal view returns (bytes memory) {
+        return payloadLibHarness.encodeVersionedPayload(MOCK_DB_VERSION, batchLibHarness.encodeBatch(batch));
     }
 
-    function requestEntryVerification(uint256 msgValue, bytes memory versionedEntry) internal {
+    function requestBatchVerification(uint256 msgValue, uint64 batchNonce, bytes memory versionedBatch) internal {
         deal(interchainDB, msgValue);
         vm.prank(interchainDB);
-        module.requestEntryVerification{value: msgValue}(DST_CHAIN_ID, versionedEntry);
+        module.requestBatchVerification{value: msgValue}(DST_CHAIN_ID, batchNonce, versionedBatch);
     }
 
-    function encodeAndHashEntry(InterchainEntry memory entry)
+    function encodeAndHashBatch(InterchainBatch memory batch)
         internal
         view
-        returns (bytes memory encodedEntry, bytes32 ethSignedHash)
+        returns (bytes memory encodedBatch, bytes32 ethSignedHash)
     {
-        bytes memory versionedEntry =
-            payloadLibHarness.encodeVersionedPayload(MOCK_DB_VERSION, entryLibHarness.encodeEntry(entry));
-        encodedEntry = abi.encode(versionedEntry, mockModuleData);
-        ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedEntry)));
+        bytes memory versionedBatch =
+            payloadLibHarness.encodeVersionedPayload(MOCK_DB_VERSION, batchLibHarness.encodeBatch(batch));
+        encodedBatch = abi.encode(versionedBatch, mockModuleData);
+        ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedBatch)));
     }
 
     function test_setup() public view {
@@ -93,41 +93,41 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
     }
 
     function test_requestVerification_emitsEvent() public {
-        (bytes memory encodedEntry, bytes32 ethSignedHash) = encodeAndHashEntry(mockEntry);
-        bytes memory versionedEntry = getVersionedEntry(mockEntry);
+        (bytes memory encodedBatch, bytes32 ethSignedHash) = encodeAndHashBatch(mockBatch);
+        bytes memory versionedBatch = getVersionedBatch(mockBatch);
         vm.expectEmit(address(module));
-        emit EntryVerificationRequested(DST_CHAIN_ID, encodedEntry, ethSignedHash);
-        requestEntryVerification(FEE, versionedEntry);
+        emit BatchVerificationRequested(DST_CHAIN_ID, encodedBatch, ethSignedHash);
+        requestBatchVerification(FEE, mockBatch.dbNonce, versionedBatch);
     }
 
     function test_requestVerification_accumulatesFee() public {
         deal(address(module), 5 ether);
-        bytes memory versionedEntry = getVersionedEntry(mockEntry);
-        requestEntryVerification(FEE, versionedEntry);
+        bytes memory versionedBatch = getVersionedBatch(mockBatch);
+        requestBatchVerification(FEE, mockBatch.dbNonce, versionedBatch);
         assertEq(address(module).balance, 5 ether + FEE);
     }
 
     function test_requestVerification_feeAboveRequired_emitsEvent() public {
-        (bytes memory encodedEntry, bytes32 ethSignedHash) = encodeAndHashEntry(mockEntry);
-        bytes memory versionedEntry = getVersionedEntry(mockEntry);
+        (bytes memory encodedBatch, bytes32 ethSignedHash) = encodeAndHashBatch(mockBatch);
+        bytes memory versionedBatch = getVersionedBatch(mockBatch);
         vm.expectEmit(address(module));
-        emit EntryVerificationRequested(DST_CHAIN_ID, encodedEntry, ethSignedHash);
-        requestEntryVerification(FEE + 1, versionedEntry);
+        emit BatchVerificationRequested(DST_CHAIN_ID, encodedBatch, ethSignedHash);
+        requestBatchVerification(FEE + 1, mockBatch.dbNonce, versionedBatch);
     }
 
     function test_requestVerification_feeAboveRequired_accumulatesFee() public {
         deal(address(module), 5 ether);
-        bytes memory versionedEntry = getVersionedEntry(mockEntry);
-        requestEntryVerification(FEE + 1, versionedEntry);
+        bytes memory versionedBatch = getVersionedBatch(mockBatch);
+        requestBatchVerification(FEE + 1, mockBatch.dbNonce, versionedBatch);
         assertEq(address(module).balance, 5 ether + FEE + 1);
     }
 
     function test_requestVerification_revert_feeBelowRequired() public {
-        bytes memory versionedEntry = getVersionedEntry(mockEntry);
+        bytes memory versionedBatch = getVersionedBatch(mockBatch);
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainModule.InterchainModule__FeeAmountBelowMin.selector, FEE - 1, FEE)
         );
-        requestEntryVerification(FEE - 1, versionedEntry);
+        requestBatchVerification(FEE - 1, mockBatch.dbNonce, versionedBatch);
     }
 
     function test_claimFees_zeroClaimFee_emitsEvent() public {
@@ -233,18 +233,20 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
     }
 
     function test_getModuleFee_thresholdTwo() public view {
-        assertEq(module.getModuleFee(DST_CHAIN_ID), FEE);
+        // TODO: dbNonce
+        assertEq(module.getModuleFee(DST_CHAIN_ID, 0), FEE);
     }
 
     function test_getModuleFee_callsGasOracle_gasLimitDefault_twoSigners() public {
         bytes memory mockedSignatures = new bytes(2 * 65);
         bytes memory remoteCalldata =
-            abi.encodeCall(module.verifyRemoteEntry, (abi.encode(mockEntry), mockedSignatures));
+            abi.encodeCall(module.verifyRemoteBatch, (abi.encode(mockBatch), mockedSignatures));
         bytes memory expectedCalldata = abi.encodeCall(
             gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, DEFAULT_GAS_LIMIT, remoteCalldata.length)
         );
         vm.expectCall(address(gasOracle), expectedCalldata);
-        module.getModuleFee(DST_CHAIN_ID);
+        // TODO: dbNonce
+        module.getModuleFee(DST_CHAIN_ID, 0);
     }
 
     function test_getModuleFee_callsGasOracle_gasLimitDefault_threeSigners() public {
@@ -252,12 +254,13 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         module.setThreshold(3);
         bytes memory mockedSignatures = new bytes(3 * 65);
         bytes memory remoteCalldata =
-            abi.encodeCall(module.verifyRemoteEntry, (abi.encode(mockEntry), mockedSignatures));
+            abi.encodeCall(module.verifyRemoteBatch, (abi.encode(mockBatch), mockedSignatures));
         bytes memory expectedCalldata = abi.encodeCall(
             gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, DEFAULT_GAS_LIMIT, remoteCalldata.length)
         );
         vm.expectCall(address(gasOracle), expectedCalldata);
-        module.getModuleFee(DST_CHAIN_ID);
+        // TODO: dbNonce
+        module.getModuleFee(DST_CHAIN_ID, 0);
     }
 
     function test_getModuleFee_callsGasOracle_gasLimitSet_twoSigners() public {
@@ -265,11 +268,12 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         module.setVerifyGasLimit(DST_CHAIN_ID, 200_000);
         bytes memory mockedSignatures = new bytes(2 * 65);
         bytes memory remoteCalldata =
-            abi.encodeCall(module.verifyRemoteEntry, (abi.encode(mockEntry), mockedSignatures));
+            abi.encodeCall(module.verifyRemoteBatch, (abi.encode(mockBatch), mockedSignatures));
         bytes memory expectedCalldata =
             abi.encodeCall(gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, 200_000, remoteCalldata.length));
         vm.expectCall(address(gasOracle), expectedCalldata);
-        module.getModuleFee(DST_CHAIN_ID);
+        // TODO: dbNonce
+        module.getModuleFee(DST_CHAIN_ID, 0);
     }
 
     function test_getModuleFee_callsGasOracle_gasLimitSet_threeSigners() public {
@@ -279,11 +283,12 @@ contract SynapseModuleSourceTest is Test, ClaimableFeesEvents, InterchainModuleE
         module.setVerifyGasLimit(DST_CHAIN_ID, 200_000);
         bytes memory mockedSignatures = new bytes(3 * 65);
         bytes memory remoteCalldata =
-            abi.encodeCall(module.verifyRemoteEntry, (abi.encode(mockEntry), mockedSignatures));
+            abi.encodeCall(module.verifyRemoteBatch, (abi.encode(mockBatch), mockedSignatures));
         bytes memory expectedCalldata =
             abi.encodeCall(gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, 200_000, remoteCalldata.length));
         vm.expectCall(address(gasOracle), expectedCalldata);
-        module.getModuleFee(DST_CHAIN_ID);
+        // TODO: dbNonce
+        module.getModuleFee(DST_CHAIN_ID, 0);
     }
 
     function test_getVerifyGasLimit_default() public view {

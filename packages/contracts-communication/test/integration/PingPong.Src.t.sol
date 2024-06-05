@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
 
 import {PingPongIntegrationTest} from "./PingPong.t.sol";
@@ -8,7 +10,8 @@ import {PingPongIntegrationTest} from "./PingPong.t.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract PingPongSrcIntegrationTest is PingPongIntegrationTest {
-    FullEntry public fullEntry;
+    InterchainBatch public batch;
+    InterchainEntry public entry;
     InterchainTransaction public icTx;
     InterchainTxDescriptor public desc;
 
@@ -19,8 +22,9 @@ contract PingPongSrcIntegrationTest is PingPongIntegrationTest {
     function setUp() public override {
         super.setUp();
         icTx = getSrcTransaction();
-        fullEntry = getSrcFullEntry();
-        desc = getInterchainTxDescriptor(fullEntry);
+        entry = getSrcInterchainEntry();
+        desc = getInterchainTxDescriptor(entry);
+        batch = getInterchainBatch(entry);
         pingFee = srcPingPongApp().getPingFee(DST_CHAIN_ID);
         verificationFee = icDB.getInterchainFee(DST_CHAIN_ID, toArray(address(module)));
         executionFee = executionService.getExecutionFee({
@@ -31,13 +35,13 @@ contract PingPongSrcIntegrationTest is PingPongIntegrationTest {
     }
 
     function test_startPingPong_events() public {
-        expectEventsPingSent(COUNTER, icTx, fullEntry, verificationFee, executionFee);
+        expectEventsPingSent(COUNTER, icTx, entry, verificationFee, executionFee);
         srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
     }
 
     function test_startPingPong_state_db() public {
         srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
-        checkDatabaseStateMsgSent(fullEntry, SRC_INITIAL_DB_NONCE);
+        checkDatabaseStateMsgSent(entry, SRC_INITIAL_DB_NONCE);
     }
 
     function test_startPingPong_state_execService() public {

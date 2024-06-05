@@ -15,7 +15,7 @@ export const PortfolioAssetActionButton = ({
         id="portfolio-asset-action-button"
         className={`
           py-1 px-6 rounded-sm
-          border border-fuchsia-400
+          border border-synapsePurple
           ${!isDisabled && 'cursor-pointer hover:bg-surface active:opacity-70'}
         `}
         onClick={selectCallback}

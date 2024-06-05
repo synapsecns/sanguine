@@ -26,7 +26,6 @@ import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 import { joinClassNames } from '@/utils/joinClassNames'
 import { MaintenanceBanners } from '@/components/Maintenance/Maintenance'
-import { AnnouncementBanner } from '@/components/Maintenance/components/AnnouncementBanner'
 
 const wrapperClassName = joinClassNames({
   textColor: 'text-zinc-800 dark:text-zinc-200',
@@ -50,12 +49,6 @@ export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div className="dark">
       <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
-        <AnnouncementBanner
-          bannerId="2024-05-02-scroll-launch"
-          bannerContents="Synapse Protocol now available on Scroll"
-          startDate={new Date('2024-05-08T18:45:09+00:00')}
-          endDate={new Date('2024-06-15T18:45:09+00:00')}
-        />
         <MaintenanceBanners />
         <LandingNav />
         {children}

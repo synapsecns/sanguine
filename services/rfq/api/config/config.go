@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/jftuga/ellipsis"
 	"gopkg.in/yaml.v2"
@@ -22,19 +21,8 @@ type Config struct {
 	Database   DatabaseConfig `yaml:"database"`
 	OmniRPCURL string         `yaml:"omnirpc_url"`
 	// bridges is a map of chainid->address
-	Bridges         map[uint32]string `yaml:"bridges"`
-	Port            string            `yaml:"port"`
-	RelayAckTimeout time.Duration     `yaml:"relay_ack_timeout"`
-}
-
-const defaultRelayAckTimeout = 30 * time.Second
-
-// GetRelayAckTimeout returns the relay ack timeout.
-func (c Config) GetRelayAckTimeout() time.Duration {
-	if c.RelayAckTimeout == 0 {
-		return defaultRelayAckTimeout
-	}
-	return c.RelayAckTimeout
+	Bridges map[uint32]string `yaml:"bridges"`
+	Port    string            `yaml:"port"`
 }
 
 // LoadConfig loads the config from the given path.

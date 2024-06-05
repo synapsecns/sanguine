@@ -10,8 +10,6 @@ export const getExplorerAddressUrl = (chainId: number, address: string) => {
     return [explorerUrl, explorerName]
   }
 
-  console.error(
-    '[Synapse Widget] Error retrieving Native Explorer Address URL: ChainId or Address missing'
-  )
+  console.error('getExplorerAddressUrl: ChainId or Address missing')
   return [null, null]
 }

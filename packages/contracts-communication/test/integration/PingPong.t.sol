@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 import {PingPongApp} from "../../contracts/apps/examples/PingPongApp.sol";
 
-import {ICIntegrationTest, InterchainTransaction} from "./ICIntegration.t.sol";
+import {ICIntegrationTest, InterchainEntry, InterchainTransaction} from "./ICIntegration.t.sol";
 
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
@@ -13,12 +13,10 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
     uint256 public constant PING_PONG_BALANCE = 1000 ether;
     uint256 public constant COUNTER = 42;
 
-    uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
-
     OptionsV1 public ppOptions = OptionsV1({gasLimit: 500_000, gasAirdrop: 0});
 
-    event PingReceived(uint256 counter, uint64 dbNonce);
-    event PingSent(uint256 counter, uint64 dbNonce);
+    event PingReceived(uint256 counter, uint64 dbNonce, uint64 entryIndex);
+    event PingSent(uint256 counter, uint64 dbNonce, uint64 entryIndex);
 
     /// @dev Should deploy the tested app and return its address.
     function deployApp() internal override returns (address app) {
@@ -26,14 +24,14 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
         deal(app, PING_PONG_BALANCE);
     }
 
-    function expectPingPongEventPingReceived(uint256 counter, FullEntry memory fullEntry) internal {
+    function expectPingPongEventPingReceived(uint256 counter, InterchainEntry memory entry) internal {
         vm.expectEmit(localApp());
-        emit PingReceived(counter, fullEntry.dbNonce);
+        emit PingReceived(counter, entry.dbNonce, entry.entryIndex);
     }
 
-    function expectPingPongEventPingSent(uint256 counter, FullEntry memory fullEntry) internal {
+    function expectPingPongEventPingSent(uint256 counter, InterchainEntry memory entry) internal {
         vm.expectEmit(localApp());
-        emit PingSent(counter, fullEntry.dbNonce);
+        emit PingSent(counter, entry.dbNonce, entry.entryIndex);
     }
 
     // ═══════════════════════════════════════════ COMPLEX SERIES CHECKS ═══════════════════════════════════════════════
@@ -41,14 +39,14 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
     function expectEventsPingSent(
         uint256 counter,
         InterchainTransaction memory icTx,
-        FullEntry memory fullEntry,
+        InterchainEntry memory entry,
         uint256 verificationFee,
         uint256 executionFee
     )
         internal
     {
-        expectEventsMessageSent(icTx, fullEntry, verificationFee, executionFee);
-        expectPingPongEventPingSent(counter, fullEntry);
+        expectEventsMessageSent(icTx, entry, verificationFee, executionFee);
+        expectPingPongEventPingSent(counter, entry);
     }
 
     // ═══════════════════════════════════════════════ DATA HELPERS ════════════════════════════════════════════════════
@@ -77,9 +75,5 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
     /// @notice Message that destination chain PingPongApp sends back to source chain.
     function getDstMessage() internal pure override returns (bytes memory) {
         return abi.encode(COUNTER - 1);
-    }
-
-    function getAppOptimisticPeriod() internal pure override returns (uint256) {
-        return APP_OPTIMISTIC_PERIOD;
     }
 }

@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
+
+import MiniMaxButton from '@/components/buttons/MiniMaxButton'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
@@ -24,11 +26,6 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { useSwapChainListArray } from '@/components/StateManagedSwap//hooks/useSwapChainListArray'
 import { useSwapFromTokenListArray } from '@/components/StateManagedSwap/hooks/useSwapFromTokenListOverlay'
 import { AmountInput } from '@/components/ui/AmountInput'
-import { joinClassNames } from '@/utils/joinClassNames'
-import { MaxButton } from '../StateManagedBridge/MaxButton'
-import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
-import { formatAmount } from '@/utils/formatAmount'
-import { getParsedBalance } from '@/utils/getParsedBalance'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -53,12 +50,9 @@ export const SwapInputContainer = () => {
     (token) => token.tokenAddress === swapFromToken?.addresses[swapChainId]
   )
 
-  const balance = tokenData?.balance
-  const decimals = tokenData?.token?.decimals[swapChainId]
-  const parsedBalance = getParsedBalance(balance, decimals)
-  const formattedBalance = formatAmount(parsedBalance)
+  const parsedBalance = tokenData?.parsedBalance
 
-  const isInputMax = parsedBalance === swapFromValue
+  const balance = tokenData?.balance
 
   useEffect(() => {
     if (
@@ -96,9 +90,7 @@ export const SwapInputContainer = () => {
   const onMaxBalance = useCallback(() => {
     dispatch(
       updateSwapFromValue(
-        trimTrailingZeroesAfterDecimal(
-          formatBigIntToString(balance, swapFromToken.decimals[swapChainId])
-        )
+        formatBigIntToString(balance, swapFromToken.decimals[swapChainId])
       )
     )
   }, [balance, swapChainId, swapFromToken])
@@ -115,12 +107,6 @@ export const SwapInputContainer = () => {
     }
   }, [chain, swapChainId, isConnected, hasMounted])
 
-  const labelClassName = joinClassNames({
-    space: 'block',
-    textColor: 'text-xxs md:text-xs',
-    cursor: 'cursor-default',
-  })
-
   return (
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
@@ -129,27 +115,22 @@ export const SwapInputContainer = () => {
       </div>
       <BridgeAmountContainer>
         <SwapFromTokenSelector />
-        <div className="flex flex-col">
-          <AmountInput
-            inputRef={inputRef}
-            showValue={showValue}
-            handleFromValueChange={handleFromValueChange}
+        <AmountInput
+          inputRef={inputRef}
+          hasMounted={hasMounted}
+          isConnected={isConnected}
+          showValue={showValue}
+          handleFromValueChange={handleFromValueChange}
+          parsedBalance={parsedBalance}
+          onMaxBalance={onMaxBalance}
+        />
+
+        {hasMounted && isConnected && (
+          <MiniMaxButton
+            disabled={!balance || balance === 0n ? true : false}
+            onClickBalance={onMaxBalance}
           />
-          <div className="flex">
-            {hasMounted && isConnected && (
-              <label htmlFor="inputRow" className={labelClassName}>
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Available:{' '}
-                </span>
-                {formattedBalance ?? '0.0'}
-              </label>
-            )}
-            <MaxButton
-              onClick={onMaxBalance}
-              isHidden={!isConnected || !balance || isInputMax}
-            />
-          </div>
-        </div>
+        )}
       </BridgeAmountContainer>
     </BridgeSectionContainer>
   )

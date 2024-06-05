@@ -68,9 +68,6 @@ export interface BridgeProps {
 
   /* Custom name prop for consumer protocol */
   protocolName?: string
-
-  /* Supress Consumer browser console errors */
-  hideConsoleErrors?: boolean
 }
 
 export interface Chain {
@@ -132,7 +129,6 @@ export declare const SUSD: BridgeableToken
 export declare const SYN: BridgeableToken
 export declare const SYNFRAX: BridgeableToken
 export declare const SYNJEWEL: BridgeableToken
-export declare const SPECTRAL: BridgeableToken
 export declare const UNIDX: BridgeableToken
 export declare const USDB: BridgeableToken
 export declare const USDBC: BridgeableToken

@@ -77,11 +77,12 @@ contract ICAppV1Harness is ICAppV1, IInterchainAppV1Harness {
         uint64 srcChainId,
         bytes32 sender,
         uint64 dbNonce,
+        uint64 entryIndex,
         bytes calldata message
     )
         internal
         override
     {
-        emit MessageReceived(srcChainId, sender, dbNonce, message);
+        emit MessageReceived(srcChainId, sender, dbNonce, entryIndex, message);
     }
 }

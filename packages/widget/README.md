@@ -73,9 +73,6 @@ List of tokens to display in the widget. These tokens are imported from the widg
 `protocolName`
 A short name for users of the widget to identify the protocol. Optional. If not provided, defaults to 'Target'.
 
-`hideConsoleErrors`
-Boolean to enable suppressing Synapse (SDK, Widget) console.error messages in your consumer app's browser. If not provided, defaults to logging error messages.
-
 - A list of `targetTokens` can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/bridgeable.ts)
 - A list of Synapse Protocol supported chains can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/chains.ts)
 

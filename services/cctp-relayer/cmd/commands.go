@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/urfave/cli/v2"
 )
 
@@ -77,10 +78,11 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("could not connect to database: %w", err)
 		}
 
+		scribeClient := client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
 		omnirpcClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, metricsProvider, omniClient.WithCaptureReqRes())
 		attAPI := attestation.NewCircleAPI(c.String(cfg.CircleAPIURl))
 
-		cctpRelayer, err := relayer.NewCCTPRelayer(c.Context, cfg, store, omnirpcClient, metricsProvider, attAPI)
+		cctpRelayer, err := relayer.NewCCTPRelayer(c.Context, cfg, store, scribeClient, omnirpcClient, metricsProvider, attAPI)
 		if err != nil {
 			return fmt.Errorf("could not create cctp relayer: %w", err)
 		}

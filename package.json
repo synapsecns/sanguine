@@ -5,8 +5,7 @@
   "description": "Implementation of the Sanguine messaging standard",
   "workspaces": {
     "packages": [
-      "packages/*",
-      "docs/*"
+      "packages/*"
     ],
     "nohoist": [
       "**/typechain",

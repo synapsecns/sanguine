@@ -10,7 +10,7 @@ import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/S
 
 import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 
-import {InterchainEntryLibHarness} from "../harnesses/InterchainEntryLibHarness.sol";
+import {InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
 import {InterchainTransactionLibHarness} from "../harnesses/InterchainTransactionLibHarness.sol";
 import {VersionedPayloadLibHarness} from "../harnesses/VersionedPayloadLibHarness.sol";
 import {ProxyTest} from "../proxy/ProxyTest.t.sol";
@@ -29,9 +29,11 @@ abstract contract ICSetup is ProxyTest {
     uint64 public constant SRC_INITIAL_DB_NONCE = 10;
     uint64 public constant DST_INITIAL_DB_NONCE = 20;
 
+    uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
+
     uint256 public constant INITIAL_TS = 1_704_067_200; // 2024-01-01 00:00:00 UTC
 
-    InterchainEntryLibHarness public entryLibHarness;
+    InterchainBatchLibHarness public batchLibHarness;
     InterchainTransactionLibHarness public txLibHarness;
     VersionedPayloadLibHarness public payloadLibHarness;
 
@@ -70,7 +72,7 @@ abstract contract ICSetup is ProxyTest {
     }
 
     function deployLibraryHarnesses() internal virtual {
-        entryLibHarness = new InterchainEntryLibHarness();
+        batchLibHarness = new InterchainBatchLibHarness();
         txLibHarness = new InterchainTransactionLibHarness();
         payloadLibHarness = new VersionedPayloadLibHarness();
     }
@@ -126,9 +128,10 @@ abstract contract ICSetup is ProxyTest {
 
     function configureLocalApp() internal virtual {
         address app = localApp();
+        // For simplicity, we assume that the apps are deployed to the same address on both chains.
         ICAppV1(app).linkRemoteAppEVM(remoteChainId(), remoteApp());
         ICAppV1(app).addTrustedModule(address(module));
-        ICAppV1(app).setAppConfigV1({requiredResponses: 1, optimisticPeriod: getAppOptimisticPeriod()});
+        ICAppV1(app).setAppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD});
         ICAppV1(app).setExecutionService(address(executionService));
         ICAppV1(app).addInterchainClient({client: address(icClient), updateLatest: true});
     }
@@ -164,7 +167,7 @@ abstract contract ICSetup is ProxyTest {
         }
     }
 
-    function isSourceChainTest() internal pure returns (bool) {
+    function isSourceChainTest() internal view returns (bool) {
         return isSourceChain(localChainId());
     }
 
@@ -186,10 +189,8 @@ abstract contract ICSetup is ProxyTest {
         return isSourceChainTest() ? dstApp : srcApp;
     }
 
-    /// @notice Should return the optimistic period for the app.
-    function getAppOptimisticPeriod() internal pure virtual returns (uint256);
     /// @notice Should return either `SRC_CHAIN_ID` or `DST_CHAIN_ID`.
-    function localChainId() internal pure virtual returns (uint64);
+    function localChainId() internal view virtual returns (uint64);
     /// @notice Should return either `SRC_CHAIN_ID` or `DST_CHAIN_ID`.
-    function remoteChainId() internal pure virtual returns (uint64);
+    function remoteChainId() internal view virtual returns (uint64);
 }

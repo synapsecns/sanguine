@@ -141,7 +141,7 @@ export abstract class RouterSet extends SynapseModuleSet {
       )
     } catch (error) {
       console.error(
-        `[SynapseSDK: RouterSet] Error when trying to calculate the best quote with bridge tokens: ${bridgeTokens} `,
+        `Error when trying to calculate the best quote with bridge tokens: ${bridgeTokens}`,
         error
       )
       return []

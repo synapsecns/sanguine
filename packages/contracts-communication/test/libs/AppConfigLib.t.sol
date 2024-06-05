@@ -43,9 +43,9 @@ contract AppConfigLibTest is Test {
 
     function test_decodeAppConfigV1_revertLowerVersion() public {
         AppConfigV1 memory appConfig = AppConfigV1(3, 100, 0, address(0));
-        uint16 versionInvalid = AppConfigLib.APP_CONFIG_V1 - 1;
-        bytes memory encoded = VersionedPayloadLib.encodeVersionedPayload(versionInvalid, abi.encode(appConfig));
-        vm.expectRevert(abi.encodeWithSelector(AppConfigLib.AppConfigLib__VersionInvalid.selector, versionInvalid));
+        uint16 VersionInvalid = AppConfigLib.APP_CONFIG_V1 - 1;
+        bytes memory encoded = VersionedPayloadLib.encodeVersionedPayload(VersionInvalid, abi.encode(appConfig));
+        vm.expectRevert(abi.encodeWithSelector(AppConfigLib.AppConfigLib__VersionInvalid.selector, VersionInvalid));
         libHarness.decodeAppConfigV1(encoded);
     }
 }

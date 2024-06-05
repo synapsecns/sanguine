@@ -4,7 +4,6 @@ on:
     types: [closed]
     paths:
       - 'packages/**'
-      - 'docs/**'
     branches:
       - master
 
