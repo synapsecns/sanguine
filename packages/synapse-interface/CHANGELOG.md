@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.25.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.24.2...@synapsecns/synapse-interface@0.25.0) (2024-06-05)
+
+
+### Features
+
+* **synapse-interface:** upgrade wagmi, viem, rainbowkit to support smartwallet ([#2674](https://github.com/synapsecns/sanguine/issues/2674)) ([ab26028](https://github.com/synapsecns/sanguine/commit/ab260284ed39d8265c8eff9b19b9d949a2f466d1))
+
+
+
+
+
 ## [0.24.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.24.1...@synapsecns/synapse-interface@0.24.2) (2024-06-02)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
