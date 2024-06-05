@@ -18,7 +18,7 @@ export default function HeroSection() {
         communication
       </h1>
       <p className="hidden text-center text-secondaryTextColor sm:block">
-        Synapse is the most widely used, extensible, secure cross-
+        Synapse is the most widely used, extensible, and secure cross-
         <br />
         chain communications network. Build truly cross-chain
         <br />

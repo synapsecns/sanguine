@@ -17,6 +17,7 @@ import {
   moonriver,
   optimism,
   polygon,
+  scroll,
 } from '@wagmi/core/chains'
 
 import { dfk, dogechain } from '@/constants/chains/extraWagmiChains'
@@ -25,24 +26,25 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 export const supportedChains = [
   mainnet,
   arbitrum,
-  aurora,
   avalanche,
   base,
+  optimism,
+  scroll,
   blast,
-  bsc,
-  canto,
-  fantom,
-  harmonyOne,
   metis,
+  dfk,
+  bsc,
+  polygon,
+  aurora,
+  canto,
+  klaytn,
+  fantom,
   moonbeam,
   moonriver,
-  optimism,
-  polygon,
-  klaytn,
   cronos,
-  dfk,
   dogechain,
   boba,
+  harmonyOne,
 ].map((chain) => {
   return {
     ...chain,

@@ -6,16 +6,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/ipfs/go-log"
+	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"github.com/synapsecns/sanguine/contrib/screener-api/config"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql"
+	"github.com/synapsecns/sanguine/contrib/screener-api/docs"
 	"github.com/synapsecns/sanguine/contrib/screener-api/screener/internal"
 	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
 	"github.com/synapsecns/sanguine/core"
@@ -26,6 +30,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
+
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // Screener is the interface for the screener.
@@ -36,7 +43,7 @@ type Screener interface {
 type screenerImpl struct {
 	rulesManager internal.RulesetManager
 	thresholds   []config.VolumeThreshold
-	db           db.RuleDB
+	db           db.DB
 	router       *gin.Engine
 	metrics      metrics.Handler
 	cfg          config.Config
@@ -54,6 +61,9 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 		metrics: metricHandler,
 		cfg:     cfg,
 	}
+
+	docs.SwaggerInfo.Title = "Screener API"
+	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.Port)
 
 	screener.client, err = trmlabs.NewClient(cfg.TRMKey, core.GetEnv("TRM_URL", "https://api.trmlabs.com"))
 	if err != nil {
@@ -77,11 +87,15 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 
 	screener.db, err = sql.Connect(ctx, dbType, cfg.Database.DSN, metricHandler)
 	if err != nil {
-		return nil, fmt.Errorf("could not connect to db: %w", err)
+		return nil, fmt.Errorf("could not connect to rules db: %w", err)
 	}
 
 	screener.router = ginhelper.New(logger)
+	screener.router.Use(screener.metrics.Gin())
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
+
+	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
+	screener.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	return &screener, nil
 }
@@ -118,6 +132,139 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 	}
 }
 
+// @dev Protected Method
+// @Summary blacklist an address
+// @Description blacklist an address
+// @Param appid header string true "Application ID"
+// @Param timestamp header string true "Timestamp of the request"
+// @Param nonce header string true "A unique nonce for the request"
+// @Param queryString header string true "Query string parameters included in the request"
+// @Param signature header string true "Signature for request validation"
+// @Param request body db.BlacklistedAddress true "Blacklist request"
+// @Accept json
+// @Produce json
+// @Router /api/data/sync [post].
+func (s *screenerImpl) blacklistAddress(c *gin.Context) {
+	var err error
+	ctx, span := s.metrics.Tracer().Start(c.Request.Context(), "blacklistAddress")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	var blacklistBody client.BlackListBody
+
+	// Grab the body of the JSON request and unmarshal it into the blacklistBody struct.
+	if err := c.ShouldBindBodyWith(&blacklistBody, binding.JSON); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	span.SetAttributes(attribute.String("type", blacklistBody.Type))
+	span.SetAttributes(attribute.String("id", blacklistBody.ID))
+	span.SetAttributes(attribute.String("data", blacklistBody.Data))
+	span.SetAttributes(attribute.String("network", blacklistBody.Network))
+	span.SetAttributes(attribute.String("tag", blacklistBody.Tag))
+	span.SetAttributes(attribute.String("remark", blacklistBody.Remark))
+	span.SetAttributes(attribute.String("address", blacklistBody.Address))
+
+	blacklistedAddress := db.BlacklistedAddress{
+		Type:    blacklistBody.Type,
+		ID:      blacklistBody.ID,
+		Data:    blacklistBody.Data,
+		Network: blacklistBody.Network,
+		Tag:     blacklistBody.Tag,
+		Remark:  blacklistBody.Remark,
+		Address: strings.ToLower(blacklistBody.Address),
+	}
+
+	switch blacklistBody.Type {
+	case "create":
+		if err := s.db.PutBlacklistedAddress(ctx, blacklistedAddress); err != nil {
+			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
+		c.JSON(http.StatusOK, gin.H{"status": "success"})
+		return
+
+	case "update":
+		if err := s.db.UpdateBlacklistedAddress(ctx, blacklistedAddress.ID, blacklistedAddress); err != nil {
+			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
+		c.JSON(http.StatusOK, gin.H{"status": "success"})
+		return
+
+	case "delete":
+		if err := s.db.DeleteBlacklistedAddress(ctx, blacklistedAddress.Address); err != nil {
+			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
+		c.JSON(http.StatusOK, gin.H{"status": "success"})
+		return
+
+	default:
+		span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
+		return
+	}
+}
+
+// This function takes the HTTP headers and the body of the request and reconstructs the signature to
+// compare it with the signature provided. If they match, the request is allowed to pass through.
+func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		_, span := s.metrics.Tracer().Start(c.Request.Context(), "authMiddleware")
+		defer span.End()
+
+		appID := c.Request.Header.Get("AppID")
+		timestamp := c.Request.Header.Get("Timestamp")
+		nonce := c.Request.Header.Get("Nonce")
+		signature := c.Request.Header.Get("Signature")
+		queryString := c.Request.Header.Get("QueryString")
+		bodyBytes, _ := io.ReadAll(c.Request.Body)
+		bodyStr := string(bodyBytes)
+
+		c.Request.Body = io.NopCloser(strings.NewReader(bodyStr))
+
+		span.SetAttributes(
+			attribute.String("appId", appID),
+			attribute.String("timestamp", timestamp),
+			attribute.String("nonce", nonce),
+			attribute.String("signature", signature),
+			attribute.String("queryString", queryString),
+			attribute.String("bodyString", bodyStr),
+		)
+
+		message := fmt.Sprintf("%s%s%s%s%s%s%s",
+			appID, timestamp, nonce, "POST", "/api/data/sync/", queryString, bodyStr)
+
+		span.AddEvent("message", trace.WithAttributes(attribute.String("message", message)))
+
+		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
+
+		span.AddEvent("generated_signature", trace.WithAttributes(attribute.String("expectedSignature", expectedSignature)))
+
+		if expectedSignature != signature {
+			span.AddEvent("error", trace.WithAttributes(attribute.String("error", "Invalid signature")))
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid signature"})
+			c.Abort()
+			return
+		}
+
+		span.AddEvent("signature_validated")
+		c.Next()
+	}
+}
+
 func (s *screenerImpl) Start(ctx context.Context) error {
 	// TODO: potential race condition here, if the blacklist is not fetched before the first request
 	// in practice trm will catch
@@ -132,11 +279,23 @@ func (s *screenerImpl) Start(ctx context.Context) error {
 	connection := baseServer.Server{}
 	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%d", s.cfg.Port), s.router)
 	if err != nil {
-		return fmt.Errorf("could not start gqlServer: %w", err)
+		return fmt.Errorf("could not start server: %w", err)
 	}
 	return nil
 }
 
+// screenAddress returns whether an address is risky or not given a ruleset.
+// @Summary Screen address for risk
+// @Description Assess the risk associated with a given address using specified rulesets.
+// @Tags address
+// @Accept  json
+// @Produce  json
+// @Param ruleset query string true "Ruleset to use for screening the address"
+// @Param address query string true "Address to be screened"
+// @Success 200 {object} map[string]bool "Returns the risk assessment result"
+// @Failure 400 {object} map[string]string "Returns error if the required parameters are missing or invalid"
+// @Failure 500 {object} map[string]string "Returns error if there are problems processing the indicators"
+// @Router /screen/{ruleset}/{address} [get].
 func (s *screenerImpl) screenAddress(c *gin.Context) {
 	var err error
 

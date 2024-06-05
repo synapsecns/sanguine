@@ -1,14 +1,16 @@
 package db_test
 
 import (
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db"
 	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
-	"time"
+	"gorm.io/gorm"
 )
 
 func (d *DBSuite) TestEmpty() {
-	d.RunOnAllDBs(func(testDB db.RuleDB) {
+	d.RunOnAllDBs(func(testDB db.DB) {
 		testAddress := gofakeit.BitcoinAddress()
 
 		// 5 mins ago
@@ -28,8 +30,8 @@ func (d *DBSuite) TestEmpty() {
 	})
 }
 
-func (d *DBSuite) TestAdressUpdate() {
-	d.RunOnAllDBs(func(testDB db.RuleDB) {
+func (d *DBSuite) TestAddressUpdate() {
+	d.RunOnAllDBs(func(testDB db.DB) {
 		testAddress := gofakeit.BitcoinAddress()
 
 		// 5 mins ago
@@ -62,5 +64,52 @@ func (d *DBSuite) TestAdressUpdate() {
 		// also make sure expiry works correctly, this should error
 		_, err = testDB.GetAddressIndicators(d.GetTestContext(), testAddress, time.Now())
 		d.Require().Error(err, db.ErrNoAddressNotCached)
+	})
+}
+
+func (d *DBSuite) TestBlacklist() {
+	d.RunOnAllDBs(func(testDB db.DB) {
+		testAddress := gofakeit.BitcoinAddress()
+
+		blacklistBody := db.BlacklistedAddress{
+			Type:    "create",
+			ID:      "testId",
+			Address: testAddress,
+			Network: "bitcoin",
+			Tag:     "testTag",
+			Remark:  "testRemark",
+		}
+
+		// blacklist the address
+		err := testDB.PutBlacklistedAddress(d.GetTestContext(), blacklistBody)
+		d.Require().NoError(err)
+		blacklistedAddress, err := testDB.GetBlacklistedAddress(d.GetTestContext(), blacklistBody.Address)
+		d.Require().NoError(err)
+		d.Require().NotNil(blacklistedAddress)
+
+		// update the address
+		blacklistBody.Type = "update"
+		blacklistBody.Remark = "testRemarkUpdated"
+		err = testDB.UpdateBlacklistedAddress(d.GetTestContext(), blacklistBody.ID, blacklistBody)
+		d.Require().NoError(err)
+
+		// check to make sure it updated
+		blacklistedAddress, err = testDB.GetBlacklistedAddress(d.GetTestContext(), blacklistBody.Address)
+		d.Require().NoError(err)
+		d.Require().NotNil(blacklistedAddress)
+		d.Require().Equal("testRemarkUpdated", blacklistedAddress.Remark)
+
+		// check for non blacklisted address
+		res, err := testDB.GetBlacklistedAddress(d.GetTestContext(), gofakeit.BitcoinAddress())
+		d.Require().EqualError(err, gorm.ErrRecordNotFound.Error())
+		d.Require().Nil(res)
+
+		// delete it
+		err = testDB.DeleteBlacklistedAddress(d.GetTestContext(), blacklistBody.ID)
+		d.Require().NoError(err)
+
+		// delete nonexistent
+		err = testDB.DeleteBlacklistedAddress(d.GetTestContext(), "NonexistentId")
+		d.Require().NoError(err)
 	})
 }
