@@ -20,6 +20,8 @@ import { supportedChains } from '@/constants/chains/supportedChains'
 const appName = 'Synapse'
 const projectId = 'ab0a846bc693996606734d788cb6561d'
 
+coinbaseWallet.preference = 'all'
+
 const connectors = connectorsForWallets(
   [
     {
