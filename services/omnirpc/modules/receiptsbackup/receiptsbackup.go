@@ -1,4 +1,4 @@
-package hangingreceipts
+package receiptsbackup
 
 import (
 	"context"
