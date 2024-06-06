@@ -49,7 +49,6 @@ There are a variety of different packages in this repo, covered comprehensively 
 <pre>
 root
 ├── <a href="./agents">agents</a>: agents contain all the agents used in optimistic messaging
-├── <a href="./committe">committe</a>: sin synapsemodule committee.
 ├── <a href="./charts">charts</a>: The helm charts used for deploying sanguine related services
 ├── <a href="./contrib">contrib</a>: Devops related tools
 │   ├── <a href="./contrib/git-changes-action">git-changes-action</a>: Github action for identifying changes in dependent modules in a go workspace
@@ -64,7 +63,6 @@ root
 ├── <a href="./ethergo">ethergo</a>: Go-based ethereum testing + common library
 ├── <a href="./packages">packages</a>
 │   ├── <a href="./packages/contracts-core">contracts-core</a>: Core contracts used for synapse, powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>
-│   ├── <a href="./packages/contracts-core">contracts-communication</a>: SIN contracts.
 │   ├── <a href="./packages/contracts-rfq">rfq</a>: RFQ contracts
 │   ├── <a href="./packages/coverage-aggregator">coverage-aggregator</a>: Javascript coverage aggregator based on <a href="https://www.npmjs.com/package/nyc">nyc</a>
 │   ├── <a href="./packages/docs">docs</a>: Docasaurus documentation. Note: this is not yet in use, and docs are still maintained on gitbook
@@ -82,7 +80,6 @@ root
 │   ├── <a href="./services/rfq">rfq</a>: RFQ contracts
 │   ├── <a href="./services/scribe">scribe</a>: Generalized ethereum event logger
 │   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once
-├── <a href="./sin-executor">sin-executor</a>: synapse interchain execturo.
 ├── <a href="./tools">tools</a>
 │   ├── <a href="./tools/abigen">abigen</a>: Used to generate abigen bindings for go
 │   ├── <a href="./tools/bundle">bundle</a>: Modified version of <a href="https://pkg.go.dev/golang.org/x/tools@v0.5.0/cmd/bundle"> go bundler </a> with improved shadowing support
