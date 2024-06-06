@@ -157,7 +157,7 @@ func (r *receiptsProxyImpl) processRequest(ctx context.Context, rpcRequest rpc.R
 			SetHeaderBytes(omniHTTP.ContentType, omniHTTP.JSONType).
 			SetHeaderBytes(omniHTTP.Accept, omniHTTP.JSONType).
 			Do()
-		if err != nil {
+		if err != nil || rpc.IsNullResponse(resp.Body()) {
 			// do backup request
 			resp, err = req.
 				SetContext(ctxWithTimeout).
