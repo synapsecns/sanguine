@@ -63,7 +63,6 @@ root
 ├── <a href="./ethergo">ethergo</a>: Go-based ethereum testing + common library
 ├── <a href="./packages">packages</a>
 │   ├── <a href="./packages/contracts-core">contracts-core</a>: Core contracts used for synapse, powered by <a href="https://github.com/foundry-rs/foundry">Foundry</a>
-│   ├── <a href="./packages/contracts-core">contracts-communication</a>: SIN contracts.
 │   ├── <a href="./packages/contracts-rfq">rfq</a>: RFQ contracts
 │   ├── <a href="./packages/coverage-aggregator">coverage-aggregator</a>: Javascript coverage aggregator based on <a href="https://www.npmjs.com/package/nyc">nyc</a>
 │   ├── <a href="./packages/docs">docs</a>: Docasaurus documentation. Note: this is not yet in use, and docs are still maintained on gitbook
