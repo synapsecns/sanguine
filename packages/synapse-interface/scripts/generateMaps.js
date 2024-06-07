@@ -285,6 +285,17 @@ const printMaps = async () => {
       Object.keys(cctpOriginMap).forEach((token) => {
         addSetToMap(originMap, token, cctpOriginMap[token])
       })
+      // Add RFQ.ETH and RFQ.USDC to origin map of tokens bridgeable into nETH or CCTP.USDC respectively
+      if (allowedChainIdsForRfq.includes(Number(chainId))) {
+        Object.keys(originMap).forEach((token) => {
+          if (originMap[token].has('nETH')) {
+            originMap[token].add('RFQ.ETH')
+          }
+          if (originMap[token].has('CCTP.USDC')) {
+            originMap[token].add('RFQ.USDC')
+          }
+        })
+      }
       const tokens = {}
       await Promise.all(
         Object.keys(originMap).map(async (token) => {
@@ -327,24 +338,27 @@ const printMaps = async () => {
                   origin: [],
                   destination: [],
                   swappable: [], // poolSets are handled during SynapseBridge portion
-                  symbol: null,
-                  decimals: null,
+                  symbol: originTokenSymbol,
+                  decimals: await getTokenDecimals(
+                    origin_chain_id,
+                    normalizedOriginAddress
+                  ),
                 }
               }
-
+              // Add RFQ symbol to origin list if not already present
               if (
-                normalizedOriginAddress in tokens &&
                 !tokens[normalizedOriginAddress].origin.includes(
                   rfqOriginSymbol
                 )
               ) {
                 tokens[normalizedOriginAddress].origin.push(rfqOriginSymbol)
-                tokens[normalizedOriginAddress].symbol = originTokenSymbol
-                tokens[normalizedOriginAddress].decimals =
-                  await getTokenDecimals(
-                    origin_chain_id,
-                    normalizedOriginAddress
-                  )
+              }
+              // Add RFQ symbol to destination list if not already present
+              if (
+                !tokens[normalizedOriginAddress].destination.includes(
+                  rfqOriginSymbol
+                )
+              ) {
                 tokens[normalizedOriginAddress].destination.push(
                   rfqOriginSymbol
                 )
