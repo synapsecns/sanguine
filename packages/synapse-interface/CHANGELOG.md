@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.25.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.25.0...@synapsecns/synapse-interface@0.25.1) (2024-06-07)
+
+
+### Bug Fixes
+
+* **synapse-interface:** rfq maps generation ([#2681](https://github.com/synapsecns/sanguine/issues/2681)) ([1791615](https://github.com/synapsecns/sanguine/commit/1791615b570e1b4d0d74a0c4298a273de6d1ff22))
+
+
+
+
+
 # [0.25.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.24.2...@synapsecns/synapse-interface@0.25.0) (2024-06-05)
 
 
