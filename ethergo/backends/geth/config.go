@@ -3,6 +3,7 @@ package geth
 import (
 	"math/big"
 	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
@@ -45,11 +46,13 @@ func makeNodeConfig(tb testing.TB) *node.Config {
 // makeEthConfig gets the eth config for a mock node.
 func makeEthConfig(address common.Address, config *params.ChainConfig) *ethconfig.Config {
 	ethConfig := ethconfig.Defaults
+
 	ethConfig.NetworkId = config.ChainID.Uint64()
 	ethConfig.Genesis = core.DeveloperGenesisBlock(10000000, address)
 	ethConfig.Genesis.ExtraData = append([]byte{}, make([]byte, 32)...)                    // 32 bytes of vanity
 	ethConfig.Genesis.ExtraData = append(ethConfig.Genesis.ExtraData, address.Bytes()...)  // Signer address
 	ethConfig.Genesis.ExtraData = append(ethConfig.Genesis.ExtraData, make([]byte, 65)...) // 65 bytes of signature
+	ethConfig.Miner.Recommit = time.Second
 
 	ethConfig.Genesis.Config = config
 	ethConfig.Miner.Etherbase = address

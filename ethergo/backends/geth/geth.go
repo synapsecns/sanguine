@@ -2,6 +2,7 @@ package geth
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/eth/catalyst"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"math/big"
 	"os"
@@ -91,6 +92,11 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 
 	embedded.ethBackend, err = eth.New(embedded.Node, ethConfig)
 	assert.Nil(t, err)
+
+	// setup the consensus client
+	simBeacon, err := catalyst.NewSimulatedBeacon(1, embedded.ethBackend)
+	catalyst.RegisterSimulatedBeaconAPIs(embedded.Node, simBeacon)
+	embedded.Node.RegisterLifecycle(simBeacon)
 
 	embedded.Node.RegisterAPIs(toPublic(tracers.APIs(embedded.ethBackend.APIBackend)))
 
