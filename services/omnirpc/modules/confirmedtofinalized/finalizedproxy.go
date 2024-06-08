@@ -24,6 +24,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"time"
 )
 
 // FinalizedProxy is the interface for the finalized proxy.
@@ -200,7 +201,7 @@ func (r *finalizedProxyImpl) checkShouldRequest(parentCtx context.Context, req r
 	ethParams.ChainID = big.NewInt(int64(r.chainID))
 
 	// derive sender
-	signer := types.MakeSigner(ethParams, big.NewInt(1))
+	signer := types.MakeSigner(ethParams, big.NewInt(1), uint64(time.Now().Unix()))
 	var from common.Address
 	from, err = types.Sender(signer, tx)
 	if err != nil {
