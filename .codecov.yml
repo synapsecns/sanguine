@@ -30,26 +30,6 @@ flags:
     paths:
       - contrib/git-changes-action/
     carryforward: true
-  release-copier-action:
-    paths:
-      - contrib/release-copier-action/
-    carryforward: true
-  terraform-provider-helmproxy:
-    paths:
-      - contrib/terraform-provider-helmproxy/
-    carryforward: true
-  terraform-provider-iap:
-    paths:
-      - contrib/terraform-provider-iap/
-    carryforward: true
-  terraform-provider-kubeproxy:
-    paths:
-      - contrib/terraform-provider-kubeproxy/
-    carryforward: true
-  tfcore:
-    paths:
-      - contrib/tfcore/
-    carryforward: true
   core:
     paths:
       - core/
