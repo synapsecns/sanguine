@@ -77,10 +77,11 @@ root
 │   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once
 ├── <a href="./tools">tools</a>
 │   ├── <a href="./tools/abigen">abigen</a>: Used to generate abigen bindings for go
-│   ├── <a href="./tools/bundle">bundle</a>: Modified version of <a href="https://pkg.go.dev/golang.org/x/tools@v0.5.0/cmd/bundle"> go bundler </a> with improved shadowing support
 │   ├── <a href="./tools/modulecopier">module copier</a>: Used to copy internal modules and export methods for testing
 │   ├── <a href="./tools/revertresolver">revertresolver</a>: Converts hexified solidity errors into their underlying errors.
 </pre>
+
+Note: Terraform related modules have been moved to [this repository](https://github.com/synapsecns/tf-providers)
 
 ## Setup
 
