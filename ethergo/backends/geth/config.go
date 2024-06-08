@@ -48,7 +48,7 @@ func makeEthConfig(address common.Address, config *params.ChainConfig) *ethconfi
 	ethConfig := ethconfig.Defaults
 
 	ethConfig.NetworkId = config.ChainID.Uint64()
-	ethConfig.Genesis = core.DeveloperGenesisBlock(10000000, address)
+	ethConfig.Genesis = core.DeveloperGenesisBlock(10000000, &address)
 	ethConfig.Genesis.ExtraData = append([]byte{}, make([]byte, 32)...)                    // 32 bytes of vanity
 	ethConfig.Genesis.ExtraData = append(ethConfig.Genesis.ExtraData, address.Bytes()...)  // Signer address
 	ethConfig.Genesis.ExtraData = append(ethConfig.Genesis.ExtraData, make([]byte, 65)...) // 65 bytes of signature
