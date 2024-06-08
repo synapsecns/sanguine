@@ -26,8 +26,6 @@ func GetSepolia() Backend {
 func GetBSCTestnet() Backend {
 	chainConfig := *params.AllDevChainProtocolChanges
 	chainConfig.ChainID = client.ChapelChainConfig.ChainID
-	// london is not activated on bsc
-	chainConfig.LondonBlock = nil
 
 	return Backend{
 		config:     &chainConfig,
@@ -57,7 +55,6 @@ func GetMaticMumbaiFakeSynDomain() Backend {
 	chainConfig := *params.AllDevChainProtocolChanges
 	chainConfig.ChainID = big.NewInt(int64(10))
 	// london is not activated on bsc
-	chainConfig.LondonBlock = nil
 
 	return Backend{
 		config:     &chainConfig,
