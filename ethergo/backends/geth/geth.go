@@ -95,6 +95,8 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 
 	// setup the consensus client
 	simBeacon, err := catalyst.NewSimulatedBeacon(1, embedded.ethBackend)
+	assert.Nil(t, err)
+
 	catalyst.RegisterSimulatedBeaconAPIs(embedded.Node, simBeacon)
 	embedded.Node.RegisterLifecycle(simBeacon)
 
