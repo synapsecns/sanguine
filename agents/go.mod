@@ -339,5 +339,4 @@ replace (
 	github.com/synapsecns/sanguine/services/omnirpc => ../services/omnirpc
 	github.com/synapsecns/sanguine/services/scribe => ../services/scribe
 	github.com/synapsecns/sanguine/tools => ../tools
-	gopkg.in/DataDog/dd-trace-go.v1 v1.50.0 => gopkg.in/DataDog/dd-trace-go.v1 v1.39.0-alpha.1.0.20230428193534-5deb295b7662
 )

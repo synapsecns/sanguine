@@ -40,6 +40,7 @@ import (
 )
 
 func TestSimulatedBackend(t *testing.T) {
+	t.Parallel()
 	var gasLimit uint64 = 8000029
 	key, _ := crypto.GenerateKey() // nolint: gosec
 	auth, _ := bind.NewKeyedTransactorWithChainID(key, big.NewInt(1337))
@@ -123,6 +124,7 @@ func simTestBackend(testAddr common.Address) *SimulatedBackend {
 }
 
 func TestNewSimulatedBackend(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	expectedBal := big.NewInt(10000000000000000)
 	sim := simTestBackend(testAddr)
@@ -144,6 +146,7 @@ func TestNewSimulatedBackend(t *testing.T) {
 }
 
 func TestAdjustTime(t *testing.T) {
+	t.Parallel()
 	sim := NewSimulatedBackend(
 		core.GenesisAlloc{}, 10000000,
 	)
@@ -161,6 +164,7 @@ func TestAdjustTime(t *testing.T) {
 }
 
 func TestNewAdjustTimeFail(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	sim := simTestBackend(testAddr)
 	defer sim.blockchain.Stop()
@@ -204,6 +208,7 @@ func TestNewAdjustTimeFail(t *testing.T) {
 }
 
 func TestBalanceAt(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	expectedBal := big.NewInt(10000000000000000)
 	sim := simTestBackend(testAddr)
@@ -221,6 +226,7 @@ func TestBalanceAt(t *testing.T) {
 }
 
 func TestBlockByHash(t *testing.T) {
+	t.Parallel()
 	sim := NewSimulatedBackend(
 		core.GenesisAlloc{}, 10000000,
 	)
@@ -242,6 +248,7 @@ func TestBlockByHash(t *testing.T) {
 }
 
 func TestBlockByNumber(t *testing.T) {
+	t.Parallel()
 	sim := NewSimulatedBackend(
 		core.GenesisAlloc{}, 10000000,
 	)
@@ -277,6 +284,7 @@ func TestBlockByNumber(t *testing.T) {
 }
 
 func TestNonceAt(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 
 	sim := simTestBackend(testAddr)
@@ -330,6 +338,7 @@ func TestNonceAt(t *testing.T) {
 }
 
 func TestSendTransaction(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 
 	sim := simTestBackend(testAddr)
@@ -364,6 +373,7 @@ func TestSendTransaction(t *testing.T) {
 }
 
 func TestTransactionByHash(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 
 	sim := NewSimulatedBackend(
@@ -418,6 +428,7 @@ func TestTransactionByHash(t *testing.T) {
 }
 
 func TestEstimateGas(t *testing.T) {
+	t.Parallel()
 	/*
 		pragma solidity ^0.6.4;
 		contract GasEstimation {
@@ -537,6 +548,7 @@ func TestEstimateGas(t *testing.T) {
 }
 
 func TestEstimateGasWithPrice(t *testing.T) {
+	t.Parallel()
 	key, _ := crypto.GenerateKey()
 	addr := crypto.PubkeyToAddress(key.PublicKey)
 
@@ -627,6 +639,7 @@ func TestEstimateGasWithPrice(t *testing.T) {
 }
 
 func TestHeaderByHash(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 
 	sim := simTestBackend(testAddr)
@@ -648,6 +661,7 @@ func TestHeaderByHash(t *testing.T) {
 }
 
 func TestHeaderByNumber(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 
 	sim := simTestBackend(testAddr)
@@ -694,6 +708,7 @@ func TestHeaderByNumber(t *testing.T) {
 }
 
 func TestTransactionCount(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 
 	sim := simTestBackend(testAddr)
@@ -746,6 +761,7 @@ func TestTransactionCount(t *testing.T) {
 }
 
 func TestTransactionInBlock(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 
 	sim := simTestBackend(testAddr)
@@ -811,6 +827,7 @@ func TestTransactionInBlock(t *testing.T) {
 }
 
 func TestPendingNonceAt(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 
 	sim := simTestBackend(testAddr)
@@ -876,6 +893,7 @@ func TestPendingNonceAt(t *testing.T) {
 }
 
 func TestTransactionReceipt(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 
 	sim := simTestBackend(testAddr)
@@ -910,6 +928,7 @@ func TestTransactionReceipt(t *testing.T) {
 }
 
 func TestSuggestGasPrice(t *testing.T) {
+	t.Parallel()
 	sim := NewSimulatedBackend(
 		core.GenesisAlloc{},
 		10000000,
@@ -926,6 +945,7 @@ func TestSuggestGasPrice(t *testing.T) {
 }
 
 func TestPendingCodeAt(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	sim := simTestBackend(testAddr)
 	defer sim.Close()
@@ -962,6 +982,7 @@ func TestPendingCodeAt(t *testing.T) {
 }
 
 func TestCodeAt(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	sim := simTestBackend(testAddr)
 	defer sim.Close()
@@ -998,10 +1019,49 @@ func TestCodeAt(t *testing.T) {
 	}
 }
 
+func TestCodeAtHash(t *testing.T) {
+	t.Parallel()
+	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
+	sim := simTestBackend(testAddr)
+	defer sim.Close()
+	bgCtx := context.Background()
+	code, err := sim.CodeAtHash(bgCtx, testAddr, sim.Blockchain().CurrentHeader().Hash())
+	if err != nil {
+		t.Errorf("could not get code at test addr: %v", err)
+	}
+	if len(code) != 0 {
+		t.Errorf("got code for account that does not have contract code")
+	}
+
+	parsed, err := abi.JSON(strings.NewReader(abiJSON))
+	if err != nil {
+		t.Errorf("could not get code at test addr: %v", err)
+	}
+	auth, _ := bind.NewKeyedTransactorWithChainID(testKey, big.NewInt(1337))
+	contractAddr, tx, contract, err := bind.DeployContract(auth, parsed, common.FromHex(abiBin), sim)
+	if err != nil {
+		t.Errorf("could not deploy contract: %v tx: %v contract: %v", err, tx, contract)
+	}
+
+	blockHash := sim.Commit()
+	code, err = sim.CodeAtHash(bgCtx, contractAddr, blockHash)
+	if err != nil {
+		t.Errorf("could not get code at test addr: %v", err)
+	}
+	if len(code) == 0 {
+		t.Errorf("did not get code for account that has contract code")
+	}
+	// ensure code received equals code deployed
+	if !bytes.Equal(code, common.FromHex(deployedCode)) {
+		t.Errorf("code received did not match expected deployed code:\n expected %v\n actual %v", common.FromHex(deployedCode), code)
+	}
+}
+
 // When receive("X") is called with sender 0x00... and value 1, it produces this tx receipt:
 //
 //	receipt{status=1 cgas=23949 bloom=00000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000040200000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 logs=[log: b6818c8064f645cd82d99b59a1a267d6d61117ef [75fd880d39c1daf53b6547ab6cb59451fc6452d27caa90e5b6649dd8293b9eed] 000000000000000000000000376c47978271565f56deb45495afa69e59c16ab200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000000158 9ae378b6d4409eada347a5dc0c180f186cb62dc68fcc0f043425eb917335aa28 0 95d429d309bb9d753954195fe2d69bd140b4ae731b9b5b605c34323de162cf00 0]}
 func TestPendingAndCallContract(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	sim := simTestBackend(testAddr)
 	defer sim.Close()
@@ -1040,7 +1100,7 @@ func TestPendingAndCallContract(t *testing.T) {
 		t.Errorf("response from calling contract was expected to be 'hello world' instead received %v", string(res))
 	}
 
-	sim.Commit()
+	blockHash := sim.Commit()
 
 	// make sure you can call the contract
 	res, err = sim.CallContract(bgCtx, ethereum.CallMsg{
@@ -1048,6 +1108,23 @@ func TestPendingAndCallContract(t *testing.T) {
 		To:   &addr,
 		Data: input,
 	}, nil)
+	if err != nil {
+		t.Errorf("could not call receive method on contract: %v", err)
+	}
+	if len(res) == 0 {
+		t.Errorf("result of contract call was empty: %v", res)
+	}
+
+	if !bytes.Equal(res, expectedReturn) || !strings.Contains(string(res), "hello world") {
+		t.Errorf("response from calling contract was expected to be 'hello world' instead received %v", string(res))
+	}
+
+	// make sure you can call the contract by hash
+	res, err = sim.CallContractAtHash(bgCtx, ethereum.CallMsg{
+		From: testAddr,
+		To:   &addr,
+		Data: input,
+	}, blockHash)
 	if err != nil {
 		t.Errorf("could not call receive method on contract: %v", err)
 	}
@@ -1086,6 +1163,7 @@ contract Reverter {
 	}
 }*/
 func TestCallContractRevert(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	sim := simTestBackend(testAddr)
 	defer sim.Close()
@@ -1181,6 +1259,7 @@ func TestCallContractRevert(t *testing.T) {
 //     Since Commit() was called 2n+1 times in total,
 //     having a chain length of just n+1 means that a reorg occurred.
 func TestFork(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	sim := simTestBackend(testAddr)
 	defer sim.Close()
@@ -1234,6 +1313,7 @@ const callableBin = "6080604052348015600f57600080fd5b5060998061001e6000396000f3f
 //  9. Re-send the transaction and mine a block.
 //  10. Check that the event was reborn.
 func TestForkLogsReborn(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	sim := simTestBackend(testAddr)
 	defer sim.Close()
@@ -1307,6 +1387,7 @@ func TestForkLogsReborn(t *testing.T) {
 //  5. Mine a block, Re-send the transaction and mine another one.
 //  6. Check that the TX is now included in block 2.
 func TestForkResendTx(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	sim := simTestBackend(testAddr)
 	defer sim.Close()
@@ -1343,6 +1424,7 @@ func TestForkResendTx(t *testing.T) {
 }
 
 func TestCommitReturnValue(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	sim := simTestBackend(testAddr)
 	defer sim.Close()
@@ -1384,6 +1466,7 @@ func TestCommitReturnValue(t *testing.T) {
 // TestAdjustTimeAfterFork ensures that after a fork, AdjustTime uses the pending fork
 // block's parent rather than the canonical head's parent.
 func TestAdjustTimeAfterFork(t *testing.T) {
+	t.Parallel()
 	testAddr := crypto.PubkeyToAddress(testKey.PublicKey)
 	sim := simTestBackend(testAddr)
 	defer sim.Close()
