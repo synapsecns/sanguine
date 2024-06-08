@@ -135,4 +135,4 @@ issues:
         - cyclop
 
   exclude-use-default: false
-  new-from-rev: 5f8d480f4e3f1f2a318243a9924f50ec90ec4945
+  new-from-rev: a9a6f84f0569de877d06a027257aeca266aeda49
