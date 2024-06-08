@@ -1,11 +1,12 @@
 import {
-  prepareWriteContract,
-  waitForTransaction,
+  type SimulateContractParameters,
+  simulateContract,
+  waitForTransactionReceipt,
   writeContract,
 } from '@wagmi/core'
-import { TransactionReceipt } from 'viem'
 
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
+import { wagmiConfig } from '@/wagmiConfig'
 
 export const swapPoolAddLiquidity = async ({
   chainId,
@@ -42,10 +43,13 @@ export const swapPoolAddLiquidity = async ({
     pwcConfig = pwcBaseConfig
   }
 
-  const { request } = await prepareWriteContract(pwcConfig)
+  const { request } = await simulateContract(
+    wagmiConfig,
+    pwcConfig as SimulateContractParameters
+  )
 
-  const { hash } = await writeContract(request)
-  const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
+  const hash = await writeContract(wagmiConfig, request)
+  const txReceipt = await waitForTransactionReceipt(wagmiConfig, { hash })
 
   return txReceipt
 }

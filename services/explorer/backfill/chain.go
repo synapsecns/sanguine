@@ -31,6 +31,8 @@ type ChainBackfiller struct {
 	messageBusParser *parser.MessageBusParser
 	// cctpParser is the parser to use to parse cctp events.
 	cctpParser *parser.CCTPParser
+	// rfqParser is the parser to use to parse rfq events.
+	rfqParser *parser.RFQParser
 	// Fetcher is the Fetcher to use to fetch logs.
 	Fetcher fetcher.ScribeFetcher
 	// chainConfig is the chain config for the chain.
@@ -44,13 +46,14 @@ const (
 )
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, cctpParser *parser.CCTPParser, fetcher fetcher.ScribeFetcher, chainConfig indexerconfig.ChainConfig) *ChainBackfiller {
+func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, cctpParser *parser.CCTPParser, rfqParser *parser.RFQParser, fetcher fetcher.ScribeFetcher, chainConfig indexerconfig.ChainConfig) *ChainBackfiller {
 	return &ChainBackfiller{
 		consumerDB:       consumerDB,
 		bridgeParser:     bridgeParser,
 		swapParsers:      swapParsers,
 		messageBusParser: messageBusParser,
 		cctpParser:       cctpParser,
+		rfqParser:        rfqParser,
 		Fetcher:          fetcher,
 		chainConfig:      chainConfig,
 	}
@@ -132,6 +135,8 @@ func (c *ChainBackfiller) makeEventParser(contract indexerconfig.ContractConfig)
 		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
 	case indexerconfig.CCTPContractType:
 		eventParser = c.cctpParser
+	case indexerconfig.RFQContractType:
+		eventParser = c.rfqParser
 	}
 	return eventParser, nil
 }

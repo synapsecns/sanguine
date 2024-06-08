@@ -4,13 +4,19 @@ import * as all from '@constants/tokens/bridgeable'
 import * as allPool from '@constants/tokens/poolMaster'
 import { GMX, ETH, USDC, USDT, WETH } from '@constants/tokens/bridgeable'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
-import { Token } from '@utils/types'
+import { Chain, Token } from '@utils/types'
+
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 const allSwap = [WETH, USDC, USDT]
 
 // TODO change this to token by key
 interface TokensByChain {
   [cID: string]: Token[]
+}
+
+interface GasTokensByChain {
+  [chainId: string]: Chain['nativeCurrency'][]
 }
 
 interface TokenByKey {
@@ -93,6 +99,25 @@ export const TOKENS_SORTED_BY_SYMBOL = Array.from(
   new Set(sortedTokens.map((token) => token.symbol))
 )
 export const BRIDGABLE_TOKENS = getBridgeableTokens()
+
+const bridgeableTokens = _(BRIDGABLE_TOKENS)
+  .values()
+  .flatten()
+  .map((t) => t.symbol)
+  .value()
+
+export const NON_BRIDGEABLE_GAS_TOKENS: GasTokensByChain = Object.values(
+  CHAINS_BY_ID
+).reduce((acc, chain) => {
+  if (!bridgeableTokens.includes(chain.nativeCurrency.symbol)) {
+    if (acc[chain.id]) {
+      acc[chain.id].concat(chain.nativeCurrency)
+    } else {
+      acc[chain.id] = [chain.nativeCurrency]
+    }
+  }
+  return acc
+}, {})
 
 export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   if (chainId) {

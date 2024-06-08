@@ -1,77 +1,35 @@
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
-import { switchNetwork } from '@wagmi/core'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { switchChain } from '@wagmi/core'
+import { LoaderIcon } from 'react-hot-toast'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
-import { setFromChainId } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import {
-  getNetworkButtonBgClassNameActive,
-  getNetworkButtonBorderActive,
-  getNetworkButtonBorderHover,
-  getNetworkHover,
-} from '@/styles/chains'
-import { LoaderIcon } from 'react-hot-toast'
+import { setFromChainId } from '@/slices/bridge/reducer'
+import { getNetworkButtonBorderHover, getNetworkHover } from '@/styles/chains'
+import { joinClassNames } from '@/utils/joinClassNames'
+import { wagmiConfig } from '@/wagmiConfig'
+
+const Indicator = ({ className }) => (
+  <span
+    className={`w-2 h-2 rounded-full ${
+      className.match(/^border-/) ? `border` : ''
+    } ${className}`}
+  />
+)
 
 export const ConnectedIndicator = () => {
+  const className = joinClassNames({
+    flex: 'flex items-center gap-2',
+    space: 'px-3 py-1 rounded-full',
+    hover: 'hover:opacity-80',
+    font: 'text-sm',
+  })
   return (
-    <button
-      data-test-id="connected-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-lg
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        hover:cursor-default
-        h-8
-      `}
-    >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-green-500 rounded-full
-            `}
-        />
-        Connected
-      </div>
-    </button>
-  )
-}
-
-const DisconnectedIndicator = () => {
-  const { openConnectModal } = useConnectModal()
-  const { fromChainId } = useBridgeState()
-  const chain = CHAINS_BY_ID[fromChainId]
-
-  return (
-    <button
-      data-test-id="disconnected-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-md
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        h-8
-        ${getNetworkHover(chain?.color)}
-        ${getNetworkButtonBgClassNameActive(chain?.color)}
-        ${getNetworkButtonBorderActive(chain?.color)}
-        ${getNetworkButtonBorderHover(chain?.color)}
-      `}
-      onClick={openConnectModal}
-    >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-red-500 rounded-full
-            `}
-        />
-        Disconnected
-      </div>
+    <button data-test-id="connected-button" disabled className={className}>
+      <Indicator className="bg-green-500 dark:bg-green-400" />
+      Connected
     </button>
   )
 }
@@ -88,7 +46,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const handleConnectNetwork: () => Promise<void> = async () => {
     setIsConnecting(true)
     try {
-      await switchNetwork({ chainId: chainId }).then((success) => {
+      await switchChain(wagmiConfig, { chainId }).then((success) => {
         success && dispatch(setFromChainId(chainId))
         scrollToTop()
       })
@@ -97,45 +55,33 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
     }
   }
 
+  const className = joinClassNames({
+    flex: 'flex items-center gap-2',
+    space: 'px-3 py-1 rounded-full',
+    border: 'border border-transparent',
+    font: 'text-sm',
+    bgHover: getNetworkHover(chain?.color),
+    borderHover: getNetworkButtonBorderHover(chain?.color),
+    active: 'hover:active:opacity-80',
+  })
+
   return (
     <button
       data-test-id="connect-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-lg
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        h-8
-        ${getNetworkHover(chain?.color)}
-        ${getNetworkButtonBgClassNameActive(chain?.color)}
-        ${getNetworkButtonBorderActive(chain?.color)}
-        ${getNetworkButtonBorderHover(chain?.color)}
-      `}
+      className={className}
       onClick={handleConnectNetwork}
     >
       {isConnecting ? (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-green-300 border-solid rounded-full
-            `}
-          />
-          <div className="flex items-center space-x-2">
-            <div>Connecting</div>
-            <LoaderIcon />
-          </div>
-        </div>
+        <>
+          <Indicator className="border-green-500 dark:border-green-400" />
+          Connecting
+          <LoaderIcon />
+        </>
       ) : (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-indigo-300 border-solid rounded-full
-            `}
-          />
+        <>
+          <Indicator className="border-indigo-500 dark:border-indigo-300" />
           Switch Network
-        </div>
+        </>
       )}
     </button>
   )
@@ -149,6 +95,16 @@ export function ConnectWalletButton() {
     setClientReady(true)
   }, [])
 
+  const className = joinClassNames({
+    flex: 'flex items-center gap-2',
+    space: 'px-3 py-1 rounded-full',
+    border: 'border border-transparent',
+    hover:
+      'hover:bg-fuchsia-50 hover:border-fuchsia-500 hover:dark:bg-fuchsia-950',
+    font: 'text-sm',
+    active: 'active:opacity-80',
+  })
+
   return (
     <div data-test-id="">
       {clientReady && (
@@ -159,18 +115,8 @@ export function ConnectWalletButton() {
                 {(() => {
                   if (!mounted || !account || !chain || !address) {
                     return (
-                      <button
-                        className={`
-                          flex items-center text-sm text-white mr-2
-                        `}
-                        onClick={openConnectModal}
-                      >
-                        <div
-                          className={`
-                            my-auto ml-auto mr-2 text-transparent w-2 h-2
-                            border border-indigo-300 border-solid rounded-full
-                          `}
-                        />
+                      <button className={className} onClick={openConnectModal}>
+                        <Indicator className="border-fuchsia-500" />
                         Connect Wallet
                       </button>
                     )

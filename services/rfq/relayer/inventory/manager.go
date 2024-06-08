@@ -2,6 +2,7 @@ package inventory
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -45,10 +46,12 @@ type Manager interface {
 	// ApproveAllTokens approves all tokens for the relayer address.
 	ApproveAllTokens(ctx context.Context) error
 	// HasSufficientGas checks if there is sufficient gas for a given route.
-	HasSufficientGas(ctx context.Context, origin, dest int) (bool, error)
+	HasSufficientGas(ctx context.Context, chainID int, gasValue *big.Int) (bool, error)
 	// Rebalance checks whether a given token should be rebalanced, and
 	// executes the rebalance if necessary.
 	Rebalance(ctx context.Context, chainID int, token common.Address) error
+	// GetTokenMetadata gets the metadata for a token.
+	GetTokenMetadata(chainID int, token common.Address) (*TokenMetadata, error)
 }
 
 type inventoryManagerImpl struct {
@@ -72,7 +75,14 @@ type inventoryManagerImpl struct {
 	rebalanceManagers map[relconfig.RebalanceMethod]RebalanceManager
 	// db is the database
 	db reldb.Service
+	// meter is the metrics meter for this package
+	meter metric.Meter
+	// balanceGauge is the histogram for balance
+	balanceGauge metric.Float64ObservableGauge
 }
+
+// ErrUnsupportedChain is the error for an unsupported chain.
+var ErrUnsupportedChain = errors.New("could not get gas balance for unsupported chain")
 
 // GetCommittableBalance gets the committable balances.
 func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error) {
@@ -86,7 +96,7 @@ func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainI
 	if balance == nil && token == chain.EthAddress {
 		gasBalance, ok := i.gasBalances[chainID]
 		if !ok || gasBalance == nil {
-			return nil, fmt.Errorf("could not get gas balance for chain %d", chainID)
+			return nil, ErrUnsupportedChain
 		}
 		balance = i.gasBalances[chainID]
 	}
@@ -160,6 +170,7 @@ var (
 
 // TODO: replace w/ config.
 const defaultPollPeriod = 5
+const meterName = "github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 
 // NewInventoryManager creates a new inventory manager.
 // TODO: too many args here.
@@ -183,6 +194,10 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 		}
 	}
 
+	if err != nil {
+		return nil, fmt.Errorf("could not create balance gauge: %w", err)
+	}
+
 	i := inventoryManagerImpl{
 		relayerAddress:    relayer,
 		handler:           handler,
@@ -191,6 +206,17 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 		txSubmitter:       txSubmitter,
 		rebalanceManagers: rebalanceManagers,
 		db:                db,
+		meter:             handler.Meter(meterName),
+	}
+
+	i.balanceGauge, err = i.meter.Float64ObservableGauge("inventory_balance")
+	if err != nil {
+		return nil, fmt.Errorf("could not create balance gauge: %w", err)
+	}
+
+	_, err = i.meter.RegisterCallback(i.recordBalances, i.balanceGauge)
+	if err != nil {
+		return nil, fmt.Errorf("could not register callback: %w", err)
 	}
 
 	err = i.initializeTokens(ctx, cfg)
@@ -328,7 +354,20 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 }
 
 // approve submits an ERC20 approval for a given token and contract address.
-func (i *inventoryManagerImpl) approve(ctx context.Context, tokenAddr, contractAddr common.Address, backendClient client.EVM) (err error) {
+func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, contractAddr common.Address, backendClient client.EVM) (err error) {
+	ctx, span := i.handler.Tracer().Start(parentCtx, "approve", trace.WithAttributes(
+		attribute.String("token_address", tokenAddr.Hex()),
+		attribute.String("contract_address", contractAddr.Hex()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	if contractAddr == (common.Address{}) {
+		span.AddEvent("not approving to zero address")
+		return nil
+	}
+
 	erc20, err := ierc20.NewIERC20(tokenAddr, backendClient)
 	if err != nil {
 		return fmt.Errorf("could not get erc20: %w", err)
@@ -352,40 +391,57 @@ func (i *inventoryManagerImpl) approve(ctx context.Context, tokenAddr, contractA
 }
 
 // HasSufficientGas checks if there is sufficient gas for a given route.
-func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, dest int) (sufficient bool, err error) {
-	gasThresh, err := i.cfg.GetMinGasToken(dest)
+func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chainID int, gasValue *big.Int) (sufficient bool, err error) {
+	ctx, span := i.handler.Tracer().Start(parentCtx, "HasSufficientGas", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, chainID),
+	))
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
+	gasThreshRaw, err := i.cfg.GetMinGasToken(chainID)
 	if err != nil {
-		return false, fmt.Errorf("error getting min gas token: %w", err)
+		return false, fmt.Errorf("error getting min gas token on origin: %w", err)
 	}
-	gasOrigin, err := i.GetCommittableBalance(ctx, origin, chain.EthAddress)
+	gasThresh := core.CopyBigInt(gasThreshRaw)
+	if gasValue != nil {
+		gasThresh = new(big.Int).Add(gasThresh, gasValue)
+		span.SetAttributes(attribute.String("gas_value", gasValue.String()))
+	}
+
+	gasBalance, err := i.GetCommittableBalance(ctx, chainID, chain.EthAddress)
 	if err != nil {
 		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
 	}
-	gasDest, err := i.GetCommittableBalance(ctx, dest, chain.EthAddress)
-	if err != nil {
-		return false, fmt.Errorf("error getting committable gas on dest: %w", err)
-	}
 
-	sufficient = gasOrigin.Cmp(gasThresh) >= 0 && gasDest.Cmp(gasThresh) >= 0
+	sufficient = gasBalance.Cmp(gasThresh) >= 0
+	span.SetAttributes(
+		attribute.String("gas_threshold_raw", gasThreshRaw.String()),
+		attribute.String("gas_threshold", gasThresh.String()),
+		attribute.String("gas_balance", gasBalance.String()),
+		attribute.Bool("sufficient", sufficient),
+	)
 	return sufficient, nil
 }
 
 // Rebalance checks whether a given token should be rebalanced, and executes the rebalance if necessary.
 // Note that if there are multiple tokens whose balance is below the maintenance balance, only the lowest balance
 // will be rebalanced.
-func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) error {
-	// evaluate the rebalance method
-	method, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
+//
+//nolint:cyclop
+func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) (err error) {
+	// short circuit if origin does not specify a rebalance method
+	methodOrigin, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
 	if err != nil {
-		return fmt.Errorf("could not get rebalance method: %w", err)
+		return fmt.Errorf("could not get origin rebalance method: %w", err)
 	}
-	if method == relconfig.RebalanceMethodNone {
+	if methodOrigin == relconfig.RebalanceMethodNone {
 		return nil
 	}
+
 	ctx, span := i.handler.Tracer().Start(parentCtx, "Rebalance", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, chainID),
 		attribute.String("token", token.Hex()),
-		attribute.String("rebalance_method", method.String()),
 	))
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
@@ -406,19 +462,20 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	)
 
 	// make sure there are no pending rebalances that touch the given path
-	pending, err := i.db.HasPendingRebalance(ctx, uint64(rebalance.OriginMetadata.ChainID), uint64(rebalance.DestMetadata.ChainID))
+	pendingRebalances, err := i.db.GetPendingRebalances(ctx, uint64(rebalance.OriginMetadata.ChainID), uint64(rebalance.DestMetadata.ChainID))
 	if err != nil {
 		return fmt.Errorf("could not check pending rebalance: %w", err)
 	}
+	pending := len(pendingRebalances) > 0
 	span.SetAttributes(attribute.Bool("rebalance_pending", pending))
 	if pending {
 		return nil
 	}
 
 	// execute the rebalance
-	manager, ok := i.rebalanceManagers[method]
+	manager, ok := i.rebalanceManagers[rebalance.Method]
 	if !ok {
-		return fmt.Errorf("no rebalance manager for method: %s", method)
+		return fmt.Errorf("no rebalance manager for method: %s", methodOrigin)
 	}
 	err = manager.Execute(ctx, rebalance)
 	if err != nil {
@@ -427,104 +484,14 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	return nil
 }
 
-//nolint:cyclop,gocognit
-func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
-	maintenancePct, err := cfg.GetMaintenanceBalancePct(chainID, token.Hex())
-	if err != nil {
-		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
+func (i *inventoryManagerImpl) GetTokenMetadata(chainID int, token common.Address) (*TokenMetadata, error) {
+	i.mux.RLock()
+	defer i.mux.RUnlock()
+	tokenData, ok := i.tokens[chainID][token]
+	if !ok {
+		return nil, fmt.Errorf("token not found")
 	}
-
-	// get token metadata
-	var rebalanceTokenData *TokenMetadata
-	for address, tokenData := range tokens[chainID] {
-		if address == token {
-			rebalanceTokenData = tokenData
-			break
-		}
-	}
-
-	// get total balance for given token across all chains
-	totalBalance := big.NewInt(0)
-	for _, tokenMap := range tokens {
-		for _, tokenData := range tokenMap {
-			if tokenData.Name == rebalanceTokenData.Name {
-				totalBalance.Add(totalBalance, tokenData.Balance)
-			}
-		}
-	}
-
-	// check if any balances are below maintenance threshold
-	var minTokenData, maxTokenData *TokenMetadata
-	for _, tokenMap := range tokens {
-		for _, tokenData := range tokenMap {
-			if tokenData.Name == rebalanceTokenData.Name {
-				if minTokenData == nil || tokenData.Balance.Cmp(minTokenData.Balance) < 0 {
-					minTokenData = tokenData
-				}
-				if maxTokenData == nil || tokenData.Balance.Cmp(maxTokenData.Balance) > 0 {
-					maxTokenData = tokenData
-				}
-			}
-		}
-	}
-
-	// get the initialPct for the origin chain
-	initialPct, err := cfg.GetInitialBalancePct(maxTokenData.ChainID, maxTokenData.Addr.Hex())
-	if err != nil {
-		return nil, fmt.Errorf("could not get initial pct: %w", err)
-	}
-	maintenanceThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePct/100)).Int(nil)
-	if span != nil {
-		span.SetAttributes(attribute.Float64("maintenance_pct", maintenancePct))
-		span.SetAttributes(attribute.Float64("initial_pct", initialPct))
-		span.SetAttributes(attribute.String("max_token_balance", maxTokenData.Balance.String()))
-		span.SetAttributes(attribute.String("min_token_balance", minTokenData.Balance.String()))
-		span.SetAttributes(attribute.String("total_balance", totalBalance.String()))
-		span.SetAttributes(attribute.String("maintenance_thresh", maintenanceThresh.String()))
-	}
-
-	// check if the minimum balance is below the threshold and trigger rebalance
-	if minTokenData.Balance.Cmp(maintenanceThresh) > 0 {
-		return rebalance, nil
-	}
-
-	// calculate the amount to rebalance vs the initial threshold on origin
-	initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
-	amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
-
-	// no need to rebalance since amount would not be positive
-	if amount.Cmp(big.NewInt(0)) <= 0 {
-		//nolint:nilnil
-		return nil, nil
-	}
-
-	// filter the rebalance amount by the configured min
-	minAmount := cfg.GetMinRebalanceAmount(maxTokenData.ChainID, maxTokenData.Addr)
-	if amount.Cmp(minAmount) < 0 {
-		// no need to rebalance
-		//nolint:nilnil
-		return nil, nil
-	}
-
-	// clip the rebalance amount by the configured max
-	maxAmount := cfg.GetMaxRebalanceAmount(maxTokenData.ChainID, maxTokenData.Addr)
-	if amount.Cmp(maxAmount) > 0 {
-		amount = maxAmount
-	}
-	if span != nil {
-		span.SetAttributes(
-			attribute.String("initial_thresh", initialThresh.String()),
-			attribute.String("rebalance_amount", amount.String()),
-			attribute.String("max_rebalance_amount", maxAmount.String()),
-		)
-	}
-
-	rebalance = &RebalanceData{
-		OriginMetadata: maxTokenData,
-		DestMetadata:   minTokenData,
-		Amount:         amount,
-	}
-	return rebalance, nil
+	return tokenData, nil
 }
 
 // initializeTokens converts the configuration into a data structure we can use to determine inventory
@@ -541,20 +508,17 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 		metrics.EndSpanWithErr(span, err)
 	}(err)
 
-	meter := i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
-
 	// TODO: this needs to be a struct bound variable otherwise will be stuck.
 	i.tokens = make(map[int]map[common.Address]*TokenMetadata)
 	i.gasBalances = make(map[int]*big.Int)
 
-	type registerCall func() error
 	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
 	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
-	var deferredRegisters []registerCall
 	deferredCalls := make(map[int][]w3types.Caller)
 
 	// iterate through all tokens to get the metadata
-	for chainID, chainCfg := range cfg.GetChains() {
+	for cid, chainCfg := range cfg.GetChains() {
+		chainID := cid // capture func literal
 		i.tokens[chainID] = map[common.Address]*TokenMetadata{}
 
 		// set up balance fetching for this chain's gas token
@@ -619,12 +583,6 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 					)
 				}
 			}
-
-			chainID := chainID // capture func literal
-			deferredRegisters = append(deferredRegisters, func() error {
-				//nolint:wrapcheck
-				return i.registerMetric(meter, chainID, token)
-			})
 		}
 	}
 
@@ -658,13 +616,6 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 		return fmt.Errorf("could not get tx: %w", err)
 	}
 
-	for _, register := range deferredRegisters {
-		err = register()
-		if err != nil {
-			return fmt.Errorf("could not register func: %w", err)
-		}
-	}
-
 	return nil
 }
 
@@ -677,7 +628,10 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	var wg sync.WaitGroup
 	wg.Add(len(i.tokens))
 
-	for chainID, tokenMap := range i.tokens {
+	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
+	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
+	for cid, tokenMap := range i.tokens {
+		chainID := cid // capture func literal
 		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
@@ -689,14 +643,14 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		}
 
 		// queue token balance fetches
-		for tokenAddress, token := range tokenMap {
+		for ta, token := range tokenMap {
+			tokenAddress := ta // capture func literal
 			// TODO: make sure Returns does nothing on error
 			if !token.IsGasToken {
 				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.Balance))
 			}
 		}
 
-		chainID := chainID // capture func literal
 		go func() {
 			defer wg.Done()
 			err = chainClient.BatchWithContext(ctx, deferredCalls...)
@@ -706,37 +660,35 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		}()
 	}
 	wg.Wait()
+
 	return nil
 }
 
-func (i *inventoryManagerImpl) registerMetric(meter metric.Meter, chainID int, token common.Address) error {
-	balanceGauge, err := meter.Float64ObservableGauge("inventory_balance")
-	if err != nil {
-		return fmt.Errorf("could not create gauge: %w", err)
-	}
-
-	if _, err := meter.RegisterCallback(func(ctx context.Context, observer metric.Observer) error {
-		i.mux.RLock()
-		defer i.mux.RUnlock()
-
-		// TODO: make sure this doesn't get called until we're done
-		tokenData, ok := i.tokens[chainID][token]
-		if !ok {
-			return fmt.Errorf("could not find token in chainTokens for chainID: %d, token: %s", chainID, token)
-		}
-
-		attributes := attribute.NewSet(attribute.Int(metrics.ChainID, chainID), attribute.String("relayer_address", i.relayerAddress.String()),
-			attribute.String("token_name", tokenData.Name), attribute.Int("decimals", int(tokenData.Decimals)),
-			attribute.String("token_address", token.String()))
-
-		observer.ObserveFloat64(balanceGauge, core.BigToDecimals(tokenData.Balance, tokenData.Decimals), metric.WithAttributeSet(attributes))
-
+func (i *inventoryManagerImpl) recordBalances(ctx context.Context, observer metric.Observer) (err error) {
+	if i.meter == nil || i.balanceGauge == nil {
 		return nil
-	}, balanceGauge); err != nil {
-		return fmt.Errorf("could not register callback: %w", err)
 	}
+
+	i.mux.RLock()
+	defer i.mux.RUnlock()
+
+	for chainID, tokens := range i.tokens {
+		for token, tokenData := range tokens {
+			opts := metric.WithAttributes(
+				attribute.Int(metrics.ChainID, chainID),
+				attribute.String("relayer_address", i.relayerAddress.String()),
+				attribute.String("token_name", tokenData.Name),
+				attribute.Int("decimals", int(tokenData.Decimals)),
+				attribute.String("token_address", token.String()),
+				attribute.String("raw_balance", tokenData.Balance.String()),
+				attribute.String("relayer", i.relayerAddress.Hex()),
+			)
+
+			// Convert the balance and record it
+			decimalBalance := core.BigToDecimals(tokenData.Balance, tokenData.Decimals)
+			observer.ObserveFloat64(i.balanceGauge, decimalBalance, opts)
+		}
+	}
+
 	return nil
 }
-
-// Ultimately this should produce a list of all balances and remove the
-// quoted amounts from the database

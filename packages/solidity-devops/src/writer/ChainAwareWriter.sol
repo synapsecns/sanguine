@@ -11,29 +11,11 @@ abstract contract ChainAwareWriter is ChainAwareness, DataWriter {
 
     /// @notice Writes the deployment JSON for a contract on the active chain under the specified alias.
     /// Example: contractName = "LinkedPool", contractAlias = "LinkedPool.USDC"
-    /// Note: writes to the FRESH deployment path, which is moved to the correct location after the contract is deployed.
-    /// Note: requires ffi to be turned on, and jq to be installed.
-    function writeDeploymentArtifact(
-        string memory contractName,
-        string memory contractAlias,
-        string memory artifactWithoutABI
-    )
-        internal
-    {
-        writeDeploymentArtifact(activeChain, contractName, contractAlias, artifactWithoutABI);
-    }
-
-    /// @notice Writes the deployment JSON for a contract on the active chain under the specified alias.
-    /// Example: contractName = "LinkedPool", contractAlias = "LinkedPool.USDC"
-    /// Note: writes to the FRESH deployment path, which is moved to the correct location after the contract is deployed.
-    /// Note: will not include the ABI in the output JSON. Unlike `writeDeploymentArtifact`, has no dependencies.
-    function writeDeploymentArtifactWithoutABI(
-        string memory contractAlias,
-        string memory artifactWithoutABI
-    )
-        internal
-    {
-        writeDeploymentArtifactWithoutABI(activeChain, contractAlias, artifactWithoutABI);
+    /// Note: writes the JSON file to the FRESH deployments directory. The written file needs to be moved
+    /// to the correct location outside of the deployment script.
+    /// Note: will not include the ABI in the output JSON.
+    function writeDeploymentArtifact(string memory contractAlias, string memory artifact) internal {
+        writeDeploymentArtifact(activeChain, contractAlias, artifact);
     }
 
     /// @notice Writes the deploy config for a contract on the active chain.

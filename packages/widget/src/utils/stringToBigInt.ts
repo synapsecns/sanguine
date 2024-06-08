@@ -32,6 +32,6 @@ export const stringToBigInt = (rawVal: string, rawDecimals: number) => {
 
     return wholeBigInt + fractionalBigInt
   } catch (error) {
-    console.log(error)
+    console.error('[Synapse Widget] Error converting string to bigint: ', error)
   }
 }

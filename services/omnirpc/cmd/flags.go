@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"github.com/urfave/cli/v2"
 	"os"
 	"path/filepath"
+
+	"github.com/urfave/cli/v2"
 )
 
 var chainIDFlag = &cli.IntFlag{
@@ -15,6 +16,12 @@ var chainIDFlag = &cli.IntFlag{
 var portFlag = &cli.IntFlag{
 	Name:  "port",
 	Usage: "port to run the omniproxy on",
+}
+
+var maxSubmitAhead = &cli.IntFlag{
+	Name:  "max-submit-ahead",
+	Usage: "max number of blocks to submit ahead",
+	Value: 0,
 }
 
 // set the default dir to the users home path/omnirpc.yaml.
@@ -46,4 +53,14 @@ var rpcFlag = &cli.StringFlag{
 	Usage: "rpc url to rewrite requests from",
 	// --rpc-url is used by cast so we alias it here.
 	Aliases: []string{"rpc-url"},
+}
+
+var backupRPCFlag = &cli.StringFlag{
+	Name:  "backup-rpc",
+	Usage: "backup rpc url to use if the primary rpc fails",
+}
+
+var recieptsTimeoutFlag = &cli.DurationFlag{
+	Name:  "receipts-timeout",
+	Usage: "timeout to use for hanging receipts requests",
 }

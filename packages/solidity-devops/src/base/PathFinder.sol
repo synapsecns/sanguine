@@ -11,6 +11,7 @@ abstract contract PathFinder is CommonBase {
     using stdJson for string;
 
     string private constant DEFAULT_DEVOPS_CONFIG = "./devops.json";
+    string internal constant ENVIRONMENT_PROD = "";
 
     string private devopsConfig;
 
@@ -32,7 +33,7 @@ abstract contract PathFinder is CommonBase {
     // ═══════════════════════════════════════════════ PATH GETTERS ════════════════════════════════════════════════════
 
     /// @dev Path to the devops.json file. Could be overridden if the location of the file is different.
-    function getDevopsConfigPath() internal view virtual returns (string memory) {
+    function getDevopsConfigPath() internal pure virtual returns (string memory) {
         return DEFAULT_DEVOPS_CONFIG;
     }
 
@@ -112,16 +113,18 @@ abstract contract PathFinder is CommonBase {
     }
 
     /// @notice Returns the path to the global config JSON that is shared across all chains for a contract.
-    /// Example: "script/configs/global/SynapseCCTP.chains.json", "script/configs/global/SynapseCCTP.json"
+    /// We expect different environments to exist, therefore the following pattern is used:
+    /// - For a production environment, the environment param is empty, e.g. "script/configs/global/SynapseCCTP.json"
+    /// - For a testnet, the environment param is "testnet", e.g. "script/configs/global/testnet/SynapseCCTP.json"
     function getGlobalDeployConfigFN(
         string memory contractName,
-        string memory globalProperty
+        string memory environment
     )
         internal
         view
         returns (string memory)
     {
-        string memory extension = globalProperty.length() == 0 ? "json" : globalProperty.concat(".json");
-        return getGlobalDeployConfigPath().concat(contractName, ".", extension);
+        string memory environmentDir = environment.equals(ENVIRONMENT_PROD) ? "" : environment.concat("/");
+        return getGlobalDeployConfigPath().concat(environmentDir, contractName, ".json");
     }
 }

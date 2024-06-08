@@ -48,6 +48,6 @@ export const formatBigIntToString = (
 
     return str
   } catch (error) {
-    console.log(`error`, error)
+    console.error(`[Synapse Widget] Error converting bigint to string: `, error)
   }
 }

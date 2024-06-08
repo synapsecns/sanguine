@@ -40,13 +40,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # TODO: this can be shorter, maybe 500-1,000? This may be slower (see: https://github.com/CocoaPods/CocoaPods/issues/4989#issuecomment-193772935)
           fetch-depth: 0
-          # TODO: is this neccesary?
-          submodules: 'recursive'
 
       # note: after this action is pushed, whatever this ends up being should go back to latest.
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:07a4696bbbafbba2d3ad7ee828b4c8adb21b4d20
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go
         with:
           github_token: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
@@ -526,18 +523,18 @@ jobs:
       # Foundry is required for flattening
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
         with:
           version: nightly
 
       - name: Install Node Dependencies
         run: yarn install --immutable
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
 
       # Generate flattened files
       - name: Run flattener
         run: npx lerna exec npm run build:go
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
 
       # Setup Go
       - uses: actions/setup-go@v4

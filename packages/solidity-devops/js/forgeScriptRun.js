@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 const fs = require('fs')
 
-const { readChainSpecificOptions, logWallet } = require('./utils/chain.js')
+const {
+  readChainSpecificOptions,
+  logWallet,
+  isVerifierEnabled,
+} = require('./utils/chain.js')
 const {
   createDeploymentDirs,
-  getConfirmedFreshDeployment,
   getNewDeployments,
   getNewDeploymentReceipts,
-  saveDeploymentArtifact,
+  saveNewDeployment,
 } = require('./utils/deployments.js')
 const { loadEnv } = require('./utils/env.js')
 const { forgeScript } = require('./utils/forge.js')
@@ -26,7 +29,7 @@ loadEnv()
 const { positionalArgs, options } = parseCommandLineArgs({
   requiredArgsCount: 3,
   usage:
-    'Usage: "yarn fsr <path-to-script> <chain-name> <wallet-name> [<options>]"',
+    'Usage: "npx fsr <path-to-script> <chain-name> <wallet-name> [<options>]"',
 })
 const [scriptFN, chainName, walletName] = positionalArgs
 assertCondition(
@@ -43,7 +46,7 @@ let forgeOptions = addOptions(
 )
 forgeOptions = addOptions(forgeOptions, readChainSpecificOptions(chainName))
 forgeOptions = addOptions(forgeOptions, options)
-if (isBroadcast) {
+if (isBroadcast && isVerifierEnabled(chainName)) {
   forgeOptions = addVerifyOptions(forgeOptions)
 }
 
@@ -56,21 +59,6 @@ if (newDeployments.length === 0) {
   process.exit(0)
 }
 const newReceipts = getNewDeploymentReceipts(chainName, scriptFN)
-newDeployments.forEach((contractAlias) => {
-  const artifact = getConfirmedFreshDeployment(chainName, contractAlias)
-  if (!artifact) {
-    return
-  }
-  // Find the matching receipt
-  const receipt = newReceipts.find((r) => r.address === artifact.address)
-  if (!receipt) {
-    logInfo(`No receipt found for ${contractAlias} at ${artifact.address}`)
-    return
-  }
-  // Add receipt.hash and receipt.blockNumber to the artifact, but don't add receipt.address
-  artifact.receipt = {
-    hash: receipt.hash,
-    blockNumber: receipt.blockNumber,
-  }
-  saveDeploymentArtifact(chainName, contractAlias, artifact)
-})
+newDeployments.forEach((contractAlias) =>
+  saveNewDeployment(chainName, contractAlias, newReceipts)
+)

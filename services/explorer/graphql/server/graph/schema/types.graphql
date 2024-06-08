@@ -178,6 +178,7 @@ type DateResultByChain {
   dogechain: Float
   base: Float
   blast: Float
+  scroll: Float
   total:  Float
 }
 
@@ -218,6 +219,7 @@ type Leaderboard {
 enum BridgeType{
   BRIDGE
   CCTP
+  RFQ
 }
 
 enum KappaStatus{
@@ -234,6 +236,7 @@ input ContractQuery {
 enum ContractType{
   BRIDGE
   CCTP
+  RFQ
 }
 
 type BlockHeight {

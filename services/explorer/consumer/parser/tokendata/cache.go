@@ -26,6 +26,13 @@ type Service interface {
 	GetCCTPTokenData(ctx context.Context, chainID uint32, token common.Address, cctpService fetcher.CCTPService) (ImmutableTokenData, error)
 }
 
+// TokenData is the data for a token -- specifically used for searching the token data map for Synapse X tokens not in the contract config.
+type TokenData struct {
+	TokenID      string
+	Decimals     uint8
+	TokenAddress string
+}
+
 const cacheSize = 3000
 
 // maxAttemptTime is how many times we will attempt to get the token data.
@@ -57,37 +64,16 @@ func NewTokenDataService(service fetcher.Service, tokenSymbolToIDs map[string]st
 
 // GetTokenData attempts to get token data from the cache otherwise it is fetched from the bridge config.
 func (t *tokenDataServiceImpl) GetTokenData(ctx context.Context, chainID uint32, token common.Address) (ImmutableTokenData, error) {
-	// Hotfix for tokens not on bridge config.
-	// Handle CRVUSDC
-	if chainID == 8453 && token.String() == "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93" {
-		return immutableTokenImpl{
-			tokenID:      "crvUSD",
-			decimals:     18,
-			tokenAddress: "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93",
-		}, nil
-	}
-
-	// Handle USDbC
-	if chainID == 8453 && token.String() == "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA" {
-		return immutableTokenImpl{
-			tokenID:      "USDbC",
-			decimals:     6,
-			tokenAddress: "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
-		}, nil
-	}
-	if chainID == 8453 && token.String() == "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb" {
-		return immutableTokenImpl{
-			tokenID:      "DAI",
-			decimals:     18,
-			tokenAddress: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
-		}, nil
-	}
-	if chainID == 10 && token.String() == "0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9" {
-		return immutableTokenImpl{
-			tokenID:      "sUSD",
-			decimals:     18,
-			tokenAddress: "0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9",
-		}, nil
+	// Fix for tokens not in the config or cache (typically SynapseX)
+	mapKey := fmt.Sprintf("%d_%s", chainID, token.String())
+	if tokenData, ok := tokenDataMap[mapKey]; ok {
+		immutableData := immutableTokenImpl{
+			tokenID:      tokenData.TokenID,
+			decimals:     tokenData.Decimals,
+			tokenAddress: tokenData.TokenAddress,
+		}
+		t.tokenCache.Add(mapKey, immutableData)
+		return immutableData, nil
 	}
 	key := fmt.Sprintf("token_%d_%s", chainID, token.Hex())
 	if data, ok := t.tokenCache.Get(key); ok {
@@ -106,30 +92,16 @@ func (t *tokenDataServiceImpl) GetTokenData(ctx context.Context, chainID uint32,
 
 // GetPoolTokenData attempts to get pool token data from the cache otherwise it is fetched from the erc20 interface for that token.
 func (t *tokenDataServiceImpl) GetPoolTokenData(ctx context.Context, chainID uint32, token common.Address, swapService fetcher.SwapService) (ImmutableTokenData, error) {
-	// Hotfix for tokens not on bridge config.
-	// Handle CRVUSDC
-	if chainID == 8453 && token.String() == "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93" {
-		return immutableTokenImpl{
-			tokenID:      "crvUSD",
-			decimals:     18,
-			tokenAddress: "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93",
-		}, nil
-	}
-
-	// Handle USDbC
-	if chainID == 8453 && token.String() == "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA" {
-		return immutableTokenImpl{
-			tokenID:      "USDbC",
-			decimals:     6,
-			tokenAddress: "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
-		}, nil
-	}
-	if chainID == 8453 && token.String() == "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb" {
-		return immutableTokenImpl{
-			tokenID:      "DAI",
-			decimals:     18,
-			tokenAddress: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
-		}, nil
+	// Fix for tokens not in the config or cache (typically SynapseX)
+	mapKey := fmt.Sprintf("%d_%s", chainID, token.String())
+	if tokenData, ok := tokenDataMap[mapKey]; ok {
+		immutableData := immutableTokenImpl{
+			tokenID:      tokenData.TokenID,
+			decimals:     tokenData.Decimals,
+			tokenAddress: tokenData.TokenAddress,
+		}
+		t.tokenCache.Add(mapKey, immutableData)
+		return immutableData, nil
 	}
 	key := fmt.Sprintf("token_%d_%s", chainID, token.Hex())
 	if data, ok := t.tokenCache.Get(key); ok {
@@ -148,30 +120,16 @@ func (t *tokenDataServiceImpl) GetPoolTokenData(ctx context.Context, chainID uin
 
 // GetCCTPTokenData attempts to get cctp token data from the cache otherwise it is fetched using the cctp ref.
 func (t *tokenDataServiceImpl) GetCCTPTokenData(ctx context.Context, chainID uint32, token common.Address, cctpService fetcher.CCTPService) (ImmutableTokenData, error) {
-	// Hotfix for tokens not on bridge config.
-	// Handle CRVUSDC
-	if chainID == 8453 && token.String() == "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93" {
-		return immutableTokenImpl{
-			tokenID:      "crvUSD",
-			decimals:     18,
-			tokenAddress: "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93",
-		}, nil
-	}
-
-	// Handle USDbC
-	if chainID == 8453 && token.String() == "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA" {
-		return immutableTokenImpl{
-			tokenID:      "USDbC",
-			decimals:     6,
-			tokenAddress: "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
-		}, nil
-	}
-	if chainID == 8453 && token.String() == "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb" {
-		return immutableTokenImpl{
-			tokenID:      "DAI",
-			decimals:     18,
-			tokenAddress: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
-		}, nil
+	// Fix for tokens not in the config or cache (typically SynapseX)
+	mapKey := fmt.Sprintf("%d_%s", chainID, token.String())
+	if tokenData, ok := tokenDataMap[mapKey]; ok {
+		immutableData := immutableTokenImpl{
+			tokenID:      tokenData.TokenID,
+			decimals:     tokenData.Decimals,
+			tokenAddress: tokenData.TokenAddress,
+		}
+		t.tokenCache.Add(mapKey, immutableData)
+		return immutableData, nil
 	}
 	key := fmt.Sprintf("token_%d_%s", chainID, token.Hex())
 	if data, ok := t.tokenCache.Get(key); ok {
@@ -315,4 +273,19 @@ func (t *tokenDataServiceImpl) retrieveCCTPTokenData(parentCtx context.Context, 
 	res.tokenAddress = tokenAddress.String()
 
 	return res, nil
+}
+
+var tokenDataMap = map[string]TokenData{
+	"1_0x5f98805A4E8be255a32880FDeC7F6728C6568bA0":     {"LUSD", 18, "0x5f98805A4E8be255a32880FDeC7F6728C6568bA0"},
+	"1_0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E":     {"crvUSD", 18, "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"},
+	"8453_0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93":  {"crvUSD", 18, "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93"},
+	"8453_0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA":  {"USDbC", 6, "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA"},
+	"1_0x853d955acef822db058eb8505911ed77f175b99e":     {"FRAX", 18, "0x853d955acef822db058eb8505911ed77f175b99e"},
+	"42161_0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F": {"FRAX", 18, "0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F"},
+	"137_0x45c32fA6DF82ead1e2EF74d17b76547EDdFaFF89":   {"FRAX", 18, "0x45c32fA6DF82ead1e2EF74d17b76547EDdFaFF89"},
+	"10_0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9":    {"sUSD", 18, "0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9"},
+	"8453_0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb":  {"DAI", 18, "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb"},
+	"1_0xAdF7C35560035944e805D98fF17d58CDe2449389":     {"SPEC", 18, "0xAdF7C35560035944e805D98fF17d58CDe2449389"},
+	"8453_0x96419929d7949D6A801A6909c145C8EEf6A40431":  {"SPEC", 18, "0x96419929d7949D6A801A6909c145C8EEf6A40431"},
+	// Add additional tokens that are not part of the cache yet (and not by nature in bridge config) here
 }

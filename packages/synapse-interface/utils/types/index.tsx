@@ -7,7 +7,6 @@ export type Chain = {
   chainSymbol: string
   name: string
   altName?: string
-  codeName: string
   chainImg: any
   layer: number
   rpcUrls: { primary: string; fallback: string }
@@ -15,9 +14,16 @@ export type Chain = {
   explorerName: string
   explorerImg: any
   blockTime: number
-  nativeCurrency: { name: string; symbol: string; decimals: number }
+  nativeCurrency: {
+    name: string
+    symbol: string
+    decimals: number
+    address: string
+    icon: any
+  }
   priorityRank?: number
   color?: string
+  isNew?: boolean
 }
 export type PoolToken = {
   symbol: string
@@ -127,6 +133,8 @@ export type BridgeWatcherTx = {
   toAddress: string
   contractEmittedFrom: string
 }
+
+export type ActionTypes = 'Bridge' | 'Swap'
 
 // TODO
 // Clean up this file as swap and pools get implemented in the sdk and more clarity on the types needed are defined

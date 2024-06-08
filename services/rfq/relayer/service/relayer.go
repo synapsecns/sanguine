@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ipfs/go-log"
 	"github.com/jellydator/ttlcache/v3"
+	"github.com/puzpuzpuz/xsync/v2"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/listener"
@@ -20,6 +21,7 @@ import (
 	cctpSql "github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
@@ -28,7 +30,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
-	"github.com/synapsecns/sanguine/services/scribe/client"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -40,11 +41,13 @@ type Relayer struct {
 	client         omniClient.RPCClient
 	chainListeners map[int]listener.ContractListener
 	apiServer      *relapi.RelayerAPIServer
+	apiClient      rfqAPIClient.AuthenticatedClient
 	inventory      inventory.Manager
 	quoter         quoter.Quoter
 	submitter      submitter.TransactionSubmitter
 	signer         signer.Signer
 	claimCache     *ttlcache.Cache[common.Hash, bool]
+	decimalsCache  *xsync.MapOf[string, *uint8]
 }
 
 var logger = log.Logger("relayer")
@@ -109,7 +112,12 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	priceFetcher := pricer.NewCoingeckoPriceFetcher(cfg.GetHTTPTimeout())
 	fp := pricer.NewFeePricer(cfg, omniClient, priceFetcher, metricHandler)
 
-	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp)
+	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricHandler, cfg.GetRfqAPIURL(), sg)
+	if err != nil {
+		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
+	}
+
+	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp, apiClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not get quoter")
 	}
@@ -126,12 +134,14 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		quoter:         q,
 		metrics:        metricHandler,
 		claimCache:     cache,
+		decimalsCache:  xsync.NewMapOf[*uint8](),
 		cfg:            cfg,
 		inventory:      im,
 		submitter:      sm,
 		signer:         sg,
 		chainListeners: chainListeners,
 		apiServer:      apiServer,
+		apiClient:      apiClient,
 	}
 	return &rel, nil
 }
@@ -271,10 +281,9 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)
 	}
-	scribeClient := client.NewRemoteScribe(uint16(cctpCfg.ScribePort), cctpCfg.ScribeURL, r.metrics).ScribeClient
 	omnirpcClient := omniClient.NewOmnirpcClient(cctpCfg.BaseOmnirpcURL, r.metrics, omniClient.WithCaptureReqRes())
 	attAPI := attestation.NewCircleAPI(cctpCfg.CircleAPIURl)
-	cctpRelayer, err := relayer.NewCCTPRelayer(ctx, *cctpCfg, store, scribeClient, omnirpcClient, r.metrics, attAPI)
+	cctpRelayer, err := relayer.NewCCTPRelayer(ctx, *cctpCfg, store, omnirpcClient, r.metrics, attAPI, relayer.WithSubmitter(r.submitter))
 	if err != nil {
 		return fmt.Errorf("could not create cctp relayer: %w", err)
 	}
@@ -288,7 +297,12 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	return nil
 }
 
-func (r *Relayer) processDB(ctx context.Context) error {
+func (r *Relayer) processDB(parentCtx context.Context) (err error) {
+	ctx, span := r.metrics.Tracer().Start(parentCtx, "processDB")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayCompleted, reldb.ProvePosted, reldb.NotEnoughInventory)
 	if err != nil {
 		return fmt.Errorf("could not get quote results: %w", err)

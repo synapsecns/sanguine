@@ -153,6 +153,7 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     dogechain
     base
     blast
+    scroll
     total
   }
 }

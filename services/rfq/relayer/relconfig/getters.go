@@ -13,13 +13,14 @@ import (
 
 // DefaultChainConfig is the default chain config.
 var DefaultChainConfig = ChainConfig{
-	DeadlineBufferSeconds: 600,
-	OriginGasEstimate:     160000,
-	DestGasEstimate:       100000,
-	MinGasToken:           "100000000000000000", // 1 ETH
-	QuotePct:              100,
-	QuoteOffsetBps:        0,
-	FixedFeeMultiplier:    1,
+	DeadlineBufferSeconds:   600,
+	OriginGasEstimate:       160000,
+	DestGasEstimate:         100000,
+	MinGasToken:             "100000000000000000", // 1 ETH
+	QuotePct:                100,
+	QuoteWidthBps:           0,
+	QuoteFixedFeeMultiplier: 1,
+	RelayFixedFeeMultiplier: 1,
 }
 
 // getChainConfigValue gets the value of a field from ChainConfig.
@@ -276,36 +277,78 @@ func (c Config) GetQuotePct(chainID int) (value float64, err error) {
 	return value, nil
 }
 
-// GetQuoteOffsetBps returns the QuoteOffsetBps for the given chainID.
-func (c Config) GetQuoteOffsetBps(chainID int) (value float64, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "QuoteOffsetBps")
+// GetQuoteOffsetBps returns the QuoteOffsetBps for the given chainID and tokenAddr.
+// If the chainID corresponds to the origin of a quote, we flip the sign.
+func (c Config) GetQuoteOffsetBps(chainID int, tokenName string, isOrigin bool) (value float64, err error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return 0, fmt.Errorf("no chain config for chain %d", chainID)
+	}
+
+	tokenCfg, ok := chainCfg.Tokens[tokenName]
+	if !ok {
+		return 0, fmt.Errorf("no token config for chain %d and token %s", chainID, tokenName)
+	}
+
+	offset := tokenCfg.QuoteOffsetBps
+	if isOrigin {
+		offset *= -1
+	}
+
+	return offset, nil
+}
+
+// GetQuoteWidthBps returns the QuoteWidthBps for the given chainID.
+func (c Config) GetQuoteWidthBps(chainID int) (value float64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "QuoteWidthBps")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(float64)
 	if !ok {
-		return value, fmt.Errorf("failed to cast QuoteOffsetBps to int")
+		return value, fmt.Errorf("failed to cast QuoteWidthBps to float")
 	}
 	if value <= 0 {
-		value = DefaultChainConfig.QuoteOffsetBps
+		value = DefaultChainConfig.QuoteWidthBps
 	}
 	return value, nil
 }
 
-// GetFixedFeeMultiplier returns the FixedFeeMultiplier for the given chainID.
-func (c Config) GetFixedFeeMultiplier(chainID int) (value float64, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "FixedFeeMultiplier")
+// GetQuoteFixedFeeMultiplier returns the QuoteFixedFeeMultiplier for the given chainID.
+func (c Config) GetQuoteFixedFeeMultiplier(chainID int) (value float64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "QuoteFixedFeeMultiplier")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(float64)
 	if !ok {
-		return value, fmt.Errorf("failed to cast FixedFeeMultiplier to int")
+		return value, fmt.Errorf("failed to cast QuoteFixedFeeMultiplier to int")
 	}
 	if value <= 0 {
-		value = DefaultChainConfig.FixedFeeMultiplier
+		value = DefaultChainConfig.QuoteFixedFeeMultiplier
+	}
+	return value, nil
+}
+
+// GetRelayFixedFeeMultiplier returns the RelayFixedFeeMultiplier for the given chainID.
+func (c Config) GetRelayFixedFeeMultiplier(chainID int) (value float64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "RelayFixedFeeMultiplier")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(float64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast RelayFixedFeeMultiplier to int")
+	}
+	if value <= 0 {
+		// If the value is not set, we default to the quote fixed fee multiplier.
+		value, err = c.GetQuoteFixedFeeMultiplier(chainID)
+		if err != nil {
+			return value, err
+		}
 	}
 	return value, nil
 }
@@ -389,45 +432,33 @@ func (c Config) GetHTTPTimeout() time.Duration {
 	return time.Duration(timeoutMs) * time.Millisecond
 }
 
-func (c Config) getTokenConfigByAddr(chainID int, tokenAddr string) (cfg TokenConfig, name string, err error) {
+func (c Config) getTokenConfigByAddr(chainID int, tokenAddr string) (cfg TokenConfig, err error) {
 	chainConfig, ok := c.Chains[chainID]
 	if !ok {
-		return cfg, name, fmt.Errorf("no chain config for chain %d", chainID)
+		return cfg, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	for tokenName, tokenConfig := range chainConfig.Tokens {
+	for _, tokenConfig := range chainConfig.Tokens {
 		if common.HexToAddress(tokenConfig.Address).Hex() == common.HexToAddress(tokenAddr).Hex() {
-			return tokenConfig, tokenName, nil
+			return tokenConfig, nil
 		}
 	}
-	return cfg, name, fmt.Errorf("no token config for chain %d and address %s", chainID, tokenAddr)
+	return cfg, fmt.Errorf("no token config for chain %d and address %s", chainID, tokenAddr)
 }
 
-// GetRebalanceMethod returns the rebalance method for the given chain and token address.
+// GetRebalanceMethod returns the rebalance method for the given chain path and token address.
+// This method will error if there is a rebalance method mismatch, and neither methods correspond to
+// RebalanceMethodNone.
 func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method RebalanceMethod, err error) {
-	tokenConfig, tokenName, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	tokenCfg, err := c.getTokenConfigByAddr(chainID, tokenAddr)
 	if err != nil {
 		return 0, err
 	}
-	if tokenConfig.RebalanceMethod == "" {
-		return RebalanceMethodNone, nil
+
+	method, err = RebalanceMethodFromString(tokenCfg.RebalanceMethod)
+	if err != nil {
+		return 0, err
 	}
-	for cid, chainCfg := range c.Chains {
-		tokenCfg, ok := chainCfg.Tokens[tokenName]
-		if ok {
-			if tokenConfig.RebalanceMethod != tokenCfg.RebalanceMethod {
-				return RebalanceMethodNone, fmt.Errorf("rebalance method mismatch for token %s on chains %d and %d", tokenName, chainID, cid)
-			}
-		}
-	}
-	switch tokenConfig.RebalanceMethod {
-	case "synapsecctp":
-		return RebalanceMethodSynapseCCTP, nil
-	case "circlecctp":
-		return RebalanceMethodCircleCCTP, nil
-	case "native":
-		return RebalanceMethodNative, nil
-	}
-	return RebalanceMethodNone, nil
+	return method, nil
 }
 
 // GetRebalanceMethods returns all rebalance methods present in the config.
@@ -449,7 +480,7 @@ func (c Config) GetRebalanceMethods() (methods map[RebalanceMethod]bool, err err
 
 // GetMaintenanceBalancePct returns the maintenance balance percentage for the given chain and token address.
 func (c Config) GetMaintenanceBalancePct(chainID int, tokenAddr string) (float64, error) {
-	tokenConfig, _, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	tokenConfig, err := c.getTokenConfigByAddr(chainID, tokenAddr)
 	if err != nil {
 		return 0, err
 	}
@@ -461,7 +492,7 @@ func (c Config) GetMaintenanceBalancePct(chainID int, tokenAddr string) (float64
 
 // GetInitialBalancePct returns the initial balance percentage for the given chain and token address.
 func (c Config) GetInitialBalancePct(chainID int, tokenAddr string) (float64, error) {
-	tokenConfig, _, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	tokenConfig, err := c.getTokenConfigByAddr(chainID, tokenAddr)
 	if err != nil {
 		return 0, err
 	}
@@ -573,7 +604,7 @@ var defaultMinRebalanceAmount = big.NewInt(1000)
 //
 //nolint:dupl
 func (c Config) GetMinRebalanceAmount(chainID int, addr common.Address) *big.Int {
-	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	tokenCfg, err := c.getTokenConfigByAddr(chainID, addr.Hex())
 	if err != nil {
 		return defaultMaxRebalanceAmount
 	}
@@ -595,7 +626,7 @@ var defaultMaxRebalanceAmount = abi.MaxInt256
 //
 //nolint:dupl
 func (c Config) GetMaxRebalanceAmount(chainID int, addr common.Address) *big.Int {
-	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	tokenCfg, err := c.getTokenConfigByAddr(chainID, addr.Hex())
 	if err != nil {
 		return defaultMaxRebalanceAmount
 	}
@@ -630,4 +661,15 @@ func (c Config) GetRebalanceInterval() time.Duration {
 		interval = time.Duration(defaultRebalanceIntervalSeconds) * time.Second
 	}
 	return interval
+}
+
+const defaultQuoteSubmissionTimeoutSeconds = 30
+
+// GetQuoteSubmissionTimeout returns the timeout for submitting quotes.
+func (c Config) GetQuoteSubmissionTimeout() time.Duration {
+	timeout := c.QuoteSubmissionTimeout
+	if timeout == 0 {
+		timeout = time.Duration(defaultQuoteSubmissionTimeoutSeconds) * time.Second
+	}
+	return timeout
 }

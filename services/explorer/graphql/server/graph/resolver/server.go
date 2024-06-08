@@ -121,6 +121,7 @@ type ComplexityRoot struct {
 		Moonriver func(childComplexity int) int
 		Optimism  func(childComplexity int) int
 		Polygon   func(childComplexity int) int
+		Scroll    func(childComplexity int) int
 		Total     func(childComplexity int) int
 	}
 
@@ -636,6 +637,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DateResultByChain.Polygon(childComplexity), true
+
+	case "DateResultByChain.scroll":
+		if e.complexity.DateResultByChain.Scroll == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Scroll(childComplexity), true
 
 	case "DateResultByChain.total":
 		if e.complexity.DateResultByChain.Total == nil {
@@ -1646,6 +1654,7 @@ type DateResultByChain {
   dogechain: Float
   base: Float
   blast: Float
+  scroll: Float
   total:  Float
 }
 
@@ -1686,6 +1695,7 @@ type Leaderboard {
 enum BridgeType{
   BRIDGE
   CCTP
+  RFQ
 }
 
 enum KappaStatus{
@@ -1702,6 +1712,7 @@ input ContractQuery {
 enum ContractType{
   BRIDGE
   CCTP
+  RFQ
 }
 
 type BlockHeight {
@@ -4730,6 +4741,47 @@ func (ec *executionContext) fieldContext_DateResultByChain_blast(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _DateResultByChain_scroll(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_scroll(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Scroll, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_scroll(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _DateResultByChain_total(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_DateResultByChain_total(ctx, field)
 	if err != nil {
@@ -7084,6 +7136,8 @@ func (ec *executionContext) fieldContext_Query_dailyStatisticsByChain(ctx contex
 				return ec.fieldContext_DateResultByChain_base(ctx, field)
 			case "blast":
 				return ec.fieldContext_DateResultByChain_blast(ctx, field)
+			case "scroll":
+				return ec.fieldContext_DateResultByChain_scroll(ctx, field)
 			case "total":
 				return ec.fieldContext_DateResultByChain_total(ctx, field)
 			}
@@ -10324,6 +10378,8 @@ func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._DateResultByChain_base(ctx, field, obj)
 		case "blast":
 			out.Values[i] = ec._DateResultByChain_blast(ctx, field, obj)
+		case "scroll":
+			out.Values[i] = ec._DateResultByChain_scroll(ctx, field, obj)
 		case "total":
 			out.Values[i] = ec._DateResultByChain_total(ctx, field, obj)
 		default:

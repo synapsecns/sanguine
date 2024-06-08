@@ -33,6 +33,7 @@ import sfiLogo from '@assets/icons/sfi.svg'
 import solarbeamLogo from '@assets/icons/solar.svg'
 import susdLogo from '@assets/icons/susd.svg'
 import synapseLogo from '@assets/icons/syn.svg'
+import spectralLogo from '@assets/icons/spectral.svg'
 import unidexLogo from '@assets/icons/unidex.svg'
 import usdbLogo from '@assets/icons/usdb.svg'
 import usdcLogo from '@assets/icons/usdc.svg'
@@ -409,6 +410,7 @@ export const USDC = new Token({
     [CHAINS.AVALANCHE.id]: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
     [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
     [CHAINS.BASE.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    [CHAINS.SCROLL.id]: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
   },
   decimals: {
     [CHAINS.ETH.id]: 6,
@@ -424,6 +426,7 @@ export const USDC = new Token({
     [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.DFK.id]: 18,
     [CHAINS.BASE.id]: 6,
+    [CHAINS.SCROLL.id]: 6,
   },
   symbol: 'USDC',
   name: 'USD Coin',
@@ -699,6 +702,7 @@ export const ETH = new Token({
     [CHAINS.ARBITRUM.id]: zeroAddress,
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
     [CHAINS.BLAST.id]: zeroAddress,
+    [CHAINS.SCROLL.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'ETH',
@@ -1179,4 +1183,22 @@ export const USDB = new Token({
   color: 'yellow',
   priorityRank: 103,
   routeSymbol: 'USDB',
+})
+
+export const SPECTRAL = new Token({
+  priorityRank: 600,
+  addresses: {
+    [CHAINS.ETH.id]: '0xAdF7C35560035944e805D98fF17d58CDe2449389',
+    [CHAINS.BASE.id]: '0x96419929d7949D6A801A6909c145C8EEf6A40431',
+  },
+  decimals: {
+    [CHAINS.ETH.id]: 18,
+    [CHAINS.BASE.id]: 18,
+  },
+  symbol: 'SPEC',
+  name: 'Spectral Token',
+  logo: spectralLogo,
+  swapableType: 'SPEC',
+  color: 'blue',
+  routeSymbol: 'SPEC',
 })

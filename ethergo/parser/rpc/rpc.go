@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"fmt"
+
 	"github.com/goccy/go-json"
 	"github.com/invopop/jsonschema"
 )
@@ -82,4 +83,20 @@ func ParseRPCPayload(body []byte) (_ Requests, err error) {
 		return nil, fmt.Errorf("could not parse json payload: %w, must conform to: %s", err, rpcReqSchema)
 	}
 	return []Request{rpcRequest}, nil
+}
+
+// IsNullResponse checks if the result field in the JSON-RPC response is null
+func IsNullResponse(body []byte) bool {
+	var response rpcResponse
+	err := json.Unmarshal(body, &response)
+	if err != nil {
+		return false
+	}
+	return string(response.Result) == "null"
+}
+
+type rpcResponse struct {
+	JSONRPC string          `json:"jsonrpc"`
+	ID      int             `json:"id"`
+	Result  json.RawMessage `json:"result"`
 }

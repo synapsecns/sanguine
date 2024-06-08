@@ -8,7 +8,12 @@ import {
   deposit,
   emptyPoolDeposit,
 } from '@/utils/actions/approveAndDeposit'
-import { fetchBalance, waitForTransaction } from '@wagmi/core'
+import {
+  fetchBalance,
+  getBalance,
+  waitForTransaction,
+  waitForTransactionReceipt,
+} from '@wagmi/core'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
@@ -18,7 +23,6 @@ import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { DepositTokenInput } from '@components/TokenInput'
 import { Token } from '@types'
-import { Address } from '@wagmi/core'
 
 import {
   resetPoolDeposit,
@@ -40,7 +44,8 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import DepositButton from './DepositButton'
-import { getAddress, zeroAddress } from 'viem'
+import { type Address, getAddress, zeroAddress } from 'viem'
+import { wagmiConfig } from '@/wagmiConfig'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
@@ -197,7 +202,7 @@ const Deposit = ({
         throw Error(resolvedTx)
       }
 
-      await waitForTransaction({
+      await waitForTransactionReceipt(wagmiConfig, {
         hash: resolvedTx?.transactionHash as Address,
         timeout: 60_000,
       })
@@ -329,7 +334,7 @@ const serializeToken = async (
   let fetchedBalance
 
   if (balanceToken.addresses[chainId] === zeroAddress) {
-    fetchedBalance = await fetchBalance({
+    fetchedBalance = await getBalance(wagmiConfig, {
       address: address as Address,
       chainId,
     })
@@ -344,7 +349,7 @@ const serializeToken = async (
       ),
     }
   } else if (balanceToken === WETHE) {
-    fetchedBalance = await fetchBalance({
+    fetchedBalance = await getBalance(wagmiConfig, {
       address: address as Address,
       chainId,
       token: balanceToken.addresses[chainId] as Address,

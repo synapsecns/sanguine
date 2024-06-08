@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.5.1...@synapsecns/sdk-router@0.6.0) (2024-05-09)
+
+
+### Features
+
+* **widget:** suppress console errors ([#2594](https://github.com/synapsecns/sanguine/issues/2594)) ([925447b](https://github.com/synapsecns/sanguine/commit/925447badd2065444d5df7cc14a6e6c56e10355f)), closes [#2591](https://github.com/synapsecns/sanguine/issues/2591) [#2593](https://github.com/synapsecns/sanguine/issues/2593)
+
+
+
+
+
+## [0.5.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.5.0...@synapsecns/sdk-router@0.5.1) (2024-05-08)
+
+
+### Bug Fixes
+
+* **sdk-rouder:** remove cache hydration ([#2597](https://github.com/synapsecns/sanguine/issues/2597)) ([1c304ee](https://github.com/synapsecns/sanguine/commit/1c304ee60af8c12311fcbb48fa92da6903e1c653))
+
+
+
+
+
+# [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.3...@synapsecns/sdk-router@0.5.0) (2024-05-03)
+
+
+### Features
+
+* **sdk-router:** Adds Scroll to SDK ([#2554](https://github.com/synapsecns/sanguine/issues/2554)) ([ed7f6de](https://github.com/synapsecns/sanguine/commit/ed7f6de23b538a5fb378e6167facfe30b352c703))
+
+
+
+
+
+## [0.4.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.2...@synapsecns/sdk-router@0.4.3) (2024-04-03)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
 ## [0.4.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.1...@synapsecns/sdk-router@0.4.2) (2024-03-31)
 
 

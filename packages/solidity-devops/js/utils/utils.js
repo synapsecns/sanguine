@@ -1,7 +1,22 @@
 const fs = require('fs')
 const { execSync } = require('child_process')
 
-const { logCommand, logError } = require('./logger.js')
+const { logCommand, logCommandError, logInfo } = require('./logger.js')
+
+/**
+ * Checks if two 0x addresses are equal, regardless of case.
+ * If either address is null, returns false.
+ *
+ * @param {string} addrA - The first address
+ * @param {string} addrB - The second address
+ * @returns {bool} Whether the addresses are equal
+ */
+const areEqualAddresses = (addrA, addrB) => {
+  if (!addrA || !addrB) {
+    return false
+  }
+  return addrA.toLowerCase() === addrB.toLowerCase()
+}
 
 /**
  * Asserts that a condition is true. If not, logs an error message and exits the process.
@@ -47,12 +62,16 @@ const createDir = (...dirNames) => {
  * @param {string} command - The command to run
  * @returns {string} The output of the command
  */
-const getCommandOutput = (command) => {
+const getCommandOutput = (command, exitOnError = true) => {
   try {
     const output = execSync(command)
     return output.toString().trim()
   } catch (error) {
-    process.exit(1)
+    logCommandError(command)
+    if (exitOnError) {
+      process.exit(1)
+    }
+    return null
   }
 }
 
@@ -62,21 +81,35 @@ const getCommandOutput = (command) => {
  * @param {string} command - The command to run
  * @returns {bool} Whether the command succeeded
  */
-const runCommand = (command) => {
+const runCommand = (command, exitOnError = true) => {
   try {
     logCommand(`${command}`)
     execSync(command, { stdio: 'inherit' })
     return true
   } catch (error) {
-    logError(`Command failed: ${command}`)
+    logCommandError(command)
+    if (exitOnError) {
+      process.exit(1)
+    }
     return false
   }
 }
 
+const syncSleep = (seconds, reason) => {
+  let logMsg = `Sleeping for ${seconds} seconds`
+  if (reason) {
+    logMsg += `: ${reason}`
+  }
+  logInfo(logMsg)
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, seconds * 1000)
+}
+
 module.exports = {
+  areEqualAddresses,
   assertCondition,
   createDir,
   exitWithError,
   getCommandOutput,
   runCommand,
+  syncSleep,
 }

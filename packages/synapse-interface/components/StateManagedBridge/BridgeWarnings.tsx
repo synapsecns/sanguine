@@ -29,7 +29,7 @@ export const ConfirmDestinationAddressWarning = () => {
           onChange={handleCheckboxChange}
           className={`
               cursor-pointer border rounded-[4px] border-secondary
-             text-synapsePurple bg-transparent outline-none
+              text-fuchsia-400 bg-transparent outline-none
               focus:!outline-0 focus:ring-0 focus:!border-0
               active:!outline-0 active:ring-0 active:!border-0
             `}

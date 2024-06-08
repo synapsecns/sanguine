@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 import { RootState } from '@/store/store'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { isAddress } from 'viem'
 
@@ -11,7 +11,6 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
-import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 import { useAppDispatch } from '@/store/hooks'
 import {
   setIsDestinationWarningAccepted,
@@ -28,10 +27,10 @@ export const BridgeTransactionButton = ({
   const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
 
-  const { chain } = useNetwork()
-  const { chains, switchNetwork } = useSwitchNetwork()
+  const { chain, isConnected: isConnectedInit } = useAccount()
+  const { chains, switchChain } = useSwitchChain()
 
-  const { isConnected: isConnectedInit } = useAccount({
+  useAccountEffect({
     onDisconnect() {
       setIsConnected(false)
     },
@@ -74,8 +73,6 @@ export const BridgeTransactionButton = ({
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||
     (isConnected && !sufficientBalance) ||
-    PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
-    PAUSED_TO_CHAIN_IDS.includes(toChainId) ||
     isBridgePaused
 
   let buttonProperties
@@ -94,20 +91,12 @@ export const BridgeTransactionButton = ({
     }
   } else if (!fromChainId) {
     buttonProperties = {
-      label: 'Please select Origin network',
+      label: 'Please select Origin Network',
       onClick: null,
     }
   } else if (!toChainId) {
     buttonProperties = {
       label: 'Please select Destination network',
-      onClick: null,
-    }
-  } else if (
-    PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
-    PAUSED_TO_CHAIN_IDS.includes(toChainId)
-  ) {
-    buttonProperties = {
-      label: `Bridge unavailable`,
       onClick: null,
     }
   } else if (!fromToken) {
@@ -136,7 +125,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (destinationAddress && !isAddress(destinationAddress)) {
     buttonProperties = {
-      label: 'Invalid destination address',
+      label: 'Invalid Destination address',
     }
   } else if (showDestinationWarning && !isDestinationWarningAccepted) {
     buttonProperties = {
@@ -147,7 +136,7 @@ export const BridgeTransactionButton = ({
   } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
-      onClick: () => switchNetwork(fromChainId),
+      onClick: () => switchChain({ chainId: fromChainId }),
       pendingLabel: 'Switching chains',
     }
   } else if (!isApproved && fromValueBigInt > 0 && bridgeQuote?.destQuery) {

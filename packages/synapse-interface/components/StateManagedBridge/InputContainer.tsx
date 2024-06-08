@@ -1,50 +1,117 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
-import { useDispatch } from 'react-redux'
-import { useAccount, useNetwork } from 'wagmi'
-
-import { initialState, updateFromValue } from '@/slices/bridge/reducer'
-import MiniMaxButton from '../buttons/MiniMaxButton'
-import { formatBigIntToString } from '@/utils/bigint/format'
+import { isNull, isNumber } from 'lodash'
+import toast from 'react-hot-toast'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
+import { useAccount } from 'wagmi'
+import { useAppDispatch } from '@/store/hooks'
+import {
+  initialState,
+  updateFromValue,
+  setFromChainId,
+  setFromToken,
+} from '@/slices/bridge/reducer'
+import { ChainSelector } from '@/components/ui/ChainSelector'
+import { TokenSelector } from '@/components/ui/TokenSelector'
+import { AmountInput } from '@/components/ui/AmountInput'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
   ConnectToNetworkButton,
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
-import { FromChainSelector } from './FromChainSelector'
-import { FromTokenSelector } from './FromTokenSelector'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { useFromChainListArray } from './hooks/useFromChainListArray'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
+import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
+import { useFromTokenListArray } from './hooks/useFromTokenListArray'
+import { AvailableBalance } from './AvailableBalance'
+import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
+import { getParsedBalance } from '@/utils/getParsedBalance'
+import { MaxButton } from './MaxButton'
+import { formatAmount } from '../../utils/formatAmount'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
-  const { fromChainId, fromToken, fromValue } = useBridgeState()
+  const dispatch = useAppDispatch()
+  const { chain, isConnected } = useAccount()
+  const { balances } = usePortfolioState()
+  const { fromChainId, toChainId, fromToken, toToken, fromValue } =
+    useBridgeState()
   const [showValue, setShowValue] = useState('')
-
   const [hasMounted, setHasMounted] = useState(false)
 
-  const { balances } = usePortfolioState()
+  const { addresses, decimals } = fromToken || {}
+  const tokenDecimals = isNumber(decimals) ? decimals : decimals?.[fromChainId]
+  const balance: bigint = balances[fromChainId]?.find(
+    (token) => token.tokenAddress === addresses?.[fromChainId]
+  )?.balance
+  const parsedBalance = getParsedBalance(balance, tokenDecimals)
+  const formattedBalance = formatAmount(parsedBalance)
+
+  const hasValidFromSelections: boolean = useMemo(() => {
+    return Boolean(fromChainId && fromToken)
+  }, [fromChainId, fromToken])
+
+  const hasValidInputSelections: boolean = useMemo(() => {
+    return Boolean(fromChainId && fromToken && toChainId && toToken)
+  }, [fromChainId, toChainId, fromToken, toToken])
+
+  const {
+    isLoading,
+    isGasToken,
+    parsedGasCost,
+    maxBridgeableGas,
+    hasValidGasEstimateInputs,
+    estimateBridgeableBalanceCallback,
+  } = useGasEstimator()
+
+  const isInputMax =
+    maxBridgeableGas?.toString() === fromValue || parsedBalance === fromValue
+
+  const onMaxBalance = useCallback(async () => {
+    if (hasValidGasEstimateInputs()) {
+      const bridgeableBalance = await estimateBridgeableBalanceCallback()
+
+      if (isNull(bridgeableBalance)) {
+        dispatch(updateFromValue(parsedBalance))
+      } else if (bridgeableBalance > 0) {
+        dispatch(updateFromValue(bridgeableBalance?.toString()))
+      } else {
+        dispatch(updateFromValue('0.0'))
+        toast.error('Gas fees likely exceeds your balance.', {
+          id: 'toast-error-not-enough-gas',
+          duration: 10000,
+        })
+      }
+    } else {
+      dispatch(updateFromValue(parsedBalance))
+    }
+  }, [
+    fromChainId,
+    fromToken,
+    parsedBalance,
+    hasValidGasEstimateInputs,
+    estimateBridgeableBalanceCallback,
+  ])
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
 
-  const { isConnected } = useAccount()
-  const { chain } = useNetwork()
-
-  const dispatch = useDispatch()
-
-  const parsedBalance = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.parsedBalance
-
-  const balance = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.balance
+  const connectedStatus = useMemo(() => {
+    if (hasMounted && !isConnected) {
+      return <ConnectWalletButton />
+    } else if (hasMounted && isConnected && fromChainId === chain?.id) {
+      return <ConnectedIndicator />
+    } else if (hasMounted && isConnected && fromChainId !== chain?.id) {
+      return <ConnectToNetworkButton chainId={fromChainId} />
+    }
+  }, [chain, fromChainId, isConnected, hasMounted])
 
   useEffect(() => {
-    if (fromToken && fromToken?.decimals[fromChainId]) {
+    if (fromToken && tokenDecimals) {
       setShowValue(fromValue)
     }
 
@@ -72,99 +139,71 @@ export const InputContainer = () => {
     }
   }
 
-  const onMaxBalance = useCallback(() => {
-    dispatch(
-      updateFromValue(
-        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
-      )
-    )
-  }, [balance, fromChainId, fromToken])
-
-  const connectedStatus = useMemo(() => {
-    if (hasMounted && !isConnected) {
-      return <ConnectWalletButton />
-    } else if (hasMounted && isConnected && fromChainId === chain.id) {
-      return <ConnectedIndicator />
-    } else if (hasMounted && isConnected && fromChainId !== chain.id) {
-      return <ConnectToNetworkButton chainId={fromChainId} />
-    }
-  }, [chain, fromChainId, isConnected, hasMounted])
-
   return (
-    <div
-      data-test-id="input-container"
-      className="text-left rounded-md p-md bg-bgLight"
-    >
-      <div className="flex items-center justify-between mb-3">
+    <BridgeSectionContainer>
+      <div className="flex items-center justify-between">
         <FromChainSelector />
         {connectedStatus}
       </div>
-      <div className="flex h-16 mb-2 space-x-2">
-        <div
-          className={`
-            flex flex-grow items-center justify-between
-            pl-md
-            w-full h-16
-            rounded-md
-            border border-white border-opacity-20
-          `}
-        >
-          <div className="flex items-center">
-            <FromTokenSelector />
-            <div className="flex flex-col justify-between ml-4">
-              <div style={{ display: 'table' }}>
-                <input
-                  ref={inputRef}
-                  pattern="^[0-9]*[.,]?[0-9]*$"
-                  disabled={false}
-                  className={`
-                    focus:outline-none
-                    focus:ring-0
-                    focus:border-none
-                    border-none
-                    bg-transparent
-                    max-w-[190px]
-                    p-0
-                    placeholder:text-[#88818C]
-                    text-white text-opacity-80 text-xl md:text-2xl font-medium
-                  `}
-                  placeholder="0.0000"
-                  onChange={handleFromValueChange}
-                  value={showValue}
-                  name="inputRow"
-                  autoComplete="off"
-                  minLength={1}
-                  maxLength={79}
-                  style={{ display: 'table-cell', width: '100%' }}
-                />
-              </div>
-              {hasMounted && isConnected && (
-                <label
-                  htmlFor="inputRow"
-                  className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-                  onClick={onMaxBalance}
-                >
-                  {parsedBalance ?? '0.0'}
-                  <span className="text-opacity-50 text-secondaryTextColor">
-                    {' '}
-                    available
-                  </span>
-                </label>
-              )}
-            </div>
-          </div>
-          <div>
-            {hasMounted && isConnected && (
-              <div className="m">
-                <MiniMaxButton
-                  disabled={!balance || balance === 0n ? true : false}
-                  onClickBalance={onMaxBalance}
-                />
-              </div>
-            )}
-          </div>
+      <BridgeAmountContainer>
+        <FromTokenSelector />
+        <div className="flex flex-wrap w-full">
+          <AmountInput
+            inputRef={inputRef}
+            showValue={showValue}
+            handleFromValueChange={handleFromValueChange}
+          />
+          <AvailableBalance
+            balance={formattedBalance}
+            maxBridgeableBalance={maxBridgeableGas}
+            gasCost={parsedGasCost}
+            isGasToken={isGasToken}
+            isGasEstimateLoading={isLoading}
+            isDisabled={!isConnected || !hasValidFromSelections}
+          />
+          <MaxButton
+            onClick={onMaxBalance}
+            isHidden={
+              !isConnected ||
+              !hasValidInputSelections ||
+              isLoading ||
+              isInputMax
+            }
+          />
         </div>
-      </div>
-    </div>
+      </BridgeAmountContainer>
+    </BridgeSectionContainer>
+  )
+}
+
+const FromChainSelector = () => {
+  const { fromChainId } = useBridgeState()
+
+  return (
+    <ChainSelector
+      dataTestId="bridge-origin-chain"
+      selectedItem={CHAINS_BY_ID[fromChainId]}
+      isOrigin={true}
+      label="From"
+      itemListFunction={useFromChainListArray}
+      setFunction={setFromChainId}
+      action="Bridge"
+    />
+  )
+}
+
+const FromTokenSelector = () => {
+  const { fromToken } = useBridgeState()
+
+  return (
+    <TokenSelector
+      dataTestId="bridge-origin-token"
+      selectedItem={fromToken}
+      isOrigin={true}
+      placeholder="Out"
+      itemListFunction={useFromTokenListArray}
+      setFunction={setFromToken}
+      action="Bridge"
+    />
   )
 }
