@@ -20,7 +20,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0
 	github.com/dgraph-io/ristretto v0.1.0
-	github.com/ethereum/go-ethereum v1.13.7
+	github.com/ethereum/go-ethereum v1.13.8
 	github.com/goccy/go-json v0.10.2
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.5.0
@@ -36,8 +36,6 @@ require (
 	github.com/jpillora/backoff v1.0.0
 	github.com/libp2p/go-libp2p v0.33.0
 	github.com/lmittmann/w3 v0.10.0
-	github.com/mattn/go-colorable v0.1.13
-	github.com/mattn/go-isatty v0.0.20
 	github.com/miguelmota/go-ethereum-hdwallet v0.1.1
 	github.com/neverlee/keymutex v0.0.0-20171121013845-f593aa834bf9
 	github.com/nsmithuk/local-kms v0.0.0-20220503165244-1bbbfed09b08
@@ -197,6 +195,8 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect

@@ -10,7 +10,7 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.27.0
 	github.com/coinbase/rosetta-sdk-go v0.8.1
 	github.com/davecgh/go-spew v1.1.1
-	github.com/ethereum/go-ethereum v1.13.7
+	github.com/ethereum/go-ethereum v1.13.8
 	github.com/hedzr/log v1.6.3
 	github.com/imkira/go-interpol v1.1.0
 	github.com/ipfs/go-log v1.0.5

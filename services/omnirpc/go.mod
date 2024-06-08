@@ -15,7 +15,7 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.27.0
 	github.com/buger/jsonparser v1.1.1
 	github.com/davecgh/go-spew v1.1.1
-	github.com/ethereum/go-ethereum v1.13.7
+	github.com/ethereum/go-ethereum v1.13.8
 	github.com/flowchartsman/swaggerui v0.0.0-20221017034628-909ed4f3701b
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
