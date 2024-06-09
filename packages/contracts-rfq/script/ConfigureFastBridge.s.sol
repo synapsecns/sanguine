@@ -5,6 +5,7 @@ import {FastBridge} from "../contracts/FastBridge.sol";
 
 import {SynapseScript, stdJson} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
+// solhint-disable no-empty-blocks
 contract ConfigureFastBridge is SynapseScript {
     using stdJson for string;
 
@@ -12,6 +13,9 @@ contract ConfigureFastBridge is SynapseScript {
 
     FastBridge public fastBridge;
     string public config;
+
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testConfigureFastBridge() external {}
 
     function run() external broadcastWithHooks {
         loadConfig();
@@ -24,7 +28,7 @@ contract ConfigureFastBridge is SynapseScript {
     }
 
     function loadConfig() internal {
-        config = readGlobalDeployConfig({contractName: NAME, globalProperty: "", revertIfNotFound: true});
+        config = readGlobalDeployConfig({contractName: NAME, environment: "", revertIfNotFound: true});
         fastBridge = FastBridge(getDeploymentAddress({contractName: NAME, revertIfNotFound: true}));
     }
 
