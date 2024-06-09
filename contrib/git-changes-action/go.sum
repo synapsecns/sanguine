@@ -262,8 +262,8 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
-github.com/vishalkuo/bimap v0.0.0-20220726225509-e0b4f20de28b h1:Wrh+B5ZP52L9v5h9h3owZTzgotdbBd9sfirUbRmCWD4=
-github.com/vishalkuo/bimap v0.0.0-20220726225509-e0b4f20de28b/go.mod h1:dxXQNHjw3hAY1z8izMtjimf/IjtT/o7ZZezj7XI8Vy0=
+github.com/vishalkuo/bimap v0.0.0-20230830142743-a9fb9b52066c h1:KEcyvVSSrD/dq45OZpwFG7/gi608xzyriB8kgquCgPU=
+github.com/vishalkuo/bimap v0.0.0-20230830142743-a9fb9b52066c/go.mod h1:oVZgsxuZOVCkAVcgSitAfucCKX0Ani+R8bIbfGdqAkg=
 github.com/xanzy/ssh-agent v0.3.3 h1:+/15pJfg/RsTxqYcX6fHqOXZwwMP+2VyYWJeWM2qQFM=
 github.com/xanzy/ssh-agent v0.3.3/go.mod h1:6dzNDKs0J9rVPHPhaGCukekBHKqfl+L3KghI1Bc68Uw=
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
