@@ -203,7 +203,7 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 		if err != nil {
 			errMessage := fmt.Sprintf("could not call contract: %v on tx: %s", err, transaction.Hash())
 			if b.RPCAddress() != "" {
-				errMessage += fmt.Sprintf("\nFor more info run (before the process stops): cast run --rpc-url %s %s --trace-printer %s", b.RPCAddress(), transaction.Hash())
+				errMessage += fmt.Sprintf("\nFor more info run (before the process stops): cast run --rpc-url %s %s --trace-printer ", b.RPCAddress(), transaction.Hash())
 
 				if core.GetEnvBool("TRACELY_ENABLED", false) {
 					errMessage += b.addCastLabels(transaction, callMessage.From)
