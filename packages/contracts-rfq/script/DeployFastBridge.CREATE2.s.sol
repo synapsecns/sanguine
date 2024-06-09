@@ -6,6 +6,7 @@ import {FastBridge} from "../contracts/FastBridge.sol";
 // TODO: this should work without remapping
 import {SynapseScript, stdJson} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
+// solhint-disable no-empty-blocks
 contract DeployFastBridgeCREATE2 is SynapseScript {
     using stdJson for string;
 
@@ -13,6 +14,9 @@ contract DeployFastBridgeCREATE2 is SynapseScript {
 
     address public admin;
     FastBridge public fastBridge;
+
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testDeployFastBridgeCREATE2() external {}
 
     function run() external broadcastWithHooks {
         loadConfig();
