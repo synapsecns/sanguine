@@ -288,10 +288,10 @@ func (f *Backend) ChainConfig() *params.ChainConfig {
 // Signer gets the signer for the chain.
 func (f *Backend) Signer() types.Signer {
 	// Get latest block by nil
-	latestBlock, err := f.BlockByNumber(f.Context(), nil)
+	latestBlock, err := f.Client().HeaderByNumber(f.Context(), nil)
 	require.Nil(f.T(), err)
 
-	return types.MakeSigner(f.ChainConfig(), latestBlock.Number(), latestBlock.Time())
+	return types.MakeSigner(f.ChainConfig(), latestBlock.Number, latestBlock.Time)
 }
 
 // FundAccount funds an account with the given amount.
