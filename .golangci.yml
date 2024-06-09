@@ -5,7 +5,6 @@ run:
     - grpc/client/rest/*
     - bundle/*
     - generated/*
-    - tracely/*
   timeout: 15m
   skip-files:
     - '.*\\.abigen\\.go$'
