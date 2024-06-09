@@ -24,7 +24,7 @@ contract ConfigureFastBridge is SynapseScript {
     }
 
     function loadConfig() internal {
-        config = readGlobalDeployConfig({contractName: NAME, globalProperty: "", revertIfNotFound: true});
+        config = readGlobalDeployConfig({contractName: NAME, environment: "", revertIfNotFound: true});
         fastBridge = FastBridge(getDeploymentAddress({contractName: NAME, revertIfNotFound: true}));
     }
 

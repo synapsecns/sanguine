@@ -31,7 +31,7 @@ contract DeployFastBridgeCREATE2 is SynapseScript {
     }
 
     function loadConfig() internal {
-        string memory config = readGlobalDeployConfig({contractName: NAME, globalProperty: "", revertIfNotFound: true});
+        string memory config = readGlobalDeployConfig({contractName: NAME, environment: "", revertIfNotFound: true});
         admin = config.readAddress(".accounts.admin");
     }
 
