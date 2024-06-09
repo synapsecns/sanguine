@@ -122,12 +122,13 @@ func (gpo *Oracle) SuggestPrice(ctx context.Context) (*big.Int, error) {
 	var (
 		sent, exp int
 		number    = head.Number.Uint64()
+		time      = head.Time
 		result    = make(chan getBlockPricesResult, gpo.checkBlocks)
 		quit      = make(chan struct{})
 		txPrices  []*big.Int
 	)
 	for sent < gpo.checkBlocks && number > 0 {
-		go gpo.getBlockPrices(ctx, types.MakeSigner(gpo.backend.ChainConfig(), big.NewInt(int64(number))), number, sampleNumber, result, quit)
+		go gpo.getBlockPrices(ctx, types.MakeSigner(gpo.backend.ChainConfig(), big.NewInt(int64(number)), time), number, sampleNumber, result, quit)
 		sent++
 		exp++
 		number--
@@ -150,7 +151,7 @@ func (gpo *Oracle) SuggestPrice(ctx context.Context) (*big.Int, error) {
 		// meaningful returned, try to query more blocks. But the maximum
 		// is 2*checkBlocks.
 		if len(res.prices) == 1 && len(txPrices)+1+exp < gpo.checkBlocks*2 && number > 0 {
-			go gpo.getBlockPrices(ctx, types.MakeSigner(gpo.backend.ChainConfig(), big.NewInt(int64(number))), number, sampleNumber, result, quit)
+			go gpo.getBlockPrices(ctx, types.MakeSigner(gpo.backend.ChainConfig(), big.NewInt(int64(number)), time), number, sampleNumber, result, quit)
 			//nolint: wastedassign
 			sent++
 			exp++

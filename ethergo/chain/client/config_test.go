@@ -1,14 +1,16 @@
 package client_test
 
 import (
+	"math"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"gotest.tools/assert"
-	"math"
-	"math/big"
 )
 
 // TestConfigFromID makes sure configs are properly returned by id.
@@ -37,7 +39,7 @@ func (c ClientSuite) TestConfig() {
 // TestChainSigner is a sanity check that our configs correctly use the signer.
 func (c ClientSuite) TestChainSigner() {
 	for _, config := range client.ChainConfigs {
-		signer := types.MakeSigner(config, big.NewInt(0).SetUint64(math.MaxUint64))
+		signer := types.MakeSigner(config, big.NewInt(0).SetUint64(math.MaxUint64), uint64(time.Now().Unix()))
 		False(c.T(), signer.Equal(types.FrontierSigner{}))
 		False(c.T(), signer.Equal(types.HomesteadSigner{}))
 	}
