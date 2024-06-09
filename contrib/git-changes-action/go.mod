@@ -14,7 +14,7 @@ require (
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/google/go-github/v41 v41.0.0
-	github.com/kendru/darwin/go/depgraph v0.0.0-20221105232959-877d6a81060c
+	github.com/kendru/darwin/go/depgraph v0.0.0-20230809052043-4d1c7e9d1767
 	github.com/migueleliasweb/go-github-mock v0.0.16
 	github.com/otiai10/copy v1.12.0
 	github.com/sethvargo/go-githubactions v1.1.0
