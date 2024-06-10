@@ -194,10 +194,6 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 		}
 	}
 
-	if err != nil {
-		return nil, fmt.Errorf("could not create balance gauge: %w", err)
-	}
-
 	i := inventoryManagerImpl{
 		relayerAddress:    relayer,
 		handler:           handler,

@@ -325,6 +325,9 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 }
 
 func (r *QuoterAPIServer) recordLatestQuoteAge(ctx context.Context, observer metric.Observer) (err error) {
+	logger.Warnf("recordLatestQuoteAge")
+	fmt.Printf("recording latest quote age")
+
 	if r.handler == nil || r.latestQuoteAgeGauge == nil {
 		return nil
 	}
@@ -349,6 +352,7 @@ func (r *QuoterAPIServer) recordLatestQuoteAge(ctx context.Context, observer met
 		)
 		observer.ObserveFloat64(r.latestQuoteAgeGauge, age, opts)
 	}
+	fmt.Printf("latest quote ages by relayer: %v\n", ageByRelayer)
 
 	return nil
 }
