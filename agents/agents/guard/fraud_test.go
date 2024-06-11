@@ -602,7 +602,7 @@ func (g *GuardSuite) TestInvalidReceipt() {
 	deliveryTip := big.NewInt(int64(gofakeit.Uint32()))
 	tips := types.NewTips(summitTip, attestationTip, executorTip, deliveryTip)
 	optimisticSeconds := uint32(1)
-	recipientDestination := g.TestClientMetadataOnDestination.Address().Hash()
+	recipientDestination := common.BytesToHash(g.TestClientMetadataOnDestination.Address().Bytes())
 	nonce := uint32(1)
 	body := []byte{byte(gofakeit.Uint32())}
 	txContextOrigin := g.TestBackendOrigin.GetTxContext(g.GetTestContext(), g.OriginContractMetadata.OwnerPtr())

@@ -1,4 +1,5 @@
 import {
+  type SimulateContractParameters,
   simulateContract,
   waitForTransactionReceipt,
   writeContract,
@@ -27,7 +28,7 @@ export const unstakeLpToken = async ({
     abi: MINICHEF_ABI,
     functionName: 'withdraw',
     args: [poolId, amount, address],
-  })
+  } as SimulateContractParameters)
 
   const hash = await writeContract(wagmiConfig, request)
   const txReceipt = await waitForTransactionReceipt(wagmiConfig, { hash })

@@ -6,13 +6,11 @@ on:
       - 'packages/contracts-core/**'
       - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
-      - 'packages/contracts-communication/**'
       - 'packages/solidity-devops/**'
   push:
     paths:
       - 'packages/contracts-core/**'
       - 'packages/contracts-rfq/**'
-      - 'packages/contracts-communication/**'
       - 'packages/solidity-devops/**'
       - '.github/workflows/solidity.yml'
 
@@ -30,7 +28,7 @@ jobs:
           fetch-depth: 0
           # if any of these packages use submodules in the future, please uncomment this line
           # submodules: 'recursive'
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter_solidity
         with:
           #  make sure to update run-goreleaser when adding a new package here
@@ -39,7 +37,6 @@ jobs:
             contracts-core: 'packages/contracts-core/**'
             contracts-rfq: 'packages/contracts-rfq/**'
             solidity-devops: 'packages/solidity-devops/**'
-            contracts-communication: 'packages/contracts-communication/**'
       - id: length
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
@@ -83,7 +80,6 @@ jobs:
           {
             "contracts-core": "${{ secrets.VERCEL_CONTRACT_DOCS_PROJECT_ID}}",
             "contracts-rfq": "${{ secrets.VERCEL_CONTRACT_RFQ_DOCS_PROJECT_ID }}",
-            "contracts-communication": "${{ secrets.VERCEL_COMMUNICATION_DOCS_PROJECT_ID }}",
             "solidity-devops": "${{ secrets.VERCEL_DEVOPS_DOCS_PROJECT_ID }}"
           }
           END

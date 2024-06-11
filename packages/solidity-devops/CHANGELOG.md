@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.1...@synapsecns/solidity-devops@0.4.2) (2024-06-04)
+
+
+### Bug Fixes
+
+* **solidity-devops:** update README ([#2666](https://github.com/synapsecns/sanguine/issues/2666)) ([ebcc94c](https://github.com/synapsecns/sanguine/commit/ebcc94c6d98a0ac302c9e41f0247c95d6fe93a37))
+* **solidity-devops:** use npx to run the binaries ([b7cb945](https://github.com/synapsecns/sanguine/commit/b7cb945b793b88789d4220a75b15dcc311afa104))
+
+
+
+
+
+## [0.4.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.0...@synapsecns/solidity-devops@0.4.1) (2024-06-02)
+
+
+### Bug Fixes
+
+* **solidity-devops:** allow verifier fo be omitted for a chain ([#2659](https://github.com/synapsecns/sanguine/issues/2659)) ([972afed](https://github.com/synapsecns/sanguine/commit/972afeda19e45ae54f868f45f95eb058ea30482c))
+
+
+
+
+
+# [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.5...@synapsecns/solidity-devops@0.4.0) (2024-06-02)
+
+
+### Features
+
+* **solidity-devops:** environment-specific configs ([#2658](https://github.com/synapsecns/sanguine/issues/2658)) ([df0d899](https://github.com/synapsecns/sanguine/commit/df0d899cf02d8741443c1910d94d8bb4adb8f12c))
+
+
+
+
+
+## [0.3.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.4...@synapsecns/solidity-devops@0.3.5) (2024-05-12)
+
+
+### Bug Fixes
+
+* **solidity-devops:** update forge-std to 1.8.2 ([#2619](https://github.com/synapsecns/sanguine/issues/2619)) ([382219d](https://github.com/synapsecns/sanguine/commit/382219d450376650a7787d6daa15c171b0610f19))
+
+
+
+
+
 ## [0.3.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.3...@synapsecns/solidity-devops@0.3.4) (2024-05-06)
 
 

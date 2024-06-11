@@ -2,6 +2,7 @@ package geth
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/eth/catalyst"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"math/big"
 	"os"
@@ -42,7 +43,7 @@ const gasLimit = 10000000
 func NewEmbeddedBackendForChainID(ctx context.Context, t *testing.T, chainID *big.Int) *Backend {
 	t.Helper()
 	// get the default config
-	config := ethCore.DeveloperGenesisBlock(0, gasLimit, common.Address{}).Config
+	config := ethCore.DeveloperGenesisBlock(gasLimit, &common.Address{}).Config
 	config.ChainID = chainID
 	return NewEmbeddedBackendWithConfig(ctx, t, config)
 }
@@ -92,6 +93,13 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 	embedded.ethBackend, err = eth.New(embedded.Node, ethConfig)
 	assert.Nil(t, err)
 
+	// setup the consensus client
+	simBeacon, err := catalyst.NewSimulatedBeacon(1, embedded.ethBackend)
+	assert.Nil(t, err)
+
+	catalyst.RegisterSimulatedBeaconAPIs(embedded.Node, simBeacon)
+	embedded.Node.RegisterLifecycle(simBeacon)
+
 	embedded.Node.RegisterAPIs(toPublic(tracers.APIs(embedded.ethBackend.APIBackend)))
 
 	// Configure log filter RPC API.
@@ -119,8 +127,8 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 	embedded.ethBackend.AccountManager().AddBackend(keystoreBackend)
 	embedded.ethBackend.SetEtherbase(acct.Address)
 
-	embedded.ethBackend.TxPool().SetGasPrice(big.NewInt(0))
-	err = embedded.ethBackend.APIBackend.StartMining(0)
+	embedded.ethBackend.TxPool().SetGasTip(big.NewInt(0))
+	err = embedded.ethBackend.APIBackend.StartMining()
 	assert.Nil(t, err)
 
 	// add debugger for node stop
@@ -140,7 +148,7 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 		if embedded.ethBackend.IsMining() {
 			cancelMiningCtx()
 		} else {
-			_ = embedded.ethBackend.APIBackend.StartMining(0)
+			_ = embedded.ethBackend.APIBackend.StartMining()
 		}
 	}, time.Millisecond*50)
 
@@ -183,7 +191,7 @@ func (f *Backend) Signer() types.Signer {
 	latestBlock, err := f.BlockByNumber(f.Context(), nil)
 	assert.Nil(f.T(), err)
 
-	return types.MakeSigner(f.ChainConfig(), latestBlock.Number())
+	return types.MakeSigner(f.ChainConfig(), latestBlock.Number(), latestBlock.Time())
 }
 
 // GethBackendName is the name of the geth backend.
@@ -221,7 +229,7 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	err = f.Chain.GasSetter().SetGasFee(ctx, auth, latestBlock.NumberU64(), core.CopyBigInt(gasprice.DefaultMaxPrice))
 	assert.Nil(f.T(), err)
 
-	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, f.faucetAddr.Address).GasLimit / 2
+	auth.GasLimit = ethCore.DeveloperGenesisBlock(gasLimit, &f.faucetAddr.Address).GasLimit / 2
 
 	return backends.AuthType{
 		TransactOpts: auth,
@@ -291,7 +299,7 @@ func (f *Backend) getFaucetTxContext(ctx context.Context) *bind.TransactOpts {
 	auth.GasPrice, err = f.Client().SuggestGasPrice(ctx)
 	assert.Nil(f.T(), err)
 
-	auth.GasLimit = ethCore.DeveloperGenesisBlock(0, gasLimit, f.faucetAddr.Address).GasLimit / 2
+	auth.GasLimit = ethCore.DeveloperGenesisBlock(gasLimit, &f.faucetAddr.Address).GasLimit / 2
 
 	return auth
 }

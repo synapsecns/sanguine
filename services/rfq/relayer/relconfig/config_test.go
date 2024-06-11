@@ -18,59 +18,59 @@ func TestChainGetters(t *testing.T) {
 	cfgWithBase := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
-				RFQAddress:             "0x123",
-				SynapseCCTPAddress:     "0x456",
-				TokenMessengerAddress:  "0x789",
-				Confirmations:          1,
-				NativeToken:            "MATIC",
-				DeadlineBufferSeconds:  10,
-				OriginGasEstimate:      10000,
-				DestGasEstimate:        20000,
-				L1FeeChainID:           10,
-				L1FeeOriginGasEstimate: 30000,
-				L1FeeDestGasEstimate:   40000,
-				MinGasToken:            "1000",
-				QuotePct:               50,
-				QuoteWidthBps:          10,
-				FixedFeeMultiplier:     1.1,
+				RFQAddress:              "0x123",
+				SynapseCCTPAddress:      "0x456",
+				TokenMessengerAddress:   "0x789",
+				Confirmations:           1,
+				NativeToken:             "MATIC",
+				DeadlineBufferSeconds:   10,
+				OriginGasEstimate:       10000,
+				DestGasEstimate:         20000,
+				L1FeeChainID:            10,
+				L1FeeOriginGasEstimate:  30000,
+				L1FeeDestGasEstimate:    40000,
+				MinGasToken:             "1000",
+				QuotePct:                50,
+				QuoteWidthBps:           10,
+				QuoteFixedFeeMultiplier: 1.1,
 			},
 		},
 		BaseChainConfig: relconfig.ChainConfig{
-			RFQAddress:             "0x1234",
-			SynapseCCTPAddress:     "0x456",
-			TokenMessengerAddress:  "0x789",
-			Confirmations:          2,
-			NativeToken:            "ARB",
-			DeadlineBufferSeconds:  11,
-			OriginGasEstimate:      10001,
-			DestGasEstimate:        20001,
-			L1FeeChainID:           11,
-			L1FeeOriginGasEstimate: 30001,
-			L1FeeDestGasEstimate:   40001,
-			MinGasToken:            "1001",
-			QuotePct:               51,
-			QuoteWidthBps:          11,
-			FixedFeeMultiplier:     1.2,
+			RFQAddress:              "0x1234",
+			SynapseCCTPAddress:      "0x456",
+			TokenMessengerAddress:   "0x789",
+			Confirmations:           2,
+			NativeToken:             "ARB",
+			DeadlineBufferSeconds:   11,
+			OriginGasEstimate:       10001,
+			DestGasEstimate:         20001,
+			L1FeeChainID:            11,
+			L1FeeOriginGasEstimate:  30001,
+			L1FeeDestGasEstimate:    40001,
+			MinGasToken:             "1001",
+			QuotePct:                51,
+			QuoteWidthBps:           11,
+			QuoteFixedFeeMultiplier: 1.2,
 		},
 	}
 	cfg := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
-				RFQAddress:             "0x123",
-				SynapseCCTPAddress:     "0x456",
-				TokenMessengerAddress:  "0x789",
-				Confirmations:          1,
-				NativeToken:            "MATIC",
-				DeadlineBufferSeconds:  10,
-				OriginGasEstimate:      10000,
-				DestGasEstimate:        20000,
-				L1FeeChainID:           10,
-				L1FeeOriginGasEstimate: 30000,
-				L1FeeDestGasEstimate:   40000,
-				MinGasToken:            "1000",
-				QuotePct:               50,
-				QuoteWidthBps:          10,
-				FixedFeeMultiplier:     1.1,
+				RFQAddress:              "0x123",
+				SynapseCCTPAddress:      "0x456",
+				TokenMessengerAddress:   "0x789",
+				Confirmations:           1,
+				NativeToken:             "MATIC",
+				DeadlineBufferSeconds:   10,
+				OriginGasEstimate:       10000,
+				DestGasEstimate:         20000,
+				L1FeeChainID:            10,
+				L1FeeOriginGasEstimate:  30000,
+				L1FeeDestGasEstimate:    40000,
+				MinGasToken:             "1000",
+				QuotePct:                50,
+				QuoteWidthBps:           10,
+				QuoteFixedFeeMultiplier: 1.1,
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:            usdcAddr,
@@ -278,18 +278,18 @@ func TestChainGetters(t *testing.T) {
 		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuoteWidthBps)
 	})
 
-	t.Run("GetFixedFeeMultiplier", func(t *testing.T) {
-		defaultVal, err := cfg.GetFixedFeeMultiplier(badChainID)
+	t.Run("GetQuoteFixedFeeMultiplier", func(t *testing.T) {
+		defaultVal, err := cfg.GetQuoteFixedFeeMultiplier(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.FixedFeeMultiplier)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.QuoteFixedFeeMultiplier)
 
-		baseVal, err := cfgWithBase.GetFixedFeeMultiplier(badChainID)
+		baseVal, err := cfgWithBase.GetQuoteFixedFeeMultiplier(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.FixedFeeMultiplier)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.QuoteFixedFeeMultiplier)
 
-		chainVal, err := cfgWithBase.GetFixedFeeMultiplier(chainID)
+		chainVal, err := cfgWithBase.GetQuoteFixedFeeMultiplier(chainID)
 		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].FixedFeeMultiplier)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuoteFixedFeeMultiplier)
 	})
 
 	t.Run("GetMaxRebalanceAmount", func(t *testing.T) {
@@ -307,21 +307,21 @@ func TestGetQuoteOffset(t *testing.T) {
 	cfg := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
-				RFQAddress:             "0x123",
-				SynapseCCTPAddress:     "0x456",
-				TokenMessengerAddress:  "0x789",
-				Confirmations:          1,
-				NativeToken:            "MATIC",
-				DeadlineBufferSeconds:  10,
-				OriginGasEstimate:      10000,
-				DestGasEstimate:        20000,
-				L1FeeChainID:           10,
-				L1FeeOriginGasEstimate: 30000,
-				L1FeeDestGasEstimate:   40000,
-				MinGasToken:            "1000",
-				QuotePct:               50,
-				QuoteWidthBps:          10,
-				FixedFeeMultiplier:     1.1,
+				RFQAddress:              "0x123",
+				SynapseCCTPAddress:      "0x456",
+				TokenMessengerAddress:   "0x789",
+				Confirmations:           1,
+				NativeToken:             "MATIC",
+				DeadlineBufferSeconds:   10,
+				OriginGasEstimate:       10000,
+				DestGasEstimate:         20000,
+				L1FeeChainID:            10,
+				L1FeeOriginGasEstimate:  30000,
+				L1FeeDestGasEstimate:    40000,
+				MinGasToken:             "1000",
+				QuotePct:                50,
+				QuoteWidthBps:           10,
+				QuoteFixedFeeMultiplier: 1.1,
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:            usdcAddr,

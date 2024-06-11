@@ -72,7 +72,7 @@ func (d *DBSuite) TestBlacklist() {
 		testAddress := gofakeit.BitcoinAddress()
 
 		blacklistBody := db.BlacklistedAddress{
-			TypeReq: "create",
+			Type:    "create",
 			ID:      "testId",
 			Address: testAddress,
 			Network: "bitcoin",
@@ -88,7 +88,7 @@ func (d *DBSuite) TestBlacklist() {
 		d.Require().NotNil(blacklistedAddress)
 
 		// update the address
-		blacklistBody.TypeReq = "update"
+		blacklistBody.Type = "update"
 		blacklistBody.Remark = "testRemarkUpdated"
 		err = testDB.UpdateBlacklistedAddress(d.GetTestContext(), blacklistBody.ID, blacklistBody)
 		d.Require().NoError(err)

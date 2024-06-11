@@ -27,7 +27,7 @@ jobs:
         with:
           key: docker-release-${{ runner.os }}-${{ matrix.package }}
 
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         name: check if any changes warrant a new build of goreleaser-cgo-cross-compiler
         id: changes
         with:
@@ -258,35 +258,6 @@ jobs:
           name: ${{steps.project_id.outputs.project_name}}.zip
           path: ${{steps.project_id.outputs.project_name}}.zip
 
-      - name: Copy Releases
-        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-iap') }}
-        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
-        with:
-          github_token: ${{ secrets.PUBLISH_TOKEN }}
-          # TODO: will change with new org
-          destination_repo: 'trajan0x/terraform-provider-iap'
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          strip_prefix: 'contrib/terraform-provider-iap/'
-
-      - name: Copy Releases
-        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-helmproxy') }}
-        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
-        with:
-          github_token: ${{ secrets.PUBLISH_TOKEN }}
-          # TODO: will change with new org
-          destination_repo: 'trajan0x/terraform-provider-helmproxy'
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          strip_prefix: 'contrib/terraform-provider-helmproxy/'
-
-      - name: Copy Releases
-        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-kubeproxy') }}
-        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
-        with:
-          github_token: ${{ secrets.PUBLISH_TOKEN }}
-          # TODO: will change with new org
-          destination_repo: 'trajan0x/terraform-provider-kubeproxy'
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          strip_prefix: 'contrib/terraform-provider-kubeproxy/'
 
       - name: Refresh Report Card
         if: steps.branch-name.outputs.is_default == 'true'

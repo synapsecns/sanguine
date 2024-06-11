@@ -67,7 +67,7 @@ func (s *Store) MarkAllBeforeNonceReplacedOrConfirmed(ctx context.Context, signe
 // it is exported for testing.
 // TODO: this should be an option passed to the GetTXs function.
 // TODO: temporarily reduced from 50 to 1 to increase resiliency.
-const MaxResultsPerChain = 1
+const MaxResultsPerChain = 10
 
 func statusToArgs(matchStatuses ...db.Status) []int {
 	inArgs := make([]int, len(matchStatuses))

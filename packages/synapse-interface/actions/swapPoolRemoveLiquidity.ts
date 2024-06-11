@@ -1,5 +1,6 @@
 import { ALL } from '@constants/withdrawTypes'
 import {
+  type SimulateContractParameters,
   simulateContract,
   waitForTransactionReceipt,
   writeContract,
@@ -42,7 +43,7 @@ export const swapPoolRemoveLiquidity = async ({
       ),
       Math.round(new Date().getTime() / 1000 + 60 * 10),
     ],
-  })
+  } as SimulateContractParameters)
 
   const hash = await writeContract(wagmiConfig, request)
   const txReceipt = await waitForTransactionReceipt(wagmiConfig, { hash })

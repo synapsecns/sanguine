@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/flowchartsman/swaggerui"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -17,11 +18,13 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"github.com/synapsecns/sanguine/services/omnirpc/swagger"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"io"
 	"math/big"
 	"net/http"
+	"time"
 )
 
 // FinalizedProxy is the interface for the finalized proxy.
@@ -81,6 +84,8 @@ func (r *finalizedProxyImpl) Run(ctx context.Context) error {
 		}
 		c.Data(http.StatusOK, gin.MIMEJSON, res)
 	})
+
+	router.Any("/swagger/*any", gin.WrapH(http.StripPrefix("/swagger", swaggerui.Handler(swagger.OpenAPI))))
 
 	r.logger.Infof(ctx, "running on port %d", r.port)
 	err := router.Run(fmt.Sprintf("0.0.0.0:%d", r.port))
@@ -196,7 +201,7 @@ func (r *finalizedProxyImpl) checkShouldRequest(parentCtx context.Context, req r
 	ethParams.ChainID = big.NewInt(int64(r.chainID))
 
 	// derive sender
-	signer := types.MakeSigner(ethParams, big.NewInt(1))
+	signer := types.MakeSigner(ethParams, big.NewInt(1), uint64(time.Now().Unix()))
 	var from common.Address
 	from, err = types.Sender(signer, tx)
 	if err != nil {

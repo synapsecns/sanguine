@@ -15,7 +15,7 @@ definitions:
         type: string
       tag:
         type: string
-      typereq:
+      type:
         type: string
       updatedAt:
         type: string

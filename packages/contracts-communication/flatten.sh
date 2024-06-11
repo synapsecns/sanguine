@@ -1,1 +1,0 @@
-../../make/scripts/flatten.sh

@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 const fs = require('fs')
 
-const { readChainSpecificOptions, logWallet } = require('./utils/chain.js')
+const {
+  readChainSpecificOptions,
+  logWallet,
+  isVerifierEnabled,
+} = require('./utils/chain.js')
 const {
   createDeploymentDirs,
   getNewDeployments,
@@ -25,7 +29,7 @@ loadEnv()
 const { positionalArgs, options } = parseCommandLineArgs({
   requiredArgsCount: 3,
   usage:
-    'Usage: "yarn fsr <path-to-script> <chain-name> <wallet-name> [<options>]"',
+    'Usage: "npx fsr <path-to-script> <chain-name> <wallet-name> [<options>]"',
 })
 const [scriptFN, chainName, walletName] = positionalArgs
 assertCondition(
@@ -42,7 +46,7 @@ let forgeOptions = addOptions(
 )
 forgeOptions = addOptions(forgeOptions, readChainSpecificOptions(chainName))
 forgeOptions = addOptions(forgeOptions, options)
-if (isBroadcast) {
+if (isBroadcast && isVerifierEnabled(chainName)) {
   forgeOptions = addVerifyOptions(forgeOptions)
 }
 

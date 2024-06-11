@@ -1,4 +1,5 @@
 import {
+  type SimulateContractParameters,
   simulateContract,
   waitForTransactionReceipt,
   writeContract,
@@ -25,7 +26,7 @@ export const harvestLpPool = async ({
     abi: MINICHEF_ABI,
     functionName: 'harvest',
     args: [poolId, address],
-  })
+  } as SimulateContractParameters)
 
   const hash = await writeContract(wagmiConfig, request)
   const txReceipt = await waitForTransactionReceipt(wagmiConfig, { hash })
