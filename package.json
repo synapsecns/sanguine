@@ -1,6 +1,6 @@
 {
   "name": "sanguine",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": "true",
   "description": "Implementation of the Sanguine messaging standard",
   "workspaces": {
@@ -79,5 +79,5 @@
     "@changesets/cli": "2.22.0",
     "eslint-plugin-jsx": "^0.1.0"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.22"
 }
