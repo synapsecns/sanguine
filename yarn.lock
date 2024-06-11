@@ -2084,9 +2084,9 @@
     prettier "^1.19.1"
 
 "@cloudflare/next-on-pages@^1.11.0":
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/@cloudflare/next-on-pages/-/next-on-pages-1.11.0.tgz#83f4e32289d53a103bb77caed760f56aff04d4af"
-  integrity sha512-/wKpDMrp2THkco+O5IKb7/JA07pppop4cRF3LEgL1FhJYxlOn3jo9WsZSuW58PovQJR2tZisLB/EJjJpmt1KOA==
+  version "1.11.3"
+  resolved "https://registry.yarnpkg.com/@cloudflare/next-on-pages/-/next-on-pages-1.11.3.tgz#cf74482ededc29fb11fb593d5a302cc195458de5"
+  integrity sha512-da+EPGYFCeiYp54czyEUvAV35VG4nMrvzp+/MaxTrk45mSs16+O2r72N6sMwEhCXGUzuiaoDo/gZ69edyQxiyw==
   dependencies:
     acorn "^8.8.0"
     ast-types "^0.14.2"
