@@ -290,7 +290,7 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 	// Otherwise, insert the current relayer's address into the cache.
 	r.ackMux.Lock()
 	ack := r.relayAckCache.Get(ackReq.TxID)
-	shouldRelay := ack == nil
+	shouldRelay := ack == nil || common.HexToAddress(relayerAddr).Hex() == common.HexToAddress(ack.Value()).Hex()
 	if shouldRelay {
 		r.relayAckCache.Set(ackReq.TxID, relayerAddr, ttlcache.DefaultTTL)
 	} else {
