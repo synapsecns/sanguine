@@ -298,7 +298,6 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	return nil
 }
 
-// INSERT_YOUR_CODE
 func (r *Relayer) processDB(ctx context.Context) (err error) {
 	ctx, span := r.metrics.Tracer().Start(ctx, "processDB")
 	defer func() {
