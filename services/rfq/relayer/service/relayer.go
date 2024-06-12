@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -297,8 +298,9 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	return nil
 }
 
-func (r *Relayer) processDB(parentCtx context.Context) (err error) {
-	ctx, span := r.metrics.Tracer().Start(parentCtx, "processDB")
+// INSERT_YOUR_CODE
+func (r *Relayer) processDB(ctx context.Context) (err error) {
+	ctx, span := r.metrics.Tracer().Start(ctx, "processDB")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -307,25 +309,46 @@ func (r *Relayer) processDB(parentCtx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not get quote results: %w", err)
 	}
-	// Obviously, these are only seen.
+
+	sem := make(chan struct{}, 30) // semaphore to limit the number of goroutines
+	errCh := make(chan error, len(requests))
+	var wg sync.WaitGroup
+
 	for _, request := range requests {
-		// if deadline < now
-		if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
-			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
-			if err != nil {
-				return fmt.Errorf("could not update request status: %w", err)
+		wg.Add(1)
+		sem <- struct{}{} // acquire a slot
+		go func(request reldb.QuoteRequest) {
+			defer wg.Done()
+			defer func() { <-sem }() // release the slot
+
+			if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
+				if err := r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded); err != nil {
+					errCh <- fmt.Errorf("could not update request status: %w", err)
+					return
+				}
 			}
-		}
 
-		qr, err := r.requestToHandler(ctx, request)
-		if err != nil {
-			return fmt.Errorf("could not get request to handler: %w", err)
-		}
+			qr, err := r.requestToHandler(ctx, request)
+			if err != nil {
+				errCh <- fmt.Errorf("could not get request to handler: %w", err)
+				return
+			}
 
-		err = qr.Handle(ctx, request)
+			if err := qr.Handle(ctx, request); err != nil {
+				errCh <- fmt.Errorf("could not handle request: %w", err)
+				return
+			}
+		}(request)
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	for err := range errCh {
 		if err != nil {
-			return fmt.Errorf("could not handle request: %w", err)
+			return err
 		}
 	}
+
 	return nil
 }
