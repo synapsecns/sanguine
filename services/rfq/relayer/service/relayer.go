@@ -344,5 +344,9 @@ func (r *Relayer) processDB(ctx context.Context) (err error) {
 		return nil
 	})
 
-	return g.Wait()
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not process db: %w", err)
+	}
+	return nil
 }
