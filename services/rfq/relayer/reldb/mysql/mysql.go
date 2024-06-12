@@ -4,6 +4,8 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -11,7 +13,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"time"
 )
 
 var logger = log.Logger("mysql-logger")
@@ -26,6 +27,8 @@ var MaxIdleConns = 0
 
 // NamingStrategy is used to exported here for testing.
 var NamingStrategy = schema.NamingStrategy{}
+
+const maxOpenConns = 50
 
 // NewMysqlStore creates a new mysql store for a given data store.
 func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler) (*Store, error) {
@@ -50,6 +53,7 @@ func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler) (
 	// fixes a timeout issue https://stackoverflow.com/a/42146536
 	sqlDB.SetMaxIdleConns(MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(time.Hour)
+	sqlDB.SetMaxOpenConns(maxOpenConns)
 
 	handler.AddGormCallbacks(gdb)
 
