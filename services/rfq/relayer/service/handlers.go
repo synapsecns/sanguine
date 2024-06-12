@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
@@ -17,6 +19,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
+
+var maxRPCRetryTime = 15 * time.Second
 
 // handleBridgeRequestedLog handles the BridgeRequestedLog event.
 // Step 1: Seen
@@ -54,9 +58,17 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return fmt.Errorf("could not get correct fast bridge: %w", err)
 	}
 
-	bridgeTx, err := fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
+	var bridgeTx fastbridge.IFastBridgeBridgeTransaction
+	call := func(ctx context.Context) error {
+		bridgeTx, err = fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
+		if err != nil {
+			return fmt.Errorf("could not get bridge transaction: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
 	if err != nil {
-		return fmt.Errorf("could not get bridge transaction: %w", err)
+		return fmt.Errorf("could not make call: %w", err)
 	}
 
 	// TODO: you can just pull these out of inventory. If they don't exist mark as invalid.
@@ -201,9 +213,17 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 		return nil
 	}
 
-	bs, err := q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionID)
+	var bs uint8
+	call := func(ctx context.Context) error {
+		bs, err = q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionID)
+		if err != nil {
+			return fmt.Errorf("could not get bridge status: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
 	if err != nil {
-		return fmt.Errorf("could not get bridge status: %w", err)
+		return fmt.Errorf("could not make contract call: %w", err)
 	}
 
 	span.AddEvent("status_check", trace.WithAttributes(attribute.String("chain_bridge_status", fastbridge.BridgeStatus(bs).String())))
@@ -321,9 +341,17 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 
 	// make sure relayer hasn't already proved. This is neeeded in case of an abrupt halt in event sourcing
 	// note:  this assumes caller has already checked the sender is the relayer.
-	bs, err := q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionID)
+	var bs uint8
+	call := func(ctx context.Context) error {
+		bs, err = q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionID)
+		if err != nil {
+			return fmt.Errorf("could not get bridge status: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
 	if err != nil {
-		return fmt.Errorf("could not get bridge status: %w", err)
+		return fmt.Errorf("could not make contract call: %w", err)
 	}
 
 	if bs == fastbridge.RelayerClaimed.Int() {
@@ -334,9 +362,17 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 		return nil
 	}
 
-	canClaim, err := q.Origin.Bridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionID, q.RelayerAddress)
+	var canClaim bool
+	claimCall := func(ctx context.Context) error {
+		canClaim, err = q.Origin.Bridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionID, q.RelayerAddress)
+		if err != nil {
+			return fmt.Errorf("could not check if can claim: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, claimCall, retry.WithMaxTotalTime(maxRPCRetryTime))
 	if err != nil {
-		return fmt.Errorf("could not check if can claim: %w", err)
+		return fmt.Errorf("could not make call: %w", err)
 	}
 
 	// can't claim yet. we'll check again later
