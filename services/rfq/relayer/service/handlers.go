@@ -100,6 +100,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	}
 
 	// immediately forward the request to handleSeen
+	span.AddEvent("forwarding to handleSeen")
 	qr, err := r.requestToHandler(ctx, dbReq)
 	if err != nil {
 		return fmt.Errorf("could not get quote request handler: %w", err)
@@ -120,11 +121,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 // We check if we have enough inventory to process the request and mark it as committed pending.
 //
 //nolint:cyclop
-func (q *QuoteRequestHandler) handleSeen(parentCtx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
-	ctx, span := q.metrics.Tracer().Start(parentCtx, "handleSeen", trace.WithAttributes(
-		attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
-	))
-
+func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	shouldProcess, err := q.Quoter.ShouldProcess(ctx, request)
 	if err != nil {
 		// will retry later
@@ -200,6 +197,7 @@ func (q *QuoteRequestHandler) handleSeen(parentCtx context.Context, span trace.S
 	}
 
 	// immediately forward the request to handleCommitPending
+	span.AddEvent("forwarding to handleCommitPending")
 	err = q.handleCommitPending(ctx, span, request)
 	if err != nil {
 		return fmt.Errorf("could not handle commit pending: %w", err)
@@ -260,6 +258,7 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 	}
 
 	// immediately forward to handleCommitConfirmed
+	span.AddEvent("forwarding to handleCommitConfirmed")
 	err = q.handleCommitConfirmed(ctx, span, request)
 	if err != nil {
 		return fmt.Errorf("could not handle commit confirmed: %w", err)
