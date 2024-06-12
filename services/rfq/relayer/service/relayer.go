@@ -312,9 +312,10 @@ func (r *Relayer) processDB(ctx context.Context) (err error) {
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		// Obviously, these are only seen.
-		for _, request := range requests {
+	// Obviously, these are only seen.
+	for _, req := range requests {
+		request := req // capture func literal
+		g.Go(func() error {
 			// if deadline < now
 			if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
 				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
@@ -332,9 +333,9 @@ func (r *Relayer) processDB(ctx context.Context) (err error) {
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
-		}
-		return nil
-	})
+			return nil
+		})
+	}
 
 	err = g.Wait()
 	if err != nil {
