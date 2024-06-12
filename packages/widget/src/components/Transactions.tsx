@@ -8,8 +8,10 @@ import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 
 export const Transactions = ({
   connectedAddress,
+  provider,
 }: {
   connectedAddress: string
+  provider: any
 }) => {
   const { transactions } = useTransactionsState()
 
@@ -48,6 +50,7 @@ export const Transactions = ({
         timestamp={transaction.timestamp}
         currentTime={currentTime}
         isStoredComplete={transaction.isComplete}
+        provider={provider}
       />
     ))
   }
