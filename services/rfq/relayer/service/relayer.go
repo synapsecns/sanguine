@@ -297,8 +297,8 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	return nil
 }
 
-func (r *Relayer) processDB(parentCtx context.Context) (err error) {
-	ctx, span := r.metrics.Tracer().Start(parentCtx, "processDB")
+func (r *Relayer) processDB(ctx context.Context) (err error) {
+	ctx, span := r.metrics.Tracer().Start(ctx, "processDB")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -307,25 +307,31 @@ func (r *Relayer) processDB(parentCtx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not get quote results: %w", err)
 	}
-	// Obviously, these are only seen.
-	for _, request := range requests {
-		// if deadline < now
-		if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
-			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
+
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		// Obviously, these are only seen.
+		for _, request := range requests {
+			// if deadline < now
+			if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
+				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
+				if err != nil {
+					return fmt.Errorf("could not update request status: %w", err)
+				}
+			}
+
+			qr, err := r.requestToHandler(ctx, request)
 			if err != nil {
-				return fmt.Errorf("could not update request status: %w", err)
+				return fmt.Errorf("could not get request to handler: %w", err)
+			}
+
+			err = qr.Handle(ctx, request)
+			if err != nil {
+				return fmt.Errorf("could not handle request: %w", err)
 			}
 		}
+		return nil
+	})
 
-		qr, err := r.requestToHandler(ctx, request)
-		if err != nil {
-			return fmt.Errorf("could not get request to handler: %w", err)
-		}
-
-		err = qr.Handle(ctx, request)
-		if err != nil {
-			return fmt.Errorf("could not handle request: %w", err)
-		}
-	}
-	return nil
+	return g.Wait()
 }
