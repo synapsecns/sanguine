@@ -8,7 +8,7 @@ import { removeTransaction } from '@/slices/_transactions/reducer'
 import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/TransactionPayloadDetail'
 import { Chain, Token } from '@/utils/types'
 import { TimeRemaining } from './components/TimeRemaining'
-import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
+import { calculateEstimatedTimeStatus } from './helpers/calculateEstimatedTimeStatus'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
@@ -74,7 +74,7 @@ export const _Transaction = ({
     isEstimatedTimeReached,
     isCheckTxStatus,
     isCheckTxForRevert,
-  } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
+  } = calculateEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxCompleted, _kappa] = useBridgeTxStatus({
     originChainId: originChain?.id,

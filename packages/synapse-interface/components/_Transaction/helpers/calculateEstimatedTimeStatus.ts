@@ -1,12 +1,11 @@
 /**
- * Provide additional data around elapsed time from an initial start time
+ * Calculates remaining time based on given initial, current, and estimated times.
  *
- * @param currentTime in seconds, unix
- * @param initialTime in seconds, unix
- * @param estimatedTime in seconds, unix
- * @returns elapsedTime, remainingTime, delayedTime (in seconds)
+ * @param currentTime - The current time, as a unix timestamp.
+ * @param initialTime - The initial time, as a unix timestamp.
+ * @param estimatedTime - The estimated duration to calculate, in seconds.
  */
-export const getEstimatedTimeStatus = (
+export const calculateEstimatedTimeStatus = (
   currentTime: number,
   initialTime: number,
   estimatedTime: number
