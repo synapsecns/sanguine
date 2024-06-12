@@ -30,6 +30,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
+	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -300,6 +301,16 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 func (r *Relayer) processDB(ctx context.Context) (err error) {
 	ctx, span := r.metrics.Tracer().Start(ctx, "processDB")
 	defer func() {
+		sqlStats, sqlErr := r.db.GetDBStats(ctx)
+		if sqlErr != nil {
+			span.SetAttributes(attribute.String("sql_error", sqlErr.Error()))
+		} else if sqlStats != nil {
+			span.SetAttributes(attribute.Int64("sql_open_conns", int64(sqlStats.OpenConnections)))
+			span.SetAttributes(attribute.Int64("sql_in_use_conns", int64(sqlStats.InUse)))
+			span.SetAttributes(attribute.Int64("sql_idle_conns", int64(sqlStats.Idle)))
+			span.SetAttributes(attribute.Int64("sql_wait_count", sqlStats.WaitCount))
+			span.SetAttributes(attribute.String("sql_wait_duration", sqlStats.WaitDuration.String()))
+		}
 		metrics.EndSpanWithErr(span, err)
 	}()
 

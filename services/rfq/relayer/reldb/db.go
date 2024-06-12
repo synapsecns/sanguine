@@ -2,6 +2,7 @@ package reldb
 
 import (
 	"context"
+	"database/sql"
 	"database/sql/driver"
 	"errors"
 	"fmt"
@@ -43,6 +44,8 @@ type Reader interface {
 	GetPendingRebalances(ctx context.Context, chainIDs ...uint64) ([]*Rebalance, error)
 	// GetRebalance gets a rebalance by ID. Should return ErrNoRebalanceForID if not found.
 	GetRebalanceByID(ctx context.Context, rebalanceID string) (*Rebalance, error)
+	// GetDBStats gets the database stats.
+	GetDBStats(ctx context.Context) (*sql.DBStats, error)
 }
 
 // Service is the interface for the database service.
