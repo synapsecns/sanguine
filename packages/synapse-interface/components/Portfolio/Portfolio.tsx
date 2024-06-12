@@ -25,7 +25,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState, resetBridgeInputs } from '@/slices/bridge/reducer'
 import { ViewSearchAddressBanner } from './components/ViewSearchAddressBanner'
 import { Activity } from '../Activity/Activity'
-import { useSearchInputState } from './helpers/useSearchInputStatus'
+import { useSearchInputState } from './hooks/useSearchInputStatus'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
