@@ -30,5 +30,5 @@ export const useStaleQuoteRefresher = (
         })
       }
     }
-  }, [currentTime])
+  }, [currentTime, staleTimeout])
 }
