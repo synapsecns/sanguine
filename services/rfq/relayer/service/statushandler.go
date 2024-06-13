@@ -89,11 +89,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 
 func (r *Relayer) mutexMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
 	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) (err error) {
-		unlocker, ok := r.relayMtx.TryLock(hexutil.Encode(req.TransactionID[:]))
-		if !ok {
-			span.SetAttributes(attribute.Bool("locked", true))
-			return nil
-		}
+		unlocker := r.relayMtx.Lock(hexutil.Encode(req.TransactionID[:]))
 		defer unlocker.Unlock()
 
 		return next(ctx, span, req)
