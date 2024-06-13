@@ -315,10 +315,24 @@ func (r *Relayer) processDB(ctx context.Context) (err error) {
 
 	for _, request := range requests {
 		wg.Add(1)
-		sem <- struct{}{} // acquire a slot
+
+		// acquire a slot (respecting context).
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("could not process db: %w", ctx.Err())
+		case sem <- struct{}{}:
+		}
+
 		go func(request reldb.QuoteRequest) {
 			defer wg.Done()
-			defer func() { <-sem }() // release the slot
+			// release the slot after we've finished
+			defer func() {
+				select {
+				case <-ctx.Done():
+					return
+				case <-sem:
+				}
+			}()
 
 			if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
 				if err := r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded); err != nil {
