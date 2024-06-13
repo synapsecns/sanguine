@@ -339,29 +339,31 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 	g, ctx := errgroup.WithContext(ctx)
 	// Obviously, these are only seen.
 	for _, req := range requests {
-		request := req // capture func literal
-		err = r.semaphore.Acquire(ctx, 1)
-		if err != nil {
-			return fmt.Errorf("could not acquire semaphore: %w", err)
-		}
-		g.Go(func() error {
-			defer r.semaphore.Release(1)
-			err = r.processRequest(ctx, request)
-			if err != nil {
-				return fmt.Errorf("could not process request: %w", err)
-			}
-			return nil
-		})
-
-		// wait for each request if serial is specified
 		if serial {
-			err = g.Wait()
+			// process in serial
+			err = r.processRequest(ctx, req)
 			if err != nil {
 				return fmt.Errorf("could not process request: %w", err)
 			}
+		} else {
+			// process in parallel (new goroutine)
+			request := req // capture func literal
+			err = r.semaphore.Acquire(ctx, 1)
+			if err != nil {
+				return fmt.Errorf("could not acquire semaphore: %w", err)
+			}
+			g.Go(func() error {
+				defer r.semaphore.Release(1)
+				err = r.processRequest(ctx, request)
+				if err != nil {
+					return fmt.Errorf("could not process request: %w", err)
+				}
+				return nil
+			})
 		}
 	}
 
+	// no-op if serial is specified
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not process requests: %w", err)
