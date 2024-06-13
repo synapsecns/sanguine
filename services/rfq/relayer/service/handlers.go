@@ -18,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/sync/errgroup"
 )
 
 var maxRPCRetryTime = 15 * time.Second
@@ -122,11 +123,30 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 //
 //nolint:cyclop
 func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
-	shouldProcess, err := q.Quoter.ShouldProcess(ctx, request)
+	// check shouldProcess and isProfitable in parallel
+	g, ctx := errgroup.WithContext(ctx)
+	var shouldProcess, isProfitable bool
+	g.Go(func() error {
+		shouldProcess, err = q.Quoter.ShouldProcess(ctx, request)
+		if err != nil {
+			// will retry later
+			return fmt.Errorf("could not determine if should process: %w", err)
+		}
+		return nil
+	})
+	g.Go(func() error {
+		isProfitable, err = q.Quoter.IsProfitable(ctx, request)
+		if err != nil {
+			// will retry later
+			return fmt.Errorf("could not determine if profitable: %w", err)
+		}
+		return nil
+	})
+	err = g.Wait()
 	if err != nil {
-		// will retry later
-		return fmt.Errorf("could not determine if should process: %w", err)
+		return fmt.Errorf("error checking seen quote: %w", err)
 	}
+
 	if !shouldProcess {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.WillNotProcess)
 		if err != nil {
@@ -136,12 +156,6 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
-	// check if the quote is profitable
-	isProfitable, err := q.Quoter.IsProfitable(ctx, request)
-	if err != nil {
-		// will retry later
-		return fmt.Errorf("could not determine if profitable: %w", err)
-	}
 	if !isProfitable {
 		// will retry later since profitability is dependent on dynamic gas prices
 		span.AddEvent("quote is not profitable")
