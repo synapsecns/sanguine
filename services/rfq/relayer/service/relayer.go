@@ -33,7 +33,10 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
+
+const maxConcurrentRequests = 50
 
 // Relayer is the core of the relayer application.
 type Relayer struct {
@@ -50,6 +53,8 @@ type Relayer struct {
 	signer         signer.Signer
 	claimCache     *ttlcache.Cache[common.Hash, bool]
 	decimalsCache  *xsync.MapOf[string, *uint8]
+	// semaphore is used to limit the number of concurrent requests
+	semaphore *semaphore.Weighted
 }
 
 var logger = log.Logger("relayer")
@@ -144,6 +149,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		chainListeners: chainListeners,
 		apiServer:      apiServer,
 		apiClient:      apiClient,
+		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
 	}
 	return &rel, nil
 }
@@ -315,7 +321,12 @@ func (r *Relayer) processDB(ctx context.Context) (err error) {
 	// Obviously, these are only seen.
 	for _, req := range requests {
 		request := req // capture func literal
+		err = r.semaphore.Acquire(ctx, 1)
+		if err != nil {
+			return fmt.Errorf("could not acquire semaphore: %w", err)
+		}
 		g.Go(func() error {
+			defer r.semaphore.Release(1)
 			// if deadline < now
 			if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
 				err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
