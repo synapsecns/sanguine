@@ -2,8 +2,6 @@ module github.com/synapsecns/sanguine/tools
 
 go 1.22
 
-
-
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/brianvoe/gofakeit/v6 v6.27.0

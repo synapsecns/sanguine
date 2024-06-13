@@ -2,8 +2,6 @@ module github.com/synapsecns/sanguine/contrib/git-changes-action
 
 go 1.22
 
-
-
 replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/synapsecns/sanguine/core => ../../core
