@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.25.2",
+  "version": "0.26.0",
   "private": true,
   "engines": {
     "node": ">=18.18.0"
@@ -95,9 +95,9 @@
   "keywords": [],
   "devDependencies": {
     "@depay/web3-mock": "^14.0.0",
-    "@graphql-codegen/cli": "5.0.0",
-    "@graphql-codegen/client-preset": "4.1.0",
-    "@graphql-codegen/introspection": "4.0.0",
+    "@graphql-codegen/cli": "5.0.2",
+    "@graphql-codegen/client-preset": "4.2.6",
+    "@graphql-codegen/introspection": "4.0.3",
     "@graphql-codegen/typescript-rtk-query": "^2.4.1",
     "@testing-library/react": "^14.0.0",
     "@types/react": "^18.2.67",
