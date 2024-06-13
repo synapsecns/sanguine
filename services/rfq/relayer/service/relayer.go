@@ -205,21 +205,31 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 	})
 
 	g.Go(func() error {
-		// run pre-relay requests in parallel
-		err := r.runDBSelector(ctx, false, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.NotEnoughInventory)
-		if err != nil {
-			return fmt.Errorf("could not start db selector: %w", err)
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(defaultPostInterval * time.Second):
+				err := r.runDBSelector(ctx, false, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.NotEnoughInventory)
+				if err != nil {
+					return fmt.Errorf("could not start db selector: %w", err)
+				}
+			}
 		}
-		return nil
 	})
 
 	g.Go(func() error {
-		// run post-relay requests in serial
-		err := r.runDBSelector(ctx, true, reldb.RelayCompleted, reldb.ProvePosted)
-		if err != nil {
-			return fmt.Errorf("could not start db selector: %w", err)
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(defaultPostInterval * time.Second):
+				err := r.runDBSelector(ctx, true, reldb.RelayCompleted, reldb.ProvePosted)
+				if err != nil {
+					return fmt.Errorf("could not start db selector: %w", err)
+				}
+			}
 		}
-		return nil
 	})
 
 	g.Go(func() error {
