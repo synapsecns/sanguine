@@ -74,17 +74,30 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		apiClient:      r.apiClient,
 	}
 
-	qr.handlers[reldb.Seen] = r.deadlineMiddleware(r.gasMiddleware(qr.handleSeen))
-	qr.handlers[reldb.CommittedPending] = r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitPending))
-	qr.handlers[reldb.CommittedConfirmed] = r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitConfirmed))
+	qr.handlers[reldb.Seen] = r.mutexMiddleware(r.deadlineMiddleware(r.gasMiddleware(qr.handleSeen)))
+	qr.handlers[reldb.CommittedPending] = r.mutexMiddleware(r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitPending)))
+	qr.handlers[reldb.CommittedConfirmed] = r.mutexMiddleware(r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitConfirmed)))
 	// no more need for deadline middleware now, we already relayed.
-	qr.handlers[reldb.RelayCompleted] = qr.handleRelayCompleted
-	qr.handlers[reldb.ProvePosted] = qr.handleProofPosted
+	qr.handlers[reldb.RelayCompleted] = r.mutexMiddleware(qr.handleRelayCompleted)
+	qr.handlers[reldb.ProvePosted] = r.mutexMiddleware(qr.handleProofPosted)
 
 	// error handlers only
-	qr.handlers[reldb.NotEnoughInventory] = r.deadlineMiddleware(qr.handleNotEnoughInventory)
+	qr.handlers[reldb.NotEnoughInventory] = r.mutexMiddleware(r.deadlineMiddleware(qr.handleNotEnoughInventory))
 
 	return qr, nil
+}
+
+func (r *Relayer) mutexMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
+	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) (err error) {
+		unlocker, ok := r.relayMtx.TryLock(hexutil.Encode(req.TransactionID[:]))
+		if !ok {
+			span.SetAttributes(attribute.Bool("locked", true))
+			return nil
+		}
+		defer unlocker.Unlock()
+
+		return next(ctx, span, req)
+	}
 }
 
 func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {

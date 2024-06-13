@@ -12,6 +12,7 @@ import (
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/puzpuzpuz/xsync/v2"
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -55,6 +56,8 @@ type Relayer struct {
 	decimalsCache  *xsync.MapOf[string, *uint8]
 	// semaphore is used to limit the number of concurrent requests
 	semaphore *semaphore.Weighted
+	// relayMtx is used to synchronize handling of relay requests
+	relayMtx mapmutex.StringMapMutex
 }
 
 var logger = log.Logger("relayer")
@@ -150,6 +153,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		apiServer:      apiServer,
 		apiClient:      apiClient,
 		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
+		relayMtx:       mapmutex.NewStringMapMutex(),
 	}
 	return &rel, nil
 }
