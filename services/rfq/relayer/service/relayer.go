@@ -260,20 +260,47 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 
 func (r *Relayer) runDBSelector(ctx context.Context) error {
 	interval := r.cfg.GetDBSelectorInterval()
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("could not run db selector: %w", ctx.Err())
-		case <-time.After(interval):
-			// TODO: add context w/ timeout
-			// TODO: add trigger
-			// TODO: should not fail on error
-			err := r.processDB(ctx)
-			if err != nil {
-				return err
+
+	// process pre-relay and post-relay requests from the db in parallel
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("could not run db selector (pre-relay): %w", ctx.Err())
+			case <-time.After(interval):
+				// TODO: add context w/ timeout
+				// TODO: add trigger
+				// TODO: should not fail on error
+				err := r.processDBPreRelay(ctx)
+				if err != nil {
+					return err
+				}
 			}
 		}
+	})
+	g.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("could not run db selector (post-relay): %w", ctx.Err())
+			case <-time.After(interval):
+				// TODO: add context w/ timeout
+				// TODO: add trigger
+				// TODO: should not fail on error
+				err := r.processDBPostRelay(ctx)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	})
+
+	err := g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not run db selector: %w", err)
 	}
+	return nil
 }
 
 // startCCTPRelayer starts the CCTP relayer, if a config is specified.
@@ -309,14 +336,36 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	return nil
 }
 
-func (r *Relayer) processDB(ctx context.Context) (err error) {
-	ctx, span := r.metrics.Tracer().Start(ctx, "processDB")
+func (r *Relayer) processDBPreRelay(ctx context.Context) (err error) {
+	ctx, span := r.metrics.Tracer().Start(ctx, "processDBPreRelay")
 	defer func() {
 		r.recordDBStats(ctx, span)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayCompleted, reldb.ProvePosted, reldb.NotEnoughInventory)
+	err = r.processRequests(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.NotEnoughInventory)
+	if err != nil {
+		return fmt.Errorf("could not process db pre-relay: %w", err)
+	}
+	return nil
+}
+
+func (r *Relayer) processDBPostRelay(ctx context.Context) (err error) {
+	ctx, span := r.metrics.Tracer().Start(ctx, "processDBPreRelay")
+	defer func() {
+		r.recordDBStats(ctx, span)
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	err = r.processRequests(ctx, reldb.RelayCompleted, reldb.ProvePosted)
+	if err != nil {
+		return fmt.Errorf("could not process db pre-relay: %w", err)
+	}
+	return nil
+}
+
+func (r Relayer) processRequests(ctx context.Context, matchStatuses ...reldb.QuoteRequestStatus) (err error) {
+	requests, err := r.db.GetQuoteResultsByStatus(ctx, matchStatuses...)
 	if err != nil {
 		return fmt.Errorf("could not get quote results: %w", err)
 	}
@@ -354,7 +403,7 @@ func (r *Relayer) processDB(ctx context.Context) (err error) {
 
 	err = g.Wait()
 	if err != nil {
-		return fmt.Errorf("could not process db: %w", err)
+		return fmt.Errorf("could not process requests: %w", err)
 	}
 	return nil
 }
