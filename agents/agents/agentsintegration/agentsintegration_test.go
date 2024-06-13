@@ -217,7 +217,7 @@ func (u *AgentsIntegrationSuite) TestAgentsE2E() {
 
 	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 	optimisticSeconds := uint32(1)
-	recipientDestination := u.TestClientMetadataOnDestination.Address().Hash()
+	recipientDestination := common.BytesToHash(u.TestClientMetadataOnDestination.Address().Bytes())
 	nonce := uint32(1)
 	body := []byte{byte(gofakeit.Uint32())}
 	txContextOrigin := u.TestBackendOrigin.GetTxContext(u.GetTestContext(), u.OriginContractMetadata.OwnerPtr())

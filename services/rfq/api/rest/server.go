@@ -12,6 +12,8 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/synapsecns/sanguine/core/ginhelper"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -44,6 +46,8 @@ type QuoterAPIServer struct {
 	relayAckCache *ttlcache.Cache[string, string]
 	// ackMux is a mutex used to ensure that only one transaction id can be acked at a time.
 	ackMux sync.Mutex
+	// latestQuoteAgeGauge is a gauge that records the age of the latest quote
+	latestQuoteAgeGauge metric.Float64ObservableGauge
 }
 
 // NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -300,4 +304,33 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 		RelayerAddress: relayerAddr,
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+func (r *QuoterAPIServer) recordLatestQuoteAge(ctx context.Context, observer metric.Observer) (err error) {
+	if r.handler == nil || r.latestQuoteAgeGauge == nil {
+		return nil
+	}
+
+	quotes, err := r.db.GetAllQuotes(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get latest quote age: %w", err)
+	}
+
+	ageByRelayer := make(map[string]float64)
+	for _, quote := range quotes {
+		age := time.Since(quote.UpdatedAt).Seconds()
+		prevAge, ok := ageByRelayer[quote.RelayerAddr]
+		if !ok || age < prevAge {
+			ageByRelayer[quote.RelayerAddr] = age
+		}
+	}
+
+	for relayer, age := range ageByRelayer {
+		opts := metric.WithAttributes(
+			attribute.String("relayer", relayer),
+		)
+		observer.ObserveFloat64(r.latestQuoteAgeGauge, age, opts)
+	}
+
+	return nil
 }

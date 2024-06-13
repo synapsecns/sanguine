@@ -565,7 +565,7 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	optimisticSeconds := uint32(10)
 
-	recipient := testContractDest.Address().Hash()
+	recipient := common.BytesToHash(testContractDest.Address().Bytes())
 	nonce := uint32(1)
 	body := []byte{byte(gofakeit.Uint32())}
 

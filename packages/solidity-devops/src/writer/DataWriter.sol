@@ -50,19 +50,25 @@ abstract contract DataWriter is PathFinder, Logger {
     /// @notice Writes the global deploy config that is shared across all chains for a contract.
     function writeGlobalDeployConfig(
         string memory contractName,
-        string memory globalProperty,
+        string memory environment,
         string memory configData
     )
         internal
     {
+        string memory environmentLabel = environment.equals(ENVIRONMENT_PROD) ? "production" : environment;
         writeJson(
-            StringUtils.concat("Saving global config for ", contractName, ": ", globalProperty),
-            getGlobalDeployConfigFN(contractName, globalProperty),
+            StringUtils.concat("Saving global config for ", contractName, " [", environmentLabel, "]"),
+            getGlobalDeployConfigFN(contractName, environment),
             configData
         );
     }
 
-    // ═══════════════════════════════════════════════════ UTILS ═══════════════════════════════════════════════════════
+    /// @notice Writes the global deploy production config that is shared across all chains for a contract.
+    function writeGlobalDeployProdConfig(string memory contractName, string memory configData) internal {
+        writeGlobalDeployConfig(contractName, ENVIRONMENT_PROD, configData);
+    }
+
+    // ═══════════════════════════════════════════════════ UTILS ═══════════════════════════════════════════════════
 
     /// @notice Creates a directory where the file will be saved if it doesn't exist yet.
     function createDirIfRequired(string memory filePath) internal {

@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/modules/confirmedtofinalized"
 	"github.com/synapsecns/sanguine/services/omnirpc/modules/harmonyproxy"
-	"os"
-	"time"
+	"github.com/synapsecns/sanguine/services/omnirpc/modules/receiptsbackup"
 
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
@@ -186,6 +188,27 @@ var harmonyProxy = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		simpleProxy := harmonyproxy.NewHarmonyProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
+
+		err := simpleProxy.Run(c.Context)
+		if err != nil {
+			return fmt.Errorf("return err: %w", err)
+		}
+		return nil
+	},
+}
+
+var receiptsProxy = &cli.Command{
+	Name:  "receipts-backup",
+	Usage: "A rpc proxy for using backup RPC with hanging receipt requests",
+	Flags: []cli.Flag{
+		rpcFlag,
+		backupRPCFlag,
+		portFlag,
+		chainIDFlag,
+		recieptsTimeoutFlag,
+	},
+	Action: func(c *cli.Context) error {
+		simpleProxy := receiptsbackup.NewProxy(c.String(rpcFlag.Name), c.String(backupRPCFlag.Name), c.Duration(recieptsTimeoutFlag.Name), metrics.Get(), c.Int(portFlag.Name), c.Int(chainIDFlag.Name))
 
 		err := simpleProxy.Run(c.Context)
 		if err != nil {

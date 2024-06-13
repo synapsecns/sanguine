@@ -11,7 +11,7 @@ loadEnv()
 
 const { positionalArgs } = parseCommandLineArgs({
   requiredArgsCount: 2,
-  usage: 'Usage: "yarn sd <chain-name> <contract-alias>"',
+  usage: 'Usage: "npx sd <chain-name> <contract-alias>"',
 })
 const [chainName, contractAlias] = positionalArgs
 createDeploymentDirs(chainName)

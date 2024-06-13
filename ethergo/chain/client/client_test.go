@@ -1,6 +1,9 @@
 package client_test
 
 import (
+	"os"
+	"time"
+
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
@@ -10,8 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"go.uber.org/atomic"
-	"os"
-	"time"
 )
 
 // TestAttemptReconnect tests the rehupping process. You may notice that in the below test, if the first connection
@@ -22,7 +23,7 @@ func (c *ClientSuite) TestAttemptReconnect() {
 	if os.Getenv("ATTEMPT_CONNECT_ENABLED") != "" {
 		c.T().Skip("deprecated")
 	}
-	testBackend := preset.GetRinkeby().Geth(c.GetTestContext(), c.T())
+	testBackend := preset.GetSepolia().Geth(c.GetTestContext(), c.T())
 
 	// make sure the client doesn't reset on us during the test
 	client.SetResetTimeout(time.Hour)

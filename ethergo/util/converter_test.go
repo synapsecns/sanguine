@@ -36,11 +36,15 @@ func TestTxToCall(t *testing.T) {
 			Equal(t, mockTxAsCall.From, acct.Address)
 			Equal(t, mockTxAsCall.To, mockedSignedTx.To())
 			Equal(t, mockTxAsCall.Gas, mockedSignedTx.Gas())
-			Equal(t, mockTxAsCall.GasPrice, mockedSignedTx.GasPrice())
 			Equal(t, mockTxAsCall.Data, mockedSignedTx.Data())
 			Equal(t, mockTxAsCall.AccessList, mockedSignedTx.AccessList())
-			Equal(t, mockTxAsCall.GasFeeCap, mockedSignedTx.GasFeeCap())
-			Equal(t, mockTxAsCall.GasTipCap, mockedSignedTx.GasTipCap())
+
+			if mockedSignedTx.Type() == types.LegacyTxType {
+				Equal(t, mockTxAsCall.GasPrice, mockedSignedTx.GasPrice())
+			} else {
+				Equal(t, mockTxAsCall.GasFeeCap, mockedSignedTx.GasFeeCap())
+				Equal(t, mockTxAsCall.GasTipCap, mockedSignedTx.GasTipCap())
+			}
 		}
 	}
 }

@@ -16,7 +16,7 @@ func (g *GethSuite) TestGetFullBackend() {
 	Nil(g.T(), err)
 	height, err := client.HeaderByNumber(g.GetTestContext(), nil)
 	Nil(g.T(), err)
-	Equal(g.T(), height.Number.Uint64(), uint64(0))
+	Equal(g.T(), height.Number.Uint64(), uint64(1))
 
 	be.FundAccount(g.GetTestContext(), common.Address{}, *big.NewInt(1))
 

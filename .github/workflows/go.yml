@@ -523,18 +523,18 @@ jobs:
       # Foundry is required for flattening
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
         with:
           version: nightly
 
       - name: Install Node Dependencies
         run: yarn install --immutable
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
 
       # Generate flattened files
       - name: Run flattener
         run: npx lerna exec npm run build:go
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
 
       # Setup Go
       - uses: actions/setup-go@v4

@@ -3,15 +3,9 @@ go 1.21
 // note: new paths should be added as flags to the .codecov.yaml
 use (
 	./agents
-	./committee
 	./contrib/git-changes-action
 	./contrib/promexporter
-	./contrib/release-copier-action
 	./contrib/screener-api
-	./contrib/terraform-provider-helmproxy
-	./contrib/terraform-provider-iap
-	./contrib/terraform-provider-kubeproxy
-	./contrib/tfcore
 	./core
 	./ethergo
 	./services/cctp-relayer
@@ -20,6 +14,5 @@ use (
 	./services/rfq
 	./services/scribe
 	./services/stiprelayer
-	./sin-executor
 	./tools
 )
