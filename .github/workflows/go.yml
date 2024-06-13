@@ -85,7 +85,7 @@ jobs:
       max-parallel: 8
       matrix:
         go-version:
-          - 1.21.x
+          - 1.22.x
         platform:
           - ubuntu-latest
         # only do on agents for now. Anything that relies on solidity in a package should do this
@@ -137,12 +137,6 @@ jobs:
           sleep 1
           done
 
-      - name: Install pyroscope-ci
-        uses: jaxxstorm/action-install-gh-release@v1.10.0
-        with: # Grab the latest version
-          repo: pyroscope-io/ci
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install gotestsum
         uses: jaxxstorm/action-install-gh-release@v1.10.0
@@ -156,17 +150,6 @@ jobs:
         run: |
           echo "::set-output name=flag::$(echo "${{ matrix.package }}" | rev | cut -d/ -f1 | rev)"
 
-      - name: Get pyroscope path
-        id: pyroscope-path
-        run: echo "##[set-output name=PYROSCOPE_PATH;]$(which pyroscope-ci)"
-        shell: bash
-
-      - name: Setup Pyroscope Tests
-        run: $PYROSCOPE_PATH go install --applicationName=$APPLICATION_NAME .
-        shell: bash
-        env:
-          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
-          APPLICATION_NAME: ${{ steps.coverage.outputs.flag }}
 
       - name: Precompile Tests
         working-directory: ${{ matrix.package }}
@@ -188,7 +171,7 @@ jobs:
             retries=0
 
             while [ $retries -lt $max_num_retries ]; do
-              if $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=3 --packages="$pkg" --format standard-verbose -- -v -timeout 30m -coverpkg="$pkg" -coverprofile=profile.cov $pkg; then
+              if gotestsum --rerun-fails=3 --packages="$pkg" --format standard-verbose -- -v -timeout 30m -coverpkg="$pkg" -coverprofile=profile.cov $pkg; then
                 break
               else
                 retries=$((retries+1))
@@ -211,7 +194,6 @@ jobs:
           cp coverage.txt profile.cov
           docker ps
         env:
-          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
           MYSQL_USER: user
@@ -271,7 +253,7 @@ jobs:
       fail-fast: false
       matrix:
         go-version:
-          - 1.21.x
+          - 1.22.x
         platform:
           - ubuntu-latest
     steps:
@@ -321,7 +303,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.21.x
+          go-version: 1.22.x
 
       - uses: actions/checkout@v4
         with:
@@ -416,7 +398,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.21.x
+          go-version: 1.22.x
 
       - name: Go modules cache
         uses: actions/cache@v3
@@ -539,7 +521,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.21.x
+          go-version: 1.22.x
 
       - name: Go modules cache
         uses: actions/cache@v3
