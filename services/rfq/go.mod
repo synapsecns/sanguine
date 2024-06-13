@@ -2,6 +2,8 @@ module github.com/synapsecns/sanguine/services/rfq
 
 go 1.22
 
+toolchain go1.22.4
+
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/alecthomas/assert v1.0.0

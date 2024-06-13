@@ -2,6 +2,8 @@ module github.com/synapsecns/sanguine/services/explorer
 
 go 1.22
 
+toolchain go1.22.4
+
 replace (
 	github.com/Yamashou/gqlgenc => github.com/synapsecns/gqlgenc v0.10.0-hotfix
 	// later versions give errors on uint64 being too high.

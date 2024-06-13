@@ -2,6 +2,8 @@ module github.com/synapsecns/sanguine/agents
 
 go 1.22
 
+toolchain go1.22.4
+
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088

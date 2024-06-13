@@ -85,7 +85,7 @@ jobs:
       max-parallel: 8
       matrix:
         go-version:
-          - 1.21.x
+          - 1.22.x
         platform:
           - ubuntu-latest
         # only do on agents for now. Anything that relies on solidity in a package should do this
@@ -271,7 +271,7 @@ jobs:
       fail-fast: false
       matrix:
         go-version:
-          - 1.21.x
+          - 1.22.x
         platform:
           - ubuntu-latest
     steps:
@@ -321,7 +321,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.21.x
+          go-version: 1.22.x
 
       - uses: actions/checkout@v4
         with:
@@ -416,7 +416,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.21.x
+          go-version: 1.22.x
 
       - name: Go modules cache
         uses: actions/cache@v3
@@ -539,7 +539,7 @@ jobs:
       # Setup Go
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.21.x
+          go-version: 1.22.x
 
       - name: Go modules cache
         uses: actions/cache@v3

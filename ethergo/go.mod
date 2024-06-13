@@ -2,6 +2,8 @@ module github.com/synapsecns/sanguine/ethergo
 
 go 1.22
 
+toolchain go1.22.4
+
 require (
 	cloud.google.com/go/kms v1.15.7
 	github.com/DenrianWeiss/tracely v0.0.0-20220624070317-49cf8afaaf18
