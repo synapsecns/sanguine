@@ -8,6 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ipfs/go-log"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/puzpuzpuz/xsync/v2"
@@ -348,7 +349,13 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 		} else {
 			// process in parallel (new goroutine)
 			request := req // capture func literal
-			err = r.semaphore.Acquire(ctx, 1)
+			ok := r.semaphore.TryAcquire(1)
+			if !ok {
+				span.AddEvent("could not acquire semaphore", trace.WithAttributes(
+					attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
+				))
+				continue
+			}
 			if err != nil {
 				return fmt.Errorf("could not acquire semaphore: %w", err)
 			}
