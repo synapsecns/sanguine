@@ -106,9 +106,10 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	if err != nil {
 		return fmt.Errorf("could not get quote request handler: %w", err)
 	}
-	err = qr.Handle(ctx, dbReq)
-	if err != nil {
-		return fmt.Errorf("could not handle seen: %w", err)
+	fwdErr := qr.Handle(ctx, dbReq)
+	if fwdErr != nil {
+		logger.Errorf("could not forward to handle seen: %w", fwdErr)
+		span.AddEvent("could not forward to handle seen")
 	}
 
 	return nil
@@ -212,9 +213,10 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 
 	// immediately forward the request to handleCommitPending
 	span.AddEvent("forwarding to handleCommitPending")
-	err = q.Handle(ctx, request)
-	if err != nil {
-		return fmt.Errorf("could not handle commit pending: %w", err)
+	fwdErr := q.Handle(ctx, request)
+	if fwdErr != nil {
+		logger.Errorf("could not forward to handle commit pending: %w", fwdErr)
+		span.AddEvent("could not forward to handle commit pending")
 	}
 
 	return nil
@@ -273,9 +275,10 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 
 	// immediately forward to handleCommitConfirmed
 	span.AddEvent("forwarding to handleCommitConfirmed")
-	err = q.Handle(ctx, request)
-	if err != nil {
-		return fmt.Errorf("could not handle commit confirmed: %w", err)
+	fwdErr := q.Handle(ctx, request)
+	if fwdErr != nil {
+		logger.Errorf("could not forward to handle commit confirmed: %w", fwdErr)
+		span.AddEvent("could not forward to handle commit confirmed")
 	}
 
 	return nil
