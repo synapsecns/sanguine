@@ -14,7 +14,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/synapsecns/sanguine/contrib/screener-api v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
-	github.com/synapsecns/sanguine/ethergo v0.0.2
+	github.com/synapsecns/sanguine/ethergo v0.1.0
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/services/rfq v0.0.28
 	github.com/urfave/cli/v2 v2.27.1
