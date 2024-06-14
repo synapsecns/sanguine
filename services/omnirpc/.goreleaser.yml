@@ -28,6 +28,23 @@ builds:
       - linux
     goarch:
       - amd64
+  # Linux ARM64
+  - id: omnirpc-arm64
+    binary: omnirpc
+    ldflags:
+      - -s -w -extldflags '-static'
+    tags:
+      - netgo
+      - osusergo
+    env:
+      - CC=gcc
+      - CXX=g++
+    main: main.go
+    goos:
+      - linux
+    goarch:
+      - arm64
+
 
 # add a source archive at release time
 source:
@@ -65,9 +82,28 @@ dockers:
       - '--label=org.opencontainers.image.revision={{.FullCommit}}'
       - '--label=org.opencontainers.image.version={{.Version}}'
       - '--label=org.opencontainers.image.source={{.GitURL}}'
+      - '--platform=linux/amd64'
+      - '--pull'
     dockerfile: ../../docker/omnirpc.Dockerfile
     ids:
       - omnirpc
+  - goos: linux
+    goarch: arm64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/omnirpc:latest'
+      - 'ghcr.io/synapsecns/sanguine/omnirpc:{{ .Tag }}'
+      - 'ghcr.io/synapsecns/sanguine/omnirpc:{{ .FullCommit }}'
+    build_flag_templates:
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.name={{.ProjectName}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
+      - '--platform=linux/arm64'
+      - '--pull'
+    dockerfile: ../../docker/omnirpc.Dockerfile
+    ids:
+      - omnirpc-arm64
 
 # track sizes
 report_sizes: true
