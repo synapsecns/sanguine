@@ -4,6 +4,7 @@ import { AssetImage } from '@components/misc/AssetImage'
 import { addressToSymbol } from '@utils/addressToSymbol'
 import { TOKEN_HASH_MAP, tokenAddressToToken } from 'synapse-constants'
 import { addressToDecimals } from '@utils/addressToDecimals'
+import { Tooltip as ReactTooltip } from 'react-tooltip'
 
 export function IconAndAmount({
   formattedValue,
@@ -11,7 +12,7 @@ export function IconAndAmount({
   chainId,
   tokenSymbol,
   textSize = 'text-2xl',
-  iconSize = 'w-6 h-6',
+  iconSize = 'w-4 h-4 rounded-full',
   styledCoin = false,
 }) {
   const t = chainId && tokenAddress && tokenAddressToToken( chainId, tokenAddress )
@@ -19,7 +20,7 @@ export function IconAndAmount({
   let styledCoinClass
   if (styledCoin === true) {
     styledCoinClass =
-      'bg-gray-700 rounded-xl text-[10px] pl-[5px] pr-[5px] pt-[2px] pb-[2px] text-white  items-center  h-fit ml-2'
+      'bg-gray-700 rounded-xl text-[10px] text-white items-center ml-2 pl-[5px] pr-[5px] pt-[2px] pb-[2px]'
   } else {
     styledCoinClass = t && `${getCoinTextColor(t)} ${textSize}`
   }
@@ -49,19 +50,24 @@ export function IconAndAmount({
   }
 
   return (
-    <div className="flex justify-between items-center ">
-      <div className="flex flex-row items-center ">
+    <div className="flex items-center">
+      <div className="flex flex-row items-center">
         <AssetImage
           tokenAddress={tokenAddress}
           tokenSymbol={tokenSymbol}
           chainId={chainId}
-          className={`${iconSize} inline mr-1 rounded-lg hover:opacity-[0.8] transition-all ease-in-out`}
+          className={`${iconSize} min-w-[1.5rem] min-h-[1.5rem] inline-block mr-[.5rem]`}
         />
-        <div className={`${textSize} pl-1 whitespace-nowrap text-white`}>
+        <div
+          data-tooltip-content={amount}
+          data-tooltip-id="amount"
+          className='flex-1 text-white'
+        >
           {formatAmount(amount)}
         </div>
       </div>
       {showToken}
+      <ReactTooltip id="amount" className="z-50 rounded-xl" />
     </div>
   )
 }

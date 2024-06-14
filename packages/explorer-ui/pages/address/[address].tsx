@@ -30,6 +30,10 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 })
 
+function truncateAddress(address) {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
 interface variableTypes {
   page: number
   addressFrom?: string,
@@ -96,7 +100,12 @@ export default function address() {
 
   return (
     <StandardPageContainer title={'Address'}>
-      <CopyTitle title={walletAddress} />
+      <div className="block sm:hidden">
+        <CopyTitle title={truncateAddress(walletAddress)} />
+      </div>
+      <div className="hidden sm:block">
+        <CopyTitle title={walletAddress} />
+      </div>
       {walletAddress != '' ? (
         <HolisticStats
           platform={platform}

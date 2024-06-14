@@ -15,6 +15,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import MenuItem from '@mui/material/MenuItem'
 import { CHAINS } from 'synapse-constants'
+import { TRANSACTIONS_PATH } from '@urls'
 
 const ChainId = CHAINS.ChainId
 const CHAIN_ENUM_BY_ID = CHAINS.CHAIN_ENUM_BY_ID
@@ -115,9 +116,9 @@ export function UniversalSearch({
   return (
     <>
       <div className="border-y border-white border-opacity-10 ">
-        <div className="flex justify-center items-center p-2 gap-x-4 py-6">
+      <div className="flex flex-col sm:flex-row justify-center items-center p-2 gap-x-4 py-6 space-y-2 sm:space-y-0">
           <h3
-            className="text-white flex items-center mr-4"
+            className="text-white flex items-center mr-4 hidden sm:flex"
             onClick={() => setShowText(!showText)}
           >
             {!showText ? (
@@ -149,32 +150,39 @@ export function UniversalSearch({
             )}
             Filters
           </h3>
-          <div className="grow">
-            <TextField
-              size="small"
-              value={kappa}
-              onChange={(e) => {
-                setKappa(e.target.value)
-              }}
-              id="outlined-basic"
-              label="Search by TXID / TXHash"
-              variant="outlined"
-              sx={inputStyle}
-            />
-          </div>
-          <button
-            onClick={() => executeSearch()}
-            className={
-              'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ml-[-105px] pointer-cursor z-10' +
-              (loading ? ' pointer-events-none opacity-[0.4]' : '')
-            }
-          >
-            Search
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2 grow">
+              <TextField
+                size="small"
+                value={kappa}
+                onChange={(e) => {
+                  setKappa(e.target.value)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    window.location.href = TRANSACTIONS_PATH + (kappa ? '?hash=' + kappa : '');
+                  }
+                }}
+                id="outlined-basic"
+                label="Search by TXID / TXHash"
+                variant="outlined"
+                sx={inputStyle}
+                className="grow sm:flex-1"
+              />
+              <button
+                onClick={() => executeSearch()}
+                className={
+                  'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700 px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ' +
+                  (loading ? ' pointer-events-none opacity-[0.4]' : '') +
+                  ' sm:flex-none sm:w-auto'
+                }
+              >
+                Search
+              </button>
+            </div>
           {/* <button onClick={() => executeSearch()} className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200">
             <a href={searchLink}>Search</a>
           </button> */}
-          <div className="">
+          <div className="sm:w-auto sm:mx-auto sm:items-center sm:py-2">
             <button
               disabled={loading}
               onClick={() => setPending(false)}
@@ -360,23 +368,7 @@ export function UniversalSearch({
                 </div>
               </div>
             </div>
-            {/* <div className="flex justify-center items-center p-2 gap-x-14 py-4">
-              <h3
-                className="text-white flex items-center mr-1"
-                onClick={() => setShowText(!showText)}
-              >
-                Token
-              </h3>
-              <div className="grow">
-                <div className="flex flex-row items-center ">
-                <TextField size="small" value={token} onChange={(e) => {
-                  setToken(e.target.value)
-                }} id="outlined-basic" label="Token Address" variant="outlined" sx={inputStyle} />
 
-
-                </div>
-              </div>
-            </div> */}
             {/* THIS IS MIN/MAX SIZE */}
             <div className="flex justify-center items-center p-2 gap-x-6 py-4">
               <h3
