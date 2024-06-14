@@ -28,4 +28,3 @@ root
 ├── <a href="./threaditer">threaditer</a>: Provides a thread-safe generic iterator for a slice.
 </pre>
 
-
