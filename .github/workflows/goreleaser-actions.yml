@@ -141,9 +141,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles(format('{0}/go.sum', matrix.package)) }}
+          key: ${{ runner.os }}-go-${{matrix.package}}-${{ hashFiles(format('{0}/go.sum', matrix.package)) }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-${{matrix.package}}
 
       - name: Get branch name
         id: branch-name
