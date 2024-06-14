@@ -171,7 +171,7 @@ export function UniversalSearch({
               <button
                 onClick={() => executeSearch()}
                 className={
-                  'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700 px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ' +
+                  'type-"button" font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700 px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ' +
                   (loading ? ' pointer-events-none opacity-[0.4]' : '') +
                   ' sm:flex-none sm:w-auto'
                 }

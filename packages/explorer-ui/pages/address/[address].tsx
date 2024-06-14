@@ -100,12 +100,8 @@ export default function address() {
 
   return (
     <StandardPageContainer title={'Address'}>
-      <div className="block sm:hidden">
-        <CopyTitle title={truncateAddress(walletAddress)} />
-      </div>
-      <div className="hidden sm:block">
-        <CopyTitle title={walletAddress} />
-      </div>
+      <CopyTitle title={walletAddress} className="hidden sm:block" />
+      <CopyTitle title={truncateAddress(walletAddress)} className="block sm:hidden" />
       {walletAddress != '' ? (
         <HolisticStats
           platform={platform}

@@ -2,7 +2,6 @@ import numeral from 'numeral'
 
 export function formatAmount(value) {
   numeral.nullFormat('--')
-  // numeral.zeroFormat('--')
 
   // Round up if the value is less than 0.001
   if (value > 0 && value < 0.001) {
