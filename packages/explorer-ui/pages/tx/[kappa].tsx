@@ -9,11 +9,8 @@ import { CHAINS } from 'synapse-constants'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import { API_URL } from '@graphql'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { timeAgo } from '@utils/timeAgo'
-import { formatDateTime } from '@utils/formatDate'
-import CopyTitle from '@components/misc/CopyTitle'
+import { formatDateTimestamp } from '@utils/formatDate'
 import { IconAndAmount } from '@components/misc/IconAndAmount'
-import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 const CCTP_CONTRACTS = CHAINS.CCTP_CONTRACTS
@@ -30,6 +27,15 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 })
 
+function truncateAddress(address) {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+function truncateHash(hash) {
+  return `${hash.slice(0, 8)}...${hash.slice(-5)}`;
+}
+
+
 export default function BridgeTransaction({ queryResult }) {
   const router = useRouter()
   const search = useSearchParams()
@@ -43,27 +49,6 @@ export default function BridgeTransaction({ queryResult }) {
     } else {
       return 'Pending'
     }
-  }
-  const generateBridgeAddress = (chainID, eventType) => {
-    if (eventType == 10 || eventType == 11) {
-      return (
-        CHAINS_BY_ID[chainID].explorerUrl +
-        '/address/' +
-        CCTP_CONTRACTS[chainID]
-      )
-    }
-    else if (eventType == 12 || eventType == 13) {
-      return (
-        CHAINS_BY_ID[chainID].explorerUrl +
-        '/address/' +
-        FASTBRIDGE_CONTRACTS[chainID]
-      )
-    }
-    return (
-      CHAINS_BY_ID[chainID].explorerUrl +
-      '/address/' +
-      BRIDGE_CONTRACTS[chainID]
-    )
   }
   const transaction = queryResult.bridgeTransactions[0]
   const { pending, fromInfo, toInfo } = transaction
@@ -81,122 +66,100 @@ export default function BridgeTransaction({ queryResult }) {
   if (!!transaction) {
     content = (
       <>
-        <div className=" mt-5 mb-1">
+        <div className="flex flex-row mt-5 mb-1 text-white pb-12">
           <a
-            className="text-white cursor-pointer hover:underline"
+            className="text-[#99E6FF] cursor-pointer mr-2"
             href={TRANSACTIONS_PATH}
           >
-            ← Analytics
+            ← Explorer
           </a>
+            <span className="text-gray-500 mr-2">/</span>
+            <span
+              className="text-white hover:text-gray-500 cursor-pointer"
+              onClick={() => {
+                try {
+                  navigator.clipboard.writeText(String(kappa))
+                    .then(() => '')
+                    .catch(err => alert('Failed to copy text: ' + err));
+                } catch (err) {
+                  alert('Clipboard not supported on this browser');
+                }
+              }}
+            >
+              <span className="hidden sm:inline">{kappa}</span>
+              <span className="sm:hidden">{truncateAddress(kappa)}</span>
+            </span>
         </div>
-
-        <div className=" mb-2">
-          <h3 className="text-white text-5xl mb-2 font-semibold">TXID</h3>
-          <CopyTitle title={kappa} />
-        </div>
-        <br />
-        <HorizontalDivider />
-
-        {/* <UniversalSearch placeholder={`txid: ${kappa}`} /> */}
-        <BridgeTransactionTable queryResult={queryResult.bridgeTransactions} />
-
-        <HorizontalDivider />
-        <div className="pb-6">
-          <div className="py-6">
-            <h3 className="text-white text-xl font-medium ">
-              {fromInfo.time
-                ? timeAgo({ timestamp: fromInfo.time })
-                : timeAgo({ timestamp: toInfo?.time })}{' '}
-              ago
-            </h3>
-          </div>
-          <div className="flex gap-x-4 py-1">
-            <p className="text-white text-opacity-60">Requested</p>
-            <p className="text-white ">
-              {formatDateTime(new Date(fromInfo.time * 1000))}
-            </p>
-          </div>
-          <div className="flex gap-x-4 py-1">
-            <p className="text-white text-opacity-60">Confirmed</p>
-            <p className="text-white ">
-              {toInfo
-                ? formatDateTime(new Date(toInfo.time * 1000))
-                : pendingContent}
-            </p>
-          </div>
-          <div className="flex gap-x-[1.1rem] py-1">
-            <p className="text-white text-opacity-60">Total Time</p>
-            <p className="text-white ">
-              {toInfo
-                ? getTimeDifference(fromInfo.time, toInfo.time) + ' seconds'
-                : pendingContent}{' '}
-            </p>
-          </div>
-
-          <br />
-
-          <div className="flex gap-y-2 flex-col">
-            <HorizontalDivider />
-
+        <div className="py-4 border border-[#252537] rounded-xl w-4/5 mx-auto">
+          <div className="flex px-4 gap-y-2 flex-col">
             <div className="flex mt-4 flex-col">
-              <div className="flex flex-col">
-                <div className="flex gap-x-[3rem] py-1 ">
-                  <p className="text-white text-opacity-60">Origin</p>
-                  <ChainInfo
-                    chainId={fromInfo.chainID}
-                    noLink={true}
-                    imgClassName="w-6 h-6 rounded-full"
-                  />
-                </div>
-                <div className="flex gap-x-[3.4rem] py-1 ">
-                  <p className="text-white text-opacity-60">From</p>
-                  <a
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-white break-all text-sm underline"
-                    href={ACCOUNTS_PATH + '/' + fromInfo.address}
-                  >
-                    {fromInfo.address}
-                  </a>
-                </div>
+            <div className="flex flex-col">
+            <div className="flex justify-between items-center w-full">
+              <div className="flex gap-x-[1.8rem] py-1">
+                <p className="text-white text-opacity-60 w-24">Timestamp</p>
+                <p className="text-white">
+                  {formatDateTimestamp(new Date(fromInfo.time * 1000))}
+                </p>
+              </div>
+              <div className="flex gap-x-[1.8rem] py-1">
+                <p className="text-white hidden sm:block">
+                  {new Date(fromInfo.time * 1000).toISOString().replace('T', ' ').slice(0, 16) + ' UTC'}
+                </p>
+              </div>
+            </div>
 
-                <div className="flex gap-x-[1.8rem] py-1">
-                  <p className="text-white text-opacity-60">TX Hash</p>
-                  {fromInfo ? (
-                    <a
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-white break-all text-sm underline"
-                      href={
-                        CHAINS_BY_ID[fromInfo.chainID]?.explorerUrl +
-                        '/tx/' +
-                        fromInfo.hash
-                      }
-                    >
-                      {fromInfo.hash}
-                    </a>
+              <div className="flex gap-x-[1.8rem] py-1">
+                <p className="text-white text-opacity-60 w-24">Status</p>
+                <p className="text-white ">
+                  {pending
+                    ? 'Pending'
+                : 'Confirmed'}{' '}
+                </p>
+              </div>
+              <div className="flex gap-x-[1.8rem] py-1 pb-4">
+                <p className="text-white text-opacity-60 w-24">Elapsed</p>
+                <p className="text-white ">
+                  {toInfo
+                    ? getTimeDifference(fromInfo.time, toInfo.time) + ' seconds'
+                : '--'}{' '}
+                </p>
+              </div>
+              <HorizontalDivider className="mx-[-1rem] bg-[#252537]"/>
+              <div className="flex gap-x-[1.8rem] py-1 pt-4">
+                <p className="text-white text-opacity-60 w-24">From</p>
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-white break-all text-sm hover:text-gray-500 cursor-pointer"
+                  href={ACCOUNTS_PATH + '/' + fromInfo.address}
+                >
+                  <span className="hidden sm:inline">{fromInfo.address}</span>
+                  <span className="sm:hidden">{truncateAddress(fromInfo.address)}</span>
+                </a>
+              </div>
+              <div className="flex gap-x-[1.8rem] py-1 pb-4">
+                <p className="text-white text-opacity-60 w-24">To</p>
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-white break-all text-sm hover:text-gray-500 cursor-pointer"
+                  href={toInfo ? ACCOUNTS_PATH + '/' + toInfo.address : ''}
+                >
+                  {toInfo ? (
+                    <>
+                      <span className="hidden sm:inline">{toInfo.address}</span>
+                      <span className="sm:hidden">{truncateAddress(toInfo.address)}</span>
+                    </>
                   ) : (
-                    <p className="text-white break-all text-sm ">
-                      {pendingContent}
-                    </p>
+                    '--'
                   )}
-                </div>
-                <div className="flex gap-x-[1.7rem] py-1">
-                  <p className="text-white text-opacity-60">Contract</p>
-                  <a
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-white break-all text-sm underline"
-                    href={generateBridgeAddress(
-                      fromInfo.chainID,
-                      fromInfo.eventType
-                    )}
-                  >
-                    Origin Bridge Contract
-                  </a>
-                </div>
-                <div className="flex gap-x-11 mt-3">
-                  <h1 className="text-white text-2xl text-opacity-60">Sent</h1>
+                              </a>
+              </div>
+              <HorizontalDivider className="mx-[-1rem] bg-[#252537]"/>
+
+              <div className="flex gap-x-[1.8rem] pt-4">
+                <p className="text-white text-opacity-60 w-24">Sent</p>
+                <div className="flex flex-col sm:flex-row items-center">
                   <IconAndAmount
                     formattedValue={fromInfo.formattedValue}
                     tokenAddress={fromInfo.tokenAddress}
@@ -206,100 +169,84 @@ export default function BridgeTransaction({ queryResult }) {
                     textSize="text-sm"
                     styledCoin={true}
                   />
+                  <div className="flex flex-col sm:flex-row items-center">
+                    <span className="px-2 text-white text-opacity-60">on</span>
+                    <ChainInfo chainId={fromInfo?.chainID} noLink={true} imgClassName="w-4 h-4 rounded-full" />
+                  </div>
                 </div>
               </div>
-              <br />
-
-              <HorizontalDivider />
-
-              <div className="flex  mt-8  flex-col">
-                <div className="flex gap-x-2 py-1 ">
-                  <p className="text-white text-opacity-60">Destination</p>
-                  {toInfo ? (
-                    <ChainInfo
-                      chainId={toInfo.chainID}
-                      noLink={true}
-                      imgClassName="w-6 h-6 rounded-full"
-                    />
-                  ) : (
-                    <ChainInfo
-                      chainId={fromInfo.destinationChainID}
-                      noLink={true}
-                      imgClassName="w-6 h-6 rounded-full"
-                    />
-                  )}
-                </div>
-                <div className="flex gap-x-[4.5rem] py-1">
-                  <p className="text-white text-opacity-60">To</p>
-                  <a
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-white break-all text-sm underline"
-                    href={toInfo ? ACCOUNTS_PATH + '/' + toInfo.address : ''}
-                  >
-                    {toInfo ? toInfo.address : pendingContent}
-                  </a>
-                </div>
-
-                <div className="flex gap-x-[1.7rem] py-1 ">
-                  <p className="text-white text-opacity-60">TX Hash</p>
-                  {toInfo ? (
-                    <a
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-white break-all text-sm underline"
-                      href={
-                        CHAINS_BY_ID[toInfo.chainID]?.explorerUrl +
-                        '/tx/' +
-                        toInfo.hash
-                      }
-                    >
-                      {toInfo.hash}
-                    </a>
-                  ) : (
-                    <p className="text-white break-all text-sm ">
-                      {pendingContent}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-x-[1.6rem] py-1">
-                  <p className="text-white text-opacity-60">Contract</p>
-                  <a
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-white break-all text-sm underline"
-                    href={generateBridgeAddress(
-                      toInfo?.chainID
-                        ? toInfo.chainID
-                        : fromInfo.destinationChainID,
-                      fromInfo.eventType
-                    )}
-                  >
-                    Destination Bridge Contract
-                  </a>
-                </div>
-                <div className="flex gap-x-8 mt-3">
-                  <h1 className="text-white text-2xl text-opacity-60">
-                    Received
-                  </h1>
-
-                  {toInfo ? (
+              <HorizontalDivider className="mx-[-1rem] bg-[#252537] block sm:hidden my-4"/>
+              <div className="flex gap-x-[1.8rem] mt-3 pb-1 items-center">
+                <p className="text-white text-opacity-60 w-24">Received</p>
+                {toInfo ? (
+                  <div className="flex flex-col sm:flex-row items-center">
                     <IconAndAmount
                       formattedValue={toInfo.formattedValue}
                       tokenAddress={toInfo.tokenAddress}
                       chainId={toInfo.chainID}
                       tokenSymbol={toInfo.tokenSymbol}
-                      iconSize="w-7 h-7"
-                      textSize="text-md"
+                      iconSize="w-4 h-4"
+                      textSize="text-sm"
                       styledCoin={true}
                     />
-                  ) : null}
+                    <div className="flex flex-col sm:flex-row items-center">
+                      <span className="px-2 text-white text-opacity-60">on</span>
+                      <ChainInfo chainId={toInfo?.chainID} noLink={true} imgClassName="w-4 h-4 rounded-full" />
+                    </div>
+                  </div>
+                ) : <p className="text-white break-all text-sm">--</p>}
+                </div>
+              </div>
+              <br />
+
+              <HorizontalDivider className="mx-[-1rem] bg-[#252537]"/>
+
+              <div className="flex mt-8 flex-col">
+                <div className="flex gap-x-[1.8rem] py-1">
+                  <p className="text-white text-opacity-60 w-24">Txn Hash</p>
+                  <p className="text-white break-all text-sm">
+                    <span className="hidden sm:inline">{kappa}</span>
+                    <span className="sm:hidden">{truncateHash(kappa)}</span>
+                  </p>
+                </div>
+
+                <div className="flex gap-x-[1.8rem] py-1">
+                  <p className="text-white text-opacity-60 w-24">From Txn</p>
+                  {fromInfo ? (
+                    <a
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-white break-all text-sm hover:text-gray-500 cursor-pointer"
+                      href={CHAINS_BY_ID[fromInfo.chainID]?.explorerUrl + '/tx/' + fromInfo.hash}
+                    >
+                      <span className="hidden sm:inline">{fromInfo.hash}</span>
+                      <span className="sm:hidden">{truncateHash(fromInfo.hash)}</span>
+                    </a>
+                  ) : (
+                    <p className="text-white break-all text-sm">--</p>
+                  )}
+                </div>
+
+                <div className="flex gap-x-[1.8rem] py-1">
+                  <p className="text-white text-opacity-60 w-24">Dest Txn</p>
+                  {toInfo ? (
+                    <a
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-white break-all text-sm hover:text-gray-500 cursor-pointer"
+                      href={CHAINS_BY_ID[toInfo.chainID]?.explorerUrl + '/tx/' + toInfo.hash}
+                    >
+                      <span className="hidden sm:inline">{toInfo.hash}</span>
+                      <span className="sm:hidden">{truncateHash(toInfo.hash)}</span>
+                    </a>
+                  ) : (
+                    <p className="text-white break-all text-sm">--</p>
+                  )}
                 </div>
               </div>
             </div>
           </div>
           <br />
-          <HorizontalDivider />
         </div>
       </>
     )

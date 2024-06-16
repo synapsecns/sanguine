@@ -19,27 +19,6 @@ const platformTitles = {
   SWAP: 'Swap',
   MESSAGE_BUS: 'Msg Bus',
 }
-const formatCurrency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
-const formatNumber = new Intl.NumberFormat('en-US')
-
-const formatTooltipName = (name) => {
-  if (name === 'total') {
-    return 'Total'
-  } else if (name === 'txCount') {
-    return 'Transaction Count'
-  } else if (name === 'volume') {
-    return 'Volume'
-  } else if (name === 'usdVolume') {
-    return 'USD Volume'
-  } else if (name === 'coinVolume') {
-    return 'Coin Volume'
-  }
-
-  return name
-}
 
 export const CurrencyTooltip = ({
   names: names,
