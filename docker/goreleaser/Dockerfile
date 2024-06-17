@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:11
+FROM --platform=linux/amd64 debian:11-slim
 
 ARG VERSION_ARG=1.24.0-pro
 ARG SHA_ARG=01237f7151d2c46c307f21de183eb863ce47a4b5244507487ec663640b077d7d
@@ -12,8 +12,8 @@ ENV GORELEASER_DOWNLOAD_FILE=$FILE_ARG
 ENV GORELEASER_DOWNLOAD_URL=$DOWNLOAD_ARG
 
 # Golang
-ENV GOLANG_VERSION=1.22.0
-ENV GOLANG_SHA=f6c8a87aa03b92c4b0bf3d558e28ea03006eb29db78917daec5cfb6ec1046265
+ENV GOLANG_VERSION=1.22.4
+ENV GOLANG_SHA=ba79d4526102575196273416239cca418a651e049c2b099f3159db85e7bade7d
 ENV GOLANG_DOWNLOAD_FILE=go${GOLANG_VERSION}.linux-amd64.tar.gz
 ENV GOLANG_DOWNLOAD_URL=https://dl.google.com/go/${GOLANG_DOWNLOAD_FILE}
 
@@ -31,7 +31,12 @@ ENV DOCKER_DOWNLOAD_URL=https://download.docker.com/linux/static/stable/x86_64/$
 RUN apt-get update && apt-get install -y build-essential wget git cmake \
 	libc6-dev-armel-cross libc6-dev-armel-cross binutils-arm-linux-gnueabi libncurses5-dev \
 	gcc-mingw-w64 g++-mingw-w64 \
-	gcc-aarch64-linux-gnu g++-aarch64-linux-gnu && \
+  # install snappy deps
+	gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev \
+  # node 20 deps
+  curl ca-certificates gnupg zip jq \
+  # utils
+  make tar wget && \
 	apt-get -y autoremove
 
 
@@ -79,17 +84,12 @@ LABEL org.opencontainers.image.description="Goreleaser Docker image"
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libbz2-dev libgflags-dev libsnappy-dev libzstd-dev zlib1g-dev \
-    make tar wget
-
 ARG ROCKSDB=6.24.2
 ENV ROCKSDB_DISABLE_SNAPPY=1
 ENV ROCKSDB_DISABLE_GFLAGS=1
 ENV ROCKSDB_DISABLE_ZSTD=1
 
 
-RUN apt-get update
 RUN \
   wget -q https://github.com/facebook/rocksdb/archive/v${ROCKSDB}.tar.gz \
   && tar -zxf v${ROCKSDB}.tar.gz \
@@ -104,7 +104,6 @@ RUN \
 ENV PATH=${PATH}:/etc/musl/x86_64-linux-musl-native/bin:/etc/musl/aarch64-linux-musl-cross/bin:/usr/local/go/bin
 
 # Install node 20
-RUN apt-get install -y curl ca-certificates gnupg zip jq
 
 RUN mkdir -p /etc/apt/keyrings
 
@@ -119,3 +118,5 @@ RUN apt-get update && apt-get install -y nodejs
 # Install syft
 
 RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+RUN rm -rf /var/lib/apt/lists/* /var/log/apt/* /tmp/* /var/tmp/*

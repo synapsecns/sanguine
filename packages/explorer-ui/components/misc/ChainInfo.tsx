@@ -35,30 +35,28 @@ export function ChainInfo({
     link = getChainUrl({ chainId })
   }
 
+
   if (chain) {
     return (
       <div className="w-full relative">
-        <div className="flex justify-between ">
-          <div className="flex flex-row w-[90%] items-center">
-            <Image
-              className={`inline mr-[.5rem] rounded-full ${imgClassName}`}
-              src={chain?.chainImg}
-              alt={chain?.name}
-            />
-            <p className={textClassName}>{chain.name}</p>
-          </div>
-          {noLink ? null : (
-            <div className="flex items-center">
-              <a
-                type="link"
-                target="_blank"
-                href={link}
-                className={linkClassName}
-              >
-                ↗
-              </a>
-            </div>
-          )}
+        <div className="flex items-center justify-start">
+          <Image
+            className={`inline rounded-full ${imgClassName}`}
+            src={chain?.chainImg}
+            alt={chain?.name}
+          />
+          <p className={textClassName}>{chain.name}</p>
+          {/* we should just add this link to the text */}
+          {/* {noLink ? null : (
+            <a
+              type="link"
+              target="_blank"
+              href={link}
+              className={linkClassName}
+            >
+              ↗
+            </a>
+          )} */}
         </div>
       </div>
     )
