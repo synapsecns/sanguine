@@ -11,7 +11,6 @@ import {
   getPublicClient,
   waitForTransactionReceipt,
 } from '@wagmi/core'
-
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
@@ -54,7 +53,6 @@ import { Token } from '@/utils/types'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { approveToken } from '@/utils/approveToken'
 import { stringToBigInt } from '@/utils/bigint/format'
-
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
@@ -74,6 +72,7 @@ import {
   getBridgeModuleNames,
 } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
+import { useStaleQuoteRefresher } from '@/utils/hooks/useStaleQuoteRefresher'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -93,12 +92,14 @@ const StateManagedBridge = () => {
     bridgeQuote,
     debouncedFromValue,
     destinationAddress,
+    isLoading: isQuoteLoading,
   }: BridgeState = useBridgeState()
   const { showSettingsSlideOver, showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
 
-  const [isApproved, setIsApproved] = useState(false)
+  const [isWalletPending, setIsWalletPending] = useState<boolean>(false)
+  const [isApproved, setIsApproved] = useState<boolean>(false)
 
   const dispatch = useAppDispatch()
 
@@ -153,6 +154,7 @@ const StateManagedBridge = () => {
 
     try {
       dispatch(setIsLoading(true))
+      const currentTimestamp: number = getTimeMinutesFromNow(0)
 
       const allQuotes = await synapseSDK.allBridgeQuotes(
         fromChainId,
@@ -273,6 +275,7 @@ const StateManagedBridge = () => {
             estimatedTime: estimatedTime,
             bridgeModuleName: bridgeModuleName,
             gasDropAmount: BigInt(gasDropAmount.toString()),
+            timestamp: currentTimestamp,
           })
         )
 
@@ -313,6 +316,13 @@ const StateManagedBridge = () => {
       }
     }
   }
+
+  useStaleQuoteRefresher(
+    bridgeQuote,
+    getAndSetBridgeQuote,
+    isQuoteLoading,
+    isWalletPending
+  )
 
   const approveTxn = async () => {
     try {
@@ -366,6 +376,7 @@ const StateManagedBridge = () => {
       })
     )
     try {
+      setIsWalletPending(true)
       const wallet = await getWalletClient(wagmiConfig, {
         chainId: fromChainId,
       })
@@ -507,6 +518,8 @@ const StateManagedBridge = () => {
       }
 
       return txErrorHandler(error)
+    } finally {
+      setIsWalletPending(false)
     }
   }
 

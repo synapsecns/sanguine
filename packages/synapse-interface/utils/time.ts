@@ -13,6 +13,13 @@ export const getTimeMinutesBeforeNow = (minutesBeforeNow) => {
   return Math.round(currentTimeSeconds - 60 * minutesBeforeNow)
 }
 
+export const calculateTimeBetween = (
+  timeBefore: number,
+  timeAfter: number
+): number => {
+  return Math.abs(timeBefore - timeAfter) * 1000
+}
+
 export const formatDate = (date) => {
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
