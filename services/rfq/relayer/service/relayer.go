@@ -225,7 +225,7 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 			case <-ctx.Done():
 				return nil
 			case <-time.After(defaultPostInterval * time.Second):
-				err := r.runDBSelector(ctx, true, reldb.RelayCompleted, reldb.ProvePosted)
+				err := r.runDBSelector(ctx, true, reldb.RelayStarted, reldb.RelayCompleted, reldb.ProvePosted)
 				if err != nil {
 					return fmt.Errorf("could not start db selector: %w", err)
 				}

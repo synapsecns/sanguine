@@ -321,7 +321,9 @@ func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridge
 		return fmt.Errorf("could not get quote request: %w", err)
 	}
 	// we might've accidentally gotten this later, if so we'll just ignore it
-	if reqID.Status != reldb.RelayStarted {
+	// note that in the edge case where we pessimistically marked as DeadlineExceeded
+	// and the relay was actually succesful, we should continue the proving process
+	if reqID.Status != reldb.RelayStarted && reqID.Status != reldb.DeadlineExceeded {
 		logger.Warnf("got relay log for request that was not relay started (transaction id: %s, txhash: %s)", hexutil.Encode(reqID.TransactionID[:]), req.Raw.TxHash)
 		return nil
 	}

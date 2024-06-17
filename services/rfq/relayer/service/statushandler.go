@@ -78,10 +78,15 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		mutexMiddlewareFunc: r.mutexMiddleware,
 	}
 
+	// wrap in deadline middleware since the relay has not yet happened
 	qr.handlers[reldb.Seen] = r.deadlineMiddleware(r.gasMiddleware(qr.handleSeen))
 	qr.handlers[reldb.CommittedPending] = r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitPending))
 	qr.handlers[reldb.CommittedConfirmed] = r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitConfirmed))
-	// no more need for deadline middleware now, we already relayed.
+
+	// no-op edge case
+	qr.handlers[reldb.RelayStarted] = func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error { return nil }
+
+	// no more need for deadline middleware now, we already relayed
 	qr.handlers[reldb.RelayCompleted] = qr.handleRelayCompleted
 	qr.handlers[reldb.ProvePosted] = qr.handleProofPosted
 
