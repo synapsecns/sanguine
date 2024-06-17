@@ -326,7 +326,9 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 }
 
 func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...reldb.QuoteRequestStatus) (err error) {
-	ctx, span := r.metrics.Tracer().Start(ctx, "processDB")
+	ctx, span := r.metrics.Tracer().Start(ctx, "processDB", trace.WithAttributes(
+		attribute.Bool("serial", serial),
+	))
 	defer func() {
 		r.recordDBStats(ctx, span)
 		metrics.EndSpanWithErr(span, err)
@@ -378,7 +380,15 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 	return nil
 }
 
-func (r *Relayer) processRequest(ctx context.Context, request reldb.QuoteRequest) (err error) {
+func (r *Relayer) processRequest(parentCtx context.Context, request reldb.QuoteRequest) (err error) {
+	ctx, span := r.metrics.Tracer().Start(parentCtx, "processRequest", trace.WithAttributes(
+		attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
+		attribute.String("status", request.Status.String()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	// if deadline < now
 	if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
 		err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
