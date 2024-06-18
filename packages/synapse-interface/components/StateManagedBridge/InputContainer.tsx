@@ -33,12 +33,18 @@ import { formatAmount } from '../../utils/formatAmount'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
-export const InputContainer = ({ isWalletPending }) => {
+export const InputContainer = () => {
   const dispatch = useAppDispatch()
   const { chain, isConnected } = useAccount()
   const { balances } = usePortfolioState()
-  const { fromChainId, toChainId, fromToken, toToken, fromValue } =
-    useBridgeState()
+  const {
+    fromChainId,
+    toChainId,
+    fromToken,
+    toToken,
+    fromValue,
+    isWalletPending,
+  } = useBridgeState()
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
