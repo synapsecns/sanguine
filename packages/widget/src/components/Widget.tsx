@@ -394,7 +394,7 @@ export const Widget = ({
         style={{ background: 'var(--synapse-root)' }}
       >
         <BridgeMaintenanceProgressBar />
-        <Transactions connectedAddress={connectedAddress} />
+        <Transactions connectedAddress={connectedAddress} provider={provider} />
         <section
           className={cardStyle}
           style={{ background: 'var(--synapse-surface)' }}

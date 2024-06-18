@@ -19,6 +19,9 @@ import { MenuItem } from '@/components/ui/MenuItem'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { TransactionSupport } from '@/components/TransactionSupport'
 import { AnimatedProgressBar } from '@/components/AnimatedProgressBar'
+import { useTxRevertCheck } from '@/hooks/useTxRevertCheck'
+import { calculateEstimatedTimeStatus } from '@/utils/calculateEstimatedTimeStatus'
+import { useBridgeTxUpdater } from '@/hooks/useBridgeTxUpdater'
 
 export const Transaction = ({
   connectedAddress,
@@ -33,6 +36,7 @@ export const Transaction = ({
   timestamp,
   currentTime,
   isStoredComplete,
+  provider,
 }: {
   connectedAddress: string
   originAmount: string
@@ -46,10 +50,9 @@ export const Transaction = ({
   timestamp: number
   currentTime: number
   isStoredComplete: boolean
+  provider: any
 }) => {
   const dispatch = useAppDispatch()
-  const transactions = useTransactionsState()
-
   const { synapseSDK } = useSynapseContext()
 
   const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
@@ -61,18 +64,14 @@ export const Transaction = ({
     connectedAddress
   )
 
-  const elapsedTime: number = currentTime - timestamp // in seconds
-  const remainingTime: number = estimatedTime - elapsedTime
-
-  const isEstimatedTimeReached: boolean = useMemo(() => {
-    if (!currentTime || !estimatedTime || !timestamp) {
-      return false
-    }
-    return currentTime - timestamp > estimatedTime
-  }, [estimatedTime, currentTime, timestamp])
-
-  const delayedTime = isEstimatedTimeReached ? remainingTime : null
-  const delayedTimeInMin = remainingTime ? Math.floor(remainingTime / 60) : null
+  const {
+    remainingTime,
+    delayedTime,
+    delayedTimeInMin,
+    isEstimatedTimeReached,
+    isCheckTxStatus,
+    isCheckTxForRevert,
+  } = calculateEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     synapseSDK,
@@ -85,30 +84,20 @@ export const Transaction = ({
     currentTime,
   })
 
+  const isTxReverted = useTxRevertCheck(
+    originTxHash,
+    originChainId,
+    provider,
+    true
+  )
+
+  useBridgeTxUpdater(_kappa, originTxHash, isTxComplete)
+
   /** Check if store already marked tx as complete, otherwise check hook status */
   const isTxFinalized = isStoredComplete ?? isTxComplete
 
   const showTransactionSupport =
     !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
-
-  /** Update tx kappa when available */
-  useEffect(() => {
-    if (_kappa && originTxHash) {
-      dispatch(
-        updateTransactionKappa({ originTxHash, kappa: _kappa as string })
-      )
-    }
-  }, [_kappa, dispatch])
-
-  /** Update tx for completion */
-  /** Check that we have not already marked tx as complete */
-  useEffect(() => {
-    const txKappa = kappa ?? _kappa
-
-    if (!isStoredComplete && isTxComplete && originTxHash && txKappa) {
-      dispatch(completeTransaction({ originTxHash, kappa: txKappa as string }))
-    }
-  }, [isStoredComplete, isTxComplete, dispatch, transactions])
 
   const handleClearTransaction = useCallback(() => {
     dispatch(removeTransaction({ originTxHash }))
