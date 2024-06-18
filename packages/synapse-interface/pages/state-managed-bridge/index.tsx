@@ -326,6 +326,7 @@ const StateManagedBridge = () => {
 
   const approveTxn = async () => {
     try {
+      dispatch(setIsWalletPending(true))
       const tx = approveToken(
         bridgeQuote?.routerAddress,
         fromChainId,
@@ -337,6 +338,8 @@ const StateManagedBridge = () => {
       getAndSetBridgeQuote()
     } catch (error) {
       return txErrorHandler(error)
+    } finally {
+      dispatch(setIsWalletPending(false))
     }
   }
 
