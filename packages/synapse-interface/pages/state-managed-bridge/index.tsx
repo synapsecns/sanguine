@@ -63,6 +63,7 @@ import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 import {
   MaintenanceWarningMessages,
   useMaintenanceCountdownProgresses,
@@ -506,6 +507,10 @@ const StateManagedBridge = () => {
       dispatch(removePendingBridgeTransaction(currentTimestamp))
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
+
+      if (isTransactionUserRejectedError(error)) {
+        getAndSetBridgeQuote()
+      }
 
       /** Fetch balances if await transaction receipt times out */
       if (isTransactionReceiptError(error)) {
