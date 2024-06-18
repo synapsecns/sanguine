@@ -33,7 +33,7 @@ import { formatAmount } from '../../utils/formatAmount'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
-export const InputContainer = () => {
+export const InputContainer = ({ isWalletPending }) => {
   const dispatch = useAppDispatch()
   const { chain, isConnected } = useAccount()
   const { balances } = usePortfolioState()
@@ -152,6 +152,7 @@ export const InputContainer = () => {
             inputRef={inputRef}
             showValue={showValue}
             handleFromValueChange={handleFromValueChange}
+            disabled={isWalletPending}
           />
           <AvailableBalance
             balance={formattedBalance}

@@ -577,7 +577,7 @@ const StateManagedBridge = () => {
           )}
           {!showSettingsSlideOver && (
             <>
-              <InputContainer />
+              <InputContainer isWalletPending={isWalletPending} />
               <SwitchButton
                 onClick={() => {
                   dispatch(setFromChainId(toChainId))
