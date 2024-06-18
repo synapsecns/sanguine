@@ -34,11 +34,10 @@ import {
   setFromToken,
   setToChainId,
   setToToken,
-} from '@/slices/bridge/reducer'
-import {
   updateFromValue,
   setBridgeQuote,
   setIsLoading,
+  setIsWalletPending,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
 import {
@@ -94,12 +93,12 @@ const StateManagedBridge = () => {
     debouncedFromValue,
     destinationAddress,
     isLoading: isQuoteLoading,
+    isWalletPending,
   }: BridgeState = useBridgeState()
   const { showSettingsSlideOver, showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
 
-  const [isWalletPending, setIsWalletPending] = useState<boolean>(false)
   const [isApproved, setIsApproved] = useState<boolean>(false)
 
   const dispatch = useAppDispatch()
@@ -327,6 +326,7 @@ const StateManagedBridge = () => {
 
   const approveTxn = async () => {
     try {
+      dispatch(setIsWalletPending(true))
       const tx = approveToken(
         bridgeQuote?.routerAddress,
         fromChainId,
@@ -338,6 +338,8 @@ const StateManagedBridge = () => {
       getAndSetBridgeQuote()
     } catch (error) {
       return txErrorHandler(error)
+    } finally {
+      dispatch(setIsWalletPending(false))
     }
   }
 
@@ -377,7 +379,7 @@ const StateManagedBridge = () => {
       })
     )
     try {
-      setIsWalletPending(true)
+      dispatch(setIsWalletPending(true))
       const wallet = await getWalletClient(wagmiConfig, {
         chainId: fromChainId,
       })
@@ -524,7 +526,7 @@ const StateManagedBridge = () => {
 
       return txErrorHandler(error)
     } finally {
-      setIsWalletPending(false)
+      dispatch(setIsWalletPending(false))
     }
   }
 
