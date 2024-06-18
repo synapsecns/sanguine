@@ -339,12 +339,13 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 		return fmt.Errorf("could not get quote results: %w", err)
 	}
 
+	blockTimes := make(map[uint32]*big.Int)
 	g, ctx := errgroup.WithContext(ctx)
 	// Obviously, these are only seen.
 	for _, req := range requests {
 		if serial {
 			// process in serial
-			err = r.processRequest(ctx, req)
+			err = r.processRequest(ctx, req, blockTimes)
 			if err != nil {
 				return fmt.Errorf("could not process request: %w", err)
 			}
@@ -363,7 +364,7 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 			}
 			g.Go(func() error {
 				defer r.semaphore.Release(1)
-				err = r.processRequest(ctx, request)
+				err = r.processRequest(ctx, request, blockTimes)
 				if err != nil {
 					return fmt.Errorf("could not process request: %w", err)
 				}
@@ -380,7 +381,7 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 	return nil
 }
 
-func (r *Relayer) processRequest(parentCtx context.Context, request reldb.QuoteRequest) (err error) {
+func (r *Relayer) processRequest(parentCtx context.Context, request reldb.QuoteRequest, blockTimes map[uint32]*big.Int) (err error) {
 	ctx, span := r.metrics.Tracer().Start(parentCtx, "processRequest", trace.WithAttributes(
 		attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
 		attribute.String("status", request.Status.String()),
@@ -389,8 +390,21 @@ func (r *Relayer) processRequest(parentCtx context.Context, request reldb.QuoteR
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	_, ok := blockTimes[request.Transaction.OriginChainId]
+	if !ok {
+		client, err := r.client.GetChainClient(ctx, int(request.Transaction.OriginChainId))
+		if err != nil {
+			return fmt.Errorf("could not get origin client: %w", err)
+		}
+		blk, err := client.BlockByNumber(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("could not get block: %w", err)
+		}
+		blockTimes[request.Transaction.OriginChainId] = big.NewInt(int64(blk.Time()))
+	}
+
 	// if deadline < now
-	if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
+	if request.Transaction.Deadline.Cmp(blockTimes[request.Transaction.OriginChainId]) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
 		err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
