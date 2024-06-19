@@ -100,11 +100,12 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	}
 
 	// immediately forward the request to handleSeen
-	span.AddEvent("forwarding to handleSeen")
+	span.AddEvent("sending to handleSeen")
 	qr, err := r.requestToHandler(ctx, dbReq)
 	if err != nil {
 		return fmt.Errorf("could not get quote request handler: %w", err)
 	}
+	// Important! we call handle here instead of Forward since the lock will not have been acquired, as no middleware has been hit!
 	fwdErr := qr.Handle(ctx, dbReq)
 	if fwdErr != nil {
 		logger.Errorf("could not forward to handle seen: %w", fwdErr)
@@ -192,6 +193,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
+	request.Status = reldb.CommittedPending
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
@@ -199,7 +201,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 
 	// immediately forward the request to handleCommitPending
 	span.AddEvent("forwarding to handleCommitPending")
-	fwdErr := q.Handle(ctx, request)
+	fwdErr := q.Forward(ctx, request)
 	if fwdErr != nil {
 		logger.Errorf("could not forward to handle commit pending: %w", fwdErr)
 		span.AddEvent("could not forward to handle commit pending")
@@ -254,6 +256,8 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 	if bs != fastbridge.REQUESTED.Int() {
 		return nil
 	}
+
+	request.Status = reldb.CommittedConfirmed
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedConfirmed)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
@@ -261,7 +265,7 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 
 	// immediately forward to handleCommitConfirmed
 	span.AddEvent("forwarding to handleCommitConfirmed")
-	fwdErr := q.Handle(ctx, request)
+	fwdErr := q.Forward(ctx, request)
 	if fwdErr != nil {
 		logger.Errorf("could not forward to handle commit confirmed: %w", fwdErr)
 		span.AddEvent("could not forward to handle commit confirmed")
