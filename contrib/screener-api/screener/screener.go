@@ -43,7 +43,7 @@ type screenerImpl struct {
 	metrics           metrics.Handler
 	cfg               config.Config
 	client            chainalysis.Client
-	whitelist         []string
+	whitelist         map[string]bool
 	blacklistCache    map[string]bool
 	blacklistCacheMux sync.RWMutex
 }
@@ -65,7 +65,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 
 	screener.blacklistCache = make(map[string]bool)
 	for _, item := range cfg.Whitelist {
-		screener.whitelist = append(screener.whitelist, strings.ToLower(item))
+		screener.whitelist[strings.ToLower(item)] = true
 	}
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
@@ -162,8 +162,14 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 	}
 
 	// Check if the address is in the blacklist.
-	if blocked, ok := s.blacklistCache[address]; ok && blocked {
+	if _, blacklisted := s.blacklistCache[address]; blacklisted {
 		c.JSON(http.StatusOK, gin.H{"risk": true})
+		return
+	}
+
+	// Check if the address is in the whitelist.
+	if _, whitelisted := s.whitelist[address]; whitelisted {
+		c.JSON(http.StatusOK, gin.H{"risk": false})
 		return
 	}
 
@@ -183,9 +189,6 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"risk": true})
 		return
 	}
-	s.blacklistCacheMux.Lock()
-	defer s.blacklistCacheMux.Unlock()
-	s.blacklistCache[address] = false
 
 	c.JSON(http.StatusOK, gin.H{"risk": false})
 }
