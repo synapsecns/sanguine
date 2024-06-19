@@ -85,7 +85,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	qr.handlers[reldb.CommittedConfirmed] = r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitConfirmed))
 
 	// no-op edge case, but we still want to check the deadline
-	qr.handlers[reldb.RelayStarted] = r.deadlineMiddleware(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error { return nil })
+	qr.handlers[reldb.RelayStarted] = r.deadlineMiddleware(func(_ context.Context, _ trace.Span, _ reldb.QuoteRequest) error { return nil })
 
 	// no more need for deadline middleware now, we already relayed
 	qr.handlers[reldb.RelayCompleted] = qr.handleRelayCompleted
