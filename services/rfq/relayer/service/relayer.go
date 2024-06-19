@@ -340,6 +340,7 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 	g, ctx := errgroup.WithContext(ctx)
 	// Obviously, these are only seen.
 	for _, req := range requests {
+		//nolint: nestif
 		if serial {
 			// process in serial
 			err = r.processRequest(ctx, req)
