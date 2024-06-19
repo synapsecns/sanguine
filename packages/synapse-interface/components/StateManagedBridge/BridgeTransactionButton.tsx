@@ -1,8 +1,6 @@
-import { useSelector } from 'react-redux'
 import { useMemo } from 'react'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { RootState } from '@/store/store'
 import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { isAddress } from 'viem'
@@ -12,10 +10,7 @@ import { stringToBigInt } from '@/utils/bigint/format'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useAppDispatch } from '@/store/hooks'
-import {
-  setIsDestinationWarningAccepted,
-  setShowDestinationWarning,
-} from '@/slices/bridgeDisplaySlice'
+import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
 
 export const BridgeTransactionButton = ({
   approveTxn,
