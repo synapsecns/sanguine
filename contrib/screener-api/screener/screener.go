@@ -81,10 +81,15 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router = ginhelper.New(logger)
 	screener.router.Use(screener.metrics.Gin())
 
+	// Blacklist route
 	screener.router.POST("/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
+
+	// Screening routes
+	screener.router.GET("/address/:address", screener.screenAddress)
 	// deprecated and ruleset is not used, this is for backwards compatibility
 	screener.router.GET("/:ruleset/address/:address", screener.screenAddress)
-	screener.router.GET("/address/:address", screener.screenAddress)
+
+	// Swagger routes
 	screener.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	gin.SetMode(gin.ReleaseMode)
