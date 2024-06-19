@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -46,6 +47,7 @@ func NewClient(riskLevels []string, apiKey, url string) Client {
 
 // ScreenAddress screens an address from the Chainalysis API.
 func (c *clientImpl) ScreenAddress(ctx context.Context, address string) (bool, error) {
+	address = strings.ToLower(address)
 	// Get the response.
 	resp, err := c.client.R().
 		SetContext(ctx).

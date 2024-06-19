@@ -96,7 +96,7 @@ func (s *screenerImpl) Start(ctx context.Context) error {
 	// TODO: potential race condition here, if the blacklist is not fetched before the first request
 	// in practice chainalysis will catch
 	go func() {
-		// fetch the blacklist at start
+		// Fetch the blacklist at start.
 		s.fetchBlacklist(ctx)
 
 		for {
