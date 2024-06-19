@@ -151,10 +151,10 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 
 	if m.screener != nil {
 		// screen sender and recipient in parallel
-		g, ctx := errgroup.WithContext(ctx)
+		g, gctx := errgroup.WithContext(ctx)
 		var senderBlocked, recipientBlocked bool
 		g.Go(func() error {
-			senderBlocked, err = m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.OriginSender.String())
+			senderBlocked, err = m.screener.ScreenAddress(gctx, screenerRuleset, quote.Transaction.OriginSender.String())
 			if err != nil {
 				span.RecordError(fmt.Errorf("error screening address: %w", err))
 				return fmt.Errorf("error screening address: %w", err)
@@ -162,7 +162,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 			return nil
 		})
 		g.Go(func() error {
-			recipientBlocked, err = m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.DestRecipient.String())
+			recipientBlocked, err = m.screener.ScreenAddress(gctx, screenerRuleset, quote.Transaction.DestRecipient.String())
 			if err != nil {
 				span.RecordError(fmt.Errorf("error screening address: %w", err))
 				return fmt.Errorf("error screening address: %w", err)
