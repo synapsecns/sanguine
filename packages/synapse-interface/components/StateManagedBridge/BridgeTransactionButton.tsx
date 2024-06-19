@@ -67,22 +67,30 @@ export const BridgeTransactionButton = ({
     )
   }, [balanceForToken, fromValue, fromChainId, toChainId, toToken])
 
-  const isButtonDisabled =
-    isLoading ||
-    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-    bridgeQuote === EMPTY_BRIDGE_QUOTE ||
-    (destinationAddress && !isAddress(destinationAddress)) ||
-    (isConnected && !sufficientBalance) ||
-    isBridgePaused
-
-  let buttonProperties
-
   const fromTokenDecimals: number | undefined =
     fromToken && fromToken?.decimals[fromChainId]
 
   const fromValueBigInt = useMemo(() => {
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
   }, [fromValue, fromTokenDecimals])
+
+  const bridgeQuoteAmountGreaterThanInputForRfq = useMemo(() => {
+    return (
+      bridgeQuote.bridgeModuleName === 'SynapseRFQ' &&
+      bridgeQuote.outputAmount > fromValueBigInt
+    )
+  }, [bridgeQuote.outputAmount, fromValueBigInt])
+
+  const isButtonDisabled =
+    isLoading ||
+    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
+    bridgeQuote === EMPTY_BRIDGE_QUOTE ||
+    (destinationAddress && !isAddress(destinationAddress)) ||
+    (isConnected && !sufficientBalance) ||
+    bridgeQuoteAmountGreaterThanInputForRfq ||
+    isBridgePaused
+
+  let buttonProperties
 
   if (isBridgePaused) {
     buttonProperties = {
@@ -111,6 +119,11 @@ export const BridgeTransactionButton = ({
   ) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
+      onClick: null,
+    }
+  } else if (bridgeQuoteAmountGreaterThanInputForRfq) {
+    buttonProperties = {
+      label: 'Invalid bridge quote',
       onClick: null,
     }
   } else if (!isConnected && fromValueBigInt > 0) {
