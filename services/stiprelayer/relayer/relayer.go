@@ -3,10 +3,11 @@ package relayer
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"math/big"
 	"strings"
 	"time"
+
+	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 
 	"github.com/cenkalti/backoff"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -383,7 +384,7 @@ const stipRuleset = "stip"
 // nolint: cyclop
 func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transaction *db.STIPTransactions) error {
 	// Check if the address is blocked
-	blocked, err := s.screener.ScreenAddress(ctx, stipRuleset, transaction.Address)
+	blocked, err := s.screener.ScreenAddress(ctx, transaction.Address)
 	if err != nil {
 		return fmt.Errorf("could not screen address: %w", err)
 	}
