@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -21,7 +22,7 @@ func Start(args []string, buildInfo config.BuildInfo) {
 		// nolint:wrapcheck
 		return metrics.Setup(c.Context, buildInfo)
 	}
-	app.Commands = cli.Commands{screenerCommand, splitterCommand}
+	app.Commands = cli.Commands{screenerCommand}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action

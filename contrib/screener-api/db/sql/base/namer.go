@@ -8,8 +8,6 @@ func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
 
 	addressName = namer.GetConsistentName("Address")
-	indicatorName = namer.GetConsistentName("Indicators")
-
 	typeName = namer.GetConsistentName("Type")
 	idName = namer.GetConsistentName("ID")
 	dataName = namer.GetConsistentName("Data")
@@ -19,9 +17,7 @@ func init() {
 }
 
 var (
-	addressName   string
-	indicatorName string
-
+	addressName string
 	typeName    string
 	idName      string
 	dataName    string

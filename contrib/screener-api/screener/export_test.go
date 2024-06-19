@@ -3,14 +3,15 @@ package screener
 import (
 	"context"
 	"fmt"
+
+	"github.com/synapsecns/sanguine/contrib/screener-api/chainalysis"
 	"github.com/synapsecns/sanguine/contrib/screener-api/config"
-	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
 	"github.com/synapsecns/sanguine/core/metrics"
 )
 
 type TestScreener interface {
 	Screener
-	SetClient(client trmlabs.Client)
+	SetClient(client chainalysis.Client)
 }
 
 func NewTestScreener(ctx context.Context, cfg config.Config, metricHandler metrics.Handler) (_ TestScreener, err error) {
@@ -27,10 +28,6 @@ func NewTestScreener(ctx context.Context, cfg config.Config, metricHandler metri
 	return ts, nil
 }
 
-func (s *screenerImpl) SetClient(client trmlabs.Client) {
+func (s *screenerImpl) SetClient(client chainalysis.Client) {
 	s.client = client
-}
-
-func SplitCSV(file string) (map[string][]Set, error) {
-	return splitCSV(file)
 }

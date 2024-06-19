@@ -4,20 +4,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/Flaque/filet"
-	"github.com/gocarina/gocsv"
 	"github.com/phayes/freeport"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/contrib/screener-api/chainalysis"
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"github.com/synapsecns/sanguine/contrib/screener-api/config"
 	"github.com/synapsecns/sanguine/contrib/screener-api/metadata"
 	"github.com/synapsecns/sanguine/contrib/screener-api/screener"
-	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -59,18 +58,6 @@ func (s *ScreenerSuite) SetupSuite() {
 	Nil(s.T(), err)
 }
 
-func (s *ScreenerSuite) makeTestCSV(rules []screener.Set) string {
-	content, err := gocsv.MarshalString(rules)
-	Nil(s.T(), err)
-
-	file := filet.TmpFile(s.T(), "", content)
-	defer func() {
-		// _ = Nil(s.T(), file.Close())
-	}()
-
-	return file.Name()
-}
-
 func (s *ScreenerSuite) TestScreener() {
 	var err error
 
@@ -80,33 +67,15 @@ func (s *ScreenerSuite) TestScreener() {
 	s.T().Setenv("TRM_URL", "")
 
 	cfg := config.Config{
-		AppSecret: "secret",
-		AppID:     "appid",
-		TRMKey:    "",
-		Rulesets: map[string]config.RulesetConfig{
-			"testrule": {
-				Filename: s.makeTestCSV([]screener.Set{
-					{
-						Enabled:    "true",
-						ID:         strconv.Itoa(1),
-						Category:   "test_category",
-						Name:       "name",
-						Severity:   "severity",
-						TypeOfRisk: "Risk Type",
-					},
-				}),
-			},
-			"testrule2": {
-				Filename: s.makeTestCSV([]screener.Set{}),
-			},
-		},
+		AppSecret:    "secret",
+		AppID:        "appid",
 		BlacklistURL: "https://synapseprotocol.com/blacklist.json", // TODO: mock this out
-		CacheTime:    1,
 		Port:         s.port,
 		Database: config.DatabaseConfig{
 			Type: dbcommon.Sqlite.String(),
 			DSN:  filet.TmpDir(s.T(), ""),
 		},
+		RiskLevels: []string{"Severe", "High"},
 	}
 
 	realScreener, err := screener.NewTestScreener(s.GetTestContext(), cfg, s.metrics)
@@ -120,19 +89,33 @@ func (s *ScreenerSuite) TestScreener() {
 	}()
 
 	m := mockClient{
-		responseMap: map[string][]trmlabs.ScreenResponse{
+		risks: []string{"Severe", "High"},
+		entityMap: map[string]*Entity{
 			"0x123": {
-				{
-					AddressRiskIndicators: []trmlabs.AddressRiskIndicator{
-						{
-							Category:                    "test_category",
-							CategoryID:                  "1",
-							CategoryRiskScoreLevel:      1,
-							CategoryRiskScoreLevelLabel: "test_category",
-							IncomingVolumeUsd:           "1",
-						},
-					},
+				Address:                "0x123",
+				Risk:                   "Severe",
+				Cluster:                Cluster{Name: "Example Cluster 2", Category: "benign activity"},
+				RiskReason:             "Low risk example",
+				AddressType:            "EXCHANGE",
+				AddressIdentifications: []interface{}{},
+				Exposures: []Exposure{
+					{Category: "decentralized exchange", Value: 1234.56, ExposureType: "indirect", Direction: "both_directions"},
+					{Category: "mining", Value: 789.01, ExposureType: "direct", Direction: "both_directions"},
 				},
+				Triggers: []interface{}{},
+			},
+			"0x456": {
+				Address:                "0x456",
+				Risk:                   "High",
+				Cluster:                Cluster{Name: "High Risk Cluster", Category: "fraud"},
+				RiskReason:             "High risk due to fraud",
+				AddressType:            "WALLET",
+				AddressIdentifications: []interface{}{},
+				Exposures: []Exposure{
+					{Category: "fee", Value: 5678.90, ExposureType: "indirect", Direction: "outgoing"},
+					{Category: "token smart contract", Value: 3456.78, ExposureType: "direct", Direction: "incoming"},
+				},
+				Triggers: []interface{}{},
 			},
 		},
 	}
@@ -143,13 +126,22 @@ func (s *ScreenerSuite) TestScreener() {
 	apiClient, err := client.NewClient(s.metrics, fmt.Sprintf("http://localhost:%d", s.port))
 	Nil(s.T(), err)
 
-	// http://localhost:63575/testrule/address/0x123: true
-	out, err := apiClient.ScreenAddress(s.GetTestContext(), "testrule", "0x123")
+	// http://localhost:63575/v2/entities/0x123: true
+	out, err := apiClient.ScreenAddress(s.GetTestContext(), "0x123")
+	Nil(s.T(), err)
+	True(s.T(), out)
+
+	out, err = apiClient.ScreenAddress(s.GetTestContext(), "0x456")
 	Nil(s.T(), err)
 	True(s.T(), out)
 
 	// http://localhost:63575/testrule/address/0x00: false
-	out, err = apiClient.ScreenAddress(s.GetTestContext(), "testrule", "0x00")
+	out, err = apiClient.ScreenAddress(s.GetTestContext(), "0x00")
+	Nil(s.T(), err)
+	False(s.T(), out)
+
+	// http://localhost:63575/testrule/address/0x00: false
+	out, err = apiClient.ScreenAddress(s.GetTestContext(), "0x00")
 	Nil(s.T(), err)
 	False(s.T(), out)
 
@@ -166,7 +158,6 @@ func (s *ScreenerSuite) TestScreener() {
 
 	// post to the blacklist
 	status, err := apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
 	Equal(s.T(), "success", status)
 	Nil(s.T(), err)
 
@@ -175,7 +166,6 @@ func (s *ScreenerSuite) TestScreener() {
 	blacklistBody.Remark = "new remark"
 
 	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
 	Equal(s.T(), "success", status)
 	Nil(s.T(), err)
 
@@ -184,45 +174,87 @@ func (s *ScreenerSuite) TestScreener() {
 	blacklistBody.ID = "1"
 
 	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
 	Equal(s.T(), "success", status)
 	Nil(s.T(), err)
 
 	// unauthorized
 	status, err = apiClient.BlacklistAddress(s.GetTestContext(), "bad", cfg.AppID, blacklistBody)
-	fmt.Println(status)
 	NotEqual(s.T(), "success", status)
 	NotNil(s.T(), err)
+
+	c := chainalysis.NewClient([]string{"Severe", "High"}, "key", "url")
+	NotNil(s.T(), c)
+
+	ot, err := c.ScreenAddress(s.GetTestContext(), "0x123")
+	NotNil(s.T(), err)
+	False(s.T(), ot)
 }
 
 type mockClient struct {
-	responseMap map[string][]trmlabs.ScreenResponse
+	risks     []string
+	entityMap map[string]*Entity
 }
 
 // ScreenAddress mocks the screen address method.
-func (m mockClient) ScreenAddress(ctx context.Context, address string) ([]trmlabs.ScreenResponse, error) {
-	if m.responseMap == nil {
-		return nil, fmt.Errorf("no response map")
+func (m mockClient) ScreenAddress(ctx context.Context, address string) (bool, error) {
+	if m.entityMap == nil {
+		return false, fmt.Errorf("no response map")
+	}
+	entity, ok := m.entityMap[address]
+	if !ok {
+		err := m.RegisterAddress(ctx, address)
+		if err != nil {
+			return false, fmt.Errorf("could not register address: %w", err)
+		}
+		entity = m.entityMap[address]
 	}
 
-	return m.responseMap[address], nil
+	if slices.Contains(m.risks, entity.Risk) {
+		return true, nil
+	}
+
+	return false, nil
 }
 
-var _ trmlabs.Client = mockClient{}
+// RegisterAddress mocks the register address method.
+func (m mockClient) RegisterAddress(ctx context.Context, address string) error {
+	m.entityMap[address] = &Entity{
+		Address:                "0x1234abcdef1234abcdef1234abcdef1234abcd",
+		Risk:                   "Critical",
+		Cluster:                Cluster{Name: "Critical Risk Cluster", Category: "money laundering"},
+		RiskReason:             "Involved in money laundering",
+		AddressType:            "PRIVATE_WALLET",
+		AddressIdentifications: []interface{}{},
+		Exposures: []Exposure{
+			{Category: "smart contract", Value: 9876.54, ExposureType: "indirect", Direction: "both_directions"},
+			{Category: "stolen funds", Value: 1234.56, ExposureType: "direct", Direction: "both_directions"},
+		},
+		Triggers: []interface{}{},
+	}
+	return nil
+}
 
-const testFile = `Enabled,ID,Category,Name,Type of risk,Severity,FE,RFQ
-true,1,test_category,name,Risk Type,severity,true,false
-false,2,test_category,name,Risk Type,severity,true,false
-true,3,test_category,name,Risk Type,severity,false,true`
+var _ chainalysis.Client = mockClient{}
 
-func TestSplitCSV(t *testing.T) {
-	testfile := filet.TmpFile(t, "", testFile)
-	out, err := screener.SplitCSV(testfile.Name())
-	Nil(t, err)
+type Exposure struct {
+	Category     string  `json:"category"`
+	Value        float64 `json:"value"`
+	ExposureType string  `json:"exposureType"`
+	Direction    string  `json:"direction"`
+}
 
-	// 2 different files
-	Equal(t, 2, len(out))
-	Equal(t, "true", out["FE"][1].Enabled)
-	Equal(t, "false", out["RFQ"][1].Enabled)
-	Equal(t, "true", out["RFQ"][2].Enabled)
+type Cluster struct {
+	Name     string `json:"name"`
+	Category string `json:"category"`
+}
+
+type Entity struct {
+	Address                string        `json:"address"`
+	Risk                   string        `json:"risk"`
+	Cluster                Cluster       `json:"cluster"`
+	RiskReason             string        `json:"riskReason"`
+	AddressType            string        `json:"addressType"`
+	AddressIdentifications []interface{} `json:"addressIdentifications"`
+	Exposures              []Exposure    `json:"exposures"`
+	Triggers               []interface{} `json:"triggers"`
 }
