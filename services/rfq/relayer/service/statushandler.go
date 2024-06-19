@@ -223,7 +223,7 @@ func (q *QuoteRequestHandler) Forward(ctx context.Context, request reldb.QuoteRe
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// TODO: consider adding a lock attempt/fail here as a defensive coding strategy. We *expect* stuff to be locked by the tiem we get to forward.
+	// TODO: consider adding a lock attempt/fail here as a defensive coding strategy. We *expect* stuff to be locked by the time we get to forward.
 
 	return q.handlers[request.Status](ctx, span, request)
 }

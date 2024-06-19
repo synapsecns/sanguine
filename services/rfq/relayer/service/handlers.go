@@ -52,11 +52,11 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		// maybe a db err? if so error out & try again later
 		if err != nil {
 			return fmt.Errorf("could not call db: %w", err)
-		} else {
-			span.AddEvent("already known")
-			// already seen this request
-			return nil
 		}
+
+		span.AddEvent("already known")
+		// already seen this request
+		return nil
 	}
 
 	// TODO: these should be premade
