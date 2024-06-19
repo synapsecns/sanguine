@@ -81,6 +81,8 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router.Use(screener.metrics.Gin())
 
 	screener.router.POST("/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
+	// deprecated and ruleset is not used, this is for backwards compatibility
+	screener.router.GET("/:ruleset/address/:address", screener.screenAddress)
 	screener.router.GET("/:address", screener.screenAddress)
 	screener.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
@@ -91,15 +93,21 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 
 func (s *screenerImpl) Start(ctx context.Context) error {
 	// TODO: potential race condition here, if the blacklist is not fetched before the first request
-	// in practice trm will catch
+	// in practice chainalysis will catch
 	go func() {
+		// fetch the blacklist at start
+		s.fetchBlacklist(ctx)
+
 		for {
-			if s.cfg.BlacklistURL != "" {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(time.Second * 15):
 				s.fetchBlacklist(ctx)
-				time.Sleep(time.Second * 15)
 			}
 		}
 	}()
+
 	connection := baseServer.Server{}
 	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%d", s.cfg.Port), s.router)
 	if err != nil {
@@ -139,7 +147,7 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 	s.blacklistCacheMux.Lock()
 	defer s.blacklistCacheMux.Unlock()
 	for _, item := range blacklist {
-		s.blacklistCache[item] = true
+		s.blacklistCache[strings.ToLower(item)] = true
 	}
 }
 
