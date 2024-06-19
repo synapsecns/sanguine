@@ -117,8 +117,8 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	if err != nil {
 		return fmt.Errorf("could not get quote request handler: %w", err)
 	}
-	// Important! we call handle here instead of Forward since the lock will not have been acquired, as no middleware has been hit!
-	fwdErr := qr.Handle(ctx, dbReq)
+	// Forward instead of lock since we called lock above.
+	fwdErr := qr.Forward(ctx, dbReq)
 	if fwdErr != nil {
 		logger.Errorf("could not forward to handle seen: %w", fwdErr)
 		span.AddEvent("could not forward to handle seen")
