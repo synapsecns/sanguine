@@ -37,13 +37,25 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// TODO: consider a mapmutex
+	unlocker, ok := r.relayMtx.TryLock(hexutil.Encode(req.TransactionId[:]))
+	if !ok {
+		span.SetAttributes(attribute.Bool("locked", true))
+		// already processing this request
+		return nil
+	}
+
+	defer unlocker.Unlock()
+
 	_, err = r.db.GetQuoteRequestByID(ctx, req.TransactionId)
 	// expect no results
 	if !errors.Is(err, reldb.ErrNoQuoteForID) {
 		// maybe a db err? if so error out & try again later
 		if err != nil {
 			return fmt.Errorf("could not call db: %w", err)
+		} else {
+			span.AddEvent("already known")
+			// already seen this request
+			return nil
 		}
 	}
 
