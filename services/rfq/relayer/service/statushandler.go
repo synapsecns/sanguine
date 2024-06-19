@@ -17,6 +17,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/sync/errgroup"
 )
 
 // TODO: everything in this file should be moved to it's own module, at least as an interface
@@ -143,24 +144,35 @@ func (r *Relayer) gasMiddleware(next func(ctx context.Context, span trace.Span, 
 			)
 		}()
 
-		sufficientGasOrigin, err = r.inventory.HasSufficientGas(ctx, int(req.Transaction.OriginChainId), nil)
+		// check gas sufficiency on origin / dest in parallel
+		g, gctx := errgroup.WithContext(ctx)
+		g.Go(func() error {
+			sufficientGasOrigin, err = r.inventory.HasSufficientGas(gctx, int(req.Transaction.OriginChainId), nil)
+			if err != nil {
+				return fmt.Errorf("could not check gas on origin: %w", err)
+			}
+			return nil
+		})
+		g.Go(func() error {
+			// on destination, we need to check transactor.Value as well if we are dealing with ETH
+			// However, all requests with statuses CommittedPending, CommittedConfirmed and RelayStarted are considered
+			// in-flight and their respective amounts are already deducted from the inventory: see Manager.GetCommittableBalances().
+			// Therefore, we only need to check the gas value for requests with all the other statuses.
+			isInFlight := req.Status == reldb.CommittedPending || req.Status == reldb.CommittedConfirmed || req.Status == reldb.RelayStarted
+			var destGasValue *big.Int
+			if req.Transaction.DestToken == chain.EthAddress && !isInFlight {
+				destGasValue = req.Transaction.DestAmount
+				span.SetAttributes(attribute.String("dest_gas_value", destGasValue.String()))
+			}
+			sufficientGasDest, err = r.inventory.HasSufficientGas(gctx, int(req.Transaction.DestChainId), destGasValue)
+			if err != nil {
+				return fmt.Errorf("could not check gas on dest: %w", err)
+			}
+			return nil
+		})
+		err = g.Wait()
 		if err != nil {
-			return fmt.Errorf("could not check gas on origin: %w", err)
-		}
-
-		// on destination, we need to check transactor.Value as well if we are dealing with ETH
-		// However, all requests with statuses CommittedPending, CommittedConfirmed and RelayStarted are considered
-		// in-flight and their respective amounts are already deducted from the inventory: see Manager.GetCommittableBalances().
-		// Therefore, we only need to check the gas value for requests with all the other statuses.
-		isInFlight := req.Status == reldb.CommittedPending || req.Status == reldb.CommittedConfirmed || req.Status == reldb.RelayStarted
-		var destGasValue *big.Int
-		if req.Transaction.DestToken == chain.EthAddress && !isInFlight {
-			destGasValue = req.Transaction.DestAmount
-			span.SetAttributes(attribute.String("dest_gas_value", destGasValue.String()))
-		}
-		sufficientGasDest, err = r.inventory.HasSufficientGas(ctx, int(req.Transaction.DestChainId), destGasValue)
-		if err != nil {
-			return fmt.Errorf("could not check gas on dest: %w", err)
+			return fmt.Errorf("could not check gas: %w", err)
 		}
 
 		if !sufficientGasOrigin || !sufficientGasDest {
