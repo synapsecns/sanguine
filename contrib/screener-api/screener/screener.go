@@ -64,6 +64,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 		cfg.RiskLevels, cfg.ChainalysisKey, core.GetEnv("CHAINALYSIS_URL", cfg.ChainalysisURL))
 
 	screener.blacklistCache = make(map[string]bool)
+	screener.whitelist = make(map[string]bool)
 	for _, item := range cfg.Whitelist {
 		screener.whitelist[strings.ToLower(item)] = true
 	}
@@ -83,7 +84,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router.POST("/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
 	// deprecated and ruleset is not used, this is for backwards compatibility
 	screener.router.GET("/:ruleset/address/:address", screener.screenAddress)
-	screener.router.GET("/:address", screener.screenAddress)
+	screener.router.GET("/address/:address", screener.screenAddress)
 	screener.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	gin.SetMode(gin.ReleaseMode)

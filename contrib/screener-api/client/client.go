@@ -55,7 +55,7 @@ func (c clientImpl) ScreenAddress(ctx context.Context, address string) (bool, er
 	resp, err := c.rClient.R().
 		SetContext(ctx).
 		SetResult(&blockedRes).
-		Get("/" + address)
+		Get("/address/" + address)
 	if err != nil {
 		return false, fmt.Errorf("error from server: %s: %w", resp.Status(), err)
 	}
