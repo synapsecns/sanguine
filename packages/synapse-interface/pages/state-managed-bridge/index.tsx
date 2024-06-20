@@ -74,8 +74,6 @@ import {
 } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteRefresher } from '@/utils/hooks/useStaleQuoteRefresher'
-import { useIsTxRefunded } from '@/components/_Transaction/helpers/useIsTxRefunded'
-import { BASE } from '@/constants/chains/master'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -105,15 +103,6 @@ const StateManagedBridge = () => {
   const [isApproved, setIsApproved] = useState<boolean>(false)
 
   const dispatch = useAppDispatch()
-
-  const isRefunded = useIsTxRefunded(
-    '0x6DE56AB01E5C9D1D411918BFCE2FB222E53E4F45BCDAFD8892F6649C1E27AEA6',
-    '0x0000000000489d89D2B233D3375C045dfD05745F',
-    BASE,
-    true
-  )
-
-  console.log('isRefunded: ', isRefunded)
 
   useEffect(() => {
     segmentAnalyticsEvent(`[Bridge page] arrives`, {
