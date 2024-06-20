@@ -297,13 +297,17 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 	if err != nil {
 		return fmt.Errorf("could not submit relay: %w", err)
 	}
-	_ = nonce
 	span.AddEvent("relay successfully submitted")
 	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
 
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
 	if err != nil {
 		return fmt.Errorf("could not update quote request status: %w", err)
+	}
+
+	err = q.db.UpdateRelayNonce(ctx, request.TransactionID, nonce)
+	if err != nil {
+		return fmt.Errorf("could not update relay nonce: %w", err)
 	}
 
 	return nil
