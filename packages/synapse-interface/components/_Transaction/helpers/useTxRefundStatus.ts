@@ -6,8 +6,8 @@ import { readContract } from '@wagmi/core'
 import { type Chain } from '@/utils/types'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import { wagmiConfig } from '@/wagmiConfig'
-import fastBridgeAbi from '@/constants/abis/FastBridge.json'
-import fastBridgeRouterAbi from '@/constants/abis/FastBridgeRouter.json'
+import fastBridgeAbi from '@/constants/abis/fastBridge.json'
+import fastBridgeRouterAbi from '@/constants/abis/fastBridgeRouter.json'
 
 enum BridgeStatus {
   NULL,
