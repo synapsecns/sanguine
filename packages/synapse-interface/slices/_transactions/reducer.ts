@@ -14,6 +14,7 @@ export interface _TransactionDetails {
   originValue: string
   originTxHash: string
   bridgeModuleName: string
+  routerAddress: string
   estimatedTime: number
   timestamp: number
   kappa?: string

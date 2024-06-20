@@ -2,10 +2,10 @@ import { type Address } from 'viem'
 import { useEffect, useState } from 'react'
 import { readContract } from '@wagmi/core'
 
-import { Chain } from '@/utils/types'
+import { type Chain } from '@/utils/types'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
-import fastBridgeAbi from '@/constants/abis/fastBridge.json'
 import { wagmiConfig } from '@/wagmiConfig'
+import fastBridgeAbi from '@/constants/abis/fastBridge.json'
 
 enum BridgeStatus {
   NULL,
