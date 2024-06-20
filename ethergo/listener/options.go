@@ -33,10 +33,6 @@ func WithFinalityMode(mode string) Option {
 		switch mode {
 		case "latest":
 			c.finalityMode = rpc.LatestBlockNumber
-		case "earliest":
-			c.finalityMode = rpc.EarliestBlockNumber
-		case "pending":
-			c.finalityMode = rpc.PendingBlockNumber
 		case "safe":
 			c.finalityMode = rpc.SafeBlockNumber
 		case "finalized":
