@@ -34,7 +34,7 @@ interface _TransactionProps {
   timestamp: number
   currentTime: number
   kappa?: string
-  status: 'pending' | 'completed' | 'reverted'
+  status: 'pending' | 'completed' | 'reverted' | 'refunded'
 }
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
@@ -100,7 +100,9 @@ export const _Transaction = ({
     kappa,
     routerAddress as Address,
     originChain,
-    isCheckTxForRefund && bridgeModuleName === 'SynapseRFQ'
+    isCheckTxForRefund &&
+      status === 'pending' &&
+      bridgeModuleName === 'SynapseRFQ'
   )
 
   useBridgeTxUpdater(
@@ -116,6 +118,7 @@ export const _Transaction = ({
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
   const showTransactionSupport =
     status === 'reverted' ||
+    status === 'refunded' ||
     (status === 'pending' && delayedTimeInMin && delayedTimeInMin <= -5)
 
   return (
@@ -187,7 +190,11 @@ export const _Transaction = ({
             />
             {status !== 'pending' && (
               <MenuItem
-                text={isTxReverted ? 'Clear notification' : 'Clear transaction'}
+                text={
+                  isTxReverted || isTxRefunded
+                    ? 'Clear notification'
+                    : 'Clear transaction'
+                }
                 link={null}
                 onClick={handleClearTransaction}
               />
