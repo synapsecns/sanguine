@@ -57,10 +57,6 @@ flags:
     paths:
       - services/scribe/
     carryforward: true
-  stiprelayer:
-    paths:
-      - services/stiprelayer/
-    carryforward: true
   solidity-core:
     paths:
       - packages/contracts-core/
