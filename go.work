@@ -15,6 +15,5 @@ use (
 	./services/omnirpc
 	./services/rfq
 	./services/scribe
-	./services/stiprelayer
 	./tools
 )
