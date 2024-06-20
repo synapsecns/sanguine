@@ -1,3 +1,4 @@
+import { isNumber, isString } from 'lodash'
 import { type Address } from 'viem'
 import { useEffect, useState } from 'react'
 import { readContract } from '@wagmi/core'
@@ -5,7 +6,9 @@ import { readContract } from '@wagmi/core'
 import { type Chain } from '@/utils/types'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import { wagmiConfig } from '@/wagmiConfig'
-import fastBridgeAbi from '@/constants/abis/fastBridge.json'
+import fastBridgeAbi from '@/constants/abis/FastBridge.json'
+import fastBridgeRouterAbi from '@/constants/abis/FastBridgeRouter.json'
+import { isValidAddress } from '@/utils/isValidAddress'
 
 enum BridgeStatus {
   NULL,
@@ -17,7 +20,7 @@ enum BridgeStatus {
 
 export const useIsTxRefunded = (
   txId: Address | undefined,
-  bridgeContract: Address,
+  routerAddress: Address,
   chain: Chain,
   checkForRefund: boolean
 ) => {
@@ -26,17 +29,23 @@ export const useIsTxRefunded = (
 
   const getTxRefundStatus = async () => {
     try {
-      const status = await checkRFQTxBridgeStatus(
-        txId,
-        bridgeContract,
+      const bridgeContract = await getRFQBridgeContract(
+        routerAddress,
         chain?.id
       )
-      console.log('status: ', status)
+
+      const status = await checkRFQTxBridgeStatus(
+        txId,
+        bridgeContract as Address,
+        chain?.id
+      )
+
       if (status === BridgeStatus.REFUNDED) {
         setIsRefunded(true)
       }
+      console.log('RFQ Transaction Status: ', status)
     } catch (error) {
-      console.error('Failed to fetch transaction receipt:', error)
+      console.error('Failed to get transaction refund status:', error)
     }
   }
 
@@ -49,17 +58,48 @@ export const useIsTxRefunded = (
   return isRefunded
 }
 
+const getRFQBridgeContract = async (
+  routerAddress: Address,
+  chainId: number
+): Promise<string | undefined> => {
+  try {
+    const fastBridgeAddress = await readContract(wagmiConfig, {
+      abi: fastBridgeRouterAbi,
+      address: routerAddress,
+      functionName: 'fastBridge',
+      chainId,
+    })
+
+    if (!isString(fastBridgeAddress)) {
+      throw new Error('Invalid address')
+    }
+
+    return fastBridgeAddress
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 const checkRFQTxBridgeStatus = async (
   txId: Address,
   bridgeContract: Address,
   chainId: number
-) => {
-  const result = await readContract(wagmiConfig, {
-    abi: fastBridgeAbi,
-    address: bridgeContract,
-    functionName: 'bridgeStatuses',
-    args: [txId],
-    chainId,
-  })
-  return result
+): Promise<number | undefined> => {
+  try {
+    const status = await readContract(wagmiConfig, {
+      abi: fastBridgeAbi,
+      address: bridgeContract,
+      functionName: 'bridgeStatuses',
+      args: [txId],
+      chainId,
+    })
+
+    if (!isNumber(status)) {
+      throw new Error('Invalid status code')
+    }
+
+    return status
+  } catch (error) {
+    throw new Error(error)
+  }
 }
