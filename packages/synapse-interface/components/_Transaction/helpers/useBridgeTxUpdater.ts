@@ -5,11 +5,12 @@ import {
   updateTransactionKappa,
   completeTransaction,
   revertTransaction,
+  refundTransaction,
   _TransactionDetails,
 } from '@/slices/_transactions/reducer'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
-import { Chain } from '@/utils/types'
+import { type Chain } from '@/utils/types'
 
 /**
  * Hook to update Tx store state based on returned SDK method calls
@@ -27,7 +28,8 @@ export const useBridgeTxUpdater = (
   kappa: string,
   originTxHash: string,
   isTxComplete: boolean,
-  isTxReverted: boolean
+  isTxReverted: boolean,
+  isTxRefunded: boolean
 ) => {
   const dispatch = useAppDispatch()
   const { transactions } = use_TransactionsState()
@@ -48,6 +50,13 @@ export const useBridgeTxUpdater = (
       dispatch(revertTransaction({ originTxHash }))
     }
   }, [isTxReverted])
+
+  /** Update tx for refunds in store */
+  useEffect(() => {
+    if (isTxRefunded && storedTx.status !== 'refunded') {
+      dispatch(refundTransaction({ originTxHash }))
+    }
+  }, [isTxRefunded])
 
   /** Update tx for completion in store */
   useEffect(() => {

@@ -18,7 +18,7 @@ export interface _TransactionDetails {
   estimatedTime: number
   timestamp: number
   kappa?: string
-  status: 'pending' | 'completed' | 'reverted'
+  status: 'pending' | 'completed' | 'reverted' | 'refunded'
 }
 
 export interface _TransactionsState {
@@ -88,6 +88,19 @@ export const transactionsSlice = createSlice({
         state.transactions[txIndex].status = 'reverted'
       }
     },
+    refundTransaction: (
+      state,
+      action: PayloadAction<{ originTxHash: string }>
+    ) => {
+      const { originTxHash } = action.payload
+
+      const txIndex = state.transactions.findIndex(
+        (tx) => tx.originTxHash === originTxHash
+      )
+      if (txIndex !== -1) {
+        state.transactions[txIndex].status = 'refunded'
+      }
+    },
     clearTransactions: (state) => {
       state.transactions = []
     },
@@ -100,6 +113,7 @@ export const {
   updateTransactionKappa,
   completeTransaction,
   revertTransaction,
+  refundTransaction,
   clearTransactions,
 } = transactionsSlice.actions
 

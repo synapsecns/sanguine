@@ -74,7 +74,6 @@ import {
 } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteRefresher } from '@/utils/hooks/useStaleQuoteRefresher'
-import { getTransactionRefundLogs } from '@/components/_Transaction/helpers/getTransactionReceipt'
 import { useIsTxRefunded } from '@/components/_Transaction/helpers/useIsTxRefunded'
 import { BASE } from '@/constants/chains/master'
 

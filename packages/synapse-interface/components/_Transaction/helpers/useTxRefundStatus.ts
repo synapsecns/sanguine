@@ -1,5 +1,5 @@
-import { isNumber, isString } from 'lodash'
 import { type Address } from 'viem'
+import { isNumber, isString } from 'lodash'
 import { useEffect, useState } from 'react'
 import { readContract } from '@wagmi/core'
 
@@ -8,7 +8,6 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import { wagmiConfig } from '@/wagmiConfig'
 import fastBridgeAbi from '@/constants/abis/FastBridge.json'
 import fastBridgeRouterAbi from '@/constants/abis/FastBridgeRouter.json'
-import { isValidAddress } from '@/utils/isValidAddress'
 
 enum BridgeStatus {
   NULL,
@@ -18,8 +17,8 @@ enum BridgeStatus {
   REFUNDED,
 }
 
-export const useIsTxRefunded = (
-  txId: Address | undefined,
+export const useTxRefundStatus = (
+  txId: string | undefined,
   routerAddress: Address,
   chain: Chain,
   checkForRefund: boolean
@@ -81,7 +80,7 @@ const getRFQBridgeContract = async (
 }
 
 const checkRFQTxBridgeStatus = async (
-  txId: Address,
+  txId: string,
   bridgeContract: Address,
   chainId: number
 ): Promise<number | undefined> => {
