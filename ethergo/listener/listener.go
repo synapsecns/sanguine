@@ -69,7 +69,7 @@ func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB
 		client:              omnirpcClient,
 		backoff:             newBackoffConfig(),
 		pollIntervalSetting: time.Millisecond * 50,
-		finalityMode:        FinalityModeLatest,
+		finalityMode:        rpc.LatestBlockNumber,
 		blockWait:           0,
 	}
 

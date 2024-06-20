@@ -27,18 +27,21 @@ func WithPollInterval(interval time.Duration) Option {
 	}
 }
 
-const (
-	FinalityModeSafe                rpc.BlockNumber = rpc.SafeBlockNumber
-	FinalityModeFinalized           rpc.BlockNumber = rpc.FinalizedBlockNumber
-	FinalityModeLatest              rpc.BlockNumber = rpc.LatestBlockNumber
-	FinalityModePending             rpc.BlockNumber = rpc.PendingBlockNumber
-	FinalityModeEarliestBlockNumber rpc.BlockNumber = rpc.EarliestBlockNumber
-)
-
 // WithFinalityMode sets the finality mode.
-func WithFinalityMode(mode rpc.BlockNumber) Option {
+func WithFinalityMode(mode string) Option {
 	return func(c *chainListener) {
-		c.finalityMode = mode
+		switch mode {
+		case "latest":
+			c.finalityMode = rpc.LatestBlockNumber
+		case "earliest":
+			c.finalityMode = rpc.EarliestBlockNumber
+		case "pending":
+			c.finalityMode = rpc.PendingBlockNumber
+		case "safe":
+			c.finalityMode = rpc.SafeBlockNumber
+		case "finalized":
+			c.finalityMode = rpc.FinalizedBlockNumber
+		}
 	}
 }
 
