@@ -232,13 +232,15 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		return
 	}
 
-	span.SetAttributes(attribute.String("type", blacklistBody.Type))
-	span.SetAttributes(attribute.String("id", blacklistBody.ID))
-	span.SetAttributes(attribute.String("data", blacklistBody.Data))
-	span.SetAttributes(attribute.String("network", blacklistBody.Network))
-	span.SetAttributes(attribute.String("tag", blacklistBody.Tag))
-	span.SetAttributes(attribute.String("remark", blacklistBody.Remark))
-	span.SetAttributes(attribute.String("address", blacklistBody.Address))
+	span.SetAttributes(
+		attribute.String("type", blacklistBody.Type),
+		(attribute.String("id", blacklistBody.ID)),
+		(attribute.String("data", blacklistBody.Data)),
+		(attribute.String("network", blacklistBody.Network)),
+		(attribute.String("tag", blacklistBody.Tag)),
+		(attribute.String("remark", blacklistBody.Remark)),
+		(attribute.String("address", blacklistBody.Address)),
+	)
 
 	blacklistedAddress := db.BlacklistedAddress{
 		Type:    blacklistBody.Type,
