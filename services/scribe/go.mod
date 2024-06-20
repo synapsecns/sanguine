@@ -50,7 +50,7 @@ require (
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/tools v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.27.2
-	github.com/vektah/gqlparser/v2 v2.5.8
+	github.com/vektah/gqlparser/v2 v2.5.14
 	github.com/vektra/mockery/v2 v2.14.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0
 	go.opentelemetry.io/otel v1.27.0
