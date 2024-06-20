@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -339,7 +340,7 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 		return fmt.Errorf("could not get quote results: %w", err)
 	}
 
-	g, ctx := errgroup.WithContext(ctx)
+	wg := sync.WaitGroup{}
 	// Obviously, these are only seen.
 	for _, req := range requests {
 		//nolint: nestif
@@ -362,22 +363,20 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 			if err != nil {
 				return fmt.Errorf("could not acquire semaphore: %w", err)
 			}
-			g.Go(func() error {
+			wg.Add(1)
+			go func() {
 				defer r.semaphore.Release(1)
+				defer wg.Done()
 				err = r.processRequest(ctx, request)
 				if err != nil {
-					return fmt.Errorf("could not process request: %w", err)
+					logger.Errorf("could not process request: %w", err)
 				}
-				return nil
-			})
+			}()
 		}
 	}
 
 	// no-op if serial is specified
-	err = g.Wait()
-	if err != nil {
-		return fmt.Errorf("could not process requests: %w", err)
-	}
+	wg.Wait()
 	return nil
 }
 

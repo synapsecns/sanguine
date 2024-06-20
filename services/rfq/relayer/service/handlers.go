@@ -304,22 +304,25 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 //
 // This is the fourth step in the bridge process. Here we submit the relay transaction to the destination chain.
 // TODO: just to be safe, we should probably check if another relayer has already relayed this.
-func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
-	if err != nil {
-		return fmt.Errorf("could not update quote request status: %w", err)
-	}
-
+func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	// TODO: store the dest txhash connected to the nonce
 	nonce, _, err := q.Dest.SubmitRelay(ctx, request)
 	if err != nil {
 		return fmt.Errorf("could not submit relay: %w", err)
 	}
-	_ = nonce
+	span.AddEvent("relay successfully submitted")
+	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
 
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
 	if err != nil {
-		return fmt.Errorf("could not update request status: %w", err)
+		return fmt.Errorf("could not update quote request status: %w", err)
 	}
+
+	err = q.db.UpdateRelayNonce(ctx, request.TransactionID, nonce)
+	if err != nil {
+		return fmt.Errorf("could not update relay nonce: %w", err)
+	}
+
 	return nil
 }
 

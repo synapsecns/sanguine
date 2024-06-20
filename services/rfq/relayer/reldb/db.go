@@ -30,6 +30,8 @@ type Writer interface {
 	UpdateRebalance(ctx context.Context, rebalance Rebalance, updateID bool) error
 	// UpdateDestTxHash updates the dest tx hash of a quote request
 	UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash common.Hash) error
+	// UpdateRelayNonce updates the relay nonce of a quote request
+	UpdateRelayNonce(ctx context.Context, id [32]byte, nonce uint64) error
 }
 
 // Reader is the interface for reading from the database.
@@ -79,6 +81,8 @@ type QuoteRequest struct {
 	Status       QuoteRequestStatus
 	OriginTxHash common.Hash
 	DestTxHash   common.Hash
+	// RelayNonce is the nonce for the relay transaction.
+	RelayNonce uint64
 }
 
 // GetOriginIDPair gets the origin chain id and token address pair.

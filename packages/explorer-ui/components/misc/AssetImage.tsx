@@ -9,11 +9,17 @@ export function AssetImage({ tokenAddress, chainId, className, tokenSymbol= '' }
     const t = chainId && tokenAddress && TOKEN_HASH_MAP[chainId]?.[tokenAddress]
     return(
       <a href={getTokenAddressUrl({ tokenAddress, chainId })}>
+        <div className="w-full relative">
+          <div className="flex justify-between ">
+            <div className="flex flex-row w-[90%] items-center">
         <Image
-          className={`inline w-5 h-5 mr-2 rounded-md ${className}`}
+          className={`${className}`}
           src={t?.icon}
           alt=""
         />
+            </div>
+          </div>
+        </div>
       </a>
     )
   }
@@ -25,7 +31,7 @@ export function AssetImage({ tokenAddress, chainId, className, tokenSymbol= '' }
     return (
       <a href={getTokenAddressUrl({ tokenAddress, chainId })}>
         <Image
-          className={`inline w-5 h-5 mr-2 rounded-md ${className}`}
+          className={`inline mr-[.5rem] rounded-full ${className}`}
           src={t?.icon}
           alt=""
         />
@@ -35,7 +41,7 @@ export function AssetImage({ tokenAddress, chainId, className, tokenSymbol= '' }
     return (
       // temporary fix until either symbolToToken works better as a function or explorer indexer has the right token addresses
       <Image
-      className={`inline w-5 h-5 mr-2 rounded-md ${className}`}
+      className={`${className}`}
       src={USDC?.icon}
       alt=""
     />
