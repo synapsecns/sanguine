@@ -27,12 +27,12 @@ func WithPollInterval(interval time.Duration) Option {
 	}
 }
 
-// FinalityMode represents the finality mode for block queries.
-
 const (
-	FinalityModeSafe      rpc.BlockNumber = rpc.SafeBlockNumber
-	FinalityModeFinalized rpc.BlockNumber = rpc.FinalizedBlockNumber
-	FinalityModeLatest    rpc.BlockNumber = rpc.FinalizedBlockNumber
+	FinalityModeSafe                rpc.BlockNumber = rpc.SafeBlockNumber
+	FinalityModeFinalized           rpc.BlockNumber = rpc.FinalizedBlockNumber
+	FinalityModeLatest              rpc.BlockNumber = rpc.LatestBlockNumber
+	FinalityModePending             rpc.BlockNumber = rpc.PendingBlockNumber
+	FinalityModeEarliestBlockNumber rpc.BlockNumber = rpc.EarliestBlockNumber
 )
 
 // WithFinalityMode sets the finality mode.

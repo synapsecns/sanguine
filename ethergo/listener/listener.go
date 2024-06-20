@@ -137,7 +137,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	}()
 
 	oldLatestBlock := c.latestBlock
-	c.latestBlock, err = c.client.BlockNumber(ctx)
+	c.latestBlock, err = c.getBlockNumber(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get block number: %w", err)
 	}
@@ -189,11 +189,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 }
 
 func (c chainListener) getBlockNumber(ctx context.Context) (uint64, error) {
-	var block *types.Block
-	var err error
-
-	block, err = c.client.BlockByNumber(ctx, big.NewInt(c.finalityMode.Int64()))
-
+	block, err := c.client.BlockByNumber(ctx, big.NewInt(c.finalityMode.Int64()))
 	if err != nil {
 		return 0, err
 	}
