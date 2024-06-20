@@ -108,7 +108,7 @@ const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
 
   useIsTxRefunded(
-    undefined,
+    '0x6DE56AB01E5C9D1D411918BFCE2FB222E53E4F45BCDAFD8892F6649C1E27AEA6',
     '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
     BASE,
     true

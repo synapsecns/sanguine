@@ -1,9 +1,11 @@
-import { Address } from 'viem'
+import { type Address } from 'viem'
 import { useEffect, useState } from 'react'
+import { readContract } from '@wagmi/core'
 
 import { Chain } from '@/utils/types'
-import { getTransactionRefundLogs } from './getTransactionReceipt'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
+import fastBridgeAbi from '@/constants/abis/fastBridge.json'
+import { wagmiConfig } from '@/wagmiConfig'
 
 export const useIsTxRefunded = (
   txId: Address | undefined,
@@ -16,7 +18,12 @@ export const useIsTxRefunded = (
 
   const getTxRefundStatus = async () => {
     try {
-      await getTransactionRefundLogs(bridgeContract, chain?.id)
+      const status = await checkRFQTxBridgeStatus(
+        txId,
+        bridgeContract,
+        chain?.id
+      )
+      console.log('status: ', status)
     } catch (error) {
       console.error('Failed to fetch transaction receipt:', error)
     }
@@ -29,4 +36,19 @@ export const useIsTxRefunded = (
   }, [checkForRefund, txId, chain, currentTime])
 
   return isRefunded
+}
+
+const checkRFQTxBridgeStatus = async (
+  txId: Address,
+  bridgeContract: Address,
+  chainId: number
+) => {
+  const result = await readContract(wagmiConfig, {
+    abi: fastBridgeAbi,
+    address: bridgeContract,
+    functionName: 'bridgeStatuses',
+    args: [txId],
+    chainId,
+  })
+  return result
 }
