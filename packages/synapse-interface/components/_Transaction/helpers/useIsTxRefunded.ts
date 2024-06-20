@@ -7,6 +7,14 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import fastBridgeAbi from '@/constants/abis/fastBridge.json'
 import { wagmiConfig } from '@/wagmiConfig'
 
+enum BridgeStatus {
+  NULL,
+  REQUESTED,
+  RELAYER_PROVED,
+  RELAYER_CLAIMED,
+  REFUNDED,
+}
+
 export const useIsTxRefunded = (
   txId: Address | undefined,
   bridgeContract: Address,
@@ -14,7 +22,7 @@ export const useIsTxRefunded = (
   checkForRefund: boolean
 ) => {
   const [isRefunded, setIsRefunded] = useState<boolean>(false)
-  const currentTime = useIntervalTimer(60000)
+  const currentTime = useIntervalTimer(600000)
 
   const getTxRefundStatus = async () => {
     try {
@@ -24,6 +32,9 @@ export const useIsTxRefunded = (
         chain?.id
       )
       console.log('status: ', status)
+      if (status === BridgeStatus.REFUNDED) {
+        setIsRefunded(true)
+      }
     } catch (error) {
       console.error('Failed to fetch transaction receipt:', error)
     }
