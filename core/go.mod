@@ -58,7 +58,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.27.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.7.0
-	gorm.io/driver/sqlite v1.5.5
+	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.10
 	k8s.io/apimachinery v0.26.2
 )
