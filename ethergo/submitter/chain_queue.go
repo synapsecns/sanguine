@@ -28,8 +28,6 @@ type chainQueue struct {
 	*txSubmitterImpl
 	// client is the client for this chain
 	client client.EVM
-	// wg is the waitgroup for this chain
-	wg *sync.WaitGroup
 	// client is the nonce used for this chain
 	nonce uint64
 	// txsHaveConfirmed is true if any of the txes have confirmed
@@ -70,9 +68,10 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		span.AddEvent("could not register nonce", trace.WithAttributes(attribute.String("error", registerErr.Error())))
 	}
 
+	wg := &sync.WaitGroup{}
+
 	cq := chainQueue{
 		txSubmitterImpl: t,
-		wg:              &sync.WaitGroup{},
 		chainID:         core.CopyBigInt(chainID),
 		nonce:           currentNonce,
 		client:          chainClient,
@@ -104,9 +103,9 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		}
 
 		// bump tx in new goroutine
-		cq.wg.Add(1)
+		wg.Add(1)
 		go func() {
-			defer cq.wg.Done()
+			defer wg.Done()
 			bumpErr := cq.bumpTX(ctx, tx)
 			if bumpErr != nil {
 				logger.Errorf("could not bump tx: %v", bumpErr)
@@ -115,16 +114,16 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	}
 
 	// update old tx statuses in parallel
-	cq.wg.Add(1)
+	wg.Add(1)
 	go func() {
-		defer cq.wg.Done()
+		defer wg.Done()
 		updateErr := cq.updateOldTxStatuses(ctx)
 		if updateErr != nil {
 			logger.Errorf("could not update old tx statuses: %v", updateErr)
 		}
 	}()
 
-	cq.wg.Wait()
+	wg.Wait()
 
 	sort.Slice(cq.reprocessQueue, func(i, j int) bool {
 		return cq.reprocessQueue[i].Nonce() < cq.reprocessQueue[j].Nonce()
