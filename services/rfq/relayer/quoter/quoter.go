@@ -131,8 +131,6 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 	}, nil
 }
 
-const screenerRuleset = "rfq"
-
 // ShouldProcess determines if a quote should be processed.
 func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequest) (res bool, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "shouldProcess", trace.WithAttributes(
