@@ -66,7 +66,7 @@ require (
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
-	github.com/gin-contrib/cors v1.4.0 // indirect
+	github.com/gin-contrib/cors v1.7.2 // indirect
 	github.com/gin-contrib/requestid v0.0.6 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-contrib/zap v0.2.0 // indirect

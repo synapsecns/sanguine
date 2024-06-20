@@ -100,7 +100,7 @@ require (
 	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08 // indirect
 	github.com/gballet/go-verkle v0.1.1-0.20231031103413-a67434b50f46 // indirect
 	github.com/getsentry/sentry-go v0.18.0 // indirect
-	github.com/gin-contrib/cors v1.4.0 // indirect
+	github.com/gin-contrib/cors v1.7.2 // indirect
 	github.com/gin-contrib/requestid v0.0.6 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-contrib/zap v0.2.0 // indirect
