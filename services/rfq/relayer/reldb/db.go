@@ -2,6 +2,7 @@ package reldb
 
 import (
 	"context"
+	"database/sql"
 	"database/sql/driver"
 	"errors"
 	"fmt"
@@ -29,6 +30,8 @@ type Writer interface {
 	UpdateRebalance(ctx context.Context, rebalance Rebalance, updateID bool) error
 	// UpdateDestTxHash updates the dest tx hash of a quote request
 	UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash common.Hash) error
+	// UpdateRelayNonce updates the relay nonce of a quote request
+	UpdateRelayNonce(ctx context.Context, id [32]byte, nonce uint64) error
 }
 
 // Reader is the interface for reading from the database.
@@ -43,6 +46,8 @@ type Reader interface {
 	GetPendingRebalances(ctx context.Context, chainIDs ...uint64) ([]*Rebalance, error)
 	// GetRebalance gets a rebalance by ID. Should return ErrNoRebalanceForID if not found.
 	GetRebalanceByID(ctx context.Context, rebalanceID string) (*Rebalance, error)
+	// GetDBStats gets the database stats.
+	GetDBStats(ctx context.Context) (*sql.DBStats, error)
 }
 
 // Service is the interface for the database service.
@@ -76,6 +81,8 @@ type QuoteRequest struct {
 	Status       QuoteRequestStatus
 	OriginTxHash common.Hash
 	DestTxHash   common.Hash
+	// RelayNonce is the nonce for the relay transaction.
+	RelayNonce uint64
 }
 
 // GetOriginIDPair gets the origin chain id and token address pair.

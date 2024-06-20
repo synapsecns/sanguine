@@ -109,3 +109,14 @@ func (s Store) UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash com
 	}
 	return nil
 }
+
+// UpdateRelayNonce todo: db test.
+func (s Store) UpdateRelayNonce(ctx context.Context, id [32]byte, nonce uint64) error {
+	tx := s.DB().WithContext(ctx).Model(&RequestForQuote{}).
+		Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).
+		Update(relayNonceFieldName, nonce)
+	if tx.Error != nil {
+		return fmt.Errorf("could not update: %w", tx.Error)
+	}
+	return nil
+}
