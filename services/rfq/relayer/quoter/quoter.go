@@ -25,6 +25,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"golang.org/x/exp/slices"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -149,23 +150,35 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 	}
 
 	if m.screener != nil {
-		blocked, err := m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.OriginSender.String())
-		if err != nil {
-			span.RecordError(fmt.Errorf("error screening address: %w", err))
-			return false, fmt.Errorf("error screening address: %w", err)
-		}
-		if blocked {
-			span.AddEvent(fmt.Sprintf("address %s blocked", quote.Transaction.OriginSender))
-			return false, nil
-		}
+		// screen sender and recipient in parallel
+		g, gctx := errgroup.WithContext(ctx)
+		var senderBlocked, recipientBlocked bool
+		g.Go(func() error {
+			senderBlocked, err = m.screener.ScreenAddress(gctx, screenerRuleset, quote.Transaction.OriginSender.String())
+			if err != nil {
+				span.RecordError(fmt.Errorf("error screening address: %w", err))
+				return fmt.Errorf("error screening address: %w", err)
+			}
+			return nil
+		})
+		g.Go(func() error {
+			recipientBlocked, err = m.screener.ScreenAddress(gctx, screenerRuleset, quote.Transaction.DestRecipient.String())
+			if err != nil {
+				span.RecordError(fmt.Errorf("error screening address: %w", err))
+				return fmt.Errorf("error screening address: %w", err)
+			}
+			return nil
+		})
 
-		blocked, err = m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.DestRecipient.String())
+		err = g.Wait()
 		if err != nil {
-			span.RecordError(fmt.Errorf("error screening address: %w", err))
-			return false, fmt.Errorf("error screening address: %w", err)
+			return false, fmt.Errorf("error screening addresses: %w", err)
 		}
-		if blocked {
-			span.AddEvent(fmt.Sprintf("address %s blocked", quote.Transaction.DestRecipient))
+		if senderBlocked || recipientBlocked {
+			span.SetAttributes(
+				attribute.Bool("sender_blocked", senderBlocked),
+				attribute.Bool("recipient_blocked", recipientBlocked),
+			)
 			return false, nil
 		}
 	}

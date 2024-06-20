@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"database/sql"
+
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"gorm.io/gorm"
 )
@@ -124,4 +126,14 @@ func (s Store) GetRebalanceByID(ctx context.Context, rebalanceID string) (*reldb
 	}
 
 	return rebalance, nil
+}
+
+// GetDBStats gets the database stats.
+func (s Store) GetDBStats(ctx context.Context) (*sql.DBStats, error) {
+	sqlDB, err := s.DB().WithContext(ctx).DB()
+	if err != nil {
+		return nil, fmt.Errorf("could not get db: %w", err)
+	}
+	stats := sqlDB.Stats()
+	return &stats, nil
 }

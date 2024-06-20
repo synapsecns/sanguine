@@ -45,6 +45,9 @@ type QuoteRequestHandler struct {
 	metrics metrics.Handler
 	// apiClient is used to get acks before submitting a relay transaction.
 	apiClient client.AuthenticatedClient
+	// mutexMiddlewareFunc is used to wrap the handler in a mutex middleware.
+	// this should only be done if Handling, not forwarding.
+	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
 }
 
 // Handler is the handler for a quote request.
@@ -62,22 +65,28 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	}
 
 	qr := &QuoteRequestHandler{
-		Origin:         *origin,
-		Dest:           *dest,
-		db:             r.db,
-		Inventory:      r.inventory,
-		Quoter:         r.quoter,
-		handlers:       make(map[reldb.QuoteRequestStatus]Handler),
-		metrics:        r.metrics,
-		RelayerAddress: r.signer.Address(),
-		claimCache:     r.claimCache,
-		apiClient:      r.apiClient,
+		Origin:              *origin,
+		Dest:                *dest,
+		db:                  r.db,
+		Inventory:           r.inventory,
+		Quoter:              r.quoter,
+		handlers:            make(map[reldb.QuoteRequestStatus]Handler),
+		metrics:             r.metrics,
+		RelayerAddress:      r.signer.Address(),
+		claimCache:          r.claimCache,
+		apiClient:           r.apiClient,
+		mutexMiddlewareFunc: r.mutexMiddleware,
 	}
 
+	// wrap in deadline middleware since the relay has not yet happened
 	qr.handlers[reldb.Seen] = r.deadlineMiddleware(r.gasMiddleware(qr.handleSeen))
 	qr.handlers[reldb.CommittedPending] = r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitPending))
 	qr.handlers[reldb.CommittedConfirmed] = r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitConfirmed))
-	// no more need for deadline middleware now, we already relayed.
+
+	// no-op edge case, but we still want to check the deadline
+	qr.handlers[reldb.RelayStarted] = r.deadlineMiddleware(func(_ context.Context, _ trace.Span, _ reldb.QuoteRequest) error { return nil })
+
+	// no more need for deadline middleware now, we already relayed
 	qr.handlers[reldb.RelayCompleted] = qr.handleRelayCompleted
 	qr.handlers[reldb.ProvePosted] = qr.handleProofPosted
 
@@ -85,6 +94,19 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	qr.handlers[reldb.NotEnoughInventory] = r.deadlineMiddleware(qr.handleNotEnoughInventory)
 
 	return qr, nil
+}
+
+func (r *Relayer) mutexMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
+	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) (err error) {
+		unlocker, ok := r.relayMtx.TryLock(hexutil.Encode(req.TransactionID[:]))
+		if !ok {
+			span.SetAttributes(attribute.Bool("locked", true))
+			return nil
+		}
+		defer unlocker.Unlock()
+
+		return next(ctx, span, req)
+	}
 }
 
 func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
@@ -190,6 +212,23 @@ func (q *QuoteRequestHandler) Handle(ctx context.Context, request reldb.QuoteReq
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	// we're handling and not forwarding, so we need to wrap the handler in a mutex middleware
+	handler := q.mutexMiddlewareFunc(q.handlers[request.Status])
+	return handler(ctx, span, request)
+}
+
+// Forward forwards a quote request.
+// this ignores the mutex middleware.
+func (q *QuoteRequestHandler) Forward(ctx context.Context, request reldb.QuoteRequest) (err error) {
+	ctx, span := q.metrics.Tracer().Start(ctx, fmt.Sprintf("forward-%s", request.Status.String()), trace.WithAttributes(
+		attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	// TODO: consider adding a lock attempt/fail here as a defensive coding strategy. We *expect* stuff to be locked by the time we get to forward.
 
 	return q.handlers[request.Status](ctx, span, request)
 }

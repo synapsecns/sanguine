@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
@@ -17,6 +19,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
+
+var maxRPCRetryTime = 15 * time.Second
 
 // handleBridgeRequestedLog handles the BridgeRequestedLog event.
 // Step 1: Seen
@@ -33,7 +37,15 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// TODO: consider a mapmutex
+	unlocker, ok := r.relayMtx.TryLock(hexutil.Encode(req.TransactionId[:]))
+	if !ok {
+		span.SetAttributes(attribute.Bool("locked", true))
+		// already processing this request
+		return nil
+	}
+
+	defer unlocker.Unlock()
+
 	_, err = r.db.GetQuoteRequestByID(ctx, req.TransactionId)
 	// expect no results
 	if !errors.Is(err, reldb.ErrNoQuoteForID) {
@@ -41,6 +53,10 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		if err != nil {
 			return fmt.Errorf("could not call db: %w", err)
 		}
+
+		span.AddEvent("already known")
+		// already seen this request
+		return nil
 	}
 
 	// TODO: these should be premade
@@ -54,9 +70,17 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return fmt.Errorf("could not get correct fast bridge: %w", err)
 	}
 
-	bridgeTx, err := fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
+	var bridgeTx fastbridge.IFastBridgeBridgeTransaction
+	call := func(ctx context.Context) error {
+		bridgeTx, err = fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
+		if err != nil {
+			return fmt.Errorf("could not get bridge transaction: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
 	if err != nil {
-		return fmt.Errorf("could not get bridge transaction: %w", err)
+		return fmt.Errorf("could not make call: %w", err)
 	}
 
 	// TODO: you can just pull these out of inventory. If they don't exist mark as invalid.
@@ -71,7 +95,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return fmt.Errorf("could not get decimals: %w", err)
 	}
 
-	err = r.db.StoreQuoteRequest(ctx, reldb.QuoteRequest{
+	dbReq := reldb.QuoteRequest{
 		BlockNumber:         req.Raw.BlockNumber,
 		RawRequest:          req.Request,
 		OriginTokenDecimals: *originDecimals,
@@ -81,9 +105,23 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		Transaction:         bridgeTx,
 		Status:              reldb.Seen,
 		OriginTxHash:        req.Raw.TxHash,
-	})
+	}
+	err = r.db.StoreQuoteRequest(ctx, dbReq)
 	if err != nil {
 		return fmt.Errorf("could not get db: %w", err)
+	}
+
+	// immediately forward the request to handleSeen
+	span.AddEvent("sending to handleSeen")
+	qr, err := r.requestToHandler(ctx, dbReq)
+	if err != nil {
+		return fmt.Errorf("could not get quote request handler: %w", err)
+	}
+	// Forward instead of lock since we called lock above.
+	fwdErr := qr.Forward(ctx, dbReq)
+	if fwdErr != nil {
+		logger.Errorf("could not forward to handle seen: %w", fwdErr)
+		span.AddEvent("could not forward to handle seen")
 	}
 
 	return nil
@@ -167,10 +205,20 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
+	request.Status = reldb.CommittedPending
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
+
+	// immediately forward the request to handleCommitPending
+	span.AddEvent("forwarding to handleCommitPending")
+	fwdErr := q.Forward(ctx, request)
+	if fwdErr != nil {
+		logger.Errorf("could not forward to handle commit pending: %w", fwdErr)
+		span.AddEvent("could not forward to handle commit pending")
+	}
+
 	return nil
 }
 
@@ -201,20 +249,40 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 		return nil
 	}
 
-	bs, err := q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionID)
+	var bs uint8
+	call := func(ctx context.Context) error {
+		bs, err = q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionID)
+		if err != nil {
+			return fmt.Errorf("could not get bridge status: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
 	if err != nil {
-		return fmt.Errorf("could not get bridge status: %w", err)
+		return fmt.Errorf("could not make contract call: %w", err)
 	}
 
 	span.AddEvent("status_check", trace.WithAttributes(attribute.String("chain_bridge_status", fastbridge.BridgeStatus(bs).String())))
 
 	// sanity check to make sure it's still requested.
-	if bs == fastbridge.REQUESTED.Int() {
-		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedConfirmed)
-		if err != nil {
-			return fmt.Errorf("could not update request status: %w", err)
-		}
+	if bs != fastbridge.REQUESTED.Int() {
+		return nil
 	}
+
+	request.Status = reldb.CommittedConfirmed
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedConfirmed)
+	if err != nil {
+		return fmt.Errorf("could not update request status: %w", err)
+	}
+
+	// immediately forward to handleCommitConfirmed
+	span.AddEvent("forwarding to handleCommitConfirmed")
+	fwdErr := q.Forward(ctx, request)
+	if fwdErr != nil {
+		logger.Errorf("could not forward to handle commit confirmed: %w", fwdErr)
+		span.AddEvent("could not forward to handle commit confirmed")
+	}
+
 	return nil
 }
 
@@ -223,22 +291,25 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 //
 // This is the fourth step in the bridge process. Here we submit the relay transaction to the destination chain.
 // TODO: just to be safe, we should probably check if another relayer has already relayed this.
-func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
-	if err != nil {
-		return fmt.Errorf("could not update quote request status: %w", err)
-	}
-
+func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	// TODO: store the dest txhash connected to the nonce
 	nonce, _, err := q.Dest.SubmitRelay(ctx, request)
 	if err != nil {
 		return fmt.Errorf("could not submit relay: %w", err)
 	}
-	_ = nonce
+	span.AddEvent("relay successfully submitted")
+	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
 
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
 	if err != nil {
-		return fmt.Errorf("could not update request status: %w", err)
+		return fmt.Errorf("could not update quote request status: %w", err)
 	}
+
+	err = q.db.UpdateRelayNonce(ctx, request.TransactionID, nonce)
+	if err != nil {
+		return fmt.Errorf("could not update relay nonce: %w", err)
+	}
+
 	return nil
 }
 
@@ -253,7 +324,9 @@ func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridge
 		return fmt.Errorf("could not get quote request: %w", err)
 	}
 	// we might've accidentally gotten this later, if so we'll just ignore it
-	if reqID.Status != reldb.RelayStarted {
+	// note that in the edge case where we pessimistically marked as DeadlineExceeded
+	// and the relay was actually successful, we should continue the proving process
+	if reqID.Status != reldb.RelayStarted && reqID.Status != reldb.DeadlineExceeded {
 		logger.Warnf("got relay log for request that was not relay started (transaction id: %s, txhash: %s)", hexutil.Encode(reqID.TransactionID[:]), req.Raw.TxHash)
 		return nil
 	}
@@ -321,9 +394,17 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 
 	// make sure relayer hasn't already proved. This is neeeded in case of an abrupt halt in event sourcing
 	// note:  this assumes caller has already checked the sender is the relayer.
-	bs, err := q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionID)
+	var bs uint8
+	call := func(ctx context.Context) error {
+		bs, err = q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionID)
+		if err != nil {
+			return fmt.Errorf("could not get bridge status: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
 	if err != nil {
-		return fmt.Errorf("could not get bridge status: %w", err)
+		return fmt.Errorf("could not make contract call: %w", err)
 	}
 
 	if bs == fastbridge.RelayerClaimed.Int() {
@@ -334,9 +415,17 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 		return nil
 	}
 
-	canClaim, err := q.Origin.Bridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionID, q.RelayerAddress)
+	var canClaim bool
+	claimCall := func(ctx context.Context) error {
+		canClaim, err = q.Origin.Bridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionID, q.RelayerAddress)
+		if err != nil {
+			return fmt.Errorf("could not check if can claim: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, claimCall, retry.WithMaxTotalTime(maxRPCRetryTime))
 	if err != nil {
-		return fmt.Errorf("could not check if can claim: %w", err)
+		return fmt.Errorf("could not make call: %w", err)
 	}
 
 	// can't claim yet. we'll check again later
