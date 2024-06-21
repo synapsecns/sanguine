@@ -6762,7 +6762,7 @@
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.25.tgz#f077fdc0b5d0078d30893396ff4827a13f99e817"
   integrity sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==
 
-"@ponder/core@^0.4.6":
+"@ponder/core@^0.4.40":
   version "0.4.40"
   resolved "https://registry.yarnpkg.com/@ponder/core/-/core-0.4.40.tgz#1748c64127650fe828f606f8ddc12ab0974adfc1"
   integrity sha512-dxLocZj0jElWiGZWet2zg3Awxxdz53NY71+DN2jIzAjCt2KBJX8l5yHaAPDSbWKh18u1iZnvEVcZWsIme6Cnxw==
