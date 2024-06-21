@@ -7,8 +7,8 @@ type MessageBusChain = 'dfk' | 'harmony' | 'klaytn'
 // Different start dates for testing purposes:
 // - deploy: block number when the contract was deployed
 // - '2024-01-01': to be used for indexing the 2024 messages
-// - '2024-04-18': to be used for initial testing of the 2024 messages
-const startDates = ['deploy', '2024-01-01', '2024-04-18'] as const
+// - '2024-04-01': to be used for initial testing of the 2024 messages
+const startDates = ['deploy', '2024-01-01', '2024-04-01'] as const
 type StartDateType = (typeof startDates)[number]
 
 // Fetch the start date from the environment variables, use the latest date as fallback
@@ -16,7 +16,7 @@ const startDate: StartDateType = startDates.includes(
   process.env.START_DATE as StartDateType
 )
   ? (process.env.START_DATE as StartDateType)
-  : '2024-04-18'
+  : '2024-04-01'
 
 console.log(`Using start date: ${startDate}`)
 
@@ -24,17 +24,17 @@ const startBlock: Record<MessageBusChain, Record<StartDateType, number>> = {
   dfk: {
     deploy: 1513462,
     '2024-01-01': 26749099,
-    '2024-04-18': 31164128,
+    '2024-04-01': 30461868,
   },
   harmony: {
     deploy: 26108972,
     '2024-01-01': 51743502,
-    '2024-04-18': 56359717,
+    '2024-04-01': 55625555,
   },
   klaytn: {
     deploy: 105416660,
     '2024-01-01': 142088644,
-    '2024-04-18': 151413555,
+    '2024-04-01': 149946308,
   },
 }
 
