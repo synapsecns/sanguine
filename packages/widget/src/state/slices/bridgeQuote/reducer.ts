@@ -29,6 +29,7 @@ export type BridgeQuote = {
   estimatedTime: number
   bridgeModuleName: string
   requestId: number
+  timestamp: number
 }
 
 export const EMPTY_BRIDGE_QUOTE = {

@@ -26,6 +26,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     synapseSDK,
     requestId,
     pausedModules,
+    timestamp,
   }: {
     originChainId: number
     destinationChainId: number
@@ -36,6 +37,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     synapseSDK: any
     requestId: number
     pausedModules: any
+    timestamp: number
   }) => {
     const allQuotes = await synapseSDK.allBridgeQuotes(
       originChainId,
@@ -120,6 +122,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       estimatedTime,
       bridgeModuleName,
       requestId,
+      timestamp,
     }
   }
 )

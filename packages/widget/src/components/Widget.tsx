@@ -61,6 +61,7 @@ import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
+import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -198,6 +199,7 @@ export const Widget = ({
       const thisRequestId = currentSDKRequestID.current
 
       dispatch(resetQuote())
+      const currentTimestamp: number = getTimeMinutesFromNow(0)
 
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
@@ -214,6 +216,7 @@ export const Widget = ({
             synapseSDK,
             requestId: thisRequestId,
             pausedModules: pausedModulesList,
+            timestamp: currentTimestamp,
           })
         )
       }
