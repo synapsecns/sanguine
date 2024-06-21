@@ -192,34 +192,38 @@ export const Widget = ({
     bridgeQuote?.routerAddress,
   ])
 
+  const fetchAndStoreBridgeQuote = async () => {
+    currentSDKRequestID.current += 1
+    const thisRequestId = currentSDKRequestID.current
+
+    dispatch(resetQuote())
+    const currentTimestamp: number = getTimeMinutesFromNow(0)
+
+    if (thisRequestId === currentSDKRequestID.current) {
+      dispatch(
+        fetchBridgeQuote({
+          originChainId,
+          destinationChainId,
+          originToken,
+          destinationToken,
+          amount: stringToBigInt(
+            debouncedInputAmount,
+            originToken.decimals[originChainId]
+          ),
+          debouncedInputAmount,
+          synapseSDK,
+          requestId: thisRequestId,
+          pausedModules: pausedModulesList,
+          timestamp: currentTimestamp,
+        })
+      )
+    }
+  }
+
   /** Handle refreshing quotes */
   useEffect(() => {
     if (isInputValid && hasValidSelections) {
-      currentSDKRequestID.current += 1
-      const thisRequestId = currentSDKRequestID.current
-
-      dispatch(resetQuote())
-      const currentTimestamp: number = getTimeMinutesFromNow(0)
-
-      if (thisRequestId === currentSDKRequestID.current) {
-        dispatch(
-          fetchBridgeQuote({
-            originChainId,
-            destinationChainId,
-            originToken,
-            destinationToken,
-            amount: stringToBigInt(
-              debouncedInputAmount,
-              originToken.decimals[originChainId]
-            ),
-            debouncedInputAmount,
-            synapseSDK,
-            requestId: thisRequestId,
-            pausedModules: pausedModulesList,
-            timestamp: currentTimestamp,
-          })
-        )
-      }
+      fetchAndStoreBridgeQuote()
     } else {
       dispatch(resetQuote())
     }
