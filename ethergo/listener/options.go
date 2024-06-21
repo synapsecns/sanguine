@@ -2,6 +2,7 @@ package listener
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/rpc"
@@ -30,13 +31,15 @@ func WithPollInterval(interval time.Duration) Option {
 // WithFinalityMode sets the finality mode.
 func WithFinalityMode(mode string) Option {
 	return func(c *chainListener) {
-		switch mode {
+		switch strings.ToLower(mode) {
 		case "latest":
 			c.finalityMode = rpc.LatestBlockNumber
 		case "safe":
 			c.finalityMode = rpc.SafeBlockNumber
 		case "finalized":
 			c.finalityMode = rpc.FinalizedBlockNumber
+		default:
+			c.finalityMode = rpc.SafeBlockNumber
 		}
 	}
 }
