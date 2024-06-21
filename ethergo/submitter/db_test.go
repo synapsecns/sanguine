@@ -2,7 +2,6 @@ package submitter_test
 
 import (
 	"errors"
-	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -212,7 +211,7 @@ func (t *TXSubmitterDBSuite) TestDeleteTXS() {
 		nonce := uint64(0)
 		mockAccount := t.mockAccounts[0]
 		backend := t.testBackends[0]
-		storeTx := func(status db.Status, createdAt time.Time) {
+		storeTx := func(status db.Status) {
 			manager := t.managers[backend.GetChainID()]
 			legacyTx := &types.LegacyTx{
 				To:    &mockAccount.Address,
@@ -222,40 +221,30 @@ func (t *TXSubmitterDBSuite) TestDeleteTXS() {
 			tx, err := manager.SignTx(types.NewTx(legacyTx), backend.Signer(), mockAccount.PrivateKey)
 			t.Require().NoError(err)
 			dbTx := db.NewTX(tx, status, uuid.New().String())
-			dbTx.CreationTime() = refTime
 			err = testDB.PutTXS(t.GetTestContext(), dbTx)
 			t.Require().NoError(err)
 			nonce++
 		}
 
-		refTime := time.Now().UTC()
-		day := time.Hour * 24
-		week := day * 7
-
-		storeTx(db.Pending, refTime.Add(-day))
-		storeTx(db.Pending, refTime.Add(-2*week))
-		storeTx(db.Stored, refTime.Add(-day))
-		storeTx(db.Stored, refTime.Add(-2*week))
-		storeTx(db.Replaced, refTime.Add(-day))
-		storeTx(db.Replaced, refTime.Add(-2*week))
-		storeTx(db.ReplacedOrConfirmed, refTime.Add(-day))
-		storeTx(db.ReplacedOrConfirmed, refTime.Add(-2*week))
-		storeTx(db.Confirmed, refTime.Add(-day))
-		storeTx(db.Confirmed, refTime.Add(-2*week))
+		storeTx(db.Pending)
+		storeTx(db.Stored)
+		storeTx(db.Replaced)
+		storeTx(db.ReplacedOrConfirmed)
+		storeTx(db.Confirmed)
 
 		// ensure txs were stored
 		allStatuses := []db.Status{db.Pending, db.Stored, db.Replaced, db.ReplacedOrConfirmed, db.Confirmed}
 		txs, err := testDB.GetTXS(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), allStatuses...)
 		t.Require().NoError(err)
-		t.Equal(10, len(txs))
+		t.Equal(5, len(txs))
 
 		// delete non-terminal txs
-		err = testDB.DeleteTXS(t.GetTestContext(), week, db.Replaced, db.ReplacedOrConfirmed, db.Confirmed)
+		err = testDB.DeleteTXS(t.GetTestContext(), 0, db.Replaced, db.ReplacedOrConfirmed, db.Confirmed)
 		t.Require().NoError(err)
 
 		// ensure txs were deleted
 		txs, err = testDB.GetTXS(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), allStatuses...)
 		t.Require().NoError(err)
-		t.Equal(4, len(txs))
+		t.Equal(2, len(txs))
 	})
 }
