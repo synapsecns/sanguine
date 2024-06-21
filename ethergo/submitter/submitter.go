@@ -117,7 +117,7 @@ func (t *txSubmitterImpl) Start(parentCtx context.Context) error {
 			case <-ctx.Done():
 				return
 			case <-time.After(reaperInterval):
-				err := t.db.DeleteTXS(ctx, maxRecordAge)
+				err := t.db.DeleteTXS(ctx, maxRecordAge, db.ReplacedOrConfirmed, db.Replaced, db.Confirmed)
 				if err != nil {
 					logger.Errorf("could not flush old records: %v", err)
 				}
