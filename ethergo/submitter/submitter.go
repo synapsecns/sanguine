@@ -105,7 +105,26 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 	return retryInterval
 }
 
-func (t *txSubmitterImpl) Start(ctx context.Context) error {
+var reaperInterval = time.Minute * 5
+var maxRecordAge = time.Hour * 24 * 7
+
+func (t *txSubmitterImpl) Start(parentCtx context.Context) error {
+	// start reaper process
+	ctx, cancel := context.WithCancel(parentCtx)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(reaperInterval):
+				err := t.db.DeleteTXS(ctx, maxRecordAge)
+				if err != nil {
+					logger.Errorf("could not flush old records: %v", err)
+				}
+			}
+		}
+	}()
+
 	i := 0
 	for {
 		i++
@@ -115,6 +134,7 @@ func (t *txSubmitterImpl) Start(ctx context.Context) error {
 		}
 		if shouldExit {
 			logger.Warn("exiting transaction submitter")
+			cancel()
 			return nil
 		}
 	}

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -37,6 +38,8 @@ type Service interface {
 	GetNonceAttemptsByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64, matchStatuses ...Status) (txs []TX, err error)
 	// GetChainIDsByStatus gets the distinct chain ids for a given address and status.
 	GetChainIDsByStatus(ctx context.Context, fromAddress common.Address, matchStatuses ...Status) (chainIDs []*big.Int, err error)
+	// DeleteTXS deletes txs that are older than a given duration.
+	DeleteTXS(ctx context.Context, maxAge time.Duration) error
 }
 
 // TransactionFunc is a function that can be passed to DBTransaction.
