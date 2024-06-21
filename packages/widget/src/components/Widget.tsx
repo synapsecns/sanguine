@@ -200,7 +200,6 @@ export const Widget = ({
   ])
 
   const fetchAndStoreBridgeQuote = async () => {
-    console.log('fetching quote')
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
 
