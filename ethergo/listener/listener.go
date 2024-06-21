@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/ipfs/go-log"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -48,6 +49,8 @@ type chainListener struct {
 	pollInterval, pollIntervalSetting time.Duration
 	// newBlockHandler is an optional handler that is called when a new block is detected.
 	newBlockHandler NewBlockHandler
+	finalityMode    rpc.BlockNumber
+	blockWait       uint64
 }
 
 var (
@@ -66,6 +69,8 @@ func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB
 		client:              omnirpcClient,
 		backoff:             newBackoffConfig(),
 		pollIntervalSetting: time.Millisecond * 50,
+		finalityMode:        rpc.LatestBlockNumber,
+		blockWait:           0,
 	}
 
 	for _, option := range options {
@@ -132,7 +137,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	}()
 
 	oldLatestBlock := c.latestBlock
-	c.latestBlock, err = c.client.BlockNumber(ctx)
+	c.latestBlock, err = c.getBlockNumber(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get block number: %w", err)
 	}
@@ -181,6 +186,21 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 
 	c.startBlock = lastUnconfirmedBlock
 	return nil
+}
+
+func (c chainListener) getBlockNumber(ctx context.Context) (uint64, error) {
+	block, err := c.client.BlockByNumber(ctx, big.NewInt(c.finalityMode.Int64()))
+	if err != nil {
+		return 0, fmt.Errorf("could not get block by number: %w", err)
+	}
+
+	blockNumber := block.Number()
+
+	if c.blockWait > 0 {
+		blockNumber.Sub(blockNumber, big.NewInt(int64(c.blockWait)))
+	}
+
+	return blockNumber.Uint64(), nil
 }
 
 func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chainID uint64, err error) {
