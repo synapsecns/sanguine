@@ -1,5 +1,5 @@
 import { isNull, isNumber } from 'lodash'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { type BridgeQuote } from '@/state/slices/bridgeQuote/reducer'
 import { calculateTimeBetween } from '@/utils/calculateTimeBetween'
@@ -19,15 +19,28 @@ export const useBridgeQuoteUpdater = (
   const quoteTime = quote?.timestamp
   const isValidQuote = isNumber(quoteTime) && !isNull(quoteTime)
   const currentTime = useIntervalTimer(staleTimeout, !isValidQuote)
+  const eventListenerRef = useRef<null | (() => void)>(null)
 
   useEffect(() => {
     if (isValidQuote && !isQuoteLoading && !isWalletPending) {
       const timeDifference = calculateTimeBetween(currentTime, quoteTime)
       const isStaleQuote = timeDifference >= staleTimeout
+
       if (isStaleQuote) {
-        document.addEventListener('mousemove', refreshQuoteCallback, {
+        if (eventListenerRef.current) {
+          document.removeEventListener('mousemove', eventListenerRef.current)
+        }
+
+        const newEventListener = () => {
+          refreshQuoteCallback()
+          eventListenerRef.current = null
+        }
+
+        document.addEventListener('mousemove', newEventListener, {
           once: true,
         })
+
+        eventListenerRef.current = newEventListener
       }
     }
   }, [currentTime, staleTimeout])
