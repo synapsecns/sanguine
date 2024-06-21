@@ -78,43 +78,43 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return fmt.Errorf("could not handle request: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeRelayed:
+			// blocking lock on the txid mutex to ensure state transitions are not overrwitten
+			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			defer unlocker.Unlock()
+
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
-
-			// blocking lock on the txid mutex to ensure state transitions are not overrwitten
-			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
-			defer unlocker.Unlock()
 
 			err = r.handleRelayLog(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle relay: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeProofProvided:
+			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			defer unlocker.Unlock()
+
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
-
-			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
-			defer unlocker.Unlock()
 
 			err = r.handleProofProvided(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle proof provided: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeDepositClaimed:
+			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			defer unlocker.Unlock()
+
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
-
-			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
-			defer unlocker.Unlock()
 
 			err = r.handleDepositClaimed(ctx, event)
 			if err != nil {
