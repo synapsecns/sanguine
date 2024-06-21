@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
@@ -83,6 +84,10 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
 
+			// blocking lock on the txid mutex to ensure state transitions are not overrwitten
+			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			defer unlocker.Unlock()
+
 			err = r.handleRelayLog(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle relay: %w", err)
@@ -94,6 +99,9 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
 
+			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			defer unlocker.Unlock()
+
 			err = r.handleProofProvided(ctx, event)
 			if err != nil {
 				return fmt.Errorf("could not handle proof provided: %w", err)
@@ -104,6 +112,9 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				//nolint: wrapcheck
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
+
+			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			defer unlocker.Unlock()
 
 			err = r.handleDepositClaimed(ctx, event)
 			if err != nil {
