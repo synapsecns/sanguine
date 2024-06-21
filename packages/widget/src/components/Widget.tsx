@@ -6,7 +6,11 @@ import {
   useRef,
   useState,
 } from 'react'
-import { BridgeableToken, Chain, CustomThemeVariables } from 'types'
+import {
+  type BridgeableToken,
+  type Chain,
+  type CustomThemeVariables,
+} from 'types'
 import { ZeroAddress } from 'ethers'
 
 import { Web3Context } from '@/providers/Web3Provider'
@@ -32,6 +36,7 @@ import { setIsWalletPending } from '@/state/slices/wallet/reducer'
 import {
   fetchAndStoreAllowance,
   fetchAndStoreTokenBalances,
+  useWalletState,
 } from '@/state/slices/wallet/hooks'
 import { BridgeButton } from '@/components/BridgeButton'
 import { AvailableBalance } from '@/components/AvailableBalance'
@@ -64,7 +69,6 @@ import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 import { useBridgeQuoteUpdater } from '@/hooks/useBridgeQuoteUpdater'
-import { useWalletState } from '@/state/slices/wallet/hooks'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
