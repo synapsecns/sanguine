@@ -105,6 +105,20 @@ func (r *Relayer) mutexMiddleware(next func(ctx context.Context, span trace.Span
 		}
 		defer unlocker.Unlock()
 
+		// make sure the status has not changed since we last saw it
+		dbReq, err := r.db.GetQuoteRequestByID(ctx, req.TransactionID)
+		if err != nil {
+			return fmt.Errorf("could not get request: %w", err)
+		}
+		if dbReq.Status != req.Status {
+			span.SetAttributes(
+				attribute.Bool("status_changed", true),
+				attribute.String("db_status", dbReq.Status.String()),
+				attribute.String("handler_status", req.Status.String()),
+			)
+			return nil
+		}
+
 		return next(ctx, span, req)
 	}
 }
