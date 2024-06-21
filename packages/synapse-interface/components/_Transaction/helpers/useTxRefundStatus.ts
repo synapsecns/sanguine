@@ -42,7 +42,6 @@ export const useTxRefundStatus = (
       if (status === BridgeStatus.REFUNDED) {
         setIsRefunded(true)
       }
-      console.log('RFQ Transaction Status: ', status)
     } catch (error) {
       console.error('Failed to get transaction refund status:', error)
     }
