@@ -156,8 +156,10 @@ func (c *RelayerServerSuite) startQuoterAPIServer() {
 		c.Require().NoError(err)
 		resp, err := client.Do(req)
 		defer func() {
-			closeErr := resp.Body.Close()
-			c.NoError(closeErr)
+			if resp.Body != nil {
+				closeErr := resp.Body.Close()
+				c.NoError(closeErr)
+			}
 		}()
 		if err != nil {
 			return fmt.Errorf("server not ready: %w", err)
