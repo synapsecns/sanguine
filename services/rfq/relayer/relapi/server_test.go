@@ -59,10 +59,12 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
 	expectedResult := relapi.GetQuoteRequestStatusResponse{
-		Status:       quoteRequest.Status.String(),
-		TxID:         hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash: quoteRequest.OriginTxHash.String(),
-		DestTxHash:   quoteRequest.DestTxHash.String(),
+		Status:        quoteRequest.Status.String(),
+		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
+		OriginTxHash:  quoteRequest.OriginTxHash.String(),
+		OriginChainID: quoteRequest.Transaction.OriginChainId,
+		DestChainID:   quoteRequest.Transaction.DestChainId,
+		DestTxHash:    quoteRequest.DestTxHash.String(),
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()
@@ -94,10 +96,12 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
 	expectedResult := relapi.GetQuoteRequestStatusResponse{
-		Status:       quoteRequest.Status.String(),
-		TxID:         hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash: quoteRequest.OriginTxHash.String(),
-		DestTxHash:   quoteRequest.DestTxHash.String(),
+		Status:        quoteRequest.Status.String(),
+		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
+		OriginTxHash:  quoteRequest.OriginTxHash.String(),
+		OriginChainID: quoteRequest.Transaction.OriginChainId,
+		DestChainID:   quoteRequest.Transaction.DestChainId,
+		DestTxHash:    quoteRequest.DestTxHash.String(),
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()
@@ -156,8 +160,10 @@ func (c *RelayerServerSuite) startQuoterAPIServer() {
 		c.Require().NoError(err)
 		resp, err := client.Do(req)
 		defer func() {
-			closeErr := resp.Body.Close()
-			c.NoError(closeErr)
+			if resp.Body != nil {
+				closeErr := resp.Body.Close()
+				c.NoError(closeErr)
+			}
 		}()
 		if err != nil {
 			return fmt.Errorf("server not ready: %w", err)

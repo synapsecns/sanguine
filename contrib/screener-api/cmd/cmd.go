@@ -15,7 +15,7 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
 	app.Name = buildInfo.Name()
 
-	app.Description = buildInfo.VersionString() + "Senior Care Data Utils"
+	app.Description = buildInfo.VersionString() + "Screener API is a tool to screen and split data."
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
 	app.Before = func(c *cli.Context) error {
