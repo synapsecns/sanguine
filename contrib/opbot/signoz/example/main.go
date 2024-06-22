@@ -8,8 +8,8 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/davidmytton/url-verifier"
-	"github.com/keybase/go-keychain"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
+	"github.com/synapsecns/sanguine/contrib/opbot/signoz/example/keychain"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"os"
@@ -27,13 +27,13 @@ func main() {
 }
 
 const (
-	// ConfigPath for plaintext config files
+	// ConfigPath for plaintext config files.
 	ConfigPath = "~/.signoz/"
-	// EmailPath path to email file
+	// EmailPath path to email file.
 	EmailPath = ConfigPath + "email"
-	// UrlPath path to url file
+	// UrlPath path to url file.
 	UrlPath = ConfigPath + "url"
-	// KeychainServiceName (service name for key chain: ios only)
+	// KeychainServiceName (service name for key chain: ios only).
 	KeychainServiceName = "signoz-example"
 )
 
@@ -60,7 +60,6 @@ func loadConfig() *signoz.Client {
 				return nil
 			}).
 			Placeholder("URL Path"))
-
 	}
 
 	if cfg.email = readPath(EmailPath); cfg.email == "" {
@@ -119,7 +118,6 @@ func loadConfig() *signoz.Client {
 			if err != nil {
 				clientErr = fmt.Errorf("could not login: %w", err)
 			}
-
 		}).Run()
 	if err != nil {
 		panic(err)
@@ -156,7 +154,7 @@ func storeConfig(cfg config) {
 	}
 }
 
-// readPath reads a path
+// readPath reads a path.
 func readPath(path string) string {
 	fileBytes, err := os.ReadFile(core.ExpandOrReturnPath(path))
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
