@@ -15,5 +15,6 @@ type Config struct {
 	// inject only with init container!
 	SignozPassword string `yaml:"signoz_password"`
 	// SignozBaseURL is the base url of the signoz instance.
-	SignozBaseURL string `yaml:"signoz_base_url"`
+	SignozBaseURL string   `yaml:"signoz_base_url"`
+	RelayerURLS   []string `yaml:"rfq_relayer_urls"`
 }

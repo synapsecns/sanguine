@@ -8,8 +8,10 @@ import (
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"log"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -73,7 +75,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 				return
 			}
 
-			slackBlocks := []slack.Block{slack.NewHeaderBlock(slack.NewTextBlockObject(slack.PlainTextType, "Traces", false, false))}
+			slackBlocks := []slack.Block{slack.NewHeaderBlock(slack.NewTextBlockObject(slack.PlainTextType, fmt.Sprintf("Traces for %s", tags), false, false))}
 
 			for _, results := range traceList {
 				trace := results.Data["traceID"].(string)
@@ -108,4 +110,103 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 			}
 		},
 	}
+}
+
+func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
+	return &slacker.CommandDefinition{
+		Command:     "rfq <tx>",
+		Description: "find a rfq transaction by either tx hash or txid on all configured relayers",
+		Examples: []string{
+			"rfq 0x30f96b45ba689c809f7e936c140609eb31c99b182bef54fccf49778716a7e1ca",
+		},
+		Handler: func(ctx *slacker.CommandContext) {
+			type Status struct {
+				relayer string
+				*relapi.GetQuoteRequestStatusResponse
+			}
+
+			var statuses []Status
+			var sliceMux sync.Mutex
+
+			if len(b.cfg.RelayerURLS) == 0 {
+				_, err := ctx.Response().Reply("no relayer urls configured")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+
+			tx := ctx.Request().Param("tx")
+
+			var wg sync.WaitGroup
+			// 2 routines per relayer, one for tx hashh one for tx id
+			wg.Add(len(b.cfg.RelayerURLS) * 2)
+			for _, relayer := range b.cfg.RelayerURLS {
+				client := relapi.NewRelayerClient(b.handler, relayer)
+				go func() {
+					defer wg.Done()
+					res, err := client.GetQuoteRequestStatusByTxHash(ctx.Context(), tx)
+					if err != nil {
+						log.Printf("error fetching quote request status by tx hash: %v\n", err)
+						return
+					}
+					sliceMux.Lock()
+					defer sliceMux.Unlock()
+					statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestStatusResponse: res})
+				}()
+
+				go func() {
+					defer wg.Done()
+					res, err := client.GetQuoteRequestStatusByTxID(ctx.Context(), tx)
+					if err != nil {
+						log.Printf("error fetching quote request status by tx id: %v\n", err)
+						return
+					}
+					sliceMux.Lock()
+					defer sliceMux.Unlock()
+					statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestStatusResponse: res})
+				}()
+			}
+			wg.Wait()
+
+			if len(statuses) == 0 {
+				_, err := ctx.Response().Reply("no quote request found")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+
+			var slackBlocks []slack.Block
+			for _, status := range statuses {
+				slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, []*slack.TextBlockObject{
+					{
+						Type: slack.MarkdownType,
+						Text: fmt.Sprintf("*Relayer*: %s", status.relayer),
+					},
+					{
+						Type: slack.MarkdownType,
+						Text: fmt.Sprintf("*Status*: %s", status.Status),
+					},
+					{
+						Type: slack.MarkdownType,
+						Text: fmt.Sprintf("*TxID*: %s", status.TxID),
+					},
+					{
+						Type: slack.MarkdownType,
+						Text: fmt.Sprintf("*OriginTxHash*: %s", status.OriginTxHash),
+					},
+					{
+						Type: slack.MarkdownType,
+						Text: fmt.Sprintf("*DestTxHash*: %s", status.DestTxHash),
+					},
+				}, nil))
+			}
+
+			_, err := ctx.Response().ReplyBlocks(slackBlocks)
+			if err != nil {
+				log.Println(err)
+			}
+
+		}}
 }

@@ -27,9 +27,15 @@ func NewBot(handler metrics.Handler, cfg config.Config) Bot {
 
 	bot.signozClient = signoz.NewClientFromUser(handler, cfg.SignozBaseURL, cfg.SignozEmail, cfg.SignozPassword)
 
-	server.AddCommand(bot.traceCommand())
+	bot.addCommands(bot.traceCommand(), bot.rfqLookupCommand())
 
 	return bot
+}
+
+func (b *Bot) addCommands(commands ...*slacker.CommandDefinition) {
+	for _, command := range commands {
+		b.server.AddCommand(command)
+	}
 }
 
 // Start starts the bot server.
