@@ -226,7 +226,7 @@ func toExplorerSlackLink(ogHash string) string {
 	rfqHash := strings.ToUpper(ogHash)
 	// cut off 0x
 	if len(rfqHash) > 0 {
-		rfqHash = strings.ToUpper(rfqHash[2:])
+		rfqHash = strings.ToLower(rfqHash[2:])
 	}
 
 	return fmt.Sprintf("<https://anon.to/?https://explorer.synapseprotocol.com/tx/%s|%s>", rfqHash, ogHash)
