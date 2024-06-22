@@ -222,13 +222,14 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 		}}
 }
 
-func toExplorerSlackLink(rfqHash string) string {
+func toExplorerSlackLink(ogHash string) string {
+	rfqHash := strings.ToUpper(ogHash)
 	// cut off 0x
-	if len(rfqHash) == 0 {
+	if len(rfqHash) > 0 {
 		rfqHash = strings.ToUpper(rfqHash[2:])
 	}
 
-	return fmt.Sprintf("<https://anon.to/?https://explorer.synapseprotocol.com/tx/%s|%s>", rfqHash, "View on Synapse Explorer")
+	return fmt.Sprintf("<https://anon.to/?https://explorer.synapseprotocol.com/tx/%s|%s>", rfqHash, ogHash)
 }
 
 // produce a salck link if the explorer exists.

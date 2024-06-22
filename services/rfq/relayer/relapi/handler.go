@@ -48,10 +48,12 @@ func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
 	}
 
 	resp := GetQuoteRequestStatusResponse{
-		Status:       quoteRequest.Status.String(),
-		TxID:         hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash: quoteRequest.OriginTxHash.String(),
-		DestTxHash:   quoteRequest.DestTxHash.String(),
+		Status:        quoteRequest.Status.String(),
+		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
+		OriginTxHash:  quoteRequest.OriginTxHash.String(),
+		OriginChainID: quoteRequest.Transaction.OriginChainId,
+		DestChainID:   quoteRequest.Transaction.DestChainId,
+		DestTxHash:    quoteRequest.DestTxHash.String(),
 	}
 	c.JSON(http.StatusOK, resp)
 }
