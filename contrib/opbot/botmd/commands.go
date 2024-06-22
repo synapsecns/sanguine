@@ -225,7 +225,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 func toExplorerSlackLink(ogHash string) string {
 	rfqHash := strings.ToUpper(ogHash)
 	// cut off 0x
-	if len(rfqHash) > 0 {
+	if strings.HasPrefix(rfqHash, "0x") {
 		rfqHash = strings.ToLower(rfqHash[2:])
 	}
 
