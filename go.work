@@ -1,11 +1,10 @@
-go 1.22
-
-toolchain go1.22.4
+go 1.22.4
 
 // note: new paths should be added as flags to the .codecov.yaml
 use (
 	./agents
 	./contrib/git-changes-action
+	./contrib/opbot
 	./contrib/promexporter
 	./contrib/screener-api
 	./core
