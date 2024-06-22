@@ -1,4 +1,4 @@
-// Package cmd provides the command line interface for the screener-api.
+// Package cmd provides the command line interface for the opbot.
 package cmd
 
 import (

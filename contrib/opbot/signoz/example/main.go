@@ -31,8 +31,8 @@ const (
 	ConfigPath = "~/.signoz/"
 	// EmailPath path to email file.
 	EmailPath = ConfigPath + "email"
-	// UrlPath path to url file.
-	UrlPath = ConfigPath + "url"
+	// URLPath path to url file.
+	URLPath = ConfigPath + "url"
 	// KeychainServiceName (service name for key chain: ios only).
 	KeychainServiceName = "signoz-example"
 )
@@ -48,7 +48,7 @@ func loadConfig() *signoz.Client {
 
 	var configFormFields []huh.Field
 
-	if cfg.url = readPath(UrlPath); cfg.url == "" {
+	if cfg.url = readPath(URLPath); cfg.url == "" {
 		configFormFields = append(configFormFields, huh.NewInput().
 			Value(&cfg.url).
 			Title("URL").
@@ -139,7 +139,7 @@ func storeConfig(cfg config) {
 		panic(err)
 	}
 
-	err = os.WriteFile(core.ExpandOrReturnPath(UrlPath), []byte(cfg.url), 0600)
+	err = os.WriteFile(core.ExpandOrReturnPath(URLPath), []byte(cfg.url), 0600)
 	if err != nil {
 		panic(err)
 	}

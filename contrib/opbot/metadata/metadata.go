@@ -1,4 +1,4 @@
-// Package metadata provides a metadata service for the RFQ API.
+// Package metadata provides a metadata service for opbot.
 package metadata
 
 import "github.com/synapsecns/sanguine/core/config"
