@@ -82,5 +82,5 @@ dockers:
       - '--label=org.opencontainers.image.source={{.GitURL}}'
     dockerfile: ../../docker/opbot.Dockerfile
     ids:
-      - relayer
+      - opbot
 
