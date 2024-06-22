@@ -10,6 +10,6 @@ LABEL org.opencontainers.image.description="Op Bot Docker image"
 USER nonroot:nonroot
 
 WORKDIR /app
-COPY --chown=nonroot:nonroot relayer /app/opbot
+COPY --chown=nonroot:nonroot opbot /app/opbot
 
 ENTRYPOINT ["/app/opbot"]
