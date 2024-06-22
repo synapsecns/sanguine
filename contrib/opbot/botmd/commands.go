@@ -179,7 +179,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 
 			var slackBlocks []slack.Block
 			for _, status := range statuses {
-				slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, []*slack.TextBlockObject{
+				objects := []*slack.TextBlockObject{
 					{
 						Type: slack.MarkdownType,
 						Text: fmt.Sprintf("*Relayer*: %s", status.relayer),
@@ -200,13 +200,14 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 						Type: slack.MarkdownType,
 						Text: fmt.Sprintf("*DestTxHash*: %s", status.DestTxHash),
 					},
-				}, nil))
+				}
+
+				slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, objects, nil))
 			}
 
 			_, err := ctx.Response().ReplyBlocks(slackBlocks)
 			if err != nil {
 				log.Println(err)
 			}
-
 		}}
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/valyala/fastjson"
+	"net/http"
 )
 
 // RelayerClient is the interface for the relayer client.
@@ -22,7 +23,7 @@ type relayerClient struct {
 	client *resty.Client
 }
 
-// NewRelayerClient creates a new RelayerClient
+// NewRelayerClient creates a new RelayerClient.
 func NewRelayerClient(handler metrics.Handler, url string) RelayerClient {
 	client := resty.New()
 	client.SetBaseURL(url)
@@ -39,9 +40,9 @@ func NewRelayerClient(handler metrics.Handler, url string) RelayerClient {
 func (r *relayerClient) Health(ctx context.Context) (ok bool, err error) {
 	resp, err := r.client.R().SetContext(ctx).Get(getHealthRoute)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to check health: %w", err)
 	}
-	if resp.StatusCode() != 200 {
+	if resp.StatusCode() != http.StatusOK {
 		return false, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
 	}
 
@@ -60,7 +61,7 @@ func (r *relayerClient) GetQuoteRequestStatusByTxHash(ctx context.Context, hash 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get quote request status by tx hash: %w", err)
 	}
-	if resp.StatusCode() != 200 {
+	if resp.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
 	}
 
@@ -77,7 +78,7 @@ func (r *relayerClient) GetQuoteRequestStatusByTxID(ctx context.Context, txid st
 	if err != nil {
 		return nil, fmt.Errorf("failed to get quote request status by tx hash: %w", err)
 	}
-	if resp.StatusCode() != 200 {
+	if resp.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
 	}
 
@@ -93,10 +94,9 @@ func (r *relayerClient) RetryTransaction(ctx context.Context, txhash string) (*G
 	if err != nil {
 		return nil, fmt.Errorf("failed to retry transaction: %w", err)
 	}
-	if resp.StatusCode() != 200 {
+	if resp.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
 	}
 
 	return &res, nil
-
 }
