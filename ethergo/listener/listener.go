@@ -189,12 +189,12 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 }
 
 func (c chainListener) getBlockNumber(ctx context.Context) (uint64, error) {
-	block, err := c.client.BlockByNumber(ctx, big.NewInt(c.finalityMode.Int64()))
+	block, err := c.client.HeaderByNumber(ctx, big.NewInt(c.finalityMode.Int64()))
 	if err != nil {
 		return 0, fmt.Errorf("could not get block by number: %w", err)
 	}
 
-	blockNumber := block.Number()
+	blockNumber := block.Number
 
 	if c.blockWait > 0 {
 		blockNumber.Sub(blockNumber, big.NewInt(int64(c.blockWait)))
