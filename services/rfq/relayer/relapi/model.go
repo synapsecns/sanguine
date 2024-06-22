@@ -2,10 +2,12 @@ package relapi
 
 // GetQuoteRequestStatusResponse contains the schema for a GET /quote response.
 type GetQuoteRequestStatusResponse struct {
-	Status       string `json:"status"`
-	TxID         string `json:"tx_id"`
-	OriginTxHash string `json:"origin_tx_hash"`
-	DestTxHash   string `json:"dest_tx_hash"`
+	Status        string `json:"status"`
+	TxID          string `json:"tx_id"`
+	OriginTxHash  string `json:"origin_tx_hash"`
+	OriginChainID uint32 `json:"origin_chain_id"`
+	DestTxHash    string `json:"dest_tx_hash"`
+	DestChainID   uint32 `json:"dest_chain_id"`
 }
 
 // GetTxRetryResponse contains the schema for a PUT /tx/retry response.

@@ -194,3 +194,34 @@ func (c *RelayerServerSuite) SetupSuite() {
 func TestRelayerServerSuite(t *testing.T) {
 	suite.Run(t, NewRelayerServerSuite(t))
 }
+
+type RelayerClientSuite struct {
+	*testsuite.TestSuite
+	underlying *RelayerServerSuite
+	Client     relapi.RelayerClient
+}
+
+// NewRelayerClientSuite creates a new relayer client suite.
+func NewRelayerClientSuite(tb testing.TB) *RelayerClientSuite {
+	tb.Helper()
+	underlying := NewRelayerServerSuite(tb)
+
+	return &RelayerClientSuite{
+		TestSuite:  underlying.TestSuite,
+		underlying: underlying,
+	}
+}
+func (c *RelayerClientSuite) SetupSuite() {
+	c.underlying.SetupSuite()
+}
+
+func (c *RelayerClientSuite) SetupTest() {
+	c.underlying.SetupTest()
+	c.underlying.startQuoterAPIServer()
+	c.Client = relapi.NewRelayerClient(c.underlying.handler, fmt.Sprintf("http://localhost:%d", c.underlying.port))
+}
+
+// TestConfigSuite runs the integration test suite.
+func TestRelayerClientSuite(t *testing.T) {
+	suite.Run(t, NewRelayerClientSuite(t))
+}
