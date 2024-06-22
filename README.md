@@ -52,6 +52,7 @@ root
 ├── <a href="./charts">charts</a>: The helm charts used for deploying sanguine related services
 ├── <a href="./contrib">contrib</a>: Devops related tools
 │   ├── <a href="./contrib/git-changes-action">git-changes-action</a>: Github action for identifying changes in dependent modules in a go workspace
+│   ├── <a href="./contrib/opbot">op bot</a>: Slack bot for managing operations.
 │   ├── <a href="./contrib/promexporter">promexporter</a>: Multi-service prometheus exporter
 │   ├── <a href="./contrib/screener-api">screener-api</a>: Optional address screening api
 ├── <a href="./core">core</a>: The Go core library with common utilities for use across the monorepo

@@ -132,6 +132,9 @@ issues:
     - path: \.resolvers\.go
       linters:
         - cyclop
-
+    - path: signoz/*
+      linters:
+        - mnd
+        - stylecheck
   exclude-use-default: false
   new-from-rev: a9a6f84f0569de877d06a027257aeca266aeda49
