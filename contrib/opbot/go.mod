@@ -8,6 +8,7 @@ require (
 	github.com/charmbracelet/huh/spinner v0.0.0-20240618200428-90406d79077d
 	github.com/davidmytton/url-verifier v1.0.1
 	github.com/dubonzi/otelresty v1.2.0
+	github.com/ethereum/go-ethereum v1.13.8
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
 	github.com/go-resty/resty/v2 v2.13.1
 	github.com/google/uuid v1.6.0
@@ -20,6 +21,7 @@ require (
 	github.com/slack-go/slack v0.13.0
 	github.com/slack-io/slacker v0.1.0
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
+	github.com/synapsecns/sanguine/ethergo v0.1.0
 	github.com/synapsecns/sanguine/services/rfq v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.27.2
 	gopkg.in/yaml.v2 v2.4.0
@@ -102,7 +104,6 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/ethereum/c-kzg-4844 v0.4.0 // indirect
-	github.com/ethereum/go-ethereum v1.13.8 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
@@ -202,7 +203,6 @@ require (
 	github.com/skeema/knownhosts v1.2.2 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/supranational/blst v0.3.11 // indirect
-	github.com/synapsecns/sanguine/ethergo v0.1.0 // indirect
 	github.com/synapsecns/sanguine/services/cctp-relayer v0.0.0-00010101000000-000000000000 // indirect
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect

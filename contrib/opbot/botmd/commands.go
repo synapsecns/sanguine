@@ -4,10 +4,12 @@ package botmd
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/hako/durafmt"
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
+	"github.com/synapsecns/sanguine/ethergo/chaindata"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"log"
 	"strings"
@@ -190,16 +192,24 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 					},
 					{
 						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*TxID*: %s", status.TxID),
+						Text: fmt.Sprintf("*TxID*: %s", toExplorerSlackLink(status.TxID)),
 					},
 					{
 						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*OriginTxHash*: %s", status.OriginTxHash),
+						Text: fmt.Sprintf("*OriginTxHash*: %s", toTXSlackLink(status.OriginTxHash, status.OriginChainID)),
 					},
-					{
+				}
+
+				if status.DestTxHash == (common.Hash{}).String() {
+					objects = append(objects, &slack.TextBlockObject{
 						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*DestTxHash*: %s", status.DestTxHash),
-					},
+						Text: "*DestTxHash*: not available",
+					})
+				} else {
+					objects = append(objects, &slack.TextBlockObject{
+						Type: slack.MarkdownType,
+						Text: fmt.Sprintf("*DestTxHash*: %s", toTXSlackLink(status.DestTxHash, status.DestChainID)),
+					})
 				}
 
 				slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, objects, nil))
@@ -210,4 +220,24 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				log.Println(err)
 			}
 		}}
+}
+
+func toExplorerSlackLink(rfqHash string) string {
+	// cut off 0x
+	if len(rfqHash) == 0 {
+		rfqHash = strings.ToUpper(rfqHash[2:])
+	}
+
+	return fmt.Sprintf("<https://anon.to/?https://explorer.synapseprotocol.com/tx/%s|%s>", rfqHash, "View on Synapse Explorer")
+}
+
+// produce a salck link if the explorer exists.
+func toTXSlackLink(txHash string, chainID uint32) string {
+	url := chaindata.ToTXLink(int64(chainID), txHash)
+	if url == "" {
+		return txHash
+	}
+
+	// TODO: remove when we can contorl unfurl
+	return fmt.Sprintf("<https://anon.to/?%s|%s>", url, txHash)
 }

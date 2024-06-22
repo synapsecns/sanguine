@@ -187,11 +187,11 @@ func ChainIDToExplorer(chainId int64) string {
 	return ""
 }
 
-// ToExplorerLink converts the chain id and hash to the explorer link.
-func ToExplorerLink(chainID int64, hash string) string {
+// ToTXLink converts the chain id and hash to the explorer link.
+func ToTXLink(chainID int64, hash string) string {
 	explorer := ChainIDToExplorer(chainID)
 	if explorer == "" {
-		return hash
+		return ""
 	}
 	return explorer + "/tx/" + hash
 }
