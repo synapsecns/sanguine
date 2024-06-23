@@ -46,12 +46,6 @@ export function Home() {
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 hover:text-white'
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
-  // const returnChainData = () => {
-  //   var items = Object.keys(dailyDataArr?.[currentTooltipIndex]).map((key) => { return [key, dailyDataArr?.[currentTooltipIndex][key]] })
-  //   items.sort((first, second) => { return second[1] - first[1] })
-  //   var keys = items.map((e) => { return e[0] })
-  //   return keys
-  // }
   const {
     loading,
     error,
@@ -72,7 +66,7 @@ export function Home() {
         bridgeTransactionsTable,
         'fromInfo.time',
         ['desc']
-      ).slice(0, 25)
+      ).slice(0, 15)
       setTransactionsArr(bridgeTransactionsTable)
     },
   })
@@ -153,14 +147,15 @@ export function Home() {
         setPlatform={setPlatform}
       />
       <br />
-      <HorizontalDivider />
-      <div className="grid grid-cols-4 gap-4">
+      <HorizontalDivider className="hidden sm:block" />
+      <HorizontalDivider className='' />
+      <div className="grid grid-cols-4 gap-4 hidden sm:grid">
         <div className="col-span-1">
           <div className="z-1 w-full h-full flex bg-synapse-logo bg-no-repeat bg-center">
             <div id="tooltip-sidebar" className="w-full " />
           </div>
         </div>
-        <div className="col-span-3 flex justify-end flex-col my-6	">
+        <div className="col-span-3 flex justify-end flex-col my-6">
           <div className="flex flex-wrap justify-end ">
             <div className="h-full flex items-center mr-4">
               {platform === 'MESSAGE_BUS' ? null : (
@@ -302,35 +297,40 @@ export function Home() {
           />
         </div>
       </div>
+      <br className="hidden sm:block" /> <br className="hidden sm:block" />
+      <HorizontalDivider className="hidden sm:block" />
       <br /> <br />
-      <HorizontalDivider />
-      <br /> <br />
-      <p className="text-white text-2xl font-bold">Recent Transactions</p>
-      <div className="flex justify-center items-center pr-2 gap-x-4 py-6">
-        <div className="grow">
+      <p className="text-white text-2xl font-bold sm:text-left text-center">Recent Transactions</p>
+      <div className="flex flex-col sm:flex-row justify-center items-center pr-2 gap-x-4 py-6 space-y-2 sm:space-y-0">
+        <div className="flex flex-row items-center w-full">
           <TextField
             size="small"
             value={kappa}
             onChange={(e) => {
               setKappa(e.target.value)
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                window.location.href = TRANSACTIONS_PATH + (kappa ? '?hash=' + kappa : '');
+              }
+            }}
             id="outlined-basic"
             label="Search by TXID / TXHash"
             variant="outlined"
             sx={inputStyle}
           />
+          <a
+            href={TRANSACTIONS_PATH + (kappa ? '?hash=' + kappa : '')}
+            className={
+              'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700 px-4 py-1 my-1 hover:bg-opacity-70 ease-in-out duration-200 mx-2 pointer-cursor z-10' +
+              (loading ? ' pointer-events-none opacity-[0.4]' : '')
+            }
+            style={{ flexShrink: 0 }}
+          >
+            Search
+          </a>
         </div>
-        <a
-          href={TRANSACTIONS_PATH + (kappa ? '?hash=' + kappa : '')}
-          className={
-            'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ml-[-105px] pointer-cursor z-10' +
-            (loading ? ' pointer-events-none opacity-[0.4]' : '')
-          }
-        >
-          Search
-        </a>
-
-        <div className="">
+        <div className="flex w-full justify-center sm:w-auto sm:mx-auto sm:items-center sm:py-2">
           <button
             disabled={loading}
             onClick={() => setPending(false)}

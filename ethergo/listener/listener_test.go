@@ -3,10 +3,11 @@ package listener_test
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/listener"
-	"sync"
 )
 
 func (l *ListenerTestSuite) TestListenForEvents() {
@@ -14,13 +15,10 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 	var wg sync.WaitGroup
 	const iterations = 10
 	for i := 0; i < iterations; i++ {
-		i := i
 		wg.Add(1)
-		go func(_ int) {
+		go func() {
 			defer wg.Done()
-
 			auth := l.backend.GetTxContext(l.GetTestContext(), nil)
-
 			//nolint:typecheck
 			bridgeRequestTX, err := handle.IncrementCounter(auth.TransactOpts)
 			l.NoError(err)
@@ -32,7 +30,7 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 			l.NoError(err)
 			l.NotNil(bridgeResponseTX)
 			l.backend.WaitForConfirmation(l.GetTestContext(), bridgeResponseTX)
-		}(i)
+		}()
 	}
 
 	wg.Wait()
@@ -40,10 +38,47 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 	startBlock, err := handle.DeployBlock(&bind.CallOpts{Context: l.GetTestContext()})
 	l.NoError(err)
 
-	cl, err := listener.NewChainListener(l.backend, l.store, handle.Address(), uint64(startBlock.Int64()), l.metrics, listener.WithNewBlockHandler(func(ctx context.Context, block uint64) error {
-		fmt.Println(block)
-		return nil
-	}))
+	cl, err := listener.NewChainListener(
+		l.backend,
+		l.store,
+		handle.Address(),
+		uint64(startBlock.Int64()),
+		l.metrics,
+		listener.WithNewBlockHandler(func(ctx context.Context, block uint64) error {
+			fmt.Println(block)
+			return nil
+		}),
+	)
+	l.NoError(err)
+
+	clSafe, err := listener.NewChainListener(
+		l.backend,
+		l.store,
+		handle.Address(),
+		uint64(startBlock.Int64()),
+		l.metrics,
+		listener.WithNewBlockHandler(func(ctx context.Context, block uint64) error {
+			fmt.Println(block)
+			return nil
+		}),
+		listener.WithFinalityMode("safe"),
+		listener.WithBlockWait(10),
+	)
+	l.NoError(err)
+
+	clFinalized, err := listener.NewChainListener(
+		l.backend,
+		l.store,
+		handle.Address(),
+		uint64(startBlock.Int64()),
+		l.metrics,
+		listener.WithNewBlockHandler(func(ctx context.Context, block uint64) error {
+			fmt.Println(block)
+			return nil
+		}),
+		listener.WithFinalityMode("finalized"),
+		listener.WithBlockWait(10),
+	)
 	l.NoError(err)
 
 	eventCount := 0
@@ -59,4 +94,27 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 
 		return nil
 	})
+
+	_ = clSafe.Listen(listenCtx, func(ctx context.Context, log types.Log) error {
+		eventCount++
+
+		if eventCount == iterations*2 {
+			cancel()
+		}
+
+		return nil
+	})
+
+	_ = clFinalized.Listen(listenCtx, func(ctx context.Context, log types.Log) error {
+		eventCount++
+
+		if eventCount == iterations*2 {
+			cancel()
+		}
+
+		return nil
+	})
+
+	l.NotEqual(cl.LatestBlock(), clFinalized.LatestBlock(), clSafe.LatestBlock())
+
 }

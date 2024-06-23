@@ -3,6 +3,7 @@ import { BridgeQuote, Token } from '@/utils/types'
 import { formatBigIntToString } from '../bigint/format'
 import { commify } from '@ethersproject/units'
 import { calculateExchangeRate } from '../calculateExchangeRate'
+import { getTimeMinutesFromNow } from '../time'
 
 export interface BridgeQuoteResponse extends BridgeQuote {
   destinationToken: Token
@@ -23,6 +24,7 @@ export async function fetchBridgeQuote(
   synapseSDK: any
 ): Promise<BridgeQuoteResponse> {
   if (request && synapseSDK) {
+    const currentTimestamp: number = getTimeMinutesFromNow(0)
     try {
       const {
         originChainId,
@@ -93,6 +95,7 @@ export async function fetchBridgeQuote(
         estimatedTime: estimatedTime,
         bridgeModuleName: bridgeModuleName,
         gasDropAmount: BigInt(gasDropAmount.toString()),
+        timestamp: currentTimestamp,
       }
     } catch (error) {
       console.error('Error fetching bridge quote:', error)

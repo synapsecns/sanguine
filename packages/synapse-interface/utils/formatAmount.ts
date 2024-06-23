@@ -20,7 +20,7 @@ export const formatAmount = (
       throw new TypeError(`"${amount}" is not a finite number`)
     }
   } catch ({ name, message }) {
-    console.error(name, message)
+    // console.error(name, message)
     return amount
   }
 
