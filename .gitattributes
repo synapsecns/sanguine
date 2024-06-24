@@ -15,6 +15,7 @@
 *_gen.go linguist-generated
 # ignore ifacemaker files
 *_generated.go linguist-generated
+contrib/opbot/generated/* linguist-generated
 
 
 # svg should be treated as a binary https://git.io/JE2VK
