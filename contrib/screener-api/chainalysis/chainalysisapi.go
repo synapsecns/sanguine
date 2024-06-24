@@ -72,6 +72,7 @@ func (c clientImpl) handleResponse(ctx context.Context, address string, resp *re
 	}
 
 	// If the user is not registered, register them and try again.
+	//nolint: nestif
 	if userNotRegistered(rawResponse) {
 		if err = c.registerAddress(ctx, address); err != nil {
 			return false, fmt.Errorf("could not register address: %w", err)
@@ -93,7 +94,7 @@ func (c clientImpl) handleResponse(ctx context.Context, address string, resp *re
 					SetPathParam("address", address).
 					Get(EntityEndpoint + "/" + address)
 				if err != nil {
-					return err
+					return fmt.Errorf("could not get response: %w", err)
 				}
 				newResp = resp
 				return nil
@@ -101,6 +102,7 @@ func (c clientImpl) handleResponse(ctx context.Context, address string, resp *re
 		if err != nil {
 			return false, fmt.Errorf("could not get response: %w", err)
 		}
+
 		if err := json.Unmarshal(newResp.Body(), &rawResponse); err != nil {
 			return false, fmt.Errorf("could not unmarshal response 2: %w", err)
 		}
