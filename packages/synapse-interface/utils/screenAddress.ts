@@ -4,7 +4,7 @@ import { GlobalEventEmitter } from '@/utils/globalEventEmitter'
 import { DISCORD_URL } from '@/constants/urls'
 
 export const screenAddress = (address: Address | string) => {
-  const url = `https://screener.omnirpc.io/fe/address/${address}`
+  const url = `https://screener-v2.omnirpc.io/fe/address/${address}`
 
   fetch(url, {
     method: 'GET',
