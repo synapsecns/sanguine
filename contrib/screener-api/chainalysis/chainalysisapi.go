@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/synapsecns/sanguine/core/retry"
 )
 
 const (
@@ -76,12 +77,27 @@ func (c clientImpl) handleResponse(ctx context.Context, address string, resp *re
 			return false, fmt.Errorf("could not register address: %w", err)
 		}
 
-		// Then try again.
-		time.Sleep(2 * time.Second)
 		newResp, err := c.client.R().
 			SetContext(ctx).
 			SetPathParam("address", address).
 			Get(EntityEndpoint + "/" + address)
+		if err != nil {
+			return false, fmt.Errorf("could not get response: %w", err)
+		}
+
+		// Retry until the user is registered.
+		err = retry.WithBackoff(ctx,
+			func(ctx context.Context) error {
+				resp, err := c.client.R().
+					SetContext(ctx).
+					SetPathParam("address", address).
+					Get(EntityEndpoint + "/" + address)
+				if err != nil {
+					return err
+				}
+				newResp = resp
+				return nil
+			})
 		if err != nil {
 			return false, fmt.Errorf("could not get response: %w", err)
 		}
