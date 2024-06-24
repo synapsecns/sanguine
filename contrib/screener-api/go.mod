@@ -1,4 +1,4 @@
-m odule github.com/synapsecns/sanguine/contrib/screener-api
+module github.com/synapsecns/sanguine/contrib/screener-api
 
 go 1.22
 
