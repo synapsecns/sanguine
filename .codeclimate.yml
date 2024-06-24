@@ -14,6 +14,8 @@ plugins:
 
 exclude_patterns:
   - '.*\\.abigen\\.go$'
+  - '*/*.abigen.go'
+  - '*.gen.go' #gql gen
   - '.*\\.metadata\\.go$'
   - '.*\\.pb\\.go$'
   - '.*_gen.go$'
