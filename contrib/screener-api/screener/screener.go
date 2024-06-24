@@ -2,6 +2,7 @@
 package screener
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -225,42 +226,32 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 		_, span := s.metrics.Tracer().Start(c.Request.Context(), "authMiddleware")
 		defer span.End()
 
-		appID := c.Request.Header.Get("AppID")
-		timestamp := c.Request.Header.Get("Timestamp")
-		nonce := c.Request.Header.Get("Nonce")
-		signature := c.Request.Header.Get("Signature")
-		queryString := c.Request.Header.Get("QueryString")
-		bodyBytes, _ := io.ReadAll(c.Request.Body)
+		appID := c.Request.Header.Get("X-Signature-appid")
+		timestamp := c.Request.Header.Get("X-Signature-timestamp")
+		nonce := c.Request.Header.Get("X-Signature-nonce")
+		signature := c.Request.Header.Get("X-Signature-signature")
+		queryString := c.Request.URL.RawQuery
+
+		bodyBytes, err := io.ReadAll(c.Request.Body)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "could not read request body"})
+			c.Abort()
+			return
+		}
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 		bodyStr := string(bodyBytes)
 
-		c.Request.Body = io.NopCloser(strings.NewReader(bodyStr))
-
-		span.SetAttributes(
-			attribute.String("appId", appID),
-			attribute.String("timestamp", timestamp),
-			attribute.String("nonce", nonce),
-			attribute.String("signature", signature),
-			attribute.String("queryString", queryString),
-			attribute.String("bodyString", bodyStr),
-		)
-
 		message := fmt.Sprintf("%s%s%s%s%s%s%s",
-			appID, timestamp, nonce, "POST", "/api/data/sync/", queryString, bodyStr)
-
-		span.AddEvent("message", trace.WithAttributes(attribute.String("message", message)))
+			appID, timestamp, nonce, "POST", "/api/data/sync", queryString, bodyStr)
 
 		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
 
-		span.AddEvent("generated_signature", trace.WithAttributes(attribute.String("expectedSignature", expectedSignature)))
-
 		if expectedSignature != signature {
-			span.AddEvent("error", trace.WithAttributes(attribute.String("error", "Invalid signature")))
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid signature"})
 			c.Abort()
 			return
 		}
 
-		span.AddEvent("signature_validated")
 		c.Next()
 	}
 }
