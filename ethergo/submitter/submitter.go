@@ -120,7 +120,11 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 	return retryInterval
 }
 
-func (t *txSubmitterImpl) Start(ctx context.Context) error {
+func (t *txSubmitterImpl) Start(ctx context.Context) (err error) {
+	err = t.setupMetrics()
+	if err != nil {
+		return fmt.Errorf("could not setup metrics: %w", err)
+	}
 
 	i := 0
 	for {
