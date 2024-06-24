@@ -11,6 +11,7 @@ replace (
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
+	github.com/TwiN/gocache/v2 v2.2.2
 	github.com/brianvoe/gofakeit/v6 v6.27.0
 	github.com/dubonzi/otelresty v1.2.0
 	github.com/gin-gonic/gin v1.10.0
@@ -24,8 +25,10 @@ require (
 	github.com/swaggo/swag v1.16.3
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.27.2
+	github.com/valyala/fastjson v1.6.4
 	go.opentelemetry.io/otel v1.27.0
 	go.opentelemetry.io/otel/trace v1.27.0
+	golang.org/x/sync v0.7.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/driver/sqlite v1.5.6
@@ -37,6 +40,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
+	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
@@ -175,7 +179,6 @@ require (
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
 	golang.org/x/mod v0.18.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/tools v0.22.0 // indirect

@@ -2,8 +2,11 @@ package chainalysis
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/TwiN/gocache/v2"
+	"github.com/valyala/fastjson"
+	"net/http"
 	"slices"
 	"strings"
 	"time"
@@ -24,11 +27,18 @@ type Client interface {
 
 // clientImpl is the implementation of the Chainalysis API client.
 type clientImpl struct {
-	client     *resty.Client
-	apiKey     string
-	url        string
-	riskLevels []string
+	client            *resty.Client
+	apiKey            string
+	url               string
+	riskLevels        []string
+	registrationCache *gocache.Cache
 }
+
+const (
+	maxCacheSizeGB            = 3
+	bytesInGB                 = 1024 * 1024 * 1024
+	chainalysisRequestTimeout = 30 * time.Second
+)
 
 // NewClient creates a new Chainalysis API client.
 func NewClient(riskLevels []string, apiKey, url string) Client {
@@ -36,77 +46,78 @@ func NewClient(riskLevels []string, apiKey, url string) Client {
 		SetBaseURL(url).
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Token", apiKey).
-		SetTimeout(30 * time.Second)
+		SetTimeout(chainalysisRequestTimeout)
+
+	// max cache size 3gb
+	// TODO: make this configurable.
+	registrationCache := gocache.NewCache().WithEvictionPolicy(gocache.LeastRecentlyUsed).WithMaxMemoryUsage(maxCacheSizeGB * bytesInGB)
 
 	return &clientImpl{
-		client:     client,
-		apiKey:     apiKey,
-		url:        url,
-		riskLevels: riskLevels,
+		client:            client,
+		apiKey:            apiKey,
+		url:               url,
+		riskLevels:        riskLevels,
+		registrationCache: registrationCache,
 	}
 }
 
 // ScreenAddress screens an address from the Chainalysis API.
-func (c *clientImpl) ScreenAddress(ctx context.Context, address string) (bool, error) {
+func (c *clientImpl) ScreenAddress(parentCtx context.Context, address string) (bool, error) {
+	// make sure to cancel the context when we're done.
+	// this ensures if we didn't need pessimistic register, we don't wait on it.
+	ctx, cancel := context.WithCancel(parentCtx)
+	defer cancel()
+
 	address = strings.ToLower(address)
-	// Get the response.
-	resp, err := c.client.R().
-		SetContext(ctx).
-		SetPathParam("address", address).
-		Get(EntityEndpoint + "/" + address)
+
+	// we don't even wait on pessimistic register since if the address is already registered, but not in the in-memory cache
+	// this will just get canceled.
+	go func() {
+		// Register the address in the cache.
+		if err := c.pessimisticRegister(ctx, address); err != nil && !errors.Is(err, context.Canceled) {
+			fmt.Printf("could not register address: %v\n", err)
+		}
+	}()
+
+	return c.checkBlacklist(ctx, address)
+}
+
+// pessimisticRegister registers an address if its not in memory cache. This happens regardless it was registered before.
+func (c *clientImpl) pessimisticRegister(ctx context.Context, address string) error {
+	if _, isPresent := c.registrationCache.Get(address); !isPresent {
+		if err := c.registerAddress(ctx, address); err != nil {
+			return fmt.Errorf("could not register address: %w", err)
+		}
+	}
+	return nil
+}
+
+func (c *clientImpl) checkBlacklist(ctx context.Context, address string) (bool, error) {
+	var resp *resty.Response
+	// Retry until the user is registered.
+	err := retry.WithBackoff(ctx,
+		func(ctx context.Context) (err error) {
+			resp, err = c.client.R().
+				SetContext(ctx).
+				SetPathParam("address", address).
+				Get(EntityEndpoint + "/" + address)
+			if err != nil {
+				return fmt.Errorf("could not get response: %w", err)
+			}
+
+			if resp.StatusCode() != http.StatusOK {
+				return fmt.Errorf("could not get response: %s", resp.Status())
+			}
+			return nil
+		}, retry.WithMax(time.Second))
 	if err != nil {
 		return false, fmt.Errorf("could not get response: %w", err)
 	}
 
-	return c.handleResponse(ctx, address, resp)
-}
+	// address has been found, let's screen it.
+	c.registrationCache.Set(address, struct{}{})
 
-// handleResponse takes the Chainalysis response, and depending if the address is registered or not, returns the result.
-// It will retry the request if the address is not registered.
-func (c clientImpl) handleResponse(ctx context.Context, address string, resp *resty.Response) (bool, error) {
-	// Response could differ based on if the address is registered or not.
-	var rawResponse map[string]interface{}
-	var err error
-	if err := json.Unmarshal(resp.Body(), &rawResponse); err != nil {
-		return false, fmt.Errorf("could not unmarshal response 1: %w", err)
-	}
-
-	// If the user is not registered, register them and try again.
-	if userNotRegistered(rawResponse) {
-		if err = c.registerAddress(ctx, address); err != nil {
-			return false, fmt.Errorf("could not register address: %w", err)
-		}
-
-		newResp, err := c.client.R().
-			SetContext(ctx).
-			SetPathParam("address", address).
-			Get(EntityEndpoint + "/" + address)
-		if err != nil {
-			return false, fmt.Errorf("could not get response: %w", err)
-		}
-
-		// Retry until the user is registered.
-		err = retry.WithBackoff(ctx,
-			func(ctx context.Context) error {
-				resp, err := c.client.R().
-					SetContext(ctx).
-					SetPathParam("address", address).
-					Get(EntityEndpoint + "/" + address)
-				if err != nil {
-					return err
-				}
-				newResp = resp
-				return nil
-			})
-		if err != nil {
-			return false, fmt.Errorf("could not get response: %w", err)
-		}
-		if err := json.Unmarshal(newResp.Body(), &rawResponse); err != nil {
-			return false, fmt.Errorf("could not unmarshal response 2: %w", err)
-		}
-	}
-
-	risk, _ := rawResponse["risk"].(string)
+	risk := fastjson.GetString(resp.Body(), "risk")
 	return slices.Contains(c.riskLevels, risk), nil
 }
 
@@ -127,8 +138,3 @@ func (c *clientImpl) registerAddress(ctx context.Context, address string) error 
 }
 
 var _ Client = &clientImpl{}
-
-func userNotRegistered(rawResponse map[string]interface{}) bool {
-	_, ok := rawResponse["message"]
-	return ok
-}

@@ -4,7 +4,10 @@ package screener
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/mapmutex"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"net/http"
 	"strings"
@@ -46,6 +49,7 @@ type screenerImpl struct {
 	whitelist         map[string]bool
 	blacklistCache    map[string]bool
 	blacklistCacheMux sync.RWMutex
+	requestMux        mapmutex.StringMapMutex
 }
 
 var logger = log.Logger("screener")
@@ -53,8 +57,9 @@ var logger = log.Logger("screener")
 // NewScreener creates a new screener.
 func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.Handler) (_ Screener, err error) {
 	screener := screenerImpl{
-		metrics: metricHandler,
-		cfg:     cfg,
+		metrics:    metricHandler,
+		cfg:        cfg,
+		requestMux: mapmutex.NewStringMapMutex(),
 	}
 
 	docs.SwaggerInfo.Title = "Screener API"
@@ -97,6 +102,8 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	return &screener, nil
 }
 
+const blacklistScreenInterval = 15 * time.Second
+
 func (s *screenerImpl) Start(ctx context.Context) error {
 	// TODO: potential race condition here, if the blacklist is not fetched before the first request
 	// in practice chainalysis will catch
@@ -108,7 +115,7 @@ func (s *screenerImpl) Start(ctx context.Context) error {
 			select {
 			case <-ctx.Done():
 				return
-			case <-time.After(time.Second * 15):
+			case <-time.After(blacklistScreenInterval):
 				s.fetchBlacklist(ctx)
 			}
 		}
@@ -176,7 +183,7 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 	}
 
 	// Check if the address is in the blacklist.
-	if _, blacklisted := s.blacklistCache[address]; blacklisted {
+	if s.isBlacklistedCache(address) {
 		c.JSON(http.StatusOK, gin.H{"risk": true})
 		return
 	}
@@ -187,24 +194,57 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 		return
 	}
 
-	// If not, check request Chainalysis for the risk assessment.
-	blocked, err := s.client.ScreenAddress(c.Request.Context(), address)
-	if err != nil {
-		logger.Errorf("error screening address: %s", err)
+	// prevent a single address from saturating the server.
+	// the only case this is useful is with a bad client that continuously sends requests for the same address.
+	// due to a goroutine leak, etc.
+	unlocker := s.requestMux.Lock(address)
+	defer unlocker.Unlock()
+
+	g, ctx := errgroup.WithContext(c.Request.Context())
+	var isAPIBlocked, isDBBlocked bool
+	g.Go(func() (err error) {
+		// If not, check db & Chainalysis for the risk assessment.
+		isAPIBlocked, err = s.client.ScreenAddress(ctx, address)
+		if err != nil {
+			return fmt.Errorf("error screening address: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() (err error) {
+		isDBBlocked, err = s.isDBBlacklisted(ctx, address)
+		if err != nil {
+			return fmt.Errorf("error checking db: %w", err)
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		logger.Errorf("error screening address: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if blocked {
-		s.blacklistCacheMux.Lock()
-		defer s.blacklistCacheMux.Unlock()
-		s.blacklistCache[address] = true
+	c.JSON(http.StatusOK, gin.H{"risk": isAPIBlocked || isDBBlocked})
+}
 
-		c.JSON(http.StatusOK, gin.H{"risk": true})
-		return
+func (s *screenerImpl) isDBBlacklisted(ctx context.Context, address string) (bool, error) {
+	_, err := s.db.GetBlacklistedAddress(ctx, address)
+	if err != nil && !errors.Is(err, db.ErrNoAddressNotFound) {
+		return false, fmt.Errorf("could not get blacklisted address: %w", err)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"risk": false})
+	if errors.Is(err, db.ErrNoAddressNotFound) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (s *screenerImpl) isBlacklistedCache(address string) bool {
+	s.blacklistCacheMux.RLock()
+	defer s.blacklistCacheMux.RUnlock()
+	return s.blacklistCache[address]
 }
 
 // @dev Protected Method

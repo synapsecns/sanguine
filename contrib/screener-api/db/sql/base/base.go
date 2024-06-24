@@ -40,7 +40,7 @@ func (s *Store) GetBlacklistedAddress(ctx context.Context, address string) (*db.
 	if err := s.db.WithContext(ctx).Where("address = ?", address).
 		First(&blacklistedAddress).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, err
+			return nil, db.ErrNoAddressNotFound
 		}
 		return nil, fmt.Errorf("failed to get blacklisted address: %w", err)
 	}
