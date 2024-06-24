@@ -191,20 +191,26 @@ func blacklistTestWithOperation(operation string, apiClient client.ScreenerClien
 		dataMap := map[string]string{"key": fmt.Sprintf("value-%d", rand.Intn(1000))}
 		dataStr, err := json.Marshal(dataMap)
 		if err != nil {
-			fmt.Println("Error marshalling dataMap:", err)
-			continue
+			return statuses, fmt.Errorf("error marshalling data: %w", err)
 		}
 
-		body := client.BlackListBody{
-			Type:    operation,
-			ID:      fmt.Sprintf("unique-id-%d", rand.Intn(1000)),
-			Data:    string(dataStr),
-			Address: fmt.Sprintf("address-%d", rand.Intn(1000)),
-			Network: fmt.Sprintf("network-%d", rand.Intn(1000)),
-			Tag:     fmt.Sprintf("tag-%d", rand.Intn(1000)),
-			Remark:  "remark",
+		var body client.BlackListBody
+		if operation == "create" || operation == "update" {
+			body = client.BlackListBody{
+				Type:    operation,
+				ID:      fmt.Sprintf("unique-id-%d", rand.Intn(1000)),
+				Data:    string(dataStr),
+				Address: fmt.Sprintf("address-%d", rand.Intn(1000)),
+				Network: fmt.Sprintf("network-%d", rand.Intn(1000)),
+				Tag:     fmt.Sprintf("tag-%d", rand.Intn(1000)),
+				Remark:  "remark",
+			}
+		} else {
+			body = client.BlackListBody{
+				Type: operation,
+				ID:   fmt.Sprintf("unique-id-%d", rand.Intn(1000)),
+			}
 		}
-
 		status, err := apiClient.BlacklistAddress(context.Background(), cfg.AppSecret, cfg.AppID, body)
 		statuses = append(statuses, status)
 		if err != nil {

@@ -202,7 +202,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		return
 
 	case "delete":
-		if err := s.db.DeleteBlacklistedAddress(ctx, blacklistedAddress.Address); err != nil {
+		if err := s.db.DeleteBlacklistedAddress(ctx, blacklistedAddress.ID); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
