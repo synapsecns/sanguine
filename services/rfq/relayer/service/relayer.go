@@ -58,8 +58,8 @@ type Relayer struct {
 	decimalsCache  *xsync.MapOf[string, *uint8]
 	// semaphore is used to limit the number of concurrent requests
 	semaphore *semaphore.Weighted
-	// relayMtx is used to synchronize handling of relay requests
-	relayMtx mapmutex.StringMapMutex
+	// handlerMtx is used to synchronize handling of relay requests
+	handlerMtx mapmutex.StringMapMutex
 }
 
 var logger = log.Logger("relayer")
@@ -155,7 +155,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		apiServer:      apiServer,
 		apiClient:      apiClient,
 		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
-		relayMtx:       mapmutex.NewStringMapMutex(),
+		handlerMtx:     mapmutex.NewStringMapMutex(),
 	}
 	return &rel, nil
 }

@@ -37,7 +37,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	unlocker, ok := r.relayMtx.TryLock(hexutil.Encode(req.TransactionId[:]))
+	unlocker, ok := r.handlerMtx.TryLock(hexutil.Encode(req.TransactionId[:]))
 	if !ok {
 		span.SetAttributes(attribute.Bool("locked", true))
 		// already processing this request

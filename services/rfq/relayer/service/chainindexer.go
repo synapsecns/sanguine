@@ -79,7 +79,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			}
 		case *fastbridge.FastBridgeBridgeRelayed:
 			// blocking lock on the txid mutex to ensure state transitions are not overrwitten
-			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
 			defer unlocker.Unlock()
 
 			// it wasn't me
@@ -93,7 +93,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return fmt.Errorf("could not handle relay: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeProofProvided:
-			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
 			defer unlocker.Unlock()
 
 			// it wasn't me
@@ -107,7 +107,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return fmt.Errorf("could not handle proof provided: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeDepositClaimed:
-			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
 			defer unlocker.Unlock()
 
 			// it wasn't me
