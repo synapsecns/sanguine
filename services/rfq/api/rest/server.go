@@ -168,6 +168,9 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// engine.PUT("/quotes", h.ModifyQuote)
 	engine.GET(QuoteRoute, h.GetQuotes)
 
+	// Expose Prometheus metrics
+	engine.GET(metrics.MetricsPathDefault, gin.WrapH(r.handler.Handler()))
+
 	r.engine = engine
 
 	connection := baseServer.Server{}
