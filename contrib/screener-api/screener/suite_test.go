@@ -2,8 +2,10 @@ package screener_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"testing"
 	"time"
@@ -154,45 +156,62 @@ func (s *ScreenerSuite) TestScreener() {
 	False(s.T(), out)
 
 	// now test crud screener
-	blacklistBody := client.BlackListBody{
-		Type:    "create",
-		ID:      "1",
-		Data:    "{\"test\":\"data\"}",
-		Address: "0x123",
-		Network: "eth",
-		Tag:     "tag",
-		Remark:  "remark",
-	}
-
-	// post to the blacklist
-	status, err := apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	Equal(s.T(), "success", status)
+	// create a bunch
+	statuses, err := blacklistTestWithOperation("create", apiClient, cfg)
+	all(s.T(), statuses, func(status string) bool {
+		return status == "success"
+	})
 	Nil(s.T(), err)
 
-	// update an address on the blacklist
-	blacklistBody.Type = "update"
-	blacklistBody.Remark = "new remark"
-
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	Equal(s.T(), "success", status)
+	// update a bunch
+	statuses, err = blacklistTestWithOperation("update", apiClient, cfg)
+	all(s.T(), statuses, func(status string) bool {
+		return status == "success"
+	})
 	Nil(s.T(), err)
 
-	// delete the address on the blacklist
-	blacklistBody.Type = "delete"
-	blacklistBody.ID = "1"
-
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	Equal(s.T(), "success", status)
+	// delete a bunch
+	statuses, err = blacklistTestWithOperation("delete", apiClient, cfg)
+	all(s.T(), statuses, func(status string) bool {
+		return status == "success"
+	})
 	Nil(s.T(), err)
 
-	// unauthorized
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), "bad", cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	NotEqual(s.T(), "success", status)
+	// unauthorized, return on err so statuses will be only one
+	cfg.AppSecret = "BAD"
+	statuses, err = blacklistTestWithOperation("create", apiClient, cfg)
+	all(s.T(), statuses, func(status string) bool {
+		return status == "401 Unauthorized"
+	})
 	NotNil(s.T(), err)
+}
+
+func blacklistTestWithOperation(operation string, apiClient client.ScreenerClient, cfg config.Config) (statuses []string, err error) {
+	for i := 0; i < 10; i++ {
+		dataMap := map[string]string{"key": fmt.Sprintf("value-%d", rand.Intn(1000))}
+		dataStr, err := json.Marshal(dataMap)
+		if err != nil {
+			fmt.Println("Error marshalling dataMap:", err)
+			continue
+		}
+
+		body := client.BlackListBody{
+			Type:    operation,
+			ID:      fmt.Sprintf("unique-id-%d", rand.Intn(1000)),
+			Data:    string(dataStr),
+			Address: fmt.Sprintf("address-%d", rand.Intn(1000)),
+			Network: fmt.Sprintf("network-%d", rand.Intn(1000)),
+			Tag:     fmt.Sprintf("tag-%d", rand.Intn(1000)),
+			Remark:  "remark",
+		}
+
+		status, err := apiClient.BlacklistAddress(context.Background(), cfg.AppSecret, cfg.AppID, body)
+		statuses = append(statuses, status)
+		if err != nil {
+			return statuses, fmt.Errorf("error blacklisting address: %w", err)
+		}
+	}
+	return statuses, nil
 }
 
 type mockClient struct {
@@ -225,4 +244,12 @@ func TestSplitCSV(t *testing.T) {
 	Equal(t, "true", out["FE"][1].Enabled)
 	Equal(t, "false", out["RFQ"][1].Enabled)
 	Equal(t, "true", out["RFQ"][2].Enabled)
+}
+
+func all(t *testing.T, statuses []string, f func(string) bool) {
+	for _, status := range statuses {
+		if !f(status) {
+			t.Fail()
+		}
+	}
 }
