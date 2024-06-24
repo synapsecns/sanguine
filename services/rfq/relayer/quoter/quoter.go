@@ -11,7 +11,6 @@ import (
 	"sync/atomic"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
-	"github.com/synapsecns/sanguine/core"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.opentelemetry.io/otel/attribute"
@@ -74,8 +73,10 @@ type Manager struct {
 	relayPaused atomic.Bool
 	// meter is the meter used by this package.
 	meter metric.Meter
-	// quoteAmountHist stores a histogram of quote amounts.
-	quoteAmountHist metric.Float64Histogram
+	// quoteAmountGauge stores a histogram of quote amounts.
+	quoteAmountGauge metric.Float64ObservableGauge
+	// currentQuotes is used for recording quote metrics.
+	currentQuotes []model.PutQuoteRequest
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -107,17 +108,7 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		}
 	}
 
-	var meter metric.Meter
-	var quoteAmountHist metric.Float64Histogram
-	if metricsHandler.Type() != metrics.Null {
-		meter := metricsHandler.Meter(meterName)
-		quoteAmountHist, err = meter.Float64Histogram("quote_amount")
-		if err != nil {
-			return nil, fmt.Errorf("error creating quote amount hist: %w", err)
-		}
-	}
-
-	return &Manager{
+	m := &Manager{
 		config:           config,
 		inventoryManager: inventoryManager,
 		rfqClient:        apiClient,
@@ -126,9 +117,21 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		metricsHandler:   metricsHandler,
 		feePricer:        feePricer,
 		screener:         ss,
-		meter:            meter,
-		quoteAmountHist:  quoteAmountHist,
-	}, nil
+		meter:            metricsHandler.Meter(meterName),
+		currentQuotes:    []model.PutQuoteRequest{},
+	}
+
+	m.quoteAmountGauge, err = m.meter.Float64ObservableGauge("quote_amount")
+	if err != nil {
+		return nil, fmt.Errorf("error creating quote amount gauge: %w", err)
+	}
+
+	_, err = m.meter.RegisterCallback(m.recordQuoteAmounts, m.quoteAmountGauge)
+	if err != nil {
+		return nil, fmt.Errorf("could not register callback: %w", err)
+	}
+
+	return m, nil
 }
 
 const screenerRuleset = "rfq"
@@ -329,18 +332,11 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 					))
 					continue
 				}
-
-				registerErr := m.registerQuote(ctx, quote)
-				if registerErr != nil {
-					span.AddEvent("error registering quote", trace.WithAttributes(
-						attribute.String("error", registerErr.Error()),
-					))
-				}
-
 				quotes = append(quotes, *quote)
 			}
 		}
 	}
+	m.currentQuotes = quotes
 	return quotes, nil
 }
 
@@ -401,34 +397,38 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 	return quote, nil
 }
 
-// registerQuote registers a quote with the metrics handler.
-func (m *Manager) registerQuote(ctx context.Context, quote *model.PutQuoteRequest) (err error) {
-	if m.meter == nil || m.quoteAmountHist == nil {
+// recordQuoteAmounts records the latest quotes from the relayer.
+func (m *Manager) recordQuoteAmounts(ctx context.Context, observer metric.Observer) (err error) {
+	if m.meter == nil || m.quoteAmountGauge == nil || m.currentQuotes == nil {
 		return nil
 	}
 
-	originMetadata, err := m.inventoryManager.GetTokenMetadata(quote.OriginChainID, common.HexToAddress(quote.OriginTokenAddr))
-	if err != nil {
-		return fmt.Errorf("error getting origin token metadata: %w", err)
+	for _, quote := range m.currentQuotes {
+		originMetadata, err := m.inventoryManager.GetTokenMetadata(quote.OriginChainID, common.HexToAddress(quote.OriginTokenAddr))
+		if err != nil {
+			return fmt.Errorf("error getting origin token metadata: %w", err)
+		}
+		destMetadata, err := m.inventoryManager.GetTokenMetadata(quote.DestChainID, common.HexToAddress(quote.DestTokenAddr))
+		if err != nil {
+			return fmt.Errorf("error getting dest token metadata: %w", err)
+		}
+
+		destAmount, err := strconv.ParseFloat(quote.DestAmount, 64)
+		if err != nil {
+			return fmt.Errorf("error parsing dest amount: %w", err)
+		}
+		opts := metric.WithAttributes(
+			attribute.Int(metrics.Origin, quote.OriginChainID),
+			attribute.Int(metrics.Destination, quote.DestChainID),
+			attribute.String("origin_token_name", originMetadata.Name),
+			attribute.String("dest_token_name", destMetadata.Name),
+			attribute.String("max_origin_amount", quote.MaxOriginAmount),
+			attribute.String("fixed_fee", quote.FixedFee),
+			attribute.String("relayer", m.relayerSigner.Address().Hex()),
+		)
+		observer.ObserveFloat64(m.quoteAmountGauge, destAmount, opts)
 	}
-	destMetadata, err := m.inventoryManager.GetTokenMetadata(quote.DestChainID, common.HexToAddress(quote.DestTokenAddr))
-	if err != nil {
-		return fmt.Errorf("error getting dest token metadata: %w", err)
-	}
-	destAmount, ok := new(big.Int).SetString(quote.DestAmount, 10)
-	if !ok {
-		return fmt.Errorf("error parsing dest amount: %w", err)
-	}
-	attributes := attribute.NewSet(
-		attribute.Int(metrics.Origin, quote.OriginChainID),
-		attribute.Int(metrics.Destination, quote.DestChainID),
-		attribute.String("origin_token_name", originMetadata.Name),
-		attribute.String("dest_token_name", destMetadata.Name),
-		attribute.String("max_origin_amount", quote.MaxOriginAmount),
-		attribute.String("fixed_fee", quote.FixedFee),
-		attribute.String("relayer", m.relayerSigner.Address().Hex()),
-	)
-	m.quoteAmountHist.Record(ctx, core.BigToDecimals(destAmount, destMetadata.Decimals), metric.WithAttributeSet(attributes))
+
 	return nil
 }
 
