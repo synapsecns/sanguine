@@ -30,11 +30,14 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
 
 var logger = log.Logger("ethergo-submitter")
+
+const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
 
 // TransactionSubmitter is the interface for submitting transactions to the chain.
 type TransactionSubmitter interface {
@@ -51,6 +54,7 @@ type TransactionSubmitter interface {
 // txSubmitterImpl is the implementation of the transaction submitter.
 type txSubmitterImpl struct {
 	metrics metrics.Handler
+	meter   metric.Meter
 	// signer is the signer for signing transactions.
 	signer signer.Signer
 	// nonceMux is the mutex for the nonces. It is keyed by chain.
@@ -72,6 +76,14 @@ type txSubmitterImpl struct {
 	lastGasBlockCache *xsync.MapOf[int, *types.Header]
 	// config is the config for the transaction submitter.
 	config config.IConfig
+	// numPendingGauge is the gauge for the number of pending transactions.
+	numPendingGauge metric.Int64ObservableGauge
+	// nonceGauge is the gauge for the current nonce.
+	nonceGauge metric.Int64ObservableGauge
+	// numPendingTxes is used for metrics.
+	numPendingTxes map[uint32]int
+	// currentNonces is used for metrics.
+	currentNonces map[uint32]uint64
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -87,12 +99,15 @@ func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetc
 		db:                db,
 		config:            config,
 		metrics:           metrics,
+		meter:             metrics.Meter(meterName),
 		signer:            signer,
 		fetcher:           fetcher,
 		nonceMux:          mapmutex.NewStringerMapMutex(),
 		statusMux:         mapmutex.NewStringMapMutex(),
 		retryNow:          make(chan bool, 1),
 		lastGasBlockCache: xsync.NewIntegerMapOf[int, *types.Header](),
+		numPendingTxes:    make(map[uint32]int),
+		currentNonces:     make(map[uint32]uint64),
 	}
 }
 
@@ -106,6 +121,7 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 }
 
 func (t *txSubmitterImpl) Start(ctx context.Context) error {
+
 	i := 0
 	for {
 		i++
@@ -118,6 +134,30 @@ func (t *txSubmitterImpl) Start(ctx context.Context) error {
 			return nil
 		}
 	}
+}
+
+func (t *txSubmitterImpl) setupMetrics() (err error) {
+	t.numPendingGauge, err = t.meter.Int64ObservableGauge("num_pending_txes")
+	if err != nil {
+		return fmt.Errorf("could not create num pending txes gauge: %w", err)
+	}
+
+	_, err = t.meter.RegisterCallback(t.recordNumPending, t.numPendingGauge)
+	if err != nil {
+		return fmt.Errorf("could not register callback: %w", err)
+	}
+
+	t.nonceGauge, err = t.meter.Int64ObservableGauge("current_nonce")
+	if err != nil {
+		return fmt.Errorf("could not create nonce gauge: %w", err)
+	}
+
+	_, err = t.meter.RegisterCallback(t.recordNonces, t.nonceGauge)
+	if err != nil {
+		return fmt.Errorf("could not register callback: %w", err)
+	}
+
+	return nil
 }
 
 func (t *txSubmitterImpl) GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error) {
