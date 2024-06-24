@@ -2,10 +2,11 @@ package screener_test
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"strconv"
 	"testing"
 	"time"
@@ -157,58 +158,69 @@ func (s *ScreenerSuite) TestScreener() {
 
 	// now test crud screener
 	// create a bunch
-	statuses, err := blacklistTestWithOperation("create", apiClient, cfg)
+	statuses, err := blacklistTestWithOperation(s.T(), "create", apiClient, cfg)
+	Equal(s.T(), len(statuses), 10)
 	all(s.T(), statuses, func(status string) bool {
-		return status == "success"
+		return status == success
 	})
 	Nil(s.T(), err)
 
 	// update a bunch
-	statuses, err = blacklistTestWithOperation("update", apiClient, cfg)
+	statuses, err = blacklistTestWithOperation(s.T(), "update", apiClient, cfg)
+	Equal(s.T(), len(statuses), 10)
 	all(s.T(), statuses, func(status string) bool {
-		return status == "success"
+		return status == success
 	})
 	Nil(s.T(), err)
 
 	// delete a bunch
-	statuses, err = blacklistTestWithOperation("delete", apiClient, cfg)
+	statuses, err = blacklistTestWithOperation(s.T(), "delete", apiClient, cfg)
+	Equal(s.T(), len(statuses), 10)
 	all(s.T(), statuses, func(status string) bool {
-		return status == "success"
+		return status == success
 	})
 	Nil(s.T(), err)
 
 	// unauthorized, return on err so statuses will be only one
 	cfg.AppSecret = "BAD"
-	statuses, err = blacklistTestWithOperation("create", apiClient, cfg)
+	statuses, err = blacklistTestWithOperation(s.T(), "create", apiClient, cfg)
 	all(s.T(), statuses, func(status string) bool {
 		return status == "401 Unauthorized"
 	})
+	Equal(s.T(), len(statuses), 1)
 	NotNil(s.T(), err)
 }
 
-func blacklistTestWithOperation(operation string, apiClient client.ScreenerClient, cfg config.Config) (statuses []string, err error) {
-	for i := 0; i < 10; i++ {
-		dataMap := map[string]string{"key": fmt.Sprintf("value-%d", rand.Intn(1000))}
+func blacklistTestWithOperation(t *testing.T, operation string, apiClient client.ScreenerClient, cfg config.Config) (statuses []string, err error) {
+	t.Helper()
+	for range 10 {
+		randomNumber, err := rand.Int(rand.Reader, big.NewInt(1000))
+		if err != nil {
+			return statuses, fmt.Errorf("error generating random number: %w", err)
+		}
+
+		dataMap := map[string]string{"key": fmt.Sprintf("value-%d", randomNumber)}
 		dataStr, err := json.Marshal(dataMap)
 		if err != nil {
-			return statuses, fmt.Errorf("error marshalling data: %w", err)
+			return statuses, fmt.Errorf("error marshaling data: %w", err)
 		}
 
 		var body client.BlackListBody
+
 		if operation == "create" || operation == "update" {
 			body = client.BlackListBody{
 				Type:    operation,
-				ID:      fmt.Sprintf("unique-id-%d", rand.Intn(1000)),
+				ID:      fmt.Sprintf("unique-id-%d", randomNumber),
 				Data:    string(dataStr),
-				Address: fmt.Sprintf("address-%d", rand.Intn(1000)),
-				Network: fmt.Sprintf("network-%d", rand.Intn(1000)),
-				Tag:     fmt.Sprintf("tag-%d", rand.Intn(1000)),
+				Address: fmt.Sprintf("address-%d", randomNumber),
+				Network: fmt.Sprintf("network-%d", randomNumber),
+				Tag:     fmt.Sprintf("tag-%d", randomNumber),
 				Remark:  "remark",
 			}
 		} else {
 			body = client.BlackListBody{
 				Type: operation,
-				ID:   fmt.Sprintf("unique-id-%d", rand.Intn(1000)),
+				ID:   fmt.Sprintf("unique-id-%d", randomNumber),
 			}
 		}
 		status, err := apiClient.BlacklistAddress(context.Background(), cfg.AppSecret, cfg.AppID, body)
@@ -253,9 +265,12 @@ func TestSplitCSV(t *testing.T) {
 }
 
 func all(t *testing.T, statuses []string, f func(string) bool) {
+	t.Helper()
 	for _, status := range statuses {
 		if !f(status) {
 			t.Fail()
 		}
 	}
 }
+
+const success = "success"
