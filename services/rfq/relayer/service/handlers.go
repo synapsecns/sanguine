@@ -142,7 +142,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return fmt.Errorf("could not determine if should process: %w", err)
 	}
 	if !shouldProcess {
-		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.WillNotProcess)
+		err = q.safeUpdateStatus(ctx, int(request.Transaction.DestChainId), request.TransactionID, reldb.WillNotProcess)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
@@ -206,7 +206,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 	}
 
 	request.Status = reldb.CommittedPending
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending)
+	err = q.safeUpdateStatus(ctx, int(request.Transaction.DestChainId), request.TransactionID, reldb.CommittedPending)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
@@ -270,7 +270,7 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 	}
 
 	request.Status = reldb.CommittedConfirmed
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedConfirmed)
+	err = q.safeUpdateStatus(ctx, int(request.Transaction.DestChainId), request.TransactionID, reldb.CommittedConfirmed)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
@@ -300,7 +300,7 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 	span.AddEvent("relay successfully submitted")
 	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
 
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted)
+	err = q.safeUpdateStatus(ctx, int(request.Transaction.DestChainId), request.TransactionID, reldb.RelayStarted)
 	if err != nil {
 		return fmt.Errorf("could not update quote request status: %w", err)
 	}
@@ -465,5 +465,20 @@ func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, _ tr
 			return fmt.Errorf("could not update request status: %w", err)
 		}
 	}
+	return nil
+}
+
+func (q *QuoteRequestHandler) safeUpdateStatus(ctx context.Context, chainID int, transactionID [32]byte, status reldb.QuoteRequestStatus) (err error) {
+	unlocker, ok := q.balanceMtx.TryLock(chainID)
+	if !ok {
+		return fmt.Errorf("could not acquire lock")
+	}
+	defer unlocker.Unlock()
+
+	err = q.db.UpdateQuoteRequestStatus(ctx, transactionID, status)
+	if err != nil {
+		return fmt.Errorf("could not update request status: %w", err)
+	}
+
 	return nil
 }

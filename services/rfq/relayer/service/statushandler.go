@@ -51,6 +51,8 @@ type QuoteRequestHandler struct {
 	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
 	// handlerMtx is the mutex for relaying.
 	handlerMtx mapmutex.StringMapMutex
+	// balanceMtx is the mutex for balances.
+	balanceMtx mapmutex.IntMapMutex
 }
 
 // Handler is the handler for a quote request.

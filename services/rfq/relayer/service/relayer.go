@@ -60,6 +60,8 @@ type Relayer struct {
 	semaphore *semaphore.Weighted
 	// handlerMtx is used to synchronize handling of relay requests
 	handlerMtx mapmutex.StringMapMutex
+	// balanceMtx is used to synchronize access to committable balances
+	balanceMtx mapmutex.IntMapMutex
 }
 
 var logger = log.Logger("relayer")
@@ -156,6 +158,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		apiClient:      apiClient,
 		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
 		handlerMtx:     mapmutex.NewStringMapMutex(),
+		balanceMtx:     mapmutex.NewIntMapMutex(),
 	}
 	return &rel, nil
 }
