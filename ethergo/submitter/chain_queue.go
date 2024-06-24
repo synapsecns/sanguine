@@ -155,6 +155,7 @@ func (t *txSubmitterImpl) recordNumPending(ctx context.Context, observer metric.
 	for chainID, numPending := range t.numPendingTxes {
 		opts := metric.WithAttributes(
 			attribute.Int(metrics.ChainID, int(chainID)),
+			attribute.String("wallet", t.signer.Address().Hex()),
 		)
 		observer.ObserveInt64(t.numPendingGauge, int64(numPending), opts)
 	}
@@ -170,6 +171,7 @@ func (t *txSubmitterImpl) recordNonces(ctx context.Context, observer metric.Obse
 	for chainID, nonce := range t.currentNonces {
 		opts := metric.WithAttributes(
 			attribute.Int(metrics.ChainID, int(chainID)),
+			attribute.String("wallet", t.signer.Address().Hex()),
 		)
 		observer.ObserveInt64(t.nonceGauge, int64(nonce), opts)
 	}
