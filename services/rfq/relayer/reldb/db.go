@@ -68,6 +68,16 @@ var (
 	ErrNoRebalanceForID = errors.New("no rebalance found for id")
 )
 
+// ErrInvalidStateTransition is the error for an invalid state transition.
+type ErrInvalidStateTransition struct {
+	Msg string
+}
+
+// Implement the Error method for the custom error type
+func (e *ErrInvalidStateTransition) Error() string {
+	return e.Msg
+}
+
 // QuoteRequest is the quote request object.
 type QuoteRequest struct {
 	BlockNumber         uint64

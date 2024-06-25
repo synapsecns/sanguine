@@ -453,7 +453,7 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 // Error Handlers Only from this point below.
 //
 // handleNotEnoughInventory handles the not enough inventory status.
-func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
 	if err != nil {
 		return fmt.Errorf("could not get committable balance: %w", err)

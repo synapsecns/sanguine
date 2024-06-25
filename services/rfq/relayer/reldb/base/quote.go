@@ -133,15 +133,8 @@ func (s Store) UpdateRelayNonce(ctx context.Context, id [32]byte, nonce uint64) 
 }
 
 func isValidStateTransition(prevStatus, status reldb.QuoteRequestStatus) bool {
-	return true
-}
-
-// ErrInvalidStateTransition is the error for an invalid state transition.
-type ErrInvalidStateTransition struct {
-	Msg string
-}
-
-// Implement the Error method for the custom error type
-func (e *ErrInvalidStateTransition) Error() string {
-	return e.Msg
+	if status == reldb.DeadlineExceeded || status == reldb.WillNotProcess {
+		return true
+	}
+	return status > prevStatus
 }
