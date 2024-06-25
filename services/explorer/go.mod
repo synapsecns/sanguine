@@ -42,7 +42,7 @@ require (
 	github.com/synapsecns/sanguine/ethergo v0.1.0
 	github.com/synapsecns/sanguine/services/scribe v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.27.2
-	github.com/vektah/gqlparser/v2 v2.5.8
+	github.com/vektah/gqlparser/v2 v2.5.14
 	go.opentelemetry.io/otel v1.27.0
 	go.opentelemetry.io/otel/metric v1.27.0
 	go.uber.org/atomic v1.11.0
