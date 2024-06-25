@@ -138,7 +138,7 @@ func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.S
 
 		// if deadline < now, we don't even have to bother calling the underlying function
 		if req.Transaction.Deadline.Cmp(big.NewInt(almostNow.Unix())) < 0 {
-			err := r.db.UpdateQuoteRequestStatus(ctx, req.TransactionID, reldb.DeadlineExceeded)
+			err := r.db.UpdateQuoteRequestStatus(ctx, req.TransactionID, reldb.DeadlineExceeded, &req.Status)
 			if err != nil {
 				return fmt.Errorf("could not update request status: %w", err)
 			}

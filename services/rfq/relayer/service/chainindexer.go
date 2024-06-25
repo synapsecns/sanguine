@@ -85,7 +85,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
+				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost, nil)
 			}
 
 			err = r.handleRelayLog(ctx, event)
@@ -99,7 +99,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
+				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost, nil)
 			}
 
 			err = r.handleProofProvided(ctx, event)
@@ -113,7 +113,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
+				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost, nil)
 			}
 
 			err = r.handleDepositClaimed(ctx, event)
@@ -206,7 +206,7 @@ func getDecimalsKey(addr common.Address, chainID uint32) string {
 }
 
 func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed) error {
-	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
+	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted, nil)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}

@@ -391,7 +391,7 @@ func (r *Relayer) processRequest(parentCtx context.Context, request reldb.QuoteR
 
 	// if deadline < now
 	if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
-		err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
+		err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded, &request.Status)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}

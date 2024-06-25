@@ -89,7 +89,18 @@ func (s Store) GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...rel
 }
 
 // UpdateQuoteRequestStatus todo: db test.
-func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status reldb.QuoteRequestStatus) error {
+func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status reldb.QuoteRequestStatus, prevStatus *reldb.QuoteRequestStatus) error {
+	if prevStatus == nil {
+		req, err := s.GetQuoteRequestByID(ctx, id)
+		if err != nil {
+			return fmt.Errorf("could not get quote: %w", err)
+		}
+		prevStatus = &req.Status
+	}
+	if !isValidStateTransition(*prevStatus, status) {
+		return &ErrInvalidStateTransition{Msg: fmt.Sprintf("invalid state transition from %s to %s", *prevStatus, status)}
+	}
+
 	tx := s.DB().WithContext(ctx).Model(&RequestForQuote{}).
 		Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).
 		Update(statusFieldName, status)
@@ -119,4 +130,18 @@ func (s Store) UpdateRelayNonce(ctx context.Context, id [32]byte, nonce uint64) 
 		return fmt.Errorf("could not update: %w", tx.Error)
 	}
 	return nil
+}
+
+func isValidStateTransition(prevStatus, status reldb.QuoteRequestStatus) bool {
+	return true
+}
+
+// ErrInvalidStateTransition is the error for an invalid state transition.
+type ErrInvalidStateTransition struct {
+	Msg string
+}
+
+// Implement the Error method for the custom error type
+func (e *ErrInvalidStateTransition) Error() string {
+	return e.Msg
 }
