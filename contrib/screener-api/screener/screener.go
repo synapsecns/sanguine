@@ -246,12 +246,27 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 
 		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
 
+		span.SetAttributes(
+			attribute.String("appid", appID),
+			attribute.String("timestamp", timestamp),
+			attribute.String("nonce", nonce),
+			attribute.String("signature", signature),
+			attribute.String("queryString", queryString),
+			attribute.String("body", bodyStr),
+			attribute.String("expectedSignature", expectedSignature),
+			attribute.String("message", message),
+		)
+
 		if expectedSignature != signature {
+			span.AddEvent(
+				"error",
+				trace.WithAttributes(attribute.String("error", "Invalid signature"+expectedSignature)),
+			)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid signature"})
 			c.Abort()
 			return
 		}
-
+		span.AddEvent("success", trace.WithAttributes(attribute.String("message", "Valid signature"+expectedSignature)))
 		c.Next()
 	}
 }
