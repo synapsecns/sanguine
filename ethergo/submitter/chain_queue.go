@@ -63,7 +63,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		return fmt.Errorf("could not get nonce: %w", err)
 	}
 	span.SetAttributes(attribute.Int("nonce", int(currentNonce)))
-	t.currentNonces[uint32(chainID.Int64())] = currentNonce
+	t.currentNonces.Set(uint32(chainID.Int64()), currentNonce)
 
 	wg := &sync.WaitGroup{}
 
@@ -133,18 +133,9 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	}
 
 	cq.storeAndSubmit(ctx, calls, span)
-	t.numPendingTxes[uint32(chainID.Int64())] = len(cq.reprocessQueue)
+	t.numPendingTxes.Set(uint32(chainID.Int64()), len(cq.reprocessQueue))
 
 	return nil
-}
-
-var meter metric.Meter
-
-func getMeter(handler metrics.Handler) metric.Meter {
-	if meter == nil {
-		meter = handler.Meter(meterName)
-	}
-	return meter
 }
 
 func (t *txSubmitterImpl) recordNumPending(_ context.Context, observer metric.Observer) (err error) {
@@ -152,13 +143,15 @@ func (t *txSubmitterImpl) recordNumPending(_ context.Context, observer metric.Ob
 		return nil
 	}
 
-	for chainID, numPending := range t.numPendingTxes {
+	t.numPendingTxes.Range(func(chainID uint32, numPending int) bool {
 		opts := metric.WithAttributes(
 			attribute.Int(metrics.ChainID, int(chainID)),
 			attribute.String("wallet", t.signer.Address().Hex()),
 		)
 		observer.ObserveInt64(t.numPendingGauge, int64(numPending), opts)
-	}
+
+		return true
+	})
 
 	return nil
 }
@@ -168,13 +161,14 @@ func (t *txSubmitterImpl) recordNonces(_ context.Context, observer metric.Observ
 		return nil
 	}
 
-	for chainID, nonce := range t.currentNonces {
+	t.currentNonces.Range(func(chainID uint32, nonce uint64) bool {
 		opts := metric.WithAttributes(
 			attribute.Int(metrics.ChainID, int(chainID)),
 			attribute.String("wallet", t.signer.Address().Hex()),
 		)
 		observer.ObserveInt64(t.nonceGauge, int64(nonce), opts)
-	}
+		return true
+	})
 
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/cornelk/hashmap"
 	"math"
 	"math/big"
 	"reflect"
@@ -81,9 +82,9 @@ type txSubmitterImpl struct {
 	// nonceGauge is the gauge for the current nonce.
 	nonceGauge metric.Int64ObservableGauge
 	// numPendingTxes is used for metrics.
-	numPendingTxes map[uint32]int
+	numPendingTxes *hashmap.Map[uint32, int]
 	// currentNonces is used for metrics.
-	currentNonces map[uint32]uint64
+	currentNonces *hashmap.Map[uint32, uint64]
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -95,6 +96,7 @@ type ClientFetcher interface {
 
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
+
 	return &txSubmitterImpl{
 		db:                db,
 		config:            config,
@@ -106,8 +108,8 @@ func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetc
 		statusMux:         mapmutex.NewStringMapMutex(),
 		retryNow:          make(chan bool, 1),
 		lastGasBlockCache: xsync.NewIntegerMapOf[int, *types.Header](),
-		numPendingTxes:    make(map[uint32]int),
-		currentNonces:     make(map[uint32]uint64),
+		numPendingTxes:    hashmap.New[uint32, int](),
+		currentNonces:     hashmap.New[uint32, uint64](),
 	}
 }
 
