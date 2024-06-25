@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"log"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -27,7 +28,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 			"trace transaction_id:0x1234 serviceName:rfq",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
-			tags := ctx.Request().Param("tags")
+			tags := stripLinks(ctx.Request().Param("tags"))
 			splitTags := strings.Split(tags, " ")
 			if len(splitTags) == 0 {
 				_, err := ctx.Response().Reply("please provide tags in a key:value format")
@@ -138,7 +139,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				return
 			}
 
-			tx := ctx.Request().Param("tx")
+			tx := stripLinks(ctx.Request().Param("tx"))
 
 			var wg sync.WaitGroup
 			// 2 routines per relayer, one for tx hashh one for tx id
@@ -241,4 +242,9 @@ func toTXSlackLink(txHash string, chainID uint32) string {
 
 	// TODO: remove when we can contorl unfurl
 	return fmt.Sprintf("<https://anon.to/?%s|%s>", url, txHash)
+}
+
+func stripLinks(input string) string {
+	linkRegex := regexp.MustCompile(`<https?://[^|>]+\|([^>]+)>`)
+	return linkRegex.ReplaceAllString(input, "$1")
 }

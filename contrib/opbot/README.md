@@ -1,5 +1,8 @@
 # OpBot
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/contrib/opbot.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/contrib/opbot)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/contrib/opbot)](https://goreportcard.com/report/github.com/synapsecns/sanguine/contrib/opbot)
+
 OpBot is a Slack bot written in Go that interacts with the Signoz trace API to provide various functionalities, including searching for transactions based on user-provided tags. This bot is designed to help teams monitor and manage their operations more effectively by integrating with Slack and Signoz.
 
 ## Features
