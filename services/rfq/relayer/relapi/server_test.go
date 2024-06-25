@@ -27,8 +27,10 @@ func (c *RelayerServerSuite) TestNewQuoterAPIServer() {
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
 	defer func() {
-		err = resp.Body.Close()
-		c.Require().NoError(err)
+		if resp != nil && resp.Body != nil {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}
 	}()
 	c.Equal(http.StatusOK, resp.StatusCode)
 	c.GetTestContext().Done()
@@ -49,8 +51,10 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
 	defer func() {
-		err = resp.Body.Close()
-		c.Require().NoError(err)
+		if resp != nil && resp.Body != nil {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}
 	}()
 	c.Equal(http.StatusOK, resp.StatusCode)
 
@@ -59,10 +63,12 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
 	expectedResult := relapi.GetQuoteRequestStatusResponse{
-		Status:       quoteRequest.Status.String(),
-		TxID:         hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash: quoteRequest.OriginTxHash.String(),
-		DestTxHash:   quoteRequest.DestTxHash.String(),
+		Status:        quoteRequest.Status.String(),
+		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
+		OriginTxHash:  quoteRequest.OriginTxHash.String(),
+		OriginChainID: quoteRequest.Transaction.OriginChainId,
+		DestChainID:   quoteRequest.Transaction.DestChainId,
+		DestTxHash:    quoteRequest.DestTxHash.String(),
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()
@@ -84,8 +90,10 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
 	defer func() {
-		err = resp.Body.Close()
-		c.Require().NoError(err)
+		if resp != nil && resp.Body != nil {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}
 	}()
 	c.Equal(http.StatusOK, resp.StatusCode)
 
@@ -94,10 +102,12 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
 	expectedResult := relapi.GetQuoteRequestStatusResponse{
-		Status:       quoteRequest.Status.String(),
-		TxID:         hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash: quoteRequest.OriginTxHash.String(),
-		DestTxHash:   quoteRequest.DestTxHash.String(),
+		Status:        quoteRequest.Status.String(),
+		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
+		OriginTxHash:  quoteRequest.OriginTxHash.String(),
+		OriginChainID: quoteRequest.Transaction.OriginChainId,
+		DestChainID:   quoteRequest.Transaction.DestChainId,
+		DestTxHash:    quoteRequest.DestTxHash.String(),
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()
@@ -118,8 +128,10 @@ func (c *RelayerServerSuite) TestGetTxRetry() {
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
 	defer func() {
-		err = resp.Body.Close()
-		c.Require().NoError(err)
+		if resp != nil && resp.Body != nil {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}
 	}()
 	c.Equal(http.StatusOK, resp.StatusCode)
 
@@ -156,8 +168,10 @@ func (c *RelayerServerSuite) startQuoterAPIServer() {
 		c.Require().NoError(err)
 		resp, err := client.Do(req)
 		defer func() {
-			closeErr := resp.Body.Close()
-			c.NoError(closeErr)
+			if resp != nil && resp.Body != nil {
+				closeErr := resp.Body.Close()
+				c.NoError(closeErr)
+			}
 		}()
 		if err != nil {
 			return fmt.Errorf("server not ready: %w", err)

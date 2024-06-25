@@ -20,6 +20,10 @@ type Config struct {
 	ChainConfig `yaml:",inline"`
 	// Chains overrides the global config for each chain
 	Chains map[int]ChainConfig `yaml:"chains"`
+	// ReaperInterval is the interval at which scan for transactions to flush
+	ReaperInterval time.Duration `yaml:"reaper_interval"`
+	// MaxRecordAge is the maximum age of a record before it is flushed
+	MaxRecordAge time.Duration `yaml:"max_record_age"`
 }
 
 // ChainConfig contains configuration for a specific chain.
@@ -68,8 +72,30 @@ var DefaultMaxPrice = big.NewInt(500 * params.GWei)
 // DefaultMinGasPrice is the default min price of a tx.
 var DefaultMinGasPrice = big.NewInt(0.01 * params.GWei)
 
+// DefaultReaperInterval is the default interval at which to scan for transactions to flush.
+var DefaultReaperInterval = time.Minute * 5
+
+// DefaultMaxRecordAge is the default maximum age of a record before it is flushed.
+var DefaultMaxRecordAge = time.Hour * 24 * 7
+
 // note: there's probably a way to clean these getters up with generics, the real problem comes with the fact that
 // that this would require the caller to override the entire struct, which is not ideal..
+
+// GetReaperInterval returns the reaper interval.
+func (c *Config) GetReaperInterval() time.Duration {
+	if c.ReaperInterval == 0 {
+		return DefaultReaperInterval
+	}
+	return c.ReaperInterval
+}
+
+// GetMaxRecordAge returns the maximum record age.
+func (c *Config) GetMaxRecordAge() time.Duration {
+	if c.MaxRecordAge == 0 {
+		return DefaultMaxRecordAge
+	}
+	return c.MaxRecordAge
+}
 
 // GetMaxBatchSize returns the maximum number of transactions to send in a batch.
 func (c *Config) GetMaxBatchSize(chainID int) int {

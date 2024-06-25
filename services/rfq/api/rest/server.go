@@ -31,6 +31,8 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 )
 
+const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
+
 // QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
 type QuoterAPIServer struct {
@@ -39,6 +41,7 @@ type QuoterAPIServer struct {
 	engine              *gin.Engine
 	omnirpcClient       omniClient.RPCClient
 	handler             metrics.Handler
+	meter               metric.Meter
 	fastBridgeContracts map[uint32]*fastbridge.FastBridge
 	roleCache           map[uint32]*ttlcache.Cache[string, bool]
 	// relayAckCache contains a set of transactionID values that reflect
@@ -109,16 +112,31 @@ func NewAPI(
 		relayAckCache.Stop()
 	}()
 
-	return &QuoterAPIServer{
+	q := &QuoterAPIServer{
 		cfg:                 cfg,
 		db:                  store,
 		omnirpcClient:       omniRPCClient,
 		handler:             handler,
+		meter:               handler.Meter(meterName),
 		fastBridgeContracts: bridges,
 		roleCache:           roles,
 		relayAckCache:       relayAckCache,
 		ackMux:              sync.Mutex{},
-	}, nil
+	}
+
+	// Prometheus metrics setup
+	var err error
+	q.latestQuoteAgeGauge, err = q.meter.Float64ObservableGauge("latest_quote_age")
+	if err != nil {
+		return nil, fmt.Errorf("could not create latest quote age gauge: %w", err)
+	}
+
+	_, err = q.meter.RegisterCallback(q.recordLatestQuoteAge, q.latestQuoteAgeGauge)
+	if err != nil {
+		return nil, fmt.Errorf("could not register callback: %w", err)
+	}
+
+	return q, nil
 }
 
 const (
@@ -149,6 +167,9 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// GET routes without the AuthMiddleware
 	// engine.PUT("/quotes", h.ModifyQuote)
 	engine.GET(QuoteRoute, h.GetQuotes)
+
+	// Expose Prometheus metrics
+	engine.GET(metrics.MetricsPathDefault, gin.WrapH(r.handler.Handler()))
 
 	r.engine = engine
 
