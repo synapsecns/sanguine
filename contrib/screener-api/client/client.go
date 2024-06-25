@@ -92,18 +92,17 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appi
 	}
 
 	message := fmt.Sprintf("%s%s%s%s%s%s%s",
-		appid, timestamp, nonce, "POST", "/api/data/sync/", queryString, string(bodyBz))
+		appid, timestamp, nonce, "POST", "/api/data/sync", queryString, string(bodyBz))
 
 	signature := GenerateSignature(appsecret, message)
 
 	resp, err := c.rClient.R().
 		SetContext(ctx).
 		SetHeader("Content-Type", "application/json").
-		SetHeader("AppID", appid).
-		SetHeader("Timestamp", timestamp).
-		SetHeader("Nonce", nonce).
-		SetHeader("QueryString", queryString).
-		SetHeader("Signature", signature).
+		SetHeader("X-Signature-appid", appid).
+		SetHeader("X-Signature-timestamp", timestamp).
+		SetHeader("X-Signature-nonce", nonce).
+		SetHeader("X-Signature-signature", signature).
 		SetBody(body).
 		SetResult(&blacklistRes).
 		Post("/api/data/sync/")
