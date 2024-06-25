@@ -2,8 +2,11 @@ package screener_test
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"strconv"
 	"testing"
 	"time"
@@ -154,45 +157,79 @@ func (s *ScreenerSuite) TestScreener() {
 	False(s.T(), out)
 
 	// now test crud screener
-	blacklistBody := client.BlackListBody{
-		Type:    "create",
-		ID:      "1",
-		Data:    "{\"test\":\"data\"}",
-		Address: "0x123",
-		Network: "eth",
-		Tag:     "tag",
-		Remark:  "remark",
-	}
-
-	// post to the blacklist
-	status, err := apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	Equal(s.T(), "success", status)
+	// create a bunch
+	statuses, err := blacklistTestWithOperation(s.T(), "create", apiClient, cfg)
+	Equal(s.T(), len(statuses), 10)
+	all(s.T(), statuses, func(status string) bool {
+		return status == success
+	})
 	Nil(s.T(), err)
 
-	// update an address on the blacklist
-	blacklistBody.Type = "update"
-	blacklistBody.Remark = "new remark"
-
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	Equal(s.T(), "success", status)
+	// update a bunch
+	statuses, err = blacklistTestWithOperation(s.T(), "update", apiClient, cfg)
+	Equal(s.T(), len(statuses), 10)
+	all(s.T(), statuses, func(status string) bool {
+		return status == success
+	})
 	Nil(s.T(), err)
 
-	// delete the address on the blacklist
-	blacklistBody.Type = "delete"
-	blacklistBody.ID = "1"
-
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), cfg.AppSecret, cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	Equal(s.T(), "success", status)
+	// delete a bunch
+	statuses, err = blacklistTestWithOperation(s.T(), "delete", apiClient, cfg)
+	Equal(s.T(), len(statuses), 10)
+	all(s.T(), statuses, func(status string) bool {
+		return status == success
+	})
 	Nil(s.T(), err)
 
-	// unauthorized
-	status, err = apiClient.BlacklistAddress(s.GetTestContext(), "bad", cfg.AppID, blacklistBody)
-	fmt.Println(status)
-	NotEqual(s.T(), "success", status)
+	// unauthorized, return on err so statuses will be only one
+	cfg.AppSecret = "BAD"
+	statuses, err = blacklistTestWithOperation(s.T(), "create", apiClient, cfg)
+	all(s.T(), statuses, func(status string) bool {
+		return status == "401 Unauthorized"
+	})
+	Equal(s.T(), len(statuses), 1)
 	NotNil(s.T(), err)
+}
+
+func blacklistTestWithOperation(t *testing.T, operation string, apiClient client.ScreenerClient, cfg config.Config) (statuses []string, err error) {
+	t.Helper()
+	for range 10 {
+		randomNumber, err := rand.Int(rand.Reader, big.NewInt(1000))
+		if err != nil {
+			return statuses, fmt.Errorf("error generating random number: %w", err)
+		}
+
+		dataMap := map[string]string{"key": fmt.Sprintf("value-%d", randomNumber)}
+		dataStr, err := json.Marshal(dataMap)
+		if err != nil {
+			return statuses, fmt.Errorf("error marshaling data: %w", err)
+		}
+
+		var body client.BlackListBody
+
+		if operation == "create" || operation == "update" {
+			body = client.BlackListBody{
+				Type:    operation,
+				ID:      fmt.Sprintf("unique-id-%d", randomNumber),
+				Data:    string(dataStr),
+				Address: fmt.Sprintf("address-%d", randomNumber),
+				Network: fmt.Sprintf("network-%d", randomNumber),
+				Tag:     fmt.Sprintf("tag-%d", randomNumber),
+				Remark:  "remark",
+			}
+		} else {
+			body = client.BlackListBody{
+				Type: operation,
+				ID:   fmt.Sprintf("unique-id-%d", randomNumber),
+			}
+		}
+		status, err := apiClient.BlacklistAddress(context.Background(), cfg.AppSecret, cfg.AppID, body)
+		statuses = append(statuses, status)
+		if err != nil {
+			return statuses, fmt.Errorf("error blacklisting address: %w", err)
+		}
+	}
+	return statuses, nil
 }
 
 type mockClient struct {
@@ -226,3 +263,14 @@ func TestSplitCSV(t *testing.T) {
 	Equal(t, "false", out["RFQ"][1].Enabled)
 	Equal(t, "true", out["RFQ"][2].Enabled)
 }
+
+func all(t *testing.T, statuses []string, f func(string) bool) {
+	t.Helper()
+	for _, status := range statuses {
+		if !f(status) {
+			t.Fail()
+		}
+	}
+}
+
+const success = "success"

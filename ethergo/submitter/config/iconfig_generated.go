@@ -9,6 +9,10 @@ import (
 
 // IConfig ...
 type IConfig interface {
+	// GetReaperInterval returns the reaper interval.
+	GetReaperInterval() time.Duration
+	// GetMaxRecordAge returns the maximum record age.
+	GetMaxRecordAge() time.Duration
 	// GetMaxBatchSize returns the maximum number of transactions to send in a batch.
 	GetMaxBatchSize(chainID int) int
 	// GetBatch returns whether or not to batch transactions at the rpc level.

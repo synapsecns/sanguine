@@ -3,6 +3,7 @@ package config_test
 import (
 	"math/big"
 	"testing"
+	"time"
 
 	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"gopkg.in/yaml.v2"
@@ -32,6 +33,20 @@ func TestGetters(t *testing.T) {
 			},
 		},
 	}
+
+	t.Run("GetReaperInterval", func(t *testing.T) {
+		assert.Equal(t, config.DefaultReaperInterval, cfg.GetReaperInterval())
+		reaperInterval := time.Minute
+		cfg.ReaperInterval = reaperInterval
+		assert.Equal(t, reaperInterval, cfg.GetReaperInterval())
+	})
+
+	t.Run("GetMaxRecordAge", func(t *testing.T) {
+		assert.Equal(t, config.DefaultMaxRecordAge, cfg.GetMaxRecordAge())
+		maxRecordAge := time.Minute
+		cfg.MaxRecordAge = maxRecordAge
+		assert.Equal(t, maxRecordAge, cfg.GetMaxRecordAge())
+	})
 
 	t.Run("GetMaxBatchSize", func(t *testing.T) {
 		assert.Equal(t, 8, cfg.GetMaxBatchSize(1))
