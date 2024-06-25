@@ -398,7 +398,7 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 }
 
 // recordQuoteAmounts records the latest quotes from the relayer.
-func (m *Manager) recordQuoteAmounts(ctx context.Context, observer metric.Observer) (err error) {
+func (m *Manager) recordQuoteAmounts(_ context.Context, observer metric.Observer) (err error) {
 	if m.meter == nil || m.quoteAmountGauge == nil || m.currentQuotes == nil {
 		return nil
 	}

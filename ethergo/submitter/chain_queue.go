@@ -147,7 +147,7 @@ func getMeter(handler metrics.Handler) metric.Meter {
 	return meter
 }
 
-func (t *txSubmitterImpl) recordNumPending(ctx context.Context, observer metric.Observer) (err error) {
+func (t *txSubmitterImpl) recordNumPending(_ context.Context, observer metric.Observer) (err error) {
 	if t.metrics == nil || t.numPendingGauge == nil || t.numPendingTxes == nil {
 		return nil
 	}
@@ -163,7 +163,7 @@ func (t *txSubmitterImpl) recordNumPending(ctx context.Context, observer metric.
 	return nil
 }
 
-func (t *txSubmitterImpl) recordNonces(ctx context.Context, observer metric.Observer) (err error) {
+func (t *txSubmitterImpl) recordNonces(_ context.Context, observer metric.Observer) (err error) {
 	if t.metrics == nil || t.nonceGauge == nil || t.currentNonces == nil {
 		return nil
 	}
