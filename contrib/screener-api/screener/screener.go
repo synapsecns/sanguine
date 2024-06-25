@@ -2,6 +2,7 @@
 package screener
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -94,7 +95,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router.Use(screener.metrics.Gin())
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
 
-	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
+	screener.router.Handle(http.MethodPost, "/api/data/sync", ginhelper.TraceMiddleware(metricHandler.Tracer(), true), screener.authMiddleware(cfg), screener.blacklistAddress)
 	screener.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	return &screener, nil
@@ -201,7 +202,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 		return
 
 	case "delete":
-		if err := s.db.DeleteBlacklistedAddress(ctx, blacklistedAddress.Address); err != nil {
+		if err := s.db.DeleteBlacklistedAddress(ctx, blacklistedAddress.ID); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -220,47 +221,53 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 // This function takes the HTTP headers and the body of the request and reconstructs the signature to
 // compare it with the signature provided. If they match, the request is allowed to pass through.
+// nolint: canonicalheader
 func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		_, span := s.metrics.Tracer().Start(c.Request.Context(), "authMiddleware")
 		defer span.End()
 
-		appID := c.Request.Header.Get("AppID")
-		timestamp := c.Request.Header.Get("Timestamp")
-		nonce := c.Request.Header.Get("Nonce")
-		signature := c.Request.Header.Get("Signature")
-		queryString := c.Request.Header.Get("QueryString")
-		bodyBytes, _ := io.ReadAll(c.Request.Body)
+		appID := c.Request.Header.Get("X-Signature-appid")
+		timestamp := c.Request.Header.Get("X-Signature-timestamp")
+		nonce := c.Request.Header.Get("X-Signature-nonce")
+		signature := c.Request.Header.Get("X-Signature-signature")
+		queryString := c.Request.URL.RawQuery
+
+		bodyBytes, err := io.ReadAll(c.Request.Body)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "could not read request body"})
+			c.Abort()
+			return
+		}
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 		bodyStr := string(bodyBytes)
 
-		c.Request.Body = io.NopCloser(strings.NewReader(bodyStr))
+		message := fmt.Sprintf("%s%s%s%s%s%s%s",
+			appID, timestamp, nonce, "POST", "/api/data/sync", queryString, bodyStr)
+
+		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
 
 		span.SetAttributes(
-			attribute.String("appId", appID),
+			attribute.String("appid", appID),
 			attribute.String("timestamp", timestamp),
 			attribute.String("nonce", nonce),
 			attribute.String("signature", signature),
 			attribute.String("queryString", queryString),
-			attribute.String("bodyString", bodyStr),
+			attribute.String("body", bodyStr),
+			attribute.String("expectedSignature", expectedSignature),
+			attribute.String("message", message),
 		)
 
-		message := fmt.Sprintf("%s%s%s%s%s%s%s",
-			appID, timestamp, nonce, "POST", "/api/data/sync/", queryString, bodyStr)
-
-		span.AddEvent("message", trace.WithAttributes(attribute.String("message", message)))
-
-		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
-
-		span.AddEvent("generated_signature", trace.WithAttributes(attribute.String("expectedSignature", expectedSignature)))
-
 		if expectedSignature != signature {
-			span.AddEvent("error", trace.WithAttributes(attribute.String("error", "Invalid signature")))
+			span.AddEvent(
+				"error",
+				trace.WithAttributes(attribute.String("error", "Invalid signature"+expectedSignature)),
+			)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid signature"})
 			c.Abort()
 			return
 		}
-
-		span.AddEvent("signature_validated")
+		span.AddEvent("success", trace.WithAttributes(attribute.String("message", "Valid signature"+expectedSignature)))
 		c.Next()
 	}
 }
