@@ -2,8 +2,9 @@ package mapmutex
 
 import (
 	"fmt"
-	"github.com/LK4d4/trylock"
 	"sync"
+
+	"github.com/LK4d4/trylock"
 )
 
 // untypedMapMutex wraps a map of mutexes.  Each key locks separately.
@@ -13,6 +14,7 @@ import (
 type untypedMapMutex interface {
 	Lock(key interface{}) Unlocker
 	TryLock(key interface{}) (Unlocker, bool)
+	Keys() []interface{}
 }
 
 type untypedMapMutexImpl struct {
@@ -80,6 +82,18 @@ func (m *untypedMapMutexImpl) TryLock(key interface{}) (Unlocker, bool) {
 	}
 
 	return nil, false
+}
+
+// Keys returns all keys in the map.
+func (m *untypedMapMutexImpl) Keys() []interface{} {
+	// note that we don't lock here in case the map is already locked.
+	// the idea is that this function can be used for debugging-
+	// there may be read inconsistencies.
+	keys := make([]interface{}, 0, len(m.ma))
+	for k := range m.ma {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 // Unlock releases the lock for this entry.

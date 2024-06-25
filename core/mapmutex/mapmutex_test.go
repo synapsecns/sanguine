@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/mapmutex"
+	"gotest.tools/assert"
 )
 
 // ExampleMapMutex provides an example implementation of a map mutex.
@@ -50,6 +51,28 @@ func (s MapMutexSuite) TestExampleMapMutex() {
 	NotPanics(s.T(), ExampleStringMapMutex)
 	NotPanics(s.T(), ExampleStringerMapMutex)
 	NotPanics(s.T(), ExampleStringMapMutex)
+}
+
+func (s MapMutexSuite) TestKeys() {
+	s.T().Run("StringMapMutexKeys", func(t *testing.T) {
+		mapMutex := mapmutex.NewStringMapMutex()
+		mapMutex.Lock("lock1")
+		assert.Equal(t, "lock1", mapMutex.Keys()[0])
+		assert.Equal(t, 1, len(mapMutex.Keys()))
+	})
+	s.T().Run("StringerMapMutexKeys", func(t *testing.T) {
+		mapMutex := mapmutex.NewStringerMapMutex()
+		vitalik := common.HexToAddress("0xab5801a7d398351b8be11c439e05c5b3259aec9b")
+		mapMutex.Lock(vitalik)
+		assert.Equal(t, vitalik.String(), mapMutex.Keys()[0])
+		assert.Equal(t, 1, len(mapMutex.Keys()))
+	})
+	s.T().Run("IntMapMutexKeys", func(t *testing.T) {
+		mapMutex := mapmutex.NewIntMapMutex()
+		mapMutex.Lock(1)
+		assert.Equal(t, 1, mapMutex.Keys()[0])
+		assert.Equal(t, 1, len(mapMutex.Keys()))
+	})
 }
 
 func (s MapMutexSuite) TestMapMutex() {
