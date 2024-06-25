@@ -27,8 +27,10 @@ func (c *RelayerServerSuite) TestNewQuoterAPIServer() {
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
 	defer func() {
-		err = resp.Body.Close()
-		c.Require().NoError(err)
+		if resp != nil && resp.Body != nil {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}
 	}()
 	c.Equal(http.StatusOK, resp.StatusCode)
 	c.GetTestContext().Done()
@@ -49,8 +51,10 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
 	defer func() {
-		err = resp.Body.Close()
-		c.Require().NoError(err)
+		if resp != nil && resp.Body != nil {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}
 	}()
 	c.Equal(http.StatusOK, resp.StatusCode)
 
@@ -86,8 +90,10 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
 	defer func() {
-		err = resp.Body.Close()
-		c.Require().NoError(err)
+		if resp != nil && resp.Body != nil {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}
 	}()
 	c.Equal(http.StatusOK, resp.StatusCode)
 
@@ -122,8 +128,10 @@ func (c *RelayerServerSuite) TestGetTxRetry() {
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
 	defer func() {
-		err = resp.Body.Close()
-		c.Require().NoError(err)
+		if resp != nil && resp.Body != nil {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}
 	}()
 	c.Equal(http.StatusOK, resp.StatusCode)
 
@@ -160,7 +168,7 @@ func (c *RelayerServerSuite) startQuoterAPIServer() {
 		c.Require().NoError(err)
 		resp, err := client.Do(req)
 		defer func() {
-			if resp.Body != nil {
+			if resp != nil && resp.Body != nil {
 				closeErr := resp.Body.Close()
 				c.NoError(closeErr)
 			}

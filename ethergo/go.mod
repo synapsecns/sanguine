@@ -19,6 +19,7 @@ require (
 	github.com/btcsuite/btcd v0.22.1
 	github.com/btcsuite/btcd/btcec/v2 v2.3.0
 	github.com/chzyer/test v1.0.0
+	github.com/cornelk/hashmap v1.0.8
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0
 	github.com/dgraph-io/ristretto v0.1.0
