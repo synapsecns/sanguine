@@ -95,7 +95,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.router.Use(screener.metrics.Gin())
 	screener.router.Handle(http.MethodGet, "/:ruleset/address/:address", screener.screenAddress)
 
-	screener.router.Handle(http.MethodPost, "/api/data/sync", screener.authMiddleware(cfg), screener.blacklistAddress)
+	screener.router.Handle(http.MethodPost, "/api/data/sync", ginhelper.TraceMiddleware(metricHandler.Tracer(), true), screener.authMiddleware(cfg), screener.blacklistAddress)
 	screener.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	return &screener, nil
@@ -221,6 +221,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 // This function takes the HTTP headers and the body of the request and reconstructs the signature to
 // compare it with the signature provided. If they match, the request is allowed to pass through.
+// nolint: canonicalheader
 func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		_, span := s.metrics.Tracer().Start(c.Request.Context(), "authMiddleware")
