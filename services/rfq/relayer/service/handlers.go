@@ -375,7 +375,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.
 func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastBridgeBridgeProofProvided) (err error) {
 	// TODO: this can still get re-orged
 	// ALso: we should make sure the previous status  is ProvePosting
-	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.ProvePosted, &request.Status)
+	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.ProvePosted, nil)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
