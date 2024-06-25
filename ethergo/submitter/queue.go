@@ -99,6 +99,8 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	return nil
 }
 
+const maxTxesPerChain = 100
+
 func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.processConfirmedQueue")
 	defer func() {
@@ -110,7 +112,7 @@ func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err 
 		return fmt.Errorf("could not get txs: %w", err)
 	}
 
-	sortedTXsByChainID := sortTxesByChainID(txs)
+	sortedTXsByChainID := sortTxesByChainID(txs, maxTxesPerChain)
 
 	var wg sync.WaitGroup
 	wg.Add(len(sortedTXsByChainID))
