@@ -29,5 +29,5 @@ type DB interface {
 	BlacklistedAddressDB
 }
 
-// ErrNoAddressNotFound is returned when an address is not cached.
-var ErrNoAddressNotFound = errors.New("address not cached")
+// ErrNoAddressNotFound is returned when an address is not found.
+var ErrNoAddressNotFound = errors.New("record not found")
