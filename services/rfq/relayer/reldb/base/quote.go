@@ -5,12 +5,16 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ipfs/go-log"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
+var logger = log.Logger("relayer-db")
 
 // StoreQuoteRequest stores a quote request.
 func (s Store) StoreQuoteRequest(ctx context.Context, request reldb.QuoteRequest) error {
@@ -98,7 +102,8 @@ func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status
 		prevStatus = &req.Status
 	}
 	if !isValidStateTransition(*prevStatus, status) {
-		return &ErrInvalidStateTransition{Msg: fmt.Sprintf("invalid state transition from %s to %s", *prevStatus, status)}
+		logger.Warnf("invalid state transition from %s to %s [txid=%s]", *prevStatus, status, hexutil.Encode(id[:]))
+		return nil
 	}
 
 	tx := s.DB().WithContext(ctx).Model(&RequestForQuote{}).
