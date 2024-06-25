@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cornelk/hashmap"
 	"math"
 	"math/big"
 	"reflect"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/cornelk/hashmap"
 
 	"github.com/google/uuid"
 	"github.com/puzpuzpuz/xsync/v2"
@@ -122,11 +123,27 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 	return retryInterval
 }
 
-func (t *txSubmitterImpl) Start(ctx context.Context) (err error) {
+func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
 	err = t.setupMetrics()
 	if err != nil {
 		return fmt.Errorf("could not setup metrics: %w", err)
 	}
+
+	// start reaper process
+	ctx, cancel := context.WithCancel(parentCtx)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(t.config.GetReaperInterval()):
+				err := t.db.DeleteTXS(ctx, t.config.GetMaxRecordAge(), db.ReplacedOrConfirmed, db.Replaced, db.Confirmed)
+				if err != nil {
+					logger.Errorf("could not flush old records: %v", err)
+				}
+			}
+		}
+	}()
 
 	i := 0
 	for {
@@ -137,6 +154,7 @@ func (t *txSubmitterImpl) Start(ctx context.Context) (err error) {
 		}
 		if shouldExit {
 			logger.Warn("exiting transaction submitter")
+			cancel()
 			return nil
 		}
 	}

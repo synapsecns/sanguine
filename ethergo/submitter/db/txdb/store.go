@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -380,6 +381,20 @@ func (s *Store) GetChainIDsByStatus(ctx context.Context, fromAddress common.Addr
 	}
 
 	return chainIDs, nil
+}
+
+// DeleteTXS deletes txs that are older than a given duration.
+func (s *Store) DeleteTXS(ctx context.Context, maxAge time.Duration, matchStatuses ...db.Status) (err error) {
+	threshold := time.Now().UTC().Add(-maxAge)
+	inArgs := statusToArgs(matchStatuses...)
+	tx := s.DB().WithContext(ctx).
+		Where("created_at < ?", threshold).
+		Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).
+		Delete(&ETHTX{})
+	if tx.Error != nil {
+		return fmt.Errorf("could not delete txs: %w", tx.Error)
+	}
+	return nil
 }
 
 // DB gets the database.
