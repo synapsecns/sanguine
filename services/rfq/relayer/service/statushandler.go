@@ -104,7 +104,10 @@ func (r *Relayer) mutexMiddleware(next func(ctx context.Context, span trace.Span
 	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) (err error) {
 		unlocker, ok := r.relayMtx.TryLock(hexutil.Encode(req.TransactionID[:]))
 		if !ok {
-			span.SetAttributes(attribute.Bool("locked", true))
+			span.SetAttributes(
+				attribute.Bool("locked", true),
+				attribute.StringSlice("current_locks", r.relayMtx.Keys()),
+			)
 			return nil
 		}
 		defer unlocker.Unlock()
