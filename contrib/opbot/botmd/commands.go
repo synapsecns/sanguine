@@ -245,8 +245,6 @@ func toTXSlackLink(txHash string, chainID uint32) string {
 }
 
 func stripLinks(input string) string {
-	fmt.Println(input)
-
 	linkRegex := regexp.MustCompile(`<https?://[^|>]+\|([^>]+)>`)
 	return linkRegex.ReplaceAllString(input, "$1")
 }
