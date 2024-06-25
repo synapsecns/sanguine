@@ -123,9 +123,6 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 	return retryInterval
 }
 
-var reaperInterval = time.Minute * 5
-var maxRecordAge = time.Hour * 24 * 7
-
 func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
 	err = t.setupMetrics()
 	if err != nil {
@@ -139,8 +136,8 @@ func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
 			select {
 			case <-ctx.Done():
 				return
-			case <-time.After(reaperInterval):
-				err := t.db.DeleteTXS(ctx, maxRecordAge, db.ReplacedOrConfirmed, db.Replaced, db.Confirmed)
+			case <-time.After(t.config.GetReaperInterval()):
+				err := t.db.DeleteTXS(ctx, t.config.GetMaxRecordAge(), db.ReplacedOrConfirmed, db.Replaced, db.Confirmed)
 				if err != nil {
 					logger.Errorf("could not flush old records: %v", err)
 				}
