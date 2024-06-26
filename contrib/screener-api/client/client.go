@@ -119,6 +119,7 @@ type BlackListBody struct {
 	Data Data   `json:"data"`
 }
 
+// Data is the data field in the BlackListBody.
 type Data struct {
 	Address string `json:"address"`
 	Network string `json:"network"`
