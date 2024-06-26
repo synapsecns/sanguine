@@ -284,14 +284,12 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	)
 
 	blacklistedAddress := db.BlacklistedAddress{
-		Type: blacklistBody.Type,
-		ID:   blacklistBody.ID,
-		Data: db.Data{
-			Address: blacklistBody.Data.Address,
-			Network: blacklistBody.Data.Network,
-			Tag:     blacklistBody.Data.Tag,
-			Remark:  blacklistBody.Data.Remark,
-		},
+		Type:    blacklistBody.Type,
+		ID:      blacklistBody.ID,
+		Network: blacklistBody.Data.Network,
+		Tag:     blacklistBody.Data.Tag,
+		Remark:  blacklistBody.Data.Remark,
+		Address: strings.ToLower(blacklistBody.Data.Address),
 	}
 
 	s.blacklistCacheMux.Lock()

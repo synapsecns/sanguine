@@ -10,13 +10,8 @@ type BlacklistedAddress struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 
-	Type string `gorm:"column:type"           json:"type"`
-	ID   string `gorm:"column:id;primaryKey" json:"id"`
-	Data Data   `gorm:"embedded" json:"data"`
-}
-
-// Data represents the detailed data of a blacklisted address.
-type Data struct {
+	Type    string `gorm:"column:type"           json:"type"`
+	ID      string `gorm:"column:id;primaryKey" json:"id"`
 	Address string `gorm:"column:address" json:"address"`
 	Network string `gorm:"column:network" json:"network"`
 	Tag     string `gorm:"column:tag"     json:"tag"`
