@@ -11,13 +11,6 @@ In order to setup the signer with AWS KMS, you will need to create a KMS key and
 1. Sign in to the AWS Management Console and open the IAM console at https://console.aws.amazon.com/iam.
 ![IAM Dashboard](img/iam-dash.png)
 
-2. Click on `Roles` in the left-hand menu and then click on `Create role`.
-
-
-### Create an IAM User
-
-1. Sign in to the AWS Management Console and open the IAM console at https://console.aws.amazon.com/iam.
-   ![IAM Dashboard](img/iam-dash.png)
 2. Click on `Users` in the left-hand menu and then click on `Add user`.
 
 ![Create User](img/kms-user.png)
@@ -77,9 +70,9 @@ Note: The advanced options are not required for this setup. You can leave them a
 
 - Alias: This is an alias that will be used to reference the key in the signer. The field is required but the value doesn't matter.
 - Description: This is a description that will be used to describe the key in the signer. This is only optional and only for your reference.
-- Tags: These are tags that will be used to describe the key in the signer. This ese are optional and only for your reference.
+- Tags: These are tags that will be used to describe the key in the signer. These are optional and only for your reference.
 
-4. Choose `Next` and define your key admin permissions. These are *not* required by the sigenr itself but are required to manage the key. You can use whatever you like here.
+4. Choose `Next` and define your key admin permissions. These are *not* required by the signer itself but are required to manage the key. You can use whatever you like here.
 
 ![KMS Permissions](img/kms-permissons.png)
 
