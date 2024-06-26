@@ -5,7 +5,8 @@ import { IconAndAmount } from '@components/misc/IconAndAmount'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { timeAgo } from '@utils/timeAgo'
 import { addressToSymbol } from '@utils/addressToSymbol'
-import { formatDateTime, formatDate } from '@utils/formatDate'
+import { formatDate } from '@utils/formatDate'
+import Arrow from '@components/icons/Arrow'
 import { getBridgeTransactionUrl } from '@urls'
 import Link from 'next/link'
 
@@ -78,6 +79,11 @@ export function BridgeTransactionTable({ queryResult }) {
           className='py-2'
         />
       </div>
+      <div className="relative w-[5%]">
+        <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+          <Arrow color='white' />
+        </div>
+      </div>
       <div className="flex flex-col w-[12.5%]">
         <ChainInfo
           chainId={pending ? fromInfo.destinationChainID : toInfo?.chainID}
@@ -120,3 +126,4 @@ export function BridgeTransactionTable({ queryResult }) {
   })
   return <Table header={[]} body={tableRows} />
 }
+
