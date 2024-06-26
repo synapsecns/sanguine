@@ -46,6 +46,7 @@ var action = func(c *cli.Context) error {
 	}
 
 	var cfg exampleConfig.ExampleConfig
+	// nolint: musttag
 	err = yaml.Unmarshal(configFile, &cfg)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal config file: %w", err)

@@ -68,7 +68,8 @@ const (
 	GCPType // GCP
 )
 
-func (s SignerType) LString() string {
+// lString returns the lowercase string of the signer type.
+func (s SignerType) lString() string {
 	return strings.ToLower(s.String())
 }
 
@@ -100,7 +101,7 @@ func allSignerTypesList() string {
 // in the old code configs were split into responsible packages. Maybe something like that works here?
 func SignerFromConfig(ctx context.Context, config SignerConfig) (signer.Signer, error) {
 	switch strings.ToLower(config.Type) {
-	case FileType.LString():
+	case FileType.lString():
 		wall, err := wallet.FromKeyFile(core.ExpandOrReturnPath(config.File))
 		if err != nil {
 			return nil, fmt.Errorf("could not add signer: %w", err)
@@ -109,7 +110,7 @@ func SignerFromConfig(ctx context.Context, config SignerConfig) (signer.Signer, 
 		res := localsigner.NewSigner(wall.PrivateKey())
 
 		return res, nil
-	case AWSType.LString():
+	case AWSType.lString():
 		awsConfig, err := DecodeAWSConfig(config.File)
 		if err != nil {
 			return nil, fmt.Errorf("could not decode aws config: %w", err)
@@ -119,7 +120,7 @@ func SignerFromConfig(ctx context.Context, config SignerConfig) (signer.Signer, 
 			return nil, fmt.Errorf("could not decode aws config: %w", err)
 		}
 		return res, nil
-	case GCPType.LString():
+	case GCPType.lString():
 		gcpConfig, err := DecodeGCPConfig(config.File)
 		if err != nil {
 			return nil, fmt.Errorf("could not decode gcp config: %w", err)
