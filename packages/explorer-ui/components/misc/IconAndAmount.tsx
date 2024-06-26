@@ -14,6 +14,7 @@ export function IconAndAmount({
   textSize = 'text-2xl',
   iconSize = 'w-4 h-4 rounded-full',
   styledCoin = false,
+  className = ''
 }) {
   const t = chainId && tokenAddress && tokenAddressToToken( chainId, tokenAddress )
 
@@ -50,23 +51,23 @@ export function IconAndAmount({
   }
 
   return (
-    <div className="flex items-center">
-      <div className="flex flex-row items-center">
+    <div className={`flex items-center ${className}`}>
+      <div className="flex flex-row items-center text-white">
         <AssetImage
           tokenAddress={tokenAddress}
           tokenSymbol={tokenSymbol}
           chainId={chainId}
-          className={`${iconSize} min-w-[1.5rem] min-h-[1.5rem] inline-block mr-[.5rem]`}
+          className={`${iconSize} min-w-[1.5rem] min-h-[1.5rem] inline rounded-full`}
         />
         <div
           data-tooltip-content={amount}
           data-tooltip-id="amount"
-          className='flex-1 text-white'
+          className='flex-1 text-white pl-1 mr-1'
         >
           {formatAmount(amount)}
         </div>
       </div>
-      {showToken}
+      <span className="text-white">{tokenSymbol}</span>
       <ReactTooltip id="amount" className="z-50 rounded-xl" />
     </div>
   )
