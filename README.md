@@ -52,6 +52,7 @@ root
 ├── <a href="./charts">charts</a>: The helm charts used for deploying sanguine related services
 ├── <a href="./contrib">contrib</a>: Devops related tools
 │   ├── <a href="./contrib/git-changes-action">git-changes-action</a>: Github action for identifying changes in dependent modules in a go workspace
+│   ├── <a href="./contrib/opbot">op bot</a>: Slack bot for managing operations.
 │   ├── <a href="./contrib/promexporter">promexporter</a>: Multi-service prometheus exporter
 │   ├── <a href="./contrib/screener-api">screener-api</a>: Optional address screening api
 ├── <a href="./core">core</a>: The Go core library with common utilities for use across the monorepo
@@ -71,7 +72,6 @@ root
 ├── <a href="./services">services</a>
 │   ├── <a href="./services/cctp-relayer">CCTP Relayer</a>: CCTP message relayer
 │   ├── <a href="./services/explorer">explorer</a>: Bridge/messaging explorer ba
-│   ├── <a href="./services/stiprelayer">stiprelayer</a>: STIP relayer for rewards.
 │   ├── <a href="./services/rfq">rfq</a>: RFQ contracts
 │   ├── <a href="./services/scribe">scribe</a>: Generalized ethereum event logger
 │   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once

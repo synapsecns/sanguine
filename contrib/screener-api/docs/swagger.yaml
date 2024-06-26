@@ -64,45 +64,24 @@ paths:
       - application/json
       responses: {}
       summary: blacklist an address
-  /screen/{ruleset}/{address}:
+  /screen/{address}:
     get:
       consumes:
       - application/json
-      description: Assess the risk associated with a given address using specified
-        rulesets.
+      - application/json
+      description: Screen an address using Chainalysis API to determine if it's high
+        risk
       parameters:
-      - description: Ruleset to use for screening the address
-        in: query
-        name: ruleset
-        required: true
-        type: string
       - description: Address to be screened
-        in: query
+        in: path
         name: address
         required: true
         type: string
       produces:
       - application/json
-      responses:
-        "200":
-          description: Returns the risk assessment result
-          schema:
-            additionalProperties:
-              type: boolean
-            type: object
-        "400":
-          description: Returns error if the required parameters are missing or invalid
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Returns error if there are problems processing the indicators
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Screen address for risk
+      - application/json
+      responses: {}
+      summary: Screen an address for risk
       tags:
-      - address
+      - Address Screening
 swagger: "2.0"

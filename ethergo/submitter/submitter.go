@@ -11,6 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cornelk/hashmap"
+
 	"github.com/google/uuid"
 	"github.com/puzpuzpuz/xsync/v2"
 
@@ -30,11 +32,14 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
 
 var logger = log.Logger("ethergo-submitter")
+
+const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
 
 // TransactionSubmitter is the interface for submitting transactions to the chain.
 type TransactionSubmitter interface {
@@ -51,6 +56,7 @@ type TransactionSubmitter interface {
 // txSubmitterImpl is the implementation of the transaction submitter.
 type txSubmitterImpl struct {
 	metrics metrics.Handler
+	meter   metric.Meter
 	// signer is the signer for signing transactions.
 	signer signer.Signer
 	// nonceMux is the mutex for the nonces. It is keyed by chain.
@@ -72,6 +78,14 @@ type txSubmitterImpl struct {
 	lastGasBlockCache *xsync.MapOf[int, *types.Header]
 	// config is the config for the transaction submitter.
 	config config.IConfig
+	// numPendingGauge is the gauge for the number of pending transactions.
+	numPendingGauge metric.Int64ObservableGauge
+	// nonceGauge is the gauge for the current nonce.
+	nonceGauge metric.Int64ObservableGauge
+	// numPendingTxes is used for metrics.
+	numPendingTxes *hashmap.Map[uint32, int]
+	// currentNonces is used for metrics.
+	currentNonces *hashmap.Map[uint32, uint64]
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -83,16 +97,20 @@ type ClientFetcher interface {
 
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
+
 	return &txSubmitterImpl{
 		db:                db,
 		config:            config,
 		metrics:           metrics,
+		meter:             metrics.Meter(meterName),
 		signer:            signer,
 		fetcher:           fetcher,
 		nonceMux:          mapmutex.NewStringerMapMutex(),
 		statusMux:         mapmutex.NewStringMapMutex(),
 		retryNow:          make(chan bool, 1),
 		lastGasBlockCache: xsync.NewIntegerMapOf[int, *types.Header](),
+		numPendingTxes:    hashmap.New[uint32, int](),
+		currentNonces:     hashmap.New[uint32, uint64](),
 	}
 }
 
@@ -105,7 +123,28 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 	return retryInterval
 }
 
-func (t *txSubmitterImpl) Start(ctx context.Context) error {
+func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
+	err = t.setupMetrics()
+	if err != nil {
+		return fmt.Errorf("could not setup metrics: %w", err)
+	}
+
+	// start reaper process
+	ctx, cancel := context.WithCancel(parentCtx)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(t.config.GetReaperInterval()):
+				err := t.db.DeleteTXS(ctx, t.config.GetMaxRecordAge(), db.ReplacedOrConfirmed, db.Replaced, db.Confirmed)
+				if err != nil {
+					logger.Errorf("could not flush old records: %v", err)
+				}
+			}
+		}
+	}()
+
 	i := 0
 	for {
 		i++
@@ -115,9 +154,34 @@ func (t *txSubmitterImpl) Start(ctx context.Context) error {
 		}
 		if shouldExit {
 			logger.Warn("exiting transaction submitter")
+			cancel()
 			return nil
 		}
 	}
+}
+
+func (t *txSubmitterImpl) setupMetrics() (err error) {
+	t.numPendingGauge, err = t.meter.Int64ObservableGauge("num_pending_txes")
+	if err != nil {
+		return fmt.Errorf("could not create num pending txes gauge: %w", err)
+	}
+
+	_, err = t.meter.RegisterCallback(t.recordNumPending, t.numPendingGauge)
+	if err != nil {
+		return fmt.Errorf("could not register callback: %w", err)
+	}
+
+	t.nonceGauge, err = t.meter.Int64ObservableGauge("current_nonce")
+	if err != nil {
+		return fmt.Errorf("could not create nonce gauge: %w", err)
+	}
+
+	_, err = t.meter.RegisterCallback(t.recordNonces, t.nonceGauge)
+	if err != nil {
+		return fmt.Errorf("could not register callback: %w", err)
+	}
+
+	return nil
 }
 
 func (t *txSubmitterImpl) GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error) {

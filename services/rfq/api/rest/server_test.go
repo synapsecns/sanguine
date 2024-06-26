@@ -235,12 +235,12 @@ func (c *ServerSuite) TestPutAck() {
 	c.Require().NoError(err)
 	c.Equal(http.StatusOK, resp.StatusCode)
 
-	// Expect ack with shouldRelay=false
+	// Expect ack with shouldRelay=true
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
 	expectedResult = relapi.PutRelayAckResponse{
 		TxID:           testTxID,
-		ShouldRelay:    false,
+		ShouldRelay:    true,
 		RelayerAddress: c.testWallet.Address().Hex(),
 	}
 	c.Equal(expectedResult, result)

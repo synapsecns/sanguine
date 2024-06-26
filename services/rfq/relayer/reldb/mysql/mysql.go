@@ -4,6 +4,8 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -11,7 +13,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"time"
 )
 
 var logger = log.Logger("mysql-logger")
