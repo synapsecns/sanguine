@@ -277,26 +277,26 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	span.SetAttributes(
 		attribute.String("type", blacklistBody.Type),
 		(attribute.String("id", blacklistBody.ID)),
-		(attribute.String("data", blacklistBody.Data)),
-		(attribute.String("network", blacklistBody.Network)),
-		(attribute.String("tag", blacklistBody.Tag)),
-		(attribute.String("remark", blacklistBody.Remark)),
-		(attribute.String("address", blacklistBody.Address)),
+		(attribute.String("network", blacklistBody.Data.Network)),
+		(attribute.String("tag", blacklistBody.Data.Tag)),
+		(attribute.String("remark", blacklistBody.Data.Remark)),
+		(attribute.String("address", blacklistBody.Data.Address)),
 	)
 
 	blacklistedAddress := db.BlacklistedAddress{
-		Type:    blacklistBody.Type,
-		ID:      blacklistBody.ID,
-		Data:    blacklistBody.Data,
-		Network: blacklistBody.Network,
-		Tag:     blacklistBody.Tag,
-		Remark:  blacklistBody.Remark,
-		Address: strings.ToLower(blacklistBody.Address),
+		Type: blacklistBody.Type,
+		ID:   blacklistBody.ID,
+		Data: db.Data{
+			Address: blacklistBody.Data.Address,
+			Network: blacklistBody.Data.Network,
+			Tag:     blacklistBody.Data.Tag,
+			Remark:  blacklistBody.Data.Remark,
+		},
 	}
 
 	s.blacklistCacheMux.Lock()
 	defer s.blacklistCacheMux.Unlock()
-	s.blacklistCache[blacklistBody.Address] = true
+	s.blacklistCache[blacklistBody.Data.Address] = true
 
 	switch blacklistBody.Type {
 	case "create":
@@ -306,7 +306,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			return
 		}
 
-		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
@@ -317,7 +317,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			return
 		}
 
-		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
@@ -328,7 +328,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			return
 		}
 
-		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
