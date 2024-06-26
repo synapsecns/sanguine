@@ -56,7 +56,7 @@ func (s *Store) PutBlacklistedAddress(ctx context.Context, body db.BlacklistedAd
 				{Name: idName},
 			},
 			DoUpdates: clause.AssignmentColumns([]string{
-				idName, typeName, dataName, addressName, networkName, tagName, remarkName},
+				idName, typeName, dataAddressName, dataRemarkName, dataNetworkName, dataTagName},
 			),
 		}).Create(&body)
 	if dbTx.Error != nil {

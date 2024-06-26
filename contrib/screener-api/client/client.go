@@ -114,9 +114,13 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appi
 
 // BlackListBody is the json payload that represents a blacklisted address.
 type BlackListBody struct {
-	Type    string `json:"type"`
-	ID      string `json:"id"`
-	Data    string `json:"data"`
+	Type string `json:"type"`
+	ID   string `json:"id"`
+	Data Data   `json:"data"`
+}
+
+// Data is the data field in the BlackListBody.
+type Data struct {
 	Address string `json:"address"`
 	Network string `json:"network"`
 	Tag     string `json:"tag"`
