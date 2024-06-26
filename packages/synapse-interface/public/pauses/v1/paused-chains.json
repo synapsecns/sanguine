@@ -15,22 +15,5 @@
     "disableBanner": true,
     "disableWarning": true,
     "disableCountdown": true
-  },
-  {
-    "id": "blast-chain-pause-2024-06-26",
-    "pausedFromChains": [],
-    "pausedToChains": [81457],
-    "pauseBridge": true,
-    "pauseSwap": true,
-    "startTimePauseChain": "2024-06-26T00:00:00Z",
-    "endTimePauseChain": null,
-    "startTimeBanner": "2024-06-26T00:00:00Z",
-    "endTimeBanner": null,
-    "inputWarningMessage": "",
-    "bannerMessage": "Bridging to Blast is temporarily paused",
-    "progressBarMessage": "Bridging to Blast temporarily paused",
-    "disableBanner": false,
-    "disableWarning": true,
-    "disableCountdown": true
   }
 ]
