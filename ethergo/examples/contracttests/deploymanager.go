@@ -1,10 +1,10 @@
-package example
+package contracttests
 
 import (
 	"context"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/ethergo/example/counter"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"testing"
 )

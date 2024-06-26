@@ -1,9 +1,9 @@
-package example
+package contracttests
 
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/ethergo/example/counter"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
 )
 
 // set all contact types.

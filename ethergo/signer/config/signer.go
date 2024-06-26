@@ -17,6 +17,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -32,15 +33,19 @@ type SignerConfig struct {
 
 // IsValid determines if the config is valid.
 func (s SignerConfig) IsValid(_ context.Context) (ok bool, err error) {
-	if !strings.EqualFold(s.Type, FileType.String()) {
+	if !slices.ContainsFunc(AllSignerTypes, func(signerType SignerType) bool {
+		return strings.EqualFold(signerType.String(), s.Type)
+	}) {
 		return false, fmt.Errorf("%w: %s. must be one of: %s", ErrUnsupportedSignerType, s.Type, allSignerTypesList())
 	}
 
-	// TODO: we'll need to switch validity here based on type once we have more then one supported configuration type
-	// alternatively, we could try to use an awsconfig type file, but this makes the virtual box setup more tedious. A third option is a json blob
-	_, err = wallet.FromKeyFile(s.File)
-	if err != nil {
-		return false, fmt.Errorf("file %s invalid: %w", s.File, err)
+	if strings.EqualFold(s.Type, FileType.String()) {
+		// TODO: we'll need to switch validity here based on type once we have more then one supported configuration type
+		// alternatively, we could try to use an awsconfig type file, but this makes the virtual box setup more tedious. A third option is a json blob
+		_, err = wallet.FromKeyFile(s.File)
+		if err != nil {
+			return false, fmt.Errorf("file %s invalid: %w", s.File, err)
+		}
 	}
 
 	return true, nil
@@ -62,6 +67,10 @@ const (
 	// GCPType is a gcp cloud based signer.
 	GCPType // GCP
 )
+
+func (s SignerType) LString() string {
+	return strings.ToLower(s.String())
+}
 
 // AllSignerTypes is a list of all contract types. Since we use stringer and this is a testing library, instead
 // of manually copying all these out we pull the names out of stringer. In order to make sure stringer is updated, we panic on
@@ -90,8 +99,8 @@ func allSignerTypesList() string {
 // TODO: this needs to be moved to some kind of common package.
 // in the old code configs were split into responsible packages. Maybe something like that works here?
 func SignerFromConfig(ctx context.Context, config SignerConfig) (signer.Signer, error) {
-	switch config.Type {
-	case FileType.String():
+	switch strings.ToLower(config.Type) {
+	case FileType.LString():
 		wall, err := wallet.FromKeyFile(core.ExpandOrReturnPath(config.File))
 		if err != nil {
 			return nil, fmt.Errorf("could not add signer: %w", err)
@@ -100,7 +109,7 @@ func SignerFromConfig(ctx context.Context, config SignerConfig) (signer.Signer, 
 		res := localsigner.NewSigner(wall.PrivateKey())
 
 		return res, nil
-	case AWSType.String():
+	case AWSType.LString():
 		awsConfig, err := DecodeAWSConfig(config.File)
 		if err != nil {
 			return nil, fmt.Errorf("could not decode aws config: %w", err)
@@ -110,7 +119,7 @@ func SignerFromConfig(ctx context.Context, config SignerConfig) (signer.Signer, 
 			return nil, fmt.Errorf("could not decode aws config: %w", err)
 		}
 		return res, nil
-	case GCPType.String():
+	case GCPType.LString():
 		gcpConfig, err := DecodeGCPConfig(config.File)
 		if err != nil {
 			return nil, fmt.Errorf("could not decode gcp config: %w", err)

@@ -1,12 +1,12 @@
-package example_test
+package contracttests_test
 
 import (
 	"context"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"github.com/synapsecns/sanguine/ethergo/example"
-	"github.com/synapsecns/sanguine/ethergo/example/counter"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"testing"
 	"time"
@@ -19,11 +19,11 @@ func TestCounter(t *testing.T) {
 
 	// since extra deployers don't necessarily deploy anything (only when requested in the GetOnlyContractRegistry)
 	// adding them here won't slow anything down. It's recommended you have a global slice of these deployers you register every time.
-	deployer := manager.NewDeployerManager(t, example.NewCounterDeployer)
+	deployer := manager.NewDeployerManager(t, contracttests.NewCounterDeployer)
 
 	newTestBackend := simulated.NewSimulatedBackend(testContext, t)
 
-	deployedContract := deployer.Get(testContext, newTestBackend, example.CounterType)
+	deployedContract := deployer.Get(testContext, newTestBackend, contracttests.CounterType)
 	// if you're using these often, it's recommended you extend manager and add type casted getters here, along with the global registry
 	//nolint: forcetypeassert
 	counterHandle := deployedContract.ContractHandle().(*counter.CounterRef)
@@ -48,6 +48,6 @@ func TestCounter(t *testing.T) {
 
 func TestDependenciesCorrect(t *testing.T) {
 	manager.AssertDependenciesCorrect(context.Background(), t, func() manager.IDeployManager {
-		return manager.NewDeployerManager(t, example.NewCounterDeployer)
+		return manager.NewDeployerManager(t, contracttests.NewCounterDeployer)
 	})
 }
