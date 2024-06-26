@@ -1,4 +1,4 @@
-package example
+package contracttests
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
-	"github.com/synapsecns/sanguine/ethergo/example/counter"
+	counter2 "github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
 )
 
 // CounterDeployer deploys a counter.
@@ -28,11 +28,11 @@ func (n *CounterDeployer) Deploy(ctx context.Context) (contracts.DeployedContrac
 	//nolint: wrapcheck
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		//nolint: wrapcheck
-		return counter.DeployCounter(transactOps, backend)
+		return counter2.DeployCounter(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		// this is kept separate because we often want to add an address handle to this so it's compatible with vm.ContractRef
 		//nolint: wrapcheck
-		return counter.NewCounterRef(address, backend)
+		return counter2.NewCounterRef(address, backend)
 	})
 }
 
