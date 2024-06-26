@@ -42,7 +42,7 @@ dockers:
       - '--label=org.opencontainers.image.revision={{.FullCommit}}'
       - '--label=org.opencontainers.image.version={{.Version}}'
       - '--label=org.opencontainers.image.source={{.GitURL}}'
-    dockerfile: ../../docker/signer-example.Dockerfile
+    dockerfile: ../docker/signer-example.Dockerfile
     ids:
       - signer-example
 
