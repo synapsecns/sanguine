@@ -131,6 +131,7 @@ go run main.go --config=/path/to/signer.yml
 ```
 
 We also have this available as a docker container for your convenience here:
+
 `ghcr.io/synapsecns/sanguine/signer-example:latest`
 
 ## Setup with GCP CloudKMS

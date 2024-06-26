@@ -144,17 +144,6 @@ const config: Config = {
         }
       },
     ],
-    [
-      '@docusaurus/plugin-ideal-image',
-      {
-        quality: 70,
-        max: 600, // max resized image's size.
-        min: 450, // min resized image's size. if original is lower, use that size.
-        steps: 2, // the max number of images generated between min and max (inclusive)
-        disableInDev: false,
-      },
-    ],
-
     // please see: https://github.com/facebook/docusaurus/issues/8091#issuecomment-1269112001 for an explanation.
     () => ({
       name: 'resolve-react',
