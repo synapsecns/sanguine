@@ -67,13 +67,7 @@ const config: Config = {
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Tutorial',
-        },
-        {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/synapsecns/sanguine',
           label: 'GitHub',
           position: 'right',
         },
