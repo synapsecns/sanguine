@@ -115,6 +115,11 @@ export const BridgeTransactionButton = ({
       label: `Please select an Origin token`,
       onClick: null,
     }
+  } else if (isLoading) {
+    buttonProperties = {
+      label: `Bridge ${fromToken?.symbol}`,
+      onClick: null,
+    }
   } else if (
     !isLoading &&
     bridgeQuote?.feeAmount === 0n &&
@@ -124,12 +129,20 @@ export const BridgeTransactionButton = ({
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (!chainSelectionsMatchBridgeQuote) {
+  } else if (
+    !isLoading &&
+    !chainSelectionsMatchBridgeQuote &&
+    fromValueBigInt > 0
+  ) {
     buttonProperties = {
       label: 'Please reset chain selection',
       onClick: null,
     }
-  } else if (bridgeQuoteAmountGreaterThanInputForRfq) {
+  } else if (
+    !isLoading &&
+    bridgeQuoteAmountGreaterThanInputForRfq &&
+    fromValueBigInt > 0
+  ) {
     buttonProperties = {
       label: 'Invalid bridge quote',
       onClick: null,
@@ -139,7 +152,7 @@ export const BridgeTransactionButton = ({
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
     }
-  } else if (isConnected && !sufficientBalance) {
+  } else if (!isLoading && isConnected && !sufficientBalance) {
     buttonProperties = {
       label: 'Insufficient balance',
       onClick: null,
