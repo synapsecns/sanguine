@@ -85,7 +85,10 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appi
 		return "", fmt.Errorf("error marshaling body: %w", err)
 	}
 
-	bodyStr := core.BytesToJSONString(bodyBz)
+	bodyStr, err := core.BytesToJSONString(bodyBz)
+	if err != nil {
+		return "", fmt.Errorf("could not convert bytes to json: %w", err)
+	}
 
 	message := fmt.Sprintf("%s;%s;%s;%s;%s;%s",
 		appid, timestamp, nonce, "POST", "/api/data/sync", bodyStr)

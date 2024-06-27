@@ -359,7 +359,12 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 		// Put it back so we can read it again for DB operations.
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBz))
 
-		bodyStr := core.BytesToJSONString(bodyBz)
+		bodyStr, err := core.BytesToJSONString(bodyBz)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "could not convert bytes to json"})
+			c.Abort()
+			return
+		}
 
 		var message string
 		if len(queryString) > 0 {

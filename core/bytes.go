@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 // BytesToSlice converts a 32 bit array to a slice slice.
@@ -12,15 +13,15 @@ func BytesToSlice(bytes [32]byte) []byte {
 }
 
 // BytesToJSONString converts a 32 bit array to a JSON string without escapes, newlines, etc.
-func BytesToJSONString(bz []byte) string {
+func BytesToJSONString(bz []byte) (string, error) {
 	var jsonData map[string]interface{}
 	if err := json.Unmarshal(bz, &jsonData); err != nil {
-		return ""
+		return "", fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
 	formattedJSON, err := json.Marshal(jsonData)
 	if err != nil {
-		return ""
+		return "", fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 
-	return string(formattedJSON)
+	return string(formattedJSON), nil
 }
