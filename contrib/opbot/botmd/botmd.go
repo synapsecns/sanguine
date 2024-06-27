@@ -10,10 +10,11 @@ import (
 
 // Bot represents the bot server.
 type Bot struct {
-	handler      metrics.Handler
-	server       *slacker.Slacker
-	cfg          config.Config
-	signozClient *signoz.Client
+	handler       metrics.Handler
+	server        *slacker.Slacker
+	cfg           config.Config
+	signozClient  *signoz.Client
+	signozEnabled bool
 }
 
 // NewBot creates a new bot server.
@@ -25,8 +26,13 @@ func NewBot(handler metrics.Handler, cfg config.Config) Bot {
 		server:  server,
 	}
 
-	bot.signozClient = signoz.NewClientFromUser(handler, cfg.SignozBaseURL, cfg.SignozEmail, cfg.SignozPassword)
+	// you should be able to run opbot even without signoz.
+	if cfg.SignozPassword != "" && cfg.SignozEmail != "" && cfg.SignozBaseURL != "" {
+		bot.signozClient = signoz.NewClientFromUser(handler, cfg.SignozBaseURL, cfg.SignozEmail, cfg.SignozPassword)
+		bot.signozEnabled = true
+	}
 
+	bot.server.AddCommandMiddleware(bot.tracingMiddleware())
 	bot.addCommands(bot.traceCommand(), bot.rfqLookupCommand())
 
 	return bot
