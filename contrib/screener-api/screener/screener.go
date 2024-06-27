@@ -350,17 +350,34 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 		signature := c.Request.Header.Get("X-Signature-signature")
 		queryString := c.Request.URL.RawQuery
 
-		bodyBytes, err := io.ReadAll(c.Request.Body)
+		bodyBz, err := io.ReadAll(c.Request.Body)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "could not read request body"})
 			c.Abort()
 			return
 		}
-		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-		bodyStr := string(bodyBytes)
+		// Put it back so we can read it again for DB operations.
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBz))
 
-		message := fmt.Sprintf("%s%s%s%s%s%s%s",
-			appID, timestamp, nonce, "POST", "/api/data/sync", queryString, bodyStr)
+		bodyStr, err := core.BytesToJSONString(bodyBz)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "could not convert bytes to json"})
+			c.Abort()
+			return
+		}
+
+		var message string
+		if len(queryString) > 0 {
+			message = fmt.Sprintf(
+				"%s;%s;%s;%s;%s;%s;%s",
+				appID, timestamp, nonce, "POST", "/api/data/sync", queryString, bodyStr,
+			)
+		} else {
+			message = fmt.Sprintf(
+				"%s;%s;%s;%s;%s;%s",
+				appID, timestamp, nonce, "POST", "/api/data/sync", bodyStr,
+			)
+		}
 
 		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
 

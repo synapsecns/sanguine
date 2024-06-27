@@ -14,6 +14,7 @@ import (
 	"github.com/dubonzi/otelresty"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 )
@@ -78,15 +79,19 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appi
 
 	nonce := strings.ReplaceAll(uuid.New().String(), "-", "")[:32]
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
-	queryString := ""
 
 	bodyBz, err := json.Marshal(body)
 	if err != nil {
 		return "", fmt.Errorf("error marshaling body: %w", err)
 	}
 
-	message := fmt.Sprintf("%s%s%s%s%s%s%s",
-		appid, timestamp, nonce, "POST", "/api/data/sync", queryString, string(bodyBz))
+	bodyStr, err := core.BytesToJSONString(bodyBz)
+	if err != nil {
+		return "", fmt.Errorf("could not convert bytes to json: %w", err)
+	}
+
+	message := fmt.Sprintf("%s;%s;%s;%s;%s;%s",
+		appid, timestamp, nonce, "POST", "/api/data/sync", bodyStr)
 
 	signature := GenerateSignature(appsecret, message)
 
@@ -133,12 +138,8 @@ type blacklistResponse struct {
 }
 
 // GenerateSignature generates a signature for the request.
-func GenerateSignature(
-	secret,
-	message string,
-) string {
-	key := []byte(secret)
-	h := hmac.New(sha256.New, key)
+func GenerateSignature(secret, message string) string {
+	h := hmac.New(sha256.New, []byte(secret))
 	h.Write([]byte(message))
 	return hex.EncodeToString(h.Sum(nil))
 }
