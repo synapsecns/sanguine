@@ -215,6 +215,8 @@ export abstract class SynapseModuleSet {
       estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
       bridgeModuleName: bridgeRoute.bridgeModuleName,
       gasDropAmount: await this.getGasDropAmount(bridgeRoute),
+      originChainId: bridgeRoute.originChainId,
+      destChainId: bridgeRoute.destChainId,
     }
   }
 }
