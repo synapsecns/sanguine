@@ -13,7 +13,7 @@ var logger = log.Logger("guard-api")
 
 // Start starts the api server.
 func Start(ctx context.Context, metricsPort uint16) error {
-	router := ginhelper.New(logger)
+	router := ginhelper.New(logger, ginhelper.EmptyHandler("guard-api"))
 
 	g, ctx := errgroup.WithContext(ctx)
 

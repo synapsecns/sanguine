@@ -23,6 +23,27 @@ import (
 //go:embed robots.txt
 var robots []byte
 
+// IMetricsHandler is an interface for metrics handlers.
+type IMetricsHandler interface {
+	// Name returns the name of the service
+	Name() string
+}
+
+// EmptyHandler returns an empty service.
+func EmptyHandler(serviceName string) IMetricsHandler {
+	return emptyService{name: serviceName}
+}
+
+type emptyService struct {
+	name string
+}
+
+func (m emptyService) Name() string {
+	return "metrics-server"
+}
+
+var _ IMetricsHandler = (*emptyService)(nil)
+
 // New creates a new gin server with some sensible defaults.
 // these include:
 // - helmet-default handlers
@@ -30,7 +51,7 @@ var robots []byte
 // - cors (used for requests from the frontend)
 // - health-checks
 // - restrictive robots.txt.
-func New(logger *log.ZapEventLogger) *gin.Engine {
+func New(logger *log.ZapEventLogger, handler IMetricsHandler) *gin.Engine {
 	server := newBase()
 
 	server.Use(ginzap.RecoveryWithZap(logger.Desugar(), true))
@@ -92,7 +113,7 @@ func newBase() *gin.Engine {
 	server.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
 		AllowHeaders:    []string{"*"},
-		AllowMethods:    []string{"GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowMethods:    []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodPatch, http.MethodDelete, http.MethodOptions},
 		MaxAge:          12 * time.Hour,
 	}))
 
@@ -111,7 +132,7 @@ func newBase() *gin.Engine {
 	})
 
 	server.GET(HealthCheck, func(c *gin.Context) {
-		c.JSON(200, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"status": "UP",
 		})
 	})

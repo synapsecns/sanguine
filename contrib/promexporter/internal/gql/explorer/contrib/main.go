@@ -33,7 +33,7 @@ func main() {
 	defer cancel()
 
 	// prepare the server
-	router := ginhelper.New(logger)
+	router := ginhelper.New(logger, ginhelper.EmptyHandler("explorer-api"))
 
 	nullHandler, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Null)
 	if err != nil {

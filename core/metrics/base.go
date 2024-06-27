@@ -48,6 +48,10 @@ type baseHandler struct {
 	experimentalLogger experimentalLogger.ExperimentalLogger
 }
 
+func (b *baseHandler) Name() string {
+	return b.name
+}
+
 func (b *baseHandler) Handler() http.Handler {
 	return b.handler
 }

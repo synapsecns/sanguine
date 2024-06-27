@@ -85,7 +85,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 		return nil, fmt.Errorf("could not connect to rules db: %w", err)
 	}
 
-	screener.router = ginhelper.New(logger)
+	screener.router = ginhelper.New(logger, metricHandler.Gin())
 	screener.router.Use(screener.metrics.Gin())
 
 	// Blacklist route

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
+	"github.com/synapsecns/sanguine/core/ginhelper"
 	experimentalLogger "github.com/synapsecns/sanguine/core/metrics/logger"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/metric"
@@ -43,7 +44,12 @@ type Handler interface {
 	Handler() http.Handler
 	// ExperimentalLogger returns an experimental logger.
 	ExperimentalLogger() experimentalLogger.ExperimentalLogger
+	// Name returns the name of the service
+	Name() string
 }
+
+// Static check
+var _ ginhelper.IMetricsHandler = (*Handler)(nil)
 
 // HandlerType is the handler type to use
 //
