@@ -45,7 +45,7 @@ func (t *UtilSuite) TestWaitForStartSucceed() {
 	tmpPort, err := freeport.GetFreePort()
 	t.Require().NoError(err)
 
-	router := ginhelper.New(testLogger, ginhelper.EmptyHandler("test"))
+	router := ginhelper.New(testLogger)
 
 	// start a server
 	go func() {

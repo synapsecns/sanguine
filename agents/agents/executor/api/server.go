@@ -13,7 +13,7 @@ var logger = log.Logger("executor-api")
 
 // Start starts the api server.
 func Start(ctx context.Context, metricsPort uint16) error {
-	router := ginhelper.New(logger, ginhelper.EmptyHandler("executor-api"))
+	router := ginhelper.New(logger)
 
 	g, ctx := errgroup.WithContext(ctx)
 

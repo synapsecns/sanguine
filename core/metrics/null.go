@@ -19,7 +19,6 @@ type nullHandler struct {
 	tracer     trace.Tracer
 	propagator nullPropogator
 	meter      Meter
-	name       string
 }
 
 func (n nullHandler) ExperimentalLogger() experimentalLogger.ExperimentalLogger {
@@ -62,10 +61,6 @@ func (n nullHandler) Gin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 	}
-}
-
-func (n nullHandler) Name() string {
-	return ""
 }
 
 func (n nullHandler) Start(_ context.Context) error {

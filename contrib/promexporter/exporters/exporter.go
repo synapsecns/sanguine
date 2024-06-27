@@ -59,7 +59,7 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	// the main server serves metrics since this is only a prom exporter
 	_ = os.Setenv(metrics.MetricsPortEnabledEnv, "false")
 
-	router := ginhelper.New(logger, handler)
+	router := ginhelper.New(logger)
 	router.Use(handler.Gin())
 	router.GET(metrics.MetricsPathDefault, gin.WrapH(handler.Handler()))
 
