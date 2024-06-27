@@ -4,14 +4,17 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ipfs/go-log"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/puzpuzpuz/xsync/v2"
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -30,8 +33,13 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
+
+const maxConcurrentRequests = 150
 
 // Relayer is the core of the relayer application.
 type Relayer struct {
@@ -48,6 +56,10 @@ type Relayer struct {
 	signer         signer.Signer
 	claimCache     *ttlcache.Cache[common.Hash, bool]
 	decimalsCache  *xsync.MapOf[string, *uint8]
+	// semaphore is used to limit the number of concurrent requests
+	semaphore *semaphore.Weighted
+	// relayMtx is used to synchronize handling of relay requests
+	relayMtx mapmutex.StringMapMutex
 }
 
 var logger = log.Logger("relayer")
@@ -142,6 +154,8 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		chainListeners: chainListeners,
 		apiServer:      apiServer,
 		apiClient:      apiClient,
+		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
+		relayMtx:       mapmutex.NewStringMapMutex(),
 	}
 	return &rel, nil
 }
@@ -198,7 +212,21 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 			case <-ctx.Done():
 				return nil
 			case <-time.After(defaultPostInterval * time.Second):
-				err := r.runDBSelector(ctx)
+				err := r.runDBSelector(ctx, false, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.NotEnoughInventory)
+				if err != nil {
+					return fmt.Errorf("could not start db selector: %w", err)
+				}
+			}
+		}
+	})
+
+	g.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(defaultPostInterval * time.Second):
+				err := r.runDBSelector(ctx, true, reldb.RelayStarted, reldb.RelayCompleted, reldb.ProvePosted)
 				if err != nil {
 					return fmt.Errorf("could not start db selector: %w", err)
 				}
@@ -246,8 +274,9 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 	return nil
 }
 
-func (r *Relayer) runDBSelector(ctx context.Context) error {
+func (r *Relayer) runDBSelector(ctx context.Context, serial bool, matchStatuses ...reldb.QuoteRequestStatus) error {
 	interval := r.cfg.GetDBSelectorInterval()
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -256,7 +285,7 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 			// TODO: add context w/ timeout
 			// TODO: add trigger
 			// TODO: should not fail on error
-			err := r.processDB(ctx)
+			err := r.processDB(ctx, serial, matchStatuses...)
 			if err != nil {
 				return err
 			}
@@ -297,30 +326,100 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	return nil
 }
 
-func (r *Relayer) processDB(ctx context.Context) error {
-	requests, err := r.db.GetQuoteResultsByStatus(ctx, reldb.Seen, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayCompleted, reldb.ProvePosted, reldb.NotEnoughInventory)
+func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...reldb.QuoteRequestStatus) (err error) {
+	ctx, span := r.metrics.Tracer().Start(ctx, "processDB", trace.WithAttributes(
+		attribute.Bool("serial", serial),
+	))
+	defer func() {
+		r.recordDBStats(ctx, span)
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	requests, err := r.db.GetQuoteResultsByStatus(ctx, matchStatuses...)
 	if err != nil {
 		return fmt.Errorf("could not get quote results: %w", err)
 	}
+
+	wg := sync.WaitGroup{}
 	// Obviously, these are only seen.
-	for _, request := range requests {
-		// if deadline < now
-		if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
-			err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
+	for _, req := range requests {
+		//nolint: nestif
+		if serial {
+			// process in serial
+			err = r.processRequest(ctx, req)
 			if err != nil {
-				return fmt.Errorf("could not update request status: %w", err)
+				return fmt.Errorf("could not process request: %w", err)
 			}
-		}
-
-		qr, err := r.requestToHandler(ctx, request)
-		if err != nil {
-			return fmt.Errorf("could not get request to handler: %w", err)
-		}
-
-		err = qr.Handle(ctx, request)
-		if err != nil {
-			return fmt.Errorf("could not handle request: %w", err)
+		} else {
+			// process in parallel (new goroutine)
+			request := req // capture func literal
+			ok := r.semaphore.TryAcquire(1)
+			if !ok {
+				span.AddEvent("could not acquire semaphore", trace.WithAttributes(
+					attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
+				))
+				continue
+			}
+			if err != nil {
+				return fmt.Errorf("could not acquire semaphore: %w", err)
+			}
+			wg.Add(1)
+			go func() {
+				defer r.semaphore.Release(1)
+				defer wg.Done()
+				err = r.processRequest(ctx, request)
+				if err != nil {
+					logger.Errorf("could not process request: %w", err)
+				}
+			}()
 		}
 	}
+
+	// no-op if serial is specified
+	wg.Wait()
 	return nil
+}
+
+func (r *Relayer) processRequest(parentCtx context.Context, request reldb.QuoteRequest) (err error) {
+	ctx, span := r.metrics.Tracer().Start(parentCtx, "processRequest", trace.WithAttributes(
+		attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
+		attribute.String("status", request.Status.String()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	// if deadline < now
+	if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
+		err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+	}
+
+	qr, err := r.requestToHandler(ctx, request)
+	if err != nil {
+		return fmt.Errorf("could not get request to handler: %w", err)
+	}
+
+	err = qr.Handle(ctx, request)
+	if err != nil {
+		return fmt.Errorf("could not handle request: %w", err)
+	}
+	return nil
+}
+
+func (r *Relayer) recordDBStats(ctx context.Context, span trace.Span) {
+	sqlStats, sqlErr := r.db.GetDBStats(ctx)
+	if sqlErr != nil {
+		span.SetAttributes(attribute.String("sql_error", sqlErr.Error()))
+		return
+	}
+	if sqlStats != nil {
+		span.SetAttributes(attribute.Int64("sql_open_conns", int64(sqlStats.OpenConnections)))
+		span.SetAttributes(attribute.Int64("sql_in_use_conns", int64(sqlStats.InUse)))
+		span.SetAttributes(attribute.Int64("sql_idle_conns", int64(sqlStats.Idle)))
+		span.SetAttributes(attribute.Int64("sql_wait_count", sqlStats.WaitCount))
+		span.SetAttributes(attribute.String("sql_wait_duration", sqlStats.WaitDuration.String()))
+	}
 }

@@ -16,7 +16,7 @@ Some key components of Ethergo include:
  - **Manager**: The manager is responsible for handling contract deployments.
  -  **Signer**: Ethergo offers signing and transaction submission utilities, with various adapters for signing transactions and handling race conditions with nonces. It also includes a wallet interface capable of importing keys from seed phrases, private keys, and mnemonics.
 
- To see a working example of Ethergo in action, refer to the [`example`](./example) folder, which provides a complete demonstration of how to use the deployer and manager components. Please note that the APIs are subject to change.
+ To see a working example of Ethergo in action, refer to the [`example`](./examples) folder, which provides a complete demonstration of how to use the deployer and manager components. Please note that the APIs are subject to change.
 
 
 ## Directory Structure
@@ -36,7 +36,7 @@ root
 │   ├── <a href="./chain/watcher">watcher</a>: Client interface for chain watcher.</s>
 ├── <a href="./contracts">contracts</a>: Contains interfaces for using contracts with the deployer + manager
 ├── <a href="./client">client</a>: Contains an open tracing compatible ethclient with batching.
-├── <a href="./example">example</a>: Contains a full featured example of how to use deployer + manager
+├── <a href="./examples">examples</a>: Contains a full featured example of how to use deployer + manager & a signer.
 ├── <a href="./forker">forker</a>: Allows the use of fork tests in live chains without docker using an anvil binary.
 ├── <a href="./listener">listener</a>: Drop-in contract listener
 ├── <a href="./manager">manager</a>: Manages contract deployments.

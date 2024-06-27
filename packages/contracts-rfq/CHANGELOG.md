@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.9](https://github.com/synapsecns/sanguine/compare/FastBridge@0.2.8...FastBridge@0.2.9) (2024-06-09)
+
+
+### Bug Fixes
+
+* adjust to [#2658](https://github.com/synapsecns/sanguine/issues/2658) breaking changes ([#2688](https://github.com/synapsecns/sanguine/issues/2688)) ([7533f70](https://github.com/synapsecns/sanguine/commit/7533f70f4bc88f334af26a009c81c9d581d3997f))
+
+
+
+
+
+## [0.2.8](https://github.com/synapsecns/sanguine/compare/FastBridge@0.2.7...FastBridge@0.2.8) (2024-06-04)
+
+**Note:** Version bump only for package FastBridge
+
+
+
+
+
 ## [0.2.7](https://github.com/synapsecns/sanguine/compare/FastBridge@0.2.6...FastBridge@0.2.7) (2024-06-02)
 
 **Note:** Version bump only for package FastBridge

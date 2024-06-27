@@ -135,6 +135,15 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
+      - name: Set up cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{matrix.package}}-${{ hashFiles(format('{0}/go.sum', matrix.package)) }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{matrix.package}}
 
       - name: Get branch name
         id: branch-name
@@ -188,7 +197,6 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       # use this to determine if we need goreleaser for a workflow
-      # TODO: it might be worth considering moving this into a seperate workflow so we can avoid doing a full clone + pulling the image when we don't need anything
       - name: Check For Docker Images
         if: steps.branch-name.outputs.is_default != 'true'
         id: image_check
@@ -196,7 +204,6 @@ jobs:
           # will be 0 if none present
           has_images=$(yq eval '.dockers != null' ${{matrix.package}}/.goreleaser.yml)
           echo "##[set-output name=has_images;]$(echo $has_images)"
-
 
       - name: Run GoReleaser (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
@@ -257,36 +264,6 @@ jobs:
         with:
           name: ${{steps.project_id.outputs.project_name}}.zip
           path: ${{steps.project_id.outputs.project_name}}.zip
-
-      - name: Copy Releases
-        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-iap') }}
-        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
-        with:
-          github_token: ${{ secrets.PUBLISH_TOKEN }}
-          # TODO: will change with new org
-          destination_repo: 'trajan0x/terraform-provider-iap'
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          strip_prefix: 'contrib/terraform-provider-iap/'
-
-      - name: Copy Releases
-        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-helmproxy') }}
-        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
-        with:
-          github_token: ${{ secrets.PUBLISH_TOKEN }}
-          # TODO: will change with new org
-          destination_repo: 'trajan0x/terraform-provider-helmproxy'
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          strip_prefix: 'contrib/terraform-provider-helmproxy/'
-
-      - name: Copy Releases
-        if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-kubeproxy') }}
-        uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
-        with:
-          github_token: ${{ secrets.PUBLISH_TOKEN }}
-          # TODO: will change with new org
-          destination_repo: 'trajan0x/terraform-provider-kubeproxy'
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          strip_prefix: 'contrib/terraform-provider-kubeproxy/'
 
       - name: Refresh Report Card
         if: steps.branch-name.outputs.is_default == 'true'

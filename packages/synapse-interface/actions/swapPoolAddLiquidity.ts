@@ -1,4 +1,5 @@
 import {
+  type SimulateContractParameters,
   simulateContract,
   waitForTransactionReceipt,
   writeContract,
@@ -42,7 +43,10 @@ export const swapPoolAddLiquidity = async ({
     pwcConfig = pwcBaseConfig
   }
 
-  const { request } = await simulateContract(wagmiConfig, pwcConfig)
+  const { request } = await simulateContract(
+    wagmiConfig,
+    pwcConfig as SimulateContractParameters
+  )
 
   const hash = await writeContract(wagmiConfig, request)
   const txReceipt = await waitForTransactionReceipt(wagmiConfig, { hash })

@@ -77,10 +77,8 @@ type inventoryManagerImpl struct {
 	db reldb.Service
 	// meter is the metrics meter for this package
 	meter metric.Meter
-	// balanceHist is the histogram for balance
-	balanceHist metric.Float64Histogram
-	// pendingHist is the histogram for pending rebalances
-	pendingHist metric.Float64Histogram
+	// balanceGauge is the histogram for balance
+	balanceGauge metric.Float64ObservableGauge
 }
 
 // ErrUnsupportedChain is the error for an unsupported chain.
@@ -196,16 +194,6 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 		}
 	}
 
-	meter := handler.Meter(meterName)
-	balanceHist, err := meter.Float64Histogram("inventory_balance")
-	if err != nil {
-		return nil, fmt.Errorf("could not create balance histogram: %w", err)
-	}
-	pendingHist, err := meter.Float64Histogram("pending_rebalance_amount")
-	if err != nil {
-		return nil, fmt.Errorf("could not create pending rebalance histogram: %w", err)
-	}
-
 	i := inventoryManagerImpl{
 		relayerAddress:    relayer,
 		handler:           handler,
@@ -214,9 +202,17 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 		txSubmitter:       txSubmitter,
 		rebalanceManagers: rebalanceManagers,
 		db:                db,
-		meter:             meter,
-		balanceHist:       balanceHist,
-		pendingHist:       pendingHist,
+		meter:             handler.Meter(meterName),
+	}
+
+	i.balanceGauge, err = i.meter.Float64ObservableGauge("inventory_balance")
+	if err != nil {
+		return nil, fmt.Errorf("could not create balance gauge: %w", err)
+	}
+
+	_, err = i.meter.RegisterCallback(i.recordBalances, i.balanceGauge)
+	if err != nil {
+		return nil, fmt.Errorf("could not register callback: %w", err)
 	}
 
 	err = i.initializeTokens(ctx, cfg)
@@ -471,12 +467,6 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	if pending {
 		return nil
 	}
-	for _, pendingReb := range pendingRebalances {
-		registerErr := i.registerPendingRebalance(ctx, pendingReb)
-		if registerErr != nil {
-			span.AddEvent("could not register pending rebalance", trace.WithAttributes(attribute.String("error", registerErr.Error())))
-		}
-	}
 
 	// execute the rebalance
 	manager, ok := i.rebalanceManagers[rebalance.Method]
@@ -487,26 +477,6 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	if err != nil {
 		return fmt.Errorf("could not execute rebalance: %w", err)
 	}
-	return nil
-}
-
-// registerPendingRebalance registers a callback to update the pending rebalance amount gauge.
-func (i *inventoryManagerImpl) registerPendingRebalance(ctx context.Context, rebalance *reldb.Rebalance) (err error) {
-	if rebalance == nil || i.meter == nil || i.pendingHist == nil {
-		return nil
-	}
-
-	attributes := attribute.NewSet(
-		attribute.Int(metrics.Origin, int(rebalance.Origin)),
-		attribute.Int(metrics.Destination, int(rebalance.Destination)),
-		attribute.String("status", rebalance.Status.String()),
-		attribute.String("relayer", i.relayerAddress.Hex()),
-	)
-	tokenMetadata, err := i.GetTokenMetadata(int(rebalance.Origin), rebalance.OriginTokenAddr)
-	if err != nil {
-		return fmt.Errorf("could not get token metadata: %w", err)
-	}
-	i.pendingHist.Record(ctx, core.BigToDecimals(rebalance.OriginAmount, tokenMetadata.Decimals), metric.WithAttributeSet(attributes))
 	return nil
 }
 
@@ -538,10 +508,8 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	i.tokens = make(map[int]map[common.Address]*TokenMetadata)
 	i.gasBalances = make(map[int]*big.Int)
 
-	type registerCall func() error
 	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
 	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
-	var deferredRegisters []registerCall
 	deferredCalls := make(map[int][]w3types.Caller)
 
 	// iterate through all tokens to get the metadata
@@ -611,11 +579,6 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 					)
 				}
 			}
-
-			deferredRegisters = append(deferredRegisters, func() error {
-				//nolint:wrapcheck
-				return i.registerBalance(ctx, chainID, token)
-			})
 		}
 	}
 
@@ -649,13 +612,6 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 		return fmt.Errorf("could not get tx: %w", err)
 	}
 
-	for _, register := range deferredRegisters {
-		err = register()
-		if err != nil {
-			return fmt.Errorf("could not register func: %w", err)
-		}
-	}
-
 	return nil
 }
 
@@ -668,11 +624,8 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	var wg sync.WaitGroup
 	wg.Add(len(i.tokens))
 
-	type registerCall func() error
 	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
 	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
-	var deferredRegisters []registerCall
-
 	for cid, tokenMap := range i.tokens {
 		chainID := cid // capture func literal
 		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
@@ -684,10 +637,6 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		deferredCalls := []w3types.Caller{
 			eth.Balance(i.relayerAddress, nil).Returns(i.gasBalances[chainID]),
 		}
-		deferredRegisters = append(deferredRegisters, func() error {
-			//nolint:wrapcheck
-			return i.registerBalance(ctx, chainID, chain.EthAddress)
-		})
 
 		// queue token balance fetches
 		for ta, token := range tokenMap {
@@ -695,10 +644,6 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 			// TODO: make sure Returns does nothing on error
 			if !token.IsGasToken {
 				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.Balance))
-				deferredRegisters = append(deferredRegisters, func() error {
-					//nolint:wrapcheck
-					return i.registerBalance(ctx, chainID, tokenAddress)
-				})
 			}
 		}
 
@@ -712,40 +657,34 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	}
 	wg.Wait()
 
-	for _, register := range deferredRegisters {
-		err := register()
-		if err != nil {
-			logger.Warnf("could not register func: %v", err)
+	return nil
+}
+
+func (i *inventoryManagerImpl) recordBalances(ctx context.Context, observer metric.Observer) (err error) {
+	if i.meter == nil || i.balanceGauge == nil {
+		return nil
+	}
+
+	i.mux.RLock()
+	defer i.mux.RUnlock()
+
+	for chainID, tokens := range i.tokens {
+		for token, tokenData := range tokens {
+			opts := metric.WithAttributes(
+				attribute.Int(metrics.ChainID, chainID),
+				attribute.String("relayer_address", i.relayerAddress.String()),
+				attribute.String("token_name", tokenData.Name),
+				attribute.Int("decimals", int(tokenData.Decimals)),
+				attribute.String("token_address", token.String()),
+				attribute.String("raw_balance", tokenData.Balance.String()),
+				attribute.String("relayer", i.relayerAddress.Hex()),
+			)
+
+			// Convert the balance and record it
+			decimalBalance := core.BigToDecimals(tokenData.Balance, tokenData.Decimals)
+			observer.ObserveFloat64(i.balanceGauge, decimalBalance, opts)
 		}
 	}
 
 	return nil
 }
-
-func (i *inventoryManagerImpl) registerBalance(ctx context.Context, chainID int, token common.Address) (err error) {
-	if i.meter == nil || i.balanceHist == nil {
-		return nil
-	}
-
-	// TODO: make sure this doesn't get called until we're done
-	tokenData, ok := i.tokens[chainID][token]
-	if !ok {
-		return fmt.Errorf("could not find token in chainTokens for chainID: %d, token: %s", chainID, token)
-	}
-
-	attributes := attribute.NewSet(
-		attribute.Int(metrics.ChainID, chainID),
-		attribute.String("relayer_address", i.relayerAddress.String()),
-		attribute.String("token_name", tokenData.Name),
-		attribute.Int("decimals", int(tokenData.Decimals)),
-		attribute.String("token_address", token.String()),
-		attribute.String("raw_balance", tokenData.Balance.String()),
-		attribute.String("relayer", i.relayerAddress.Hex()),
-	)
-
-	i.balanceHist.Record(ctx, core.BigToDecimals(tokenData.Balance, tokenData.Decimals), metric.WithAttributeSet(attributes))
-	return nil
-}
-
-// Ultimately this should produce a list of all balances and remove the
-// quoted amounts from the database

@@ -117,7 +117,7 @@ The relayer is configured with a yaml file. The following is an example configur
           min_quote_amount: 10000
           rebalance_method: "circlecctp"
           maintenance_balance_pct: 20
-          initial_balance_pct: 34
+          initial_balance_pct: 50
           max_rebalance_amount: 500000
         ETH:
           address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
@@ -141,7 +141,7 @@ The relayer is configured with a yaml file. The following is an example configur
           min_quote_amount: 10000
           rebalance_method: "circlecctp"
           maintenance_balance_pct: 20
-          initial_balance_pct: 34
+          initial_balance_pct: 50
           max_rebalance_amount: 500000
         ETH:
           address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
@@ -208,7 +208,7 @@ The relayer is configured with a yaml file. The following is an example configur
     - `min_quote_amount` - smallest amount to quote for a given chain. This should be balanced against expected gas spend for a relayer to be profitable. `min_quote_amount` is to be given in decimal units (so 1000.00 is 1000)
     - `rebalance_method` - rebalance method for this particular kind of token. Some tokens may not have a rebalance method. This is either cctp or token messenger.
     - `maintenance_balance_pct` - percent of liquidity that should be maintained on the given chain for this token. If the balance is under this amount a rebalance is triggered.
-    - `initial_balance_pct` - percent of liquidity to maintain after a rebalance.
+    - `initial_balance_pct` - percent of liquidity to maintain after a rebalance. The total of these on all-chains should be 100.
     - `min_rebalance_amount` - amount of this token to try to rebalance
     - `max_rebalance_amount` - maximum amount of this token to try to rebalance at once
   - `quotable_tokens`:

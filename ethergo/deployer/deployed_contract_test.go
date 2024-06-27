@@ -4,7 +4,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
-	"github.com/synapsecns/sanguine/ethergo/example/counter"
+	counter2 "github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
 	"math/big"
 )
 
@@ -13,10 +13,10 @@ func (d *DeployerSuite) TestNewDeployedContract() {
 	backend := simulated.NewSimulatedBackendWithChainID(d.GetTestContext(), d.T(), big.NewInt(chainID))
 
 	counterDeployer := backend.GetTxContext(d.GetTestContext(), nil)
-	deploymentAddress, tx, _, err := counter.DeployCounter(counterDeployer.TransactOpts, backend)
+	deploymentAddress, tx, _, err := counter2.DeployCounter(counterDeployer.TransactOpts, backend)
 	Nil(d.T(), err)
 
-	handle, err := counter.NewCounterRef(deploymentAddress, backend)
+	handle, err := counter2.NewCounterRef(deploymentAddress, backend)
 	Nil(d.T(), err)
 
 	deployed, err := deployer.NewDeployedContract(handle, tx)

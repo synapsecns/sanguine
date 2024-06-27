@@ -23,6 +23,7 @@ func init() {
 	originTxHashFieldName = namer.GetConsistentName("OriginTxHash")
 	destTxHashFieldName = namer.GetConsistentName("DestTxHash")
 	rebalanceIDFieldName = namer.GetConsistentName("RebalanceID")
+	relayNonceFieldName = namer.GetConsistentName("RelayNonce")
 }
 
 var (
@@ -36,6 +37,8 @@ var (
 	destTxHashFieldName string
 	// rebalanceIDFieldName is the rebalances id field name.
 	rebalanceIDFieldName string
+	// relayNonceFieldName is the relay nonce field name.
+	relayNonceFieldName string
 )
 
 // RequestForQuote is the primary event model.
@@ -88,6 +91,8 @@ type RequestForQuote struct {
 	RawRequest string
 	// SendChainGas is true if the chain should send gas
 	SendChainGas bool
+	// RelayNonce is the nonce for the relay transaction.
+	RelayNonce uint64
 }
 
 // Rebalance is the event model for a rebalance action.
@@ -130,6 +135,7 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		OriginNonce:          int(request.Transaction.Nonce.Uint64()),
 		Status:               request.Status,
 		BlockNumber:          request.BlockNumber,
+		RelayNonce:           request.RelayNonce,
 	}
 }
 
@@ -216,6 +222,7 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 		Status:       r.Status,
 		OriginTxHash: common.HexToHash(r.OriginTxHash.String),
 		DestTxHash:   common.HexToHash(r.DestTxHash.String),
+		RelayNonce:   r.RelayNonce,
 	}, nil
 }
 

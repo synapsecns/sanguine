@@ -1,9 +1,9 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.24.2",
+  "version": "0.26.6",
   "private": true,
   "engines": {
-    "node": ">=18.17.0"
+    "node": ">=18.18.0"
   },
   "scripts": {
     "cf:build": "npx @cloudflare/next-on-pages",
@@ -29,7 +29,7 @@
     "@ethersproject/units": "5.7.0",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "1.0.6",
-    "@rainbow-me/rainbowkit": "^2.0.4",
+    "@rainbow-me/rainbowkit": "^2.1.2",
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
@@ -42,8 +42,8 @@
     "@types/web3": "^1.2.2",
     "@visx/chord": "^3.0.0",
     "@visx/shape": "^3.0.0",
-    "@wagmi/connectors": "^4.1.24",
-    "@wagmi/core": "^2.6.15",
+    "@wagmi/connectors": "^5.0.0",
+    "@wagmi/core": "^2.10.5",
     "babel-plugin-transform-bigint": "^1.0.32",
     "eslint": "^8.37.0",
     "eslint-config-next": "^13.5.6",
@@ -70,8 +70,8 @@
     "tailwindcss-border-gradient-radius": "^3.0.1",
     "typescript": "5.1.6",
     "use-persisted-state": "^0.3.3",
-    "viem": "^2.9.8",
-    "wagmi": "^2.5.18",
+    "viem": "^2.13.6",
+    "wagmi": "^2.9.8",
     "yarn": "^1.22.19"
   },
   "browserslist": {

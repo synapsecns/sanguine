@@ -18,11 +18,12 @@ package londinium_test
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/trie"
-	"github.com/synapsecns/sanguine/ethergo/chain/gas/londinium"
 	"math"
 	"math/big"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/trie"
+	"github.com/synapsecns/sanguine/ethergo/chain/gas/londinium"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus/ethash"
@@ -72,7 +73,7 @@ func newTestBackend(t *testing.T) *testBackend {
 	)
 	engine := ethash.NewFaker()
 	db := rawdb.NewMemoryDatabase()
-	triedb := trie.NewDatabase(db)
+	triedb := trie.NewDatabase(db, nil)
 	genesis, _ := gspec.Commit(db, triedb)
 
 	// Generate testing blocks
@@ -86,7 +87,7 @@ func newTestBackend(t *testing.T) *testBackend {
 	})
 	// Construct testing chain
 	diskdb := rawdb.NewMemoryDatabase()
-	disktriedb := trie.NewDatabase(diskdb)
+	disktriedb := trie.NewDatabase(diskdb, nil)
 	_, err := gspec.Commit(diskdb, disktriedb)
 	Nil(t, err)
 
