@@ -10,6 +10,9 @@ M-make:
 M-docker:
   - any: ['docker/**/*']
 
+M-docs:
+  - any: ['docs/**/*']
+
 M-integration:
   - any: ['integration-tests/**/*']
 
@@ -31,5 +34,17 @@ M-charts:
 C-Protocol-Critical:
   - 'packages/contracts-core/**/*.sol'
 
+M-vscode-settings:
+  - any: ['.vscode/**/*']
+
+
+Sol:
+  - '**/*.ts'
+
+Typescript:
+  - '**/*.ts'
+
+Javascript:
+  - '**/*.js'
 Go:
   - '**/*.go'
