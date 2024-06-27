@@ -32,10 +32,16 @@ func NewBot(handler metrics.Handler, cfg config.Config) Bot {
 		bot.signozEnabled = true
 	}
 
-	bot.server.AddCommandMiddleware(bot.tracingMiddleware())
+	bot.addMiddleware(bot.tracingMiddleware(), bot.metricsMiddleware())
 	bot.addCommands(bot.traceCommand(), bot.rfqLookupCommand())
 
 	return bot
+}
+
+func (b *Bot) addMiddleware(middlewares ...slacker.CommandMiddlewareHandler) {
+	for _, middleware := range middlewares {
+		b.server.AddCommandMiddleware(middleware)
+	}
 }
 
 func (b *Bot) addCommands(commands ...*slacker.CommandDefinition) {
