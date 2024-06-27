@@ -350,29 +350,16 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 		signature := c.Request.Header.Get("X-Signature-signature")
 		queryString := c.Request.URL.RawQuery
 
-		bodyBytes, err := io.ReadAll(c.Request.Body)
+		bodyBz, err := io.ReadAll(c.Request.Body)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "could not read request body"})
 			c.Abort()
 			return
 		}
 		// Put it back so we can read it again for DB operations.
-		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBz))
 
-		var jsonData map[string]interface{}
-		if err := json.Unmarshal(bodyBytes, &jsonData); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "could not unmarshal request body"})
-			c.Abort()
-			return
-		}
-		formattedJson, err := json.Marshal(jsonData)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "could not marshal request body"})
-			c.Abort()
-			return
-		}
-
-		bodyStr := string(formattedJson)
+		bodyStr := core.BytesToJSONString(bodyBz)
 
 		var message string
 		if len(queryString) > 0 {

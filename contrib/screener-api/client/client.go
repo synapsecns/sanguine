@@ -14,6 +14,7 @@ import (
 	"github.com/dubonzi/otelresty"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 )
@@ -84,8 +85,10 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appi
 		return "", fmt.Errorf("error marshaling body: %w", err)
 	}
 
+	bodyStr := core.BytesToJSONString(bodyBz)
+
 	message := fmt.Sprintf("%s;%s;%s;%s;%s;%s",
-		appid, timestamp, nonce, "POST", "/api/data/sync", string(bodyBz))
+		appid, timestamp, nonce, "POST", "/api/data/sync", bodyStr)
 
 	signature := GenerateSignature(appsecret, message)
 
