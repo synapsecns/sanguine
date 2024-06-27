@@ -435,6 +435,7 @@ export const USDC: BridgeableToken = {
     [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
     [CHAINS.BASE.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+    [CHAINS.SCROLL.id]: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 6,
@@ -450,6 +451,7 @@ export const USDC: BridgeableToken = {
     [CHAINS.DFK.id]: 18,
     [CHAINS.BASE.id]: 6,
     [CHAINS.POLYGON.id]: 6,
+    [CHAINS.SCROLL.id]: 6,
   },
   symbol: 'USDC',
   name: 'USD Coin',
@@ -799,6 +801,7 @@ export const ETH: BridgeableToken = {
     [CHAINS.ARBITRUM.id]: ZeroAddress,
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
     [CHAINS.BLAST.id]: ZeroAddress,
+    [CHAINS.SCROLL.id]: ZeroAddress,
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 18,
@@ -809,6 +812,7 @@ export const ETH: BridgeableToken = {
     [CHAINS.ARBITRUM.id]: 18,
     [CHAINS.DFK.id]: 18,
     [CHAINS.BLAST.id]: 18,
+    [CHAINS.SCROLL.id]: 18,
   },
   symbol: 'ETH',
   name: 'Ethereum',
