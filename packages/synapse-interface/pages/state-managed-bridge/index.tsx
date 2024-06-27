@@ -201,6 +201,8 @@ const StateManagedBridge = () => {
         estimatedTime,
         bridgeModuleName,
         gasDropAmount,
+        originChainId,
+        destChainId,
       } = quote
 
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
@@ -276,6 +278,8 @@ const StateManagedBridge = () => {
             bridgeModuleName: bridgeModuleName,
             gasDropAmount: BigInt(gasDropAmount.toString()),
             timestamp: currentTimestamp,
+            originChainId,
+            destChainId,
           })
         )
 
