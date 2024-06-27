@@ -17,10 +17,10 @@ func BytesToJSONString(bz []byte) string {
 	if err := json.Unmarshal(bz, &jsonData); err != nil {
 		return ""
 	}
-	formattedJson, err := json.Marshal(jsonData)
+	formattedJSON, err := json.Marshal(jsonData)
 	if err != nil {
 		return ""
 	}
 
-	return string(formattedJson)
+	return string(formattedJSON)
 }
