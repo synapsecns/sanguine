@@ -38,6 +38,14 @@ M-vscode-settings:
   - any: ['.vscode/**/*']
 
 
+M-deps:
+  - 'package.json'
+  - 'yarn.lock'
+  - 'go.mod'
+  - 'go.sum'
+  - 'go.work'
+  - 'go.work.sum'
+
 Sol:
   - '**/*.ts'
 
