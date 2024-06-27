@@ -5,8 +5,6 @@ definitions:
         type: string
       createdAt:
         type: string
-      data:
-        type: string
       id:
         type: string
       network:
