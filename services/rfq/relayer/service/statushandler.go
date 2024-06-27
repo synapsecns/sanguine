@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jellydator/ttlcache/v3"
+	"github.com/synapsecns/sanguine/core/mapmutex"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
@@ -45,6 +46,11 @@ type QuoteRequestHandler struct {
 	metrics metrics.Handler
 	// apiClient is used to get acks before submitting a relay transaction.
 	apiClient client.AuthenticatedClient
+	// mutexMiddlewareFunc is used to wrap the handler in a mutex middleware.
+	// this should only be done if Handling, not forwarding.
+	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
+	// relayMtx is the mutex for relaying.
+	relayMtx mapmutex.StringMapMutex
 }
 
 // Handler is the handler for a quote request.
@@ -62,22 +68,29 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	}
 
 	qr := &QuoteRequestHandler{
-		Origin:         *origin,
-		Dest:           *dest,
-		db:             r.db,
-		Inventory:      r.inventory,
-		Quoter:         r.quoter,
-		handlers:       make(map[reldb.QuoteRequestStatus]Handler),
-		metrics:        r.metrics,
-		RelayerAddress: r.signer.Address(),
-		claimCache:     r.claimCache,
-		apiClient:      r.apiClient,
+		Origin:              *origin,
+		Dest:                *dest,
+		db:                  r.db,
+		Inventory:           r.inventory,
+		Quoter:              r.quoter,
+		handlers:            make(map[reldb.QuoteRequestStatus]Handler),
+		metrics:             r.metrics,
+		RelayerAddress:      r.signer.Address(),
+		claimCache:          r.claimCache,
+		apiClient:           r.apiClient,
+		mutexMiddlewareFunc: r.mutexMiddleware,
+		relayMtx:            r.relayMtx,
 	}
 
+	// wrap in deadline middleware since the relay has not yet happened
 	qr.handlers[reldb.Seen] = r.deadlineMiddleware(r.gasMiddleware(qr.handleSeen))
 	qr.handlers[reldb.CommittedPending] = r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitPending))
 	qr.handlers[reldb.CommittedConfirmed] = r.deadlineMiddleware(r.gasMiddleware(qr.handleCommitConfirmed))
-	// no more need for deadline middleware now, we already relayed.
+
+	// no-op edge case, but we still want to check the deadline
+	qr.handlers[reldb.RelayStarted] = r.deadlineMiddleware(func(_ context.Context, _ trace.Span, _ reldb.QuoteRequest) error { return nil })
+
+	// no more need for deadline middleware now, we already relayed
 	qr.handlers[reldb.RelayCompleted] = qr.handleRelayCompleted
 	qr.handlers[reldb.ProvePosted] = qr.handleProofPosted
 
@@ -85,6 +98,33 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	qr.handlers[reldb.NotEnoughInventory] = r.deadlineMiddleware(qr.handleNotEnoughInventory)
 
 	return qr, nil
+}
+
+func (r *Relayer) mutexMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
+	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) (err error) {
+		unlocker, ok := r.relayMtx.TryLock(hexutil.Encode(req.TransactionID[:]))
+		if !ok {
+			span.SetAttributes(attribute.Bool("locked", true))
+			return nil
+		}
+		defer unlocker.Unlock()
+
+		// make sure the status has not changed since we last saw it
+		dbReq, err := r.db.GetQuoteRequestByID(ctx, req.TransactionID)
+		if err != nil {
+			return fmt.Errorf("could not get request: %w", err)
+		}
+		if dbReq.Status != req.Status {
+			span.SetAttributes(
+				attribute.Bool("status_changed", true),
+				attribute.String("db_status", dbReq.Status.String()),
+				attribute.String("handler_status", req.Status.String()),
+			)
+			return nil
+		}
+
+		return next(ctx, span, req)
+	}
 }
 
 func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
@@ -190,6 +230,28 @@ func (q *QuoteRequestHandler) Handle(ctx context.Context, request reldb.QuoteReq
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	// we're handling and not forwarding, so we need to wrap the handler in a mutex middleware
+	handler := q.mutexMiddlewareFunc(q.handlers[request.Status])
+	return handler(ctx, span, request)
+}
+
+// Forward forwards a quote request.
+// this ignores the mutex middleware.
+func (q *QuoteRequestHandler) Forward(ctx context.Context, request reldb.QuoteRequest) (err error) {
+	txID := hexutil.Encode(request.TransactionID[:])
+	ctx, span := q.metrics.Tracer().Start(ctx, fmt.Sprintf("forward-%s", request.Status.String()), trace.WithAttributes(
+		attribute.String("transaction_id", txID),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	// sanity check to make sure that the lock is already acquired for this tx
+	_, ok := q.relayMtx.TryLock(txID)
+	if ok {
+		panic(fmt.Sprintf("attempted forward while lock was not acquired for tx: %s", txID))
+	}
 
 	return q.handlers[request.Status](ctx, span, request)
 }

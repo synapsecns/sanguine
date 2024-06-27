@@ -1,3 +1,5 @@
+import moment from 'moment'
+
 const monthNames = [
   'Jan',
   'Feb',
@@ -40,4 +42,8 @@ export function formatDate(date) {
     return 'Today'
   }
   return `${month} ${day}, ${year}`
+}
+
+export function formatDateTimestamp(date) {
+  return moment(date).format('dddd, MMMM Do, h:mma')
 }

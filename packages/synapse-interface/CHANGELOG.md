@@ -3,6 +3,76 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.26.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.5...@synapsecns/synapse-interface@0.26.6) (2024-06-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.26.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.4...@synapsecns/synapse-interface@0.26.5) (2024-06-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.26.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.3...@synapsecns/synapse-interface@0.26.4) (2024-06-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.26.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.2...@synapsecns/synapse-interface@0.26.3) (2024-06-25)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.26.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.1...@synapsecns/synapse-interface@0.26.2) (2024-06-18)
+
+
+### Bug Fixes
+
+* **synapse-interface:** disable input pending wallet ([#2738](https://github.com/synapsecns/sanguine/issues/2738)) ([667a90e](https://github.com/synapsecns/sanguine/commit/667a90e76c0f958c37b6b760af4228657df0332d))
+
+
+
+
+
+## [0.26.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.0...@synapsecns/synapse-interface@0.26.1) (2024-06-18)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.26.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.25.2...@synapsecns/synapse-interface@0.26.0) (2024-06-17)
+
+
+### Features
+
+* **synapse-interface:** refresh stale quotes ([#2607](https://github.com/synapsecns/sanguine/issues/2607)) ([c0de3ca](https://github.com/synapsecns/sanguine/commit/c0de3caad9e8fe25aa0aed1924ffa7be19dddea5))
+
+
+
+
+
+## [0.25.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.25.1...@synapsecns/synapse-interface@0.25.2) (2024-06-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.25.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.25.0...@synapsecns/synapse-interface@0.25.1) (2024-06-07)
 
 

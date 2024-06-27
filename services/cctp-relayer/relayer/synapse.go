@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
 
@@ -204,7 +205,7 @@ func (s *synapseCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context,
 	rawMsg.State = relayTypes.Pending
 
 	if s.screener != nil {
-		blocked, err := s.screener.ScreenAddress(ctx, screenerRuleset, circleRequestSentEvent.Sender.String())
+		blocked, err := s.screener.ScreenAddress(ctx, circleRequestSentEvent.Sender.String())
 		if err != nil {
 			return nil, fmt.Errorf("error screening address: %w", err)
 		}
