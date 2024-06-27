@@ -164,6 +164,8 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
+      console.log(`allBridgeQuotes`, allQuotes)
+
       const pausedBridgeModules = new Set(
         PAUSED_MODULES.filter((module) =>
           module.chainId ? module.chainId === fromChainId : true
@@ -201,6 +203,8 @@ const StateManagedBridge = () => {
         estimatedTime,
         bridgeModuleName,
         gasDropAmount,
+        originChainId,
+        destChainId,
       } = quote
 
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
@@ -276,6 +280,8 @@ const StateManagedBridge = () => {
             bridgeModuleName: bridgeModuleName,
             gasDropAmount: BigInt(gasDropAmount.toString()),
             timestamp: currentTimestamp,
+            originChainId,
+            destChainId,
           })
         )
 
