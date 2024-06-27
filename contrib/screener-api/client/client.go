@@ -133,12 +133,8 @@ type blacklistResponse struct {
 }
 
 // GenerateSignature generates a signature for the request.
-func GenerateSignature(
-	secret,
-	message string,
-) string {
-	key := []byte(secret)
-	h := hmac.New(sha256.New, key)
+func GenerateSignature(secret, message string) string {
+	h := hmac.New(sha256.New, []byte(secret))
 	h.Write([]byte(message))
 	return hex.EncodeToString(h.Sum(nil))
 }
