@@ -60,7 +60,7 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	_ = os.Setenv(metrics.MetricsPortEnabledEnv, "false")
 
 	router := ginhelper.New(logger)
-	router.Use(handler.Gin())
+	router.Use(handler.Gin()...)
 	router.GET(metrics.MetricsPathDefault, gin.WrapH(handler.Handler()))
 
 	var lc net.ListenConfig
