@@ -2,11 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { type Address } from 'viem'
 
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import {
-  type BridgeQuote,
-  type BridgeQuoteResponse,
-  type Token,
-} from '@/utils/types'
+import { type BridgeQuote, type Token } from '@/utils/types'
 import {
   getRoutePossibilities,
   getSymbol,
@@ -17,7 +13,6 @@ import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { findValidToken } from '@/utils/findValidToken'
-import { FetchState } from '../portfolio/actions'
 
 export interface BridgeState {
   fromChainId: number
@@ -33,8 +28,6 @@ export interface BridgeState {
   debouncedFromValue: string
   debouncedToTokensFromValue: string
   bridgeQuote: BridgeQuote
-  toTokensBridgeQuotes: BridgeQuoteResponse[]
-  toTokensBridgeQuotesStatus: FetchState
   isLoading: boolean
   isWalletPending: boolean
   deadlineMinutes: number | null
@@ -71,8 +64,6 @@ export const initialState: BridgeState = {
   debouncedFromValue: '',
   debouncedToTokensFromValue: '',
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
-  toTokensBridgeQuotes: [],
-  toTokensBridgeQuotesStatus: FetchState.IDLE,
   isLoading: false,
   isWalletPending: false,
   deadlineMinutes: null,
@@ -480,10 +471,6 @@ export const bridgeSlice = createSlice({
       state.fromValue = initialState.fromValue
       state.debouncedFromValue = initialState.debouncedFromValue
     },
-    resetFetchedBridgeQuotes: (state) => {
-      state.toTokensBridgeQuotes = initialState.toTokensBridgeQuotes
-      state.toTokensBridgeQuotesStatus = initialState.toTokensBridgeQuotesStatus
-    },
   },
 })
 
@@ -503,7 +490,6 @@ export const {
   setIsWalletPending,
   resetBridgeInputs,
   clearDestinationAddress,
-  resetFetchedBridgeQuotes,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer

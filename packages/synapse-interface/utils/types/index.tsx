@@ -87,11 +87,6 @@ export type BridgeQuote = {
   destChainId: number
 }
 
-export interface BridgeQuoteResponse extends BridgeQuote {
-  destinationToken: Token
-  destinationChainId: number
-}
-
 interface TokensByChain {
   [cID: string]: Token[]
 }
