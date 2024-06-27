@@ -1,4 +1,5 @@
-package instrumentation
+// Package httpcapture provides an http.RoundTripper that captures requests and responses.
+package httpcapture
 
 import (
 	"bytes"
@@ -12,7 +13,6 @@ import (
 )
 
 // NewCaptureTransport returns a new http.Transport that captures requests and responses.
-// TODO: add tests.
 func NewCaptureTransport(underlyingTransport http.RoundTripper, handler metrics.Handler) http.RoundTripper {
 	return &captureTransport{
 		transport: underlyingTransport,

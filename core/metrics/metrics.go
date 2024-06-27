@@ -17,6 +17,8 @@ import (
 )
 
 // Handler collects metrics.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name Handler --output ./mocks --case=underscore
 type Handler interface {
 	Start(ctx context.Context) error
 	// Gin gets a gin middleware for tracing.

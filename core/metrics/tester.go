@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/config"
+	"go.opentelemetry.io/otel/attribute"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"testing"
@@ -50,4 +51,37 @@ func (t *testHandler) GetSpansByName(name string) (spans []tracetest.SpanStub) {
 		}
 	}
 	return
+}
+
+// SpanEventByName returns the value of the first event with the given name.
+// it is a helper function for tests.
+func SpanEventByName(stub tracetest.SpanStub, name string) *attribute.Value {
+	for _, event := range stub.Events {
+		if event.Name == name {
+			return &event.Attributes[0].Value
+		}
+	}
+	return nil
+}
+
+// SpanAttributeByName returns the value of the first attribute with the given name.
+// it is a helper function for tests.
+func SpanAttributeByName(stub tracetest.SpanStub, name string) *attribute.Value {
+	for _, attr := range stub.Attributes {
+		if attr.Key == attribute.Key(name) {
+			return &attr.Value
+		}
+	}
+	return nil
+}
+
+// SpanHasException returns true if the span has an exception event.
+// it is a helper function for tests.
+func SpanHasException(stub tracetest.SpanStub) bool {
+	for _, event := range stub.Events {
+		if event.Name == "exception" {
+			return true
+		}
+	}
+	return false
 }

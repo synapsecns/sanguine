@@ -55,7 +55,7 @@ func main() {
 		}
 	}()
 
-	err = util2.WaitForStart(ctx, tmpPort)
+	err = ginhelper.WaitForStart(ctx, tmpPort)
 	if err != nil {
 		panic(err)
 	}

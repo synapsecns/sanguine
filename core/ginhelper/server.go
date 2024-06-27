@@ -92,7 +92,7 @@ func newBase() *gin.Engine {
 	server.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
 		AllowHeaders:    []string{"*"},
-		AllowMethods:    []string{"GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowMethods:    []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodPatch, http.MethodDelete, http.MethodOptions},
 		MaxAge:          12 * time.Hour,
 	}))
 

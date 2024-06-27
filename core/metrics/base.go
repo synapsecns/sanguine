@@ -126,6 +126,7 @@ func (b *baseHandler) startMetricsServer(ctx context.Context) {
 }
 
 func (b *baseHandler) Gin() gin.HandlerFunc {
+
 	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp), otelgin.WithPropagators(b.propagator))
 }
 
