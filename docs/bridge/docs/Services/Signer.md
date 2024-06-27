@@ -106,10 +106,10 @@ signer_config:
 
 `aws.yaml`:
 ```yaml
-region: us-east-1 # should match the region of your key!
-access_key: YOUR_ACCESS_KEY
-access_secret: YOUR_ACCESS_SECRET
-key_id: f15fa759-7c13-44eb-a868-e7388aa1387b # this will be the id from above.
+region: "us-east-1" # should match the region of your key!
+access_key: "YOUR_ACCESS_KEY"
+access_secret: "YOUR_ACCESS_SECRET"
+key_id: "f15fa759-7c13-44eb-a868-e7388aa1387b" # this will be the id from above.
 ```
 
 This is obviously used in multiple services, so we've put together an example service that will print out the address of your key.
