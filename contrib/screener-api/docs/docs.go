@@ -112,9 +112,6 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "data": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
