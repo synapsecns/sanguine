@@ -356,6 +356,7 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		// Put it back so we can read it again for DB operations.
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
 		var jsonData map[string]interface{}
@@ -364,7 +365,6 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
 		formattedJson, err := json.Marshal(jsonData)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "could not marshal request body"})
@@ -376,11 +376,15 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 
 		var message string
 		if len(queryString) > 0 {
-			message = fmt.Sprintf("%s;%s;%s;%s;%s;%s;%s",
-				appID, timestamp, nonce, "POST", "/api/data/sync", queryString, bodyStr)
+			message = fmt.Sprintf(
+				"%s;%s;%s;%s;%s;%s;%s",
+				appID, timestamp, nonce, "POST", "/api/data/sync", queryString, bodyStr,
+			)
 		} else {
-			message = fmt.Sprintf("%s;%s;%s;%s;%s;%s",
-				appID, timestamp, nonce, "POST", "/api/data/sync", bodyStr)
+			message = fmt.Sprintf(
+				"%s;%s;%s;%s;%s;%s",
+				appID, timestamp, nonce, "POST", "/api/data/sync", bodyStr,
+			)
 		}
 
 		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)

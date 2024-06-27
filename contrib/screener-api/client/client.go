@@ -78,15 +78,14 @@ func (c clientImpl) BlacklistAddress(ctx context.Context, appsecret string, appi
 
 	nonce := strings.ReplaceAll(uuid.New().String(), "-", "")[:32]
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
-	queryString := ""
 
 	bodyBz, err := json.Marshal(body)
 	if err != nil {
 		return "", fmt.Errorf("error marshaling body: %w", err)
 	}
 
-	message := fmt.Sprintf("%s%s%s%s%s%s%s",
-		appid, timestamp, nonce, "POST", "/api/data/sync", queryString, string(bodyBz))
+	message := fmt.Sprintf("%s;%s;%s;%s;%s;%s",
+		appid, timestamp, nonce, "POST", "/api/data/sync", string(bodyBz))
 
 	signature := GenerateSignature(appsecret, message)
 
