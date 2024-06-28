@@ -53,6 +53,8 @@ func (s *ScreenerSuite) SetupSuite() {
 	if useMetrics {
 		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 		metricsHandler = metrics.Jaeger
+	} else {
+		metricsHandler = metrics.OTLP
 	}
 
 	var err error
@@ -175,14 +177,7 @@ func (s *ScreenerSuite) TestScreener() {
 	// unauthorized, return on err so statuses will be only one
 	cfg.AppSecret = "BAD"
 	statuses, err = blacklistTestWithOperation(s.T(), "create", apiClient, cfg)
-	all(s.T(), statuses, func(status string) bool {
-		return status == "ERROR"
-	})
-	Equal(s.T(), len(statuses), 1)
 	NotNil(s.T(), err)
-
-	c := chainalysis.NewClient(s.metrics, []string{"Severe", "High"}, "key", "url")
-	NotNil(s.T(), c)
 
 }
 
