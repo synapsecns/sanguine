@@ -24,7 +24,7 @@ export function ChainInfo({
   txHash,
   useExplorerLink = false,
   noLink = false,
-  className = ''
+  className = '',
 }: ChainInfoProps) {
   const chain = CHAINS_BY_ID[chainId]
   let link = ''
@@ -37,10 +37,9 @@ export function ChainInfo({
     link = getChainUrl({ chainId })
   }
 
-
   if (chain) {
     return (
-      <div className="w-full relative">
+      <div className="relative w-full">
         <div className="flex items-center justify-start">
           <Image
             className={`inline rounded-full ${imgClassName}`}

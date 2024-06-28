@@ -6,7 +6,7 @@ import { TOKEN_HASH_MAP, tokenAddressToToken } from 'synapse-constants'
 import { addressToDecimals } from '@utils/addressToDecimals'
 import { Tooltip as ReactTooltip } from 'react-tooltip'
 
-export function IconAndAmount({
+export const IconAndAmount = ({
   formattedValue,
   tokenAddress,
   chainId,
@@ -14,9 +14,10 @@ export function IconAndAmount({
   textSize = 'text-2xl',
   iconSize = 'w-4 h-4 rounded-full',
   styledCoin = false,
-  className = ''
-}) {
-  const t = chainId && tokenAddress && tokenAddressToToken( chainId, tokenAddress )
+  className = '',
+}) => {
+  const t =
+    chainId && tokenAddress && tokenAddressToToken(chainId, tokenAddress)
 
   let styledCoinClass
   if (styledCoin === true) {
@@ -25,18 +26,18 @@ export function IconAndAmount({
   } else {
     styledCoinClass = t && `${getCoinTextColor(t)} ${textSize}`
   }
-2
+  2
   let amount
   let showToken
   if (tokenSymbol) {
-    const displaySymbol = addressToSymbol({ tokenAddress, chainId }) || tokenSymbol
+    const displaySymbol =
+      addressToSymbol({ tokenAddress, chainId }) || tokenSymbol
     showToken = <div className={styledCoinClass}>{displaySymbol}</div>
     const dec = 10 ** addressToDecimals({ tokenAddress, chainId })
     // Need a cleaner way of doing this.
     if (formattedValue > 10000000) {
       amount = formattedValue / (dec / 10 ** 6)
-    }
-    else {
+    } else {
       amount = formattedValue
     }
   } else {
@@ -57,12 +58,12 @@ export function IconAndAmount({
           tokenAddress={tokenAddress}
           tokenSymbol={tokenSymbol}
           chainId={chainId}
-          className={`${iconSize} min-w-[1.5rem] min-h-[1.5rem] inline rounded-full`}
+          className={`${iconSize} min-w-[1rem] min-h-[1rem] inline rounded-full`}
         />
         <div
           data-tooltip-content={amount}
           data-tooltip-id="amount"
-          className='flex-1 text-white pl-1 mr-1'
+          className="flex-1 pl-1 mr-1 text-white"
         >
           {formatAmount(amount)}
         </div>
