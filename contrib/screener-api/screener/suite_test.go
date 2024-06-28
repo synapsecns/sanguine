@@ -181,7 +181,7 @@ func (s *ScreenerSuite) TestScreener() {
 	Equal(s.T(), len(statuses), 1)
 	NotNil(s.T(), err)
 
-	c := chainalysis.NewClient([]string{"Severe", "High"}, "key", "url")
+	c := chainalysis.NewClient(s.metrics, []string{"Severe", "High"}, "key", "url")
 	NotNil(s.T(), c)
 
 	ot, err := c.ScreenAddress(s.GetTestContext(), "0x123")
