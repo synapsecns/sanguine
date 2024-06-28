@@ -86,9 +86,9 @@ func (m *untypedMapMutexImpl) TryLock(key interface{}) (Unlocker, bool) {
 
 // Keys returns all keys in the map.
 func (m *untypedMapMutexImpl) Keys() []interface{} {
-	// note that we don't lock here in case the map is already locked.
-	// the idea is that this function can be used for debugging-
-	// there may be read inconsistencies.
+	m.ml.Lock()
+	defer m.ml.Unlock()
+
 	keys := make([]interface{}, 0, len(m.ma))
 	for k := range m.ma {
 		keys = append(keys, k)
