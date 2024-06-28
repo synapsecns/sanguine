@@ -25,7 +25,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
         className="block w-full no-underline group"
       >
         <div className="flex flex-row">
-          <div className="flex flex-col w-[12.5%] px-1 py-2">
+          <div className="flex flex-col w-[12.5%] px-1">
             <span className="text-gray-400">
               {new Date(fromInfo.time * 1000).toDateString() ===
               new Date().toDateString()
@@ -41,7 +41,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               })}
             </span>
           </div>
-          <div className="flex flex-col w-[12.5%] py-2">
+          <div className="flex flex-col w-[12.5%] space-y-2">
             <StyleAddress sourceInfo={fromInfo} />
             {pending ? (
               <StyleAddress sourceInfo={fromInfo} />
@@ -51,13 +51,12 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               <StyleAddress sourceInfo={toInfo} />
             )}
           </div>
-          <div className="flex flex-col w-[12.5%]">
+          <div className="flex flex-col min-w-[12.5%] space-y-2 w-fit">
             <ChainInfo
               chainId={fromInfo.chainID}
               imgClassName="w-4 h-4 rounded-full"
               txHash={fromInfo.hash}
               useExplorerLink={false}
-              className="py-2"
             />
             <IconAndAmount
               formattedValue={fromInfo.formattedValue}
@@ -72,21 +71,17 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               iconSize="w-4 h-4 rounded-full"
               textSize="text-sm"
               styledCoin={true}
-              className="py-2"
             />
           </div>
-          <div className="relative w-[5%]">
-            <div className="absolute left-0 z-10 -translate-x-1/2 -translate-y-1/2 top-1/2">
-              <Arrow color="white" />
-            </div>
+          <div className="relative">
+            <Arrow color="white" />
           </div>
-          <div className="flex flex-col w-[12.5%]">
+          <div className="flex flex-col w-[12.5%] space-y-2">
             <ChainInfo
               chainId={pending ? fromInfo.destinationChainID : toInfo?.chainID}
               imgClassName="w-4 h-4 rounded-full"
               txHash={pending ? '' : toInfo?.hash}
               useExplorerLink={false}
-              className="py-2"
             />
             <IconAndAmount
               formattedValue={
@@ -107,15 +102,14 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               iconSize="w-4 h-4 rounded-full"
               textSize="text-sm"
               styledCoin={true}
-              className="py-2"
             />
           </div>
-          <div className="px-1 py-2 text-gray-400">
+          <div className="px-1 text-gray-400">
             {fromInfo.time
               ? timeAgo({ timestamp: fromInfo.time }) + ' ago'
               : timeAgo({ timestamp: toInfo?.time }) + ' ago'}
           </div>
-          <div className="flex flex-col w-[12.5%] group-hover:text-white group-hover:block px-1 py-2">
+          <div className="flex flex-col w-[12.5%] group-hover:text-white group-hover:block px-1">
             <span className="text-white">▶</span>
           </div>
         </div>
