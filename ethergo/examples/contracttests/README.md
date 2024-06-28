@@ -153,8 +153,8 @@
         "context"
         "github.com/ethereum/go-ethereum/accounts/abi/bind"
         . "github.com/stretchr/testify/assert"
-        "github.com/synapsecns/sanguine/ethergo/example"
-        "github.com/synapsecns/sanguine/ethergo/example/counter"
+        "github.com/synapsecns/sanguine/ethergo/examples"
+        "github.com/synapsecns/sanguine/ethergo/examples/counter"
         "github.com/synapsecns/sanguine/ethergo/manager"
         "github.com/synapsecns/sanguine/ethergo/backends/simulated"
         "testing"
@@ -233,7 +233,7 @@
         "context"
         "github.com/synapsecns/sanguine/ethergo/backends"
         "github.com/synapsecns/sanguine/ethergo/contracts"
-        "github.com/synapsecns/sanguine/ethergo/example/counter"
+        "github.com/synapsecns/sanguine/ethergo/examples/counter"
         "github.com/synapsecns/sanguine/ethergo/manager"
         "testing"
       )
@@ -255,7 +255,7 @@
             "context"
             "github.com/synapsecns/sanguine/ethergo/backends"
             "github.com/synapsecns/sanguine/ethergo/contracts"
-            "github.com/synapsecns/sanguine/ethergo/example"
+            "github.com/synapsecns/sanguine/ethergo/examples"
             "github.com/synapsecns/sanguine/ethergo/manager"
             "testing"
           )

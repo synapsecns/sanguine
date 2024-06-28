@@ -74,6 +74,8 @@ const expectCorrectBridgeQuote = (bridgeQuote: BridgeQuote) => {
   expect(bridgeQuote.maxAmountOut.gt(0)).toBe(true)
   expect(bridgeQuote.originQuery).toBeDefined()
   expect(bridgeQuote.destQuery).toBeDefined()
+  expect(bridgeQuote.originChainId).toBeDefined()
+  expect(bridgeQuote.destChainId).toBeDefined()
 }
 
 const expectCorrectPopulatedTransaction = (
@@ -293,6 +295,8 @@ describe('SynapseSDK', () => {
         expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
         )
+        expect(result.originChainId).toEqual(SupportedChainId.ETH)
+        expect(result.destChainId).toEqual(SupportedChainId.ARBITRUM)
       })
     })
   })
@@ -337,6 +341,8 @@ describe('SynapseSDK', () => {
         expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.BSC]
         )
+        expect(result.originChainId).toEqual(SupportedChainId.AVALANCHE)
+        expect(result.destChainId).toEqual(SupportedChainId.BSC)
       })
     })
 
@@ -374,6 +380,8 @@ describe('SynapseSDK', () => {
         expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.BSC]
         )
+        expect(result.originChainId).toEqual(SupportedChainId.AVALANCHE)
+        expect(result.destChainId).toEqual(SupportedChainId.BSC)
       })
     })
   })
@@ -418,6 +426,8 @@ describe('SynapseSDK', () => {
         expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.ETH]
         )
+        expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
+        expect(result.destChainId).toEqual(SupportedChainId.ETH)
       })
     })
 
@@ -455,6 +465,8 @@ describe('SynapseSDK', () => {
         expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.ETH]
         )
+        expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
+        expect(result.destChainId).toEqual(SupportedChainId.ETH)
       })
     })
 
@@ -498,6 +510,8 @@ describe('SynapseSDK', () => {
           expect(result.gasDropAmount).toEqual(
             EXPECTED_GAS_DROP[SupportedChainId.ETH]
           )
+          expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
+          expect(result.destChainId).toEqual(SupportedChainId.ETH)
         })
       })
 
@@ -536,6 +550,8 @@ describe('SynapseSDK', () => {
           expect(result.gasDropAmount).toEqual(
             EXPECTED_GAS_DROP[SupportedChainId.ETH]
           )
+          expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
+          expect(result.destChainId).toEqual(SupportedChainId.ETH)
         })
       })
 
@@ -574,6 +590,8 @@ describe('SynapseSDK', () => {
           expect(result.gasDropAmount).toEqual(
             EXPECTED_GAS_DROP[SupportedChainId.ETH]
           )
+          expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
+          expect(result.destChainId).toEqual(SupportedChainId.ETH)
         })
       })
     })
@@ -612,6 +630,8 @@ describe('SynapseSDK', () => {
         expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.ETH]
         )
+        expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
+        expect(result.destChainId).toEqual(SupportedChainId.ETH)
       })
     })
   })
@@ -657,6 +677,8 @@ describe('SynapseSDK', () => {
         expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.AVALANCHE]
         )
+        expect(result.originChainId).toEqual(SupportedChainId.BSC)
+        expect(result.destChainId).toEqual(SupportedChainId.AVALANCHE)
       })
     })
 
@@ -694,6 +716,8 @@ describe('SynapseSDK', () => {
         expect(result.gasDropAmount).toEqual(
           EXPECTED_GAS_DROP[SupportedChainId.AVALANCHE]
         )
+        expect(result.originChainId).toEqual(SupportedChainId.BSC)
+        expect(result.destChainId).toEqual(SupportedChainId.AVALANCHE)
       })
     })
   })
@@ -778,6 +802,10 @@ describe('SynapseSDK', () => {
       expect(allQuotes[1].gasDropAmount).toEqual(
         EXPECTED_GAS_DROP[SupportedChainId.ARBITRUM]
       )
+      expect(allQuotes[0].originChainId).toEqual(SupportedChainId.ETH)
+      expect(allQuotes[0].destChainId).toEqual(SupportedChainId.ARBITRUM)
+      expect(allQuotes[1].originChainId).toEqual(SupportedChainId.ETH)
+      expect(allQuotes[1].destChainId).toEqual(SupportedChainId.ARBITRUM)
     })
 
     it('Fetches only SynapseBridge quotes for ETH', async () => {

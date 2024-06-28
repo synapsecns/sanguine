@@ -6,7 +6,11 @@ import {
   useRef,
   useState,
 } from 'react'
-import { BridgeableToken, Chain, CustomThemeVariables } from 'types'
+import {
+  type BridgeableToken,
+  type Chain,
+  type CustomThemeVariables,
+} from 'types'
 import { ZeroAddress } from 'ethers'
 
 import { Web3Context } from '@/providers/Web3Provider'
@@ -28,9 +32,11 @@ import {
   setProtocolName,
 } from '@/state/slices/bridge/reducer'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
+import { setIsWalletPending } from '@/state/slices/wallet/reducer'
 import {
   fetchAndStoreAllowance,
   fetchAndStoreTokenBalances,
+  useWalletState,
 } from '@/state/slices/wallet/hooks'
 import { BridgeButton } from '@/components/BridgeButton'
 import { AvailableBalance } from '@/components/AvailableBalance'
@@ -61,6 +67,8 @@ import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
+import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
+import { useBridgeQuoteUpdater } from '@/hooks/useBridgeQuoteUpdater'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -114,8 +122,8 @@ export const Widget = ({
   }, [originChainId])
 
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
-
   const { isInputValid, hasValidSelections } = useValidations()
+  const { isWalletPending } = useWalletState()
 
   const { bridgeTxnStatus } = useBridgeTransactionState()
   const { approveTxnStatus } = useApproveTransactionState()
@@ -191,32 +199,38 @@ export const Widget = ({
     bridgeQuote?.routerAddress,
   ])
 
+  const fetchAndStoreBridgeQuote = async () => {
+    currentSDKRequestID.current += 1
+    const thisRequestId = currentSDKRequestID.current
+
+    dispatch(resetQuote())
+    const currentTimestamp: number = getTimeMinutesFromNow(0)
+
+    if (thisRequestId === currentSDKRequestID.current) {
+      dispatch(
+        fetchBridgeQuote({
+          originChainId,
+          destinationChainId,
+          originToken,
+          destinationToken,
+          amount: stringToBigInt(
+            debouncedInputAmount,
+            originToken.decimals[originChainId]
+          ),
+          debouncedInputAmount,
+          synapseSDK,
+          requestId: thisRequestId,
+          pausedModules: pausedModulesList,
+          timestamp: currentTimestamp,
+        })
+      )
+    }
+  }
+
   /** Handle refreshing quotes */
   useEffect(() => {
     if (isInputValid && hasValidSelections) {
-      currentSDKRequestID.current += 1
-      const thisRequestId = currentSDKRequestID.current
-
-      dispatch(resetQuote())
-
-      if (thisRequestId === currentSDKRequestID.current) {
-        dispatch(
-          fetchBridgeQuote({
-            originChainId,
-            destinationChainId,
-            originToken,
-            destinationToken,
-            amount: stringToBigInt(
-              debouncedInputAmount,
-              originToken.decimals[originChainId]
-            ),
-            debouncedInputAmount,
-            synapseSDK,
-            requestId: thisRequestId,
-            pausedModules: pausedModulesList,
-          })
-        )
-      }
+      fetchAndStoreBridgeQuote()
     } else {
       dispatch(resetQuote())
     }
@@ -229,6 +243,13 @@ export const Widget = ({
     isInputValid,
     hasValidSelections,
   ])
+
+  useBridgeQuoteUpdater(
+    bridgeQuote,
+    fetchAndStoreBridgeQuote,
+    isLoading,
+    isWalletPending
+  )
 
   const handleUserInput = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -268,6 +289,7 @@ export const Widget = ({
 
   const executeApproval = async () => {
     try {
+      dispatch(setIsWalletPending(true))
       const tx = await dispatch(
         executeApproveTxn({
           spenderAddress: bridgeQuote?.routerAddress,
@@ -294,11 +316,14 @@ export const Widget = ({
       }
     } catch (error) {
       console.error(`[Synapse Widget] Error while approving token: `, error)
+    } finally {
+      dispatch(setIsWalletPending(false))
     }
   }
 
   const executeBridge = async () => {
     try {
+      dispatch(setIsWalletPending(true))
       const action = await dispatch(
         executeBridgeTxn({
           destinationAddress: connectedAddress,
@@ -348,6 +373,8 @@ export const Widget = ({
       }
     } catch (error) {
       console.error('[Synapse Widget] Error bridging: ', error)
+    } finally {
+      dispatch(setIsWalletPending(false))
     }
   }
 

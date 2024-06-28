@@ -3,7 +3,6 @@ package screener_test
 import (
 	"context"
 	"crypto/rand"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
@@ -182,7 +181,7 @@ func (s *ScreenerSuite) TestScreener() {
 	Equal(s.T(), len(statuses), 1)
 	NotNil(s.T(), err)
 
-	c := chainalysis.NewClient([]string{"Severe", "High"}, "key", "url")
+	c := chainalysis.NewClient(s.metrics, []string{"Severe", "High"}, "key", "url")
 	NotNil(s.T(), c)
 
 	ot, err := c.ScreenAddress(s.GetTestContext(), "0x123")
@@ -198,23 +197,18 @@ func blacklistTestWithOperation(t *testing.T, operation string, apiClient client
 			return statuses, fmt.Errorf("error generating random number: %w", err)
 		}
 
-		dataMap := map[string]string{"key": fmt.Sprintf("value-%d", randomNumber)}
-		dataStr, err := json.Marshal(dataMap)
-		if err != nil {
-			return statuses, fmt.Errorf("error marshaling data: %w", err)
-		}
-
 		var body client.BlackListBody
 
 		if operation == "create" || operation == "update" {
 			body = client.BlackListBody{
-				Type:    operation,
-				ID:      fmt.Sprintf("unique-id-%d", randomNumber),
-				Data:    string(dataStr),
-				Address: fmt.Sprintf("address-%d", randomNumber),
-				Network: fmt.Sprintf("network-%d", randomNumber),
-				Tag:     fmt.Sprintf("tag-%d", randomNumber),
-				Remark:  "remark",
+				Type: operation,
+				ID:   fmt.Sprintf("unique-id-%d", randomNumber),
+				Data: client.Data{
+					Address: fmt.Sprintf("address-%d", randomNumber),
+					Network: fmt.Sprintf("network-%d", randomNumber),
+					Tag:     fmt.Sprintf("tag-%d", randomNumber),
+					Remark:  "remark",
+				},
 			}
 		} else {
 			body = client.BlackListBody{

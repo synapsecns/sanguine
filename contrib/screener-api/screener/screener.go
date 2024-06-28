@@ -67,8 +67,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	docs.SwaggerInfo.Title = "Screener API"
 	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.Port)
 
-	screener.client = chainalysis.NewClient(
-		cfg.RiskLevels, cfg.ChainalysisKey, core.GetEnv("CHAINALYSIS_URL", cfg.ChainalysisURL))
+	screener.client = chainalysis.NewClient(metricHandler, cfg.RiskLevels, cfg.ChainalysisKey, core.GetEnv("CHAINALYSIS_URL", cfg.ChainalysisURL))
 
 	screener.blacklistCache = make(map[string]bool)
 	screener.whitelist = make(map[string]bool)
@@ -277,26 +276,24 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	span.SetAttributes(
 		attribute.String("type", blacklistBody.Type),
 		(attribute.String("id", blacklistBody.ID)),
-		(attribute.String("data", blacklistBody.Data)),
-		(attribute.String("network", blacklistBody.Network)),
-		(attribute.String("tag", blacklistBody.Tag)),
-		(attribute.String("remark", blacklistBody.Remark)),
-		(attribute.String("address", blacklistBody.Address)),
+		(attribute.String("network", blacklistBody.Data.Network)),
+		(attribute.String("tag", blacklistBody.Data.Tag)),
+		(attribute.String("remark", blacklistBody.Data.Remark)),
+		(attribute.String("address", blacklistBody.Data.Address)),
 	)
 
 	blacklistedAddress := db.BlacklistedAddress{
 		Type:    blacklistBody.Type,
 		ID:      blacklistBody.ID,
-		Data:    blacklistBody.Data,
-		Network: blacklistBody.Network,
-		Tag:     blacklistBody.Tag,
-		Remark:  blacklistBody.Remark,
-		Address: strings.ToLower(blacklistBody.Address),
+		Network: blacklistBody.Data.Network,
+		Tag:     blacklistBody.Data.Tag,
+		Remark:  blacklistBody.Data.Remark,
+		Address: strings.ToLower(blacklistBody.Data.Address),
 	}
 
 	s.blacklistCacheMux.Lock()
 	defer s.blacklistCacheMux.Unlock()
-	s.blacklistCache[blacklistBody.Address] = true
+	s.blacklistCache[blacklistBody.Data.Address] = true
 
 	switch blacklistBody.Type {
 	case "create":
@@ -306,7 +303,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			return
 		}
 
-		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
@@ -317,7 +314,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			return
 		}
 
-		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
@@ -328,7 +325,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 			return
 		}
 
-		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Address)))
+		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 		return
 
@@ -352,17 +349,34 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 		signature := c.Request.Header.Get("X-Signature-signature")
 		queryString := c.Request.URL.RawQuery
 
-		bodyBytes, err := io.ReadAll(c.Request.Body)
+		bodyBz, err := io.ReadAll(c.Request.Body)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "could not read request body"})
 			c.Abort()
 			return
 		}
-		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-		bodyStr := string(bodyBytes)
+		// Put it back so we can read it again for DB operations.
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBz))
 
-		message := fmt.Sprintf("%s%s%s%s%s%s%s",
-			appID, timestamp, nonce, "POST", "/api/data/sync", queryString, bodyStr)
+		bodyStr, err := core.BytesToJSONString(bodyBz)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "could not convert bytes to json"})
+			c.Abort()
+			return
+		}
+
+		var message string
+		if len(queryString) > 0 {
+			message = fmt.Sprintf(
+				"%s;%s;%s;%s;%s;%s;%s",
+				appID, timestamp, nonce, "POST", "/api/data/sync", queryString, bodyStr,
+			)
+		} else {
+			message = fmt.Sprintf(
+				"%s;%s;%s;%s;%s;%s",
+				appID, timestamp, nonce, "POST", "/api/data/sync", bodyStr,
+			)
+		}
 
 		expectedSignature := client.GenerateSignature(cfg.AppSecret, message)
 

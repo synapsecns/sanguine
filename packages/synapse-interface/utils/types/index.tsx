@@ -83,6 +83,8 @@ export type BridgeQuote = {
   bridgeModuleName: string
   gasDropAmount: bigint
   timestamp: number
+  originChainId: number
+  destChainId: number
 }
 
 interface TokensByChain {

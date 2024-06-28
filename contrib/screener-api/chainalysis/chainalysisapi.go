@@ -4,14 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/TwiN/gocache/v2"
-	"github.com/valyala/fastjson"
 	"net/http"
 	"slices"
 	"strings"
 	"time"
 
+	"github.com/TwiN/gocache/v2"
+	"github.com/dubonzi/otelresty"
+	"github.com/valyala/fastjson"
+
 	"github.com/go-resty/resty/v2"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
 )
 
@@ -41,7 +44,7 @@ const (
 )
 
 // NewClient creates a new Chainalysis API client.
-func NewClient(riskLevels []string, apiKey, url string) Client {
+func NewClient(metricHandler metrics.Handler, riskLevels []string, apiKey, url string) Client {
 	client := resty.New().
 		SetBaseURL(url).
 		SetHeader("Content-Type", "application/json").
@@ -51,6 +54,8 @@ func NewClient(riskLevels []string, apiKey, url string) Client {
 	// max cache size 3gb
 	// TODO: make this configurable.
 	registrationCache := gocache.NewCache().WithEvictionPolicy(gocache.LeastRecentlyUsed).WithMaxMemoryUsage(maxCacheSizeGB * bytesInGB)
+
+	otelresty.TraceClient(client, otelresty.WithTracerProvider(metricHandler.GetTracerProvider()))
 
 	return &clientImpl{
 		client:            client,

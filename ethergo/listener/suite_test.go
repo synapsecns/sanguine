@@ -6,8 +6,8 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ipfs/go-log"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/ethergo/example"
-	"github.com/synapsecns/sanguine/ethergo/example/counter"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	db2 "github.com/synapsecns/sanguine/ethergo/listener/db"
 	"gorm.io/gorm"
@@ -31,7 +31,7 @@ const chainID = 10
 
 type ListenerTestSuite struct {
 	*testsuite.TestSuite
-	manager *example.DeployManager
+	manager *contracttests.DeployManager
 	backend backends.SimulatedTestBackend
 	store   db2.ChainListenerDB
 	metrics metrics.Handler
@@ -53,7 +53,7 @@ func TestListenerSuite(t *testing.T) {
 func (l *ListenerTestSuite) SetupTest() {
 	l.TestSuite.SetupTest()
 
-	l.manager = example.NewDeployManager(l.T())
+	l.manager = contracttests.NewDeployManager(l.T())
 	l.backend = geth.NewEmbeddedBackendForChainID(l.GetTestContext(), l.T(), big.NewInt(chainID))
 	var err error
 	l.metrics = metrics.NewNullHandler()
