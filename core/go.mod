@@ -61,7 +61,6 @@ require (
 	golang.org/x/sync v0.7.0
 	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.10
-	gotest.tools v2.2.0+incompatible
 	k8s.io/apimachinery v0.29.3
 )
 
