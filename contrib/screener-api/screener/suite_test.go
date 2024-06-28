@@ -260,8 +260,6 @@ func (m mockClient) RegisterAddress(ctx context.Context, address string) error {
 	return nil
 }
 
-var _ chainalysis.Client = mockClient{}
-
 type Exposure struct {
 	Category     string  `json:"category"`
 	Value        float64 `json:"value"`
@@ -295,3 +293,5 @@ func all(t *testing.T, statuses []string, f func(string) bool) {
 }
 
 const success = "OK"
+
+var _ chainalysis.Client = mockClient{}
