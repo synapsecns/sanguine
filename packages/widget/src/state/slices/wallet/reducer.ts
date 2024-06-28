@@ -15,6 +15,7 @@ export interface WalletState {
   allowance: string
   status: FetchState
   error?: any
+  isWalletPending: boolean
 }
 
 const initialState: WalletState = {
@@ -22,12 +23,17 @@ const initialState: WalletState = {
   allowance: null,
   status: FetchState.IDLE,
   error: null,
+  isWalletPending: false,
 }
 
 export const walletSlice = createSlice({
   name: 'wallet',
   initialState,
-  reducers: {},
+  reducers: {
+    setIsWalletPending: (state, action: PayloadAction<boolean>) => {
+      state.isWalletPending = action.payload
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchAndStoreTokenBalances.pending, (state) => {
@@ -65,5 +71,7 @@ export const walletSlice = createSlice({
       })
   },
 })
+
+export const { setIsWalletPending } = walletSlice.actions
 
 export default walletSlice.reducer
