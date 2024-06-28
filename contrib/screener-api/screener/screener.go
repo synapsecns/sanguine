@@ -38,8 +38,8 @@ import (
 )
 
 const (
-	OK    = "OK"
-	ERROR = "ERROR"
+	okResponse  = "OK"
+	errResponse = "ERROR"
 )
 
 // Screener is the interface for the screener.
@@ -274,7 +274,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 	// Grab the body of the JSON request and unmarshal it into the blacklistBody struct.
 	if err := c.ShouldBindBodyWith(&blacklistBody, binding.JSON); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ERROR})
+		c.JSON(http.StatusBadRequest, gin.H{"error": errResponse})
 		return
 	}
 
@@ -304,38 +304,38 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	case "create":
 		if err := s.db.PutBlacklistedAddress(ctx, blacklistedAddress); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": ERROR})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": errResponse})
 			return
 		}
 
 		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
-		c.JSON(http.StatusOK, gin.H{"status": OK})
+		c.JSON(http.StatusOK, gin.H{"status": okResponse})
 		return
 
 	case "update":
 		if err := s.db.UpdateBlacklistedAddress(ctx, blacklistedAddress.ID, blacklistedAddress); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": ERROR})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": errResponse})
 			return
 		}
 
 		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
-		c.JSON(http.StatusOK, gin.H{"status": OK})
+		c.JSON(http.StatusOK, gin.H{"status": okResponse})
 		return
 
 	case "delete":
 		if err := s.db.DeleteBlacklistedAddress(ctx, blacklistedAddress.ID); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": ERROR})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": errResponse})
 			return
 		}
 
 		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
-		c.JSON(http.StatusOK, gin.H{"status": OK})
+		c.JSON(http.StatusOK, gin.H{"status": okResponse})
 		return
 
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{"error": ERROR})
+		c.JSON(http.StatusBadRequest, gin.H{"error": errResponse})
 		return
 	}
 }
@@ -356,7 +356,7 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 
 		bodyBz, err := io.ReadAll(c.Request.Body)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": ERROR})
+			c.JSON(http.StatusBadRequest, gin.H{"error": errResponse})
 			c.Abort()
 			return
 		}
@@ -365,7 +365,7 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 
 		bodyStr, err := core.BytesToJSONString(bodyBz)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": ERROR})
+			c.JSON(http.StatusBadRequest, gin.H{"error": errResponse})
 			c.Abort()
 			return
 		}
@@ -401,7 +401,7 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 				"error",
 				trace.WithAttributes(attribute.String("error", "Invalid signature"+expectedSignature)),
 			)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": ERROR})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": errResponse})
 			c.Abort()
 			return
 		}
