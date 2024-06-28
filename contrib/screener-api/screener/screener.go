@@ -67,8 +67,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	docs.SwaggerInfo.Title = "Screener API"
 	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.Port)
 
-	screener.client = chainalysis.NewClient(
-		cfg.RiskLevels, cfg.ChainalysisKey, core.GetEnv("CHAINALYSIS_URL", cfg.ChainalysisURL))
+	screener.client = chainalysis.NewClient(metricHandler, cfg.RiskLevels, cfg.ChainalysisKey, core.GetEnv("CHAINALYSIS_URL", cfg.ChainalysisURL))
 
 	screener.blacklistCache = make(map[string]bool)
 	screener.whitelist = make(map[string]bool)
