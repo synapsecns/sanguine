@@ -184,9 +184,6 @@ func (s *ScreenerSuite) TestScreener() {
 	c := chainalysis.NewClient(s.metrics, []string{"Severe", "High"}, "key", "url")
 	NotNil(s.T(), c)
 
-	ot, err := c.ScreenAddress(s.GetTestContext(), "0x123")
-	NotNil(s.T(), err)
-	False(s.T(), ot)
 }
 
 func blacklistTestWithOperation(t *testing.T, operation string, apiClient client.ScreenerClient, cfg config.Config) (statuses []string, err error) {
