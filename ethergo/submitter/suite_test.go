@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
 	"math/big"
 	"os"
 	"sync"
@@ -24,7 +25,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/ethergo/example"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
@@ -80,7 +80,7 @@ func (s *SubmitterSuite) SetupSuite() {
 
 	testChainIDs := []uint64{1, 3, 4}
 	s.testBackends = make([]backends.SimulatedTestBackend, len(testChainIDs))
-	s.deployer = manager.NewDeployerManager(s.T(), example.NewCounterDeployer)
+	s.deployer = manager.NewDeployerManager(s.T(), contracttests.NewCounterDeployer)
 
 	var wg sync.WaitGroup
 	// wait for all the backends to be created, add 1 to the wait group for the metrics
@@ -115,7 +115,7 @@ func (s *SubmitterSuite) SetupSuite() {
 			options.SetProcessLogOptions(processlog.WithLogFileName(fmt.Sprintf("chain-%d.log", chainID)), processlog.WithLogDir(logDir))
 
 			s.testBackends[index] = anvil.NewAnvilBackend(s.GetSuiteContext(), s.T(), options)
-			s.deployer.Get(s.GetSuiteContext(), s.testBackends[index], example.CounterType)
+			s.deployer.Get(s.GetSuiteContext(), s.testBackends[index], contracttests.CounterType)
 		}(i, chainID)
 	}
 	wg.Wait()

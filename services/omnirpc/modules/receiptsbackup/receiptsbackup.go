@@ -65,7 +65,7 @@ func NewProxy(proxyURL, backupURL string, receiptTimeout time.Duration, handler 
 
 func (r *receiptsProxyImpl) Run(ctx context.Context) error {
 	router := ginhelper.NewWithExperimentalLogger(ctx, r.handler.ExperimentalLogger())
-	router.Use(r.handler.Gin())
+	router.Use(r.handler.Gin()...)
 
 	router.POST("/", func(c *gin.Context) {
 		err := r.ProxyRequest(c)

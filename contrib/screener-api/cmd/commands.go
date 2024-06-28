@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/synapsecns/sanguine/contrib/screener-api/config"
 	"github.com/synapsecns/sanguine/contrib/screener-api/screener"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
-	"os"
 )
 
 var fileFlag = &cli.StringFlag{
@@ -53,22 +54,4 @@ var inFileFlag = &cli.StringFlag{
 var outDirFlag = &cli.StringFlag{
 	Name:  "out-dir",
 	Usage: "Specify the path to the output directory where split CSV files will be saved. Example: --out-dir /path/to/output",
-}
-
-var splitterCommand = &cli.Command{
-	Name:        "splitter",
-	Usage:       "splitter",
-	Flags:       []cli.Flag{inFileFlag, outDirFlag},
-	Description: "takes a csv and splits it into many out csvs",
-	Action: func(context *cli.Context) error {
-		inFile := context.String(inFileFlag.Name)
-		outFile := context.String(outDirFlag.Name)
-
-		_, err := screener.SplitAndWriteCSV(inFile, outFile)
-		if err != nil {
-			return fmt.Errorf("failed to split csv: %w", err)
-		}
-
-		return nil
-	},
 }

@@ -3,6 +3,7 @@ package submitter
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/params"
 	"math/big"
 	"sort"
 	"sync"
@@ -84,7 +85,9 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	if err != nil {
 		return fmt.Errorf("could not get gas balance: %w", err)
 	}
+	t.currentGasBalances.Set(uint32(chainID.Int64()), core.CopyBigInt(gasBalance))
 	span.SetAttributes(attribute.String("gas_balance", gasBalance.String()))
+
 	for i := range txes {
 		tx := txes[i]
 
@@ -171,6 +174,33 @@ func (t *txSubmitterImpl) recordNonces(_ context.Context, observer metric.Observ
 	})
 
 	return nil
+}
+
+func (t *txSubmitterImpl) recordBalance(_ context.Context, observer metric.Observer) (err error) {
+	if t.metrics == nil || t.gasBalanceGauge == nil {
+		return nil
+	}
+
+	t.currentGasBalances.Range(func(chainID uint32, gasPrice *big.Int) bool {
+		opts := metric.WithAttributes(
+			attribute.Int(metrics.ChainID, int(chainID)),
+			attribute.String("wallet", t.signer.Address().Hex()),
+		)
+
+		observer.ObserveFloat64(t.gasBalanceGauge, toFloat(gasPrice), opts)
+		return true
+	})
+
+	return nil
+}
+
+func toFloat(wei *big.Int) float64 {
+	// Convert wei to float64
+	weiFloat := new(big.Float).SetInt(wei)
+	weiAsFloat64, _ := weiFloat.Float64()
+
+	// Perform the division to convert wei to ether
+	return weiAsFloat64 / params.Ether
 }
 
 // storeAndSubmit stores the txes in the database and submits them to the chain.

@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/contrib/screener-api/db"
-	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql/base"
 	"os"
+
+	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql/base"
 
 	"github.com/ipfs/go-log"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
@@ -59,5 +59,3 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	}
 	return &Store{base.NewStore(gdb, handler)}, nil
 }
-
-var _ db.RuleDB = &Store{}

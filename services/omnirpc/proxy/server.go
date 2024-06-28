@@ -61,7 +61,7 @@ func (r *RPCProxy) Run(ctx context.Context) {
 	go r.startProxyLoop(ctx)
 
 	router := ginhelper.New(logger)
-	router.Use(r.handler.Gin())
+	router.Use(r.handler.Gin()...)
 
 	router.POST("/rpc/:id", func(c *gin.Context) {
 		chainID, err := strconv.Atoi(c.Param("id"))

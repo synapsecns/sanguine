@@ -15,7 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation/httpcapture"
 	"github.com/synapsecns/sanguine/core/retry"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/attribute"
@@ -41,7 +41,7 @@ func makeHTTPClient(handler metrics.Handler) *http.Client {
 	httpClient := new(http.Client)
 	handler.ConfigureHTTPClient(httpClient)
 
-	httpClient.Transport = instrumentation.NewCaptureTransport(httpClient.Transport, handler)
+	httpClient.Transport = httpcapture.NewCaptureTransport(httpClient.Transport, handler)
 
 	return httpClient
 }
@@ -60,7 +60,7 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	_ = os.Setenv(metrics.MetricsPortEnabledEnv, "false")
 
 	router := ginhelper.New(logger)
-	router.Use(handler.Gin())
+	router.Use(handler.Gin()...)
 	router.GET(metrics.MetricsPathDefault, gin.WrapH(handler.Handler()))
 
 	var lc net.ListenConfig

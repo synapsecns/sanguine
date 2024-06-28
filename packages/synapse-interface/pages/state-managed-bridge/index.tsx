@@ -72,7 +72,7 @@ import {
   getBridgeModuleNames,
 } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
-import { useStaleQuoteRefresher } from '@/utils/hooks/useStaleQuoteRefresher'
+import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -201,6 +201,8 @@ const StateManagedBridge = () => {
         estimatedTime,
         bridgeModuleName,
         gasDropAmount,
+        originChainId,
+        destChainId,
       } = quote
 
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
@@ -276,6 +278,8 @@ const StateManagedBridge = () => {
             bridgeModuleName: bridgeModuleName,
             gasDropAmount: BigInt(gasDropAmount.toString()),
             timestamp: currentTimestamp,
+            originChainId,
+            destChainId,
           })
         )
 
@@ -317,7 +321,7 @@ const StateManagedBridge = () => {
     }
   }
 
-  useStaleQuoteRefresher(
+  useStaleQuoteUpdater(
     bridgeQuote,
     getAndSetBridgeQuote,
     isQuoteLoading,

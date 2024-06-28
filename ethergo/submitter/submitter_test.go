@@ -2,6 +2,8 @@ package submitter_test
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -10,8 +12,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
-	"github.com/synapsecns/sanguine/ethergo/example"
-	"github.com/synapsecns/sanguine/ethergo/example/counter"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	ethMocks "github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
@@ -270,7 +270,7 @@ func (s *SubmitterSuite) TestGetNonce() {
 
 func (s *SubmitterSuite) TestSubmitTransaction() {
 	_, cntr := manager.GetContract[*counter.CounterRef](s.GetTestContext(), s.T(),
-		s.deployer, s.testBackends[0], example.CounterType)
+		s.deployer, s.testBackends[0], contracttests.CounterType)
 
 	cfg := &config.Config{}
 	chainID := s.testBackends[0].GetBigChainID()

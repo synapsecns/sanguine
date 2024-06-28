@@ -1,6 +1,8 @@
 package anvil_test
 
 import (
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -9,8 +11,6 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
-	"github.com/synapsecns/sanguine/ethergo/example"
-	"github.com/synapsecns/sanguine/ethergo/example/counter"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 )
 
@@ -49,8 +49,8 @@ func (a *AnvilSuite) SetupSuite() {
 	a.client, err = anvil.Dial(a.GetSuiteContext(), a.backend.RPCAddress())
 	Nil(a.T(), err)
 
-	deployer := manager.NewDeployerManager(a.T(), example.NewCounterDeployer)
-	deployedContract := deployer.Get(a.GetSuiteContext(), a.backend, example.CounterType)
+	deployer := manager.NewDeployerManager(a.T(), contracttests.NewCounterDeployer)
+	deployedContract := deployer.Get(a.GetSuiteContext(), a.backend, contracttests.CounterType)
 
 	var ok bool
 	a.counter, ok = deployedContract.ContractHandle().(*counter.CounterRef)
