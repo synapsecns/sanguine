@@ -189,6 +189,8 @@ func (t *txSubmitterImpl) setupMetrics() (err error) {
 		return fmt.Errorf("could not register callback: %w", err)
 	}
 
+	_, err = t.meter.RegisterCallback(t.recordBalance, t.gasBalanceGauge)
+
 	return nil
 }
 
