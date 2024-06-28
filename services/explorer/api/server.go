@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation/httpcapture"
 	"net"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
 	etherClient "github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
@@ -173,7 +173,7 @@ func Start(ctx context.Context, cfg serverConfig.Config, handler metrics.Handler
 	// configure the http client
 	httpClient := http.DefaultClient
 	// TODO: add an option for full capture instead of keeping on by default
-	httpClient.Transport = instrumentation.NewCaptureTransport(httpClient.Transport, handler)
+	httpClient.Transport = httpcapture.NewCaptureTransport(httpClient.Transport, handler)
 	handler.ConfigureHTTPClient(httpClient)
 
 	//  get the fetcher

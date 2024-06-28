@@ -85,7 +85,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	}
 
 	screener.router = ginhelper.New(logger)
-	screener.router.Use(screener.metrics.Gin())
+	screener.router.Use(screener.metrics.Gin()...)
 
 	// Blacklist route
 	screener.router.POST("/api/data/sync", ginhelper.TraceMiddleware(metricHandler.Tracer(), true), screener.authMiddleware(cfg), screener.blacklistAddress)

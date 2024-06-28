@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/lmittmann/w3"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation/httpcapture"
 	"net/http"
 )
 
@@ -22,7 +22,7 @@ func newCaptureClient(ctx context.Context, url string, handler metrics.Handler, 
 	client := new(http.Client)
 
 	if capture {
-		client.Transport = instrumentation.NewCaptureTransport(client.Transport, handler)
+		client.Transport = httpcapture.NewCaptureTransport(client.Transport, handler)
 	}
 	c, err := metrics.RPCClient(ctx, handler, url, client)
 	if err != nil {

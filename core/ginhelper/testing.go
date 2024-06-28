@@ -1,9 +1,8 @@
-package util
+package ginhelper
 
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/retry"
 	"net/http"
 	"time"
@@ -11,10 +10,13 @@ import (
 
 // WaitForStart waits for the connection to be ready on a ginhelper like server
 // times out after serverStartTimeout.
-func WaitForStart(ctx context.Context, port int) error {
+func WaitForStart(parentCtx context.Context, port int) error {
+	ctx, cancel := context.WithTimeout(parentCtx, serverStartTimeout)
+	defer cancel()
+
 	err := retry.WithBackoff(ctx, func(ctx context.Context) error {
 		client := http.DefaultClient
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://localhost:%d%s", port, ginhelper.HealthCheck), nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://localhost:%d%s", port, HealthCheck), nil)
 		if err != nil {
 			return fmt.Errorf("could not create request: %w", err)
 		}
@@ -36,4 +38,4 @@ func WaitForStart(ctx context.Context, port int) error {
 	return nil
 }
 
-const serverStartTimeout = time.Second * 5
+var serverStartTimeout = time.Second * 5

@@ -18,10 +18,27 @@ import (
 	"time"
 )
 
+func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.CommandDefinition {
+	if b.signozEnabled {
+		return definition
+	}
+	return &slacker.CommandDefinition{
+		Command:     definition.Command,
+		Description: fmt.Sprintf("normally this would \"%s\", but signoz is not configured", definition.Description),
+		Examples:    definition.Examples,
+		Handler: func(ctx *slacker.CommandContext) {
+			_, err := ctx.Response().Reply("cannot run command: signoz is not configured")
+			if err != nil {
+				log.Println(err)
+			}
+		},
+	}
+}
+
 // nolint: traceCommand, gocognit
 // TODO: add trace middleware.
 func (b *Bot) traceCommand() *slacker.CommandDefinition {
-	return &slacker.CommandDefinition{
+	return b.requiresSignoz(&slacker.CommandDefinition{
 		Command:     "trace <tags>",
 		Description: "find a transaction in signoz",
 		Examples: []string{
@@ -112,7 +129,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 				log.Println(err)
 			}
 		},
-	}
+	})
 }
 
 func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
