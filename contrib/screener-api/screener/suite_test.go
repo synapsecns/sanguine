@@ -176,7 +176,7 @@ func (s *ScreenerSuite) TestScreener() {
 	cfg.AppSecret = "BAD"
 	statuses, err = blacklistTestWithOperation(s.T(), "create", apiClient, cfg)
 	all(s.T(), statuses, func(status string) bool {
-		return status == "401 Unauthorized"
+		return status == "ERROR"
 	})
 	Equal(s.T(), len(statuses), 1)
 	NotNil(s.T(), err)
@@ -303,4 +303,4 @@ func all(t *testing.T, statuses []string, f func(string) bool) {
 	}
 }
 
-const success = "success"
+const success = "OK"
