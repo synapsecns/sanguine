@@ -30,7 +30,7 @@ const platformTitles = {
   MESSAGE_BUS: 'Message Bus',
 }
 
-export function Home() {
+export const Home = () => {
   const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
   const [platform, setPlatform] = useState('ALL')
   const [transactionsArr, setTransactionsArr] = useState([])
@@ -148,16 +148,16 @@ export function Home() {
       />
       <br />
       <HorizontalDivider className="hidden sm:block" />
-      <HorizontalDivider className='' />
-      <div className="grid grid-cols-4 gap-4 hidden sm:grid">
+      <HorizontalDivider className="" />
+      <div className="grid hidden grid-cols-4 gap-4 sm:grid">
         <div className="col-span-1">
-          <div className="z-1 w-full h-full flex bg-synapse-logo bg-no-repeat bg-center">
+          <div className="flex w-full h-full bg-center bg-no-repeat z-1 bg-synapse-logo">
             <div id="tooltip-sidebar" className="w-full " />
           </div>
         </div>
-        <div className="col-span-3 flex justify-end flex-col my-6">
+        <div className="flex flex-col justify-end col-span-3 my-6">
           <div className="flex flex-wrap justify-end ">
-            <div className="h-full flex items-center mr-4">
+            <div className="flex items-center h-full mr-4">
               {platform === 'MESSAGE_BUS' ? null : (
                 <button
                   onClick={() => setDailyStatisticType('VOLUME')}
@@ -219,7 +219,7 @@ export function Home() {
                 </>
               )}
             </div>
-            <div className="h-full flex items-center mr-4">
+            <div className="flex items-center h-full mr-4">
               <button
                 onClick={() => SetDailyStatisticDuration('PAST_MONTH')}
                 className={
@@ -257,7 +257,7 @@ export function Home() {
                 6mo
               </button>
             </div>
-            <div className="h-full flex items-center">
+            <div className="flex items-center h-full">
               <button
                 onClick={() => SetDailyStatisticCumulative(false)}
                 className={
@@ -300,9 +300,11 @@ export function Home() {
       <br className="hidden sm:block" /> <br className="hidden sm:block" />
       <HorizontalDivider className="hidden sm:block" />
       <br /> <br />
-      <p className="text-white text-2xl font-bold sm:text-left text-center">Recent Transactions</p>
-      <div className="flex flex-col sm:flex-row justify-center items-center pr-2 gap-x-4 py-6 space-y-2 sm:space-y-0">
-        <div className="flex flex-row items-center w-full">
+      <p className="text-2xl font-bold text-center text-white sm:text-left">
+        Recent Transactions
+      </p>
+      <div className="flex flex-col items-center justify-center py-6 space-y-3 sm:flex-row gap-x-4 sm:space-y-0">
+        <div className="flex flex-row items-center w-full space-x-2">
           <TextField
             size="small"
             value={kappa}
@@ -311,7 +313,8 @@ export function Home() {
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                window.location.href = TRANSACTIONS_PATH + (kappa ? '?hash=' + kappa : '');
+                window.location.href =
+                  TRANSACTIONS_PATH + (kappa ? '?hash=' + kappa : '')
               }
             }}
             id="outlined-basic"
@@ -322,7 +325,7 @@ export function Home() {
           <a
             href={TRANSACTIONS_PATH + (kappa ? '?hash=' + kappa : '')}
             className={
-              'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700 px-4 py-1 my-1 hover:bg-opacity-70 ease-in-out duration-200 mx-2 pointer-cursor z-10' +
+              'font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700 px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200 pointer-cursor z-10' +
               (loading ? ' pointer-events-none opacity-[0.4]' : '')
             }
             style={{ flexShrink: 0 }}
@@ -330,7 +333,7 @@ export function Home() {
             Search
           </a>
         </div>
-        <div className="flex w-full justify-center sm:w-auto sm:mx-auto sm:items-center sm:py-2">
+        <div className="flex w-full sm:w-auto">
           <button
             disabled={loading}
             onClick={() => setPending(false)}
@@ -365,7 +368,7 @@ export function Home() {
         <BridgeTransactionTable queryResult={transactionsArr} />
       )}
       <br />
-      <div className="text-center text-white my-6 ">
+      <div className="my-6 text-center text-white ">
         <div className="mt-2 mb-14 ">
           <a
             className="text-white rounded-md px-5 py-3 text-opacity-100 transition-all ease-in hover:bg-synapse-radial border-l-0 border-gray-700 border-opacity-30 bg-gray-700 bg-opacity-30 hover:border-[#BE78FF] cursor-pointer"

@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.4.1...@synapsecns/widget@0.5.0) (2024-06-28)
+
+
+### Features
+
+* **widget:** refresh stale quotes ([#2763](https://github.com/synapsecns/sanguine/issues/2763)) ([2651119](https://github.com/synapsecns/sanguine/commit/26511191fe8788688d38d80be6823feb4a22c34e))
+
+
+
+
+
+## [0.4.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.4.0...@synapsecns/widget@0.4.1) (2024-06-27)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+# [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.3.0...@synapsecns/widget@0.4.0) (2024-06-27)
+
+
+### Features
+
+* **widget:** Adds scroll ([#2805](https://github.com/synapsecns/sanguine/issues/2805)) ([1f4a910](https://github.com/synapsecns/sanguine/commit/1f4a910141ff4393030c26fde5592a513e882b6a))
+
+
+
+
+
 # [0.3.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.2.1...@synapsecns/widget@0.3.0) (2024-05-17)
 
 

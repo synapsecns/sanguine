@@ -64,6 +64,8 @@ export type BridgeQuote = {
   estimatedTime: number
   bridgeModuleName: string
   gasDropAmount: BigNumber
+  originChainId: number
+  destChainId: number
 }
 
 /**

@@ -9,12 +9,10 @@ import (
 	"github.com/lmittmann/w3/w3types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation/httpcapture"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	_ "go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"io"
 	"math/big"
@@ -81,7 +79,7 @@ func (c *ClientSuite) checkRequest(makeReq func(client TestEVM)) {
 	<-doneChan
 
 	spans := mockTracer.GetSpansByName(rpcRequest.Method())
-	requestSpans := mockTracer.GetSpansByName(instrumentation.RequestSpanName)
+	requestSpans := mockTracer.GetSpansByName(httpcapture.RequestSpanName)
 	// make sure we got at most 1 span
 	c.Require().Equal(len(spans), 1, "expected 1 span, got %d", len(spans))
 	span := spans[0]
@@ -90,36 +88,9 @@ func (c *ClientSuite) checkRequest(makeReq func(client TestEVM)) {
 	requestSpan := requestSpans[0]
 
 	// make sure the span has an exception
-	c.Require().True(spanHasException(span), "expected exception event, got none")
-	Equal(c.T(), spanAttributeByName(span, "endpoint").AsString(), server.URL)
-	Equal(c.T(), spanEventByName(requestSpan, instrumentation.RequestEventName).AsString(), string(body))
-}
-
-func spanEventByName(stub tracetest.SpanStub, name string) *attribute.Value {
-	for _, event := range stub.Events {
-		if event.Name == name {
-			return &event.Attributes[0].Value
-		}
-	}
-	return nil
-}
-
-func spanAttributeByName(stub tracetest.SpanStub, name string) *attribute.Value {
-	for _, attr := range stub.Attributes {
-		if attr.Key == attribute.Key(name) {
-			return &attr.Value
-		}
-	}
-	return nil
-}
-
-func spanHasException(stub tracetest.SpanStub) bool {
-	for _, event := range stub.Events {
-		if event.Name == "exception" {
-			return true
-		}
-	}
-	return false
+	c.Require().True(metrics.SpanHasException(span), "expected exception event, got none")
+	Equal(c.T(), metrics.SpanAttributeByName(span, "endpoint").AsString(), server.URL)
+	Equal(c.T(), metrics.SpanEventByName(requestSpan, httpcapture.RequestEventName).AsString(), string(body))
 }
 
 // Test parsing.

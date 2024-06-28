@@ -38,7 +38,7 @@ export const EcotoneForkUpgradeBanner = () => {
   return (
     <AnnouncementBanner
       bannerId="03142024-ecotone-fork"
-      bannerContents={
+      bannerContent={
         <>
           Optimism + Base Bridging will be paused 10 minutes ahead of Ecotone
           (March 14, 00:00 UTC, 20:00 EST). Will be back online shortly

@@ -61,7 +61,7 @@ func NewHarmonyProxy(proxyURL string, handler metrics.Handler, port int) *Harmon
 // Run runs the harmony proxy.
 func (r *HarmonyProxy) Run(_ context.Context) error {
 	router := ginhelper.New(logger)
-	router.Use(r.handler.Gin())
+	router.Use(r.handler.Gin()...)
 
 	router.POST("/", func(c *gin.Context) {
 		err := r.ProxyRequest(c)

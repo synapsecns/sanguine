@@ -134,8 +134,6 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 	return m, nil
 }
 
-const screenerRuleset = "rfq"
-
 // ShouldProcess determines if a quote should be processed.
 func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequest) (res bool, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "shouldProcess", trace.WithAttributes(
@@ -157,7 +155,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		g, gctx := errgroup.WithContext(ctx)
 		var senderBlocked, recipientBlocked bool
 		g.Go(func() error {
-			senderBlocked, err = m.screener.ScreenAddress(gctx, screenerRuleset, quote.Transaction.OriginSender.String())
+			senderBlocked, err = m.screener.ScreenAddress(gctx, quote.Transaction.OriginSender.String())
 			if err != nil {
 				span.RecordError(fmt.Errorf("error screening address: %w", err))
 				return fmt.Errorf("error screening address: %w", err)
@@ -165,7 +163,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 			return nil
 		})
 		g.Go(func() error {
-			recipientBlocked, err = m.screener.ScreenAddress(gctx, screenerRuleset, quote.Transaction.DestRecipient.String())
+			recipientBlocked, err = m.screener.ScreenAddress(gctx, quote.Transaction.DestRecipient.String())
 			if err != nil {
 				span.RecordError(fmt.Errorf("error screening address: %w", err))
 				return fmt.Errorf("error screening address: %w", err)

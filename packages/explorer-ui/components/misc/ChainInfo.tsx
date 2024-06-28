@@ -13,6 +13,7 @@ interface ChainInfoProps {
   txHash?: string
   useExplorerLink?: boolean
   noLink?: boolean
+  className?: string
 }
 
 export function ChainInfo({
@@ -23,6 +24,7 @@ export function ChainInfo({
   txHash,
   useExplorerLink = false,
   noLink = false,
+  className = '',
 }: ChainInfoProps) {
   const chain = CHAINS_BY_ID[chainId]
   let link = ''
@@ -35,10 +37,9 @@ export function ChainInfo({
     link = getChainUrl({ chainId })
   }
 
-
   if (chain) {
     return (
-      <div className="w-full relative">
+      <div className="relative w-full">
         <div className="flex items-center justify-start">
           <Image
             className={`inline rounded-full ${imgClassName}`}
@@ -62,7 +63,7 @@ export function ChainInfo({
     )
   } else {
     return (
-      <div className="flex items-center">
+      <div className={`flex items-center ${className}`}>
         <QuestionMarkCircleIcon
           className={`inline mr-2 rounded-lg ${imgClassName}`}
           strokeWidth={1}
