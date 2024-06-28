@@ -274,7 +274,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 	// Grab the body of the JSON request and unmarshal it into the blacklistBody struct.
 	if err := c.ShouldBindBodyWith(&blacklistBody, binding.JSON); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": ERROR})
 		return
 	}
 
