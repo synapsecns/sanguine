@@ -103,7 +103,7 @@ func bigPtrToString(num *big.Int) string {
 }
 
 // sortTxesByChainID sorts a slice of transactions by nonce.
-func sortTxesByChainID(txs []db.TX) map[uint64][]db.TX {
+func sortTxesByChainID(txs []db.TX, maxPerChain int) map[uint64][]db.TX {
 	txesByChainID := make(map[uint64][]db.TX)
 	// put the transactions in a map by chain id
 	for _, t := range txs {
@@ -126,6 +126,13 @@ func sortTxesByChainID(txs []db.TX) map[uint64][]db.TX {
 			}
 			return iNonce < jNonce
 		})
+	}
+
+	// cap the number of txes per chain
+	for chainID, txes := range txesByChainID {
+		if len(txes) > maxPerChain {
+			txesByChainID[chainID] = txes[:maxPerChain]
+		}
 	}
 
 	return txesByChainID

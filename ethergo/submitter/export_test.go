@@ -39,8 +39,8 @@ func TxToAttributes(transaction *types.Transaction, UUID string) []attribute.Key
 }
 
 // SortTxes exports sortTxesByChainID for testing.
-func SortTxes(txs []db.TX) map[uint64][]db.TX {
-	return sortTxesByChainID(txs)
+func SortTxes(txs []db.TX, maxPerChain int) map[uint64][]db.TX {
+	return sortTxesByChainID(txs, maxPerChain)
 }
 
 // GroupTxesByNonce exports groupTxesByNonce for testing.

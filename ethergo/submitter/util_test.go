@@ -238,10 +238,21 @@ func (s *SubmitterSuite) TestSortTxes() {
 	}
 	wg.Wait()
 
-	sorted := submitter.SortTxes(allTxes)
+	sorted := submitter.SortTxes(allTxes, 50)
 	assert.Equal(s.T(), len(sorted), len(expected))
 	for chainID, txes := range expected {
 		for i := range txes {
+			assert.Equal(s.T(), sorted[chainID][i].Hash(), txes[i].Hash())
+		}
+	}
+
+	// check tx cap
+	numTxes := 10
+	sorted = submitter.SortTxes(allTxes, numTxes)
+	assert.Equal(s.T(), len(sorted), len(expected))
+	for chainID, txes := range expected {
+		chainTxes := txes[:numTxes]
+		for i := range chainTxes {
 			assert.Equal(s.T(), sorted[chainID][i].Hash(), txes[i].Hash())
 		}
 	}
