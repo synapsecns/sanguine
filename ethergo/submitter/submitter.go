@@ -102,18 +102,19 @@ type ClientFetcher interface {
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
 	return &txSubmitterImpl{
-		db:                db,
-		config:            config,
-		metrics:           metrics,
-		meter:             metrics.Meter(meterName),
-		signer:            signer,
-		fetcher:           fetcher,
-		nonceMux:          mapmutex.NewStringerMapMutex(),
-		statusMux:         mapmutex.NewStringMapMutex(),
-		retryNow:          make(chan bool, 1),
-		lastGasBlockCache: xsync.NewIntegerMapOf[int, *types.Header](),
-		numPendingTxes:    hashmap.New[uint32, int](),
-		currentNonces:     hashmap.New[uint32, uint64](),
+		db:                 db,
+		config:             config,
+		metrics:            metrics,
+		meter:              metrics.Meter(meterName),
+		signer:             signer,
+		fetcher:            fetcher,
+		nonceMux:           mapmutex.NewStringerMapMutex(),
+		statusMux:          mapmutex.NewStringMapMutex(),
+		retryNow:           make(chan bool, 1),
+		lastGasBlockCache:  xsync.NewIntegerMapOf[int, *types.Header](),
+		numPendingTxes:     hashmap.New[uint32, int](),
+		currentNonces:      hashmap.New[uint32, uint64](),
+		currentGasBalances: hashmap.New[uint32, *big.Int](),
 	}
 }
 
@@ -179,17 +180,20 @@ func (t *txSubmitterImpl) setupMetrics() (err error) {
 		return fmt.Errorf("could not create nonce gauge: %w", err)
 	}
 
-	t.gasBalanceGauge, err = t.meter.Float64ObservableGauge("gas_balance")
-	if err != nil {
-		return fmt.Errorf("could not create nonce gauge: %w", err)
-	}
-
 	_, err = t.meter.RegisterCallback(t.recordNonces, t.nonceGauge)
 	if err != nil {
 		return fmt.Errorf("could not register callback: %w", err)
 	}
 
+	t.gasBalanceGauge, err = t.meter.Float64ObservableGauge("gas_balance")
+	if err != nil {
+		return fmt.Errorf("could not create gas balance gauge: %w", err)
+	}
+
 	_, err = t.meter.RegisterCallback(t.recordBalance, t.gasBalanceGauge)
+	if err != nil {
+		return fmt.Errorf("could not register callback: %w", err)
+	}
 
 	return nil
 }
