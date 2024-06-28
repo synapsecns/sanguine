@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.4.1...@synapsecns/widget@0.5.0) (2024-06-28)
+
+
+### Features
+
+* **widget:** refresh stale quotes ([#2763](https://github.com/synapsecns/sanguine/issues/2763)) ([2651119](https://github.com/synapsecns/sanguine/commit/26511191fe8788688d38d80be6823feb4a22c34e))
+
+
+
+
+
 ## [0.4.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.4.0...@synapsecns/widget@0.4.1) (2024-06-27)
 
 **Note:** Version bump only for package @synapsecns/widget
