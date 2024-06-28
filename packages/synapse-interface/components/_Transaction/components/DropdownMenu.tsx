@@ -1,8 +1,16 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, ReactNode } from 'react'
 import { DownArrow } from '@/components/icons/DownArrow'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
-export const DropdownMenu = ({ menuTitleElement, children }) => {
+interface DropdownMenuProps {
+  menuTitleElement: ReactNode
+  children: ReactNode
+}
+
+export const DropdownMenu = ({
+  menuTitleElement,
+  children,
+}: DropdownMenuProps) => {
   const menuRef = useRef(null)
   const [open, setOpen] = useState<boolean>(false)
 

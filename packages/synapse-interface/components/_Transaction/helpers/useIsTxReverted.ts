@@ -2,7 +2,7 @@ import { Address } from 'viem'
 import { useEffect, useState } from 'react'
 
 import { Chain } from '@/utils/types'
-import { getTransactionReceipt } from './getTransactionReceipt'
+import { getTransactionReceipt } from '@/utils/actions/getTransactionReceipt'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
 export const useIsTxReverted = (

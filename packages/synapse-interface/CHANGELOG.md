@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.27.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.27.0...@synapsecns/synapse-interface@0.27.1) (2024-06-27)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.27.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.7...@synapsecns/synapse-interface@0.27.0) (2024-06-27)
+
+
+### Features
+
+* **synapse-interface:** SDK bridgequote chainID validation ([#2803](https://github.com/synapsecns/sanguine/issues/2803)) ([c585219](https://github.com/synapsecns/sanguine/commit/c5852196eed34ca2fd2b544b030c9667fb70dbd7))
+
+
+
+
+
 ## [0.26.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.6...@synapsecns/synapse-interface@0.26.7) (2024-06-27)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
