@@ -176,9 +176,8 @@ func (s *ScreenerSuite) TestScreener() {
 
 	// unauthorized, return on err so statuses will be only one
 	cfg.AppSecret = "BAD"
-	statuses, err = blacklistTestWithOperation(s.T(), "create", apiClient, cfg)
+	_, err = blacklistTestWithOperation(s.T(), "create", apiClient, cfg)
 	NotNil(s.T(), err)
-
 }
 
 func blacklistTestWithOperation(t *testing.T, operation string, apiClient client.ScreenerClient, cfg config.Config) (statuses []string, err error) {
