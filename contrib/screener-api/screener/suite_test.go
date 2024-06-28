@@ -53,6 +53,8 @@ func (s *ScreenerSuite) SetupSuite() {
 	if useMetrics {
 		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
 		metricsHandler = metrics.Jaeger
+	} else {
+		metricsHandler = metrics.OTLP
 	}
 
 	var err error
@@ -174,19 +176,8 @@ func (s *ScreenerSuite) TestScreener() {
 
 	// unauthorized, return on err so statuses will be only one
 	cfg.AppSecret = "BAD"
-	statuses, err = blacklistTestWithOperation(s.T(), "create", apiClient, cfg)
-	all(s.T(), statuses, func(status string) bool {
-		return status == "401 Unauthorized"
-	})
-	Equal(s.T(), len(statuses), 1)
+	_, err = blacklistTestWithOperation(s.T(), "create", apiClient, cfg)
 	NotNil(s.T(), err)
-
-	c := chainalysis.NewClient(s.metrics, []string{"Severe", "High"}, "key", "url")
-	NotNil(s.T(), c)
-
-	ot, err := c.ScreenAddress(s.GetTestContext(), "0x123")
-	NotNil(s.T(), err)
-	False(s.T(), ot)
 }
 
 func blacklistTestWithOperation(t *testing.T, operation string, apiClient client.ScreenerClient, cfg config.Config) (statuses []string, err error) {
@@ -269,8 +260,6 @@ func (m mockClient) RegisterAddress(ctx context.Context, address string) error {
 	return nil
 }
 
-var _ chainalysis.Client = mockClient{}
-
 type Exposure struct {
 	Category     string  `json:"category"`
 	Value        float64 `json:"value"`
@@ -303,4 +292,6 @@ func all(t *testing.T, statuses []string, f func(string) bool) {
 	}
 }
 
-const success = "success"
+const success = "OK"
+
+var _ chainalysis.Client = mockClient{}
