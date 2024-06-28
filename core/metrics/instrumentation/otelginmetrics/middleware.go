@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
 )
 
 // Middleware returns middleware that will trace incoming requests.
@@ -49,7 +49,7 @@ func Middleware(service string, options ...Option) gin.HandlerFunc {
 				code := int(ginCtx.Writer.Status()/100) * 100
 				resAttributes = append(resAttributes, semconv.HTTPStatusCodeKey.Int(code))
 			} else {
-				resAttributes = append(resAttributes, semconv.HTTPAttributesFromHTTPStatusCode(ginCtx.Writer.Status())...)
+				resAttributes = append(resAttributes, semconv.HTTPResponseStatusCodeKey.Int(ginCtx.Writer.Status()))
 			}
 
 			recorder.AddRequests(ctx, 1, resAttributes)
