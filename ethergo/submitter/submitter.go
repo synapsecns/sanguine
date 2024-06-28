@@ -82,10 +82,14 @@ type txSubmitterImpl struct {
 	numPendingGauge metric.Int64ObservableGauge
 	// nonceGauge is the gauge for the current nonce.
 	nonceGauge metric.Int64ObservableGauge
+	// gasBalanceGauge is the gauge for the gas balance.
+	gasBalanceGauge metric.Float64ObservableGauge
 	// numPendingTxes is used for metrics.
 	numPendingTxes *hashmap.Map[uint32, int]
 	// currentNonces is used for metrics.
 	currentNonces *hashmap.Map[uint32, uint64]
+	// currentGasBalance is used for metrics.
+	currentGasBalances *hashmap.Map[uint32, *big.Int]
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -97,7 +101,6 @@ type ClientFetcher interface {
 
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
-
 	return &txSubmitterImpl{
 		db:                db,
 		config:            config,
@@ -172,6 +175,11 @@ func (t *txSubmitterImpl) setupMetrics() (err error) {
 	}
 
 	t.nonceGauge, err = t.meter.Int64ObservableGauge("current_nonce")
+	if err != nil {
+		return fmt.Errorf("could not create nonce gauge: %w", err)
+	}
+
+	t.gasBalanceGauge, err = t.meter.Float64ObservableGauge("gas_balance")
 	if err != nil {
 		return fmt.Errorf("could not create nonce gauge: %w", err)
 	}
