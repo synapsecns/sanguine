@@ -104,12 +104,12 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               styledCoin={true}
             />
           </div>
-          <div className="px-1 text-gray-400">
+          <div className="text-gray-400">
             {fromInfo.time
               ? timeAgo({ timestamp: fromInfo.time }) + ' ago'
               : timeAgo({ timestamp: toInfo?.time }) + ' ago'}
           </div>
-          <div className="flex flex-col px-1 group-hover:text-white group-hover:block">
+          <div className="hidden group-hover:text-white group-hover:block">
             <span className="text-white">▶</span>
           </div>
         </div>
