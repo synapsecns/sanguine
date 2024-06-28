@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { Table } from '@components/TransactionTable/Table'
 import { StyleAddress } from '@components/misc/StyleAddress'
 import { IconAndAmount } from '@components/misc/IconAndAmount'
@@ -25,7 +24,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
         className="block w-full no-underline group"
       >
         <div className="flex flex-row space-x-3">
-          <div className="flex flex-col px-1 min-w-24">
+          <div className="flex flex-col min-w-24">
             <span className="text-gray-400">
               {new Date(fromInfo.time * 1000).toDateString() ===
               new Date().toDateString()
