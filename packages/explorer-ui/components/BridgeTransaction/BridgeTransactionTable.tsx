@@ -24,8 +24,8 @@ export const BridgeTransactionTable = ({ queryResult }) => {
         })}
         className="block w-full no-underline group"
       >
-        <div className="flex flex-row">
-          <div className="flex flex-col w-[12.5%] px-1">
+        <div className="flex flex-row space-x-3">
+          <div className="flex flex-col px-1 min-w-24">
             <span className="text-gray-400">
               {new Date(fromInfo.time * 1000).toDateString() ===
               new Date().toDateString()
@@ -41,7 +41,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               })}
             </span>
           </div>
-          <div className="flex flex-col w-[12.5%] space-y-2">
+          <div className="flex flex-col space-y-2 min-w-24">
             <StyleAddress sourceInfo={fromInfo} />
             {pending ? (
               <StyleAddress sourceInfo={fromInfo} />
@@ -51,7 +51,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               <StyleAddress sourceInfo={toInfo} />
             )}
           </div>
-          <div className="flex flex-col min-w-[12.5%] space-y-2 w-fit">
+          <div className="flex flex-col space-y-2 min-w-28 w-fit">
             <ChainInfo
               chainId={fromInfo.chainID}
               imgClassName="w-4 h-4 rounded-full"
@@ -76,7 +76,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
           <div className="relative">
             <Arrow color="white" />
           </div>
-          <div className="flex flex-col w-[12.5%] space-y-2">
+          <div className="flex flex-col space-y-2 min-w-36">
             <ChainInfo
               chainId={pending ? fromInfo.destinationChainID : toInfo?.chainID}
               imgClassName="w-4 h-4 rounded-full"
@@ -109,7 +109,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               ? timeAgo({ timestamp: fromInfo.time }) + ' ago'
               : timeAgo({ timestamp: toInfo?.time }) + ' ago'}
           </div>
-          <div className="flex flex-col w-[12.5%] group-hover:text-white group-hover:block px-1">
+          <div className="flex flex-col px-1 group-hover:text-white group-hover:block">
             <span className="text-white">▶</span>
           </div>
         </div>
