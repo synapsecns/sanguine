@@ -68,6 +68,8 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 
 	t.distinctChainIDMux.RLock()
 	noOpChainIDs := outersection(pendingChainIDs, t.distinctChainIDs)
+	fmt.Println("outersection 2", noOpChainIDs)
+
 	t.distinctChainIDMux.RUnlock()
 
 	pendingChainIDs64 := make([]int64, len(pendingChainIDs))
@@ -163,6 +165,8 @@ func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err 
 	t.distinctChainIDMux.RLock()
 	noOpChainIDs := outersection(mapToBigIntSlice(sortedTXsByChainID), t.distinctChainIDs)
 	t.distinctChainIDMux.RUnlock()
+
+	fmt.Println("outersection 1", noOpChainIDs)
 
 	var wg sync.WaitGroup
 	wg.Add(len(sortedTXsByChainID))
