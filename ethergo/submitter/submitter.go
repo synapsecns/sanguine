@@ -78,6 +78,8 @@ type txSubmitterImpl struct {
 	lastGasBlockCache *xsync.MapOf[int, *types.Header]
 	// config is the config for the transaction submitter.
 	config config.IConfig
+	// oldestPendingGauge is the gauge for the oldest pending transaction.
+	oldestPendingGauge metric.Float64ObservableGauge
 	// numPendingGauge is the gauge for the number of pending transactions.
 	numPendingGauge metric.Int64ObservableGauge
 	// nonceGauge is the gauge for the current nonce.
@@ -85,11 +87,17 @@ type txSubmitterImpl struct {
 	// gasBalanceGauge is the gauge for the gas balance.
 	gasBalanceGauge metric.Float64ObservableGauge
 	// numPendingTxes is used for metrics.
+	// note: numPendingTxes will stop counting at MaxResultsPerChain.
 	numPendingTxes *hashmap.Map[uint32, int]
 	// currentNonces is used for metrics.
+	// chainID -> nonce
 	currentNonces *hashmap.Map[uint32, uint64]
 	// currentGasBalance is used for metrics.
+	// chainID -> balance
 	currentGasBalances *hashmap.Map[uint32, *big.Int]
+	// oldestPendingPerChain is the oldest pending transaction.
+	// chainID -> time
+	oldestPendingPerChain *hashmap.Map[uint32, time.Time]
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -102,19 +110,20 @@ type ClientFetcher interface {
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
 	return &txSubmitterImpl{
-		db:                 db,
-		config:             config,
-		metrics:            metrics,
-		meter:              metrics.Meter(meterName),
-		signer:             signer,
-		fetcher:            fetcher,
-		nonceMux:           mapmutex.NewStringerMapMutex(),
-		statusMux:          mapmutex.NewStringMapMutex(),
-		retryNow:           make(chan bool, 1),
-		lastGasBlockCache:  xsync.NewIntegerMapOf[int, *types.Header](),
-		numPendingTxes:     hashmap.New[uint32, int](),
-		currentNonces:      hashmap.New[uint32, uint64](),
-		currentGasBalances: hashmap.New[uint32, *big.Int](),
+		db:                    db,
+		config:                config,
+		metrics:               metrics,
+		meter:                 metrics.Meter(meterName),
+		signer:                signer,
+		fetcher:               fetcher,
+		nonceMux:              mapmutex.NewStringerMapMutex(),
+		statusMux:             mapmutex.NewStringMapMutex(),
+		retryNow:              make(chan bool, 1),
+		lastGasBlockCache:     xsync.NewIntegerMapOf[int, *types.Header](),
+		numPendingTxes:        hashmap.New[uint32, int](),
+		currentNonces:         hashmap.New[uint32, uint64](),
+		currentGasBalances:    hashmap.New[uint32, *big.Int](),
+		oldestPendingPerChain: hashmap.New[uint32, time.Time](),
 	}
 }
 
@@ -191,6 +200,16 @@ func (t *txSubmitterImpl) setupMetrics() (err error) {
 	}
 
 	_, err = t.meter.RegisterCallback(t.recordBalance, t.gasBalanceGauge)
+	if err != nil {
+		return fmt.Errorf("could not register callback: %w", err)
+	}
+
+	t.oldestPendingGauge, err = t.meter.Float64ObservableGauge("oldest_pending_tx", metric.WithUnit("s"))
+	if err != nil {
+		return fmt.Errorf("could not create oldest pending gauge: %w", err)
+	}
+
+	_, err = t.meter.RegisterCallback(t.recordOldestPendingTx, t.oldestPendingGauge)
 	if err != nil {
 		return fmt.Errorf("could not register callback: %w", err)
 	}

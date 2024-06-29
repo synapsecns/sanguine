@@ -68,6 +68,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	// record metrics for txes.
 	t.currentNonces.Set(uint32(chainID.Int64()), currentNonce)
 	t.numPendingTxes.Set(uint32(chainID.Int64()), calculatePendingTxes(txes, currentNonce))
+	t.oldestPendingPerChain.Set(uint32(chainID.Int64()), fetchOldestPendingTx(txes, currentNonce))
 
 	wg := &sync.WaitGroup{}
 
@@ -142,6 +143,23 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	return nil
 }
 
+// fetchOldestPendingTx fetches the oldest pending tx in the queue.
+func fetchOldestPendingTx(txes []db.TX, nonce uint64) time.Time {
+	oldestPendingTx := time.Now()
+	for _, tx := range txes {
+		if tx.Nonce() >= nonce {
+			continue
+		}
+
+		if tx.CreationTime().Before(oldestPendingTx) {
+			oldestPendingTx = tx.CreationTime()
+		}
+	}
+
+	return oldestPendingTx
+
+}
+
 // calculatePendingTxes calculates the number of pending txes in the queue.
 func calculatePendingTxes(txes []db.TX, nonce uint64) int {
 	realPendingCount := 0
@@ -208,6 +226,25 @@ func (t *txSubmitterImpl) recordBalance(_ context.Context, observer metric.Obser
 	})
 
 	return nil
+}
+
+func (t *txSubmitterImpl) recordOldestPendingTx(_ context.Context, observer metric.Observer) (err error) {
+	if t.metrics == nil || t.oldestPendingGauge == nil {
+		return nil
+	}
+
+	t.oldestPendingPerChain.Range(func(chainID uint32, oldestPendingTx time.Time) bool {
+		opts := metric.WithAttributes(
+			attribute.Int(metrics.ChainID, int(chainID)),
+			attribute.String("wallet", t.signer.Address().Hex()),
+		)
+		observer.ObserveFloat64(t.oldestPendingGauge, time.Since(oldestPendingTx).Seconds(), opts)
+
+		return true
+	})
+
+	return nil
+
 }
 
 func toFloat(wei *big.Int) float64 {
