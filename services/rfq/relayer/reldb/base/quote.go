@@ -141,5 +141,5 @@ func isValidStateTransition(prevStatus, status reldb.QuoteRequestStatus) bool {
 	if status == reldb.DeadlineExceeded || status == reldb.WillNotProcess {
 		return true
 	}
-	return status > prevStatus
+	return status >= prevStatus
 }
