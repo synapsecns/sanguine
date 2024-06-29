@@ -148,3 +148,34 @@ func groupTxesByNonce(txs []db.TX) map[uint64][]db.TX {
 
 	return txesByNonce
 }
+
+// Function to check if a slice contains a given big integer.
+func contains(slice []*big.Int, elem *big.Int) bool {
+	for _, v := range slice {
+		if v.Cmp(elem) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// Function to get the outersection of two slices of big.Int.
+func outersection(set, superset []*big.Int) []*big.Int {
+	var result []*big.Int
+	for _, elem := range superset {
+		if !contains(set, elem) {
+			result = append(result, elem)
+		}
+	}
+	return result
+}
+
+// Generic function to convert a map[uint64]T to []*big.Int.
+func mapToBigIntSlice[T any](m map[uint64]T) []*big.Int {
+	var result []*big.Int
+	for k := range m {
+		bigIntKey := new(big.Int).SetUint64(k)
+		result = append(result, bigIntKey)
+	}
+	return result
+}

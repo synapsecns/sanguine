@@ -114,3 +114,13 @@ func (t *txSubmitterImpl) GetNonce(parentCtx context.Context, chainID *big.Int, 
 func (t *txSubmitterImpl) CheckAndSetConfirmation(ctx context.Context, chainClient client.EVM, txes []db.TX) error {
 	return t.checkAndSetConfirmation(ctx, chainClient, txes)
 }
+
+// Outersection exports outersection for testing.
+func Outersection(set, superset []*big.Int) []*big.Int {
+	return outersection(set, superset)
+}
+
+// MapToBigIntSlice exports mapToBigIntSlice for testing.
+func MapToBigIntSlice[T any](m map[uint64]T) []*big.Int {
+	return mapToBigIntSlice(m)
+}
