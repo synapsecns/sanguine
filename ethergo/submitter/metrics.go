@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
+const meterName = "github.com/synapsecns/sanguine/ethergo/submitter"
 
 // generate an interface for otelRecorder that exports the public method.
 // this allows us to avoid using recordX externally anad makes the package less confusing.
