@@ -63,6 +63,8 @@ type txSubmitterImpl struct {
 	db db.Service
 	// retryOnce is used to return 0 on the first call to GetRetryInterval.
 	retryOnce sync.Once
+	// distinctOnce is used to return 0 on the first call to GetDistinctInterval.
+	distinctOnce sync.Once
 	// retryNow is used to trigger a retry immediately.
 	// it circumvents the retry interval.
 	// to prevent memory leaks, this has a buffer of 1.
@@ -115,13 +117,15 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 // GetDistinctInterval returns the interval at which distinct chain ids should be queried.
 // this is used for metric updates.
 func (t *txSubmitterImpl) GetDistinctInterval() time.Duration {
-	retryInterval := time.Second * 60
-	t.retryOnce.Do(func() {
+	retryInterval := time.Minute
+	t.distinctOnce.Do(func() {
 		retryInterval = time.Duration(0)
 	})
 	return retryInterval
 }
 
+// Start starts the transaction submitter.
+// nolint: cyclop
 func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
 	t.otelRecorder, err = newOtelRecorder(t.metrics, t.signer)
 	if err != nil {
