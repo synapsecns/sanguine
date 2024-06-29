@@ -177,7 +177,7 @@ func (h *Handler) Withdraw(c *gin.Context) {
 				Value: value,
 			})
 
-			return tx, nil
+			return transactor.Signer(h.submitter.Address(), tx)
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not submit transaction: %s", err.Error())})

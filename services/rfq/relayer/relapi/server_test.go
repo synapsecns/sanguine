@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"math/big"
 	"net/http"
 	"time"
@@ -201,4 +202,37 @@ func (c *RelayerServerSuite) getTestQuoteRequest(status reldb.QuoteRequestStatus
 		OriginTxHash: common.HexToHash("0x0000000"),
 		DestTxHash:   common.HexToHash("0x0000001"),
 	}
+}
+
+func (c *RelayerClientSuite) TestEthWithdraw() {
+	backend := c.underlying.testBackends[uint64(c.underlying.originChainID)]
+
+	startBalance, err := backend.BalanceAt(c.GetTestContext(), testWithdrawalAddress, nil)
+	c.Require().NoError(err)
+
+	withdrawalAmount := big.NewInt(50)
+
+	_, err = c.Client.Withdraw(c.GetTestContext(), &relapi.WithdrawRequest{
+		ChainID:      uint32(backend.GetChainID()),
+		To:           testWithdrawalAddress,
+		Amount:       withdrawalAmount.String(),
+		TokenAddress: chain.EthAddress,
+	})
+	c.Require().NoError(err)
+
+	// Wait for the transaction to be mined
+	err = retry.WithBackoff(c.GetTestContext(), func(ctx context.Context) error {
+		balance, err := backend.BalanceAt(ctx, testWithdrawalAddress, nil)
+		if err != nil {
+			return err
+		}
+
+		expectedBalance := new(big.Int).Add(startBalance, withdrawalAmount)
+
+		if balance.Cmp(expectedBalance) != 0 {
+			return fmt.Errorf("balance not updated")
+		}
+
+		return nil
+	})
 }
