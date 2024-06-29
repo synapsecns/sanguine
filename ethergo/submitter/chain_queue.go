@@ -64,7 +64,10 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		return fmt.Errorf("could not get nonce: %w", err)
 	}
 	span.SetAttributes(attribute.Int("nonce", int(currentNonce)))
+
+	// record metrics for txes.
 	t.currentNonces.Set(uint32(chainID.Int64()), currentNonce)
+	t.numPendingTxes.Set(uint32(chainID.Int64()), calculatePendingTxes(txes, currentNonce))
 
 	wg := &sync.WaitGroup{}
 
@@ -122,7 +125,6 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 			logger.Errorf("could not update old tx statuses: %v", updateErr)
 		}
 	}()
-
 	wg.Wait()
 
 	sort.Slice(cq.reprocessQueue, func(i, j int) bool {
@@ -136,9 +138,23 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	}
 
 	cq.storeAndSubmit(ctx, calls, span)
-	t.numPendingTxes.Set(uint32(chainID.Int64()), len(cq.reprocessQueue))
 
 	return nil
+}
+
+// calculatePendingTxes calculates the number of pending txes in the queue.
+func calculatePendingTxes(txes []db.TX, nonce uint64) int {
+	realPendingCount := 0
+	for _, tx := range txes {
+		// current nonce is going to be transaction count (nonces are offset by -1 since first nonce is 0)
+		// so we use equal to here
+		if tx.Nonce() >= nonce {
+			realPendingCount++
+		}
+	}
+
+	return realPendingCount
+
 }
 
 func (t *txSubmitterImpl) recordNumPending(_ context.Context, observer metric.Observer) (err error) {
