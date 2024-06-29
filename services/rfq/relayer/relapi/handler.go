@@ -3,6 +3,7 @@ package relapi
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -171,12 +172,12 @@ func (h *Handler) Withdraw(c *gin.Context) {
 
 	if chain.IsGasToken(req.TokenAddress) {
 		nonce, err = h.submitter.SubmitTransaction(c, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-			tx = types.NewTx(&types.LegacyTx{
-				// covers l2s, etc
-				Gas:   500_000,
-				To:    &req.To,
-				Value: value,
-			})
+			bc := bind.NewBoundContract(req.To, abi.ABI{}, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client)
+			if transactor.GasPrice != nil {
+				transactor.Value = value
+				// nolint: wrapcheck
+				return bc.Transfer(transactor)
+			}
 
 			return transactor.Signer(h.submitter.Address(), tx)
 		})

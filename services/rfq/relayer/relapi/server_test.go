@@ -236,6 +236,7 @@ func (c *RelayerClientSuite) TestEthWithdraw() {
 
 		return nil
 	})
+	c.Require().NoError(err)
 }
 
 func (c *RelayerClientSuite) TestERC20Withdraw() {
@@ -271,4 +272,5 @@ func (c *RelayerClientSuite) TestERC20Withdraw() {
 
 		return nil
 	})
+	c.Require().NoError(err)
 }
