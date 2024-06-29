@@ -70,7 +70,7 @@ func newOtelRecorder(meterHandler metrics.Handler, signerT signer.Signer) (_ iOt
 
 	_, err = or.meter.RegisterCallback(or.recordNumPending, or.numPendingGauge)
 	if err != nil {
-		return nil, fmt.Errorf("could not register callback: %w", err)
+		return nil, fmt.Errorf("could not register callback for num pending txes gauge: %w", err)
 	}
 
 	or.nonceGauge, err = or.meter.Int64ObservableGauge("current_nonce")
@@ -80,7 +80,7 @@ func newOtelRecorder(meterHandler metrics.Handler, signerT signer.Signer) (_ iOt
 
 	_, err = or.meter.RegisterCallback(or.recordNonces, or.nonceGauge)
 	if err != nil {
-		return nil, fmt.Errorf("could not register callback: %w", err)
+		return nil, fmt.Errorf("could not register callback for nonce gauge: %w", err)
 	}
 
 	or.gasBalanceGauge, err = or.meter.Float64ObservableGauge("gas_balance")
@@ -90,7 +90,7 @@ func newOtelRecorder(meterHandler metrics.Handler, signerT signer.Signer) (_ iOt
 
 	_, err = or.meter.RegisterCallback(or.recordBalance, or.gasBalanceGauge)
 	if err != nil {
-		return nil, fmt.Errorf("could not register callback: %w", err)
+		return nil, fmt.Errorf("could not register callback for gas balance gauge: %w", err)
 	}
 
 	or.oldestPendingGauge, err = or.meter.Float64ObservableGauge("oldest_pending_tx", metric.WithUnit("s"))
@@ -100,17 +100,17 @@ func newOtelRecorder(meterHandler metrics.Handler, signerT signer.Signer) (_ iOt
 
 	_, err = or.meter.RegisterCallback(or.recordOldestPendingTx, or.oldestPendingGauge)
 	if err != nil {
-		return nil, fmt.Errorf("could not register callback: %w", err)
+		return nil, fmt.Errorf("could not register callback for oldest pending gauge: %w", err)
 	}
 
 	or.confirmedQueueGauge, err = or.meter.Int64ObservableGauge("confirmed_queue")
 	if err != nil {
-		return nil, fmt.Errorf("could not create oldest pending gauge: %w", err)
+		return nil, fmt.Errorf("could not create confirmed queue gauge: %w", err)
 	}
 
 	_, err = or.meter.RegisterCallback(or.recordConfirmedQueue, or.confirmedQueueGauge)
 	if err != nil {
-		return nil, fmt.Errorf("could not register callback: %w", err)
+		return nil, fmt.Errorf("could not register callback for confirmed queue gauge: %w", err)
 	}
 
 	return &or, nil
