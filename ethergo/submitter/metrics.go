@@ -128,11 +128,14 @@ func newOtelRecorder(meterHandler metrics.Handler, signerT signer.Signer) (_ iOt
 }
 
 func (o *otelRecorder) recordNumPending(_ context.Context, observer metric.Observer) (err error) {
+	fmt.Println("recordNumPending")
 	if o.metrics == nil || o.numPendingGauge == nil || o.numPendingTxes == nil {
 		return nil
 	}
+	fmt.Println("recordNumPending 2")
 
 	o.numPendingTxes.Range(func(chainID uint32, numPending int) bool {
+		fmt.Println("recordNumPending for ", chainID)
 		opts := metric.WithAttributes(
 			attribute.Int(metrics.ChainID, int(chainID)),
 			attribute.String("wallet", o.signer.Address().Hex()),
@@ -141,6 +144,7 @@ func (o *otelRecorder) recordNumPending(_ context.Context, observer metric.Obser
 
 		return true
 	})
+	fmt.Println("recordNumPending 3")
 
 	return nil
 }
