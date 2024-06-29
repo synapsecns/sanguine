@@ -54,6 +54,7 @@ type otelRecorder struct {
 // nolint: cyclop
 func newOtelRecorder(meterHandler metrics.Handler, signerT signer.Signer) (_ iOtelRecorder, err error) {
 	or := otelRecorder{
+		metrics:               meterHandler,
 		meter:                 meterHandler.Meter(meterName),
 		numPendingTxes:        hashmap.New[uint32, int](),
 		currentNonces:         hashmap.New[uint32, uint64](),
