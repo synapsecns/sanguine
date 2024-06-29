@@ -51,6 +51,10 @@ type Config struct {
 	QuoteSubmissionTimeout time.Duration `yaml:"quote_submission_timeout"`
 	// CCTPRelayerConfig is the embedded cctp relayer config (optional).
 	CCTPRelayerConfig *cctpConfig.Config `yaml:"cctp_relayer_config"`
+	// EnableAPIWithdrawals enables withdrawals via the API.
+	EnableAPIWithdrawals bool `yaml:"enable_api_withdrawals"`
+	// WithdrawalWhitelist is a list of addresses that are allowed to withdraw.
+	WithdrawalWhitelist []string `yaml:"withdrawal_whitelist"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -154,6 +158,26 @@ func SanitizeTokenID(id string) (sanitized string, err error) {
 	addr := common.HexToAddress(split[1])
 	sanitized = fmt.Sprintf("%d%s%s", chainID, tokenIDDelimiter, addr.Hex())
 	return sanitized, nil
+}
+
+// DecodeTokenID decodes a token ID into a chain ID and address.
+func DecodeTokenID(id string) (chainID int, addr common.Address, err error) {
+	// defensive coding, first check if the token ID is valid
+	_, err = SanitizeTokenID(id)
+	if err != nil {
+		return chainID, addr, err
+	}
+
+	split := strings.Split(id, tokenIDDelimiter)
+	if len(split) != 2 {
+		return chainID, addr, fmt.Errorf("invalid token ID: %s", id)
+	}
+	chainID, err = strconv.Atoi(split[0])
+	if err != nil {
+		return chainID, addr, fmt.Errorf("invalid chain ID: %s", split[0])
+	}
+	addr = common.HexToAddress(split[1])
+	return chainID, addr, nil
 }
 
 // LoadConfig loads the config from the given path.

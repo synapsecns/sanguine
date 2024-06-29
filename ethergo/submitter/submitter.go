@@ -39,7 +39,7 @@ import (
 
 var logger = log.Logger("ethergo-submitter")
 
-const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
+const meterName = "github.com/synapsecns/sanguine/ethergo/submitter"
 
 // TransactionSubmitter is the interface for submitting transactions to the chain.
 type TransactionSubmitter interface {
