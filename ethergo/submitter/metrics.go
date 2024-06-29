@@ -207,25 +207,30 @@ func (o *otelRecorder) recordOldestPendingTx(_ context.Context, observer metric.
 // RecordNonceForChain sets the nonce for a chain.
 func (o *otelRecorder) RecordNonceForChain(chainID uint32, nonce uint64) {
 	o.currentNonces.Set(chainID, nonce)
+	fmt.Println("recoreded", chainID, nonce)
 }
 
 // RecordGasBalanceForChain sets the gas balance for a chain.
 func (o *otelRecorder) RecordGasBalanceForChain(chainID uint32, balance *big.Int) {
 	o.currentGasBalances.Set(chainID, balance)
+	fmt.Println("recoreded", chainID, balance)
 }
 
 // RecordOldestPendingTx sets the oldest pending tx.
 func (o *otelRecorder) RecordOldestPendingTx(chainID uint32, lastPending time.Duration) {
 	o.oldestPendingPerChain.Set(chainID, lastPending)
+	fmt.Println("recoreded", chainID, lastPending)
 }
 
 // RecordNumPendingTxes sets the number of pending txes.
 func (o *otelRecorder) RecordNumPendingTxes(chainID uint32, numPending int) {
 	o.numPendingTxes.Set(chainID, numPending)
+	fmt.Println("recoreded", chainID, numPending)
 }
 
 // RecordConfirmedQueue sets the confirmed queue count.
 func (o *otelRecorder) RecordConfirmedQueue(chainID uint32, queueSize int) {
+	fmt.Println("recoreded", chainID, queueSize)
 	o.confirmedQueueCount.Set(chainID, queueSize)
 }
 
