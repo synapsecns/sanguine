@@ -3,6 +3,7 @@ package submitter
 import (
 	"context"
 	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/cornelk/hashmap"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -13,7 +14,7 @@ import (
 	"time"
 )
 
-const meterName = "github.com/synapsecns/sanguine/ethergo/submitter"
+const meterName = "ethergo/submitter"
 
 // generate an interface for otelRecorder that exports the public method.
 // this allows us to avoid using recordX externally anad makes the package less confusing.
@@ -62,6 +63,16 @@ func newOtelRecorder(meterHandler metrics.Handler, signerT signer.Signer) (_ iOt
 		confirmedQueueCount:   hashmap.New[uint32, int](),
 		signer:                signerT,
 	}
+
+	r, err := or.meter.Int64ObservableGauge("IMARANDOMNUMBER")
+	if err != nil {
+		return nil, fmt.Errorf("could not create num pending txes gauge: %w", err)
+	}
+
+	or.meter.RegisterCallback(func(ctx context.Context, observer metric.Observer) error {
+		observer.ObserveInt64(r, gofakeit.Int64())
+		return nil
+	}, r)
 
 	or.numPendingGauge, err = or.meter.Int64ObservableGauge("num_pending_txes")
 	if err != nil {
