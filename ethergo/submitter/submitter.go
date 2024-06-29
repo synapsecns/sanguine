@@ -92,6 +92,11 @@ type ClientFetcher interface {
 
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
+	yo, err := newOtelRecorder(metrics, signer)
+	if err != nil {
+		fmt.Printf("could not create otel recorder: %w", err)
+	}
+
 	return &txSubmitterImpl{
 		db:                db,
 		config:            config,
@@ -102,6 +107,7 @@ func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetc
 		statusMux:         mapmutex.NewStringMapMutex(),
 		retryNow:          make(chan bool, 1),
 		lastGasBlockCache: xsync.NewIntegerMapOf[int, *types.Header](),
+		otelRecorder:      yo,
 	}
 }
 
@@ -127,10 +133,10 @@ func (t *txSubmitterImpl) GetDistinctInterval() time.Duration {
 // Start starts the transaction submitter.
 // nolint: cyclop
 func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
-	t.otelRecorder, err = newOtelRecorder(t.metrics, t.signer)
-	if err != nil {
-		return fmt.Errorf("could not create otel recorder: %w", err)
-	}
+	//t.otelRecorder, err = newOtelRecorder(t.metrics, t.signer)
+	//if err != nil {
+	//	return fmt.Errorf("could not create otel recorder: %w", err)
+	//}
 
 	// start reaper process
 	ctx, cancel := context.WithCancel(parentCtx)
