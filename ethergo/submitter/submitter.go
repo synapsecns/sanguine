@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/brianvoe/gofakeit/v6"
-	"go.opentelemetry.io/otel/metric"
 	"math"
 	"math/big"
 	"reflect"
@@ -133,17 +131,6 @@ func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not create otel recorder: %w", err)
 	}
-
-	yo := t.metrics.Meter("submitter")
-	r, err := yo.Int64ObservableGauge("num_pending_txes")
-	if err != nil {
-		return fmt.Errorf("could not create num pending txes gauge: %w", err)
-	}
-
-	yo.RegisterCallback(func(ctx context.Context, observer metric.Observer) error {
-		observer.ObserveInt64(r, gofakeit.Int64())
-		return nil
-	}, r)
 
 	// start reaper process
 	ctx, cancel := context.WithCancel(parentCtx)
