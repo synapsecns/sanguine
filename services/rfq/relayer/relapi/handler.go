@@ -172,7 +172,8 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	if chain.IsGasToken(req.TokenAddress) {
 		nonce, err = h.submitter.SubmitTransaction(c, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 			tx = types.NewTx(&types.LegacyTx{
-				Nonce: transactor.Nonce.Uint64(),
+				// covers l2s, etc
+				Gas:   500_000,
 				To:    &req.To,
 				Value: value,
 			})
@@ -191,8 +192,8 @@ func (h *Handler) Withdraw(c *gin.Context) {
 		}
 
 		nonce, err = h.submitter.SubmitTransaction(c, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-			tx, err = erc20Contract.Transfer(transactor, req.To, value)
-			return tx, fmt.Errorf("could not create transfer transaction: %w", err)
+			// nolint: wrapcheck
+			return erc20Contract.Transfer(transactor, req.To, value)
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not submit transaction: %s", err.Error())})
