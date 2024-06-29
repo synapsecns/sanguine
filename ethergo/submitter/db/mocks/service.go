@@ -115,6 +115,29 @@ func (_m *Service) GetChainIDsByStatus(ctx context.Context, fromAddress common.A
 	return r0, r1
 }
 
+// GetDistinctChainIDs provides a mock function with given fields: ctx
+func (_m *Service) GetDistinctChainIDs(ctx context.Context) ([]*big.Int, error) {
+	ret := _m.Called(ctx)
+
+	var r0 []*big.Int
+	if rf, ok := ret.Get(0).(func(context.Context) []*big.Int); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetNonceAttemptsByStatus provides a mock function with given fields: ctx, fromAddress, chainID, nonce, matchStatuses
 func (_m *Service) GetNonceAttemptsByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64, matchStatuses ...db.Status) ([]db.TX, error) {
 	_va := make([]interface{}, len(matchStatuses))

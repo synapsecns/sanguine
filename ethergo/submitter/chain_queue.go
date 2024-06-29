@@ -20,7 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -66,9 +65,9 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	span.SetAttributes(attribute.Int("nonce", int(currentNonce)))
 
 	// record metrics for txes.
-	t.currentNonces.Set(uint32(chainID.Int64()), currentNonce)
-	t.numPendingTxes.Set(uint32(chainID.Int64()), calculatePendingTxes(txes, currentNonce))
-	t.oldestPendingPerChain.Set(uint32(chainID.Int64()), fetchOldestPendingTx(txes, currentNonce))
+	t.otelRecorder.RecordNonceForChain(uint32(chainID.Int64()), currentNonce)
+	t.otelRecorder.RecordNumPendingTxes(uint32(chainID.Int64()), calculatePendingTxes(txes, currentNonce))
+	t.otelRecorder.RecordOldestPendingTx(uint32(chainID.Int64()), time.Since(fetchOldestPendingTx(txes, currentNonce)))
 
 	wg := &sync.WaitGroup{}
 
@@ -89,7 +88,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	if err != nil {
 		return fmt.Errorf("could not get gas balance: %w", err)
 	}
-	t.currentGasBalances.Set(uint32(chainID.Int64()), core.CopyBigInt(gasBalance))
+	t.otelRecorder.RecordGasBalanceForChain(uint32(chainID.Int64()), core.CopyBigInt(gasBalance))
 	span.SetAttributes(attribute.String("gas_balance", gasBalance.String()))
 
 	for i := range txes {
@@ -141,110 +140,6 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	cq.storeAndSubmit(ctx, calls, span)
 
 	return nil
-}
-
-// fetchOldestPendingTx fetches the oldest pending tx in the queue.
-func fetchOldestPendingTx(txes []db.TX, nonce uint64) time.Time {
-	oldestPendingTx := time.Now()
-	for _, tx := range txes {
-		if tx.Nonce() >= nonce {
-			continue
-		}
-
-		if tx.CreationTime().Before(oldestPendingTx) {
-			oldestPendingTx = tx.CreationTime()
-		}
-	}
-
-	return oldestPendingTx
-
-}
-
-// calculatePendingTxes calculates the number of pending txes in the queue.
-func calculatePendingTxes(txes []db.TX, nonce uint64) int {
-	realPendingCount := 0
-	for _, tx := range txes {
-		// current nonce is going to be transaction count (nonces are offset by -1 since first nonce is 0)
-		// so we use equal to here
-		if tx.Nonce() >= nonce {
-			realPendingCount++
-		}
-	}
-
-	return realPendingCount
-
-}
-
-func (t *txSubmitterImpl) recordNumPending(_ context.Context, observer metric.Observer) (err error) {
-	if t.metrics == nil || t.numPendingGauge == nil || t.numPendingTxes == nil {
-		return nil
-	}
-
-	t.numPendingTxes.Range(func(chainID uint32, numPending int) bool {
-		opts := metric.WithAttributes(
-			attribute.Int(metrics.ChainID, int(chainID)),
-			attribute.String("wallet", t.signer.Address().Hex()),
-		)
-		observer.ObserveInt64(t.numPendingGauge, int64(numPending), opts)
-
-		return true
-	})
-
-	return nil
-}
-
-func (t *txSubmitterImpl) recordNonces(_ context.Context, observer metric.Observer) (err error) {
-	if t.metrics == nil || t.nonceGauge == nil || t.currentNonces == nil {
-		return nil
-	}
-
-	t.currentNonces.Range(func(chainID uint32, nonce uint64) bool {
-		opts := metric.WithAttributes(
-			attribute.Int(metrics.ChainID, int(chainID)),
-			attribute.String("wallet", t.signer.Address().Hex()),
-		)
-		observer.ObserveInt64(t.nonceGauge, int64(nonce), opts)
-		return true
-	})
-
-	return nil
-}
-
-func (t *txSubmitterImpl) recordBalance(_ context.Context, observer metric.Observer) (err error) {
-	if t.metrics == nil || t.gasBalanceGauge == nil {
-		return nil
-	}
-
-	t.currentGasBalances.Range(func(chainID uint32, gasPrice *big.Int) bool {
-		opts := metric.WithAttributes(
-			attribute.Int(metrics.ChainID, int(chainID)),
-			attribute.String("wallet", t.signer.Address().Hex()),
-		)
-
-		observer.ObserveFloat64(t.gasBalanceGauge, toFloat(gasPrice), opts)
-		return true
-	})
-
-	return nil
-}
-
-func (t *txSubmitterImpl) recordOldestPendingTx(_ context.Context, observer metric.Observer) (err error) {
-	if t.metrics == nil || t.oldestPendingGauge == nil {
-		return nil
-	}
-
-	t.oldestPendingPerChain.Range(func(chainID uint32, oldestPendingTx time.Time) bool {
-		opts := metric.WithAttributes(
-			attribute.Int(metrics.ChainID, int(chainID)),
-			attribute.String("wallet", t.signer.Address().Hex()),
-		)
-		observer.ObserveFloat64(t.oldestPendingGauge, time.Since(oldestPendingTx).Seconds(), opts)
-
-		return true
-	})
-
-	return nil
-
 }
 
 func toFloat(wei *big.Int) float64 {

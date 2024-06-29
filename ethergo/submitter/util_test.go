@@ -296,3 +296,93 @@ func makeAttrMap(tx *types.Transaction, UUID string) map[string]attribute.Value 
 	}
 	return mapAttr
 }
+
+// Test for the outersection function.
+func TestOutersection(t *testing.T) {
+	set := []*big.Int{
+		big.NewInt(2),
+		big.NewInt(4),
+	}
+
+	superset := []*big.Int{
+		big.NewInt(1),
+		big.NewInt(2),
+		big.NewInt(3),
+		big.NewInt(4),
+		big.NewInt(5),
+	}
+
+	expected := []*big.Int{
+		big.NewInt(1),
+		big.NewInt(3),
+		big.NewInt(5),
+	}
+
+	result := submitter.Outersection(set, superset)
+
+	if len(result) != len(expected) {
+		t.Fatalf("Expected %d elements, but got %d", len(expected), len(result))
+	}
+
+	for i, v := range result {
+		if v.Cmp(expected[i]) != 0 {
+			t.Errorf("Expected %s but got %s at index %d", expected[i], v, i)
+		}
+	}
+}
+
+// Test for the mapToBigIntSlice function with generics.
+func TestMapToBigIntSlice(t *testing.T) {
+	m := map[uint64]struct{}{
+		1: {},
+		2: {},
+		3: {},
+	}
+
+	expected := []*big.Int{
+		big.NewInt(1),
+		big.NewInt(2),
+		big.NewInt(3),
+	}
+
+	result := submitter.MapToBigIntSlice(m)
+
+	if len(result) != len(expected) {
+		t.Fatalf("Expected %d elements, but got %d", len(expected), len(result))
+	}
+
+	for i, v := range result {
+		if v.Cmp(expected[i]) != 0 {
+			t.Errorf("Expected %s but got %s at index %d", expected[i], v, i)
+		}
+	}
+}
+
+func TestMapToBigIntSliceWithStruct(t *testing.T) {
+	type MyStruct struct {
+		Value int
+	}
+	m := map[uint64]MyStruct{
+		1: {Value: 10},
+		2: {Value: 20},
+		3: {Value: 30},
+	}
+
+	expected := []*big.Int{
+		big.NewInt(1),
+		big.NewInt(2),
+		big.NewInt(3),
+	}
+
+	result := submitter.MapToBigIntSlice(m)
+
+	if len(result) != len(expected) {
+		t.Fatalf("Expected %d elements, but got %d", len(expected), len(result))
+	}
+
+	for i, v := range result {
+		if v.Cmp(expected[i]) != 0 {
+			t.Errorf("Expected %s but got %s at index %d", expected[i], v, i)
+		}
+	}
+}
