@@ -128,8 +128,6 @@ func (o *otelRecorder) recordNumPending(_ context.Context, observer metric.Obser
 		)
 		observer.ObserveInt64(o.numPendingGauge, int64(numPending), opts)
 
-		fmt.Println("recoreded", chainID, numPending)
-
 		return true
 	})
 
@@ -147,7 +145,6 @@ func (o *otelRecorder) recordNonces(_ context.Context, observer metric.Observer)
 			attribute.String("wallet", o.signer.Address().Hex()),
 		)
 		observer.ObserveInt64(o.nonceGauge, int64(nonce), opts)
-		fmt.Println("recoreded", chainID, nonce)
 		return true
 	})
 
@@ -176,8 +173,6 @@ func (o *otelRecorder) recordBalance(_ context.Context, observer metric.Observer
 		return nil
 	}
 
-	fmt.Println("recoreded", o.currentGasBalances)
-
 	o.currentGasBalances.Range(func(chainID uint32, gasPrice *big.Int) bool {
 		opts := metric.WithAttributes(
 			attribute.Int(metrics.ChainID, int(chainID)),
@@ -195,8 +190,6 @@ func (o *otelRecorder) recordOldestPendingTx(_ context.Context, observer metric.
 	if o.metrics == nil || o.oldestPendingGauge == nil {
 		return nil
 	}
-
-	fmt.Println("recoreded", o.oldestPendingPerChain)
 
 	o.oldestPendingPerChain.Range(func(chainID uint32, oldestPendingTx time.Duration) bool {
 		opts := metric.WithAttributes(
