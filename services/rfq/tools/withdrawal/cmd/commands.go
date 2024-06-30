@@ -1,3 +1,6 @@
+// Package cmd provides the command line interface for the withdrawal tool. It takes in five
+// flags: relayer-url, chain-id, amount, token-address, and to to withdraw <amount> of <token-address>
+// to <to> on the <chain-id> chain.
 package cmd
 
 import (
