@@ -11,12 +11,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var configFlag = &cli.StringFlag{
-	Name:      "config",
-	Usage:     "path to the config file",
-	TakesFile: true,
-}
-
 var relayerURLFlag = &cli.StringFlag{
 	Name:  "relayer-url",
 	Usage: "relayer url",
