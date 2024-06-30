@@ -23,6 +23,7 @@ func NewWithdrawer(handler metrics.Handler, url string) Withdrawer {
 	}
 }
 
+// TODO: support multiple withdraw requests in one cli command (via config?)
 func (w *withdrawerImpl) Withdraw(ctx context.Context, withdrawRequests ...relapi.WithdrawRequest) ([]*relapi.WithdrawResponse, error) {
 	var responses []*relapi.WithdrawResponse
 	for _, req := range withdrawRequests {
