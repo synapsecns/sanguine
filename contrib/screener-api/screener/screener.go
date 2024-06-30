@@ -54,7 +54,7 @@ type screenerImpl struct {
 	cfg               config.Config
 	client            chainalysis.Client
 	whitelist         map[string]bool
-	blacklistCache    map[string]bool
+	blacklist         map[string]bool
 	blacklistCacheMux sync.RWMutex
 	requestMux        mapmutex.StringMapMutex
 }
@@ -74,10 +74,14 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 
 	screener.client = chainalysis.NewClient(metricHandler, cfg.RiskLevels, cfg.ChainalysisKey, core.GetEnv("CHAINALYSIS_URL", cfg.ChainalysisURL))
 
-	screener.blacklistCache = make(map[string]bool)
+	screener.blacklist = make(map[string]bool)
 	screener.whitelist = make(map[string]bool)
 	for _, item := range cfg.Whitelist {
 		screener.whitelist[strings.ToLower(item)] = true
+	}
+
+	for _, item := range cfg.Blacklist {
+		screener.blacklist[strings.ToLower(item)] = true
 	}
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
@@ -166,7 +170,7 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 	s.blacklistCacheMux.Lock()
 	defer s.blacklistCacheMux.Unlock()
 	for _, item := range blacklist {
-		s.blacklistCache[strings.ToLower(item)] = true
+		s.blacklist[strings.ToLower(item)] = true
 	}
 }
 
@@ -250,7 +254,7 @@ func (s *screenerImpl) isDBBlacklisted(ctx context.Context, address string) (boo
 func (s *screenerImpl) isBlacklistedCache(address string) bool {
 	s.blacklistCacheMux.RLock()
 	defer s.blacklistCacheMux.RUnlock()
-	return s.blacklistCache[address]
+	return s.blacklist[address]
 }
 
 // @dev Protected Method
@@ -298,7 +302,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 	s.blacklistCacheMux.Lock()
 	defer s.blacklistCacheMux.Unlock()
-	s.blacklistCache[blacklistBody.Data.Address] = true
+	s.blacklist[blacklistBody.Data.Address] = true
 
 	switch blacklistBody.Type {
 	case "create":
