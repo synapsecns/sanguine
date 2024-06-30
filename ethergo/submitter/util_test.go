@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	"sort"
 	"sync"
 	"testing"
 	"time"
@@ -331,7 +332,14 @@ func TestOutersection(t *testing.T) {
 	}
 }
 
-// Test for the mapToBigIntSlice function with generics.
+// bigIntSlice is a type for sorting []*big.Int.
+type bigIntSlice []*big.Int
+
+func (p bigIntSlice) Len() int           { return len(p) }
+func (p bigIntSlice) Less(i, j int) bool { return p[i].Cmp(p[j]) < 0 }
+func (p bigIntSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+// Test for the MapToBigIntSlice function with generics.
 func TestMapToBigIntSlice(t *testing.T) {
 	m := map[uint64]struct{}{
 		1: {},
@@ -350,6 +358,9 @@ func TestMapToBigIntSlice(t *testing.T) {
 	if len(result) != len(expected) {
 		t.Fatalf("Expected %d elements, but got %d", len(expected), len(result))
 	}
+
+	sort.Sort(bigIntSlice(result))
+	sort.Sort(bigIntSlice(expected))
 
 	for i, v := range result {
 		if v.Cmp(expected[i]) != 0 {
@@ -379,6 +390,9 @@ func TestMapToBigIntSliceWithStruct(t *testing.T) {
 	if len(result) != len(expected) {
 		t.Fatalf("Expected %d elements, but got %d", len(expected), len(result))
 	}
+
+	sort.Sort(bigIntSlice(result))
+	sort.Sort(bigIntSlice(expected))
 
 	for i, v := range result {
 		if v.Cmp(expected[i]) != 0 {
