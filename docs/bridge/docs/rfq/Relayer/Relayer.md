@@ -221,6 +221,11 @@ The relayer is configured with a yaml file. The following is an example configur
 
 ### Observability
 
-The RFQ relayer implements open telemetry for both tracing and metrics. Please see the [Observability](../../Observability) page for more info. There is also a custom [grafana dashboard](https://github.com/synapsecns/sanguine/tree/master/services/rfq/relayer/dashboards/grafana.json) available for the relayer.
+The RFQ relayer implements open telemetry for both tracing and metrics. Please see the [Observability](../../Observability) page for more info. There is also a custom [grafana dashboard](https://github.com/synapsecns/sanguine/tree/master/services/rfq/relayer/dashboards/dashboard.json) available for the relayer. We'd also highly recommend setting up the [submitter dashboard](../../Services/Submitter#Observability) as well.
 
 ![Relayer Grafana Dashboard](dashboard.png)
+
+The metrics exposed by the relayer are:
+
+- `inventory_balance`: The balance of the inventory on the chain for a given `token_name` and `relayer`.
+- `quote_amount`: The amount quoted for a given `token_name` and `relayer`.

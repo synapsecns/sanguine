@@ -9,23 +9,23 @@ In order to setup the signer with AWS KMS, you will need to create a KMS key and
 ### Create an IAM User
 
 1. Sign in to the AWS Management Console and open the IAM console at https://console.aws.amazon.com/iam.
-![IAM Dashboard](img/iam-dash.png)
+![IAM Dashboard](img/signer/aws/iam-dash.png)
 
 2. Click on `Users` in the left-hand menu and then click on `Add user`.
 
-![Create User](img/kms-user.png)
+![Create User](img/signer/aws/kms-user.png)
 
 3. Leave Permissions empty and click `Next`
 
-![img.png](img/perms.png)
+![img/signer/aws.png](img/signer/aws/perms.png)
 
 4. Add tags if you want and click `Create User`
 
-![IAM Preview User](img/iam-preview-user.png)
+![IAM Preview User](img/signer/aws/iam-preview-user.png)
 
 5. The user will be create and appear in the list of users. Click on the user to view the user details.
 
-![User List](img/user-list.png)
+![User List](img/signer/aws/user-list.png)
 
 6. Click on 'Create access key'.
 
@@ -39,22 +39,22 @@ In the example above, we use access keys & secrets to authenticate the user. Thi
 
 7. Skip the description page
 
-![user-perms.png](img/user-perms.png)
+![user-perms.png](img/signer/aws/user-perms.png)
 
 8. Click on `Create access key`
 
-![Create Access Key](img/create-acces-key.png)
+![Create Access Key](img/signer/aws/create-acces-key.png)
 
 Note down the `Access key ID` and `Secret access key` as you will need these to configure the signer.
 
 ### Create a KMS Key
 1. Sign in to the AWS Management Console and open the KMS console at https://console.aws.amazon.com/kms.
 
-![KMS Key](img/kms-1.png)
+![KMS Key](img/signer/aws/kms-1.png)
 
 2. Choose `Create key` and fill in the following options:
 
-![Create Key](img/kms-2.png)
+![Create Key](img/signer/aws/kms-2.png)
 
 - Key Type: `Asymmetric`: Since ethereum uses [ECDSA](https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm) keys, we need to use an asymmetric key.
 - Key Usage: `Sign and verify`: We will be using the key to sign transactions so we select this option.
@@ -62,11 +62,11 @@ Note down the `Access key ID` and `Secret access key` as you will need these to 
 
 Note: The advanced options are not required for this setup. You can leave them as default:
 
-![Advanced Options](img/kms-advanced.png)
+![Advanced Options](img/signer/aws/kms-advanced.png)
 
 3. Choose `Next` and fill in the following options:
 
-![KMS Creation Step 2](img/kms-labels.png)
+![KMS Creation Step 2](img/signer/aws/kms-labels.png)
 
 - Alias: This is an alias that will be used to reference the key in the signer. The field is required but the value doesn't matter.
 - Description: This is a description that will be used to describe the key in the signer. This is only optional and only for your reference.
@@ -74,21 +74,21 @@ Note: The advanced options are not required for this setup. You can leave them a
 
 4. Choose `Next` and define your key admin permissions. These are *not* required by the signer itself but are required to manage the key. You can use whatever you like here.
 
-![KMS Permissions](img/kms-permissons.png)
+![KMS Permissions](img/signer/aws/kms-permissons.png)
 
 5. Choose `Next` and define your user permissions. Here you should set your user as a user.
 
-![KMS User Permissions](img/kms-user-permissions.png)
+![KMS User Permissions](img/signer/aws/kms-user-permissions.png)
 
 6. Choose `Next` and review your key settings. If everything looks good, choose `Finish`.
 
-![Review](img/review.png)
+![Review](img/signer/aws/review.png)
 
 7. Your key will be created and you will be redirected to the key details page. Note down the `Key ID` as you will need this to configure the signer.
 
 8. You will be redirected to the key details page. Click on the key alias to view the key details.
 
-![Key Details](img/key-details.png)
+![Key Details](img/signer/aws/key-details.png)
 
 9. Using Your Key (AWS)
 
