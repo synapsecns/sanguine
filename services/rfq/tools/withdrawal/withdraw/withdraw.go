@@ -17,6 +17,7 @@ type withdrawerImpl struct {
 	client relapi.RelayerClient
 }
 
+// NewWithdrawer creates a new Withdrawer.
 func NewWithdrawer(handler metrics.Handler, url string) Withdrawer {
 	return &withdrawerImpl{
 		client: relapi.NewRelayerClient(handler, url),
@@ -24,6 +25,7 @@ func NewWithdrawer(handler metrics.Handler, url string) Withdrawer {
 }
 
 // TODO: support multiple withdraw requests in one cli command (via config?)
+// Withdraw withdraws the given amount of tokens to the given address.
 func (w *withdrawerImpl) Withdraw(ctx context.Context, withdrawRequest relapi.WithdrawRequest) (*relapi.WithdrawResponse, error) {
 	return w.client.Withdraw(ctx, &withdrawRequest)
 }
