@@ -56,11 +56,35 @@ var runCommand = &cli.Command{
 			return fmt.Errorf("could not create relayer: %w", err)
 		}
 
+		if c.String(relayerURLFlag.Name) == "" {
+			return fmt.Errorf("relayer URL is required")
+		}
+
+		chainID := c.Uint(chainIDFlag.Name)
+		if chainID == 0 {
+			return fmt.Errorf("valid chain ID is required")
+		}
+
+		amount := c.String(amountFlag.Name)
+		if amount == "" {
+			return fmt.Errorf("amount is required")
+		}
+
+		tokenAddress := c.String(tokenAddressFlag.Name)
+		if !common.IsHexAddress(tokenAddress) {
+			return fmt.Errorf("valid token address is required")
+		}
+
+		to := c.String(toFlag.Name)
+		if !common.IsHexAddress(to) {
+			return fmt.Errorf("valid recipient address is required")
+		}
+
 		withdrawRequest := relapi.WithdrawRequest{
-			ChainID:      uint32(c.Uint(chainIDFlag.Name)),
-			Amount:       c.String(amountFlag.Name),
-			TokenAddress: common.HexToAddress(c.String(tokenAddressFlag.Name)),
-			To:           common.HexToAddress(toFlag.Name),
+			ChainID:      uint32(chainID),
+			Amount:       amount,
+			TokenAddress: common.HexToAddress(tokenAddress),
+			To:           common.HexToAddress(to),
 		}
 
 		_, err = withdrawer.Withdraw(c.Context, withdrawRequest)

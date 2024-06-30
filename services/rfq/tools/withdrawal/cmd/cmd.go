@@ -13,7 +13,7 @@ import (
 func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
 	app.Name = buildInfo.Name()
-	app.Description = buildInfo.VersionString() + "Synapse RFQ Relayer Server"
+	app.Description = buildInfo.VersionString() + "Synapse RFQ Relayer Withdrawal CLI"
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
 	// TODO: should we really halt boot on because of metrics?
