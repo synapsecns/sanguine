@@ -10,7 +10,7 @@ At a high level, the relayer works like this:
 
 1. Poll for new transactions from the CCTP contracts and add them to the database as [Pending](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState)
 2. Fetch the attestation from the Circle API. Once successful add attestation to the database and update status to be [Attested](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState)
-3. Submit the attestation to the CCTP contracts. Once the transaction has been added to [Submitter](../Services/Submitter.md), mark as [Submitted](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState)
+3. Submit the attestation to the CCTP contracts. Once the transaction has been added to [Submitter](../Services/Submitter#Observability), mark as [Submitted](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState)
 4. Poll for the transaction receipt and mark as [Confirmed](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState)
 
 ### Modes
@@ -104,4 +104,4 @@ The CCTP Relayer is configured with a yaml file. The following is an example con
 
 ### Observability
 
-The CCTP relayer implements open telemetry for both tracing and metrics. Please see the [Observability](../Observability) page for more info. We'd also highly recommend setting up the [submitter dashboard](../../Services/Submitter) as well.
+The CCTP relayer implements open telemetry for both tracing and metrics. Please see the [Observability](../Observability) page for more info. We'd also highly recommend setting up the [submitter dashboard](../Services/Submitter) as well.
