@@ -226,7 +226,7 @@ func (c *RelayerClientSuite) TestEthWithdraw() {
 	err = retry.WithBackoff(c.GetTestContext(), func(ctx context.Context) error {
 		balance, err := backend.BalanceAt(ctx, testWithdrawalAddress, nil)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not fetch balance %w", err)
 		}
 
 		expectedBalance := new(big.Int).Add(startBalance, withdrawalAmount)
@@ -262,7 +262,7 @@ func (c *RelayerClientSuite) TestERC20Withdraw() {
 	err = retry.WithBackoff(c.GetTestContext(), func(ctx context.Context) error {
 		balance, err := erc20.BalanceOf(&bind.CallOpts{Context: ctx}, testWithdrawalAddress)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not get balance %w", err)
 		}
 
 		expectedBalance := new(big.Int).Add(startBalance, withdrawalAmount)
@@ -278,7 +278,7 @@ func (c *RelayerClientSuite) TestERC20Withdraw() {
 
 func (c *RelayerClientSuite) TestEthWithdrawCLI() {
 	res, err := c.withdrawer.Withdraw(c.GetTestContext(), relapi.WithdrawRequest{
-		ChainID:      uint32(c.underlying.originChainID),
+		ChainID:      c.underlying.originChainID,
 		To:           common.HexToAddress(testWithdrawalAddress.String()),
 		Amount:       "1000000000000000000",
 		TokenAddress: chain.EthAddress,
@@ -295,7 +295,7 @@ func (c *RelayerClientSuite) TestEthWithdrawCLI() {
 				res.Nonce,
 			)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not get status %w", err)
 		}
 
 		if status != submitterdb.Stored {
@@ -319,7 +319,7 @@ func (c *RelayerClientSuite) TestERC20WithdrawCLI() {
 	withdrawalAmount := big.NewInt(1000000000000000000)
 
 	res, err := c.withdrawer.Withdraw(c.GetTestContext(), relapi.WithdrawRequest{
-		ChainID:      uint32(c.underlying.originChainID),
+		ChainID:      c.underlying.originChainID,
 		To:           common.HexToAddress(testWithdrawalAddress.String()),
 		Amount:       withdrawalAmount.String(),
 		TokenAddress: erc20.Address(),
@@ -330,7 +330,7 @@ func (c *RelayerClientSuite) TestERC20WithdrawCLI() {
 	err = retry.WithBackoff(c.GetTestContext(), func(ctx context.Context) error {
 		balance, err := erc20.BalanceOf(&bind.CallOpts{Context: ctx}, testWithdrawalAddress)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not fetch balance %w", err)
 		}
 
 		expectedBalance := new(big.Int).Add(startBalance, withdrawalAmount)

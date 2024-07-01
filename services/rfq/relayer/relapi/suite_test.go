@@ -135,7 +135,6 @@ func (c *RelayerServerSuite) SetupTest() {
 	}()
 
 	for _, backend := range c.testBackends {
-		backend := backend
 		go func() {
 			defer wg.Done()
 			backend.FundAccount(c.GetTestContext(), c.wallet.Address(), *big.NewInt(params.Ether))
