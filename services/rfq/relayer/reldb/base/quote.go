@@ -102,7 +102,6 @@ func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status
 		prevStatus = &req.Status
 	}
 	if !isValidStateTransition(*prevStatus, status) {
-		logger.Warnf("invalid state transition from %s to %s [txid=%s]", *prevStatus, status, hexutil.Encode(id[:]))
 		return nil
 	}
 
