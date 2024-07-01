@@ -143,6 +143,8 @@ func (h *Handler) GetTxRetry(c *gin.Context) {
 }
 
 // Withdraw withdraws tokens from the relayer.
+//
+//nolint:cyclop
 func (h *Handler) Withdraw(c *gin.Context) {
 	var req WithdrawRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
