@@ -74,7 +74,7 @@ var toFlag = &cli.StringFlag{
 
 // runCommand runs the rfq relayer.
 var runWithdrawCommand = &cli.Command{
-	Name:        "run",
+	Name:        "widthdraw",
 	Description: "run the withdrawal tool",
 	Flags:       []cli.Flag{relayerURLFlag, chainIDFlag, amountFlag, tokenAddressFlag, toFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
