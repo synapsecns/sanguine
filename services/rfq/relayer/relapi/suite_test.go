@@ -2,13 +2,15 @@ package relapi_test
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/params"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
-	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"math/big"
 	"strconv"
 	"sync"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/params"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
+	"github.com/synapsecns/sanguine/services/rfq/testutil"
+	"github.com/synapsecns/sanguine/services/rfq/tools/withdrawal/withdraw"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -270,6 +272,8 @@ type RelayerClientSuite struct {
 	*testsuite.TestSuite
 	underlying *RelayerServerSuite
 	Client     relapi.RelayerClient
+
+	withdrawer withdraw.Withdrawer
 }
 
 // NewRelayerClientSuite creates a new relayer client suite.
@@ -290,6 +294,7 @@ func (c *RelayerClientSuite) SetupTest() {
 	c.underlying.SetupTest()
 	c.underlying.startQuoterAPIServer()
 	c.Client = relapi.NewRelayerClient(c.underlying.handler, fmt.Sprintf("http://localhost:%d", c.underlying.port))
+	c.withdrawer = withdraw.NewWithdrawer(c.Client)
 }
 
 // TestConfigSuite runs the integration test suite.

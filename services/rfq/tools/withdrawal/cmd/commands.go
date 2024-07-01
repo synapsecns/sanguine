@@ -47,8 +47,11 @@ var runCommand = &cli.Command{
 	Action: func(c *cli.Context) (err error) {
 
 		metricsProvider := metrics.Get()
+		relayerURL := c.String(relayerURLFlag.Name)
 
-		withdrawer := withdraw.NewWithdrawer(metricsProvider, c.String(relayerURLFlag.Name))
+		client := relapi.NewRelayerClient(metricsProvider, relayerURL)
+
+		withdrawer := withdraw.NewWithdrawer(client)
 		if err != nil {
 			return fmt.Errorf("could not create relayer: %w", err)
 		}

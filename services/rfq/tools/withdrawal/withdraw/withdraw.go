@@ -5,7 +5,6 @@ package withdraw
 import (
 	"context"
 
-	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 )
 
@@ -20,9 +19,9 @@ type withdrawerImpl struct {
 }
 
 // NewWithdrawer creates a new Withdrawer.
-func NewWithdrawer(handler metrics.Handler, url string) Withdrawer {
+func NewWithdrawer(c relapi.RelayerClient) Withdrawer {
 	return &withdrawerImpl{
-		client: relapi.NewRelayerClient(handler, url),
+		client: c,
 	}
 }
 
