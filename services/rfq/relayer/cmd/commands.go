@@ -78,19 +78,13 @@ var runWithdrawCommand = &cli.Command{
 	Description: "run the withdrawal tool",
 	Flags:       []cli.Flag{relayerURLFlag, chainIDFlag, amountFlag, tokenAddressFlag, toFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
-
-		metricsProvider := metrics.Get()
-		relayerURL := c.String(relayerURLFlag.Name)
-
-		client := relapi.NewRelayerClient(metricsProvider, relayerURL)
-
-		withdrawer := relapi.NewWithdrawer(client)
-		if err != nil {
-			return fmt.Errorf("could not create relayer: %w", err)
-		}
-
 		if c.String(relayerURLFlag.Name) == "" {
 			return fmt.Errorf("relayer URL is required")
+		}
+
+		withdrawer := relapi.NewWithdrawer(relapi.NewRelayerClient(metrics.Get(), c.String(relayerURLFlag.Name)))
+		if err != nil {
+			return fmt.Errorf("could not create relayer: %w", err)
 		}
 
 		chainID := c.Uint(chainIDFlag.Name)
