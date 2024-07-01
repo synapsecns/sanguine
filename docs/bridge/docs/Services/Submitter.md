@@ -8,9 +8,12 @@ This section is still in progress, please see [here](https://pkg.go.dev/github.c
 
 The Ethergo Submitter module is designed to submit transactions to an EVM-based blockchain. It handles gas bumping and confirmation checking to ensure that transactions are eventually confirmed. This module is essential because the EVM does not specify transaction submission or consensus, and rate limits can affect transaction submission.
 
+![submitter flow](img/submitter/submitter_flow.svg)
+
 ## Key Features
 
-- **Transaction Submission**: The main function of the module is the `SubmitTransaction` method, which returns a nonce and ensures that the transaction will eventually be confirmed.
+The module is the `SubmitTransaction` method, which returns a nonce and ensures that the transaction will eventually be confirmed.
+
 - **Gas Bumping**: Automatically adjusts the gas price to ensure timely transaction confirmation.
 - **Confirmation Checking**: Continuously checks the status of submitted transactions to confirm their inclusion in the blockchain.
 - **Reaper Functionality**: Flushes old entries in the database that have reached a terminal state.
@@ -27,12 +30,11 @@ This section is still in progress, please see [here](https://pkg.go.dev/github.c
 
 Submitter exposes metrics for Prometheus. The metrics are:
 
- - `num_pending_txs`: The number of pending transactions.
- - `current_nonce`: The current nonce.
- - `oldest_pending_tx`: The age of the oldest pending transaction.
- - `confirmed_queue`: The number of confirmed transactions.
- - `gas_balance`: The current gas balance.
-
+- `num_pending_txs`: The number of pending transactions.
+- `current_nonce`: The current nonce.
+- `oldest_pending_tx`: The age of the oldest pending transaction.
+- `confirmed_queue`: The number of confirmed transactions.
+- `gas_balance`: The current gas balance.
 
 The metrics can be used in a dashboard [here](https://raw.githubusercontent.com/synapsecns/sanguine/master/ethergo/dashboard.json). It looks like this:
 
