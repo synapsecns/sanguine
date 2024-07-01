@@ -12,7 +12,7 @@ The Ethergo Submitter module is designed to submit transactions to an EVM-based 
 
 ## Key Features
 
-The module is the `SubmitTransaction` method, which returns a nonce and ensures that the transaction will eventually be confirmed. The nonce may then be used in the `GetSubmissionStatus` method to check the state: `NotFound`, `Pending`, `Confirming`, or `Confirmed`.
+The module is the `SubmitTransaction` method, which returns a nonce and ensures that the transaction will eventually be confirmed. The nonce may then be used in the `GetSubmissionStatus` method to check the state: `Pending`, `Stored`, `Submitted`, `FailedSubmit`, `ReplacedOrConfirmed`, `Replaced`, `Confirmed`.
 
 - **Gas Bumping**: Automatically adjusts the gas price to ensure timely transaction confirmation.
 - **Confirmation Checking**: Continuously checks the status of submitted transactions to confirm their inclusion in the blockchain.
@@ -75,6 +75,44 @@ nonce, err := c.txSubmitter.SubmitTransaction(
 	return tx, nil
   },
 )
+```
+
+### Nonce Management, Database, Internals
+
+#### Nonce Management and Multichain
+
+Submitter was designed with multiple chains in mind by keeping track of a thread-safe `map[chainid]nonce`. When we build the transaction opts, we lock on the chainid until we finish firing off the transaction.
+We also keep a txHash -> txStatus map with a similar, thread-safe mechanism.
+
+This allows for a concurrent nature where we're able to concurrently fire off transactions on different chains while ensuring our nonces are correct per chain. The [Chain Queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) is the actual implementation of the queue.
+
+The Chain Queue db interface, [Service](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/db/service.go), allows a user to customize their transaction db behavior. The base implementation is in [store.go](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/db/txdb/store.go).
+
+#### Database
+
+When sending transactions, we are able to check on the status of them after we fire them off. The schema for a transaction is
+
+```go
+// ETHTX contains a raw evm transaction that is unsigned.
+type ETHTX struct {
+  ID uint64 `gorm:"column:id;primaryKey;autoIncrement:true"`
+  // UUID is a unique ID for this transaction that will persist across retries.
+  UUID string `gorm:"column:uuid;index"`
+  // CreatedAt is the time the transaction was created
+  CreatedAt time.Time
+  // TXHash is the hash of the transaction
+  TXHash string `gorm:"column:tx_hash;uniqueIndex;size:256"`
+  // From is the sender of the transaction
+  From string `gorm:"column:from;index"`
+  // ChainID is the chain id the transaction hash will be sent on
+  ChainID uint64 `gorm:"column:chain_id;index"`
+  // Nonce is the nonce of the raw evm tx
+  Nonce uint64 `gorm:"column:nonce;index"`
+  // RawTx is the raw serialized transaction
+  RawTx []byte `gorm:"column:raw_tx"`
+  // Status is the status of the transaction
+  Status db.Status `gorm:"column:status;index"`
+}
 ```
 
 ### Observability
