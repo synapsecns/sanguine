@@ -1,6 +1,6 @@
 // Package withdraw provides a wrapper around the RelayerClient's Withdraw method which allows a relayer to withdraw
 // at ERC20s or the native token.
-package withdraw
+package withdrawal
 
 import (
 	"context"
