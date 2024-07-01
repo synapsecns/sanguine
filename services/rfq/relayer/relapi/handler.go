@@ -3,14 +3,15 @@ package relapi
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"net/http"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
-	"math/big"
-	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -170,6 +171,7 @@ func (h *Handler) Withdraw(c *gin.Context) {
 		return
 	}
 
+	//nolint: nestif
 	if chain.IsGasToken(req.TokenAddress) {
 		nonce, err = h.submitter.SubmitTransaction(c, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 			bc := bind.NewBoundContract(req.To, abi.ABI{}, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client)
@@ -178,8 +180,11 @@ func (h *Handler) Withdraw(c *gin.Context) {
 				// nolint: wrapcheck
 				return bc.Transfer(transactor)
 			}
-
-			return transactor.Signer(h.submitter.Address(), tx)
+			signer, err := transactor.Signer(h.submitter.Address(), tx)
+			if err != nil {
+				return nil, fmt.Errorf("could not get signer: %w", err)
+			}
+			return signer, nil
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not submit transaction: %s", err.Error())})
