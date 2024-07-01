@@ -22,7 +22,7 @@ export const calculateGasCost = (
     }
   }
 
-  const upperLimitBuffer = 2.5
+  const upperLimitBuffer = 3
   const gasLimitFloat = parseFloat(gasLimit) ? parseFloat(gasLimit) : 1
   const gasPriceFloat = parseFloat(gasPrice) ? parseFloat(gasPrice) : 1
 
