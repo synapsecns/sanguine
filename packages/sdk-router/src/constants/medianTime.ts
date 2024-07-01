@@ -51,4 +51,5 @@ export const MEDIAN_TIME_RFQ = {
   [SupportedChainId.ARBITRUM]: 15,
   [SupportedChainId.BASE]: 15,
   [SupportedChainId.SCROLL]: 15,
+  [SupportedChainId.BSC]: 15,
 }
