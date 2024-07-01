@@ -277,7 +277,6 @@ func (c *RelayerClientSuite) TestERC20Withdraw() {
 }
 
 func (c *RelayerClientSuite) TestEthWithdrawCLI() {
-
 	res, err := c.withdrawer.Withdraw(c.GetTestContext(), relapi.WithdrawRequest{
 		ChainID:      uint32(c.underlying.originChainID),
 		To:           common.HexToAddress(testWithdrawalAddress.String()),
@@ -325,8 +324,6 @@ func (c *RelayerClientSuite) TestERC20WithdrawCLI() {
 		Amount:       withdrawalAmount.String(),
 		TokenAddress: erc20.Address(),
 	})
-	c.Require().NoError(err)
-
 	c.Require().NoError(err)
 
 	// Wait for the transaction to be mined
