@@ -1,5 +1,3 @@
-// Package withdrawal provides a wrapper around the RelayerClient's Withdraw method which allows a relayer to withdraw
-// at ERC20s or the native token.
 package relapi
 
 import (
