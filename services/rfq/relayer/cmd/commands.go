@@ -11,7 +11,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
-	"github.com/synapsecns/sanguine/services/rfq/tools/withdrawal"
 	"github.com/urfave/cli/v2"
 )
 
@@ -85,7 +84,7 @@ var runWithdrawCommand = &cli.Command{
 
 		client := relapi.NewRelayerClient(metricsProvider, relayerURL)
 
-		withdrawer := withdrawal.NewWithdrawer(client)
+		withdrawer := relapi.NewWithdrawer(client)
 		if err != nil {
 			return fmt.Errorf("could not create relayer: %w", err)
 		}
