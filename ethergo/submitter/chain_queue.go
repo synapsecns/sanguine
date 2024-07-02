@@ -3,11 +3,12 @@ package submitter
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/params"
 	"math/big"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/params"
 
 	"github.com/synapsecns/sanguine/ethergo/util"
 
