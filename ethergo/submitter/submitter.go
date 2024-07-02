@@ -38,6 +38,8 @@ import (
 var logger = log.Logger("ethergo-submitter")
 
 // TransactionSubmitter is the interface for submitting transactions to the chain.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name TransactionSubmitter --output ./mocks --case=underscore
 type TransactionSubmitter interface {
 	// Start starts the transaction submitter.
 	Start(ctx context.Context) error
