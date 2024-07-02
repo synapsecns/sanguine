@@ -46,6 +46,8 @@ type TransactionSubmitter interface {
 	SubmitTransaction(ctx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error)
 	// GetSubmissionStatus returns the status of a transaction and any metadata associated with it if it is complete.
 	GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error)
+	// Address returns the address of the signer.
+	Address() common.Address
 }
 
 // txSubmitterImpl is the implementation of the transaction submitter.
@@ -663,6 +665,10 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	}
 
 	return gasEstimate, nil
+}
+
+func (t *txSubmitterImpl) Address() common.Address {
+	return t.signer.Address()
 }
 
 var _ TransactionSubmitter = &txSubmitterImpl{}
