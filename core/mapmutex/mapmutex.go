@@ -2,7 +2,6 @@ package mapmutex
 
 import (
 	"fmt"
-	"github.com/LK4d4/trylock"
 	"sync"
 )
 
@@ -24,7 +23,7 @@ type mentry struct {
 	// m point back to untypedMapMutexImpl, so we can synchronize removing this mentry when cnt==0
 	m *untypedMapMutexImpl
 	// el is an entry-specific lock
-	el trylock.Mutex
+	el sync.Mutex
 	// cnt is the reference count
 	cnt int
 	// key is the key of the memory entry
