@@ -82,7 +82,7 @@ var runWithdrawCommand = &cli.Command{
 			return fmt.Errorf("relayer URL is required")
 		}
 
-		withdrawer := relapi.NewWithdrawer(relapi.NewRelayerClient(metrics.Get(), c.String(relayerURLFlag.Name)))
+		withdrawer := relapi.NewRelayerClient(metrics.Get(), c.String(relayerURLFlag.Name))
 		if err != nil {
 			return fmt.Errorf("could not create relayer: %w", err)
 		}
@@ -114,7 +114,7 @@ var runWithdrawCommand = &cli.Command{
 			To:           common.HexToAddress(to),
 		}
 
-		_, err = withdrawer.Withdraw(c.Context, withdrawRequest)
+		_, err = withdrawer.Withdraw(c.Context, &withdrawRequest)
 		if err != nil {
 			return fmt.Errorf("could not start relayer: %w", err)
 		}

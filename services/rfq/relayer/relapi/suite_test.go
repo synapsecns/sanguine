@@ -271,8 +271,6 @@ type RelayerClientSuite struct {
 	*testsuite.TestSuite
 	underlying *RelayerServerSuite
 	Client     relapi.RelayerClient
-
-	withdrawer relapi.Withdrawer
 }
 
 // NewRelayerClientSuite creates a new relayer client suite.
@@ -293,7 +291,6 @@ func (c *RelayerClientSuite) SetupTest() {
 	c.underlying.SetupTest()
 	c.underlying.startQuoterAPIServer()
 	c.Client = relapi.NewRelayerClient(c.underlying.handler, fmt.Sprintf("http://localhost:%d", c.underlying.port))
-	c.withdrawer = relapi.NewWithdrawer(c.Client)
 }
 
 // TestConfigSuite runs the integration test suite.
