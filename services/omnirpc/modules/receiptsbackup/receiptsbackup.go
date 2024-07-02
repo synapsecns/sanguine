@@ -65,7 +65,7 @@ func NewProxy(proxyURL, backupURL string, receiptTimeout time.Duration, handler 
 
 func (r *receiptsProxyImpl) Run(ctx context.Context) error {
 	router := ginhelper.NewWithExperimentalLogger(ctx, r.handler.ExperimentalLogger())
-	router.Use(r.handler.Gin())
+	router.Use(r.handler.Gin()...)
 
 	router.POST("/", func(c *gin.Context) {
 		err := r.ProxyRequest(c)
@@ -136,11 +136,12 @@ func (r *receiptsProxyImpl) ProxyRequest(c *gin.Context) (err error) {
 }
 
 func (r *receiptsProxyImpl) processRequest(ctx context.Context, rpcRequest rpc.Request, requestID []byte) (resp omniHTTP.Response, err error) {
+	req := r.client.NewRequest()
+	body, err := json.Marshal(rpcRequest)
+
 	//nolint: exhaustive
 	switch client.RPCMethod(rpcRequest.Method) {
 	case client.TransactionReceiptByHashMethod:
-		req := r.client.NewRequest()
-		body, err := json.Marshal(rpcRequest)
 		if err != nil {
 			return nil, errors.New("could not marshal request")
 		}
@@ -173,6 +174,21 @@ func (r *receiptsProxyImpl) processRequest(ctx context.Context, rpcRequest rpc.R
 			}
 		}
 		return resp, nil
+	default:
+		resp, err = req.
+			SetContext(ctx).
+			SetRequestURI(r.proxyURL).
+			SetBody(body).
+			SetHeaderBytes(omniHTTP.XRequestID, requestID).
+			SetHeaderBytes(omniHTTP.XForwardedFor, []byte(r.proxyURL)).
+			SetHeaderBytes(omniHTTP.ContentType, omniHTTP.JSONType).
+			SetHeaderBytes(omniHTTP.Accept, omniHTTP.JSONType).
+			Do()
+
+		if err != nil {
+			return nil, fmt.Errorf("could not get response from RPC %s: %w", r.proxyURL, err)
+		}
+
+		return resp, nil
 	}
-	return nil, nil
 }

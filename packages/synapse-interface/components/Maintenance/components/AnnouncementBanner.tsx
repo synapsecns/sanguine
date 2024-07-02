@@ -1,24 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ReactNode } from 'react'
 import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 
 /**
- * Generic Message Banner that appears between defined start and end time.
- * If end date is null, banner will appear indefinitely until removed.
+ * Message banner that renders between defined start <> end dates.
  *
- * @param bannerId Unique ID to prevent conflicts with other banner instances.
- *                 Assign ID $MMDDYYYY-$BANNER_NAME format (e.g 03132024-ETH-DENCUN)
- * @param bannerContents Message to display
- * @param startDate Start time to display banner
- * @param endDate End time to remove banner
+ * @param {string} bannerId - The unique ID assigned to banner instance to prevent collisions. ID Format: $MMDDYYYY-$BANNER_NAME format (e.g 03132024-ETH-DENCUN)
+ * @param {any} bannerContent - The content to display in the banner.
+ * @param {Date} startDate - The start date that initiates rendering banner.
+ * @param {Date | null} endDate - The end date that removes banner. If null, the banner will render indefinitely.
  */
 export const AnnouncementBanner = ({
   bannerId,
-  bannerContents,
+  bannerContent,
   startDate,
   endDate,
 }: {
   bannerId: string
-  bannerContents: any
+  bannerContent: any
   startDate: Date
   endDate: Date | null
 }) => {
@@ -72,7 +70,7 @@ export const AnnouncementBanner = ({
         `}
         role="alert"
       >
-        {bannerContents}
+        {bannerContent}
         <button
           onClick={() => setShowBanner(false)}
           className="inline-flex items-center justify-center p-3 text-primaryTextColor hover:opacity-70"

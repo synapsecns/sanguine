@@ -112,6 +112,10 @@ export type BridgeQuote = {
   // Amount of native gas tokens that user will receive on the destination chain
   // on top of the token amount
   gasDropAmount: BigNumber
+  // Origin chain id
+  originChainId: number
+  // Destination chain id
+  destChainId: number
 }
 ```
 

@@ -3,15 +3,16 @@ package commandline
 import (
 	"context"
 	"fmt"
-	"github.com/c-bata/go-prompt"
-	"github.com/c-bata/go-prompt/completer"
-	"github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
 	"os"
 	"os/signal"
 	"os/user"
 	"strings"
 	"syscall"
+
+	"github.com/c-bata/go-prompt"
+	"github.com/c-bata/go-prompt/completer"
+	"github.com/pkg/errors"
+	"github.com/urfave/cli/v2"
 )
 
 const shellCommandName = "shell"
@@ -50,14 +51,16 @@ func GenerateShellCommand(shellCommands []*cli.Command) *cli.Command {
 				}
 			}
 
-			// warn user about sigterms
 			sigs := make(chan os.Signal)
+			ctx, cancel := context.WithCancel(c.Context)
 			go func() {
-				for range sigs {
-					fmt.Printf("\n(type \"%s\", \"%s\" or \"%s\" to exit)\n\n >", quitCommand, exitCommand, quitCommandShort)
+				for sig := range sigs {
+					if sig == syscall.SIGINT || sig == syscall.SIGTERM {
+						cancel()
+						fmt.Printf("\n(type \"%s\", \"%s\" or \"%s\" to exit)\n\n >", quitCommand, exitCommand, quitCommandShort)
+					}
 				}
 			}()
-			//nolint: govet
 			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 			defer func() {
 				signal.Stop(sigs)
@@ -69,7 +72,7 @@ func GenerateShellCommand(shellCommands []*cli.Command) *cli.Command {
 				return nil
 			}
 
-			interactive := newInteractiveClient(c.Context, capturedCommands, console)
+			interactive := newInteractiveClient(ctx, capturedCommands, console)
 			for {
 				p := prompt.New(
 					interactive.executor,

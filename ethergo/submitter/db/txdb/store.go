@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -97,6 +98,26 @@ func convertTXS(ethTxes []ETHTX) (txs []db.TX, err error) {
 		txs = append(txs, retTX)
 	}
 	return txs, nil
+}
+
+// GetDistinctChainIDs gets a list of all chains that have been used.
+func (s *Store) GetDistinctChainIDs(ctx context.Context) ([]*big.Int, error) {
+	var chainIDs []string
+	err := s.db.WithContext(ctx).
+		Model(&ETHTX{}).
+		Distinct(chainIDFieldName).
+		Pluck(chainIDFieldName, &chainIDs).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*big.Int
+	for _, chainIDStr := range chainIDs {
+		chainID := new(big.Int)
+		chainID.SetString(chainIDStr, 10)
+		result = append(result, chainID)
+	}
+	return result, nil
 }
 
 // GetTXS returns all transactions for a given address on a given (or any) chain id that match a given status.
@@ -380,6 +401,20 @@ func (s *Store) GetChainIDsByStatus(ctx context.Context, fromAddress common.Addr
 	}
 
 	return chainIDs, nil
+}
+
+// DeleteTXS deletes txs that are older than a given duration.
+func (s *Store) DeleteTXS(ctx context.Context, maxAge time.Duration, matchStatuses ...db.Status) (err error) {
+	threshold := time.Now().UTC().Add(-maxAge)
+	inArgs := statusToArgs(matchStatuses...)
+	tx := s.DB().WithContext(ctx).
+		Where("created_at < ?", threshold).
+		Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).
+		Delete(&ETHTX{})
+	if tx.Error != nil {
+		return fmt.Errorf("could not delete txs: %w", tx.Error)
+	}
+	return nil
 }
 
 // DB gets the database.

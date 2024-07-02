@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
@@ -77,10 +78,14 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return fmt.Errorf("could not handle request: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeRelayed:
+			// blocking lock on the txid mutex to ensure state transitions are not overrwitten
+			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			defer unlocker.Unlock()
+
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
+				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost, nil)
 			}
 
 			err = r.handleRelayLog(ctx, event)
@@ -88,10 +93,13 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return fmt.Errorf("could not handle relay: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeProofProvided:
+			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			defer unlocker.Unlock()
+
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
+				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost, nil)
 			}
 
 			err = r.handleProofProvided(ctx, event)
@@ -99,10 +107,13 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return fmt.Errorf("could not handle proof provided: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeDepositClaimed:
+			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			defer unlocker.Unlock()
+
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
+				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost, nil)
 			}
 
 			err = r.handleDepositClaimed(ctx, event)
@@ -195,7 +206,7 @@ func getDecimalsKey(addr common.Address, chainID uint32) string {
 }
 
 func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed) error {
-	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
+	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted, nil)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}

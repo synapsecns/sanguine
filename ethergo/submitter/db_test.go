@@ -50,6 +50,11 @@ func (t *TXSubmitterDBSuite) TestGetNonceForChainID() {
 				}
 			}
 		}
+
+		distinctChains, err := testDB.GetDistinctChainIDs(t.GetTestContext())
+		t.Require().NoError(err)
+
+		t.Require().Equal(len(t.testBackends), len(distinctChains))
 	})
 }
 
@@ -203,5 +208,48 @@ func (t *TXSubmitterDBSuite) TestGetChainIDsByStatus() {
 			}
 			t.Equal(expectedPendingChainIDs, resultInt64)
 		}
+	})
+}
+
+func (t *TXSubmitterDBSuite) TestDeleteTXS() {
+	t.RunOnAllDBs(func(testDB db.Service) {
+		nonce := uint64(0)
+		mockAccount := t.mockAccounts[0]
+		backend := t.testBackends[0]
+		storeTx := func(status db.Status) {
+			manager := t.managers[backend.GetChainID()]
+			legacyTx := &types.LegacyTx{
+				To:    &mockAccount.Address,
+				Value: big.NewInt(0),
+				Nonce: nonce,
+			}
+			tx, err := manager.SignTx(types.NewTx(legacyTx), backend.Signer(), mockAccount.PrivateKey)
+			t.Require().NoError(err)
+			dbTx := db.NewTX(tx, status, uuid.New().String())
+			err = testDB.PutTXS(t.GetTestContext(), dbTx)
+			t.Require().NoError(err)
+			nonce++
+		}
+
+		storeTx(db.Pending)
+		storeTx(db.Stored)
+		storeTx(db.Replaced)
+		storeTx(db.ReplacedOrConfirmed)
+		storeTx(db.Confirmed)
+
+		// ensure txs were stored
+		allStatuses := []db.Status{db.Pending, db.Stored, db.Replaced, db.ReplacedOrConfirmed, db.Confirmed}
+		txs, err := testDB.GetTXS(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), allStatuses...)
+		t.Require().NoError(err)
+		t.Equal(5, len(txs))
+
+		// delete non-terminal txs
+		err = testDB.DeleteTXS(t.GetTestContext(), 0, db.Replaced, db.ReplacedOrConfirmed, db.Confirmed)
+		t.Require().NoError(err)
+
+		// ensure txs were deleted
+		txs, err = testDB.GetTXS(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), allStatuses...)
+		t.Require().NoError(err)
+		t.Equal(2, len(txs))
 	})
 }

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.6.0...@synapsecns/sdk-router@0.7.0) (2024-06-27)
+
+
+### Features
+
+* **sdk:** Adds origin/dest chain ids to bridge quote ([#2804](https://github.com/synapsecns/sanguine/issues/2804)) ([b045125](https://github.com/synapsecns/sanguine/commit/b0451251b48d35909bb9d976c3a6bdd03b99d6ab))
+
+
+
+
+
 # [0.6.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.5.1...@synapsecns/sdk-router@0.6.0) (2024-05-09)
 
 

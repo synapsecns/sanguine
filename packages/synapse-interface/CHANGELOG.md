@@ -3,6 +3,65 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.27.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.27.0...@synapsecns/synapse-interface@0.27.1) (2024-06-27)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.27.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.7...@synapsecns/synapse-interface@0.27.0) (2024-06-27)
+
+
+### Features
+
+* **synapse-interface:** SDK bridgequote chainID validation ([#2803](https://github.com/synapsecns/sanguine/issues/2803)) ([c585219](https://github.com/synapsecns/sanguine/commit/c5852196eed34ca2fd2b544b030c9667fb70dbd7))
+
+
+
+
+
+## [0.26.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.6...@synapsecns/synapse-interface@0.26.7) (2024-06-27)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.26.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.5...@synapsecns/synapse-interface@0.26.6) (2024-06-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.26.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.4...@synapsecns/synapse-interface@0.26.5) (2024-06-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.26.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.3...@synapsecns/synapse-interface@0.26.4) (2024-06-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.26.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.2...@synapsecns/synapse-interface@0.26.3) (2024-06-25)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.26.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.26.1...@synapsecns/synapse-interface@0.26.2) (2024-06-18)
 
 

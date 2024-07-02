@@ -13,11 +13,12 @@ plugins:
     enabled: true
 
 exclude_patterns:
-  - '.*\\.abigen\\.go$'
-  - '.*\\.metadata\\.go$'
-  - '.*\\.pb\\.go$'
-  - '.*_gen.go$'
-  - '.*_generated.go$'
+  - '**/*.abigen.go'
+  - '**/*.gen.go' #gql gen
+  - '**/*.metadata.go'
+  - '**/*.pb.go'
+  - '**/*_gen.go'
+  - '**/.*_generated.go'
   - '**/grpc/client/rest/*'
   - '**/bundle/*'
   - '**/generated/*'

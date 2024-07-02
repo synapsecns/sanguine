@@ -63,6 +63,8 @@ type txSubmitterImpl struct {
 	db db.Service
 	// retryOnce is used to return 0 on the first call to GetRetryInterval.
 	retryOnce sync.Once
+	// distinctOnce is used to return 0 on the first call to GetDistinctInterval.
+	distinctOnce sync.Once
 	// retryNow is used to trigger a retry immediately.
 	// it circumvents the retry interval.
 	// to prevent memory leaks, this has a buffer of 1.
@@ -72,6 +74,13 @@ type txSubmitterImpl struct {
 	lastGasBlockCache *xsync.MapOf[int, *types.Header]
 	// config is the config for the transaction submitter.
 	config config.IConfig
+	// otelRecorder is the recorder for the otel metrics.
+	otelRecorder iOtelRecorder
+	// distinctChainIDMux is the mutex for the distinct chain ids.
+	distinctChainIDMux sync.RWMutex
+	// distinctChainIDs is the distinct chain ids for the transaction submitter.
+	// note: this map should not be appended to!
+	distinctChainIDs []*big.Int
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -105,7 +114,57 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 	return retryInterval
 }
 
-func (t *txSubmitterImpl) Start(ctx context.Context) error {
+// GetDistinctInterval returns the interval at which distinct chain ids should be queried.
+// this is used for metric updates.
+func (t *txSubmitterImpl) GetDistinctInterval() time.Duration {
+	retryInterval := time.Minute
+	t.distinctOnce.Do(func() {
+		retryInterval = time.Duration(0)
+	})
+	return retryInterval
+}
+
+// Start starts the transaction submitter.
+// nolint: cyclop
+func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
+	t.otelRecorder, err = newOtelRecorder(t.metrics, t.signer)
+	if err != nil {
+		return fmt.Errorf("could not create otel recorder: %w", err)
+	}
+
+	// start reaper process
+	ctx, cancel := context.WithCancel(parentCtx)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(t.config.GetReaperInterval()):
+				err := t.db.DeleteTXS(ctx, t.config.GetMaxRecordAge(), db.ReplacedOrConfirmed, db.Replaced, db.Confirmed)
+				if err != nil {
+					logger.Errorf("could not flush old records: %v", err)
+				}
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(t.GetDistinctInterval()):
+				tmpChainIDs, err := t.db.GetDistinctChainIDs(ctx)
+				if err != nil {
+					logger.Errorf("could not update distinct chain ids: %v", err)
+				}
+				t.distinctChainIDMux.Lock()
+				t.distinctChainIDs = tmpChainIDs
+				t.distinctChainIDMux.Unlock()
+			}
+		}
+	}()
+
 	i := 0
 	for {
 		i++
@@ -115,6 +174,7 @@ func (t *txSubmitterImpl) Start(ctx context.Context) error {
 		}
 		if shouldExit {
 			logger.Warn("exiting transaction submitter")
+			cancel()
 			return nil
 		}
 	}

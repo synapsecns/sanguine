@@ -5,8 +5,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
-	"github.com/synapsecns/sanguine/ethergo/example"
-	"github.com/synapsecns/sanguine/ethergo/example/counter"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
 	"github.com/synapsecns/sanguine/ethergo/forker"
 	"github.com/synapsecns/sanguine/ethergo/manager"
 )
@@ -18,8 +18,8 @@ func (f *ForkSuite) TestFork() {
 
 	err := forker.Fork(testContext, backend.HTTPEndpoint(), 10, func(client *ethclient.Client) {
 		// deploy the counter contract
-		deployer := manager.NewDeployerManager(f.T(), example.NewCounterDeployer)
-		deployedContract := deployer.Get(testContext, backend, example.CounterType)
+		deployer := manager.NewDeployerManager(f.T(), contracttests.NewCounterDeployer)
+		deployedContract := deployer.Get(testContext, backend, contracttests.CounterType)
 		// if you're using these often, it's recommended you extend manager and add type casted getters here, along with the global registry
 		//nolint: forcetypeassert
 		counterHandle := deployedContract.ContractHandle().(*counter.CounterRef)

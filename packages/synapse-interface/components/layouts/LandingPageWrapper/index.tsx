@@ -52,7 +52,7 @@ export function LandingPageWrapper({ children }: { children: any }) {
       <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
         <AnnouncementBanner
           bannerId="2024-05-02-scroll-launch"
-          bannerContents="Synapse Protocol now available on Scroll"
+          bannerContent="Synapse Protocol now available on Scroll"
           startDate={new Date('2024-05-08T18:45:09+00:00')}
           endDate={new Date('2024-06-15T18:45:09+00:00')}
         />
