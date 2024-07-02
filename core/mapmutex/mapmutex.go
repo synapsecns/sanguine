@@ -3,8 +3,6 @@ package mapmutex
 import (
 	"fmt"
 	"sync"
-
-	"github.com/LK4d4/trylock"
 )
 
 // untypedMapMutex wraps a map of mutexes.  Each key locks separately.
