@@ -27,7 +27,7 @@ const nextConfig = {
     config.plugins.push(
       codecovWebpackPlugin({
         enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
-        bundleName: 'explorer-ui',
+        bundleName: 'synapse-interface',
         uploadToken: process.env.CODECOV_TOKEN,
         uploadOverrides: {
           sha: process.env.GH_COMMIT_SHA,
