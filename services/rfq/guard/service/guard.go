@@ -200,6 +200,11 @@ func (g Guard) runChainIndexer(ctx context.Context, chainID int) (err error) {
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
+		case *fastbridge.FastBridgeBridgeProofDisputed:
+			err = g.handleProofDisputedLog(ctx, event)
+			if err != nil {
+				return fmt.Errorf("could not handle request: %w", err)
+			}
 		}
 
 		return nil
@@ -264,6 +269,15 @@ func (g *Guard) handleProofProvidedLog(ctx context.Context, event *fastbridge.Fa
 	return nil
 }
 
+func (g *Guard) handleProofDisputedLog(ctx context.Context, event *fastbridge.FastBridgeBridgeProofDisputed) (err error) {
+	err = g.db.UpdatePendingProvenStatus(ctx, event.TransactionId, guarddb.Disputed)
+	if err != nil {
+		return fmt.Errorf("could not update pending proven status: %w", err)
+	}
+
+	return nil
+}
+
 func (g *Guard) processDB(ctx context.Context) (err error) {
 	provens, err := g.db.GetPendingProvensByStatus(ctx, guarddb.ProveCalled)
 	for _, proven := range provens {
@@ -312,8 +326,8 @@ func (g *Guard) handleProveCalled(ctx context.Context, proven *guarddb.PendingPr
 			return fmt.Errorf("could not dispute: %w", err)
 		}
 
-		// mark as disputed
-		err = g.db.UpdatePendingProvenStatus(ctx, proven.TransactionID, guarddb.Disputed)
+		// mark as dispute pending
+		err = g.db.UpdatePendingProvenStatus(ctx, proven.TransactionID, guarddb.DisputePending)
 		if err != nil {
 			return fmt.Errorf("could not update pending proven status: %w", err)
 		}
