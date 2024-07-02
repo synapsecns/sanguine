@@ -130,7 +130,7 @@ const config: Config = {
         config: {
           rfqapi: { // the <id> referenced when running CLI commands
             specPath: "../../services/rfq/api/docs/swagger.yaml", // path to OpenAPI spec, URLs supported
-            baseUrl: "https://https://rfq-api.omnirpc.io/",
+            baseUrl: "https://rfq-api.omnirpc.io/",
             outputDir: "docs/rfq/API", // output directory for generated files
             sidebarOptions: { // optional, instructs plugin to generate sidebar.js
               groupPathsBy: "tag", // group sidebar items by operation "tag"
