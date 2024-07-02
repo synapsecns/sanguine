@@ -11,6 +11,7 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
@@ -29,6 +30,7 @@ type Guard struct {
 	cfg            relconfig.Config
 	metrics        metrics.Handler
 	db             guarddb.Service
+	client         omniClient.RPCClient
 	chainListeners map[int]listener.ContractListener
 	contracts      map[int]*fastbridge.FastBridgeRef
 }
@@ -87,6 +89,7 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.
 	return &Guard{
 		cfg:            cfg,
 		db:             store,
+		client:         omniClient,
 		chainListeners: chainListeners,
 		contracts:      contracts,
 	}, nil
@@ -184,6 +187,11 @@ func (g Guard) runChainIndexer(ctx context.Context, chainID int) (err error) {
 		}()
 
 		switch event := parsedEvent.(type) {
+		case *fastbridge.FastBridgeBridgeRequested:
+			err = g.handleBridgeRequestedLog(ctx, event, uint64(chainID))
+			if err != nil {
+				return fmt.Errorf("could not handle request: %w", err)
+			}
 		case *fastbridge.FastBridgeBridgeProofProvided:
 			err = g.handleProofProvidedLog(ctx, event, chainID)
 			if err != nil {
@@ -196,6 +204,44 @@ func (g Guard) runChainIndexer(ctx context.Context, chainID int) (err error) {
 
 	if err != nil {
 		return fmt.Errorf("listener failed: %w", err)
+	}
+	return nil
+}
+
+var maxRPCRetryTime = 15 * time.Second
+
+func (g *Guard) handleBridgeRequestedLog(ctx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID int) (err error) {
+	originClient, err := g.client.GetChainClient(ctx, int(chainID))
+	if err != nil {
+		return fmt.Errorf("could not get correct omnirpc client: %w", err)
+	}
+
+	fastBridge, err := fastbridge.NewFastBridgeRef(req.Raw.Address, originClient)
+	if err != nil {
+		return fmt.Errorf("could not get correct fast bridge: %w", err)
+	}
+
+	var bridgeTx fastbridge.IFastBridgeBridgeTransaction
+	call := func(ctx context.Context) error {
+		bridgeTx, err = fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
+		if err != nil {
+			return fmt.Errorf("could not get bridge transaction: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
+	if err != nil {
+		return fmt.Errorf("could not make call: %w", err)
+	}
+
+	dbReq := guarddb.BridgeRequest{
+		RawRequest:    req.Request,
+		TransactionID: req.TransactionId,
+		Transaction:   bridgeTx,
+	}
+	err = g.db.StoreBridgeRequest(ctx, dbReq)
+	if err != nil {
+		return fmt.Errorf("could not get db: %w", err)
 	}
 	return nil
 }
