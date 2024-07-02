@@ -84,8 +84,7 @@ nonce, err := c.txSubmitter.SubmitTransaction(
 Submitter was designed with multiple chains in mind by keeping track of a thread-safe `map[chainid]nonce`. When we build the transaction opts, we lock on the chainid until we finish firing off the transaction.
 We also keep a `map[txHash]txStatus` with the same thread-safe mechanism.
 This allows us to concurrently fire off transactions on different chains while ensuring our nonces are correct.
-
-The [Queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) has a selector loop running at all times that calls the `processQueue` method, concurrently processing and storing confirmed txs, or using the [chain queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) to fire off and store pending txs on chain.
+The [Queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) has a selector loop running at all times which calls the `processQueue` method, concurrently processing and storing confirmed txs, or using the [chain queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) to fire off and store pending txs on chain.
 
 #### Customizing DB Behavior
 
@@ -124,10 +123,10 @@ Using [GORM.db](https://pkg.go.dev/gorm.io/gorm), you can use whatever database 
 
 ```go
 gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
-	Logger:               common_base.GetGormLogger(logger),
-	FullSaveAssociations: true,
-	NamingStrategy:       NamingStrategy,
-	NowFunc:              time.Now,
+    Logger:               common_base.GetGormLogger(logger),
+    FullSaveAssociations: true,
+    NamingStrategy:       NamingStrategy,
+    NowFunc:              time.Now,
 })
 ```
 
@@ -135,11 +134,11 @@ gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
 
 Submitter exposes metrics for Prometheus. The metrics are:
 
-- `num_pending_txs`: The number of pending transactions.
-- `current_nonce`: The current nonce.
-- `oldest_pending_tx`: The age of the oldest pending transaction.
-- `confirmed_queue`: The number of confirmed transactions.
-- `gas_balance`: The current gas balance.
+- `num_pending_txs`: The number of pending transactions
+- `current_nonce`: The current nonce
+- `oldest_pending_tx`: The age of the oldest pending transaction
+- `confirmed_queue`: The number of confirmed transactions
+- `gas_balance`: The current gas balance
 
 The metrics can be used in a dashboard [here](https://raw.githubusercontent.com/synapsecns/sanguine/master/ethergo/dashboard.json). It looks like this:
 
