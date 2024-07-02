@@ -36,13 +36,13 @@ submitter_config:
     1:
       supports_eip_1559: true
       gas_estimate: 1000000
-    42161:
+    43114:
       gas_estimate: 30000000
-      max_gas_price: 10000000000
+      max_gas_price: 100000000000
       supports_eip_1559: true
-    534352:
-      gas_estimate: 600000
-      max_gas_price: 30000000000
+    10:
+      gas_estimate: 400000
+      max_gas_price: 90000000000
       gas_bump_percentage: 20
   reaper_interval: 604800000000000 # int64(7 * 24 * time.Hour)
   max_record_age: 86400000000000 # int64(1 * 24 * time.Hour)
