@@ -12,6 +12,7 @@ import (
 type untypedMapMutex interface {
 	Lock(key interface{}) Unlocker
 	TryLock(key interface{}) (Unlocker, bool)
+	Keys() []interface{}
 }
 
 type untypedMapMutexImpl struct {
@@ -79,6 +80,18 @@ func (m *untypedMapMutexImpl) TryLock(key interface{}) (Unlocker, bool) {
 	}
 
 	return nil, false
+}
+
+// Keys returns all keys in the map.
+func (m *untypedMapMutexImpl) Keys() []interface{} {
+	m.ml.Lock()
+	defer m.ml.Unlock()
+
+	keys := make([]interface{}, 0, len(m.ma))
+	for k := range m.ma {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 // Unlock releases the lock for this entry.
