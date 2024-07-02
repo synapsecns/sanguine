@@ -3,12 +3,13 @@ package relapi
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/dubonzi/otelresty"
 	"github.com/go-http-utils/headers"
 	"github.com/go-resty/resty/v2"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/valyala/fastjson"
-	"net/http"
 )
 
 // RelayerClient is the interface for the relayer client.
@@ -121,4 +122,22 @@ func (r *relayerClient) Withdraw(ctx context.Context, req *WithdrawRequest) (*Wi
 	}
 
 	return &res, nil
+}
+
+func (r *relayerClient) GetTxHashByNonce(ctx context.Context, chainID string, nonce string) (string, error) {
+	var res struct {
+		Hash string `json:"hash"`
+	}
+	resp, err := r.client.R().SetContext(ctx).
+		SetQueryParam("chain_id", chainID).
+		SetQueryParam("nonce", nonce).
+		SetResult(&res).
+		Get(getTxHashByNonceRoute)
+	if err != nil {
+		return "", fmt.Errorf("failed to get tx hash by nonce: %w", err)
+	}
+	if resp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode())
+	}
+	return res.Hash, nil
 }

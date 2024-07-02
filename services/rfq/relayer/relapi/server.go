@@ -101,6 +101,7 @@ const (
 	getQuoteStatusByTxIDRoute   = "/status/by_tx_id"
 	getRetryRoute               = "/retry"
 	postWithdrawRoute           = "/withdraw"
+	getTxHashByNonceRoute       = "/txMiddleware"
 )
 
 var logger = log.Logger("relayer-api")
@@ -110,6 +111,7 @@ func (r *RelayerAPIServer) Run(ctx context.Context) error {
 	engine := ginhelper.New(logger)
 	// default tracing middleware
 	engine.Use(r.handler.Gin()...)
+	engine.Use(r.handler.GetWithdrawalTxHash())
 	h := NewHandler(r.db, r.chains, r.cfg, r.submitter)
 
 	// Assign GET routes

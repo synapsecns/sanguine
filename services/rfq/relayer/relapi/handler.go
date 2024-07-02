@@ -1,6 +1,7 @@
 package relapi
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -210,6 +211,15 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"nonce": nonce})
+}
+
+func (h *Handler) getTxHashByNonce(ctx context.Context, chainID *big.Int, nonce uint64) (txHash common.Hash, err error) {
+	txHash, err = h.submitter.GetTxHashByNonce(ctx, chainID, nonce)
+	if err != nil {
+		return common.Hash{}, fmt.Errorf("could not get tx by nonce: %w", err)
+	}
+
+	return txHash, nil
 }
 
 // tokenIDExists checks if a token ID exists in the config.
