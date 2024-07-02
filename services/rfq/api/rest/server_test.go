@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	apiClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"io"
 	"net/http"
 	"strconv"
@@ -337,4 +338,17 @@ func (c *ServerSuite) sendPutAckRequest(header string, txID string) (*http.Respo
 		return nil, fmt.Errorf("failed to send PUT request: %w", err)
 	}
 	return resp, nil
+}
+
+func (c *ServerSuite) TestContracts() {
+	// Start the API server in a separate goroutine and wait for it to initialize.
+	c.startQuoterAPIServer()
+
+	client, err := apiClient.NewUnauthenticatedClient(c.handler, fmt.Sprintf("http://localhost:%d", c.port))
+	c.Require().NoError(err)
+
+	contracts, err := client.GetRFQContracts(c.GetTestContext())
+	c.Require().NoError(err)
+
+	c.Require().Len(contracts.Contracts, 2)
 }

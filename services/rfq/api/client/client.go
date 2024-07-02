@@ -35,6 +35,7 @@ type UnauthenticatedClient interface {
 	GetAllQuotes(ctx context.Context) ([]*model.GetQuoteResponse, error)
 	GetSpecificQuote(ctx context.Context, q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error)
 	GetQuoteByRelayerAddress(ctx context.Context, relayerAddr string) ([]*model.GetQuoteResponse, error)
+	GetRFQContracts(ctx context.Context) (*model.GetContractsResponse, error)
 	resty() *resty.Client
 }
 
@@ -134,11 +135,11 @@ func (c *clientImpl) PutRelayAck(ctx context.Context, req *model.PutAckRequest) 
 		Put(rest.AckRoute)
 
 	if err != nil {
-		return nil, fmt.Errorf("error from server: %s %w", resp.Status(), err)
+		return nil, fmt.Errorf("error from server: %s %w", getStatus(resp), err)
 	}
 
 	if resp.IsError() {
-		return nil, fmt.Errorf("error from server: %s", resp.Status())
+		return nil, fmt.Errorf("error from server: %s", getStatus(resp))
 	}
 
 	return ack, nil
@@ -153,11 +154,11 @@ func (c *unauthenticatedClient) GetAllQuotes(ctx context.Context) ([]*model.GetQ
 		Get(rest.QuoteRoute)
 
 	if err != nil {
-		return nil, fmt.Errorf("error from server: %s: %w", resp.Status(), err)
+		return nil, fmt.Errorf("error from server: %s: %w", getStatus(resp), err)
 	}
 
 	if resp.IsError() {
-		return nil, fmt.Errorf("error from server: %s", resp.Status())
+		return nil, fmt.Errorf("error from server: %s", getStatus(resp))
 	}
 
 	return quotes, nil
@@ -178,11 +179,11 @@ func (c *unauthenticatedClient) GetSpecificQuote(ctx context.Context, q *model.G
 		Get(rest.QuoteRoute)
 
 	if err != nil {
-		return nil, fmt.Errorf("error from server: %s: %w", resp.Status(), err)
+		return nil, fmt.Errorf("error from server: %s: %w", getStatus(resp), err)
 	}
 
 	if resp.IsError() {
-		return nil, fmt.Errorf("error from server: %s", resp.Status())
+		return nil, fmt.Errorf("error from server: %s", getStatus(resp))
 	}
 
 	return quotes, nil
@@ -199,12 +200,37 @@ func (c *unauthenticatedClient) GetQuoteByRelayerAddress(ctx context.Context, re
 		Get(rest.QuoteRoute)
 
 	if err != nil {
-		return nil, fmt.Errorf("error from server: %s %w", resp.Status(), err)
+		return nil, fmt.Errorf("error from server: %s %w", getStatus(resp), err)
 	}
 
 	if resp.IsError() {
-		return nil, fmt.Errorf("error from server: %s", resp.Status())
+		return nil, fmt.Errorf("error from server: %s", getStatus(resp))
 	}
 
 	return quotes, nil
+}
+
+func (c unauthenticatedClient) GetRFQContracts(ctx context.Context) (*model.GetContractsResponse, error) {
+	var contracts *model.GetContractsResponse
+	resp, err := c.rClient.R().
+		SetContext(ctx).
+		SetResult(&contracts).
+		Get(rest.ContractsRoute)
+
+	if err != nil {
+		return nil, fmt.Errorf("error from server: %s %w", getStatus(resp), err)
+	}
+
+	if resp.IsError() {
+		return nil, fmt.Errorf("error from server: %s", getStatus(resp))
+	}
+
+	return contracts, nil
+}
+
+func getStatus(resp *resty.Response) string {
+	if resp == nil {
+		return "http status unavailable"
+	}
+	return getStatus(resp)
 }

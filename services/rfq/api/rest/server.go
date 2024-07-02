@@ -143,8 +143,10 @@ const (
 	// QuoteRoute is the API endpoint for handling quote related requests.
 	QuoteRoute = "/quotes"
 	// AckRoute is the API endpoint for handling relay ack related requests.
-	AckRoute      = "/ack"
-	cacheInterval = time.Minute
+	AckRoute = "/ack"
+	// ContractsRoute is the API endpoint for returning a list fo contracts
+	ContractsRoute = "/contracts"
+	cacheInterval  = time.Minute
 )
 
 var logger = log.Logger("rfq-api")
@@ -153,7 +155,7 @@ var logger = log.Logger("rfq-api")
 func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
-	h := NewHandler(r.db)
+	h := NewHandler(r.db, r.cfg)
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Apply AuthMiddleware only to the PUT routes
@@ -168,8 +170,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// engine.PUT("/quotes", h.ModifyQuote)
 	engine.GET(QuoteRoute, h.GetQuotes)
 
-	// Expose Prometheus metrics
-	engine.GET(metrics.MetricsPathDefault, gin.WrapH(r.handler.Handler()))
+	engine.GET(ContractsRoute, h.GetContracts)
 
 	r.engine = engine
 

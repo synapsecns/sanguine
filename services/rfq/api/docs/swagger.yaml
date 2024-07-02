@@ -1,4 +1,12 @@
 definitions:
+  model.GetContractsResponse:
+    properties:
+      contracts:
+        additionalProperties:
+          type: string
+        description: Contracts is a map of chain id to contract address
+        type: object
+    type: object
   model.GetQuoteResponse:
     properties:
       dest_amount:
@@ -87,6 +95,23 @@ paths:
       summary: Relay ack
       tags:
       - ack
+  /contracts:
+    get:
+      consumes:
+      - application/json
+      description: get quotes from all relayers.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.GetContractsResponse'
+            type: array
+      summary: Get contract addresses
+      tags:
+      - quotes
   /quotes:
     get:
       consumes:

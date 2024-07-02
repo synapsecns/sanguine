@@ -46,6 +46,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/contracts": {
+            "get": {
+                "description": "get quotes from all relayers.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Get contract addresses",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.GetContractsResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/quotes": {
             "get": {
                 "description": "get quotes from all relayers.",
@@ -135,6 +161,18 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.GetContractsResponse": {
+            "type": "object",
+            "properties": {
+                "contracts": {
+                    "description": "Contracts is a map of chain id to contract address",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "model.GetQuoteResponse": {
             "type": "object",
             "properties": {
