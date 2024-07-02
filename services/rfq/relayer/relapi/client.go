@@ -18,6 +18,7 @@ type RelayerClient interface {
 	GetQuoteRequestStatusByTxID(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
 	RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error)
 	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)
+	GetQuoteRequestByTXID(ctx context.Context, txid string) (*GetQuoteRequestResponse, error)
 }
 
 type relayerClient struct {
@@ -116,6 +117,23 @@ func (r *relayerClient) Withdraw(ctx context.Context, req *WithdrawRequest) (*Wi
 	if err != nil {
 		return nil, fmt.Errorf("failed to withdraw transaction: %w", err)
 	}
+	if resp.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
+	}
+
+	return &res, nil
+}
+
+func (r *relayerClient) GetQuoteRequestByTXID(ctx context.Context, txid string) (*GetQuoteRequestResponse, error) {
+	var res GetQuoteRequestResponse
+	resp, err := r.client.R().SetContext(ctx).
+		SetQueryParam("id", txid).
+		SetResult(&res).
+		Get(getRequestByTxID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get quote request by tx id: %w", err)
+	}
+
 	if resp.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
 	}

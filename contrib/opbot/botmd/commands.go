@@ -4,15 +4,21 @@ package botmd
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hako/durafmt"
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
+	rfqClient "github.com/synapsecns/sanguine/services/rfq/api/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"log"
+	"math/big"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -237,6 +243,80 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				log.Println(err)
 			}
 		}}
+}
+
+func (b *Bot) rfqRefund() *slacker.CommandDefinition {
+	return &slacker.CommandDefinition{
+		Command:     "refund <tx> <origin_chainid>",
+		Description: "refund a quote request",
+		Examples:    []string{"refund 0x1234"},
+		Handler: func(ctx *slacker.CommandContext) {
+			client, err := rfqClient.NewUnauthenticatedClient(b.handler, b.cfg.RFQApiURL)
+			if err != nil {
+				log.Printf("error creating rfq client: %v\n", err)
+				return
+			}
+
+			contracts, err := client.GetRFQContracts(ctx.Context())
+			if err != nil {
+				log.Printf("error fetching rfq contracts: %v\n", err)
+				return
+			}
+
+			tx := stripLinks(ctx.Request().Param("tx"))
+			originChainIDStr := ctx.Request().Param("origin_chainid")
+
+			originChainID, err := strconv.Atoi(originChainIDStr)
+			if err != nil {
+				_, err := ctx.Response().Reply("origin_chainid must be a number")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+
+			chainClient, err := b.rpcClient.GetChainClient(ctx.Context(), originChainID)
+			if err != nil {
+				log.Printf("error getting chain client: %v\n", err)
+				return
+			}
+
+			contractAddress, ok := contracts.Contracts[uint32(originChainID)]
+			if !ok {
+				_, err := ctx.Response().Reply("contract address not found")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+
+			fastBridgeHandle, err := fastbridge.NewFastBridge(common.HexToAddress(contractAddress), chainClient)
+			if err != nil {
+				log.Printf("error creating fast bridge: %v\n", err)
+				return
+			}
+
+			for _, relayer := range b.cfg.RelayerURLS {
+				relClient := relapi.NewRelayerClient(b.handler, relayer)
+				qr, err := relClient.GetQuoteRequestByTXID(ctx.Context(), tx)
+				if err != nil {
+					log.Printf("error fetching quote request: %v\n", err)
+					continue
+				}
+
+				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(originChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+					return fastBridgeHandle.Refund(transactor, common.Hex2Bytes(qr.QuoteRequestRaw))
+				})
+				if err != nil {
+					log.Printf("error submitting refund: %v\n", err)
+					continue
+				}
+
+				_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
+				return
+			}
+		},
+	}
 }
 
 func toExplorerSlackLink(ogHash string) string {

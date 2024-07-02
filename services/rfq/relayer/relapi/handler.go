@@ -142,6 +142,34 @@ func (h *Handler) GetTxRetry(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+func (h *Handler) GetQuoteRequestByTxID(c *gin.Context) {
+	txIDStr := c.Query("id")
+	if txIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'id'"})
+		return
+	}
+
+	txIDBytes, err := hexutil.Decode(txIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid txID"})
+		return
+	}
+	var txID [32]byte
+	copy(txID[:], txIDBytes)
+
+	quoteRequest, err := h.db.GetQuoteRequestByID(c, txID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp := GetQuoteRequestResponse{
+		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
+	}
+	c.JSON(http.StatusOK, resp)
+
+}
+
 // Withdraw withdraws tokens from the relayer.
 //
 //nolint:cyclop

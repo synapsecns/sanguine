@@ -24,3 +24,8 @@ type PutRelayAckResponse struct {
 	ShouldRelay    bool   `json:"should_relay"`
 	RelayerAddress string `json:"relayer_address"`
 }
+
+// GetQuoteRequestResponse is the response to a get quote request.
+type GetQuoteRequestResponse struct {
+	QuoteRequestRaw string `json:"quote_request"`
+}
