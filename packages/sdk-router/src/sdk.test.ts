@@ -920,8 +920,8 @@ describe('SynapseSDK', () => {
 
   describe('Errors', () => {
     const synapse = new SynapseSDK(
-      [SupportedChainId.ETH, SupportedChainId.BSC],
-      [ethProvider, bscProvider]
+      [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
+      [ethProvider, arbProvider]
     )
 
     const amount = BigNumber.from(10).pow(9)
@@ -983,9 +983,9 @@ describe('SynapseSDK', () => {
       await expect(
         synapse.bridgeQuote(
           SupportedChainId.ETH,
-          SupportedChainId.BSC,
+          SupportedChainId.ARBITRUM,
           ETH_USDC,
-          BSC_USDC,
+          ARB_USDC,
           BigNumber.from(10).pow(3)
         )
       ).rejects.toThrow('No route found')
