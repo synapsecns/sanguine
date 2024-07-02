@@ -40,6 +40,11 @@ jobs:
 
       - name: Run tests # Run tests of all packages
         run: npx lerna exec npm run ci:lint --parallel
+
+      - name: Run build # Run tests of all packages
+        run: npx lerna exec npm run build --parallel
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV }}
   test:
       runs-on: ubuntu-latest
       env:

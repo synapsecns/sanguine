@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.6.2",
+    "@codecov/webpack-plugin": "^0.0.1-beta.10",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@ethersproject/address": "^5.6.1",
@@ -71,6 +72,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.7",
+    "@codecov/webpack-plugin": "^0.0.1-beta.10",
     "@storybook/addon-actions": "^6.5.15",
     "@storybook/addon-essentials": "^6.5.15",
     "@storybook/addon-interactions": "^6.5.15",

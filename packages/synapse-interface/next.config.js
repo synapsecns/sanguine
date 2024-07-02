@@ -1,4 +1,5 @@
 const path = require('path')
+const { codecovWebpackPlugin } = require('@codecov/webpack-plugin')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -22,6 +23,13 @@ const nextConfig = {
       '.json',
       '.nvmrc',
     ]
+    config.plugins.push(
+      codecovWebpackPlugin({
+        enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+        bundleName: 'explorer-ui',
+        uploadToken: process.env.CODECOV_TOKEN,
+      })
+    )
     return config
   },
   eslint: {

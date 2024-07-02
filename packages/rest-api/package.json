@@ -15,7 +15,7 @@
     "ci:lint": "npm run lint:check",
     "build:go": " ",
     "build:slither": " ",
-    "build": "echo 'please run build api'",
+    "build": "npm run build api && echo 'please run build api'",
     "build:api": "yarn add @synapsecns/sdk-router && tsc",
     "postinstall": "npm run build"
   },
