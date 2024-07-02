@@ -142,6 +142,7 @@ type FeePricerConfig struct {
 	HTTPTimeoutMs int `yaml:"http_timeout_ms"`
 }
 
+// TokenIDDelimiter is the delimiter for token IDs.
 const TokenIDDelimiter = "-"
 
 // SanitizeTokenID takes a raw string, makes sure it is a valid token ID,
