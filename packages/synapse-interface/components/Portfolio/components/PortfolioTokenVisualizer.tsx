@@ -1,11 +1,15 @@
 import Image from 'next/image'
 import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
-import { HoverTooltip } from '../../HoverTooltip'
+import { HoverTooltip } from '@/components/HoverTooltip'
+import { getParsedBalance } from '@/utils/getParsedBalance'
+import { formatAmount } from '@/utils/formatAmount'
 
 export const PortfolioTokenVisualizer = ({
   portfolioTokens,
+  portfolioChainId,
 }: {
   portfolioTokens: TokenAndBalance[]
+  portfolioChainId: number
 }) => {
   const hasNoTokens: boolean =
     !portfolioTokens || (portfolioTokens && portfolioTokens.length === 0)
@@ -18,6 +22,15 @@ export const PortfolioTokenVisualizer = ({
   const hasOnlyOneToken: boolean =
     portfolioTokens && portfolioTokens.length === 1
 
+  const firstTokenBalance = getParsedBalance(
+    portfolioTokens?.[0]?.balance,
+    portfolioTokens?.[0]?.token?.decimals[portfolioChainId]
+  )
+  const secondTokenBalance = getParsedBalance(
+    portfolioTokens?.[1]?.balance,
+    portfolioTokens?.[1]?.token?.decimals[portfolioChainId]
+  )
+
   if (hasNoTokens) {
     return (
       <div
@@ -28,6 +41,7 @@ export const PortfolioTokenVisualizer = ({
       </div>
     )
   }
+
   return (
     <div
       id="portfolio-token-visualizer"
@@ -38,7 +52,7 @@ export const PortfolioTokenVisualizer = ({
           <HoverTooltip
             hoverContent={
               <div className="whitespace-nowrap">
-                {portfolioTokens[0]?.parsedBalance}{' '}
+                {formatAmount(firstTokenBalance)}{' '}
                 {portfolioTokens[0]?.token.symbol}
               </div>
             }
@@ -55,7 +69,7 @@ export const PortfolioTokenVisualizer = ({
 
       {hasOnlyOneToken && (
         <div className="text-white whitespace-nowrap">
-          {portfolioTokens[0].parsedBalance} {portfolioTokens[0].token.symbol}
+          {formatAmount(firstTokenBalance)} {portfolioTokens[0].token.symbol}
         </div>
       )}
 
@@ -64,7 +78,7 @@ export const PortfolioTokenVisualizer = ({
           <HoverTooltip
             hoverContent={
               <div className="whitespace-nowrap">
-                {portfolioTokens[1]?.parsedBalance}{' '}
+                {formatAmount(secondTokenBalance)}{' '}
                 {portfolioTokens[1]?.token.symbol}
               </div>
             }
@@ -86,10 +100,13 @@ export const PortfolioTokenVisualizer = ({
               (token: TokenAndBalance, key: number) => {
                 if (key > 1) {
                   const tokenSymbol = token.token.symbol
-                  const balance = token.parsedBalance
+                  const parsedBalance = getParsedBalance(
+                    token.balance,
+                    token.token.decimals[portfolioChainId]
+                  )
                   return (
                     <div className="whitespace-nowrap" key={key}>
-                      {balance} {tokenSymbol}
+                      {formatAmount(parsedBalance)} {tokenSymbol}
                     </div>
                   )
                 }

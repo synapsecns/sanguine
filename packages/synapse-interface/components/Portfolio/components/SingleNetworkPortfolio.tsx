@@ -87,7 +87,10 @@ export const SingleNetworkPortfolio = ({
           />
         }
         collapsedProps={
-          <PortfolioTokenVisualizer portfolioTokens={sortedTokens} />
+          <PortfolioTokenVisualizer
+            portfolioTokens={sortedTokens}
+            portfolioChainId={portfolioChainId}
+          />
         }
       >
         {isUnsupportedChain && (
