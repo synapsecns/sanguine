@@ -35,3 +35,9 @@ type PutRelayAckResponse struct {
 	// RelayerAddress is the address of the relayer that is currently acked
 	RelayerAddress string `json:"relayer_address"`
 }
+
+// GetContractsResponse contains the schema for a GET /contract response.
+type GetContractsResponse struct {
+	// Contracts is a map of chain id to contract address
+	Contracts map[uint32]string `json:"contracts"`
+}
