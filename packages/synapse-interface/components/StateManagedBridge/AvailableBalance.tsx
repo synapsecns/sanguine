@@ -22,8 +22,6 @@ export const AvailableBalance = ({
     cursor: 'cursor-default',
   })
 
-  console.log('maxBridgeableBalance: ', maxBridgeableBalance)
-
   if (isDisabled) {
     return null
   } else if (isGasToken && isGasEstimateLoading) {
