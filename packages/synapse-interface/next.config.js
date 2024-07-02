@@ -1,4 +1,5 @@
 const path = require('path')
+
 const { codecovWebpackPlugin } = require('@codecov/webpack-plugin')
 
 /** @type {import('next').NextConfig} */

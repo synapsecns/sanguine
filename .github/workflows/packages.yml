@@ -56,6 +56,12 @@ jobs:
         - name: Setup NodeJS
           uses: ./.github/actions/setup-nodejs
 
+        # Foundry is required for build
+        - name: Install Foundry
+          uses: foundry-rs/foundry-toolchain@v1
+          with:
+            version: nightly
+
         - name: Verify Changed files
           uses: tj-actions/verify-changed-files@v11.1
           id: verify-yarn-lock
