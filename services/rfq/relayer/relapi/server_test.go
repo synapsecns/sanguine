@@ -277,7 +277,7 @@ func (c *RelayerClientSuite) TestERC20Withdraw() {
 }
 
 func (c *RelayerClientSuite) TestEthWithdrawCLI() {
-	res, err := c.withdrawer.Withdraw(c.GetTestContext(), relapi.WithdrawRequest{
+	res, err := c.Client.Withdraw(c.GetTestContext(), &relapi.WithdrawRequest{
 		ChainID:      c.underlying.originChainID,
 		To:           common.HexToAddress(testWithdrawalAddress.String()),
 		Amount:       "1000000000000000000",
@@ -318,7 +318,7 @@ func (c *RelayerClientSuite) TestERC20WithdrawCLI() {
 
 	withdrawalAmount := big.NewInt(1000000000000000000)
 
-	res, err := c.withdrawer.Withdraw(c.GetTestContext(), relapi.WithdrawRequest{
+	res, err := c.Client.Withdraw(c.GetTestContext(), &relapi.WithdrawRequest{
 		ChainID:      c.underlying.originChainID,
 		To:           common.HexToAddress(testWithdrawalAddress.String()),
 		Amount:       withdrawalAmount.String(),
