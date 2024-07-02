@@ -177,6 +177,10 @@ func DecodeTokenID(id string) (chainID int, addr common.Address, err error) {
 	if err != nil {
 		return chainID, addr, fmt.Errorf("invalid chain ID: %s", split[0])
 	}
+	if !common.IsHexAddress(split[1]) {
+		return chainID, addr, fmt.Errorf("invalid address: %s", split[1])
+	}
+
 	addr = common.HexToAddress(split[1])
 	return chainID, addr, nil
 }
