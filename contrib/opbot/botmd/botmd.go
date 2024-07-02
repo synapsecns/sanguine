@@ -11,7 +11,6 @@ import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	submitterdb "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	cctpSql "github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"golang.org/x/sync/errgroup"
@@ -27,7 +26,6 @@ type Bot struct {
 	rpcClient     omnirpcClient.RPCClient
 	signer        signer.Signer
 	submitter     submitter.TransactionSubmitter
-	db            submitterdb.SubmitterDBFactory
 }
 
 // NewBot creates a new bot server.

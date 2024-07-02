@@ -313,6 +313,9 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				}
 
 				_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
+				if err != nil {
+					log.Println(err)
+				}
 				return
 			}
 		},
