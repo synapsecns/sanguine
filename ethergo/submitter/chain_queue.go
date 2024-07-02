@@ -3,11 +3,12 @@ package submitter
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/params"
 	"math/big"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/params"
 
 	"github.com/synapsecns/sanguine/ethergo/util"
 
@@ -66,8 +67,10 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 
 	// record metrics for txes.
 	t.otelRecorder.RecordNonceForChain(uint32(chainID.Int64()), currentNonce)
-	t.otelRecorder.RecordNumPendingTxes(uint32(chainID.Int64()), calculatePendingTxes(txes, currentNonce))
 	t.otelRecorder.RecordOldestPendingTx(uint32(chainID.Int64()), time.Since(fetchOldestPendingTx(txes, currentNonce)))
+	pendingTxes := calculatePendingTxes(txes, currentNonce)
+	t.otelRecorder.RecordNumPendingTxes(uint32(chainID.Int64()), pendingTxes)
+	t.numPendingTxes.Set(uint32(chainID.Int64()), pendingTxes)
 
 	wg := &sync.WaitGroup{}
 
