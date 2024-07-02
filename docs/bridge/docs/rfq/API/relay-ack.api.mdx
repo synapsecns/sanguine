@@ -1,0 +1,202 @@
+---
+id: relay-ack
+title: "Relay ack"
+description: "cache an ack request to synchronize relayer actions."
+sidebar_label: "Relay ack"
+hide_title: true
+hide_table_of_contents: true
+api: eJydVMGOm0AM/RU057SJesyxVU89tFrtntIVcsCB2cDM1GO2oYh/rw3shpYsqgoSmvE822/8bDqTY8zIBrbemb3JICsxAZdAdk4IfzQYOWGfxNZlJXlnf6GYK2iRBKJO8b3ZmAn50eet2Xcm847RsS4hhMpmoMjtU9QcnYmSowZdBfIBiS1G3QkVTqH2zejKbUChFJmsK0y/Gc+zEqxLbT5DWMlWIL1CTiCfI9m8wBTynDDGt+OxP6MbYDcxJ3vBPD0h3jyt4ZJ6soUwWuE9IdaZT6B/5T7BV9kLbLL44xNmLJbx1jPBRTdqkwAEdZyEtITCkanBXg0xiMijQB92u0mnWYSvX8ZMUAjmYKRxzKNUBrn0EsaEhiVuAC5ls9XTjdFGuLu2zOcL1KHCRQu8XGSh/G5N6L+85hW6Hs1kvRpvqHk9XIi4W9ds4XmLiNTNupN/mRmZKFlqMS1rPYx4PyPFsdCKDj5yDcMUOagVcqfTmIx1/UOY2Rj+71hP3cN44W2o5OJKoaFqGN1B0Ve9SyGm2647QsQHqvpezUN7iV2Wz0AWjnqtw6OEKRFy6fz9oTNnFIj5NLJ9d69JFV41mnzxA+nn3fXt4V6wx+m/U/tcXQh+aivLd2++y6saDEUZmniwd6YCVzRQKH4Mq89v8jPG1Q==
+sidebar_class_name: "put api-method"
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import Markdown from "@theme/Markdown";
+import Heading from "@theme/Heading";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Relay ack"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/ack"}
+>
+  
+</MethodEndpoint>
+
+
+
+cache an ack request to synchronize relayer actions.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<MimeTabs
+  className={"openapi-tabs__mime"}
+>
+  <TabItem
+    label={"application/json"}
+    value={"application/json-schema"}
+  >
+    <details
+      style={{}}
+      className={"openapi-markdown__details mime"}
+      data-collapsed={false}
+      open={true}
+    >
+      <summary
+        style={{}}
+        className={"openapi-markdown__details-summary-mime"}
+      >
+        <h3
+          className={"openapi-markdown__details-summary-header-body"}
+        >
+          Body
+        </h3><strong
+          className={"openapi-schema__required"}
+        >
+          required
+        </strong>
+      </summary><div
+        style={{"textAlign":"left","marginLeft":"1rem"}}
+      >
+        <div
+          style={{"marginTop":"1rem","marginBottom":"1rem"}}
+        >
+          
+          
+          query params
+          
+          
+        </div>
+      </div><ul
+        style={{"marginLeft":"1rem"}}
+      >
+        <SchemaItem
+          collapsible={false}
+          name={"dest_amount"}
+          required={false}
+          schemaName={"string"}
+          qualifierMessage={undefined}
+          schema={{"type":"string"}}
+        >
+          
+        </SchemaItem><SchemaItem
+          collapsible={false}
+          name={"dest_chain_id"}
+          required={false}
+          schemaName={"integer"}
+          qualifierMessage={undefined}
+          schema={{"type":"integer"}}
+        >
+          
+        </SchemaItem><SchemaItem
+          collapsible={false}
+          name={"dest_fast_bridge_address"}
+          required={false}
+          schemaName={"string"}
+          qualifierMessage={undefined}
+          schema={{"type":"string"}}
+        >
+          
+        </SchemaItem><SchemaItem
+          collapsible={false}
+          name={"dest_token_addr"}
+          required={false}
+          schemaName={"string"}
+          qualifierMessage={undefined}
+          schema={{"type":"string"}}
+        >
+          
+        </SchemaItem><SchemaItem
+          collapsible={false}
+          name={"fixed_fee"}
+          required={false}
+          schemaName={"string"}
+          qualifierMessage={undefined}
+          schema={{"type":"string"}}
+        >
+          
+        </SchemaItem><SchemaItem
+          collapsible={false}
+          name={"max_origin_amount"}
+          required={false}
+          schemaName={"string"}
+          qualifierMessage={undefined}
+          schema={{"type":"string"}}
+        >
+          
+        </SchemaItem><SchemaItem
+          collapsible={false}
+          name={"origin_chain_id"}
+          required={false}
+          schemaName={"integer"}
+          qualifierMessage={undefined}
+          schema={{"type":"integer"}}
+        >
+          
+        </SchemaItem><SchemaItem
+          collapsible={false}
+          name={"origin_fast_bridge_address"}
+          required={false}
+          schemaName={"string"}
+          qualifierMessage={undefined}
+          schema={{"type":"string"}}
+        >
+          
+        </SchemaItem><SchemaItem
+          collapsible={false}
+          name={"origin_token_addr"}
+          required={false}
+          schemaName={"string"}
+          qualifierMessage={undefined}
+          schema={{"type":"string"}}
+        >
+          
+        </SchemaItem>
+      </ul>
+    </details>
+  </TabItem>
+</MimeTabs><div>
+  <div>
+    <ApiTabs
+      label={undefined}
+      id={undefined}
+    >
+      <TabItem
+        label={"200"}
+        value={"200"}
+      >
+        <div>
+          
+          
+          OK
+          
+          
+        </div><div>
+          
+        </div>
+      </TabItem>
+    </ApiTabs>
+  </div>
+</div>
+      

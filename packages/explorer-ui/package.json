@@ -71,6 +71,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.7",
+    "@codecov/webpack-plugin": "^0.0.1-beta.10",
     "@storybook/addon-actions": "^6.5.15",
     "@storybook/addon-essentials": "^6.5.15",
     "@storybook/addon-interactions": "^6.5.15",

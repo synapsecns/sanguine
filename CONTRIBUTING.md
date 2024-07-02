@@ -285,3 +285,7 @@ func TestEventDBSuite(t *testing.T) {
 }
 
 ```
+
+## Github Actions
+
+If you want to do a shallow clone, use `fetch-depth: 2` rather than `fetch-depth: 1`. This allows [some actions](https://docs.codecov.com/docs/environment-specific-requirements) (though not all of them) to determine the correct sha.

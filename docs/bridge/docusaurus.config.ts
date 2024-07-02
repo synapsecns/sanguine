@@ -2,6 +2,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import * as path from "path";
+import {codecovWebpackPlugin} from "@codecov/webpack-plugin";
 
 const config: Config = {
   title: 'Synapse Bridge Docs',
@@ -129,7 +130,7 @@ const config: Config = {
         config: {
           rfqapi: { // the <id> referenced when running CLI commands
             specPath: "../../services/rfq/api/docs/swagger.yaml", // path to OpenAPI spec, URLs supported
-            baseUrl: "https://https://rfq-api.omnirpc.io/",
+            baseUrl: "https://rfq-api.omnirpc.io/",
             outputDir: "docs/rfq/API", // output directory for generated files
             sidebarOptions: { // optional, instructs plugin to generate sidebar.js
               groupPathsBy: "tag", // group sidebar items by operation "tag"
@@ -151,6 +152,20 @@ const config: Config = {
           },
         };
       },
+    }),
+    () => ({
+      name: 'bundle-analyzer',
+      configureWebpack() {
+        return {
+          plugins: [
+            codecovWebpackPlugin({
+              enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+              bundleName: "docs-bridge",
+              uploadToken: process.env.CODECOV_TOKEN,
+            }),
+          ]
+        };
+      }
     }),
   ],
 };
