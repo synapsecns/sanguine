@@ -28,6 +28,8 @@ type Writer interface {
 
 // Reader is the interface for reading from the database.
 type Reader interface {
+	// GetPendingProvensByStatus gets pending provens by status.
+	GetPendingProvensByStatus(ctx context.Context, matchStatuses ...PendingProvenStatus) ([]*PendingProven, error)
 	// GetPendingProvenByID gets a quote request by id. Should return ErrNoProvenForID if not found
 	GetPendingProvenByID(ctx context.Context, id [32]byte) (*PendingProven, error)
 }

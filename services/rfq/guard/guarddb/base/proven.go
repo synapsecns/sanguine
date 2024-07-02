@@ -24,6 +24,42 @@ func (s Store) StorePendingProven(ctx context.Context, proven guarddb.PendingPro
 	return nil
 }
 
+// UpdatePendingProvenStatus updates the status of a pending proven.
+func (s Store) UpdatePendingProvenStatus(ctx context.Context, id [32]byte, status guarddb.PendingProvenStatus) error {
+	tx := s.DB().WithContext(ctx).Model(&PendingProvenModel{}).
+		Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).
+		Update(statusFieldName, status)
+	if tx.Error != nil {
+		return fmt.Errorf("could not update: %w", tx.Error)
+	}
+	return nil
+}
+
+// GetPendingProvensByStatus gets pending provens by status.
+func (s Store) GetPendingProvensByStatus(ctx context.Context, matchStatuses ...guarddb.PendingProvenStatus) (res []guarddb.PendingProven, _ error) {
+	var provenResults []PendingProvenModel
+
+	inArgs := make([]int, len(matchStatuses))
+	for i := range matchStatuses {
+		inArgs[i] = int(matchStatuses[i].Int())
+	}
+
+	// TODO: consider pagination
+	tx := s.DB().WithContext(ctx).Model(&PendingProvenModel{}).Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).Find(&provenResults)
+	if tx.Error != nil {
+		return []guarddb.PendingProven{}, fmt.Errorf("could not get db results: %w", tx.Error)
+	}
+
+	for _, result := range provenResults {
+		marshaled, err := result.ToPendingProven()
+		if err != nil {
+			return []guarddb.PendingProven{}, fmt.Errorf("could not get provens")
+		}
+		res = append(res, *marshaled)
+	}
+	return res, nil
+}
+
 // GetPendingProvenByID gets a quote request by id. Should return ErrNoProvenForID if not found.
 func (s Store) GetPendingProvenByID(ctx context.Context, id [32]byte) (*guarddb.PendingProven, error) {
 	var modelResult PendingProvenModel
@@ -41,15 +77,4 @@ func (s Store) GetPendingProvenByID(ctx context.Context, id [32]byte) (*guarddb.
 		return nil, err
 	}
 	return qr, nil
-}
-
-// UpdatePendingProvenStatus updates the status of a pending proven.
-func (s Store) UpdatePendingProvenStatus(ctx context.Context, id [32]byte, status guarddb.PendingProvenStatus) error {
-	tx := s.DB().WithContext(ctx).Model(&PendingProvenModel{}).
-		Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).
-		Update(statusFieldName, status)
-	if tx.Error != nil {
-		return fmt.Errorf("could not update: %w", tx.Error)
-	}
-	return nil
 }

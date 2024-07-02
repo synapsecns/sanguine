@@ -3,6 +3,7 @@ package guard
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -13,10 +14,12 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb/connect"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/sync/errgroup"
 )
 
 var logger = log.Logger("guard")
@@ -25,6 +28,7 @@ var logger = log.Logger("guard")
 type Guard struct {
 	cfg            relconfig.Config
 	metrics        metrics.Handler
+	db             guarddb.Service
 	chainListeners map[int]listener.ContractListener
 	contracts      map[int]*fastbridge.FastBridgeRef
 }
@@ -82,20 +86,71 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.
 
 	return &Guard{
 		cfg:            cfg,
+		db:             store,
 		chainListeners: chainListeners,
 		contracts:      contracts,
 	}, nil
 }
 
+const defaultDBInterval = 5
+
 // Start starts the guard.
-func (g *Guard) Start(ctx context.Context) error {
+func (g *Guard) Start(ctx context.Context) (err error) {
+	group, ctx := errgroup.WithContext(ctx)
+	group.Go(func() error {
+		err := g.startChainIndexers(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start chain indexers: %w", err)
+		}
+		return nil
+	})
+	group.Go(func() error {
+		err = g.runDBSelector(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start db selector: %w", err)
+		}
+		return nil
+	})
+
+	err = group.Wait()
+	if err != nil {
+		return fmt.Errorf("could not wait for group: %w", err)
+	}
+
+	return nil
+}
+
+func (g *Guard) runDBSelector(ctx context.Context) (err error) {
+	interval := g.cfg.GetDBSelectorInterval()
+
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return fmt.Errorf("could not run db selector: %w", ctx.Err())
+		case <-time.After(interval):
+			err := g.processDB(ctx)
+			if err != nil {
+				return err
+			}
 		}
 	}
+}
 
+func (g *Guard) startChainIndexers(ctx context.Context) error {
+	group, ctx := errgroup.WithContext(ctx)
+
+	for chainID := range g.cfg.GetChains() {
+		chainID := chainID // capture func literal
+
+		group.Go(func() error {
+			err := g.runChainIndexer(ctx, chainID)
+			if err != nil {
+				return fmt.Errorf("could not runChainIndexer chain indexer for chain %d: %w", chainID, err)
+			}
+			return nil
+		})
+	}
+	return nil
 }
 
 func (g Guard) runChainIndexer(ctx context.Context, chainID int) (err error) {
@@ -151,4 +206,9 @@ func (g *Guard) handleProofProvidedLog(ctx context.Context, event *fastbridge.Fa
 	// 	return fmt.Errorf("could not get contract for chain: %d", chainID)
 	// }
 	return nil
+}
+
+func (g *Guard) processDB(ctx context.Context) (err error) {
+	provens, err := g.db.GetPendingProvensByStatus(ctx, guarddb.PendingProvenStatusPending)
+
 }
