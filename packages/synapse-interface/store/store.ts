@@ -73,6 +73,7 @@ store.subscribe(() => {
       outputAmountString,
       routerAddress,
       exchangeRate: BigInt(exchangeRate.toString()),
+      bridgeQuote: currentState.bridge.bridgeQuote,
     }
     segmentAnalyticsEvent(eventTitle, eventData)
   }
