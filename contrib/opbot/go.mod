@@ -139,7 +139,7 @@ require (
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.4 // indirect
-	github.com/gorilla/websocket v1.5.1 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grafana/otel-profiling-go v0.5.1 // indirect
 	github.com/grafana/pyroscope-go v1.1.1 // indirect
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.7 // indirect
@@ -202,9 +202,9 @@ require (
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
-	github.com/shomali11/commander v0.0.0-20230730023802-0b64f620037d // indirect
-	github.com/shomali11/proper v0.0.0-20190608032528-6e70a05688e7 // indirect
 	github.com/skeema/knownhosts v1.2.2 // indirect
+	github.com/slack-io/commander v0.0.0-20231120025847-9fd78b4b2d54 // indirect
+	github.com/slack-io/proper v0.0.0-20231119200853-f78ba4fc878f // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/supranational/blst v0.3.11 // indirect
 	github.com/synapsecns/sanguine/services/cctp-relayer v0.0.0-00010101000000-000000000000 // indirect
@@ -272,8 +272,7 @@ replace (
 	github.com/brianvoe/gofakeit/v6 => github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/slack-go/slack => github.com/slack-go/slack v0.12.2
-	// TODO: replace after https://github.com/slack-io/slacker/pull/14 is merged
-	github.com/slack-io/slacker => github.com/kathiouchka/slacker v0.0.0-20240629123301-04d4e71c3a96
+	github.com/slack-io/slacker => github.com/slack-io/slacker v0.1.1-0.20240701203341-bd3ee211e9d2
 	github.com/synapsecns/sanguine/core => ./../../core
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
 	github.com/synapsecns/sanguine/services/cctp-relayer => ./../../services/cctp-relayer
