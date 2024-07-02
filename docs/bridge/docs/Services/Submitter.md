@@ -77,24 +77,23 @@ nonce, err := c.txSubmitter.SubmitTransaction(
 )
 ```
 
-### Architecture, Nonce Management, Database, Internals
-
-#### Architecture: Submitter, Chain Queue, Queue
+### Nonce Management, Database, Internals
 
 #### Nonce Management and Multichain
 
 Submitter was designed with multiple chains in mind by keeping track of a thread-safe `map[chainid]nonce`. When we build the transaction opts, we lock on the chainid until we finish firing off the transaction.
-We also keep a txHash -> txStatus map with a similar, thread-safe mechanism.
+We also keep a `map[txHash]txStatus` with the same thread-safe mechanism.
+This allows us to concurrently fire off transactions on different chains while ensuring our nonces are correct.
 
-This allows us to concurrently fire off transactions on different chains while ensuring our nonces are correct. The [Chain Queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) is the actual implementation of the queue, while The [Queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) actually handles the overall processing of the queue in the `processQueue` method.
+The [Queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) has a selector loop running at all times that calls the `processQueue` method, concurrently processing and storing confirmed txs, or using the [chain queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) to fire off and store pending txs on chain.
 
-#### Service
+#### Customizing DB Behavior
 
-The Chain Queue db interface, [Service](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/db/service.go), allows a user to customize their transaction db behavior. The base implementation is in [store.go](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/db/txdb/store.go).
+The Chain Queue db interface, [Service](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/db/service.go), allows a user to customize their Transaction DB behavior. The concrete implementation is in [store.go](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/db/txdb/store.go).
 
-#### Database
+#### Transaction DB
 
-When sending transactions, we are able to check on the status of them after we fire them off. The schema for a transaction is
+The schema for a transaction to be stored in the Transaction DB is:
 
 ```go
 // ETHTX contains a raw evm transaction that is unsigned.
@@ -117,6 +116,19 @@ type ETHTX struct {
   // Status is the status of the transaction
   Status db.Status `gorm:"column:status;index"`
 }
+```
+
+Using [GORM.db](https://pkg.go.dev/gorm.io/gorm), you can use whatever database you'd like, MySQL, Sqlite, etc.
+
+#### MySQL Example
+
+```go
+gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
+	Logger:               common_base.GetGormLogger(logger),
+	FullSaveAssociations: true,
+	NamingStrategy:       NamingStrategy,
+	NowFunc:              time.Now,
+})
 ```
 
 ### Observability
