@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cornelk/hashmap"
 	"github.com/google/uuid"
 	"github.com/puzpuzpuz/xsync/v2"
 
@@ -37,6 +38,8 @@ import (
 var logger = log.Logger("ethergo-submitter")
 
 // TransactionSubmitter is the interface for submitting transactions to the chain.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name TransactionSubmitter --output ./mocks --case=underscore
 type TransactionSubmitter interface {
 	// Start starts the transaction submitter.
 	Start(ctx context.Context) error
@@ -48,6 +51,8 @@ type TransactionSubmitter interface {
 	GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error)
 	// Address returns the address of the signer.
 	Address() common.Address
+	// GetNumPendingTxes returns the number of pending transactions for a given chain.
+	GetNumPendingTxes(chainID uint32) int
 }
 
 // txSubmitterImpl is the implementation of the transaction submitter.
@@ -83,6 +88,8 @@ type txSubmitterImpl struct {
 	// distinctChainIDs is the distinct chain ids for the transaction submitter.
 	// note: this map should not be appended to!
 	distinctChainIDs []*big.Int
+	// numPendingTxes is the number of pending transactions for a given chain.
+	numPendingTxes *hashmap.Map[uint32, int]
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -219,6 +226,18 @@ func (t *txSubmitterImpl) GetSubmissionStatus(ctx context.Context, chainID *big.
 	return submissionStatusImpl{
 		state: Pending,
 	}, nil
+}
+
+// GetNumPendingTxes returns the number of pending transactions for a given chain.
+func (t *txSubmitterImpl) GetNumPendingTxes(chainID uint32) int {
+	if t.numPendingTxes == nil {
+		return 0
+	}
+	numPending, ok := t.numPendingTxes.Get(chainID)
+	if !ok {
+		return 0
+	}
+	return numPending
 }
 
 func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (_ uint64, err error) {

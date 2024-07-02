@@ -129,7 +129,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
 	}
 
-	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp, apiClient)
+	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp, apiClient, sm)
 	if err != nil {
 		return nil, fmt.Errorf("could not get quoter")
 	}

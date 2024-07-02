@@ -28,6 +28,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
 	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
@@ -59,6 +60,8 @@ type Manager struct {
 	rfqClient rfqAPIClient.AuthenticatedClient
 	// relayerSigner is the signer used by the relayer to interact on chain
 	relayerSigner signer.Signer
+	// txSubmitter is used to fetch num pending transactions.
+	txSubmitter submitter.TransactionSubmitter
 	// feePricer is used to price fees.
 	feePricer pricer.FeePricer
 	// metricsHandler handles traces, etc
@@ -80,7 +83,7 @@ type Manager struct {
 }
 
 // NewQuoterManager creates a new QuoterManager.
-func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, inventoryManager inventory.Manager, relayerSigner signer.Signer, feePricer pricer.FeePricer, apiClient rfqAPIClient.AuthenticatedClient) (Quoter, error) {
+func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, inventoryManager inventory.Manager, relayerSigner signer.Signer, feePricer pricer.FeePricer, apiClient rfqAPIClient.AuthenticatedClient, sm submitter.TransactionSubmitter) (Quoter, error) {
 	qt := make(map[string][]string)
 
 	// fix any casing issues.
@@ -114,6 +117,7 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		rfqClient:        apiClient,
 		quotableTokens:   qt,
 		relayerSigner:    relayerSigner,
+		txSubmitter:      sm,
 		metricsHandler:   metricsHandler,
 		feePricer:        feePricer,
 		screener:         ss,
@@ -346,7 +350,6 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 		logger.Error("Error converting origin chainID", "error", err)
 		return nil, fmt.Errorf("error converting origin chainID: %w", err)
 	}
-	originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
 
 	// Calculate the quote amount for this route
 	originAmount, err := m.getOriginAmount(ctx, origin, chainID, address, balance)
@@ -381,6 +384,7 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 		logger.Error("Error getting dest amount", "error", err)
 		return nil, fmt.Errorf("error getting dest amount: %w", err)
 	}
+	originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
 	quote = &model.PutQuoteRequest{
 		OriginChainID:           origin,
 		OriginTokenAddr:         originTokenAddr.Hex(),
@@ -446,7 +450,18 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// First, check if we have enough gas to complete the a bridge for this route
+	// Evaluate if we should quote this route due to pending txes
+	exceededOrigin := m.isNumPendingExceeded(origin)
+	exceededDest := m.isNumPendingExceeded(dest)
+	if exceededOrigin || exceededDest {
+		span.SetAttributes(
+			attribute.Bool("pending_exceeded_origin", exceededOrigin),
+			attribute.Bool("pending_exceeded_dest", exceededDest),
+		)
+		return big.NewInt(0), nil
+	}
+
+	// Check if we have enough gas to complete the a bridge for this route
 	// If not, set the quote amount to zero to make sure a stale quote won't be used
 	// TODO: handle in-flight gas; for now we can set a high min_gas_token
 	sufficentGasOrigin, err := m.inventoryManager.HasSufficientGas(ctx, origin, nil)
@@ -510,6 +525,16 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	}
 
 	return quoteAmount, nil
+}
+
+// isNumPendingExceeded checks if the number of pending transactions exceeds the maximum.
+func (m *Manager) isNumPendingExceeded(chainID int) bool {
+	numPending := m.txSubmitter.GetNumPendingTxes(uint32(chainID))
+	maxPending, err := m.config.GetMaxPendingTxes(chainID)
+	if err != nil {
+		return true
+	}
+	return numPending >= maxPending
 }
 
 // deductGasCost deducts the gas cost from the quote amount, if necessary.

@@ -102,6 +102,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	for _, chainID := range noOpChainIDs {
 		t.otelRecorder.RecordOldestPendingTx(uint32(chainID.Int64()), 0)
 		t.otelRecorder.RecordNumPendingTxes(uint32(chainID.Int64()), 0)
+		t.numPendingTxes.Set(uint32(chainID.Int64()), 0)
 
 		if !t.otelRecorder.HasNonceForChain(uint32(chainID.Int64())) {
 			wg.Add(1)
