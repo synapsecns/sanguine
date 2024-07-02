@@ -234,37 +234,39 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 }
 
 func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
-	clientFetcher := new(fetcherMocks.ClientFetcher)
-	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
-	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, mock.Anything).Return(0., fmt.Errorf("not using mocked price"))
-	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
 	inventoryManager := new(inventoryMocks.Manager)
 	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(sufficient, nil)
-	txSubmitter := new(submitterMocks.TransactionSubmitter)
-	txSubmitter.On(testsuite.GetFunctionName(txSubmitter.GetNumPendingTxes), mock.Anything).Return(0)
-	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer, nil, txSubmitter)
-	s.NoError(err)
-
-	var ok bool
-	s.manager, ok = mgr.(*quoter.Manager)
-	s.True(ok)
+	s.setQuoter(inventoryManager, nil)
 }
 
 func (s *QuoterSuite) setNumPendingTxes(numPending int) {
+	txSubmitter := new(submitterMocks.TransactionSubmitter)
+	txSubmitter.On(testsuite.GetFunctionName(txSubmitter.GetNumPendingTxes), mock.Anything).Return(numPending)
+	s.setQuoter(nil, txSubmitter)
+}
+
+func (s *QuoterSuite) setQuoter(im *inventoryMocks.Manager, ts *submitterMocks.TransactionSubmitter) {
 	clientFetcher := new(fetcherMocks.ClientFetcher)
 	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
 	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, mock.Anything).Return(0., fmt.Errorf("not using mocked price"))
 	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
-	inventoryManager := new(inventoryMocks.Manager)
-	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
-	txSubmitter := new(submitterMocks.TransactionSubmitter)
-	txSubmitter.On(testsuite.GetFunctionName(txSubmitter.GetNumPendingTxes), mock.Anything).Return(numPending)
-	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer, nil, txSubmitter)
+
+	if im == nil {
+		im = new(inventoryMocks.Manager)
+		im.On(testsuite.GetFunctionName(im.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+	}
+	if ts == nil {
+		ts = new(submitterMocks.TransactionSubmitter)
+		ts.On(testsuite.GetFunctionName(ts.GetNumPendingTxes), mock.Anything).Return(0)
+	}
+
+	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), im, nil, feePricer, nil, ts)
 	s.NoError(err)
 
 	var ok bool
 	s.manager, ok = mgr.(*quoter.Manager)
 	s.True(ok)
+
 }
 
 func (s *QuoterSuite) TestGetDestAmount() {
