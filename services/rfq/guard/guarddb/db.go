@@ -59,6 +59,7 @@ type BridgeRequest struct {
 
 // PendingProven is the pending proven object.
 type PendingProven struct {
+	Origin        uint32
 	TransactionID [32]byte
 	TxHash        common.Hash
 	Status        PendingProvenStatus
