@@ -50,6 +50,11 @@ func (t *TXSubmitterDBSuite) TestGetNonceForChainID() {
 				}
 			}
 		}
+
+		distinctChains, err := testDB.GetDistinctChainIDs(t.GetTestContext())
+		t.Require().NoError(err)
+
+		t.Require().Equal(len(t.testBackends), len(distinctChains))
 	})
 }
 

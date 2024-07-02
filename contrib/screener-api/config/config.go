@@ -21,6 +21,8 @@ type Config struct {
 	RiskLevels []string `yaml:"risk-levels"`
 	// Whitelist is a list of addresses to whitelist
 	Whitelist []string `yaml:"whitelist"`
+	// Blacklist is a list of addresses to blacklist
+	Blacklist []string `yaml:"blacklist"`
 }
 
 // DatabaseConfig represents the configuration for the database.

@@ -44,7 +44,6 @@ require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 // indirect
-	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
 	github.com/VictoriaMetrics/fastcache v1.12.1 // indirect
@@ -272,8 +271,9 @@ replace (
 	// later versions give errors on uint64 being too high.
 	github.com/brianvoe/gofakeit/v6 => github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	// required by slacker
 	github.com/slack-go/slack => github.com/slack-go/slack v0.12.2
+	// TODO: replace after https://github.com/slack-io/slacker/pull/14 is merged
+	github.com/slack-io/slacker => github.com/kathiouchka/slacker v0.0.0-20240629123301-04d4e71c3a96
 	github.com/synapsecns/sanguine/core => ./../../core
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
 	github.com/synapsecns/sanguine/services/cctp-relayer => ./../../services/cctp-relayer

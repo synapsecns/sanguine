@@ -25,6 +25,12 @@
     },
     {
       "type": "panel",
+      "id": "text",
+      "name": "Text",
+      "version": ""
+    },
+    {
+      "type": "panel",
       "id": "timeseries",
       "name": "Time series",
       "version": ""
@@ -53,6 +59,32 @@
   "links": [],
   "liveNow": false,
   "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 8,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "This is the rfq. It is used to track metrics for the rfq relayer. \n\nIf you update this dashboard please be sure to update the [docs](https://bridge-docs-theta.vercel.app/docs/rfq/Relayer/#observability) at `docs/bridge/` and the dashboard folder in `services/rfq/relayer/dashbords/dashboard.json`",
+        "mode": "markdown"
+      },
+      "pluginVersion": "10.1.2",
+      "title": "RFQ Relayer Dashboard",
+      "type": "text"
+    },
     {
       "datasource": {
         "type": "prometheus",
@@ -116,7 +148,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 2,
       "options": {
@@ -138,7 +170,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "avg(rate(inventory_balance_sum{token_name=\"ETH\",relayer=\"$relayer\"}[1m]) / rate(inventory_balance_count{token_name=\"ETH\",relayer=\"$relayer\"}[1m])) by (chain_id)",
+          "expr": "avg(inventory_balance{token_name=\"ETH\",relayer=\"$relayer\"}) by (chain_id)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -211,7 +243,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 3
       },
       "id": 4,
       "options": {
@@ -233,7 +265,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "avg(rate(inventory_balance_sum{token_name=\"USD Coin\",relayer=\"$relayer\"}[1m]) / rate(inventory_balance_count{token_name=\"USD Coin\",relayer=\"$relayer\"}[1m])) by (chain_id)",
+          "expr": "avg(inventory_balance{token_name=\"USD Coin\",relayer=\"$relayer\"}) by (chain_id)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -306,7 +338,7 @@
         "h": 11,
         "w": 12,
         "x": 0,
-        "y": 9
+        "y": 12
       },
       "id": 3,
       "options": {
@@ -328,7 +360,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(quote_amount_sum{origin_token_name=\"ETH\",relayer=\"$relayer\"}[5m])) by (origin_chain_id, destination_chain_id) \n/ \nsum(rate(quote_amount_count{origin_token_name=\"ETH\",relayer=\"$relayer\"}[5m])) by (origin_chain_id, destination_chain_id)\n",
+          "expr": "avg(quote_amount{origin_token_name=\"ETH\", dest_token_name=\"ETH\"}) by (origin_chain_id, dest_chain_id)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -401,7 +433,7 @@
         "h": 11,
         "w": 12,
         "x": 12,
-        "y": 9
+        "y": 12
       },
       "id": 5,
       "options": {
@@ -423,204 +455,15 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(quote_amount_sum{origin_token_name=\"USD Coin\",relayer=\"$relayer\"}[5m])) by (origin_chain_id, destination_chain_id) \n/ \nsum(rate(quote_amount_count{origin_token_name=\"USD Coin\",relayer=\"$relayer\"}[5m])) by (origin_chain_id, destination_chain_id)",
+          "expr": "avg(quote_amount{origin_token_name=\"USD Coin\"} / 1e6) by (origin_chain_id, destination_chain_id)",
+          "hide": false,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "{{origin_chain_id}} to {{destination_chain_id}} ",
           "range": true,
-          "refId": "A"
+          "refId": "B"
         }
       ],
       "title": "USDC Quote Sizing",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "Displays a rolling average of the number of transactions pending in the submitter, by chain.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 20
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "editorMode": "code",
-          "expr": "avg(rate(num_pending_txes_sum{wallet=\"$relayer\"}[15m]) / rate(num_pending_txes_count{wallet=\"$relayer\"}[15m])) by (chain_id)",
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Pending Submitter Transactions",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "Displays the latest on-chain nonce for the submitter wallet by chain.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 20
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "editorMode": "code",
-          "expr": "avg(avg_over_time(current_nonce_sum{wallet=\"$relayer\"}[5m]) / avg_over_time(current_nonce_count{wallet=\"$relayer\"}[5m])) by (chain_id)\n",
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Nonces",
       "type": "timeseries"
     }
   ],
@@ -636,7 +479,7 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(inventory_balance_sum,relayer)",
+        "definition": "label_values(inventory_balance,relayer)",
         "description": "Address of the relayer displayed in this dashboard.",
         "hide": 0,
         "includeAll": false,
@@ -645,7 +488,7 @@
         "name": "relayer",
         "options": [],
         "query": {
-          "query": "label_values(inventory_balance_sum,relayer)",
+          "query": "label_values(inventory_balance,relayer)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -664,6 +507,6 @@
   "timezone": "",
   "title": "RFQ Relayer",
   "uid": "c394e799-062f-4bfd-90d6-b94f2932575a",
-  "version": 12,
+  "version": 17,
   "weekStart": ""
 }
