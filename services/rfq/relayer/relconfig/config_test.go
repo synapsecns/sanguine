@@ -33,6 +33,7 @@ func TestChainGetters(t *testing.T) {
 				QuotePct:                50,
 				QuoteWidthBps:           10,
 				QuoteFixedFeeMultiplier: 1.1,
+				MaxPendingTxes:          11,
 			},
 		},
 		BaseChainConfig: relconfig.ChainConfig{
@@ -51,6 +52,7 @@ func TestChainGetters(t *testing.T) {
 			QuotePct:                51,
 			QuoteWidthBps:           11,
 			QuoteFixedFeeMultiplier: 1.2,
+			MaxPendingTxes:          12,
 		},
 	}
 	cfg := relconfig.Config{
@@ -71,6 +73,7 @@ func TestChainGetters(t *testing.T) {
 				QuotePct:                50,
 				QuoteWidthBps:           10,
 				QuoteFixedFeeMultiplier: 1.1,
+				MaxPendingTxes:          11,
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:            usdcAddr,
@@ -290,6 +293,20 @@ func TestChainGetters(t *testing.T) {
 		chainVal, err := cfgWithBase.GetQuoteFixedFeeMultiplier(chainID)
 		assert.NoError(t, err)
 		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuoteFixedFeeMultiplier)
+	})
+
+	t.Run("GetMaxPendingTxes", func(t *testing.T) {
+		defaultVal, err := cfg.GetMaxPendingTxes(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.MaxPendingTxes)
+
+		baseVal, err := cfgWithBase.GetMaxPendingTxes(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.MaxPendingTxes)
+
+		chainVal, err := cfgWithBase.GetMaxPendingTxes(chainID)
+		assert.NoError(t, err)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].MaxPendingTxes)
 	})
 
 	t.Run("GetMaxRebalanceAmount", func(t *testing.T) {
