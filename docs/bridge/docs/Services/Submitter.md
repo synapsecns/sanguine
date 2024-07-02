@@ -77,14 +77,18 @@ nonce, err := c.txSubmitter.SubmitTransaction(
 )
 ```
 
-### Nonce Management, Database, Internals
+### Architecture, Nonce Management, Database, Internals
+
+#### Architecture: Submitter, Chain Queue, Queue
 
 #### Nonce Management and Multichain
 
 Submitter was designed with multiple chains in mind by keeping track of a thread-safe `map[chainid]nonce`. When we build the transaction opts, we lock on the chainid until we finish firing off the transaction.
 We also keep a txHash -> txStatus map with a similar, thread-safe mechanism.
 
-This allows for a concurrent nature where we're able to concurrently fire off transactions on different chains while ensuring our nonces are correct per chain. The [Chain Queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) is the actual implementation of the queue.
+This allows us to concurrently fire off transactions on different chains while ensuring our nonces are correct. The [Chain Queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) is the actual implementation of the queue, while The [Queue](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/chain_queue.go) actually handles the overall processing of the queue in the `processQueue` method.
+
+#### Service
 
 The Chain Queue db interface, [Service](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/db/service.go), allows a user to customize their transaction db behavior. The base implementation is in [store.go](https://github.com/synapsecns/sanguine/blob/ethergo/v0.9.0/ethergo/submitter/db/txdb/store.go).
 
