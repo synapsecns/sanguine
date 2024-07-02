@@ -10,11 +10,11 @@ import { PortfolioTabs } from '@/slices/portfolio/actions'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { getValidAddress } from '@/utils/isValidAddress'
 import { isTransactionHash } from '@/utils/validators'
-import { getTransactionHashExplorerLink } from '../Transaction/components/TransactionExplorerLink'
+import { getTransactionHashExplorerLink } from '../../Activity/Transaction/components/TransactionExplorerLink'
 import { ClearSearchButton } from './ClearSearchButton'
-import { useIsFocused } from '../helpers/useIsFocused'
-import { useIsMounted } from '../helpers/useIsMounted'
-import { useSearchInputState } from '../helpers/useSearchInputStatus'
+import { useIsFocused } from '@/utils/hooks/useIsFocused'
+import { useIsMounted } from '@/utils/hooks/useIsMounted'
+import { useSearchInputState } from '../hooks/useSearchInputStatus'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 

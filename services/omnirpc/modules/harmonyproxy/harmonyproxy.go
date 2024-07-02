@@ -61,7 +61,7 @@ func NewHarmonyProxy(proxyURL string, handler metrics.Handler, port int) *Harmon
 // Run runs the harmony proxy.
 func (r *HarmonyProxy) Run(_ context.Context) error {
 	router := ginhelper.New(logger)
-	router.Use(r.handler.Gin())
+	router.Use(r.handler.Gin()...)
 
 	router.POST("/", func(c *gin.Context) {
 		err := r.ProxyRequest(c)
@@ -239,7 +239,7 @@ func (r *HarmonyProxy) makeReq(parentCtx context.Context, body []byte) (_ []byte
 	return respBody, nil
 }
 
-const expectedVersion = "Harmony (C) 2023. harmony, version v8197-v2023.4.2-1-g40a2374d"
+const expectedVersion = "Harmony (C) 2023. harmony, version v8342-v2024.1.0-0-gb02ea4c83"
 
 // nolint: cyclop
 func (r *HarmonyProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash common.Hash, rawBody []byte, checkVersion bool) (_ []byte, err error) {

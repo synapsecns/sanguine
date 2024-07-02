@@ -63,64 +63,31 @@
                 "responses": {}
             }
         },
-        "/screen/{ruleset}/{address}": {
+        "/screen/{address}": {
             "get": {
-                "description": "Assess the risk associated with a given address using specified rulesets.",
+                "description": "Screen an address using Chainalysis API to determine if it's high risk",
                 "consumes": [
+                    "application/json",
                     "application/json"
                 ],
                 "produces": [
+                    "application/json",
                     "application/json"
                 ],
                 "tags": [
-                    "address"
+                    "Address Screening"
                 ],
-                "summary": "Screen address for risk",
+                "summary": "Screen an address for risk",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Ruleset to use for screening the address",
-                        "name": "ruleset",
-                        "in": "query",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Address to be screened",
                         "name": "address",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "Returns the risk assessment result",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "boolean"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Returns error if the required parameters are missing or invalid",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Returns error if there are problems processing the indicators",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
+                "responses": {}
             }
         }
     },
@@ -132,9 +99,6 @@
                     "type": "string"
                 },
                 "createdAt": {
-                    "type": "string"
-                },
-                "data": {
                     "type": "string"
                 },
                 "id": {

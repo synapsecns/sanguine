@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/ginhelper"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation/otelginmetrics"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
 	experimentalLogger "github.com/synapsecns/sanguine/core/metrics/logger"
 	baseServer "github.com/synapsecns/sanguine/core/server"
@@ -24,7 +25,7 @@ import (
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"net/http"
@@ -115,7 +116,7 @@ func (b *baseHandler) startMetricsServer(ctx context.Context) {
 	// note: this is a global setter, so it will affect all gin servers.
 	// this is probably not wise, but a better workaround is required.
 	gin.SetMode(gin.ReleaseMode)
-	server.Use(b.Gin())
+	server.Use(b.Gin()...)
 	server.GET(path, gin.WrapH(b.handler))
 
 	connection := baseServer.Server{}
@@ -125,8 +126,11 @@ func (b *baseHandler) startMetricsServer(ctx context.Context) {
 	}
 }
 
-func (b *baseHandler) Gin() gin.HandlerFunc {
-	return otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp), otelgin.WithPropagators(b.propagator))
+func (b *baseHandler) Gin() []gin.HandlerFunc {
+	traceMiddleware := otelgin.Middleware(b.name, otelgin.WithTracerProvider(b.tp), otelgin.WithPropagators(b.propagator))
+	metricsMiddleware := otelginmetrics.Middleware(b.name)
+
+	return []gin.HandlerFunc{traceMiddleware, metricsMiddleware}
 }
 
 func (b *baseHandler) Propagator() propagation.TextMapPropagator {

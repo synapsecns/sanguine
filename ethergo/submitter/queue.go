@@ -66,6 +66,10 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 		return fmt.Errorf("could not get pendingChainIDs: %w", err)
 	}
 
+	t.distinctChainIDMux.RLock()
+	noOpChainIDs := outersection(pendingChainIDs, t.distinctChainIDs)
+	t.distinctChainIDMux.RUnlock()
+
 	pendingChainIDs64 := make([]int64, len(pendingChainIDs))
 	for i, chainID := range pendingChainIDs {
 		pendingChainIDs64[i] = chainID.Int64()
@@ -94,10 +98,54 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 			}
 		}(chainID)
 	}
+
+	for _, chainID := range noOpChainIDs {
+		t.otelRecorder.RecordOldestPendingTx(uint32(chainID.Int64()), 0)
+		t.otelRecorder.RecordNumPendingTxes(uint32(chainID.Int64()), 0)
+
+		if !t.otelRecorder.HasNonceForChain(uint32(chainID.Int64())) {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				evmClient, err := t.fetcher.GetClient(ctx, chainID)
+				if err != nil {
+					logger.Warn("could not get client", "error", err)
+					return
+				}
+				nonce, err := evmClient.NonceAt(ctx, t.signer.Address(), nil)
+				if err != nil {
+					logger.Warn("could not get nonce", "error", err)
+					return
+				}
+				t.otelRecorder.RecordNonceForChain(uint32(chainID.Int64()), nonce)
+			}()
+		}
+
+		if !t.otelRecorder.HasGasBalanceForChain(uint32(chainID.Int64())) {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				evmClient, err := t.fetcher.GetClient(ctx, chainID)
+				if err != nil {
+					logger.Warn("could not get client", "error", err)
+					return
+				}
+				balance, err := evmClient.BalanceAt(ctx, t.signer.Address(), nil)
+				if err != nil {
+					logger.Warn("could not get balance", "error", err)
+					return
+				}
+				t.otelRecorder.RecordGasBalanceForChain(uint32(chainID.Int64()), balance)
+			}()
+		}
+	}
+
 	wg.Wait()
 
 	return nil
 }
+
+const maxTxesPerChain = 100
 
 func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.processConfirmedQueue")
@@ -110,7 +158,11 @@ func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err 
 		return fmt.Errorf("could not get txs: %w", err)
 	}
 
-	sortedTXsByChainID := sortTxesByChainID(txs)
+	sortedTXsByChainID := sortTxesByChainID(txs, maxTxesPerChain)
+
+	t.distinctChainIDMux.RLock()
+	noOpChainIDs := outersection(mapToBigIntSlice(sortedTXsByChainID), t.distinctChainIDs)
+	t.distinctChainIDMux.RUnlock()
 
 	var wg sync.WaitGroup
 	wg.Add(len(sortedTXsByChainID))
@@ -126,6 +178,10 @@ func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err 
 		}(chainID)
 	}
 
+	for _, chainID := range noOpChainIDs {
+		t.otelRecorder.RecordConfirmedQueue(uint32(chainID.Int64()), 0)
+	}
+
 	wg.Wait()
 	return nil
 }
@@ -135,6 +191,8 @@ func (t *txSubmitterImpl) chainConfirmQueue(parentCtx context.Context, chainID *
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	t.otelRecorder.RecordConfirmedQueue(uint32(chainID.Int64()), len(txes))
 
 	// chainClient is the client for the chain we're working on
 	chainClient, err := t.fetcher.GetClient(ctx, chainID)

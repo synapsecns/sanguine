@@ -282,6 +282,20 @@ export const BLAST: Chain = {
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/blast.e39807f8.svg',
 }
 
+export const SCROLL: Chain = {
+  id: 534352,
+  name: 'Scroll',
+  rpcUrls: {
+    primary: 'https://rpc.scroll.io/',
+    fallback: 'https://scroll.blockpi.network/v1/rpc/public',
+  },
+  explorerUrl: 'https://scrollscan.com',
+  explorerName: 'Scrollscan',
+  blockTime: 3000,
+  imgUrl:
+    'https://fe-adds-scroll.sanguine-fe.pages.dev/_next/static/media/scroll.a805c122.svg',
+}
+
 export const CHAINS = {
   ETHEREUM,
   ARBITRUM,
@@ -303,6 +317,7 @@ export const CHAINS = {
   DOGE,
   BASE,
   BLAST,
+  SCROLL,
 }
 
 export const CHAINS_ARRAY = Object.values(CHAINS)

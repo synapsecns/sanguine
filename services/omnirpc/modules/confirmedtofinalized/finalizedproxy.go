@@ -66,7 +66,7 @@ func NewProxy(proxyURL string, handler metrics.Handler, port, maxSubmitAhead, ch
 
 func (r *finalizedProxyImpl) Run(ctx context.Context) error {
 	router := ginhelper.NewWithExperimentalLogger(ctx, r.handler.ExperimentalLogger())
-	router.Use(r.handler.Gin())
+	router.Use(r.handler.Gin()...)
 
 	router.POST("/", func(c *gin.Context) {
 		err := r.ProxyRequest(c)

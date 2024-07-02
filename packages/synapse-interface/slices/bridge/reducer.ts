@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { type Address } from 'viem'
 
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { BridgeQuote, Token } from '@/utils/types'
+import { type BridgeQuote, type Token } from '@/utils/types'
 import {
   getRoutePossibilities,
   getSymbol,
@@ -12,10 +12,7 @@ import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
-import { fetchAndStoreBridgeQuotes } from './hooks'
-import { BridgeQuoteResponse } from '@/utils/actions/fetchBridgeQuotes'
 import { findValidToken } from '@/utils/findValidToken'
-import { FetchState } from '../portfolio/actions'
 
 export interface BridgeState {
   fromChainId: number
@@ -31,9 +28,8 @@ export interface BridgeState {
   debouncedFromValue: string
   debouncedToTokensFromValue: string
   bridgeQuote: BridgeQuote
-  toTokensBridgeQuotes: BridgeQuoteResponse[]
-  toTokensBridgeQuotesStatus: FetchState
   isLoading: boolean
+  isWalletPending: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
 }
@@ -68,9 +64,8 @@ export const initialState: BridgeState = {
   debouncedFromValue: '',
   debouncedToTokensFromValue: '',
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
-  toTokensBridgeQuotes: [],
-  toTokensBridgeQuotesStatus: FetchState.IDLE,
   isLoading: false,
+  isWalletPending: false,
   deadlineMinutes: null,
   destinationAddress: null,
 }
@@ -81,6 +76,9 @@ export const bridgeSlice = createSlice({
   reducers: {
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload
+    },
+    setIsWalletPending: (state, action: PayloadAction<boolean>) => {
+      state.isWalletPending = action.payload
     },
     setFromChainId: (state, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
@@ -473,26 +471,6 @@ export const bridgeSlice = createSlice({
       state.fromValue = initialState.fromValue
       state.debouncedFromValue = initialState.debouncedFromValue
     },
-    resetFetchedBridgeQuotes: (state) => {
-      state.toTokensBridgeQuotes = initialState.toTokensBridgeQuotes
-      state.toTokensBridgeQuotesStatus = initialState.toTokensBridgeQuotesStatus
-    },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchAndStoreBridgeQuotes.pending, (state) => {
-        state.toTokensBridgeQuotesStatus = FetchState.LOADING
-      })
-      .addCase(
-        fetchAndStoreBridgeQuotes.fulfilled,
-        (state, action: PayloadAction<BridgeQuoteResponse[]>) => {
-          state.toTokensBridgeQuotes = action.payload
-          state.toTokensBridgeQuotesStatus = FetchState.VALID
-        }
-      )
-      .addCase(fetchAndStoreBridgeQuotes.rejected, (state) => {
-        state.toTokensBridgeQuotesStatus = FetchState.INVALID
-      })
   },
 })
 
@@ -509,9 +487,9 @@ export const {
   setDeadlineMinutes,
   setDestinationAddress,
   setIsLoading,
+  setIsWalletPending,
   resetBridgeInputs,
   clearDestinationAddress,
-  resetFetchedBridgeQuotes,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer

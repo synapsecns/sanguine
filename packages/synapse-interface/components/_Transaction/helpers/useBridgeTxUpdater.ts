@@ -13,14 +13,14 @@ import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { type Chain } from '@/utils/types'
 
 /**
- * Hook to update Tx store state based on returned SDK method calls
+ * Hook that updates bridge transaction in state.
  *
- * @param connectedAddress address that executed tx
- * @param destinationChain dest. chain of executed tx
- * @param kappa fetched kappa from useBridgeTxStatus
- * @param originTxHash executed tx origin hash
- * @param isTxComplete fetched status from useBridgeTxStatus
- * @param isTxReverted fetched tx status on chain
+ * @param {string} connectedAddress - The signer executing bridge transactions.
+ * @param {Chain} destinationChain - The destination chain of bridge transaction.
+ * @param {string} kappa - The Synapse transaction ID queried from SDK.
+ * @param {string} originTxHash - The transaction hash returned when initiating the bridge transaction.
+ * @param {boolean} isTxComplete - Whether bridge transaction has completed, queried from SDK.
+ * @param {boolean} isTxReverted - Whether bridge transaction was reverted, queried on-chain.
  */
 export const useBridgeTxUpdater = (
   connectedAddress: string,

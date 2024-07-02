@@ -53,3 +53,7 @@ You'll now notice that there are two failure cases for this method: if either th
 <!-- TODO: mermade diagram of confirmation queue and process queue -->
 <!-- aditionally, should describe cases in which submit transaction will return an error-->
 <!-- To understand why this module is necessary, you first need to understand that the EVM does not specify anything about transaction submission or consensus. It merely refers to a set of instructions for executing byte-code, so different chains are free to change transaction submission and p2p semantics as they wish. This forms the first constraint on transaction submission. The second constraint is formed by rate-limits, if I send my transaction to an rpc node, even if that node has unlimited throughput, there's no gurantee it will send that to all it's peers and not be rate limited by then. We therefore need to be careful about submitting transactions too far ahead of the current nonce.-->
+
+## Grafana Dashboard
+
+The submitter exposes a number of metrics that can be used to monitor the health of the submitter. You can find the dashboard at [dashboard.json](dashboard.json).

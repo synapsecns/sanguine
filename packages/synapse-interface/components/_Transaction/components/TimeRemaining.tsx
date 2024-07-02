@@ -1,14 +1,6 @@
 import { useMemo } from 'react'
 import ExclamationIcon from '@components/icons/ExclamationIcon'
 
-/**
- * @param isDelayed: Elapsed Time is over Estimated Time for Transaction
- * @param remainingTime: Time remaining for Transaction, in seconds
- * @param delayedTime: Delayed Time, in seconds
- * @param status: Transaction status
- * @returns Remaining time in minutes (in seconds if < 1 min) if not delayed.
- * Otherwise, return text representative of delayed transaction.
- */
 export const TimeRemaining = ({
   isDelayed,
   remainingTime,
@@ -18,19 +10,24 @@ export const TimeRemaining = ({
   isDelayed: boolean
   remainingTime: number
   delayedTime: number | null
-  status: string
+  status: 'pending' | 'completed' | 'reverted' | 'refunded'
 }) => {
-  const isComplete = status === 'completed'
-  const isReverted = status === 'reverted'
-
-  if (isComplete) {
+  if (status === 'completed') {
     return <div className="text-sm text-green-400">Complete!</div>
   }
 
-  if (isReverted) {
+  if (status === 'reverted') {
     return (
       <span className="flex items-center space-x-1 text-sm">
         <ExclamationIcon className="w-4 h-4" /> <span>Reverted</span>
+      </span>
+    )
+  }
+
+  if (status === 'refunded') {
+    return (
+      <span className="flex items-center space-x-1 text-sm">
+        <ExclamationIcon className="w-4 h-4" /> <span>Refunded</span>
       </span>
     )
   }

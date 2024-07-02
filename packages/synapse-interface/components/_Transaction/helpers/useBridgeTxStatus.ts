@@ -13,8 +13,7 @@ interface UseBridgeTxStatusProps {
 }
 
 /**
- * Hook will return bridge Tx status via Synapse SDK
- * returns bridge Tx completion status and fetched kappa
+ * Hook that queries SDK for Synapse transaction ID (kappa) and transaction completion status.
  */
 export const useBridgeTxStatus = ({
   originChainId,
