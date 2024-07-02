@@ -1,7 +1,6 @@
 package relapi
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -213,13 +212,26 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"nonce": nonce})
 }
 
-func (h *Handler) getTxHashByNonce(ctx context.Context, chainID *big.Int, nonce uint64) (txHash common.Hash, err error) {
-	txHash, err = h.submitter.GetTxHashByNonce(ctx, chainID, nonce)
-	if err != nil {
-		return common.Hash{}, fmt.Errorf("could not get tx by nonce: %w", err)
+func (h *Handler) GetTxHashByNonce(c *gin.Context) {
+	nonce, ok := c.Get("nonce")
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not get nonce"})
+		return
+	}
+	chainid, ok := c.Get("chainid")
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not get nonce"})
+		return
 	}
 
-	return txHash, nil
+	tx, err := h.submitter.GetTxHashByNonce(c, big.NewInt(chainid.(int64)), nonce.(uint64))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not get tx hash: %s", err.Error())})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"withdrawTxHash": tx})
+
 }
 
 // tokenIDExists checks if a token ID exists in the config.

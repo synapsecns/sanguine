@@ -683,12 +683,18 @@ func (t *txSubmitterImpl) GetTxHashByNonce(ctx context.Context, chainID *big.Int
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	tx, err := t.db.GetNonceAttemptsByStatus(ctx, t.signer.Address(), chainID, nonce)
+	txs, err := t.db.GetNonceAttemptsByStatus(ctx, t.signer.Address(), chainID, nonce)
 	if err != nil {
 		return common.Hash{}, fmt.Errorf("could not get tx by nonce: %w", err)
 	}
 
-	return tx[0].Hash(), nil
+	for tx := range txs {
+		if txs[tx].Status == db.Confirmed {
+			return txs[tx].Hash(), nil
+		}
+	}
+
+	return txs[0].Hash(), nil
 }
 
 var _ TransactionSubmitter = &txSubmitterImpl{}

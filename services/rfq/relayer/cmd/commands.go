@@ -4,6 +4,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/commandline"
@@ -114,10 +115,29 @@ var withdrawCommand = &cli.Command{
 			To:           common.HexToAddress(to),
 		}
 
-		_, err = client.Withdraw(c.Context, &withdrawRequest)
+		res, err := client.Withdraw(c.Context, &withdrawRequest)
 		if err != nil {
 			return fmt.Errorf("could not start relayer: %w", err)
 		}
+
+		var clientErr error
+		var status string
+		err = spinner.New().
+			Title("Logging in...").
+			Action(func() {
+				status, err = client.GetTxHashByNonce(c.Context, fmt.Sprint(chainID), fmt.Sprint(res.Nonce))
+				if err != nil {
+					clientErr = fmt.Errorf("could not login: %w", err)
+				}
+			}).Run()
+		if err != nil {
+			panic(err)
+		}
+		if clientErr != nil {
+			panic(clientErr)
+		}
+
+		fmt.Sprintf("Withdraw Tx: %s", status)
 
 		return nil
 	},

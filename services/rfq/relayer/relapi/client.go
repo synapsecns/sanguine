@@ -19,6 +19,7 @@ type RelayerClient interface {
 	GetQuoteRequestStatusByTxID(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
 	RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error)
 	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)
+	GetTxHashByNonce(ctx context.Context, chainID string, nonce string) (string, error)
 }
 
 type relayerClient struct {
