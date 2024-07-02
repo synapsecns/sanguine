@@ -1,4 +1,4 @@
-import { codecovRollupPlugin } from '@codecov/rollup-plugin'
+const { codecovRollupPlugin } = require('@codecov/rollup-plugin');
 
 module.exports = {
   rollup(config, options) {
