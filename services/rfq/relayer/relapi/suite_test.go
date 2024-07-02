@@ -2,13 +2,14 @@ package relapi_test
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/params"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
-	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"math/big"
 	"strconv"
 	"sync"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/params"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
+	"github.com/synapsecns/sanguine/services/rfq/testutil"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -133,7 +134,6 @@ func (c *RelayerServerSuite) SetupTest() {
 	}()
 
 	for _, backend := range c.testBackends {
-		backend := backend
 		go func() {
 			defer wg.Done()
 			backend.FundAccount(c.GetTestContext(), c.wallet.Address(), *big.NewInt(params.Ether))
@@ -177,6 +177,7 @@ func (c *RelayerServerSuite) SetupSuite() {
 
 	g, _ := errgroup.WithContext(c.GetSuiteContext())
 	for _, chainID := range chainIDs {
+		chainID := chainID
 		// Setup Anvil backend for the suite to have RPC support
 		g.Go(func() error {
 			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))

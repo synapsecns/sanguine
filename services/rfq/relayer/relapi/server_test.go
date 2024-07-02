@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"math/big"
 	"net/http"
 	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -225,7 +226,7 @@ func (c *RelayerClientSuite) TestEthWithdraw() {
 	err = retry.WithBackoff(c.GetTestContext(), func(ctx context.Context) error {
 		balance, err := backend.BalanceAt(ctx, testWithdrawalAddress, nil)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not fetch balance %w", err)
 		}
 
 		expectedBalance := new(big.Int).Add(startBalance, withdrawalAmount)
@@ -261,7 +262,7 @@ func (c *RelayerClientSuite) TestERC20Withdraw() {
 	err = retry.WithBackoff(c.GetTestContext(), func(ctx context.Context) error {
 		balance, err := erc20.BalanceOf(&bind.CallOpts{Context: ctx}, testWithdrawalAddress)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not get balance %w", err)
 		}
 
 		expectedBalance := new(big.Int).Add(startBalance, withdrawalAmount)
@@ -273,4 +274,74 @@ func (c *RelayerClientSuite) TestERC20Withdraw() {
 		return nil
 	})
 	c.Require().NoError(err)
+}
+
+func (c *RelayerClientSuite) TestEthWithdrawCLI() {
+	res, err := c.Client.Withdraw(c.GetTestContext(), &relapi.WithdrawRequest{
+		ChainID:      c.underlying.originChainID,
+		To:           common.HexToAddress(testWithdrawalAddress.String()),
+		Amount:       "1000000000000000000",
+		TokenAddress: chain.EthAddress,
+	})
+	c.Require().NoError(err)
+
+	// Wait for the transaction to be mined
+	err = retry.WithBackoff(c.GetTestContext(), func(ctx context.Context) error {
+		status, err := c.underlying.database.SubmitterDB().
+			GetNonceStatus(
+				ctx,
+				c.underlying.wallet.Address(),
+				big.NewInt(int64(c.underlying.originChainID)),
+				res.Nonce,
+			)
+		if err != nil {
+			return fmt.Errorf("could not get status %w", err)
+		}
+
+		if status != submitterdb.Stored {
+			return fmt.Errorf("transaction not mined")
+		}
+
+		return nil
+	})
+	c.Require().NoError(err)
+	c.Require().NotNil(res)
+}
+
+func (c *RelayerClientSuite) TestERC20WithdrawCLI() {
+	backend := c.underlying.testBackends[uint64(c.underlying.originChainID)]
+
+	_, erc20 := c.underlying.deployManager.GetMockERC20(c.GetTestContext(), backend)
+
+	startBalance, err := erc20.BalanceOf(&bind.CallOpts{Context: c.GetTestContext()}, testWithdrawalAddress)
+	c.Require().NoError(err)
+
+	withdrawalAmount := big.NewInt(1000000000000000000)
+
+	res, err := c.Client.Withdraw(c.GetTestContext(), &relapi.WithdrawRequest{
+		ChainID:      c.underlying.originChainID,
+		To:           common.HexToAddress(testWithdrawalAddress.String()),
+		Amount:       withdrawalAmount.String(),
+		TokenAddress: erc20.Address(),
+	})
+	c.Require().NoError(err)
+
+	// Wait for the transaction to be mined
+	err = retry.WithBackoff(c.GetTestContext(), func(ctx context.Context) error {
+		balance, err := erc20.BalanceOf(&bind.CallOpts{Context: ctx}, testWithdrawalAddress)
+		if err != nil {
+			return fmt.Errorf("could not fetch balance %w", err)
+		}
+
+		expectedBalance := new(big.Int).Add(startBalance, withdrawalAmount)
+
+		if balance.Cmp(expectedBalance) != 0 {
+			return fmt.Errorf("balance not updated")
+		}
+
+		return nil
+	})
+
+	c.Require().NoError(err)
+	c.Require().NotNil(res)
 }
