@@ -9,3 +9,8 @@ import (
 func TokenIDExists(cfg relconfig.Config, tokenAddress common.Address, chainID int) bool {
 	return tokenIDExists(cfg, tokenAddress, chainID)
 }
+
+// ToAddressIsWhitelisted checks if a to address is whitelisted.
+func ToAddressIsWhitelisted(cfg relconfig.Config, to common.Address) bool {
+	return toAddressIsWhitelisted(cfg, to)
+}

@@ -327,6 +327,39 @@ func TestTokenIDExists(t *testing.T) {
 	}
 }
 
+func TestToAddressIsWhitelisted(t *testing.T) {
+	cfg := relconfig.Config{
+		WithdrawalWhitelist: []string{
+			"0x1111111111111111111111111111111111111111",
+			"0x2222222222222222222222222222222222222222",
+		},
+	}
+
+	tests := []struct {
+		name      string
+		toAddress common.Address
+		expected  bool
+	}{
+		{
+			name:      "Address is whitelisted",
+			toAddress: common.HexToAddress("0x1111111111111111111111111111111111111111"),
+			expected:  true,
+		},
+		{
+			name:      "Address is not whitelisted",
+			toAddress: common.HexToAddress("0x3333333333333333333333333333333333333333"),
+			expected:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := relapi.ToAddressIsWhitelisted(cfg, tt.toAddress)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
 func (c *RelayerClientSuite) TestEthWithdrawCLI() {
 	res, err := c.Client.Withdraw(c.GetTestContext(), &relapi.WithdrawRequest{
 		ChainID:      c.underlying.originChainID,
