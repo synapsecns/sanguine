@@ -11,8 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cornelk/hashmap"
-
 	"github.com/google/uuid"
 	"github.com/puzpuzpuz/xsync/v2"
 
@@ -32,14 +30,11 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
 
 var logger = log.Logger("ethergo-submitter")
-
-const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
 
 // TransactionSubmitter is the interface for submitting transactions to the chain.
 type TransactionSubmitter interface {
@@ -56,7 +51,6 @@ type TransactionSubmitter interface {
 // txSubmitterImpl is the implementation of the transaction submitter.
 type txSubmitterImpl struct {
 	metrics metrics.Handler
-	meter   metric.Meter
 	// signer is the signer for signing transactions.
 	signer signer.Signer
 	// nonceMux is the mutex for the nonces. It is keyed by chain.
@@ -69,6 +63,8 @@ type txSubmitterImpl struct {
 	db db.Service
 	// retryOnce is used to return 0 on the first call to GetRetryInterval.
 	retryOnce sync.Once
+	// distinctOnce is used to return 0 on the first call to GetDistinctInterval.
+	distinctOnce sync.Once
 	// retryNow is used to trigger a retry immediately.
 	// it circumvents the retry interval.
 	// to prevent memory leaks, this has a buffer of 1.
@@ -78,18 +74,13 @@ type txSubmitterImpl struct {
 	lastGasBlockCache *xsync.MapOf[int, *types.Header]
 	// config is the config for the transaction submitter.
 	config config.IConfig
-	// numPendingGauge is the gauge for the number of pending transactions.
-	numPendingGauge metric.Int64ObservableGauge
-	// nonceGauge is the gauge for the current nonce.
-	nonceGauge metric.Int64ObservableGauge
-	// gasBalanceGauge is the gauge for the gas balance.
-	gasBalanceGauge metric.Float64ObservableGauge
-	// numPendingTxes is used for metrics.
-	numPendingTxes *hashmap.Map[uint32, int]
-	// currentNonces is used for metrics.
-	currentNonces *hashmap.Map[uint32, uint64]
-	// currentGasBalance is used for metrics.
-	currentGasBalances *hashmap.Map[uint32, *big.Int]
+	// otelRecorder is the recorder for the otel metrics.
+	otelRecorder iOtelRecorder
+	// distinctChainIDMux is the mutex for the distinct chain ids.
+	distinctChainIDMux sync.RWMutex
+	// distinctChainIDs is the distinct chain ids for the transaction submitter.
+	// note: this map should not be appended to!
+	distinctChainIDs []*big.Int
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -102,19 +93,15 @@ type ClientFetcher interface {
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
 	return &txSubmitterImpl{
-		db:                 db,
-		config:             config,
-		metrics:            metrics,
-		meter:              metrics.Meter(meterName),
-		signer:             signer,
-		fetcher:            fetcher,
-		nonceMux:           mapmutex.NewStringerMapMutex(),
-		statusMux:          mapmutex.NewStringMapMutex(),
-		retryNow:           make(chan bool, 1),
-		lastGasBlockCache:  xsync.NewIntegerMapOf[int, *types.Header](),
-		numPendingTxes:     hashmap.New[uint32, int](),
-		currentNonces:      hashmap.New[uint32, uint64](),
-		currentGasBalances: hashmap.New[uint32, *big.Int](),
+		db:                db,
+		config:            config,
+		metrics:           metrics,
+		signer:            signer,
+		fetcher:           fetcher,
+		nonceMux:          mapmutex.NewStringerMapMutex(),
+		statusMux:         mapmutex.NewStringMapMutex(),
+		retryNow:          make(chan bool, 1),
+		lastGasBlockCache: xsync.NewIntegerMapOf[int, *types.Header](),
 	}
 }
 
@@ -127,10 +114,22 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 	return retryInterval
 }
 
+// GetDistinctInterval returns the interval at which distinct chain ids should be queried.
+// this is used for metric updates.
+func (t *txSubmitterImpl) GetDistinctInterval() time.Duration {
+	retryInterval := time.Minute
+	t.distinctOnce.Do(func() {
+		retryInterval = time.Duration(0)
+	})
+	return retryInterval
+}
+
+// Start starts the transaction submitter.
+// nolint: cyclop
 func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
-	err = t.setupMetrics()
+	t.otelRecorder, err = newOtelRecorder(t.metrics, t.signer)
 	if err != nil {
-		return fmt.Errorf("could not setup metrics: %w", err)
+		return fmt.Errorf("could not create otel recorder: %w", err)
 	}
 
 	// start reaper process
@@ -149,6 +148,23 @@ func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
 		}
 	}()
 
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(t.GetDistinctInterval()):
+				tmpChainIDs, err := t.db.GetDistinctChainIDs(ctx)
+				if err != nil {
+					logger.Errorf("could not update distinct chain ids: %v", err)
+				}
+				t.distinctChainIDMux.Lock()
+				t.distinctChainIDs = tmpChainIDs
+				t.distinctChainIDMux.Unlock()
+			}
+		}
+	}()
+
 	i := 0
 	for {
 		i++
@@ -162,40 +178,6 @@ func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
 			return nil
 		}
 	}
-}
-
-func (t *txSubmitterImpl) setupMetrics() (err error) {
-	t.numPendingGauge, err = t.meter.Int64ObservableGauge("num_pending_txes")
-	if err != nil {
-		return fmt.Errorf("could not create num pending txes gauge: %w", err)
-	}
-
-	_, err = t.meter.RegisterCallback(t.recordNumPending, t.numPendingGauge)
-	if err != nil {
-		return fmt.Errorf("could not register callback: %w", err)
-	}
-
-	t.nonceGauge, err = t.meter.Int64ObservableGauge("current_nonce")
-	if err != nil {
-		return fmt.Errorf("could not create nonce gauge: %w", err)
-	}
-
-	_, err = t.meter.RegisterCallback(t.recordNonces, t.nonceGauge)
-	if err != nil {
-		return fmt.Errorf("could not register callback: %w", err)
-	}
-
-	t.gasBalanceGauge, err = t.meter.Float64ObservableGauge("gas_balance")
-	if err != nil {
-		return fmt.Errorf("could not create gas balance gauge: %w", err)
-	}
-
-	_, err = t.meter.RegisterCallback(t.recordBalance, t.gasBalanceGauge)
-	if err != nil {
-		return fmt.Errorf("could not register callback: %w", err)
-	}
-
-	return nil
 }
 
 func (t *txSubmitterImpl) GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error) {

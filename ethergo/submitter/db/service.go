@@ -40,6 +40,8 @@ type Service interface {
 	GetChainIDsByStatus(ctx context.Context, fromAddress common.Address, matchStatuses ...Status) (chainIDs []*big.Int, err error)
 	// DeleteTXS deletes txs that are older than a given duration.
 	DeleteTXS(ctx context.Context, maxAge time.Duration, matchStatuses ...Status) error
+	// GetDistinctChainIDs gets the distinct chain ids for all txs.
+	GetDistinctChainIDs(ctx context.Context) ([]*big.Int, error)
 }
 
 // TransactionFunc is a function that can be passed to DBTransaction.

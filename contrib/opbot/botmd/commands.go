@@ -102,8 +102,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 				spanID := results.Data["spanID"].(string)
 				serviceName := results.Data["serviceName"].(string)
 
-				// anon.to is used here to prevent unfurl https://github.com/slack-io/slacker/issues/11
-				url := fmt.Sprintf("https://anon.to/?%s/trace/%s?spanId=%s", b.cfg.SignozBaseURL, trace, spanID)
+				url := fmt.Sprintf("%s/trace/%s?spanId=%s", b.cfg.SignozBaseURL, trace, spanID)
 				traceName := fmt.Sprintf("<%s|%s>", url, results.Data["name"].(string))
 
 				relativeTime := durafmt.Parse(time.Since(results.Timestamp)).LimitFirstN(1).String()
@@ -124,7 +123,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 				}, nil))
 			}
 
-			_, err = ctx.Response().ReplyBlocks(slackBlocks)
+			_, err = ctx.Response().ReplyBlocks(slackBlocks, slacker.WithUnfurlLinks(false))
 			if err != nil {
 				log.Println(err)
 			}
@@ -233,7 +232,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, objects, nil))
 			}
 
-			_, err := ctx.Response().ReplyBlocks(slackBlocks)
+			_, err := ctx.Response().ReplyBlocks(slackBlocks, slacker.WithUnfurlLinks(false))
 			if err != nil {
 				log.Println(err)
 			}
@@ -247,7 +246,7 @@ func toExplorerSlackLink(ogHash string) string {
 		rfqHash = strings.ToLower(rfqHash[2:])
 	}
 
-	return fmt.Sprintf("<https://anon.to/?https://explorer.synapseprotocol.com/tx/%s|%s>", rfqHash, ogHash)
+	return fmt.Sprintf("<https://explorer.synapseprotocol.com/tx/%s|%s>", rfqHash, ogHash)
 }
 
 // produce a salck link if the explorer exists.
@@ -258,7 +257,7 @@ func toTXSlackLink(txHash string, chainID uint32) string {
 	}
 
 	// TODO: remove when we can contorl unfurl
-	return fmt.Sprintf("<https://anon.to/?%s|%s>", url, txHash)
+	return fmt.Sprintf("<%s|%s>", url, txHash)
 }
 
 func stripLinks(input string) string {
