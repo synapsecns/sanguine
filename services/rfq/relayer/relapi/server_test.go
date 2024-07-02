@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"math/big"
 	"net/http"
+	"testing"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -273,4 +276,53 @@ func (c *RelayerClientSuite) TestERC20Withdraw() {
 		return nil
 	})
 	c.Require().NoError(err)
+}
+
+func TestTokenIDExists(t *testing.T) {
+	cfg := relconfig.Config{
+		QuotableTokens: map[string][]string{
+			fmt.Sprintf("1%s0x1234567890abcdef1234567890abcdef12345678", relconfig.TokenIDDelimiter): {},
+			fmt.Sprintf("1%s0xabcdefabcdefabcdefabcdefabcdefabcdefabcd", relconfig.TokenIDDelimiter): {},
+		},
+	}
+
+	tests := []struct {
+		name         string
+		tokenAddress common.Address
+		chainID      int
+		expected     bool
+	}{
+		{
+			name:         "Valid token address",
+			tokenAddress: common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678"),
+			chainID:      1,
+			expected:     true,
+		},
+		{
+			name:         "Invalid token address",
+			tokenAddress: common.HexToAddress("0x0000000000000000000000000000000000000000"),
+			chainID:      1,
+			expected:     false,
+		},
+		{
+			name:         "Valid token address, different chain ID",
+			tokenAddress: common.HexToAddress("0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"),
+			chainID:      2,
+			expected:     false,
+		},
+		{
+			name:         "Edge case: empty token address",
+			tokenAddress: common.Address{},
+			chainID:      1,
+			expected:     false,
+		},
+	}
+
+	for i := range tests {
+		tt := tests[i]
+		t.Run(tt.name, func(t *testing.T) {
+			result := relapi.TokenIDExists(cfg, tt.tokenAddress, tt.chainID)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
 }

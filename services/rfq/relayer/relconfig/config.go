@@ -142,12 +142,12 @@ type FeePricerConfig struct {
 	HTTPTimeoutMs int `yaml:"http_timeout_ms"`
 }
 
-const tokenIDDelimiter = "-"
+const TokenIDDelimiter = "-"
 
 // SanitizeTokenID takes a raw string, makes sure it is a valid token ID,
 // and returns the token ID as string with a checksummed address.
 func SanitizeTokenID(id string) (sanitized string, err error) {
-	split := strings.Split(id, tokenIDDelimiter)
+	split := strings.Split(id, TokenIDDelimiter)
 	if len(split) != 2 {
 		return sanitized, fmt.Errorf("invalid token ID: %s", id)
 	}
@@ -156,7 +156,7 @@ func SanitizeTokenID(id string) (sanitized string, err error) {
 		return sanitized, fmt.Errorf("invalid chain ID: %s", split[0])
 	}
 	addr := common.HexToAddress(split[1])
-	sanitized = fmt.Sprintf("%d%s%s", chainID, tokenIDDelimiter, addr.Hex())
+	sanitized = fmt.Sprintf("%d%s%s", chainID, TokenIDDelimiter, addr.Hex())
 	return sanitized, nil
 }
 
@@ -168,7 +168,7 @@ func DecodeTokenID(id string) (chainID int, addr common.Address, err error) {
 		return chainID, addr, err
 	}
 
-	split := strings.Split(id, tokenIDDelimiter)
+	split := strings.Split(id, TokenIDDelimiter)
 	if len(split) != 2 {
 		return chainID, addr, fmt.Errorf("invalid token ID: %s", id)
 	}
