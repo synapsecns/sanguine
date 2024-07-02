@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/listener"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
@@ -89,12 +90,22 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.
 		}
 	}
 
+	sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
+	if err != nil {
+		return nil, fmt.Errorf("could not get signer: %w", err)
+	}
+	fmt.Printf("loaded signer with address: %s\n", sg.Address().String())
+
+	txSubmitter := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
+
 	return &Guard{
 		cfg:            cfg,
+		metrics:        metricHandler,
 		db:             store,
 		client:         omniClient,
 		chainListeners: chainListeners,
 		contracts:      contracts,
+		txSubmitter:    txSubmitter,
 	}, nil
 }
 
@@ -371,6 +382,27 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 }
 
 func relayMatchesBridgeRequest(event *fastbridge.FastBridgeBridgeRelayed, bridgeRequest *guarddb.BridgeRequest) bool {
-	//TODO: implement
+	//TODO: is this exhaustive?
+	if event.TransactionId != bridgeRequest.TransactionID {
+		return false
+	}
+	if event.OriginAmount.Cmp(bridgeRequest.Transaction.OriginAmount) != 0 {
+		return false
+	}
+	if event.DestAmount.Cmp(bridgeRequest.Transaction.DestAmount) != 0 {
+		return false
+	}
+	if event.OriginChainId != bridgeRequest.Transaction.OriginChainId {
+		return false
+	}
+	if event.To != bridgeRequest.Transaction.DestRecipient {
+		return false
+	}
+	if event.OriginToken != bridgeRequest.Transaction.OriginToken {
+		return false
+	}
+	if event.DestToken != bridgeRequest.Transaction.DestToken {
+		return false
+	}
 	return true
 }
