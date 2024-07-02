@@ -73,7 +73,7 @@ var toFlag = &cli.StringFlag{
 }
 
 // runCommand runs the rfq relayer.
-var runWithdrawCommand = &cli.Command{
+var withdrawCommand = &cli.Command{
 	Name:        "widthdraw",
 	Description: "run the withdrawal tool",
 	Flags:       []cli.Flag{relayerURLFlag, chainIDFlag, amountFlag, tokenAddressFlag, toFlag, &commandline.LogLevel},
