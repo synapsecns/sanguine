@@ -137,7 +137,7 @@ var withdrawCommand = &cli.Command{
 			panic(clientErr)
 		}
 
-		fmt.Sprintf("Withdraw Tx: %s", status)
+		fmt.Printf("Withdraw Tx Hash: %s\n", status)
 
 		return nil
 	},
