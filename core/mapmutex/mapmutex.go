@@ -2,7 +2,6 @@ package mapmutex
 
 import (
 	"fmt"
-	"github.com/LK4d4/trylock"
 	"sync"
 )
 
@@ -13,6 +12,7 @@ import (
 type untypedMapMutex interface {
 	Lock(key interface{}) Unlocker
 	TryLock(key interface{}) (Unlocker, bool)
+	Keys() []interface{}
 }
 
 type untypedMapMutexImpl struct {
@@ -24,7 +24,7 @@ type mentry struct {
 	// m point back to untypedMapMutexImpl, so we can synchronize removing this mentry when cnt==0
 	m *untypedMapMutexImpl
 	// el is an entry-specific lock
-	el trylock.Mutex
+	el sync.Mutex
 	// cnt is the reference count
 	cnt int
 	// key is the key of the memory entry
@@ -80,6 +80,18 @@ func (m *untypedMapMutexImpl) TryLock(key interface{}) (Unlocker, bool) {
 	}
 
 	return nil, false
+}
+
+// Keys returns all keys in the map.
+func (m *untypedMapMutexImpl) Keys() []interface{} {
+	m.ml.Lock()
+	defer m.ml.Unlock()
+
+	keys := make([]interface{}, 0, len(m.ma))
+	for k := range m.ma {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 // Unlock releases the lock for this entry.

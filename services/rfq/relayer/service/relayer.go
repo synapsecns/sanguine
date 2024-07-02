@@ -58,8 +58,8 @@ type Relayer struct {
 	decimalsCache  *xsync.MapOf[string, *uint8]
 	// semaphore is used to limit the number of concurrent requests
 	semaphore *semaphore.Weighted
-	// relayMtx is used to synchronize handling of relay requests
-	relayMtx mapmutex.StringMapMutex
+	// handlerMtx is used to synchronize handling of relay requests
+	handlerMtx mapmutex.StringMapMutex
 }
 
 var logger = log.Logger("relayer")
@@ -155,7 +155,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		apiServer:      apiServer,
 		apiClient:      apiClient,
 		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
-		relayMtx:       mapmutex.NewStringMapMutex(),
+		handlerMtx:     mapmutex.NewStringMapMutex(),
 	}
 	return &rel, nil
 }
@@ -391,7 +391,7 @@ func (r *Relayer) processRequest(parentCtx context.Context, request reldb.QuoteR
 
 	// if deadline < now
 	if request.Transaction.Deadline.Cmp(big.NewInt(time.Now().Unix())) < 0 && request.Status.Int() < reldb.RelayCompleted.Int() {
-		err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded)
+		err = r.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.DeadlineExceeded, &request.Status)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}

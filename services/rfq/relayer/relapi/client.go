@@ -17,6 +17,7 @@ type RelayerClient interface {
 	GetQuoteRequestStatusByTxHash(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
 	GetQuoteRequestStatusByTxID(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
 	RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error)
+	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)
 }
 
 type relayerClient struct {
@@ -93,6 +94,27 @@ func (r *relayerClient) RetryTransaction(ctx context.Context, txhash string) (*G
 		Get(getRetryRoute)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retry transaction: %w", err)
+	}
+	if resp.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
+	}
+
+	return &res, nil
+}
+
+// WithdrawResponse is the response for the withdraw request.
+type WithdrawResponse struct {
+	Nonce uint64 `json:"nonce"`
+}
+
+func (r *relayerClient) Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error) {
+	var res WithdrawResponse
+	resp, err := r.client.R().SetContext(ctx).
+		SetResult(&res).
+		SetBody(req).
+		Post(postWithdrawRoute)
+	if err != nil {
+		return nil, fmt.Errorf("failed to withdraw transaction: %w", err)
 	}
 	if resp.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())

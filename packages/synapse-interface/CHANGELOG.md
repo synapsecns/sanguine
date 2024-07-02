@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.27.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.27.1...@synapsecns/synapse-interface@0.27.2) (2024-07-02)
+
+
+### Bug Fixes
+
+* **synapse-interface:** max gas estimates ([#2831](https://github.com/synapsecns/sanguine/issues/2831)) ([6d5fdfe](https://github.com/synapsecns/sanguine/commit/6d5fdfefd249165ec959c10e882fc14119aaf8c6))
+
+
+
+
+
 ## [0.27.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.27.0...@synapsecns/synapse-interface@0.27.1) (2024-06-27)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
