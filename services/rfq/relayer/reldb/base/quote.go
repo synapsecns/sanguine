@@ -5,16 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ipfs/go-log"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
-
-var logger = log.Logger("relayer-db")
 
 // StoreQuoteRequest stores a quote request.
 func (s Store) StoreQuoteRequest(ctx context.Context, request reldb.QuoteRequest) error {
