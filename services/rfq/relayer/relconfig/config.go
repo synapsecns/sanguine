@@ -92,6 +92,9 @@ type ChainConfig struct {
 	RelayFixedFeeMultiplier float64 `yaml:"relay_fixed_fee_multiplier"`
 	// CCTP start block is the block at which the chain listener will listen for CCTP events.
 	CCTPStartBlock uint64 `yaml:"cctp_start_block"`
+	// MaxPendingTxes is the maximum number of pending transactions before quoting will be stopped
+	// for a given route.
+	MaxPendingTxes int `yaml:"max_pending_txes"`
 }
 
 // TokenConfig represents the configuration for a token.

@@ -21,6 +21,7 @@ var DefaultChainConfig = ChainConfig{
 	QuoteWidthBps:           0,
 	QuoteFixedFeeMultiplier: 1,
 	RelayFixedFeeMultiplier: 1,
+	MaxPendingTxes:          10,
 }
 
 // getChainConfigValue gets the value of a field from ChainConfig.
@@ -363,6 +364,20 @@ func (c Config) GetCCTPStartBlock(chainID int) (value uint64, err error) {
 	value, ok := rawValue.(uint64)
 	if !ok {
 		return value, fmt.Errorf("failed to cast CCTPStartBlock to int")
+	}
+	return value, nil
+}
+
+// GetMaxPendingTxes returns the MaxPendingTxes for the given chainID.
+func (c Config) GetMaxPendingTxes(chainID int) (value int, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "MaxPendingTxes")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(int)
+	if !ok {
+		return value, fmt.Errorf("failed to cast MaxPendingTxes to int")
 	}
 	return value, nil
 }
