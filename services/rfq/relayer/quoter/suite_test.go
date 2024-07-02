@@ -10,7 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
-	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
+	submitterMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	inventoryMocks "github.com/synapsecns/sanguine/services/rfq/relayer/inventory/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
@@ -104,7 +104,7 @@ func (s *QuoterSuite) SetupTest() {
 	}
 
 	// Build a FeePricer with mock gas price and mock token price.
-	clientFetcher := new(fetcherMocks.ClientFetcher)
+	clientFetcher := new(submitterMocks.ClientFetcher)
 	client := new(clientMocks.EVM)
 	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
 	gasPrice := big.NewInt(100_000_000_000) // 100 gwei
@@ -116,7 +116,10 @@ func (s *QuoterSuite) SetupTest() {
 
 	inventoryManager := new(inventoryMocks.Manager)
 	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
-	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer, nil)
+	txSubmitter := new(submitterMocks.TransactionSubmitter)
+	txSubmitter.On(testsuite.GetFunctionName(txSubmitter.GetNumPendingTxes), mock.Anything).Return(0)
+
+	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer, nil, txSubmitter)
 	s.NoError(err)
 
 	var ok bool
