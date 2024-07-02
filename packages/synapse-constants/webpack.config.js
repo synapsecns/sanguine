@@ -18,6 +18,9 @@ module.exports = {
       enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
       bundleName: 'synapse-constants',
       uploadToken: process.env.CODECOV_TOKEN,
+      uploadOverrides: {
+        sha: process.env.GH_COMMIT_SHA,
+      },
     }),
   ],
 

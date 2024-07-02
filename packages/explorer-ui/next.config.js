@@ -25,6 +25,9 @@ const nextConfig = {
         enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
         bundleName: 'explorer-ui',
         uploadToken: process.env.CODECOV_TOKEN,
+        uploadOverrides: {
+          sha: process.env.GH_COMMIT_SHA,
+        },
       })
     )
     return config

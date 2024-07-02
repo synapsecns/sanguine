@@ -56,6 +56,9 @@ export default [
         enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
         bundleName: "widget",
         uploadToken: process.env.CODECOV_TOKEN,
+        uploadOverrides: {
+          sha: process.env.GH_COMMIT_SHA,
+        }
       }),
     ],
     watch: {

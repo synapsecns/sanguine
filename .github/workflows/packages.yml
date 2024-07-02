@@ -41,10 +41,6 @@ jobs:
       - name: Run tests # Run tests of all packages
         run: npx lerna exec npm run ci:lint --parallel
 
-      - name: Run build # Run tests of all packages
-        run: npx lerna exec npm run build --parallel
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV }}
   test:
       runs-on: ubuntu-latest
       env:
@@ -102,3 +98,9 @@ jobs:
               files: lcov.info
             attempt_limit: 5
             attempt_delay: 30000
+
+        - name: Run build # Run tests of all packages
+          run: npx lerna exec npm run build --parallel
+          env:
+            CODECOV_TOKEN: ${{ secrets.CODECOV }}
+            GH_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
