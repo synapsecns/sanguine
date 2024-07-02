@@ -9,7 +9,6 @@ replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alp
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3
-	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54
 	github.com/Soft/iter v0.1.0
 	github.com/brianvoe/gofakeit/v6 v6.27.0
 	github.com/c-bata/go-prompt v0.2.6
@@ -67,7 +66,6 @@ require (
 require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
-	github.com/LK4D4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
