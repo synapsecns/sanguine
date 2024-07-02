@@ -1,14 +1,15 @@
 import { TRANSACTION_SUPPORT_URL, DISCORD_URL } from '@/constants/urls'
 
 export const TransactionSupport = ({ status }: { status: string }) => {
-  const isReverted = status === 'reverted'
   return (
     <div
       id="transaction-support"
       className="flex items-center justify-between w-full py-1 pl-3 pr-1 text-sm"
     >
-      {isReverted ? (
+      {status === 'reverted' ? (
         <div>Transaction reverted, funds returned</div>
+      ) : status === 'refunded' ? (
+        <div>Transaction refunded, funds returned</div>
       ) : (
         <div>What's taking so long?</div>
       )}

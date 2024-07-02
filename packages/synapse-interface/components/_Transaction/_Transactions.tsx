@@ -54,6 +54,7 @@ export const _Transactions = ({
               destinationToken={destinationToken}
               originTxHash={tx.originTxHash}
               bridgeModuleName={tx.bridgeModuleName}
+              routerAddress={tx.routerAddress}
               estimatedTime={tx.estimatedTime}
               kappa={tx?.kappa}
               timestamp={tx.timestamp}

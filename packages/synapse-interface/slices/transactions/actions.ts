@@ -16,6 +16,7 @@ export interface PendingBridgeTransaction {
   isSubmitted: boolean
   estimatedTime: number
   bridgeModuleName: string
+  routerAddress: string
   destinationAddress: Address | null
 }
 

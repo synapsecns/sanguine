@@ -10,7 +10,7 @@ export const TimeRemaining = ({
   isDelayed: boolean
   remainingTime: number
   delayedTime: number | null
-  status: 'pending' | 'completed' | 'reverted'
+  status: 'pending' | 'completed' | 'reverted' | 'refunded'
 }) => {
   if (status === 'completed') {
     return <div className="text-sm text-green-400">Complete!</div>
@@ -20,6 +20,14 @@ export const TimeRemaining = ({
     return (
       <span className="flex items-center space-x-1 text-sm">
         <ExclamationIcon className="w-4 h-4" /> <span>Reverted</span>
+      </span>
+    )
+  }
+
+  if (status === 'refunded') {
+    return (
+      <span className="flex items-center space-x-1 text-sm">
+        <ExclamationIcon className="w-4 h-4" /> <span>Refunded</span>
       </span>
     )
   }
