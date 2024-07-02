@@ -209,6 +209,21 @@ func (g *Guard) handleProofProvidedLog(ctx context.Context, event *fastbridge.Fa
 }
 
 func (g *Guard) processDB(ctx context.Context) (err error) {
-	provens, err := g.db.GetPendingProvensByStatus(ctx, guarddb.PendingProvenStatusPending)
+	provens, err := g.db.GetPendingProvensByStatus(ctx, guarddb.ProveCalled)
+	for _, proven := range provens {
+		err := g.handleProveCalled(ctx, proven)
+		if err != nil {
+			return fmt.Errorf("could not handle prove called: %w", err)
+		}
+	}
 
+	return nil
+}
+
+func (g *Guard) handleProveCalled(proven guarddb.PendingProven) (err error) {
+	// contract, ok := g.contracts[proven.Origin]
+	// if !ok {
+	// 	return fmt.Errorf("could not get contract for chain: %d", proven.Origin)
+	// }
+	return nil
 }

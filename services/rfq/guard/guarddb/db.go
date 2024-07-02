@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/synapsecns/sanguine/ethergo/listener/db"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -16,10 +17,14 @@ import (
 var (
 	// ErrNoProvenForID means the proven was not found.
 	ErrNoProvenForID = errors.New("no proven found for tx id")
+	// ErrNoBridgeRequestForID means the bridge request was not found.
+	ErrNoBridgeRequestForID = errors.New("no bridge request found for tx id")
 )
 
 // Writer is the interface for writing to the database.
 type Writer interface {
+	// StoreBridgeRequest stores a bridge request.
+	StoreBridgeRequest(ctx context.Context, request BridgeRequest) error
 	// StorePendingProven stores a pending proven.
 	StorePendingProven(ctx context.Context, proven PendingProven) error
 	// UpdatePendingProvenStatus updates the status of a pending proven.
@@ -30,8 +35,10 @@ type Writer interface {
 type Reader interface {
 	// GetPendingProvensByStatus gets pending provens by status.
 	GetPendingProvensByStatus(ctx context.Context, matchStatuses ...PendingProvenStatus) ([]*PendingProven, error)
-	// GetPendingProvenByID gets a quote request by id. Should return ErrNoProvenForID if not found
+	// GetPendingProvenByID gets a pending proven by id. Should return ErrNoProvenForID if not found
 	GetPendingProvenByID(ctx context.Context, id [32]byte) (*PendingProven, error)
+	// GetBridgeRequestByID gets a bridge request by id. Should return ErrNoBridgeRequestForID if not found
+	GetBridgeRequestByID(ctx context.Context, id [32]byte) (*BridgeRequest, error)
 }
 
 // Service is the interface for the database service.
@@ -41,6 +48,13 @@ type Service interface {
 	SubmitterDB() submitterDB.Service
 	Writer
 	db.ChainListenerDB
+}
+
+// BridgeRequest is the bridge request object.
+type BridgeRequest struct {
+	TransactionID [32]byte
+	Transaction   fastbridge.IFastBridgeBridgeTransaction
+	RawRequest    []byte
 }
 
 // PendingProven is the pending proven object.
