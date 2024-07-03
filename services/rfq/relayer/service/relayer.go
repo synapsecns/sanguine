@@ -26,6 +26,7 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
 	serviceGuard "github.com/synapsecns/sanguine/services/rfq/guard/service"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
@@ -329,7 +330,8 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 
 // startGuard starts the guard, if specified
 func (r *Relayer) startGuard(ctx context.Context) (err error) {
-	guard, err := serviceGuard.NewGuard(ctx, r.metrics, r.cfg)
+	guardCfg := guardconfig.NewGuardConfigFromRelayer(r.cfg)
+	guard, err := serviceGuard.NewGuard(ctx, r.metrics, guardCfg)
 	if err != nil {
 		return fmt.Errorf("could not create guard: %w", err)
 	}

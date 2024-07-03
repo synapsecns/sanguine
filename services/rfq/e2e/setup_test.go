@@ -32,6 +32,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/db/sql"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
 	guardConnect "github.com/synapsecns/sanguine/services/rfq/guard/guarddb/connect"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
@@ -398,7 +399,8 @@ func (i *IntegrationSuite) setupGuard() {
 	cfg := i.getRelayerConfig()
 
 	var err error
-	i.guard, err = guardService.NewGuard(i.GetTestContext(), i.metrics, cfg)
+	guardCfg := guardconfig.NewGuardConfigFromRelayer(cfg)
+	i.guard, err = guardService.NewGuard(i.GetTestContext(), i.metrics, guardCfg)
 	i.NoError(err)
 	go func() {
 		err = i.guard.Start(i.GetTestContext())

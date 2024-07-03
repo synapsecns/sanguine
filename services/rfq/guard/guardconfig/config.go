@@ -10,6 +10,7 @@ import (
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"gopkg.in/yaml.v2"
 
 	"path/filepath"
@@ -100,4 +101,23 @@ func (c Config) GetDBSelectorInterval() time.Duration {
 		interval = time.Duration(defaultDBSelectorIntervalSeconds) * time.Second
 	}
 	return interval
+}
+
+// NewGuardConfigFromRelayer creates a new guard config from a relayer config.
+func NewGuardConfigFromRelayer(relayerCfg relconfig.Config) Config {
+	cfg := Config{
+		Chains:             make(map[int]ChainConfig),
+		OmniRPCURL:         relayerCfg.OmniRPCURL,
+		Database:           DatabaseConfig(relayerCfg.Database),
+		Signer:             relayerCfg.Signer,
+		SubmitterConfig:    relayerCfg.SubmitterConfig,
+		DBSelectorInterval: relayerCfg.DBSelectorInterval,
+	}
+	for chainID, chainCfg := range relayerCfg.GetChains() {
+		cfg.Chains[chainID] = ChainConfig{
+			RFQAddress:    chainCfg.RFQAddress,
+			Confirmations: chainCfg.Confirmations,
+		}
+	}
+	return cfg
 }
