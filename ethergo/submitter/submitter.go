@@ -48,8 +48,6 @@ type TransactionSubmitter interface {
 	GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error)
 	// Address returns the address of the signer.
 	Address() common.Address
-	// GetTxHashByNonce returns the transaction hash for a given nonce.
-	GetTxHashByNonce(ctx context.Context, chainID *big.Int, nonce uint64) (txHash common.Hash, err error)
 }
 
 // txSubmitterImpl is the implementation of the transaction submitter.
@@ -671,30 +669,6 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 
 func (t *txSubmitterImpl) Address() common.Address {
 	return t.signer.Address()
-}
-
-func (t *txSubmitterImpl) GetTxHashByNonce(ctx context.Context, chainID *big.Int, nonce uint64) (txHash common.Hash, err error) {
-	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getTxHashByNonce", trace.WithAttributes(
-		attribute.Stringer("chainID", chainID),
-		attribute.Int64("nonce", int64(nonce)),
-	))
-
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
-
-	txs, err := t.db.GetNonceAttemptsByStatus(ctx, t.signer.Address(), chainID, nonce)
-	if err != nil {
-		return common.Hash{}, fmt.Errorf("could not get tx by nonce: %w", err)
-	}
-
-	for tx := range txs {
-		if txs[tx].Status == db.Confirmed {
-			return txs[tx].Hash(), nil
-		}
-	}
-
-	return txs[0].Hash(), nil
 }
 
 var _ TransactionSubmitter = &txSubmitterImpl{}
