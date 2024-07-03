@@ -1,6 +1,7 @@
 package e2e_test
 
 import (
+	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -445,6 +446,7 @@ func (i *IntegrationSuite) TestDispute() {
 
 	// fetch the txID
 	var txID [32]byte
+	var rawRequest []byte
 	parser, err := fastbridge.NewParser(originFastBridge.Address())
 	i.NoError(err)
 	i.Eventually(func() bool {
@@ -457,6 +459,7 @@ func (i *IntegrationSuite) TestDispute() {
 			}
 			switch event := parsedEvent.(type) {
 			case *fastbridge.FastBridgeBridgeRequested:
+				rawRequest = event.Request
 				txID = event.TransactionId
 				return true
 			}
@@ -467,7 +470,7 @@ func (i *IntegrationSuite) TestDispute() {
 	// call prove() from the relayer wallet before relay actually occurred on dest
 	relayerAuth := i.originBackend.GetTxContext(i.GetTestContext(), i.relayerWallet.AddressPtr())
 	fakeHash := common.HexToHash("0xdeadbeef")
-	tx, err = originFastBridge.Prove(relayerAuth.TransactOpts, txID[:], fakeHash)
+	tx, err = originFastBridge.Prove(relayerAuth.TransactOpts, rawRequest, fakeHash)
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -478,6 +481,7 @@ func (i *IntegrationSuite) TestDispute() {
 		if len(results) != 1 {
 			return false
 		}
+		fmt.Printf("GOT RESULTS: %v\n", results)
 		result, err := i.guardStore.GetPendingProvenByID(i.GetTestContext(), txID)
 		i.NoError(err)
 		return result.TxHash == fakeHash && result.Status == guarddb.Disputed && result.TransactionID == txID
