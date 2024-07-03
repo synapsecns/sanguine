@@ -1,14 +1,10 @@
-import { isEmpty } from 'lodash'
 import { MaintenanceBanner } from './components/MaintenanceBanner'
 import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
-import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
+import { useEventCountdownProgressBar } from './components/EventCountdownProgressBar'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
 import { useMaintanceState } from '@/slices/maintenance/hooks'
-import pausedChains from '@/public/pauses/v1/paused-chains.json'
-import pausedBridgeModules from '@/public/pauses/v1/paused-bridge-modules.json'
 import { isChainIncluded } from '@/utils/isChainIncluded'
-import { useEventCountdownProgressBar } from './components/EventCountdownProgressBar'
 
 interface ChainPause {
   id: string
