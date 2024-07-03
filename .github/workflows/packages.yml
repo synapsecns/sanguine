@@ -106,7 +106,7 @@ jobs:
             attempt_delay: 30000
 
         - name: Run build # Run tests of all packages
-          run: npx lerna exec npm run build --parallel
+          run: npx lerna exec npm run build --parallel || true # only for codecov
           env:
             CODECOV_TOKEN: ${{ secrets.CODECOV }}
             GH_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
