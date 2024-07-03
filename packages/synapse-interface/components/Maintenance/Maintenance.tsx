@@ -91,23 +91,29 @@ const useMaintenanceData = () => {
 
 export const MaintenanceBanners = () => {
   const { pausedChainsList } = useMaintenanceData()
+  const { fromChainId: bridgeFromChainId, toChainId: bridgeToChainId } =
+    useBridgeState()
+  const { swapChainId } = useSwapState()
 
-  return (
-    <>
-      {!isEmpty(pausedChainsList) &&
-        pausedChainsList.map((event) => {
-          return (
-            <MaintenanceBanner
-              id={event.id}
-              bannerMessage={event.bannerMessage}
-              startDate={event.startTimeBanner}
-              endDate={event.endTimeBanner}
-              disabled={event.disableBanner}
-            />
-          )
-        })}
-    </>
+  const activeBanner = pausedChainsList.find(
+    (pausedChain) =>
+      isChainIncluded(pausedChain?.pausedFromChains, [bridgeFromChainId]) ||
+      isChainIncluded(pausedChain?.pausedToChains, [bridgeToChainId]) ||
+      isChainIncluded(pausedChain?.pausedFromChains, [swapChainId]) ||
+      isChainIncluded(pausedChain?.pausedToChains, [swapChainId])
   )
+
+  if (activeBanner) {
+    return (
+      <MaintenanceBanner
+        id={activeBanner?.id}
+        bannerMessage={activeBanner?.bannerMessage}
+        startDate={activeBanner?.startTimeBanner}
+        endDate={activeBanner?.endTimeBanner}
+        disabled={activeBanner?.disableBanner}
+      />
+    )
+  }
 }
 
 export const useMaintenance = () => {
@@ -124,14 +130,6 @@ export const useMaintenance = () => {
 
   const activeSwapPause = pausedChainsList.find(
     (pausedChain) =>
-      isChainIncluded(pausedChain?.pausedFromChains, [swapChainId]) ||
-      isChainIncluded(pausedChain?.pausedToChains, [swapChainId])
-  )
-
-  const activeBanner = pausedChainsList.find(
-    (pausedChain) =>
-      isChainIncluded(pausedChain?.pausedFromChains, [bridgeFromChainId]) ||
-      isChainIncluded(pausedChain?.pausedToChains, [bridgeToChainId]) ||
       isChainIncluded(pausedChain?.pausedFromChains, [swapChainId]) ||
       isChainIncluded(pausedChain?.pausedToChains, [swapChainId])
   )
@@ -187,130 +185,15 @@ export const useMaintenance = () => {
     />
   )
 
-  const ActiveMaintenanceBanner = () => (
-    <MaintenanceBanner
-      id={activeBanner?.id}
-      bannerMessage={activeBanner?.bannerMessage}
-      startDate={activeBanner?.startTimeBanner}
-      endDate={activeBanner?.endTimeBanner}
-      disabled={activeBanner?.disableBanner}
-    />
-  )
-
   return {
     isBridgePaused,
     isSwapPaused,
     pausedChainsList,
     pausedModulesList,
-    ActiveMaintenanceBanner,
     BridgeMaintenanceProgressBar,
     BridgeMaintenanceWarningMessage,
     SwapMaintenanceProgressBar,
     SwapMaintenanceWarningMessage,
-  }
-}
-
-export const MaintenanceWarningMessages = ({
-  type,
-}: {
-  type: 'Bridge' | 'Swap'
-}) => {
-  const { pausedChainsList } = useMaintenanceData()
-  const { fromChainId: bridgeFromChainId, toChainId: bridgeToChainId } =
-    useBridgeState()
-  const { swapChainId } = useSwapState()
-
-  if (type === 'Bridge') {
-    return (
-      <>
-        {!isEmpty(pausedChainsList) &&
-          pausedChainsList.map((event) => {
-            return (
-              <MaintenanceWarningMessage
-                fromChainId={bridgeFromChainId}
-                toChainId={bridgeToChainId}
-                startDate={event.startTimePauseChain}
-                endDate={event.endTimePauseChain}
-                pausedFromChains={event.pausedFromChains}
-                pausedToChains={event.pausedToChains}
-                warningMessage={event.inputWarningMessage}
-                disabled={event.disableWarning || !event.pauseBridge}
-              />
-            )
-          })}
-      </>
-    )
-  } else if (type === 'Swap') {
-    return (
-      <>
-        {!isEmpty(pausedChainsList) &&
-          pausedChainsList.map((event) => {
-            return (
-              <MaintenanceWarningMessage
-                fromChainId={swapChainId}
-                toChainId={null}
-                startDate={event.startTimePauseChain}
-                endDate={event.endTimePauseChain}
-                pausedFromChains={event.pausedFromChains}
-                pausedToChains={event.pausedToChains}
-                warningMessage={event.inputWarningMessage}
-                disabled={event.disableWarning || !event.pauseSwap}
-              />
-            )
-          })}
-      </>
-    )
-  } else {
-    return null
-  }
-}
-
-/**
- * Hook that maps through PAUSED_CHAINS to apply the single event countdown progress logic to each.
- * @returns A list of objects containing maintenance status and components for each paused chain.
- */
-export const useMaintenanceCountdownProgresses = ({
-  type,
-}: {
-  type: 'Bridge' | 'Swap'
-}) => {
-  const { pausedChainsList } = useMaintenanceData()
-  const { fromChainId: bridgeFromChainId, toChainId: bridgeToChainId } =
-    useBridgeState()
-  const { swapChainId } = useSwapState()
-
-  if (type === 'Bridge') {
-    return (
-      !isEmpty(pausedChainsList) &&
-      pausedChainsList.map((event) => {
-        return useMaintenanceCountdownProgress({
-          fromChainId: bridgeFromChainId,
-          toChainId: bridgeToChainId,
-          startDate: event.startTimePauseChain,
-          endDate: event.endTimePauseChain,
-          pausedFromChains: event.pausedFromChains,
-          pausedToChains: event.pausedToChains,
-          progressBarMessage: event.progressBarMessage,
-          disabled: event.disableCountdown || !event.pauseBridge,
-        })
-      })
-    )
-  } else if (type === 'Swap') {
-    return (
-      !isEmpty(pausedChainsList) &&
-      pausedChainsList.map((event) => {
-        return useMaintenanceCountdownProgress({
-          fromChainId: swapChainId,
-          toChainId: null,
-          startDate: event.startTimePauseChain,
-          endDate: event.endTimePauseChain,
-          pausedFromChains: event.pausedFromChains,
-          pausedToChains: event.pausedToChains,
-          progressBarMessage: event.progressBarMessage,
-          disabled: event.disableCountdown || !event.pauseSwap,
-        })
-      })
-    )
   }
 }
 

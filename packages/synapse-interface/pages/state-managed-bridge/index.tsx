@@ -64,11 +64,7 @@ import { RootState } from '@/store/store'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
-import {
-  MaintenanceWarningMessages,
-  useMaintenance,
-  useMaintenanceCountdownProgresses,
-} from '@/components/Maintenance/Maintenance'
+import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import {
   PAUSED_MODULES,
   getBridgeModuleNames,
@@ -544,15 +540,6 @@ const StateManagedBridge = () => {
     }
   }
 
-  // const maintenanceCountdownProgressInstances =
-  //   useMaintenanceCountdownProgresses({ type: 'Bridge' })
-
-  // const isBridgePaused =
-  //   !isEmpty(maintenanceCountdownProgressInstances) &&
-  //   maintenanceCountdownProgressInstances.some(
-  //     (instance) => instance.isCurrentChainDisabled
-  //   )
-
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
@@ -584,10 +571,6 @@ const StateManagedBridge = () => {
           </div>
         </div>
         <BridgeCard bridgeRef={bridgeDisplayRef}>
-          {/* {!isEmpty(maintenanceCountdownProgressInstances) &&
-            maintenanceCountdownProgressInstances.map((instance) => (
-              <>{instance.MaintenanceCountdownProgressBar}</>
-            ))} */}
           <BridgeMaintenanceProgressBar />
 
           {showSettingsSlideOver && (
@@ -608,7 +591,6 @@ const StateManagedBridge = () => {
               />
               <OutputContainer />
               <Warning />
-              {/* <MaintenanceWarningMessages type="Bridge" /> */}
               <BridgeMaintenanceWarningMessage />
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />

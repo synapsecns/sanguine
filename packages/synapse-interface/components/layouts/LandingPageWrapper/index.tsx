@@ -50,7 +50,6 @@ const TODO_REMOVE_wrapperStyle = {
 }
 
 export function LandingPageWrapper({ children }: { children: any }) {
-  const { ActiveMaintenanceBanner } = useMaintenance()
   return (
     <div className="dark">
       <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
@@ -60,7 +59,7 @@ export function LandingPageWrapper({ children }: { children: any }) {
           startDate={new Date('2024-05-08T18:45:09+00:00')}
           endDate={new Date('2024-06-15T18:45:09+00:00')}
         />
-        <ActiveMaintenanceBanner />
+        <MaintenanceBanners />
         <LandingNav />
         {children}
         <PageFooter />
