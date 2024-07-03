@@ -13,6 +13,7 @@ import setupLogRocketReact from 'logrocket-react'
 
 import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 import { UserProvider } from '@/contexts/UserProvider'
+import { MaintenanceProvider } from '@/contexts/MaintenanceProvider'
 import { BackgroundListenerProvider } from '@/contexts/BackgroundListenerProvider'
 import CustomToaster from '@/components/toast'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
@@ -51,10 +52,12 @@ function App({ Component, pageProps }: AppProps) {
                 <PersistGate loading={null} persistor={persistor}>
                   <SegmentAnalyticsProvider>
                     <UserProvider>
-                      <BackgroundListenerProvider>
-                        <Component {...pageProps} />
-                      </BackgroundListenerProvider>
-                      <CustomToaster />
+                      <MaintenanceProvider>
+                        <BackgroundListenerProvider>
+                          <Component {...pageProps} />
+                        </BackgroundListenerProvider>
+                        <CustomToaster />
+                      </MaintenanceProvider>
                     </UserProvider>
                   </SegmentAnalyticsProvider>
                 </PersistGate>
