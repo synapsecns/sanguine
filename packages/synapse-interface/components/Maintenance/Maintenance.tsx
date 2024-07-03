@@ -1,3 +1,4 @@
+import { isEmpty } from 'lodash'
 import { MaintenanceBanner } from './components/MaintenanceBanner'
 import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
 import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
@@ -49,6 +50,9 @@ const useMaintenanceData = () => {
         return {
           ...pause,
           startTimeBanner: new Date(pause.startTimeBanner),
+          endTimeBanner: pause.endTimeBanner
+            ? new Date(pause.endTimeBanner)
+            : null,
           startTimePauseChain: new Date(pause.startTimePauseChain),
           endTimePauseChain: pause.endTimePauseChain
             ? new Date(pause.endTimePauseChain)
@@ -88,17 +92,18 @@ export const MaintenanceBanners = () => {
 
   return (
     <>
-      {pausedChainsList.map((event) => {
-        return (
-          <MaintenanceBanner
-            id={event.id}
-            bannerMessage={event.bannerMessage}
-            startDate={event.startTimeBanner}
-            endDate={event.endTimeBanner}
-            disabled={event.disableBanner}
-          />
-        )
-      })}
+      {!isEmpty(pausedChainsList) &&
+        pausedChainsList.map((event) => {
+          return (
+            <MaintenanceBanner
+              id={event.id}
+              bannerMessage={event.bannerMessage}
+              startDate={event.startTimeBanner}
+              endDate={event.endTimeBanner}
+              disabled={event.disableBanner}
+            />
+          )
+        })}
     </>
   )
 }
@@ -116,39 +121,41 @@ export const MaintenanceWarningMessages = ({
   if (type === 'Bridge') {
     return (
       <>
-        {pausedChainsList.map((event) => {
-          return (
-            <MaintenanceWarningMessage
-              fromChainId={bridgeFromChainId}
-              toChainId={bridgeToChainId}
-              startDate={event.startTimePauseChain}
-              endDate={event.endTimePauseChain}
-              pausedFromChains={event.pausedFromChains}
-              pausedToChains={event.pausedToChains}
-              warningMessage={event.inputWarningMessage}
-              disabled={event.disableWarning || !event.pauseBridge}
-            />
-          )
-        })}
+        {!isEmpty(pausedChainsList) &&
+          pausedChainsList.map((event) => {
+            return (
+              <MaintenanceWarningMessage
+                fromChainId={bridgeFromChainId}
+                toChainId={bridgeToChainId}
+                startDate={event.startTimePauseChain}
+                endDate={event.endTimePauseChain}
+                pausedFromChains={event.pausedFromChains}
+                pausedToChains={event.pausedToChains}
+                warningMessage={event.inputWarningMessage}
+                disabled={event.disableWarning || !event.pauseBridge}
+              />
+            )
+          })}
       </>
     )
   } else if (type === 'Swap') {
     return (
       <>
-        {pausedChainsList.map((event) => {
-          return (
-            <MaintenanceWarningMessage
-              fromChainId={swapChainId}
-              toChainId={null}
-              startDate={event.startTimePauseChain}
-              endDate={event.endTimePauseChain}
-              pausedFromChains={event.pausedFromChains}
-              pausedToChains={event.pausedToChains}
-              warningMessage={event.inputWarningMessage}
-              disabled={event.disableWarning || !event.pauseSwap}
-            />
-          )
-        })}
+        {!isEmpty(pausedChainsList) &&
+          pausedChainsList.map((event) => {
+            return (
+              <MaintenanceWarningMessage
+                fromChainId={swapChainId}
+                toChainId={null}
+                startDate={event.startTimePauseChain}
+                endDate={event.endTimePauseChain}
+                pausedFromChains={event.pausedFromChains}
+                pausedToChains={event.pausedToChains}
+                warningMessage={event.inputWarningMessage}
+                disabled={event.disableWarning || !event.pauseSwap}
+              />
+            )
+          })}
       </>
     )
   } else {
@@ -171,7 +178,7 @@ export const useMaintenanceCountdownProgresses = ({
   const { swapChainId } = useSwapState()
 
   if (type === 'Bridge') {
-    return pausedChainsList.map((event) => {
+    return PAUSED_CHAINS.map((event) => {
       return useMaintenanceCountdownProgress({
         fromChainId: bridgeFromChainId,
         toChainId: bridgeToChainId,
@@ -184,7 +191,7 @@ export const useMaintenanceCountdownProgresses = ({
       })
     })
   } else if (type === 'Swap') {
-    return pausedChainsList.map((event) => {
+    return PAUSED_CHAINS.map((event) => {
       return useMaintenanceCountdownProgress({
         fromChainId: swapChainId,
         toChainId: null,

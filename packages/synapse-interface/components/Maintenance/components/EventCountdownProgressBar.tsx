@@ -165,6 +165,8 @@ export const getCountdownTimeStatus = (
 const calculateTimeUntilTarget = (targetDate: Date) => {
   const currentDate = new Date()
 
+  console.log('targetDate: ', targetDate)
+
   const timeDifference = targetDate.getTime() - currentDate.getTime()
 
   const isComplete = timeDifference <= 0
