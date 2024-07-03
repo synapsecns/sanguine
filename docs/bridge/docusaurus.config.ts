@@ -22,11 +22,6 @@ const config: Config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
 
-  // support Mermaid
-  markdown: {
-    mermaid: true,
-  },
-
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
@@ -124,7 +119,7 @@ const config: Config = {
       darkTheme: prismThemes.dracula,
     },
   } satisfies Preset.ThemeConfig,
-  themes: ["docusaurus-theme-openapi-docs", '@docusaurus/theme-mermaid'], // export theme components
+  themes: ["docusaurus-theme-openapi-docs"], // export theme components
   plugins: [
     [
       'docusaurus-plugin-openapi-docs',
