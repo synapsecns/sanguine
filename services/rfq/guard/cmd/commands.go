@@ -7,8 +7,8 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
 	"github.com/synapsecns/sanguine/services/rfq/guard/service"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/urfave/cli/v2"
 )
 
@@ -25,7 +25,7 @@ var runCommand = &cli.Command{
 	Flags:       []cli.Flag{configFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
-		cfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		cfg, err := guardconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not read config file: %w", err)
 		}

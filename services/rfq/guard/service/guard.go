@@ -18,9 +18,9 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb/connect"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -30,7 +30,7 @@ var logger = log.Logger("guard")
 
 // Guard monitors calls to prove() and verifies them.
 type Guard struct {
-	cfg            relconfig.Config
+	cfg            guardconfig.Config
 	metrics        metrics.Handler
 	db             guarddb.Service
 	client         omniClient.RPCClient
@@ -40,7 +40,7 @@ type Guard struct {
 }
 
 // NewGuard creates a new Guard.
-func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.Config) (*Guard, error) {
+func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfig.Config) (*Guard, error) {
 	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
 	chainListeners := make(map[int]listener.ContractListener)
 
