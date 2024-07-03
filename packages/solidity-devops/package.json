@@ -19,6 +19,7 @@
     "remappings.txt"
   ],
   "scripts": {
+    "build": " ",
     "build:go": " ",
     "build:slither": " ",
     "ci:lint": "npm run lint:check",
