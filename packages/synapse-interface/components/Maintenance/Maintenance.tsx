@@ -7,6 +7,8 @@ import { useSwapState } from '@/slices/swap/hooks'
 import { useMaintanceState } from '@/slices/maintenance/hooks'
 import pausedChains from '@/public/pauses/v1/paused-chains.json'
 import pausedBridgeModules from '@/public/pauses/v1/paused-bridge-modules.json'
+import { isChainIncluded } from '@/utils/isChainIncluded'
+import { useEventCountdownProgressBar } from './components/EventCountdownProgressBar'
 
 /** Pause Chain Activity */
 interface ChainPause {
@@ -21,26 +23,26 @@ interface ChainPause {
   endTimeBanner: Date | null // If null, pause indefinitely
   inputWarningMessage: JSX.Element
   bannerMessage: JSX.Element
-  progressBarMessage: JSX.Element
+  progressBarMessage: string
   disableBanner: boolean
   disableWarning: boolean
   disableCountdown: boolean
 }
 
-const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
-  return {
-    ...pause,
-    startTimePauseChain: new Date(pause.startTimePauseChain),
-    endTimePauseChain: pause.endTimePauseChain
-      ? new Date(pause.endTimePauseChain)
-      : null,
-    startTimeBanner: new Date(pause.startTimeBanner),
-    endTimeBanner: pause.endTimeBanner ? new Date(pause.endTimeBanner) : null,
-    inputWarningMessage: <p>{pause.inputWarningMessage}</p>,
-    bannerMessage: <p className="text-left">{pause.bannerMessage}</p>,
-    progressBarMessage: <p>{pause.progressBarMessage}</p>,
-  }
-})
+// const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
+//   return {
+//     ...pause,
+//     startTimePauseChain: new Date(pause.startTimePauseChain),
+//     endTimePauseChain: pause.endTimePauseChain
+//       ? new Date(pause.endTimePauseChain)
+//       : null,
+//     startTimeBanner: new Date(pause.startTimeBanner),
+//     endTimeBanner: pause.endTimeBanner ? new Date(pause.endTimeBanner) : null,
+//     inputWarningMessage: <p>{pause.inputWarningMessage}</p>,
+//     bannerMessage: <p className="text-left">{pause.bannerMessage}</p>,
+//     progressBarMessage: <p>{pause.progressBarMessage}</p>,
+//   }
+// })
 
 const useMaintenanceData = () => {
   const { pausedChainsData, pausedModulesData } = useMaintanceState()
@@ -59,7 +61,7 @@ const useMaintenanceData = () => {
             : null,
           bannerMessage: <p className="text-left">{pause.bannerMessage}</p>,
           inputWarningMessage: <p>{pause.inputWarningMessage}</p>,
-          progressBarMessage: <p>{pause.progressBarMessage}</p>,
+          progressBarMessage: pause.progressBarMessage,
         }
       })
     : []
@@ -106,6 +108,51 @@ export const MaintenanceBanners = () => {
         })}
     </>
   )
+}
+
+export const useMaintenance = () => {
+  const { pausedChainsList, pausedModulesList } = useMaintenanceData()
+  const { fromChainId: bridgeFromChainId, toChainId: bridgeToChainId } =
+    useBridgeState()
+
+  const activeBridgePause = pausedChainsList.find(
+    (pausedChain) =>
+      isChainIncluded(pausedChain?.pausedFromChains, [bridgeFromChainId]) ||
+      isChainIncluded(pausedChain?.pausedToChains, [bridgeToChainId])
+  )
+
+  const { isPending: isBridgePaused, EventCountdownProgressBar } =
+    useEventCountdownProgressBar(
+      activeBridgePause?.progressBarMessage,
+      activeBridgePause?.startTimePauseChain,
+      activeBridgePause?.endTimePauseChain,
+      activeBridgePause?.disableCountdown
+    )
+
+  const BridgeMaintenanceProgressBar = () => EventCountdownProgressBar
+
+  const BridgeMaintenanceWarningMessage = () => (
+    <MaintenanceWarningMessage
+      fromChainId={bridgeFromChainId}
+      toChainId={bridgeToChainId}
+      startDate={activeBridgePause?.startTimePauseChain}
+      endDate={activeBridgePause?.endTimePauseChain}
+      pausedFromChains={activeBridgePause?.pausedFromChains}
+      pausedToChains={activeBridgePause?.pausedToChains}
+      warningMessage={activeBridgePause?.inputWarningMessage}
+      disabled={
+        activeBridgePause?.disableWarning || !activeBridgePause?.pauseBridge
+      }
+    />
+  )
+
+  return {
+    isBridgePaused,
+    pausedChainsList,
+    pausedModulesList,
+    BridgeMaintenanceProgressBar,
+    BridgeMaintenanceWarningMessage,
+  }
 }
 
 export const MaintenanceWarningMessages = ({
@@ -178,31 +225,37 @@ export const useMaintenanceCountdownProgresses = ({
   const { swapChainId } = useSwapState()
 
   if (type === 'Bridge') {
-    return PAUSED_CHAINS.map((event) => {
-      return useMaintenanceCountdownProgress({
-        fromChainId: bridgeFromChainId,
-        toChainId: bridgeToChainId,
-        startDate: event.startTimePauseChain,
-        endDate: event.endTimePauseChain,
-        pausedFromChains: event.pausedFromChains,
-        pausedToChains: event.pausedToChains,
-        progressBarMessage: event.progressBarMessage,
-        disabled: event.disableCountdown || !event.pauseBridge,
+    return (
+      !isEmpty(pausedChainsList) &&
+      pausedChainsList.map((event) => {
+        return useMaintenanceCountdownProgress({
+          fromChainId: bridgeFromChainId,
+          toChainId: bridgeToChainId,
+          startDate: event.startTimePauseChain,
+          endDate: event.endTimePauseChain,
+          pausedFromChains: event.pausedFromChains,
+          pausedToChains: event.pausedToChains,
+          progressBarMessage: event.progressBarMessage,
+          disabled: event.disableCountdown || !event.pauseBridge,
+        })
       })
-    })
+    )
   } else if (type === 'Swap') {
-    return PAUSED_CHAINS.map((event) => {
-      return useMaintenanceCountdownProgress({
-        fromChainId: swapChainId,
-        toChainId: null,
-        startDate: event.startTimePauseChain,
-        endDate: event.endTimePauseChain,
-        pausedFromChains: event.pausedFromChains,
-        pausedToChains: event.pausedToChains,
-        progressBarMessage: event.progressBarMessage,
-        disabled: event.disableCountdown || !event.pauseSwap,
+    return (
+      !isEmpty(pausedChainsList) &&
+      pausedChainsList.map((event) => {
+        return useMaintenanceCountdownProgress({
+          fromChainId: swapChainId,
+          toChainId: null,
+          startDate: event.startTimePauseChain,
+          endDate: event.endTimePauseChain,
+          pausedFromChains: event.pausedFromChains,
+          pausedToChains: event.pausedToChains,
+          progressBarMessage: event.progressBarMessage,
+          disabled: event.disableCountdown || !event.pauseSwap,
+        })
       })
-    })
+    )
   }
 }
 

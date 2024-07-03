@@ -13,7 +13,8 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 export const useEventCountdownProgressBar = (
   eventLabel: string,
   startDate: Date,
-  endDate: Date | null
+  endDate: Date | null,
+  hideProgress?: boolean
 ): {
   isPending: boolean
   isComplete: boolean
@@ -42,7 +43,7 @@ export const useEventCountdownProgressBar = (
   return {
     isPending,
     isComplete,
-    EventCountdownProgressBar: (
+    EventCountdownProgressBar: !hideProgress && (
       <EventCountdownProgressBar
         eventLabel={eventLabel}
         startDate={startDate}
@@ -100,8 +101,27 @@ export const getCountdownTimeStatus = (
   startDate: Date,
   endDate: Date | null
 ) => {
-  const currentDate = new Date()
+  if (!startDate && !endDate) {
+    return {
+      currentDate: null,
+      currentTimeInSeconds: null,
+      startTimeInSeconds: null,
+      endTimeInSeconds: null,
+      totalTimeInSeconds: null,
+      totalTimeElapsedInSeconds: null,
+      totalTimeRemainingInSeconds: null,
+      totalTimeRemainingInMinutes: null,
+      daysRemaining: null,
+      hoursRemaining: null,
+      minutesRemaining: null,
+      secondsRemaining: null,
+      isStarted: false,
+      isComplete: false,
+      isPending: false,
+    }
+  }
 
+  const currentDate = new Date()
   const currentTimeInSeconds = Math.floor(currentDate.getTime() / 1000)
   const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
 
@@ -164,11 +184,7 @@ export const getCountdownTimeStatus = (
 
 const calculateTimeUntilTarget = (targetDate: Date) => {
   const currentDate = new Date()
-
-  console.log('targetDate: ', targetDate)
-
   const timeDifference = targetDate.getTime() - currentDate.getTime()
-
   const isComplete = timeDifference <= 0
 
   const daysRemaining = Math.floor(timeDifference / (1000 * 60 * 60 * 24))

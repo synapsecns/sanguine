@@ -1,4 +1,5 @@
 import toast from 'react-hot-toast'
+import { isEmpty } from 'lodash'
 import { useEffect, useRef, useState } from 'react'
 import { commify } from '@ethersproject/units'
 import { Address, zeroAddress, isAddress } from 'viem'
@@ -65,6 +66,7 @@ import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 import {
   MaintenanceWarningMessages,
+  useMaintenance,
   useMaintenanceCountdownProgresses,
 } from '@/components/Maintenance/Maintenance'
 import {
@@ -534,12 +536,22 @@ const StateManagedBridge = () => {
     }
   }
 
-  const maintenanceCountdownProgressInstances =
-    useMaintenanceCountdownProgresses({ type: 'Bridge' })
+  // const maintenanceCountdownProgressInstances =
+  //   useMaintenanceCountdownProgresses({ type: 'Bridge' })
 
-  const isBridgePaused = maintenanceCountdownProgressInstances.some(
-    (instance) => instance.isCurrentChainDisabled
-  )
+  // const isBridgePaused =
+  //   !isEmpty(maintenanceCountdownProgressInstances) &&
+  //   maintenanceCountdownProgressInstances.some(
+  //     (instance) => instance.isCurrentChainDisabled
+  //   )
+
+  const {
+    isBridgePaused,
+    pausedChainsList,
+    pausedModulesList,
+    BridgeMaintenanceProgressBar,
+    BridgeMaintenanceWarningMessage,
+  } = useMaintenance()
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
@@ -572,9 +584,11 @@ const StateManagedBridge = () => {
           </div>
         </div>
         <BridgeCard bridgeRef={bridgeDisplayRef}>
-          {maintenanceCountdownProgressInstances.map((instance) => (
-            <>{instance.MaintenanceCountdownProgressBar}</>
-          ))}
+          {/* {!isEmpty(maintenanceCountdownProgressInstances) &&
+            maintenanceCountdownProgressInstances.map((instance) => (
+              <>{instance.MaintenanceCountdownProgressBar}</>
+            ))} */}
+          <BridgeMaintenanceProgressBar />
 
           {showSettingsSlideOver && (
             <div className="min-h-[472px] ">
@@ -594,7 +608,8 @@ const StateManagedBridge = () => {
               />
               <OutputContainer />
               <Warning />
-              <MaintenanceWarningMessages type="Bridge" />
+              {/* <MaintenanceWarningMessages type="Bridge" /> */}
+              <BridgeMaintenanceWarningMessage />
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />
               <BridgeTransactionButton
