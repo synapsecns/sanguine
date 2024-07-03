@@ -101,6 +101,14 @@ const StateManagedBridge = () => {
     (state: RootState) => state.bridgeDisplay
   )
 
+  const {
+    isBridgePaused,
+    pausedChainsList,
+    pausedModulesList,
+    BridgeMaintenanceProgressBar,
+    BridgeMaintenanceWarningMessage,
+  } = useMaintenance()
+
   const [isApproved, setIsApproved] = useState<boolean>(false)
 
   const dispatch = useAppDispatch()
@@ -544,14 +552,6 @@ const StateManagedBridge = () => {
   //   maintenanceCountdownProgressInstances.some(
   //     (instance) => instance.isCurrentChainDisabled
   //   )
-
-  const {
-    isBridgePaused,
-    pausedChainsList,
-    pausedModulesList,
-    BridgeMaintenanceProgressBar,
-    BridgeMaintenanceWarningMessage,
-  } = useMaintenance()
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">

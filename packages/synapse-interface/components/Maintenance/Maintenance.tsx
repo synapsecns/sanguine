@@ -114,6 +114,7 @@ export const useMaintenance = () => {
   const { pausedChainsList, pausedModulesList } = useMaintenanceData()
   const { fromChainId: bridgeFromChainId, toChainId: bridgeToChainId } =
     useBridgeState()
+  const { swapChainId } = useSwapState()
 
   const activeBridgePause = pausedChainsList.find(
     (pausedChain) =>
@@ -121,15 +122,34 @@ export const useMaintenance = () => {
       isChainIncluded(pausedChain?.pausedToChains, [bridgeToChainId])
   )
 
-  const { isPending: isBridgePaused, EventCountdownProgressBar } =
-    useEventCountdownProgressBar(
-      activeBridgePause?.progressBarMessage,
-      activeBridgePause?.startTimePauseChain,
-      activeBridgePause?.endTimePauseChain,
-      activeBridgePause?.disableCountdown
-    )
+  const activeSwapPause = pausedChainsList.find(
+    (pausedChain) =>
+      isChainIncluded(pausedChain?.pausedFromChains, [swapChainId]) ||
+      isChainIncluded(pausedChain?.pausedToChains, [swapChainId])
+  )
 
-  const BridgeMaintenanceProgressBar = () => EventCountdownProgressBar
+  const {
+    isPending: isBridgePaused,
+    EventCountdownProgressBar: BridgeEventCountdownProgressBar,
+  } = useEventCountdownProgressBar(
+    activeBridgePause?.progressBarMessage,
+    activeBridgePause?.startTimePauseChain,
+    activeBridgePause?.endTimePauseChain,
+    activeBridgePause?.disableCountdown
+  )
+
+  const {
+    isPending: isSwapPaused,
+    EventCountdownProgressBar: SwapEventCountdownProgressBar,
+  } = useEventCountdownProgressBar(
+    activeSwapPause?.progressBarMessage,
+    activeSwapPause?.startTimePauseChain,
+    activeSwapPause?.endTimePauseChain,
+    activeSwapPause?.disableCountdown
+  )
+
+  const BridgeMaintenanceProgressBar = () => BridgeEventCountdownProgressBar
+  const SwapMaintenanceProgressBar = () => SwapEventCountdownProgressBar
 
   const BridgeMaintenanceWarningMessage = () => (
     <MaintenanceWarningMessage
@@ -146,12 +166,28 @@ export const useMaintenance = () => {
     />
   )
 
+  const SwapMaintenanceWarningMessage = () => (
+    <MaintenanceWarningMessage
+      fromChainId={swapChainId}
+      toChainId={null}
+      startDate={activeSwapPause?.startTimePauseChain}
+      endDate={activeSwapPause?.endTimePauseChain}
+      pausedFromChains={activeSwapPause?.pausedFromChains}
+      pausedToChains={activeSwapPause?.pausedToChains}
+      warningMessage={activeSwapPause?.inputWarningMessage}
+      disabled={activeSwapPause?.disableWarning || !activeSwapPause?.pauseSwap}
+    />
+  )
+
   return {
     isBridgePaused,
+    isSwapPaused,
     pausedChainsList,
     pausedModulesList,
     BridgeMaintenanceProgressBar,
     BridgeMaintenanceWarningMessage,
+    SwapMaintenanceProgressBar,
+    SwapMaintenanceWarningMessage,
   }
 }
 
