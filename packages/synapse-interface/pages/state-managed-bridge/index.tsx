@@ -65,10 +65,7 @@ import { getTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
-import {
-  PAUSED_MODULES,
-  getBridgeModuleNames,
-} from '@/components/Maintenance/Maintenance'
+import { getBridgeModuleNames } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 
@@ -171,9 +168,11 @@ const StateManagedBridge = () => {
       )
 
       const pausedBridgeModules = new Set(
-        PAUSED_MODULES.filter((module) =>
-          module.chainId ? module.chainId === fromChainId : true
-        ).flatMap(getBridgeModuleNames)
+        pausedModulesList
+          .filter((module) =>
+            module.chainId ? module.chainId === fromChainId : true
+          )
+          .flatMap(getBridgeModuleNames)
       )
 
       const activeQuotes = allQuotes.filter(

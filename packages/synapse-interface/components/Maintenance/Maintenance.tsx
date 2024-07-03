@@ -222,20 +222,3 @@ export function getBridgeModuleNames(module) {
   }
   return [module.bridgeModuleName]
 }
-
-export const PAUSED_MODULES: BridgeModulePause[] = pausedBridgeModules.map(
-  (route) => {
-    if (!isValidBridgeModule(route.bridgeModuleName)) {
-      throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
-    }
-
-    return {
-      ...route,
-      bridgeModuleName: route.bridgeModuleName as
-        | 'SynapseBridge'
-        | 'SynapseRFQ'
-        | 'SynapseCCTP'
-        | 'ALL',
-    }
-  }
-)

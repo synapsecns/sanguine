@@ -8,7 +8,7 @@ import { fetchJSONData } from './fetchJsonData'
 export const PAUSED_CHAINS_URL =
   'https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-chains.json'
 export const PAUSED_MODULES_URL =
-  'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
+  'https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
 
 let isFetching = false
 
