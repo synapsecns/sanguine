@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -80,11 +82,7 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		chainListeners[chainID] = chainListener
 
 		// setup FastBridge contract on this chain
-		addr, err := cfg.GetRFQAddress(chainID)
-		if err != nil {
-			return nil, fmt.Errorf("could not get rfq address: %w", err)
-		}
-		contracts[chainID], err = fastbridge.NewFastBridgeRef(common.HexToAddress(addr), chainClient)
+		contracts[chainID], err = fastbridge.NewFastBridgeRef(common.HexToAddress(rfqAddr), chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not create bridge contract: %w", err)
 		}
@@ -334,8 +332,11 @@ func (g *Guard) handleProveCalled(ctx context.Context, proven *guarddb.PendingPr
 			return tx, nil
 		})
 		if err != nil {
-			return fmt.Errorf("could not dispute: %w", err)
+			// return fmt.Errorf("could not dispute: %w", err)
+			fmt.Printf("DISPUTE ERR: %s\n", err.Error())
+			return nil
 		}
+		fmt.Printf("Submitted dispute!\n")
 
 		// mark as dispute pending
 		err = g.db.UpdatePendingProvenStatus(ctx, proven.TransactionID, guarddb.DisputePending)
@@ -354,6 +355,10 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 		return false, fmt.Errorf("could not get chain client: %w", err)
 	}
 	receipt, err := chainClient.TransactionReceipt(ctx, proven.TxHash)
+	if errors.Is(err, ethereum.NotFound) {
+		// if tx hash does not exist, we want to consider the proof invalid
+		return false, nil
+	}
 	if err != nil {
 		return false, fmt.Errorf("could not get receipt: %w", err)
 	}
