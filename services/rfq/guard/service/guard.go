@@ -92,7 +92,6 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 	if err != nil {
 		return nil, fmt.Errorf("could not get signer: %w", err)
 	}
-	fmt.Printf("loaded signer with address: %s\n", sg.Address().String())
 
 	txSubmitter := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
@@ -332,11 +331,8 @@ func (g *Guard) handleProveCalled(ctx context.Context, proven *guarddb.PendingPr
 			return tx, nil
 		})
 		if err != nil {
-			// return fmt.Errorf("could not dispute: %w", err)
-			fmt.Printf("DISPUTE ERR: %s\n", err.Error())
-			return nil
+			return fmt.Errorf("could not dispute: %w", err)
 		}
-		fmt.Printf("Submitted dispute!\n")
 
 		// mark as dispute pending
 		err = g.db.UpdatePendingProvenStatus(ctx, proven.TransactionID, guarddb.DisputePending)
