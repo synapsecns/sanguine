@@ -8,8 +8,6 @@ This section is still in progress, please see [here](https://pkg.go.dev/github.c
 
 The Ethergo Submitter module is designed to submit transactions to an EVM-based blockchain. It handles gas bumping and confirmation checking to ensure that transactions are eventually confirmed. This module is essential because the EVM does not specify transaction submission or consensus, and rate limits can affect transaction submission.
 
-![submitter flow](img/submitter/submitter_flow.svg)
-
 ## Key Features
 
 The module is the `SubmitTransaction` method, which returns a nonce and ensures that the transaction will eventually be confirmed. The nonce may then be used in the `GetSubmissionStatus` method to check the state: `Pending`, `Stored`, `Submitted`, `FailedSubmit`, `ReplacedOrConfirmed`, `Replaced`, `Confirmed`.
@@ -17,6 +15,36 @@ The module is the `SubmitTransaction` method, which returns a nonce and ensures 
 - **Gas Bumping**: Automatically adjusts the gas price to ensure timely transaction confirmation.
 - **Confirmation Checking**: Continuously checks the status of submitted transactions to confirm their inclusion in the blockchain.
 - **Reaper Functionality**: Flushes old entries in the database that have reached a terminal state.
+
+#### Note: Status Enum
+
+In the DB, `Status`, is an enum, represented as a uint8. It is important to know what number indicates what status.
+
+```go title="submitter/db/service.go"
+type Status uint8
+
+// Important: do not modify the order of these constants.
+// if one needs to be removed, replace it with a no-op status.
+// additionally, due to the GetMaxNoncestatus function, statuses are currently assumed to be in order.
+// if you need to modify this functionality, please update that function. to reflect that the highest status
+// is no longer the expected end status.
+const (
+	// Pending is the status of a tx that has not been processed yet.
+	Pending Status = iota + 1 // Pending
+	// Stored is the status of a tx that has been stored.
+	Stored // Stored
+	// Submitted is the status of a tx that has been submitted.
+	Submitted // Submitted
+	// FailedSubmit is the status of a tx that has failed to submit.
+	FailedSubmit // Failed
+	// ReplacedOrConfirmed is the status of a tx that has been replaced by a new tx or confirmed. The actual status will be set later.
+	ReplacedOrConfirmed // ReplacedOrConfirmed
+	// Replaced is the status of a tx that has been replaced by a new tx.
+	Replaced // Replaced
+	// Confirmed is the status of a tx that has been confirmed.
+	Confirmed // Confirmed
+)
+```
 
 ### Reaper
 
@@ -34,17 +62,39 @@ for each chain. If a chain-specific item is not provided, the global config is u
 submitter_config:
   chains:
     1:
-      supports_eip_1559: true
+      # MaxBatchSize is the maximum number of transactions to send in a batch.
+      # If this is zero, the default will be used.
+      # This field is ignored if batching is disabled.
+      max_batch_size: 50
+      # Batch is whether or not to batch transactions at the rpc level.
+      skip_batching: false
+      # MaxGasPrice is the maximum gas price to use for transactions.
+      max_gas_price: 200000000000 # 200 Gwei
+      # MinGasPrice is the gas price that will be used if 0 is returned
+      # from the gas price oracle.
+      min_gas_price: 1000000000 # 1 Gwei
+      # BumpIntervalSeconds is the number of seconds to
+      # wait before bumping a transaction.
+      bump_interval_seconds: 120
+      # GasBumpPercentages is the percentage to bump the gas price by.
+      # This is applied to the greatrer of the chainprice or the last price.
+      gas_bump_percentage: 10
+      # GasEstimate is the gas estimate to use for transactions if
+      # dynamic gas estimation is enabled.
+      # This is only used as a default if the estimate fails.
       gas_estimate: 1000000
-    43114:
-      gas_estimate: 30000000
-      max_gas_price: 100000000000
+      # DynamicGasEstimate is whether or not to use dynamic gas estimation.
+      dynamic_gas_estimate: true
+      # SupportsEIP1559 is whether or not this chain supports EIP1559.
       supports_eip_1559: true
+    43114:
+      max_gas_price: 100000000000 # 100 Gwei
     10:
-      gas_estimate: 400000
-      max_gas_price: 90000000000
-      gas_bump_percentage: 20
+      max_gas_price: 90000000000 # 90 Gwei
+      min_gas_price: 100000000 # 0.1 Gwei
+  # ReaperInterval is the interval at which scan for transactions to flush
   reaper_interval: 604800000000000 # int64(7 * 24 * time.Hour)
+  # MaxRecordAge is the maximum age of a record before it is flushed
   max_record_age: 86400000000000 # int64(1 * 24 * time.Hour)
 ```
 
@@ -94,7 +144,7 @@ The Chain Queue db interface, [Service](https://github.com/synapsecns/sanguine/b
 
 The schema for a transaction to be stored in the Transaction DB is:
 
-```go
+```go title="submitter/db/txdb/model.go"
 // ETHTX contains a raw evm transaction that is unsigned.
 type ETHTX struct {
   ID uint64 `gorm:"column:id;primaryKey;autoIncrement:true"`
