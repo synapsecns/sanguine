@@ -386,13 +386,9 @@ func (i *IntegrationSuite) setupRelayer() {
 		fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress),
 	}
 
-	// TODO: good chance we wanna leave actually starting this up to the indiividual test.
 	var err error
 	i.relayer, err = service.NewRelayer(i.GetTestContext(), i.metrics, cfg)
 	i.NoError(err)
-	go func() {
-		err = i.relayer.Start(i.GetTestContext())
-	}()
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
 	i.NoError(err)
@@ -433,9 +429,6 @@ func (i *IntegrationSuite) setupGuard() {
 	var err error
 	i.guard, err = guardService.NewGuard(i.GetTestContext(), i.metrics, guardCfg)
 	i.NoError(err)
-	go func() {
-		err = i.guard.Start(i.GetTestContext())
-	}()
 
 	dbType, err := dbcommon.DBTypeFromString(guardCfg.Database.Type)
 	i.NoError(err)

@@ -106,6 +106,14 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		i.T().Skip("skipping until anvil issues are fixed in CI")
 	}
 
+	// start the relayer and guard
+	go func() {
+		_ = i.relayer.Start(i.GetTestContext())
+	}()
+	go func() {
+		_ = i.guard.Start(i.GetTestContext())
+	}()
+
 	// load token contracts
 	const startAmount = 1000
 	const rfqAmount = 900
@@ -260,6 +268,15 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	if core.GetEnvBool("CI", false) {
 		i.T().Skip("skipping until anvil issues are fixed in CI")
 	}
+
+	// start the relayer and guard
+	go func() {
+		_ = i.relayer.Start(i.GetTestContext())
+	}()
+	go func() {
+		_ = i.guard.Start(i.GetTestContext())
+	}()
+
 	// Send ETH to the relayer on destination
 	const initialBalance = 10
 	i.destBackend.FundAccount(i.GetTestContext(), i.relayerWallet.Address(), *big.NewInt(initialBalance))
@@ -373,6 +390,11 @@ func (i *IntegrationSuite) TestDispute() {
 	if core.GetEnvBool("CI", false) {
 		i.T().Skip("skipping until anvil issues are fixed in CI")
 	}
+
+	// start the guard
+	go func() {
+		_ = i.guard.Start(i.GetTestContext())
+	}()
 
 	// load token contracts
 	const startAmount = 1000
