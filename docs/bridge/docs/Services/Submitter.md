@@ -651,11 +651,11 @@ const (
 
 Submitter exposes metrics for Prometheus. The metrics are:
 
-- `num_pending_txs`: The number of pending transactions
-- `current_nonce`: The current nonce
-- `oldest_pending_tx`: The age of the oldest pending transaction
-- `confirmed_queue`: The number of confirmed transactions
-- `gas_balance`: The current gas balance
+- `num_pending_txs`: The number of pending transactions.
+- `current_nonce`: The current nonce.
+- `oldest_pending_tx`: The age of the oldest pending transaction.
+- `confirmed_queue`: The number of confirmed transactions.
+- `gas_balance`: The current gas balance.
 
 The metrics can be used in a dashboard [here](https://raw.githubusercontent.com/synapsecns/sanguine/master/ethergo/dashboard.json). It looks like this:
 
