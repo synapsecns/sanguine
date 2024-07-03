@@ -10,7 +10,6 @@ import pausedBridgeModules from '@/public/pauses/v1/paused-bridge-modules.json'
 import { isChainIncluded } from '@/utils/isChainIncluded'
 import { useEventCountdownProgressBar } from './components/EventCountdownProgressBar'
 
-/** Pause Chain Activity */
 interface ChainPause {
   id: string
   pausedFromChains: number[]
@@ -18,9 +17,9 @@ interface ChainPause {
   pauseBridge: boolean
   pauseSwap: boolean
   startTimePauseChain: Date
-  endTimePauseChain: Date | null // If null, pause indefinitely
+  endTimePauseChain: Date | null
   startTimeBanner: Date
-  endTimeBanner: Date | null // If null, pause indefinitely
+  endTimeBanner: Date | null
   inputWarningMessage: string
   bannerMessage: JSX.Element
   progressBarMessage: string
@@ -28,21 +27,6 @@ interface ChainPause {
   disableWarning: boolean
   disableCountdown: boolean
 }
-
-// const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
-//   return {
-//     ...pause,
-//     startTimePauseChain: new Date(pause.startTimePauseChain),
-//     endTimePauseChain: pause.endTimePauseChain
-//       ? new Date(pause.endTimePauseChain)
-//       : null,
-//     startTimeBanner: new Date(pause.startTimeBanner),
-//     endTimeBanner: pause.endTimeBanner ? new Date(pause.endTimeBanner) : null,
-//     inputWarningMessage: <p>{pause.inputWarningMessage}</p>,
-//     bannerMessage: <p className="text-left">{pause.bannerMessage}</p>,
-//     progressBarMessage: <p>{pause.progressBarMessage}</p>,
-//   }
-// })
 
 const useMaintenanceData = () => {
   const { pausedChainsData, pausedModulesData } = useMaintanceState()
