@@ -18,10 +18,6 @@ func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
 	statusFieldName = namer.GetConsistentName("Status")
 	transactionIDFieldName = namer.GetConsistentName("TransactionID")
-	originTxHashFieldName = namer.GetConsistentName("OriginTxHash")
-	destTxHashFieldName = namer.GetConsistentName("DestTxHash")
-	rebalanceIDFieldName = namer.GetConsistentName("RebalanceID")
-	relayNonceFieldName = namer.GetConsistentName("RelayNonce")
 }
 
 var (
@@ -29,14 +25,6 @@ var (
 	statusFieldName string
 	// transactionIDFieldName is the transactions id field name.
 	transactionIDFieldName string
-	// originTxHashFieldName is the origin tx hash field name.
-	originTxHashFieldName string
-	// destTxHashFieldName is the dest tx hash field name.
-	destTxHashFieldName string
-	// rebalanceIDFieldName is the rebalances id field name.
-	rebalanceIDFieldName string
-	// relayNonceFieldName is the relay nonce field name.
-	relayNonceFieldName string
 )
 
 // PendingProvenModel is the primary event model.

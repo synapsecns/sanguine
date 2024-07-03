@@ -36,7 +36,7 @@ func (s Store) UpdatePendingProvenStatus(ctx context.Context, id [32]byte, statu
 }
 
 // GetPendingProvensByStatus gets pending provens by status.
-func (s Store) GetPendingProvensByStatus(ctx context.Context, matchStatuses ...guarddb.PendingProvenStatus) (res []guarddb.PendingProven, _ error) {
+func (s Store) GetPendingProvensByStatus(ctx context.Context, matchStatuses ...guarddb.PendingProvenStatus) (res []*guarddb.PendingProven, _ error) {
 	var provenResults []PendingProvenModel
 
 	inArgs := make([]int, len(matchStatuses))
@@ -47,15 +47,15 @@ func (s Store) GetPendingProvensByStatus(ctx context.Context, matchStatuses ...g
 	// TODO: consider pagination
 	tx := s.DB().WithContext(ctx).Model(&PendingProvenModel{}).Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).Find(&provenResults)
 	if tx.Error != nil {
-		return []guarddb.PendingProven{}, fmt.Errorf("could not get db results: %w", tx.Error)
+		return []*guarddb.PendingProven{}, fmt.Errorf("could not get db results: %w", tx.Error)
 	}
 
 	for _, result := range provenResults {
 		marshaled, err := result.ToPendingProven()
 		if err != nil {
-			return []guarddb.PendingProven{}, fmt.Errorf("could not get provens")
+			return []*guarddb.PendingProven{}, fmt.Errorf("could not get provens")
 		}
-		res = append(res, *marshaled)
+		res = append(res, marshaled)
 	}
 	return res, nil
 }
