@@ -43,6 +43,7 @@ type IntegrationSuite struct {
 	relayer       *service.Relayer
 	guard         *guardService.Guard
 	relayerWallet wallet.Wallet
+	guardWallet   wallet.Wallet
 	userWallet    wallet.Wallet
 }
 

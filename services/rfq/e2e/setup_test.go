@@ -97,6 +97,9 @@ func (i *IntegrationSuite) setupBackends() {
 	i.relayerWallet, err = wallet.FromRandom()
 	i.NoError(err)
 
+	i.guardWallet, err = wallet.FromRandom()
+	i.NoError(err)
+
 	i.userWallet, err = wallet.FromRandom()
 	i.NoError(err)
 
@@ -135,10 +138,12 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 
 	// store the keys
 	backend.Store(base.WalletToKey(i.T(), i.relayerWallet))
+	backend.Store(base.WalletToKey(i.T(), i.guardWallet))
 	backend.Store(base.WalletToKey(i.T(), i.userWallet))
 
 	// fund each of the wallets
 	backend.FundAccount(i.GetTestContext(), i.relayerWallet.Address(), ethAmount)
+	backend.FundAccount(i.GetTestContext(), i.guardWallet.Address(), ethAmount)
 	backend.FundAccount(i.GetTestContext(), i.userWallet.Address(), ethAmount)
 
 	go func() {
@@ -147,7 +152,7 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 
 	// TODO: in the case of relayer this not finishing before the test starts can lead to race conditions since
 	// nonce may be shared between submitter and relayer. Think about how to deal w/ this.
-	for _, user := range []wallet.Wallet{i.relayerWallet, i.userWallet} {
+	for _, user := range []wallet.Wallet{i.relayerWallet, i.guardWallet, i.userWallet} {
 		go func(userWallet wallet.Wallet) {
 			for _, token := range predeployTokens {
 				i.Approve(backend, i.manager.Get(i.GetTestContext(), backend, token), userWallet)
@@ -396,18 +401,44 @@ func (i *IntegrationSuite) setupRelayer() {
 }
 
 func (i *IntegrationSuite) setupGuard() {
-	cfg := i.getRelayerConfig()
+	// add myself as a guard
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	for _, backend := range core.ToSlice(i.originBackend, i.destBackend) {
+		go func(backend backends.SimulatedTestBackend) {
+			defer wg.Done()
+
+			metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
+
+			txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
+			guardRole, err := rfqContract.GUARDROLE(&bind.CallOpts{Context: i.GetTestContext()})
+			i.NoError(err)
+
+			tx, err := rfqContract.GrantRole(txContext.TransactOpts, guardRole, i.guardWallet.Address())
+			i.NoError(err)
+
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
+		}(backend)
+	}
+	wg.Wait()
+
+	relayerCfg := i.getRelayerConfig()
+	guardCfg := guardconfig.NewGuardConfigFromRelayer(relayerCfg)
+	guardCfg.Signer = signerConfig.SignerConfig{
+		Type: signerConfig.FileType.String(),
+		File: filet.TmpFile(i.T(), "", i.guardWallet.PrivateKeyHex()).Name(),
+	}
 
 	var err error
-	guardCfg := guardconfig.NewGuardConfigFromRelayer(cfg)
 	i.guard, err = guardService.NewGuard(i.GetTestContext(), i.metrics, guardCfg)
 	i.NoError(err)
 	go func() {
 		err = i.guard.Start(i.GetTestContext())
 	}()
 
-	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
+	dbType, err := dbcommon.DBTypeFromString(guardCfg.Database.Type)
 	i.NoError(err)
-	i.guardStore, err = guardConnect.Connect(i.GetTestContext(), dbType, cfg.Database.DSN, i.metrics)
+	i.guardStore, err = guardConnect.Connect(i.GetTestContext(), dbType, guardCfg.Database.DSN, i.metrics)
 	i.NoError(err)
 }
