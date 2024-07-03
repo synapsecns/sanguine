@@ -25,7 +25,10 @@ import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 import { joinClassNames } from '@/utils/joinClassNames'
-import { MaintenanceBanners } from '@/components/Maintenance/Maintenance'
+import {
+  MaintenanceBanners,
+  useMaintenance,
+} from '@/components/Maintenance/Maintenance'
 import { AnnouncementBanner } from '@/components/Maintenance/components/AnnouncementBanner'
 
 const wrapperClassName = joinClassNames({
@@ -47,6 +50,7 @@ const TODO_REMOVE_wrapperStyle = {
 }
 
 export function LandingPageWrapper({ children }: { children: any }) {
+  const { ActiveMaintenanceBanner } = useMaintenance()
   return (
     <div className="dark">
       <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
@@ -56,7 +60,7 @@ export function LandingPageWrapper({ children }: { children: any }) {
           startDate={new Date('2024-05-08T18:45:09+00:00')}
           endDate={new Date('2024-06-15T18:45:09+00:00')}
         />
-        <MaintenanceBanners />
+        <ActiveMaintenanceBanner />
         <LandingNav />
         {children}
         <PageFooter />

@@ -21,7 +21,7 @@ interface ChainPause {
   endTimePauseChain: Date | null // If null, pause indefinitely
   startTimeBanner: Date
   endTimeBanner: Date | null // If null, pause indefinitely
-  inputWarningMessage: JSX.Element
+  inputWarningMessage: string
   bannerMessage: JSX.Element
   progressBarMessage: string
   disableBanner: boolean
@@ -60,7 +60,7 @@ const useMaintenanceData = () => {
             ? new Date(pause.endTimePauseChain)
             : null,
           bannerMessage: <p className="text-left">{pause.bannerMessage}</p>,
-          inputWarningMessage: <p>{pause.inputWarningMessage}</p>,
+          inputWarningMessage: pause.inputWarningMessage,
           progressBarMessage: pause.progressBarMessage,
         }
       })
@@ -128,6 +128,14 @@ export const useMaintenance = () => {
       isChainIncluded(pausedChain?.pausedToChains, [swapChainId])
   )
 
+  const activeBanner = pausedChainsList.find(
+    (pausedChain) =>
+      isChainIncluded(pausedChain?.pausedFromChains, [bridgeFromChainId]) ||
+      isChainIncluded(pausedChain?.pausedToChains, [bridgeToChainId]) ||
+      isChainIncluded(pausedChain?.pausedFromChains, [swapChainId]) ||
+      isChainIncluded(pausedChain?.pausedToChains, [swapChainId])
+  )
+
   const {
     isPending: isBridgePaused,
     EventCountdownProgressBar: BridgeEventCountdownProgressBar,
@@ -179,11 +187,22 @@ export const useMaintenance = () => {
     />
   )
 
+  const ActiveMaintenanceBanner = () => (
+    <MaintenanceBanner
+      id={activeBanner?.id}
+      bannerMessage={activeBanner?.bannerMessage}
+      startDate={activeBanner?.startTimeBanner}
+      endDate={activeBanner?.endTimeBanner}
+      disabled={activeBanner?.disableBanner}
+    />
+  )
+
   return {
     isBridgePaused,
     isSwapPaused,
     pausedChainsList,
     pausedModulesList,
+    ActiveMaintenanceBanner,
     BridgeMaintenanceProgressBar,
     BridgeMaintenanceWarningMessage,
     SwapMaintenanceProgressBar,
