@@ -19,7 +19,7 @@ type RelayerClient interface {
 	GetQuoteRequestStatusByTxID(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
 	RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error)
 	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)
-	GetTxHashByNonce(ctx context.Context, chainID string, nonce string) (string, error)
+	GetTxHashByNonce(ctx context.Context, req *GetTxByNonceRequest) (*TxHashByNonceResponse, error)
 }
 
 type relayerClient struct {
@@ -125,20 +125,24 @@ func (r *relayerClient) Withdraw(ctx context.Context, req *WithdrawRequest) (*Wi
 	return &res, nil
 }
 
-func (r *relayerClient) GetTxHashByNonce(ctx context.Context, chainID string, nonce string) (string, error) {
-	var res struct {
-		Hash string `json:"hash"`
-	}
+type TxHashByNonceResponse struct {
+	Hash string `json:"withdrawTxHash"`
+}
+
+func (r *relayerClient) GetTxHashByNonce(ctx context.Context, req *GetTxByNonceRequest) (*TxHashByNonceResponse, error) {
+	var res TxHashByNonceResponse
+
 	resp, err := r.client.R().SetContext(ctx).
-		SetQueryParam("chain_id", chainID).
-		SetQueryParam("nonce", nonce).
 		SetResult(&res).
+		SetBody(req).
 		Get(getTxHashByNonceRoute)
+
 	if err != nil {
-		return "", fmt.Errorf("failed to get tx hash by nonce: %w", err)
+		return nil, fmt.Errorf("failed to get tx hash by nonce: %w", err)
 	}
 	if resp.StatusCode() != http.StatusOK {
-		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode())
+		return nil, fmt.Errorf("wahhh %s", resp.String())
 	}
-	return res.Hash, nil
+
+	return &res, nil
 }

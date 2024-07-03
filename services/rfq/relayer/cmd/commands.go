@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/ethereum/go-ethereum/common"
@@ -88,8 +89,8 @@ var withdrawCommand = &cli.Command{
 			return fmt.Errorf("could not create relayer: %w", err)
 		}
 
-		chainID := c.Uint(chainIDFlag.Name)
-		if chainID == 0 {
+		chainID := big.NewInt(c.Int64(chainIDFlag.Name))
+		if chainID.Cmp(big.NewInt(0)) == 0 {
 			return fmt.Errorf("valid chain ID is required")
 		}
 
@@ -109,7 +110,7 @@ var withdrawCommand = &cli.Command{
 		}
 
 		withdrawRequest := relapi.WithdrawRequest{
-			ChainID:      uint32(chainID),
+			ChainID:      uint32(chainID.Uint64()),
 			Amount:       amount,
 			TokenAddress: common.HexToAddress(tokenAddress),
 			To:           common.HexToAddress(to),
@@ -121,11 +122,16 @@ var withdrawCommand = &cli.Command{
 		}
 
 		var clientErr error
-		var status string
+		var status *relapi.TxHashByNonceResponse
 		err = spinner.New().
-			Title("Logging in...").
+			Title("Waiting for tx...").
 			Action(func() {
-				status, err = client.GetTxHashByNonce(c.Context, fmt.Sprint(chainID), fmt.Sprint(res.Nonce))
+				status, err = client.GetTxHashByNonce(
+					c.Context,
+					&relapi.GetTxByNonceRequest{
+						ChainID: chainID,
+						Nonce:   res.Nonce,
+					})
 				if err != nil {
 					clientErr = fmt.Errorf("could not login: %w", err)
 				}
@@ -137,7 +143,7 @@ var withdrawCommand = &cli.Command{
 			panic(clientErr)
 		}
 
-		fmt.Printf("Withdraw Tx Hash: %s\n", status)
+		fmt.Printf("Withdraw Tx Hash: %s\n", status.Hash)
 
 		return nil
 	},
