@@ -122,11 +122,24 @@ export const useMaintenance = () => {
     useBridgeState()
   const { swapChainId } = useSwapState()
 
-  const activeBridgePause = pausedChainsList.find(
-    (pausedChain) =>
-      isChainIncluded(pausedChain?.pausedFromChains, [bridgeFromChainId]) ||
-      isChainIncluded(pausedChain?.pausedToChains, [bridgeToChainId])
-  )
+  const activeBridgePause = pausedChainsList
+    .filter(
+      (pausedChain) =>
+        isChainIncluded(pausedChain?.pausedFromChains, [bridgeFromChainId]) ||
+        isChainIncluded(pausedChain?.pausedToChains, [bridgeToChainId])
+    )
+    .reduce((furthestPauseChain, currentChain) => {
+      const furthestDate = furthestPauseChain?.endTimePauseChain ?? null
+      const currentDate = currentChain.endTimePauseChain ?? null
+      const furthestFutureDate = getFurthestFutureDate(
+        furthestDate,
+        currentDate
+      )
+
+      return furthestFutureDate === furthestDate
+        ? furthestPauseChain
+        : currentChain
+    }, null)
 
   const activeSwapPause = pausedChainsList.find(
     (pausedChain) =>
@@ -195,6 +208,16 @@ export const useMaintenance = () => {
     SwapMaintenanceProgressBar,
     SwapMaintenanceWarningMessage,
   }
+}
+
+const getFurthestFutureDate = (
+  date1: Date | null,
+  date2: Date | null
+): Date | null => {
+  if (date1 === null && date2 === null) return null
+  if (date1 === null) return date2
+  if (date2 === null) return date1
+  return date1 > date2 ? date1 : date2
 }
 
 /** Pause Bridge Modules */
