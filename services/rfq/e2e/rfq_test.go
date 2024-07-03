@@ -359,4 +359,11 @@ func (i *IntegrationSuite) TestETHtoETH() {
 		}
 		return false
 	})
+
+	i.Eventually(func() bool {
+		// verify that the guard has marked the tx as validated
+		results, err := i.guardStore.GetPendingProvensByStatus(i.GetTestContext(), guarddb.Validated)
+		i.NoError(err)
+		return len(results) == 1
+	})
 }
