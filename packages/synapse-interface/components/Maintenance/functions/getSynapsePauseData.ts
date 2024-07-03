@@ -1,12 +1,9 @@
-import { useEffect } from 'react'
-
 import { useAppDispatch } from '@/store/hooks'
 import {
-  setPausedChainData,
-  setPausedModuleData,
+  setPausedChainsData,
+  setPausedModulesData,
 } from '@/slices/maintenance/reducer'
 import { fetchJSONData } from './fetchJsonData'
-import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
 export const PAUSED_CHAINS_URL =
   'https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json'
@@ -27,13 +24,10 @@ export const getSynapsePauseData = () => {
       const pausedChainsData = await fetchJSONData(PAUSED_CHAINS_URL)
       const pausedModulesData = await fetchJSONData(PAUSED_MODULES_URL)
 
-      dispatch(setPausedChainData(pausedChainsData))
-      dispatch(setPausedModuleData(pausedModulesData))
+      dispatch(setPausedChainsData(pausedChainsData))
+      dispatch(setPausedModulesData(pausedModulesData))
     } catch (error) {
-      console.error(
-        '[Synapse Widget] Failed to fetch paused chains/modules: ',
-        error
-      )
+      console.error('Failed to fetch paused chains/modules: ', error)
     } finally {
       setTimeout(() => {
         isFetching = false

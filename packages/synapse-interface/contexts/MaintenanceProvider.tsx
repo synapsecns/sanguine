@@ -1,6 +1,5 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import { getSynapsePauseData } from '@/components/Maintenance/functions/useSynapsePauseData'
-import { useMaintanceState } from '@/slices/maintenance/hooks'
+import { createContext } from 'react'
+import { getSynapsePauseData } from '@/components/Maintenance/functions/getSynapsePauseData'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
 const MaintenanceContext = createContext(null)

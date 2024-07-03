@@ -1,29 +1,29 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 export interface MaintenanceState {
-  pausedChainData: any
-  pausedModuleData: any
+  pausedChainsData: any
+  pausedModulesData: any
 }
 
 const initialState: MaintenanceState = {
-  pausedChainData: null,
-  pausedModuleData: null,
+  pausedChainsData: null,
+  pausedModulesData: null,
 }
 
 export const maintenanceSlice = createSlice({
   name: 'maintenance',
   initialState,
   reducers: {
-    setPausedChainData: (state, action: PayloadAction<any>) => {
-      state.pausedChainData = action.payload
+    setPausedChainsData: (state, action: PayloadAction<any>) => {
+      state.pausedChainsData = action.payload
     },
-    setPausedModuleData: (state, action: PayloadAction<any>) => {
-      state.pausedModuleData = action.payload
+    setPausedModulesData: (state, action: PayloadAction<any>) => {
+      state.pausedModulesData = action.payload
     },
   },
 })
 
-export const { setPausedChainData, setPausedModuleData } =
+export const { setPausedChainsData, setPausedModulesData } =
   maintenanceSlice.actions
 
 export default maintenanceSlice.reducer

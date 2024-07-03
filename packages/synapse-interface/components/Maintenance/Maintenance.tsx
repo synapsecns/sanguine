@@ -3,6 +3,7 @@ import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessag
 import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
+import { useMaintanceState } from '@/slices/maintenance/hooks'
 import pausedChains from '@/public/pauses/v1/paused-chains.json'
 import pausedBridgeModules from '@/public/pauses/v1/paused-bridge-modules.json'
 
@@ -40,7 +41,52 @@ const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
   }
 })
 
+const useMaintenanceData = () => {
+  const { pausedChainsData, pausedModulesData } = useMaintanceState()
+
+  const pausedChainsList: ChainPause[] = pausedChainsData
+    ? pausedChainsData?.map((pause: ChainPause) => {
+        return {
+          ...pause,
+          startTimePauseChain: new Date(pause.startTimePauseChain),
+          endTimePauseChain: pause.endTimePauseChain
+            ? new Date(pause.endTimePauseChain)
+            : null,
+          bannerMessage: pause.bannerMessage,
+          inputWarningMessage: pause.inputWarningMessage,
+          progressBarMessage: pause.progressBarMessage,
+        }
+      })
+    : []
+
+  const pausedModulesList: BridgeModulePause[] = pausedModulesData
+    ? pausedModulesData?.map((route: BridgeModulePause) => {
+        if (!isValidBridgeModule(route.bridgeModuleName)) {
+          throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
+        }
+
+        return {
+          ...route,
+          bridgeModuleName: route.bridgeModuleName as
+            | 'SynapseBridge'
+            | 'SynapseRFQ'
+            | 'SynapseCCTP'
+            | 'ALL',
+        }
+      })
+    : []
+
+  return {
+    pausedChainsList,
+    pausedModulesList,
+  }
+}
+
 export const MaintenanceBanners = () => {
+  const { pausedChainsList } = useMaintenanceData()
+
+  console.log('pausedChainsList: ', pausedChainsList)
+
   return (
     <>
       {PAUSED_CHAINS.map((event) => {
