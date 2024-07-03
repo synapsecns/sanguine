@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -226,7 +227,15 @@ func (g Guard) runChainIndexer(ctx context.Context, chainID int) (err error) {
 
 var maxRPCRetryTime = 15 * time.Second
 
-func (g *Guard) handleBridgeRequestedLog(ctx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID int) (err error) {
+func (g *Guard) handleBridgeRequestedLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID int) (err error) {
+	ctx, span := g.metrics.Tracer().Start(parentCtx, "handleBridgeRequestedLog-guard", trace.WithAttributes(
+		attribute.Int(metrics.Origin, chainID),
+		attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:])),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	originClient, err := g.client.GetChainClient(ctx, int(chainID))
 	if err != nil {
 		return fmt.Errorf("could not get correct omnirpc client: %w", err)
@@ -262,7 +271,16 @@ func (g *Guard) handleBridgeRequestedLog(ctx context.Context, req *fastbridge.Fa
 	return nil
 }
 
-func (g *Guard) handleProofProvidedLog(ctx context.Context, event *fastbridge.FastBridgeBridgeProofProvided, chainID int) (err error) {
+func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbridge.FastBridgeBridgeProofProvided, chainID int) (err error) {
+	ctx, span := g.metrics.Tracer().Start(parentCtx, "handleProofProvidedLog-guard", trace.WithAttributes(
+		attribute.Int(metrics.Origin, chainID),
+		attribute.String("transaction_id", hexutil.Encode(event.TransactionId[:])),
+		attribute.String("tx_hash", hexutil.Encode(event.TransactionHash[:])),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	proven := guarddb.PendingProven{
 		Origin:        uint32(chainID),
 		TransactionID: event.TransactionId,
@@ -277,7 +295,14 @@ func (g *Guard) handleProofProvidedLog(ctx context.Context, event *fastbridge.Fa
 	return nil
 }
 
-func (g *Guard) handleProofDisputedLog(ctx context.Context, event *fastbridge.FastBridgeBridgeProofDisputed) (err error) {
+func (g *Guard) handleProofDisputedLog(parentCtx context.Context, event *fastbridge.FastBridgeBridgeProofDisputed) (err error) {
+	ctx, span := g.metrics.Tracer().Start(parentCtx, "handleProofDisputedLog-guard", trace.WithAttributes(
+		attribute.String("transaction_id", hexutil.Encode(event.TransactionId[:])),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	err = g.db.UpdatePendingProvenStatus(ctx, event.TransactionId, guarddb.Disputed)
 	if err != nil {
 		return fmt.Errorf("could not update pending proven status: %w", err)
@@ -298,7 +323,14 @@ func (g *Guard) processDB(ctx context.Context) (err error) {
 	return nil
 }
 
-func (g *Guard) handleProveCalled(ctx context.Context, proven *guarddb.PendingProven) (err error) {
+func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.PendingProven) (err error) {
+	ctx, span := g.metrics.Tracer().Start(parentCtx, "handleProveCalled", trace.WithAttributes(
+		attribute.String("transaction_id", hexutil.Encode(proven.TransactionID[:])),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	// first, get the corresponding bridge request
 	bridgeRequest, err := g.db.GetBridgeRequestByID(ctx, proven.TransactionID)
 	if err != nil {
@@ -309,6 +341,7 @@ func (g *Guard) handleProveCalled(ctx context.Context, proven *guarddb.PendingPr
 	if err != nil {
 		return fmt.Errorf("could not check prove validity: %w", err)
 	}
+	span.SetAttributes(attribute.Bool("valid", valid))
 
 	if valid {
 		// mark as validated
