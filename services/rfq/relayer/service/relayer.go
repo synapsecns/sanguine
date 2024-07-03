@@ -268,6 +268,14 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		return nil
 	})
 
+	g.Go(func() error {
+		err = r.startGuard(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start guard: %w", err)
+		}
+		return nil
+	})
+
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not start: %w", err)
@@ -330,6 +338,10 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 
 // startGuard starts the guard, if specified
 func (r *Relayer) startGuard(ctx context.Context) (err error) {
+	if !r.cfg.UseEmbeddedGuard {
+		return nil
+	}
+
 	guardCfg := guardconfig.NewGuardConfigFromRelayer(r.cfg)
 	guard, err := serviceGuard.NewGuard(ctx, r.metrics, guardCfg)
 	if err != nil {
