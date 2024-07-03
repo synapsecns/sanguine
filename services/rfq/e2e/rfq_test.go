@@ -368,3 +368,96 @@ func (i *IntegrationSuite) TestETHtoETH() {
 		return len(results) == 1
 	})
 }
+
+func (i *IntegrationSuite) TestDispute() {
+	if core.GetEnvBool("CI", false) {
+		i.T().Skip("skipping until anvil issues are fixed in CI")
+	}
+
+	// load token contracts
+	const startAmount = 1000
+	const rfqAmount = 900
+	opts := i.destBackend.GetTxContext(i.GetTestContext(), nil)
+	destUSDC, destUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
+	realStartAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(startAmount), destUSDC.ContractHandle())
+	i.NoError(err)
+	realRFQAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(rfqAmount), destUSDC.ContractHandle())
+	i.NoError(err)
+
+	// add initial usdc to relayer on destination
+	tx, err := destUSDCHandle.MintPublic(opts.TransactOpts, i.relayerWallet.Address(), realStartAmount)
+	i.Nil(err)
+	i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.destBackend, destUSDC, i.relayerWallet)
+
+	// add initial USDC to relayer on origin
+	optsOrigin := i.originBackend.GetTxContext(i.GetTestContext(), nil)
+	originUSDC, originUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.relayerWallet.Address(), realStartAmount)
+	i.Nil(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.originBackend, originUSDC, i.relayerWallet)
+
+	// add initial USDC to user on origin
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realRFQAmount)
+	i.Nil(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.originBackend, originUSDC, i.userWallet)
+
+	// now we can send the money
+	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
+	// we want 499 usdc for 500 requested within a day
+	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
+		DstChainId:   uint32(i.destBackend.GetChainID()),
+		To:           i.userWallet.Address(),
+		OriginToken:  originUSDC.Address(),
+		SendChainGas: true,
+		DestToken:    destUSDC.Address(),
+		OriginAmount: realRFQAmount,
+		DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(10_000_000)),
+		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
+	})
+	i.NoError(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	// fetch the txID
+	var txID [32]byte
+	parser, err := fastbridge.NewParser(originFastBridge.Address())
+	i.NoError(err)
+	i.Eventually(func() bool {
+		receipt, err := i.originBackend.TransactionReceipt(i.GetTestContext(), tx.Hash())
+		i.NoError(err)
+		for _, log := range receipt.Logs {
+			_, parsedEvent, ok := parser.ParseEvent(*log)
+			if !ok {
+				continue
+			}
+			switch event := parsedEvent.(type) {
+			case *fastbridge.FastBridgeBridgeRequested:
+				txID = event.TransactionId
+				return true
+			}
+		}
+		return false
+	})
+
+	// call prove() from the relayer wallet before relay actually occurred on dest
+	relayerAuth := i.originBackend.GetTxContext(i.GetTestContext(), i.relayerWallet.AddressPtr())
+	fakeHash := common.HexToHash("0xdeadbeef")
+	tx, err = originFastBridge.Prove(relayerAuth.TransactOpts, txID[:], fakeHash)
+	i.NoError(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	// verify that the guard calls Dispute()
+	i.Eventually(func() bool {
+		results, err := i.guardStore.GetPendingProvensByStatus(i.GetTestContext(), guarddb.Disputed)
+		i.NoError(err)
+		if len(results) != 1 {
+			return false
+		}
+		result, err := i.guardStore.GetPendingProvenByID(i.GetTestContext(), txID)
+		i.NoError(err)
+		return result.TxHash == fakeHash && result.Status == guarddb.Disputed && result.TransactionID == txID
+	})
+}
