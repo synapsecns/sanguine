@@ -32,6 +32,8 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/db/sql"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
+	guardConnect "github.com/synapsecns/sanguine/services/rfq/guard/guarddb/connect"
+	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
@@ -217,36 +219,14 @@ func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token 
 	}
 }
 
-func (i *IntegrationSuite) setupRelayer() {
-	// add myself as a filler
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	for _, backend := range core.ToSlice(i.originBackend, i.destBackend) {
-		go func(backend backends.SimulatedTestBackend) {
-			defer wg.Done()
-
-			metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
-
-			txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
-			relayerRole, err := rfqContract.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
-			i.NoError(err)
-
-			tx, err := rfqContract.GrantRole(txContext.TransactOpts, relayerRole, i.relayerWallet.Address())
-			i.NoError(err)
-
-			backend.WaitForConfirmation(i.GetTestContext(), tx)
-		}(backend)
-	}
-	wg.Wait()
-
+func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 	// construct the config
 	relayerAPIPort, err := freeport.GetFreePort()
 	i.NoError(err)
 	dsn := filet.TmpDir(i.T(), "")
 	cctpContractOrigin, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.originBackend)
 	cctpContractDest, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.destBackend)
-	cfg := relconfig.Config{
+	return relconfig.Config{
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
@@ -300,6 +280,32 @@ func (i *IntegrationSuite) setupRelayer() {
 		},
 		RebalanceInterval: 0,
 	}
+}
+
+func (i *IntegrationSuite) setupRelayer() {
+	// add myself as a filler
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	for _, backend := range core.ToSlice(i.originBackend, i.destBackend) {
+		go func(backend backends.SimulatedTestBackend) {
+			defer wg.Done()
+
+			metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
+
+			txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
+			relayerRole, err := rfqContract.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+			i.NoError(err)
+
+			tx, err := rfqContract.GrantRole(txContext.TransactOpts, relayerRole, i.relayerWallet.Address())
+			i.NoError(err)
+
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
+		}(backend)
+	}
+	wg.Wait()
+
+	cfg := i.getRelayerConfig()
 
 	// in the first backend, we want to deploy a bunch of different tokens
 	// TODO: functionalize me.
@@ -375,6 +381,7 @@ func (i *IntegrationSuite) setupRelayer() {
 	}
 
 	// TODO: good chance we wanna leave actually starting this up to the indiividual test.
+	var err error
 	i.relayer, err = service.NewRelayer(i.GetTestContext(), i.metrics, cfg)
 	i.NoError(err)
 	go func() {
@@ -384,5 +391,21 @@ func (i *IntegrationSuite) setupRelayer() {
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
 	i.NoError(err)
 	i.store, err = connect.Connect(i.GetTestContext(), dbType, cfg.Database.DSN, i.metrics)
+	i.NoError(err)
+}
+
+func (i *IntegrationSuite) setupGuard() {
+	cfg := i.getRelayerConfig()
+
+	var err error
+	i.guard, err = guardService.NewGuard(i.GetTestContext(), i.metrics, cfg)
+	i.NoError(err)
+	go func() {
+		err = i.guard.Start(i.GetTestContext())
+	}()
+
+	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
+	i.NoError(err)
+	i.guardStore, err = guardConnect.Connect(i.GetTestContext(), dbType, cfg.Database.DSN, i.metrics)
 	i.NoError(err)
 }

@@ -19,6 +19,8 @@ import (
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
+	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
@@ -36,8 +38,10 @@ type IntegrationSuite struct {
 	omniClient    omnirpcClient.RPCClient
 	metrics       metrics.Handler
 	store         reldb.Service
+	guardStore    guarddb.Service
 	apiServer     string
 	relayer       *service.Relayer
+	guard         *guardService.Guard
 	relayerWallet wallet.Wallet
 	userWallet    wallet.Wallet
 }
@@ -82,6 +86,7 @@ func (i *IntegrationSuite) SetupTest() {
 	// setup the api server
 	i.setupQuoterAPI()
 	i.setupRelayer()
+	i.setupGuard()
 }
 
 // getOtherBackend gets the backend that is not the current one. This is a helper
@@ -239,6 +244,13 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		originPendingRebals, err := i.store.GetPendingRebalances(i.GetTestContext(), uint64(i.originBackend.GetChainID()))
 		i.NoError(err)
 		return len(originPendingRebals) > 0
+	})
+
+	i.Eventually(func() bool {
+		// verify that the guard has marked the tx as validated
+		results, err := i.guardStore.GetPendingProvensByStatus(i.GetTestContext(), guarddb.Validated)
+		i.NoError(err)
+		return len(results) == 1
 	})
 }
 
