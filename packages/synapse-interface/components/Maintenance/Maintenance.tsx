@@ -48,13 +48,14 @@ const useMaintenanceData = () => {
     ? pausedChainsData?.map((pause: ChainPause) => {
         return {
           ...pause,
+          startTimeBanner: new Date(pause.startTimeBanner),
           startTimePauseChain: new Date(pause.startTimePauseChain),
           endTimePauseChain: pause.endTimePauseChain
             ? new Date(pause.endTimePauseChain)
             : null,
-          bannerMessage: pause.bannerMessage,
-          inputWarningMessage: pause.inputWarningMessage,
-          progressBarMessage: pause.progressBarMessage,
+          bannerMessage: <p className="text-left">{pause.bannerMessage}</p>,
+          inputWarningMessage: <p>{pause.inputWarningMessage}</p>,
+          progressBarMessage: <p>{pause.progressBarMessage}</p>,
         }
       })
     : []
@@ -85,11 +86,9 @@ const useMaintenanceData = () => {
 export const MaintenanceBanners = () => {
   const { pausedChainsList } = useMaintenanceData()
 
-  console.log('pausedChainsList: ', pausedChainsList)
-
   return (
     <>
-      {PAUSED_CHAINS.map((event) => {
+      {pausedChainsList.map((event) => {
         return (
           <MaintenanceBanner
             id={event.id}
@@ -109,6 +108,7 @@ export const MaintenanceWarningMessages = ({
 }: {
   type: 'Bridge' | 'Swap'
 }) => {
+  const { pausedChainsList } = useMaintenanceData()
   const { fromChainId: bridgeFromChainId, toChainId: bridgeToChainId } =
     useBridgeState()
   const { swapChainId } = useSwapState()
@@ -116,7 +116,7 @@ export const MaintenanceWarningMessages = ({
   if (type === 'Bridge') {
     return (
       <>
-        {PAUSED_CHAINS.map((event) => {
+        {pausedChainsList.map((event) => {
           return (
             <MaintenanceWarningMessage
               fromChainId={bridgeFromChainId}
@@ -135,7 +135,7 @@ export const MaintenanceWarningMessages = ({
   } else if (type === 'Swap') {
     return (
       <>
-        {PAUSED_CHAINS.map((event) => {
+        {pausedChainsList.map((event) => {
           return (
             <MaintenanceWarningMessage
               fromChainId={swapChainId}
@@ -165,12 +165,13 @@ export const useMaintenanceCountdownProgresses = ({
 }: {
   type: 'Bridge' | 'Swap'
 }) => {
+  const { pausedChainsList } = useMaintenanceData()
   const { fromChainId: bridgeFromChainId, toChainId: bridgeToChainId } =
     useBridgeState()
   const { swapChainId } = useSwapState()
 
   if (type === 'Bridge') {
-    return PAUSED_CHAINS.map((event) => {
+    return pausedChainsList.map((event) => {
       return useMaintenanceCountdownProgress({
         fromChainId: bridgeFromChainId,
         toChainId: bridgeToChainId,
@@ -183,7 +184,7 @@ export const useMaintenanceCountdownProgresses = ({
       })
     })
   } else if (type === 'Swap') {
-    return PAUSED_CHAINS.map((event) => {
+    return pausedChainsList.map((event) => {
       return useMaintenanceCountdownProgress({
         fromChainId: swapChainId,
         toChainId: null,
