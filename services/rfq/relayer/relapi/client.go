@@ -109,6 +109,7 @@ type WithdrawResponse struct {
 	Nonce uint64 `json:"nonce"`
 }
 
+// Withdraw withdraws an ERC20 or Ether from the relayer.
 func (r *relayerClient) Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error) {
 	var res WithdrawResponse
 	resp, err := r.client.R().SetContext(ctx).
@@ -125,10 +126,12 @@ func (r *relayerClient) Withdraw(ctx context.Context, req *WithdrawRequest) (*Wi
 	return &res, nil
 }
 
+// TxHashByNonceResponse is the request for getting a transaction hash by nonce.
 type TxHashByNonceResponse struct {
 	Hash string `json:"withdrawTxHash"`
 }
 
+// GetTxByNonceRequest is the request for getting a transaction hash by nonce.
 func (r *relayerClient) GetTxHashByNonce(ctx context.Context, req *GetTxByNonceRequest) (*TxHashByNonceResponse, error) {
 	var res TxHashByNonceResponse
 

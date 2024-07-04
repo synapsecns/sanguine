@@ -121,7 +121,7 @@ var withdrawCommand = &cli.Command{
 			return fmt.Errorf("could not start relayer: %w", err)
 		}
 
-		var clientErr error
+		var errClient error
 		var status *relapi.TxHashByNonceResponse
 		err = spinner.New().
 			Title("Waiting for tx...").
@@ -133,14 +133,14 @@ var withdrawCommand = &cli.Command{
 						Nonce:   res.Nonce,
 					})
 				if err != nil {
-					clientErr = fmt.Errorf("could not login: %w", err)
+					errClient = fmt.Errorf("could not login: %w", err)
 				}
 			}).Run()
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("could not get withdrawal tx hash: %w", err)
 		}
-		if clientErr != nil {
-			panic(clientErr)
+		if errClient != nil {
+			return fmt.Errorf("client error: could not get withdrawal tx hash: %w", err)
 		}
 
 		fmt.Printf("Withdraw Tx Hash: %s\n", status.Hash)

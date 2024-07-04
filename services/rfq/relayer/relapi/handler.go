@@ -212,11 +212,13 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"nonce": nonce})
 }
 
+// GetTxByNonceRequest is the request for getting a transaction hash by nonce.
 type GetTxByNonceRequest struct {
 	ChainID uint32 `json:"chain_id"`
 	Nonce   uint64 `json:"nonce"`
 }
 
+// GetTxHashByNonce gets the transaction hash by submitter nonce.
 func (h *Handler) GetTxHashByNonce(c *gin.Context) {
 	chainIDStr := c.Query("chain_id")
 	nonceStr := c.Query("nonce")
