@@ -134,14 +134,15 @@ func (r *relayerClient) GetTxHashByNonce(ctx context.Context, req *GetTxByNonceR
 
 	resp, err := r.client.R().SetContext(ctx).
 		SetResult(&res).
-		SetBody(req).
+		SetQueryParam("chain_id", fmt.Sprintf("%d", req.ChainID)).
+		SetQueryParam("nonce", fmt.Sprintf("%d", req.Nonce)).
 		Get(getTxHashByNonceRoute)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tx hash by nonce: %w", err)
 	}
 	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("wahhh %s", resp.String())
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
 	}
 
 	return &res, nil

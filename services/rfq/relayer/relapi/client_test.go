@@ -152,7 +152,7 @@ func (c *RelayerClientSuite) TestGetTxHash() {
 		txHashRes, err = c.Client.GetTxHashByNonce(
 			c.GetTestContext(),
 			&relapi.GetTxByNonceRequest{
-				ChainID: big.NewInt(int64(c.underlying.originChainID)),
+				ChainID: uint32(backend.GetChainID()),
 				Nonce:   withdrawRes.Nonce,
 			},
 		)

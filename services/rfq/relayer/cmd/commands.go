@@ -129,7 +129,7 @@ var withdrawCommand = &cli.Command{
 				status, err = client.GetTxHashByNonce(
 					c.Context,
 					&relapi.GetTxByNonceRequest{
-						ChainID: chainID,
+						ChainID: uint32(chainID.Uint64()),
 						Nonce:   res.Nonce,
 					})
 				if err != nil {

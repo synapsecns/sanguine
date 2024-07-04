@@ -213,22 +213,29 @@ func (h *Handler) Withdraw(c *gin.Context) {
 }
 
 type GetTxByNonceRequest struct {
-	ChainID *big.Int `json:"chain_id"`
-	Nonce   uint64   `json:"nonce"`
+	ChainID uint32 `json:"chain_id"`
+	Nonce   uint64 `json:"nonce"`
 }
 
 func (h *Handler) GetTxHashByNonce(c *gin.Context) {
-	var req GetTxByNonceRequest
+	chainIDStr := c.Query("chain_id")
+	nonceStr := c.Query("nonce")
 
-	// bind the request body to the struct
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "req": req})
+	chainID, ok := new(big.Int).SetString(chainIDStr, 10)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid chainID", "chainID": chainID.String()})
 		return
 	}
 
-	tx, err := h.submitter.GetSubmissionStatus(c, req.ChainID, req.Nonce)
+	nonce, ok := new(big.Int).SetString(nonceStr, 10)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid nonce"})
+		return
+	}
+
+	tx, err := h.submitter.GetSubmissionStatus(c, chainID, nonce.Uint64())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError-1, gin.H{"error": fmt.Sprintf("could not get tx hash: %s", err.Error())})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not get tx hash: %s", err.Error())})
 		return
 	}
 
