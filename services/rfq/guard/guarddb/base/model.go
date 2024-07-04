@@ -1,7 +1,6 @@
 package base
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"math/big"
@@ -50,28 +49,6 @@ func FromPendingProven(proven guarddb.PendingProven) PendingProvenModel {
 		TransactionID: hexutil.Encode(proven.TransactionID[:]),
 		TxHash:        proven.TxHash.Hex(),
 		Status:        proven.Status,
-	}
-}
-
-var emptyHash = common.HexToHash("").Hex()
-
-func hashToNullString(h common.Hash) sql.NullString {
-	if h.Hex() == emptyHash {
-		return sql.NullString{Valid: false}
-	}
-	return sql.NullString{
-		String: h.Hex(),
-		Valid:  true,
-	}
-}
-
-func stringToNullString(s string) sql.NullString {
-	if s == "" {
-		return sql.NullString{Valid: false}
-	}
-	return sql.NullString{
-		String: s,
-		Valid:  true,
 	}
 }
 
@@ -131,6 +108,7 @@ type BridgeRequestModel struct {
 	SendChainGas bool
 }
 
+// FromBridgeRequest converts a bridge request object to db model.
 func FromBridgeRequest(request guarddb.BridgeRequest) BridgeRequestModel {
 	return BridgeRequestModel{
 		TransactionID: hexutil.Encode(request.TransactionID[:]),
@@ -149,6 +127,7 @@ func FromBridgeRequest(request guarddb.BridgeRequest) BridgeRequestModel {
 	}
 }
 
+// ToBridgeRequest converts the bridge request db model to object.
 func (b BridgeRequestModel) ToBridgeRequest() (*guarddb.BridgeRequest, error) {
 	txID, err := hexutil.Decode(b.TransactionID)
 	if err != nil {

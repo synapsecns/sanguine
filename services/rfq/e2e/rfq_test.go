@@ -444,7 +444,7 @@ func (i *IntegrationSuite) TestDispute() {
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
-	// fetch the txID
+	// fetch the txid and raw request
 	var txID [32]byte
 	var rawRequest []byte
 	parser, err := fastbridge.NewParser(originFastBridge.Address())
@@ -457,8 +457,8 @@ func (i *IntegrationSuite) TestDispute() {
 			if !ok {
 				continue
 			}
-			switch event := parsedEvent.(type) {
-			case *fastbridge.FastBridgeBridgeRequested:
+			event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRequested)
+			if ok {
 				rawRequest = event.Request
 				txID = event.TransactionId
 				return true
