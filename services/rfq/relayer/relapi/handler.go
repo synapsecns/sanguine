@@ -225,7 +225,7 @@ func (h *Handler) GetTxHashByNonce(c *gin.Context) {
 
 	chainID, ok := new(big.Int).SetString(chainIDStr, 10)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid chainID", "chainID": chainID.String()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid chainID"})
 		return
 	}
 
