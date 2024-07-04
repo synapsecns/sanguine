@@ -13,15 +13,20 @@ interface ChainPause {
   pauseBridge: boolean
   pauseSwap: boolean
   startTimePauseChain: Date
-  endTimePauseChain: Date | null
+  endTimePauseChain: Date | null // If null, pause chain indefinitely.
   startTimeBanner: Date
-  endTimeBanner: Date | null
+  endTimeBanner: Date | null // If null, persist banner indefinitely.
   inputWarningMessage: string
   bannerMessage: JSX.Element
   progressBarMessage: string
   disableBanner: boolean
   disableWarning: boolean
   disableCountdown: boolean
+}
+
+interface BridgeModulePause {
+  chainId?: number // If undefined, pause bridge module for all chains.
+  bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 
 const useMaintenanceData = () => {
@@ -198,12 +203,6 @@ const getFurthestFutureDate = (
   if (date1 === null) return date2
   if (date2 === null) return date1
   return date1 > date2 ? date1 : date2
-}
-
-/** Pause Bridge Modules */
-interface BridgeModulePause {
-  chainId?: number // Will pause for all chains if undefined
-  bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 
 function isValidBridgeModule(

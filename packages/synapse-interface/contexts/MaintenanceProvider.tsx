@@ -5,10 +5,9 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 const MaintenanceContext = createContext(null)
 
 export const MaintenanceProvider = ({ children }) => {
-  const time = useIntervalTimer(60000)
   const fetchMaintenanceData = getSynapsePauseData()
-
   fetchMaintenanceData()
+  useIntervalTimer(60000)
 
   return (
     <MaintenanceContext.Provider value={null}>
