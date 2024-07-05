@@ -46,6 +46,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/bulk_quotes": {
+            "put": {
+                "description": "upsert bulk quotes from relayer.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Upsert quotes",
+                "parameters": [
+                    {
+                        "description": "query params",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PutBulkQuotesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/quotes": {
             "get": {
                 "description": "get quotes from all relayers.",
@@ -181,6 +212,17 @@ const docTemplate = `{
                 "updated_at": {
                     "description": "UpdatedAt is the time that the quote was last upserted",
                     "type": "string"
+                }
+            }
+        },
+        "model.PutBulkQuotesRequest": {
+            "type": "object",
+            "properties": {
+                "quotes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.PutQuoteRequest"
+                    }
                 }
             }
         },
