@@ -38,6 +38,8 @@ type Guard struct {
 }
 
 // NewGuard creates a new Guard.
+//
+//nolint:cyclop
 func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfig.Config) (*Guard, error) {
 	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
 	chainListeners := make(map[int]listener.ContractListener)
@@ -102,8 +104,6 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 	}, nil
 }
 
-const defaultDBInterval = 5
-
 // Start starts the guard.
 func (g *Guard) Start(ctx context.Context) (err error) {
 	group, ctx := errgroup.WithContext(ctx)
@@ -146,7 +146,7 @@ func (g *Guard) runDBSelector(ctx context.Context) (err error) {
 	}
 }
 
-func (g *Guard) startChainIndexers(ctx context.Context) error {
+func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for chainID := range g.cfg.GetChains() {
@@ -160,9 +160,16 @@ func (g *Guard) startChainIndexers(ctx context.Context) error {
 			return nil
 		})
 	}
+
+	err = group.Wait()
+	if err != nil {
+		return fmt.Errorf("could not run chain indexers")
+	}
+
 	return nil
 }
 
+//nolint:cyclop
 func (g Guard) runChainIndexer(ctx context.Context, chainID int) (err error) {
 	chainListener := g.chainListeners[chainID]
 
@@ -222,6 +229,10 @@ func (g Guard) runChainIndexer(ctx context.Context, chainID int) (err error) {
 
 func (g *Guard) processDB(ctx context.Context) (err error) {
 	provens, err := g.db.GetPendingProvensByStatus(ctx, guarddb.ProveCalled)
+	if err != nil {
+		return fmt.Errorf("could not get pending provens: %w", err)
+	}
+
 	for _, proven := range provens {
 		err := g.handleProveCalled(ctx, proven)
 		if err != nil {

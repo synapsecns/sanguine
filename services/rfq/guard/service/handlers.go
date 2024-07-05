@@ -31,7 +31,7 @@ func (g *Guard) handleBridgeRequestedLog(parentCtx context.Context, req *fastbri
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	originClient, err := g.client.GetChainClient(ctx, int(chainID))
+	originClient, err := g.client.GetChainClient(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not get correct omnirpc client: %w", err)
 	}
@@ -126,6 +126,7 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 	}
 	span.SetAttributes(attribute.Bool("valid", valid))
 
+	//nolint:nestif
 	if valid {
 		// mark as validated
 		err = g.db.UpdatePendingProvenStatus(ctx, proven.TransactionID, guarddb.Validated)
@@ -189,8 +190,8 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 			continue
 		}
 
-		switch event := parsedEvent.(type) {
-		case *fastbridge.FastBridgeBridgeRelayed:
+		event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRelayed)
+		if ok {
 			return relayMatchesBridgeRequest(event, bridgeRequest), nil
 		}
 	}

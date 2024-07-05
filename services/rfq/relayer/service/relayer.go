@@ -336,7 +336,7 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	return nil
 }
 
-// startGuard starts the guard, if specified
+// startGuard starts the guard, if specified.
 func (r *Relayer) startGuard(ctx context.Context) (err error) {
 	if !r.cfg.UseEmbeddedGuard {
 		return nil
