@@ -611,7 +611,7 @@ func (m *Manager) submitQuote(ctx context.Context, quote model.PutQuoteRequest) 
 	return nil
 }
 
-// Submits a single quote.
+// Submits multiple quotes.
 func (m *Manager) submitBulkQuotes(ctx context.Context, quotes []model.PutQuoteRequest) error {
 	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
 	defer quoteCancel()
