@@ -160,6 +160,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	quotesPut := engine.Group(QuoteRoute)
 	quotesPut.Use(r.AuthMiddleware())
 	quotesPut.PUT("", h.ModifyQuote)
+	quotesPut.PUT("/bulk", h.ModifyBulkQuotes)
 	ackPut := engine.Group(AckRoute)
 	ackPut.Use(r.AuthMiddleware())
 	ackPut.PUT("", r.PutRelayAck)
