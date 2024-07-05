@@ -26,6 +26,7 @@ import (
 // It provides methods for creating, retrieving and updating quotes.
 type AuthenticatedClient interface {
 	PutQuote(ctx context.Context, q *model.PutQuoteRequest) error
+	PutBulkQuotes(ctx context.Context, q *model.PutBulkQuotesRequest) error
 	PutRelayAck(ctx context.Context, req *model.PutAckRequest) (*model.PutRelayAckResponse, error)
 	UnauthenticatedClient
 }
@@ -118,6 +119,19 @@ func (c *clientImpl) PutQuote(ctx context.Context, q *model.PutQuoteRequest) err
 		SetContext(ctx).
 		SetBody(q).
 		Put(rest.QuoteRoute)
+
+	// TODO: Figure out if there's anything to do with the response, right now it's result: Status Code 200 OK
+	_ = res
+
+	return err
+}
+
+// PutBulkQuotes puts multiple new quotes in the RFQ quoting API.
+func (c *clientImpl) PutBulkQuotes(ctx context.Context, q *model.PutBulkQuotesRequest) error {
+	res, err := c.rClient.R().
+		SetContext(ctx).
+		SetBody(q).
+		Put(rest.BulkQuotesRoute)
 
 	// TODO: Figure out if there's anything to do with the response, right now it's result: Status Code 200 OK
 	_ = res

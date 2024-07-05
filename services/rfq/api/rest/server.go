@@ -142,6 +142,8 @@ func NewAPI(
 const (
 	// QuoteRoute is the API endpoint for handling quote related requests.
 	QuoteRoute = "/quotes"
+	// BulkQuotesRoute is the API endpoint for handling bulk quote related requests.
+	BulkQuotesRoute = "/bulk_quotes"
 	// AckRoute is the API endpoint for handling relay ack related requests.
 	AckRoute      = "/ack"
 	cacheInterval = time.Minute
@@ -160,7 +162,9 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	quotesPut := engine.Group(QuoteRoute)
 	quotesPut.Use(r.AuthMiddleware())
 	quotesPut.PUT("", h.ModifyQuote)
-	quotesPut.PUT("/bulk", h.ModifyBulkQuotes)
+	bulkQuotesPut := engine.Group(BulkQuotesRoute)
+	bulkQuotesPut.Use(r.AuthMiddleware())
+	bulkQuotesPut.PUT("", h.ModifyBulkQuotes)
 	ackPut := engine.Group(AckRoute)
 	ackPut.Use(r.AuthMiddleware())
 	ackPut.PUT("", r.PutRelayAck)
