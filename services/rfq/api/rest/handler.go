@@ -2,6 +2,7 @@ package rest
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"net/http"
 	"strconv"
 
@@ -13,13 +14,15 @@ import (
 
 // Handler is the REST API handler.
 type Handler struct {
-	db db.APIDB
+	db  db.APIDB
+	cfg config.Config
 }
 
 // NewHandler creates a new REST API handler.
-func NewHandler(db db.APIDB) *Handler {
+func NewHandler(db db.APIDB, cfg config.Config) *Handler {
 	return &Handler{
-		db: db, // Store the database connection in the handler
+		db:  db, // Store the database connection in the handler
+		cfg: cfg,
 	}
 }
 
@@ -213,4 +216,23 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 		quotes[i] = model.QuoteResponseFromDbQuote(dbQuote)
 	}
 	c.JSON(http.StatusOK, quotes)
+}
+
+// GetContracts retrieves all contracts api is currently enabled on.
+// GET /contracts.
+// PingExample godoc
+// @Summary Get contract addresses
+// @Description get quotes from all relayers.
+// @Tags quotes
+// @Accept json
+// @Produce json
+// @Success 200 {array} model.GetContractsResponse
+// @Router /contracts [get].
+func (h *Handler) GetContracts(c *gin.Context) {
+	// Convert quotes from db model to api model
+	contracts := make(map[uint32]string)
+	for chainID, address := range h.cfg.Bridges {
+		contracts[chainID] = address
+	}
+	c.JSON(http.StatusOK, model.GetContractsResponse{Contracts: contracts})
 }
