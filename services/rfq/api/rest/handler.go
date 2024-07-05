@@ -55,7 +55,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		return
 	}
 
-	dbQuote, err := parseDBQuote(putRequest, relayerAddr)
+	dbQuote, err := parseDBQuote(*putRequest, relayerAddr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -102,7 +102,7 @@ func (h *Handler) ModifyBulkQuotes(c *gin.Context) {
 
 	dbQuotes := []*db.Quote{}
 	for _, quoteReq := range putRequest.Quotes {
-		dbQuote, err := parseDBQuote(&quoteReq, relayerAddr)
+		dbQuote, err := parseDBQuote(quoteReq, relayerAddr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid quote request"})
 			return
@@ -118,18 +118,18 @@ func (h *Handler) ModifyBulkQuotes(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func parseDBQuote(putRequest *model.PutQuoteRequest, relayerAddr interface{}) (*db.Quote, error) {
+func parseDBQuote(putRequest model.PutQuoteRequest, relayerAddr interface{}) (*db.Quote, error) {
 	destAmount, err := decimal.NewFromString(putRequest.DestAmount)
 	if err != nil {
-		return nil, fmt.Errorf("Invalid DestAmount")
+		return nil, fmt.Errorf("invalid DestAmount")
 	}
 	maxOriginAmount, err := decimal.NewFromString(putRequest.MaxOriginAmount)
 	if err != nil {
-		return nil, fmt.Errorf("Invalid MaxOriginAmount")
+		return nil, fmt.Errorf("invalid MaxOriginAmount")
 	}
 	fixedFee, err := decimal.NewFromString(putRequest.FixedFee)
 	if err != nil {
-		return nil, fmt.Errorf("Invalid FixedFee")
+		return nil, fmt.Errorf("invalid FixedFee")
 	}
 	// nolint: forcetypeassert
 	return &db.Quote{
