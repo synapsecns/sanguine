@@ -88,12 +88,18 @@ jobs:
           export DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_ENV
           echo "::set-output name=url::$DEPLOY_URL"
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV }}
+          GH_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
       - name: Deploy to Vercel (Output Prod)
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
         run: |
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
           vercel build --token=${{ secrets.VERCEL_TOKEN }} --prod
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --prod
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV }}
+          GH_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
 
       - name: Update PR Description
         if: ${{ github.event_name == 'pull_request' && format('refs/heads/{0}', github.event.repository.default_branch) != github.ref }}
