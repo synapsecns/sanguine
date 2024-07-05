@@ -329,6 +329,14 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					return
 				}
 
+				if rawRequest.OriginChainID != uint32(originChainID) {
+					_, err := ctx.Response().Reply("origin chain id does not match")
+					if err != nil {
+						log.Println(err)
+					}
+					return
+				}
+
 				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(originChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 					return fastBridgeHandle.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
 				})
