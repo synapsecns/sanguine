@@ -51,6 +51,13 @@ definitions:
         description: UpdatedAt is the time that the quote was last upserted
         type: string
     type: object
+  model.PutBulkQuotesRequest:
+    properties:
+      quotes:
+        items:
+          $ref: '#/definitions/model.PutQuoteRequest'
+        type: array
+    type: object
   model.PutQuoteRequest:
     properties:
       dest_amount:
@@ -95,6 +102,26 @@ paths:
       summary: Relay ack
       tags:
       - ack
+  /bulk_quotes:
+    put:
+      consumes:
+      - application/json
+      description: upsert bulk quotes from relayer.
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PutBulkQuotesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Upsert quotes
+      tags:
+      - quotes
   /contracts:
     get:
       consumes:

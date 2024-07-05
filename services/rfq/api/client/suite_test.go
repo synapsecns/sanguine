@@ -58,6 +58,15 @@ func NewTestClientSuite(tb testing.TB) *ClientSuite {
 func (c *ClientSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
+	metricsHandler := metrics.NewNullHandler()
+	c.handler = metricsHandler
+	dbType, err := dbcommon.DBTypeFromString("sqlite")
+	c.Require().NoError(err)
+	// TODO use temp file / in memory sqlite3 to not create in directory files
+	testDB, err := sql.Connect(c.GetSuiteContext(), dbType, filet.TmpDir(c.T(), ""), metricsHandler)
+	c.Require().NoError(err)
+	c.database = testDB
+
 	testOmnirpc := omnirpcHelper.NewOmnirpcServer(c.GetTestContext(), c.T(), c.omniRPCTestBackends...)
 	omniRPCClient := omniClient.NewOmnirpcClient(testOmnirpc, c.handler, omniClient.WithCaptureReqRes())
 	c.omniRPCClient = omniRPCClient
@@ -175,14 +184,6 @@ func (c *ClientSuite) SetupSuite() {
 		c.T().Fatal(err)
 	}
 
-	dbType, err := dbcommon.DBTypeFromString("sqlite")
-	c.Require().NoError(err)
-	metricsHandler := metrics.NewNullHandler()
-	c.handler = metricsHandler
-	// TODO use temp file / in memory sqlite3 to not create in directory files
-	testDB, err := sql.Connect(c.GetSuiteContext(), dbType, filet.TmpDir(c.T(), ""), metricsHandler)
-	c.Require().NoError(err)
-	c.database = testDB
 	// setup config
 }
 

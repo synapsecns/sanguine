@@ -3,6 +3,7 @@ package base
 import (
 	"context"
 	"fmt"
+
 	"gorm.io/gorm/clause"
 
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
@@ -60,6 +61,19 @@ func (s *Store) UpsertQuote(ctx context.Context, quote *db.Quote) error {
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not update quote: %w", dbTx.Error)
+	}
+	return nil
+}
+
+// UpsertQuotes inserts multiple quotes into the database or updates existing ones.
+func (s *Store) UpsertQuotes(ctx context.Context, quotes []*db.Quote) error {
+	dbTx := s.DB().WithContext(ctx).
+		Clauses(clause.OnConflict{
+			UpdateAll: true,
+		}).Create(quotes)
+
+	if dbTx.Error != nil {
+		return fmt.Errorf("could not update quotes: %w", dbTx.Error)
 	}
 	return nil
 }
