@@ -232,5 +232,5 @@ func getStatus(resp *resty.Response) string {
 	if resp == nil {
 		return "http status unavailable"
 	}
-	return getStatus(resp)
+	return resp.Status()
 }

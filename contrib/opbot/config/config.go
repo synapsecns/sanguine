@@ -26,7 +26,7 @@ type Config struct {
 	// RFQApiURL is the URL of the RFQ API.
 	RFQApiURL string `yaml:"rfq_api_url"`
 	// OmniRPCURL is the URL of the Omni RPC.
-	OmniRPCURL string `yaml:"omni_rpc_url"`
+	OmniRPCURL string `yaml:"omnirpc_url"`
 	// Signer is the signer config.
 	Signer config.SignerConfig `yaml:"signer"`
 	// SubmitterConfig is the submitter config.

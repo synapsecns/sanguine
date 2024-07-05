@@ -3,6 +3,7 @@
 package botmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -260,13 +261,33 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			contracts, err := client.GetRFQContracts(ctx.Context())
 			if err != nil {
 				log.Printf("error fetching rfq contracts: %v\n", err)
+				_, err = ctx.Response().Reply("error fetching rfq contracts")
+				if err != nil {
+					return
+				}
 				return
 			}
 
 			tx := stripLinks(ctx.Request().Param("tx"))
-			originChainIDStr := ctx.Request().Param("origin_chainid")
 
-			originChainID, err := strconv.Atoi(originChainIDStr)
+			if len(tx) == 0 {
+				_, err := ctx.Response().Reply("please provide a tx hash")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+
+			originChainIDStr := ctx.Request().Param("origin_chainid")
+			if len(originChainIDStr) == 0 {
+				_, err := ctx.Response().Reply("please provide an origin chain id")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+
+			originChainID, err := strconv.Atoi(convertChainName(originChainIDStr))
 			if err != nil {
 				_, err := ctx.Response().Reply("origin_chainid must be a number")
 				if err != nil {
@@ -298,14 +319,18 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 
 			for _, relayer := range b.cfg.RelayerURLS {
 				relClient := relapi.NewRelayerClient(b.handler, relayer)
-				qr, err := relClient.GetQuoteRequestByTXID(ctx.Context(), tx)
+
+				rawRequest, err := getQuoteRequest(ctx.Context(), relClient, tx)
 				if err != nil {
-					log.Printf("error fetching quote request: %v\n", err)
-					continue
+					_, err := ctx.Response().Reply("error fetching quote request")
+					if err != nil {
+						log.Println(err)
+					}
+					return
 				}
 
 				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(originChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					return fastBridgeHandle.Refund(transactor, common.Hex2Bytes(qr.QuoteRequestRaw))
+					return fastBridgeHandle.Refund(transactor, rawRequest)
 				})
 				if err != nil {
 					log.Printf("error submitting refund: %v\n", err)
@@ -346,4 +371,31 @@ func toTXSlackLink(txHash string, chainID uint32) string {
 func stripLinks(input string) string {
 	linkRegex := regexp.MustCompile(`<https?://[^|>]+\|([^>]+)>`)
 	return linkRegex.ReplaceAllString(input, "$1")
+}
+
+// convertChainName detects if the string contains letters and if it does, tries to convert it to a chain id.
+// otherwise return the original string
+func convertChainName(input string) string {
+	res := chaindata.ChainNameToChainID(input)
+	if res != 0 {
+		return strconv.Itoa(int(res))
+	}
+	return input
+}
+
+func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) ([]byte, error) {
+	// at this point tx can be a txid or a has, we try both
+	txRequest, err := client.GetQuoteRequestStatusByTxHash(ctx, tx)
+	if err == nil {
+		// override tx with txid
+		tx = txRequest.TxID
+	}
+
+	// look up quote request
+	qr, err := client.GetQuoteRequestByTXID(ctx, tx)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching quote request: %w", err)
+	}
+
+	return common.Hex2Bytes(qr.QuoteRequestRaw), nil
 }
