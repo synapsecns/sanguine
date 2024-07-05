@@ -1,4 +1,4 @@
-import { fetchJSONData } from './fetchJsonData'
+import { fetchJSONData } from './fetchJSONData'
 
 const mockUrl =
   'https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-chains.json'
@@ -27,7 +27,7 @@ describe('fetchJSONData', () => {
   })
 
   test('retries the maximum number of times and fails', async () => {
-    const maxRetries = 5
+    const maxRetries = 3
     ;(fetch as jest.Mock).mockResolvedValue({
       ok: false,
       status: 500,

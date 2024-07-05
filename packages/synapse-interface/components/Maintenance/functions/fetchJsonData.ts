@@ -1,6 +1,6 @@
 export const fetchJSONData = async (url: string): Promise<any> => {
   // Configurable parameters
-  const maxRetries = 5 // maximum number of retries
+  const maxRetries = 3 // maximum number of retries
   const initialDelay = 1000 // initial delay in milliseconds
 
   // Helper function to delay for a given amount of time
