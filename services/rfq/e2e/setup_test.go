@@ -427,7 +427,7 @@ func (i *IntegrationSuite) setupGuard() {
 	}
 
 	var err error
-	i.guard, err = guardService.NewGuard(i.GetTestContext(), i.metrics, guardCfg)
+	i.guard, err = guardService.NewGuard(i.GetTestContext(), i.metrics, guardCfg, nil)
 	i.NoError(err)
 
 	dbType, err := dbcommon.DBTypeFromString(guardCfg.Database.Type)

@@ -32,7 +32,7 @@ var runCommand = &cli.Command{
 
 		metricsProvider := metrics.Get()
 
-		guard, err := service.NewGuard(c.Context, metricsProvider, cfg)
+		guard, err := service.NewGuard(c.Context, metricsProvider, cfg, nil)
 		if err != nil {
 			return fmt.Errorf("could not create guard: %w", err)
 		}

@@ -343,7 +343,7 @@ func (r *Relayer) startGuard(ctx context.Context) (err error) {
 	}
 
 	guardCfg := guardconfig.NewGuardConfigFromRelayer(r.cfg)
-	guard, err := serviceGuard.NewGuard(ctx, r.metrics, guardCfg)
+	guard, err := serviceGuard.NewGuard(ctx, r.metrics, guardCfg, r.submitter)
 	if err != nil {
 		return fmt.Errorf("could not create guard: %w", err)
 	}

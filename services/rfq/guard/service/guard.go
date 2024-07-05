@@ -40,7 +40,7 @@ type Guard struct {
 // NewGuard creates a new Guard.
 //
 //nolint:cyclop
-func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfig.Config) (*Guard, error) {
+func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfig.Config, txSubmitter submitter.TransactionSubmitter) (*Guard, error) {
 	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
 	chainListeners := make(map[int]listener.ContractListener)
 
@@ -86,12 +86,14 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		}
 	}
 
-	sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
-	if err != nil {
-		return nil, fmt.Errorf("could not get signer: %w", err)
+	// build submitter from config if one is not supplied
+	if txSubmitter == nil {
+		sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
+		if err != nil {
+			return nil, fmt.Errorf("could not get signer: %w", err)
+		}
+		txSubmitter = submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 	}
-
-	txSubmitter := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
 	return &Guard{
 		cfg:            cfg,
