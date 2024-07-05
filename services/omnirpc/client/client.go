@@ -58,9 +58,9 @@ func (c *rpcClient) GetClient(ctx context.Context, chainID *big.Int) (client.EVM
 
 func (c *rpcClient) GetEndpoint(chainID, confirmations int) (res string) {
 	defer func() {
-		res = strings.ReplaceAll(c.endpoint, "://", "TEMP_PROTOCOL")
-		res = strings.ReplaceAll(c.endpoint, "//", "/")
-		res = strings.ReplaceAll(c.endpoint, "TEMP_PROTOCOL", "://")
+		res = strings.ReplaceAll(res, "://", "TEMP_PROTOCOL")
+		res = strings.ReplaceAll(res, "//", "/")
+		res = strings.ReplaceAll(res, "TEMP_PROTOCOL", "://")
 	}()
 
 	if confirmations == 0 {

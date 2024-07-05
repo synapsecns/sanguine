@@ -337,6 +337,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					continue
 				}
 
+				// TODO: follow the lead of https://github.com/synapsecns/sanguine/pull/2845
 				_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
 				if err != nil {
 					log.Println(err)
