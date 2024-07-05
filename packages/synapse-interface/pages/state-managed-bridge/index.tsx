@@ -100,8 +100,6 @@ const StateManagedBridge = () => {
     BridgeMaintenanceWarningMessage,
   } = useMaintenance()
 
-  console.log('isBridgePaused: ', isBridgePaused)
-
   const [isApproved, setIsApproved] = useState<boolean>(false)
 
   const dispatch = useAppDispatch()
