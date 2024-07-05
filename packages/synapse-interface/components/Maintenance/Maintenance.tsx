@@ -123,6 +123,7 @@ export const useMaintenance = () => {
         currentDate
       )
 
+      if (!furthestDate) return currentChain
       return furthestFutureDate === furthestDate
         ? furthestPauseChain
         : currentChain
