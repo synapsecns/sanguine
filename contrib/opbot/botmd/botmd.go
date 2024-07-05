@@ -29,7 +29,7 @@ type Bot struct {
 }
 
 // NewBot creates a new bot server.
-func NewBot(handler metrics.Handler, cfg config.Config) Bot {
+func NewBot(handler metrics.Handler, cfg config.Config) *Bot {
 	server := slacker.NewClient(cfg.SlackBotToken, cfg.SlackAppToken)
 	bot := Bot{
 		handler: handler,
@@ -48,7 +48,7 @@ func NewBot(handler metrics.Handler, cfg config.Config) Bot {
 	bot.addMiddleware(bot.tracingMiddleware(), bot.metricsMiddleware())
 	bot.addCommands(bot.traceCommand(), bot.rfqLookupCommand(), bot.rfqRefund())
 
-	return bot
+	return &bot
 }
 
 func (b *Bot) addMiddleware(middlewares ...slacker.CommandMiddlewareHandler) {

@@ -144,7 +144,7 @@ const (
 	QuoteRoute = "/quotes"
 	// AckRoute is the API endpoint for handling relay ack related requests.
 	AckRoute = "/ack"
-	// ContractsRoute is the API endpoint for returning a list fo contracts
+	// ContractsRoute is the API endpoint for returning a list fo contracts.
 	ContractsRoute = "/contracts"
 	cacheInterval  = time.Minute
 )

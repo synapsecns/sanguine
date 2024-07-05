@@ -142,6 +142,7 @@ func (h *Handler) GetTxRetry(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// GetQuoteRequestByTxID gets the quote request by tx id.
 func (h *Handler) GetQuoteRequestByTxID(c *gin.Context) {
 	txIDStr := c.Query("id")
 	if txIDStr == "" {
@@ -167,7 +168,6 @@ func (h *Handler) GetQuoteRequestByTxID(c *gin.Context) {
 		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
 	}
 	c.JSON(http.StatusOK, resp)
-
 }
 
 // Withdraw withdraws tokens from the relayer.
