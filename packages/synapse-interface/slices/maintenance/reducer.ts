@@ -8,11 +8,13 @@ import {
 export interface MaintenanceState {
   pausedChainsData: ChainPause[]
   pausedModulesData: BridgeModulePause[]
+  isFetching: boolean
 }
 
 const initialState: MaintenanceState = {
   pausedChainsData: null,
   pausedModulesData: null,
+  isFetching: false,
 }
 
 export const maintenanceSlice = createSlice({
@@ -28,10 +30,13 @@ export const maintenanceSlice = createSlice({
     ) => {
       state.pausedModulesData = action.payload
     },
+    setIsFetching: (state, action: PayloadAction<boolean>) => {
+      state.isFetching = action.payload
+    },
   },
 })
 
-export const { setPausedChainsData, setPausedModulesData } =
+export const { setPausedChainsData, setPausedModulesData, setIsFetching } =
   maintenanceSlice.actions
 
 export default maintenanceSlice.reducer

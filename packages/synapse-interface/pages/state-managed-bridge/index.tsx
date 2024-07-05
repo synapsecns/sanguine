@@ -64,8 +64,10 @@ import { RootState } from '@/store/store'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
-import { useMaintenance } from '@/components/Maintenance/Maintenance'
-import { getBridgeModuleNames } from '@/components/Maintenance/Maintenance'
+import {
+  useMaintenance,
+  getBridgeModuleNames,
+} from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 
