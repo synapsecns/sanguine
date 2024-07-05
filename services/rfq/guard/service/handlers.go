@@ -140,7 +140,7 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 			return fmt.Errorf("could not get contract for chain: %d", bridgeRequest.Transaction.DestChainId)
 		}
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(proven.Origin)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-			tx, err = contract.Dispute(&bind.TransactOpts{Context: ctx}, proven.TransactionID)
+			tx, err = contract.Dispute(transactor, proven.TransactionID)
 			if err != nil {
 				return nil, fmt.Errorf("could not dispute: %w", err)
 			}
