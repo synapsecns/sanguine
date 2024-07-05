@@ -2,13 +2,12 @@ package metrics_test
 
 import (
 	"context"
-	"testing"
-
-	"github.com/alecthomas/assert"
+	"github.com/stretchr/testify/assert"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
+	"testing"
 )
 
 func TestSetupFromEnv(t *testing.T) {
