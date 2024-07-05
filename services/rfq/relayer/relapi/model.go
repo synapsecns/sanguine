@@ -28,4 +28,8 @@ type PutRelayAckResponse struct {
 // GetQuoteRequestResponse is the response to a get quote request.
 type GetQuoteRequestResponse struct {
 	QuoteRequestRaw string `json:"quote_request"`
+	OriginChainID   uint32 `json:"origin_chain_id"`
+	DestChainID     uint32 `json:"dest_chain_id"`
+	OriginToken     string `json:"origin_token"`
+	DestToken       string `json:"dest_token"`
 }

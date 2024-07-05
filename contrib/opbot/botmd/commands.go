@@ -330,7 +330,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				}
 
 				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(originChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					return fastBridgeHandle.Refund(transactor, rawRequest)
+					return fastBridgeHandle.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
 				})
 				if err != nil {
 					log.Printf("error submitting refund: %v\n", err)
@@ -384,7 +384,7 @@ func convertChainName(input string) string {
 	return input
 }
 
-func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) ([]byte, error) {
+func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (*relapi.GetQuoteRequestResponse, error) {
 	// at this point tx can be a txid or a has, we try both
 	txRequest, err := client.GetQuoteRequestStatusByTxHash(ctx, tx)
 	if err == nil {
@@ -398,5 +398,5 @@ func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string
 		return nil, fmt.Errorf("error fetching quote request: %w", err)
 	}
 
-	return common.Hex2Bytes(qr.QuoteRequestRaw), nil
+	return qr, nil
 }

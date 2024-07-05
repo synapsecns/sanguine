@@ -166,6 +166,10 @@ func (h *Handler) GetQuoteRequestByTxID(c *gin.Context) {
 
 	resp := GetQuoteRequestResponse{
 		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
+		OriginChainID:   quoteRequest.Transaction.OriginChainId,
+		DestChainID:     quoteRequest.Transaction.DestChainId,
+		OriginToken:     quoteRequest.Transaction.OriginToken.Hex(),
+		DestToken:       quoteRequest.Transaction.DestToken.Hex(),
 	}
 	c.JSON(http.StatusOK, resp)
 }
