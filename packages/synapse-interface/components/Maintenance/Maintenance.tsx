@@ -8,7 +8,7 @@ import { isChainIncluded } from '@/utils/isChainIncluded'
 import { isValidBridgeModule } from './functions/isValidBridgeModule'
 import { getFurthestFutureDate } from './functions/getFurthestFutureDate'
 
-export interface ChainPause {
+interface ChainPause {
   id: string
   pausedFromChains: number[]
   pausedToChains: number[]
@@ -26,7 +26,7 @@ export interface ChainPause {
   disableCountdown: boolean
 }
 
-export interface BridgeModulePause {
+interface BridgeModulePause {
   chainId?: number // If undefined, pause bridge module for all chains.
   bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }

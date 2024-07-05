@@ -1,5 +1,4 @@
 import toast from 'react-hot-toast'
-import { isEmpty } from 'lodash'
 import { useEffect, useRef, useState } from 'react'
 import { commify } from '@ethersproject/units'
 import { Address, zeroAddress, isAddress } from 'viem'
@@ -96,7 +95,6 @@ const StateManagedBridge = () => {
 
   const {
     isBridgePaused,
-    pausedChainsList,
     pausedModulesList,
     BridgeMaintenanceProgressBar,
     BridgeMaintenanceWarningMessage,

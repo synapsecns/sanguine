@@ -2,27 +2,25 @@ import { useAppDispatch } from '@/store/hooks'
 import {
   setPausedChainsData,
   setPausedModulesData,
-  setIsFetching,
 } from '@/slices/maintenance/reducer'
-import { fetchJSONData } from './fetchJsonData'
-import { useMaintenanceState } from '@/slices/maintenance/hooks'
+import { fetchJSONData } from './fetchJSONData'
+import pausedChains from '@/public/pauses/v1/paused-chains.json'
+import pausedBridgeModules from '@/public/pauses/v1/paused-bridge-modules.json'
 
 export const PAUSED_CHAINS_URL =
-  'https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-chains.json'
+  'https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-chainse.json'
 export const PAUSED_MODULES_URL =
-  'https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
+  'https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-bridge-modulese.json'
 
-export const useSynapsePauseData = () => {
+let isFetching = false
+
+export const getSynapsePauseData = () => {
   const dispatch = useAppDispatch()
-  const { isFetching } = useMaintenanceState()
-
-  const startFetching = () => dispatch(setIsFetching(true))
-  const stopFetching = () => dispatch(setIsFetching(false))
 
   const fetchAndStoreData = async () => {
     if (isFetching) return
     try {
-      startFetching()
+      isFetching = true
 
       const pausedChainsData = await fetchJSONData(PAUSED_CHAINS_URL)
       const pausedModulesData = await fetchJSONData(PAUSED_MODULES_URL)
@@ -30,10 +28,17 @@ export const useSynapsePauseData = () => {
       dispatch(setPausedChainsData(pausedChainsData))
       dispatch(setPausedModulesData(pausedModulesData))
     } catch (error) {
-      console.error('Failed to fetch paused chains/modules: ', error)
+      console.error(
+        'Using local source, failed to fetch paused chains/modules: ',
+        error
+      )
+
+      /** Read local source if fetch fails as backup */
+      dispatch(setPausedChainsData(pausedChains))
+      dispatch(setPausedModulesData(pausedBridgeModules))
     } finally {
       setTimeout(() => {
-        stopFetching()
+        isFetching = false
       }, 1000)
     }
   }
