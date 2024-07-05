@@ -31,6 +31,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	}()
 
 	// create the directory to the store if it doesn't exist
+	//nolint: gosec.
 	err = os.MkdirAll(dbPath, os.ModePerm)
 	if err != nil {
 		return nil, fmt.Errorf("could not create sqlite store")

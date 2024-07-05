@@ -4,6 +4,7 @@ package botmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,7 +20,6 @@ import (
 	"log"
 	"math/big"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -246,28 +246,13 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 		}}
 }
 
+// nolint: gocognit, cyclop.
 func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 	return &slacker.CommandDefinition{
 		Command:     "refund <tx> <origin_chainid>",
 		Description: "refund a quote request",
 		Examples:    []string{"refund 0x1234"},
 		Handler: func(ctx *slacker.CommandContext) {
-			client, err := rfqClient.NewUnauthenticatedClient(b.handler, b.cfg.RFQApiURL)
-			if err != nil {
-				log.Printf("error creating rfq client: %v\n", err)
-				return
-			}
-
-			contracts, err := client.GetRFQContracts(ctx.Context())
-			if err != nil {
-				log.Printf("error fetching rfq contracts: %v\n", err)
-				_, err = ctx.Response().Reply("error fetching rfq contracts")
-				if err != nil {
-					return
-				}
-				return
-			}
-
 			tx := stripLinks(ctx.Request().Param("tx"))
 
 			if len(tx) == 0 {
@@ -287,36 +272,6 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			originChainID, err := strconv.Atoi(convertChainName(originChainIDStr))
-			if err != nil {
-				_, err := ctx.Response().Reply("origin_chainid must be a number")
-				if err != nil {
-					log.Println(err)
-				}
-				return
-			}
-
-			chainClient, err := b.rpcClient.GetChainClient(ctx.Context(), originChainID)
-			if err != nil {
-				log.Printf("error getting chain client: %v\n", err)
-				return
-			}
-
-			contractAddress, ok := contracts.Contracts[uint32(originChainID)]
-			if !ok {
-				_, err := ctx.Response().Reply("contract address not found")
-				if err != nil {
-					log.Println(err)
-				}
-				return
-			}
-
-			fastBridgeHandle, err := fastbridge.NewFastBridge(common.HexToAddress(contractAddress), chainClient)
-			if err != nil {
-				log.Printf("error creating fast bridge: %v\n", err)
-				return
-			}
-
 			for _, relayer := range b.cfg.RelayerURLS {
 				relClient := relapi.NewRelayerClient(b.handler, relayer)
 
@@ -329,16 +284,18 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					return
 				}
 
-				if rawRequest.OriginChainID != uint32(originChainID) {
-					_, err := ctx.Response().Reply("origin chain id does not match")
+				fastBridgeContract, err := b.makeFastBridge(ctx.Context(), rawRequest)
+				if err != nil {
+					_, err := ctx.Response().Reply(err.Error())
 					if err != nil {
 						log.Println(err)
 					}
 					return
 				}
 
-				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(originChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					return fastBridgeHandle.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
+				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+					//nolint: wrapcheck.
+					return fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
 				})
 				if err != nil {
 					log.Printf("error submitting refund: %v\n", err)
@@ -354,6 +311,34 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			}
 		},
 	}
+}
+
+func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestResponse) (*fastbridge.FastBridge, error) {
+	client, err := rfqClient.NewUnauthenticatedClient(b.handler, b.cfg.RFQApiURL)
+	if err != nil {
+		return nil, fmt.Errorf("error creating rfq client: %w", err)
+	}
+
+	contracts, err := client.GetRFQContracts(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching rfq contracts: %w", err)
+	}
+
+	chainClient, err := b.rpcClient.GetChainClient(ctx, int(req.OriginChainID))
+	if err != nil {
+		return nil, fmt.Errorf("error getting chain client: %w", err)
+	}
+
+	contractAddress, ok := contracts.Contracts[req.OriginChainID]
+	if !ok {
+		return nil, errors.New("contract address not found")
+	}
+
+	fastBridgeHandle, err := fastbridge.NewFastBridge(common.HexToAddress(contractAddress), chainClient)
+	if err != nil {
+		return nil, fmt.Errorf("error creating fast bridge: %w", err)
+	}
+	return fastBridgeHandle, nil
 }
 
 func toExplorerSlackLink(ogHash string) string {
@@ -380,16 +365,6 @@ func toTXSlackLink(txHash string, chainID uint32) string {
 func stripLinks(input string) string {
 	linkRegex := regexp.MustCompile(`<https?://[^|>]+\|([^>]+)>`)
 	return linkRegex.ReplaceAllString(input, "$1")
-}
-
-// convertChainName detects if the string contains letters and if it does, tries to convert it to a chain id.
-// otherwise return the original string
-func convertChainName(input string) string {
-	res := chaindata.ChainNameToChainID(input)
-	if res != 0 {
-		return strconv.Itoa(int(res))
-	}
-	return input
 }
 
 func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (*relapi.GetQuoteRequestResponse, error) {
