@@ -56,7 +56,7 @@ type Config struct {
 	// WithdrawalWhitelist is a list of addresses that are allowed to withdraw.
 	WithdrawalWhitelist []string `yaml:"withdrawal_whitelist"`
 	// UseEmbeddedGuard enables the embedded guard.
-	UseEmbeddedGuard bool `yaml:"use_embedded_guard"`
+	UseEmbeddedGuard bool `yaml:"enable_guard"`
 }
 
 // ChainConfig represents the configuration for a chain.

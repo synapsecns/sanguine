@@ -1,4 +1,4 @@
-// Package mysql provides a common interface for starting sql-lite databases
+// Package mysql provides a common interface for starting mysql databases
 package mysql
 
 import (
@@ -17,7 +17,7 @@ import (
 
 var logger = log.Logger("mysql-logger")
 
-// Store is the sqlite store. It extends the base store for sqlite specific queries.
+// Store is the mysql store. It extends the base store for mysql specific queries.
 type Store struct {
 	*base.Store
 }
