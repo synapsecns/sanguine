@@ -331,10 +331,11 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 	g, gctx := errgroup.WithContext(ctx)
 	quoteMtx := &sync.Mutex{}
 	quotes = []model.PutQuoteRequest{}
-	for keyTokenID, itemTokenIDs := range m.quotableTokens {
+	for k, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			//nolint:nestif
 			if tokenID == destTokenID {
+				keyTokenID := k
 				g.Go(func() error {
 					quote, quoteErr := m.generateQuote(gctx, keyTokenID, chainID, address, balance, destRFQAddr)
 					if quoteErr != nil {
