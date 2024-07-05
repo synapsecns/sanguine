@@ -292,7 +292,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					}
 					return
 				}
-
+				//nolint: wrapcheck.
 				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 					//nolint: wrapcheck.
 					return fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
