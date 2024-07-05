@@ -1,8 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import {
+  type ChainPause,
+  type BridgeModulePause,
+} from '@/components/Maintenance/Maintenance'
+
 export interface MaintenanceState {
-  pausedChainsData: any
-  pausedModulesData: any
+  pausedChainsData: ChainPause[]
+  pausedModulesData: BridgeModulePause[]
 }
 
 const initialState: MaintenanceState = {
@@ -14,10 +19,13 @@ export const maintenanceSlice = createSlice({
   name: 'maintenance',
   initialState,
   reducers: {
-    setPausedChainsData: (state, action: PayloadAction<any>) => {
+    setPausedChainsData: (state, action: PayloadAction<ChainPause[]>) => {
       state.pausedChainsData = action.payload
     },
-    setPausedModulesData: (state, action: PayloadAction<any>) => {
+    setPausedModulesData: (
+      state,
+      action: PayloadAction<BridgeModulePause[]>
+    ) => {
       state.pausedModulesData = action.payload
     },
   },

@@ -3,10 +3,10 @@ import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessag
 import { useEventCountdownProgressBar } from './components/EventCountdownProgressBar'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
-import { useMaintanceState } from '@/slices/maintenance/hooks'
+import { useMaintenanceState } from '@/slices/maintenance/hooks'
 import { isChainIncluded } from '@/utils/isChainIncluded'
 
-interface ChainPause {
+export interface ChainPause {
   id: string
   pausedFromChains: number[]
   pausedToChains: number[]
@@ -24,13 +24,13 @@ interface ChainPause {
   disableCountdown: boolean
 }
 
-interface BridgeModulePause {
+export interface BridgeModulePause {
   chainId?: number // If undefined, pause bridge module for all chains.
   bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 
 const useMaintenanceData = () => {
-  const { pausedChainsData, pausedModulesData } = useMaintanceState()
+  const { pausedChainsData, pausedModulesData } = useMaintenanceState()
 
   const pausedChainsList: ChainPause[] = pausedChainsData
     ? pausedChainsData?.map((pause: ChainPause) => {
