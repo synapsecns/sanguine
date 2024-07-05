@@ -65,7 +65,7 @@ import { getTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
-import { getBridgeModuleNames } from '@/components/Maintenance/getBridgeModuleNames'
+import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 
