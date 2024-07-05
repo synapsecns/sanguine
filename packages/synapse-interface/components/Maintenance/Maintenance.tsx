@@ -5,6 +5,8 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
 import { useMaintenanceState } from '@/slices/maintenance/hooks'
 import { isChainIncluded } from '@/utils/isChainIncluded'
+import { isValidBridgeModule } from './functions/isValidBridgeModule'
+import { getFurthestFutureDate } from './functions/getFurthestFutureDate'
 
 export interface ChainPause {
   id: string
@@ -193,27 +195,4 @@ export const useMaintenance = () => {
     SwapMaintenanceProgressBar,
     SwapMaintenanceWarningMessage,
   }
-}
-
-const getFurthestFutureDate = (
-  date1: Date | null,
-  date2: Date | null
-): Date | null => {
-  if (date1 === null && date2 === null) return null
-  if (date1 === null) return date2
-  if (date2 === null) return date1
-  return date1 > date2 ? date1 : date2
-}
-
-function isValidBridgeModule(
-  module: any
-): module is 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL' {
-  return ['SynapseBridge', 'SynapseRFQ', 'SynapseCCTP', 'ALL'].includes(module)
-}
-
-export function getBridgeModuleNames(module) {
-  if (module.bridgeModuleName === 'ALL') {
-    return ['SynapseRFQ', 'SynapseCCTP', 'SynapseBridge']
-  }
-  return [module.bridgeModuleName]
 }
