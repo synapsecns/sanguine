@@ -32,7 +32,7 @@ func defaultConfig() *config {
 
 var DefaultAttributes = func(serverName, route string, request *http.Request) []attribute.KeyValue {
 	attrs := []attribute.KeyValue{
-		semconv.HTTPMethodKey.String(request.Method),
+		semconv.HTTPRequestMethodKey.String(request.Method),
 	}
 
 	if serverName != "" {
