@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
@@ -324,26 +325,40 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 	if err != nil {
 		return nil, fmt.Errorf("error getting destination RFQ address: %w", err)
 	}
-
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
+
+	// generate quotes in parallel
+	g, gctx := errgroup.WithContext(ctx)
+	quoteMtx := &sync.Mutex{}
 	quotes = []model.PutQuoteRequest{}
-	for keyTokenID, itemTokenIDs := range m.quotableTokens {
+	for k, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			//nolint:nestif
 			if tokenID == destTokenID {
-				quote, quoteErr := m.generateQuote(ctx, keyTokenID, chainID, address, balance, destRFQAddr)
-				if quoteErr != nil {
-					// continue generating quotes even if one fails
-					span.AddEvent("error generating quote", trace.WithAttributes(
-						attribute.String("key_token_id", keyTokenID),
-						attribute.String("error", quoteErr.Error()),
-					))
-					continue
-				}
-				quotes = append(quotes, *quote)
+				keyTokenID := k
+				g.Go(func() error {
+					quote, quoteErr := m.generateQuote(gctx, keyTokenID, chainID, address, balance, destRFQAddr)
+					if quoteErr != nil {
+						// continue generating quotes even if one fails
+						span.AddEvent("error generating quote", trace.WithAttributes(
+							attribute.String("key_token_id", keyTokenID),
+							attribute.String("error", quoteErr.Error()),
+						))
+						return nil
+					}
+					quoteMtx.Lock()
+					defer quoteMtx.Unlock()
+					quotes = append(quotes, *quote)
+					return nil
+				})
 			}
 		}
 	}
+	err = g.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("error generating quotes: %w", err)
+	}
+
 	m.currentQuotes = quotes
 	return quotes, nil
 }
