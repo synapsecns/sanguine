@@ -1,4 +1,4 @@
-import { fetchJSONData } from './fetchJSONData'
+import { fetchJsonData } from './fetchJsonData'
 
 const mockUrl =
   'https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-chains.json'
@@ -6,7 +6,7 @@ const mockUrl =
 // Mock the global fetch function
 global.fetch = jest.fn()
 
-describe('fetchJSONData', () => {
+describe('fetchJsonData', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -21,7 +21,7 @@ describe('fetchJSONData', () => {
         json: jest.fn().mockResolvedValueOnce(mockData),
       })
 
-    const data = await fetchJSONData(mockUrl)
+    const data = await fetchJsonData(mockUrl)
     expect(data).toEqual(mockData)
     expect(fetch).toHaveBeenCalledTimes(3)
   })
@@ -33,7 +33,7 @@ describe('fetchJSONData', () => {
       status: 500,
     })
 
-    await expect(fetchJSONData(mockUrl)).rejects.toThrow(
+    await expect(fetchJsonData(mockUrl)).rejects.toThrow(
       `Retries failed fetching ${mockUrl}`
     )
     expect(fetch).toHaveBeenCalledTimes(maxRetries)

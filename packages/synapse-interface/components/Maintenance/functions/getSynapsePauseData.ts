@@ -3,7 +3,7 @@ import {
   setPausedChainsData,
   setPausedModulesData,
 } from '@/slices/maintenance/reducer'
-import { fetchJSONData } from './fetchJSONData'
+import { fetchJsonData } from './fetchJsonData'
 import pausedChains from '@/public/pauses/v1/paused-chains.json'
 import pausedBridgeModules from '@/public/pauses/v1/paused-bridge-modules.json'
 
@@ -22,8 +22,8 @@ export const getSynapsePauseData = () => {
     try {
       isFetching = true
 
-      const pausedChainsData = await fetchJSONData(PAUSED_CHAINS_URL)
-      const pausedModulesData = await fetchJSONData(PAUSED_MODULES_URL)
+      const pausedChainsData = await fetchJsonData(PAUSED_CHAINS_URL)
+      const pausedModulesData = await fetchJsonData(PAUSED_MODULES_URL)
 
       dispatch(setPausedChainsData(pausedChainsData))
       dispatch(setPausedModulesData(pausedModulesData))
