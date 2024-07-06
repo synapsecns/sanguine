@@ -111,7 +111,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Go modules cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           # see https://github.com/mvdan/github-actions-golang
           # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
@@ -125,7 +125,7 @@ jobs:
             ${{ runner.os }}-test-${{matrix.package}}
 
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
 
@@ -261,12 +261,12 @@ jobs:
         with:
           fetch-depth: 2
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
 
       - name: Go modules cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           # see https://github.com/mvdan/github-actions-golang
           # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
@@ -301,7 +301,7 @@ jobs:
         # e.g. ['package1', 'package2'] if both package folders contains changes
         package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: 1.22.x
 
@@ -396,12 +396,12 @@ jobs:
         run: npx lerna exec npm run build:go --parallel
 
       # Setup Go
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: 1.22.x
 
       - name: Go modules cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           # see https://github.com/mvdan/github-actions-golang
           # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
@@ -519,12 +519,12 @@ jobs:
         if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
 
       # Setup Go
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: 1.22.x
 
       - name: Go modules cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: ${{ !contains(matrix.package, 'services/cctp-relayer') }}
         with:
           # see https://github.com/mvdan/github-actions-golang
@@ -541,7 +541,7 @@ jobs:
             ${{ runner.os }}-go-generate-${{matrix.package}}
 
       - name: Cache Linuxbrew
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: ${{ contains(matrix.package, 'scribe') }}
         with:
           path: |

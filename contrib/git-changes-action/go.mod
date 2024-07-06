@@ -25,7 +25,7 @@ require (
 	github.com/vishalkuo/bimap v0.0.0-20230830142743-a9fb9b52066c
 	github.com/xlab/treeprint v1.2.0
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
-	golang.org/x/mod v0.18.0
+	golang.org/x/mod v0.19.0
 	golang.org/x/oauth2 v0.21.0
 )
 
