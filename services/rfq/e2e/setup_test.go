@@ -21,7 +21,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
-	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
@@ -114,7 +113,9 @@ func (i *IntegrationSuite) setupBackends() {
 	}()
 	go func() {
 		defer wg.Done()
-		i.destBackend = geth.NewEmbeddedBackendForChainID(i.GetTestContext(), i.T(), big.NewInt(destBackendChainID))
+		options := anvil.NewAnvilOptionBuilder()
+		options.SetChainID(destBackendChainID)
+		i.destBackend = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
 		i.setupBE(i.destBackend)
 	}()
 	wg.Wait()

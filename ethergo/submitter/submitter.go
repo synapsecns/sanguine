@@ -361,7 +361,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	}()
 
 	if !t.Started() {
-		return 0, ErrNotStarted
+		logger.Errorf("%v in a future version, this will hard error", ErrNotStarted.Error())
 	}
 
 	// make sure we have a client for this chain.
