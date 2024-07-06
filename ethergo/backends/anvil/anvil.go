@@ -82,7 +82,8 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		Repository: "ghcr.io/foundry-rs/foundry",
 		Tag:        "nightly-1bac1b3d79243cea755800bf396c30a3d74741bf",
 		Platform:   "linux/amd64",
-		Cmd:        []string{strings.Join(append([]string{"anvil"}, commandArgs...), " ")},
+
+		Cmd: []string{strings.Join(append([]string{"anvil"}, commandArgs...), " ")},
 		Labels: map[string]string{
 			"test-id": uuid.New().String(),
 		},

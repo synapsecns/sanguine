@@ -73,11 +73,6 @@ const (
 func (i *IntegrationSuite) SetupTest() {
 	i.TestSuite.SetupTest()
 
-	// TODO: no need for this when anvil CI issues are fixed
-	if core.GetEnvBool("CI", false) {
-		return
-	}
-
 	i.manager = testutil.NewDeployManager(i.T())
 	i.cctpDeployManager = cctpTest.NewDeployManager(i.T())
 	// TODO: consider jaeger
