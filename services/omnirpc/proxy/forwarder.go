@@ -40,9 +40,9 @@ type Forwarder struct {
 	client omniHTTP.Client
 	// resMap is the res map
 	// Note: because we use an array here, this is not thread safe for writes
-	resMap *xsync.MapOf[[]rawResponse]
+	resMap *xsync.MapOf[string, []rawResponse]
 	// failedForwards is a map of failed forwards
-	failedForwards *xsync.MapOf[error]
+	failedForwards *xsync.MapOf[string, error]
 	// rpcRequest is the parsed rpc request
 	rpcRequest rpc.Requests
 	// mux is used to track the release of the forwarder. This should only be used in async methods

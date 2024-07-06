@@ -110,11 +110,11 @@ func (f *Forwarder) SetClient(client omniHTTP.Client) {
 	f.client = client
 }
 
-func (f *Forwarder) ResMap() *xsync.MapOf[[]rawResponse] {
+func (f *Forwarder) ResMap() *xsync.MapOf[string, []rawResponse] {
 	return f.resMap
 }
 
-func (f *Forwarder) SetResMap(resMap *xsync.MapOf[[]rawResponse]) {
+func (f *Forwarder) SetResMap(resMap *xsync.MapOf[string, []rawResponse]) {
 	f.resMap = resMap
 }
 
