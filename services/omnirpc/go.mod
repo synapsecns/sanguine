@@ -41,7 +41,7 @@ require (
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
 	github.com/urfave/cli/v2 v2.27.2
-	github.com/valyala/fasthttp v1.55.0
+	github.com/valyala/fasthttp v1.41.0
 	go.opentelemetry.io/otel v1.28.0
 	go.opentelemetry.io/otel/metric v1.28.0
 	go.opentelemetry.io/otel/trace v1.28.0
