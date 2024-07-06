@@ -26,6 +26,8 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
+	serviceGuard "github.com/synapsecns/sanguine/services/rfq/guard/service"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
@@ -266,6 +268,14 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		return nil
 	})
 
+	g.Go(func() error {
+		err = r.startGuard(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start guard: %w", err)
+		}
+		return nil
+	})
+
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not start: %w", err)
@@ -321,6 +331,26 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	err = cctpRelayer.Run(ctx)
 	if err != nil {
 		return fmt.Errorf("could not run cctp relayer: %w", err)
+	}
+
+	return nil
+}
+
+// startGuard starts the guard, if specified.
+func (r *Relayer) startGuard(ctx context.Context) (err error) {
+	if !r.cfg.UseEmbeddedGuard {
+		return nil
+	}
+
+	guardCfg := guardconfig.NewGuardConfigFromRelayer(r.cfg)
+	guard, err := serviceGuard.NewGuard(ctx, r.metrics, guardCfg, r.submitter)
+	if err != nil {
+		return fmt.Errorf("could not create guard: %w", err)
+	}
+
+	err = guard.Start(ctx)
+	if err != nil {
+		return fmt.Errorf("could not start guard: %w", err)
 	}
 
 	return nil
