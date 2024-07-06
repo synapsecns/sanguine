@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -120,6 +121,17 @@ func (g *Guard) Start(ctx context.Context) (err error) {
 		err = g.runDBSelector(ctx)
 		if err != nil {
 			return fmt.Errorf("could not start db selector: %w", err)
+		}
+		return nil
+	})
+
+	group.Go(func() error {
+		if !g.txSubmitter.Started() {
+			err = g.txSubmitter.Start(ctx)
+			// defensive coding against potential race.
+			if err != nil && !errors.Is(err, submitter.ErrSubmitterAlreadyStarted) {
+				return fmt.Errorf("could not start tx submitter: %w", err)
+			}
 		}
 		return nil
 	})
