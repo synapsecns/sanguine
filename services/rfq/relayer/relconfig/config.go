@@ -57,6 +57,8 @@ type Config struct {
 	WithdrawalWhitelist []string `yaml:"withdrawal_whitelist"`
 	// UseEmbeddedGuard enables the embedded guard.
 	UseEmbeddedGuard bool `yaml:"enable_guard"`
+	// SubmitSingleQuotes enables submitting single quotes.
+	SubmitSingleQuotes bool `yaml:"submit_single_quotes"`
 }
 
 // ChainConfig represents the configuration for a chain.

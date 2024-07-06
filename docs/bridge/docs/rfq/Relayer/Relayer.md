@@ -193,7 +193,8 @@ The relayer is configured with a yaml file. The following is an example configur
  - `rebalance_interval` - How often to rebalance, formatted as (s = seconds, m = minutes, h = hours)
  - `relayer_api_port` - the relayer api is used to control the relayer. <!--TODO: more info here--> This api should be secured/not public.
  - `base_chain_config`: Base chain config is the default config applied for each chain if the other chains do not override it. This is covered in the chains section.
- - `enable_embedded_guard`  - Run a guard on the same instance.
+ - `enable_guard`  - Run a guard on the same instance.
+ - `submit_single_quotes` - Wether to use the batch endpoint for posting quotes to the api. This can be useful for debugging.
  - `chains` - each chain has a different config that overrides base_chain_config. Here are the parameters for each chain
   - `rfq_address` - the address of the rfq contract on this chain. These addresses are available [here](../Contracts.md).
 

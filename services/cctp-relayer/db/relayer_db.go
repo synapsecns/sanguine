@@ -2,11 +2,10 @@ package db
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 
 	"github.com/ethereum/go-ethereum/common"
 	listenerDB "github.com/synapsecns/sanguine/ethergo/listener/db"
-	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
-
 	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
 )
 
@@ -34,6 +33,6 @@ type CCTPRelayerDBWriter interface {
 type CCTPRelayerDB interface {
 	CCTPRelayerDBReader
 	CCTPRelayerDBWriter
-	SubmitterDB() submitterDB.Service
+	db.SubmitterDBFactory
 	listenerDB.ChainListenerDB
 }

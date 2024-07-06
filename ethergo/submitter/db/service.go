@@ -47,6 +47,11 @@ type Service interface {
 // TransactionFunc is a function that can be passed to DBTransaction.
 type TransactionFunc func(ctx context.Context, svc Service) error
 
+// SubmitterDBFactory is the interface for the tx queue database factory.
+type SubmitterDBFactory interface {
+	SubmitterDB() Service
+}
+
 // Status is the status of a tx.
 //
 //go:generate go run golang.org/x/tools/cmd/stringer -type=Status -linecomment
