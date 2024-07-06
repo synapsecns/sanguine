@@ -103,10 +103,6 @@ func (i *IntegrationSuite) getOtherBackend(backend backends.SimulatedTestBackend
 }
 
 func (i *IntegrationSuite) TestUSDCtoUSDC() {
-	if core.GetEnvBool("CI", false) {
-		i.T().Skip("skipping until anvil issues are fixed in CI")
-	}
-
 	// start the relayer and guard
 	go func() {
 		_ = i.relayer.Start(i.GetTestContext())
@@ -266,9 +262,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 
 // nolint: cyclop
 func (i *IntegrationSuite) TestETHtoETH() {
-	if core.GetEnvBool("CI", false) {
-		i.T().Skip("skipping until anvil issues are fixed in CI")
-	}
 
 	// start the relayer and guard
 	go func() {
@@ -388,10 +381,6 @@ func (i *IntegrationSuite) TestETHtoETH() {
 }
 
 func (i *IntegrationSuite) TestDispute() {
-	if core.GetEnvBool("CI", false) {
-		i.T().Skip("skipping until anvil issues are fixed in CI")
-	}
-
 	// start the guard
 	go func() {
 		_ = i.guard.Start(i.GetTestContext())
