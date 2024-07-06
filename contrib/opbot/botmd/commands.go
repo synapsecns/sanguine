@@ -249,7 +249,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 // nolint: gocognit, cyclop.
 func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 	return &slacker.CommandDefinition{
-		Command:     "refund <tx> <origin_chainid>",
+		Command:     "refund <tx>",
 		Description: "refund a quote request",
 		Examples:    []string{"refund 0x1234"},
 		Handler: func(ctx *slacker.CommandContext) {
@@ -257,15 +257,6 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 
 			if len(tx) == 0 {
 				_, err := ctx.Response().Reply("please provide a tx hash")
-				if err != nil {
-					log.Println(err)
-				}
-				return
-			}
-
-			originChainIDStr := ctx.Request().Param("origin_chainid")
-			if len(originChainIDStr) == 0 {
-				_, err := ctx.Response().Reply("please provide an origin chain id")
 				if err != nil {
 					log.Println(err)
 				}

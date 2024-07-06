@@ -11,7 +11,7 @@ jobs:
   stale-prs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           stale-pr-message: 'This PR is stale because it has been open 14 days with no activity. Remove stale label or comment or this will be closed in 5 days.'
           exempt-pr-labels: exempt-stale
