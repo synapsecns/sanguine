@@ -45,6 +45,7 @@ flags:
   cctp-relayer:
     paths:
       - services/cctp-relayer/
+    carryforward: true
   rfq:
     paths:
       - services/rfq/

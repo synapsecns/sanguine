@@ -1,6 +1,7 @@
 package relapi_test
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
@@ -48,4 +49,15 @@ func (c *RelayerClientSuite) TestRetryTransaction() {
 	c.Require().NoError(err)
 
 	c.Equal(resp.TxID, hexutil.Encode(testReq.TransactionID[:]))
+}
+
+func (c *RelayerClientSuite) TestGetQuoteByTX() {
+	testReq := c.underlying.getTestQuoteRequest(reldb.Seen)
+	err := c.underlying.database.StoreQuoteRequest(c.GetTestContext(), testReq)
+	c.Require().NoError(err)
+
+	resp, err := c.Client.GetQuoteRequestByTXID(c.GetTestContext(), hexutil.Encode(testReq.TransactionID[:]))
+	c.Require().NoError(err)
+
+	c.Equal(len(common.Hex2Bytes(resp.QuoteRequestRaw)), len(testReq.RawRequest))
 }

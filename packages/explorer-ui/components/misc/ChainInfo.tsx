@@ -2,6 +2,7 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { getChainUrl, getExplorerTxUrl } from '@urls'
 import Image from 'next/image'
 import { CHAINS } from 'synapse-constants'
+import Link from 'next/link'
 
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
@@ -38,27 +39,28 @@ export function ChainInfo({
   }
 
   if (chain) {
+    const content = (
+      <>
+        <Image
+          className={`inline rounded-full ${imgClassName}`}
+          src={chain?.chainImg}
+          alt={chain?.name}
+        />
+        <p className={textClassName}>{chain.name}</p>
+      </>
+    )
     return (
       <div className="relative w-full">
-        <div className="flex items-center justify-start">
-          <Image
-            className={`inline rounded-full ${imgClassName}`}
-            src={chain?.chainImg}
-            alt={chain?.name}
-          />
-          <p className={textClassName}>{chain.name}</p>
-          {/* we should just add this link to the text */}
-          {/* {noLink ? null : (
-            <a
-              type="link"
-              target="_blank"
-              href={link}
-              className={linkClassName}
-            >
-              ↗
-            </a>
-          )} */}
-        </div>
+        <Link href={link} passHref legacyBehavior>
+          <div className="flex items-center justify-start cursor-pointer group">
+            <Image
+              className={`inline rounded-full ${imgClassName}`}
+              src={chain?.chainImg}
+              alt={chain?.name}
+            />
+            <p className={`${textClassName} group-hover:text-[#8FEBFF] transition-colors duration-200`}>{chain.name}</p>
+          </div>
+        </Link>
       </div>
     )
   } else {

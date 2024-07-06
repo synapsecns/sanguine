@@ -46,6 +46,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/bulk_quotes": {
+            "put": {
+                "description": "upsert bulk quotes from relayer.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Upsert quotes",
+                "parameters": [
+                    {
+                        "description": "query params",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PutBulkQuotesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/contracts": {
+            "get": {
+                "description": "get quotes from all relayers.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Get contract addresses",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.GetContractsResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/quotes": {
             "get": {
                 "description": "get quotes from all relayers.",
@@ -135,6 +192,18 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.GetContractsResponse": {
+            "type": "object",
+            "properties": {
+                "contracts": {
+                    "description": "Contracts is a map of chain id to contract address",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "model.GetQuoteResponse": {
             "type": "object",
             "properties": {
@@ -181,6 +250,17 @@ const docTemplate = `{
                 "updated_at": {
                     "description": "UpdatedAt is the time that the quote was last upserted",
                     "type": "string"
+                }
+            }
+        },
+        "model.PutBulkQuotesRequest": {
+            "type": "object",
+            "properties": {
+                "quotes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.PutQuoteRequest"
+                    }
                 }
             }
         },

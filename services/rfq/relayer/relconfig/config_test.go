@@ -456,3 +456,50 @@ func TestValidation(t *testing.T) {
 		assert.Nil(t, err)
 	})
 }
+
+func TestDecodeTokenID(t *testing.T) {
+	tests := []struct {
+		name      string
+		id        string
+		wantChain int
+		wantAddr  common.Address
+		wantErr   bool
+	}{
+		{
+			name:      "valid token ID",
+			id:        "1-0x1234567890abcdef1234567890abcdef12345678",
+			wantChain: 1,
+			wantAddr:  common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678"),
+			wantErr:   false,
+		},
+		{
+			name:    "invalid token ID format",
+			id:      "1_0x1234567890abcdef1234567890abcdef12345678",
+			wantErr: true,
+		},
+		{
+			name:    "invalid chain ID",
+			id:      "x-0x1234567890abcdef1234567890abcdef12345678",
+			wantErr: true,
+		},
+		{
+			name:    "invalid address",
+			id:      "1-0x12345",
+			wantErr: true,
+		},
+	}
+
+	for i := range tests {
+		tt := tests[i]
+		t.Run(tt.name, func(t *testing.T) {
+			gotChain, gotAddr, err := relconfig.DecodeTokenID(tt.id)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantChain, gotChain)
+				assert.Equal(t, tt.wantAddr, gotAddr)
+			}
+		})
+	}
+}

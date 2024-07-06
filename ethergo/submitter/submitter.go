@@ -46,6 +46,10 @@ type TransactionSubmitter interface {
 	SubmitTransaction(ctx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error)
 	// GetSubmissionStatus returns the status of a transaction and any metadata associated with it if it is complete.
 	GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error)
+	// Address returns the address of the signer.
+	Address() common.Address
+	// Started returns whether the submitter is running.
+	Started() bool
 }
 
 // txSubmitterImpl is the implementation of the transaction submitter.
@@ -81,6 +85,10 @@ type txSubmitterImpl struct {
 	// distinctChainIDs is the distinct chain ids for the transaction submitter.
 	// note: this map should not be appended to!
 	distinctChainIDs []*big.Int
+	// started indicates whether the submitter has started.
+	started bool
+	// startMux is the mutex for started.
+	startMux sync.RWMutex
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -105,6 +113,13 @@ func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetc
 	}
 }
 
+// Started returns whether the submitter is running.
+func (t *txSubmitterImpl) Started() bool {
+	t.startMux.RLock()
+	defer t.startMux.RUnlock()
+	return t.started
+}
+
 // GetRetryInterval returns the retry interval for the transaction submitter.
 func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 	retryInterval := time.Second * 2
@@ -124,9 +139,29 @@ func (t *txSubmitterImpl) GetDistinctInterval() time.Duration {
 	return retryInterval
 }
 
+// attemptMarkStarted attempts to mark the submitter as started.
+// if the submitter is already started, an error is returned.
+func (t *txSubmitterImpl) attemptMarkStarted() error {
+	t.startMux.Lock()
+	defer t.startMux.Unlock()
+	if t.started {
+		return ErrSubmitterAlreadyStarted
+	}
+	t.started = true
+	return nil
+}
+
+// ErrSubmitterAlreadyStarted is the error for when the submitter is already started.
+var ErrSubmitterAlreadyStarted = errors.New("submitter already started")
+
 // Start starts the transaction submitter.
 // nolint: cyclop
 func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
+	err = t.attemptMarkStarted()
+	if err != nil {
+		return err
+	}
+
 	t.otelRecorder, err = newOtelRecorder(t.metrics, t.signer)
 	if err != nil {
 		return fmt.Errorf("could not create otel recorder: %w", err)
@@ -311,6 +346,9 @@ func (t *txSubmitterImpl) triggerProcessQueue(ctx context.Context) {
 	}
 }
 
+// ErrNotStarted is the error for when the submitter is not started.
+var ErrNotStarted = errors.New("submitter is not started")
+
 // nolint: cyclop
 func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.SubmitTransaction", trace.WithAttributes(
@@ -321,6 +359,10 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	if !t.Started() {
+		logger.Errorf("%v in a future version, this will hard error", ErrNotStarted.Error())
+	}
 
 	// make sure we have a client for this chain.
 	chainClient, err := t.fetcher.GetClient(ctx, chainID)
@@ -663,6 +705,10 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	}
 
 	return gasEstimate, nil
+}
+
+func (t *txSubmitterImpl) Address() common.Address {
+	return t.signer.Address()
 }
 
 var _ TransactionSubmitter = &txSubmitterImpl{}

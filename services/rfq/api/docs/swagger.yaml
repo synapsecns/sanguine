@@ -1,4 +1,12 @@
 definitions:
+  model.GetContractsResponse:
+    properties:
+      contracts:
+        additionalProperties:
+          type: string
+        description: Contracts is a map of chain id to contract address
+        type: object
+    type: object
   model.GetQuoteResponse:
     properties:
       dest_amount:
@@ -42,6 +50,13 @@ definitions:
       updated_at:
         description: UpdatedAt is the time that the quote was last upserted
         type: string
+    type: object
+  model.PutBulkQuotesRequest:
+    properties:
+      quotes:
+        items:
+          $ref: '#/definitions/model.PutQuoteRequest'
+        type: array
     type: object
   model.PutQuoteRequest:
     properties:
@@ -87,6 +102,43 @@ paths:
       summary: Relay ack
       tags:
       - ack
+  /bulk_quotes:
+    put:
+      consumes:
+      - application/json
+      description: upsert bulk quotes from relayer.
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PutBulkQuotesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Upsert quotes
+      tags:
+      - quotes
+  /contracts:
+    get:
+      consumes:
+      - application/json
+      description: get quotes from all relayers.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.GetContractsResponse'
+            type: array
+      summary: Get contract addresses
+      tags:
+      - quotes
   /quotes:
     get:
       consumes:

@@ -25,11 +25,12 @@ import (
 // RelayerAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
 type RelayerAPIServer struct {
-	cfg     relconfig.Config
-	db      reldb.Service
-	engine  *gin.Engine
-	handler metrics.Handler
-	chains  map[uint32]*chain.Chain
+	cfg       relconfig.Config
+	db        reldb.Service
+	engine    *gin.Engine
+	handler   metrics.Handler
+	chains    map[uint32]*chain.Chain
+	submitter submitter.TransactionSubmitter
 }
 
 // NewRelayerAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -86,10 +87,11 @@ func NewRelayerAPI(
 	}
 
 	return &RelayerAPIServer{
-		cfg:     cfg,
-		db:      store,
-		handler: handler,
-		chains:  chains,
+		cfg:       cfg,
+		db:        store,
+		handler:   handler,
+		chains:    chains,
+		submitter: submitter,
 	}, nil
 }
 
@@ -98,22 +100,30 @@ const (
 	getQuoteStatusByTxHashRoute = "/status"
 	getQuoteStatusByTxIDRoute   = "/status/by_tx_id"
 	getRetryRoute               = "/retry"
+	postWithdrawRoute           = "/withdraw"
+	getRequestByTxID            = "/request/by_tx_id"
 )
 
 var logger = log.Logger("relayer-api")
 
 // Run runs the rest api server.
 func (r *RelayerAPIServer) Run(ctx context.Context) error {
-	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
-	h := NewHandler(r.db, r.chains)
+	// default tracing middleware
+	engine.Use(r.handler.Gin()...)
+	h := NewHandler(r.db, r.chains, r.cfg, r.submitter)
 
 	// Assign GET routes
 	engine.GET(getHealthRoute, h.GetHealth)
 	engine.GET(getQuoteStatusByTxHashRoute, h.GetQuoteRequestStatusByTxHash)
 	engine.GET(getQuoteStatusByTxIDRoute, h.GetQuoteRequestStatusByTxID)
 	engine.GET(getRetryRoute, h.GetTxRetry)
+	engine.GET(getRequestByTxID, h.GetQuoteRequestByTxID)
 	engine.GET(metrics.MetricsPathDefault, gin.WrapH(r.handler.Handler()))
+
+	if r.cfg.EnableAPIWithdrawals {
+		engine.POST(postWithdrawRoute, h.Withdraw)
+	}
 
 	r.engine = engine
 
