@@ -41,7 +41,7 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-const maxConcurrentRequests = 150
+const maxConcurrentRequests = 15
 
 // Relayer is the core of the relayer application.
 type Relayer struct {
