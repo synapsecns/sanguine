@@ -102,6 +102,7 @@ const (
 	getRetryRoute               = "/retry"
 	postWithdrawRoute           = "/withdraw"
 	getTxHashByNonceRoute       = "/tx_hash/by_nonce"
+	getRequestByTxID            = "/request/by_tx_id"
 )
 
 var logger = log.Logger("relayer-api")
@@ -118,6 +119,7 @@ func (r *RelayerAPIServer) Run(ctx context.Context) error {
 	engine.GET(getQuoteStatusByTxHashRoute, h.GetQuoteRequestStatusByTxHash)
 	engine.GET(getQuoteStatusByTxIDRoute, h.GetQuoteRequestStatusByTxID)
 	engine.GET(getRetryRoute, h.GetTxRetry)
+	engine.GET(getRequestByTxID, h.GetQuoteRequestByTxID)
 	engine.GET(metrics.MetricsPathDefault, gin.WrapH(r.handler.Handler()))
 
 	if r.cfg.EnableAPIWithdrawals {

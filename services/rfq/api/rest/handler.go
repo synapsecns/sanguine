@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"fmt"
+	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"net/http"
 	"strconv"
 
@@ -12,13 +14,15 @@ import (
 
 // Handler is the REST API handler.
 type Handler struct {
-	db db.APIDB
+	db  db.APIDB
+	cfg config.Config
 }
 
 // NewHandler creates a new REST API handler.
-func NewHandler(db db.APIDB) *Handler {
+func NewHandler(db db.APIDB, cfg config.Config) *Handler {
 	return &Handler{
-		db: db, // Store the database connection in the handler
+		db:  db, // Store the database connection in the handler
+		cfg: cfg,
 	}
 }
 
@@ -54,23 +58,84 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		return
 	}
 
+	dbQuote, err := parseDBQuote(*putRequest, relayerAddr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err = h.db.UpsertQuote(c, dbQuote)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
+// ModifyBulkQuotes upserts multiple quotes
+//
+// PUT /bulk_quotes
+// @dev Protected Method: Authentication is handled through middleware in server.go.
+// nolint: cyclop
+// @Summary Upsert quotes
+// @Schemes
+// @Description upsert bulk quotes from relayer.
+// @Param request body model.PutBulkQuotesRequest true "query params"
+// @Tags quotes
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /bulk_quotes [put].
+func (h *Handler) ModifyBulkQuotes(c *gin.Context) {
+	// Retrieve the request from context
+	req, exists := c.Get("putRequest")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Request not found"})
+		return
+	}
+	relayerAddr, exists := c.Get("relayerAddr")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
+		return
+	}
+	putRequest, ok := req.(*model.PutBulkQuotesRequest)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request type"})
+		return
+	}
+
+	dbQuotes := []*db.Quote{}
+	for _, quoteReq := range putRequest.Quotes {
+		dbQuote, err := parseDBQuote(quoteReq, relayerAddr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid quote request"})
+			return
+		}
+		dbQuotes = append(dbQuotes, dbQuote)
+	}
+
+	err := h.db.UpsertQuotes(c, dbQuotes)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
+func parseDBQuote(putRequest model.PutQuoteRequest, relayerAddr interface{}) (*db.Quote, error) {
 	destAmount, err := decimal.NewFromString(putRequest.DestAmount)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestAmount"})
-		return
+		return nil, fmt.Errorf("invalid DestAmount")
 	}
 	maxOriginAmount, err := decimal.NewFromString(putRequest.MaxOriginAmount)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DestAmount"})
-		return
+		return nil, fmt.Errorf("invalid MaxOriginAmount")
 	}
 	fixedFee, err := decimal.NewFromString(putRequest.FixedFee)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid FixedFee"})
-		return
+		return nil, fmt.Errorf("invalid FixedFee")
 	}
 	// nolint: forcetypeassert
-	quote := &db.Quote{
+	return &db.Quote{
 		OriginChainID:   uint64(putRequest.OriginChainID),
 		OriginTokenAddr: putRequest.OriginTokenAddr,
 		DestChainID:     uint64(putRequest.DestChainID),
@@ -82,13 +147,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		RelayerAddr:             relayerAddr.(string),
 		OriginFastBridgeAddress: putRequest.OriginFastBridgeAddress,
 		DestFastBridgeAddress:   putRequest.DestFastBridgeAddress,
-	}
-	err = h.db.UpsertQuote(c, quote)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.Status(http.StatusOK)
+	}, nil
 }
 
 // GetQuotes retrieves all quotes from the database.
@@ -157,4 +216,23 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 		quotes[i] = model.QuoteResponseFromDbQuote(dbQuote)
 	}
 	c.JSON(http.StatusOK, quotes)
+}
+
+// GetContracts retrieves all contracts api is currently enabled on.
+// GET /contracts.
+// PingExample godoc
+// @Summary Get contract addresses
+// @Description get quotes from all relayers.
+// @Tags quotes
+// @Accept json
+// @Produce json
+// @Success 200 {array} model.GetContractsResponse
+// @Router /contracts [get].
+func (h *Handler) GetContracts(c *gin.Context) {
+	// Convert quotes from db model to api model
+	contracts := make(map[uint32]string)
+	for chainID, address := range h.cfg.Bridges {
+		contracts[chainID] = address
+	}
+	c.JSON(http.StatusOK, model.GetContractsResponse{Contracts: contracts})
 }

@@ -1,12 +1,15 @@
 package otelginmetrics
 
 import (
+	"go.opentelemetry.io/otel/attribute"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 )
+
+const statusKey = attribute.Key("http.status_code")
 
 // Middleware returns middleware that will trace incoming requests.
 // The service parameter should describe the name of the (virtual)
@@ -47,7 +50,7 @@ func Middleware(service string, options ...Option) gin.HandlerFunc {
 
 			if cfg.groupedStatus {
 				code := int(ginCtx.Writer.Status()/100) * 100
-				resAttributes = append(resAttributes, semconv.HTTPStatusCodeKey.Int(code))
+				resAttributes = append(resAttributes, statusKey.Int(code))
 			} else {
 				resAttributes = append(resAttributes, semconv.HTTPResponseStatusCodeKey.Int(ginCtx.Writer.Status()))
 			}

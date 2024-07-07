@@ -164,6 +164,17 @@ var ChainMetadataList = []ChainMetadata{
 	},
 }
 
+// ChainNameToChainID converts the chain name to the chain id.
+// It returns 0 if the chain name is not found.
+func ChainNameToChainID(chainName string) uint64 {
+	for _, chainMetadata := range ChainMetadataList {
+		if strings.EqualFold(chainMetadata.ChainName, chainName) {
+			return uint64(chainMetadata.ChainID)
+		}
+	}
+	return 0
+}
+
 // ChainIDToChainName converts the chain id to the chain name.
 func ChainIDToChainName(chainID int64, isUpper bool) string {
 	for _, chainMetadata := range ChainMetadataList {
