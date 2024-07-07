@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"sync"
@@ -237,9 +238,12 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 	})
 
 	g.Go(func() error {
-		err := r.submitter.Start(ctx)
-		if err != nil {
-			return fmt.Errorf("could not start submitter: %w", err)
+		if !r.submitter.Started() {
+			err := r.submitter.Start(ctx)
+			if err != nil && !errors.Is(err, submitter.ErrSubmitterAlreadyStarted) {
+				return fmt.Errorf("could not start submitter: %w", err)
+			}
+			return nil
 		}
 		return nil
 	})
