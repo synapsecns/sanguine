@@ -23,7 +23,7 @@ func (b *Bot) tracingMiddleware() slacker.CommandMiddlewareHandler {
 		return func(cmdCtx *slacker.CommandContext) {
 			ctx, span := b.handler.Tracer().Start(cmdCtx.Context(), fmt.Sprintf("command.%s", cmdCtx.Definition().Command), trace.WithAttributes(
 				attribute.String("user_id", cmdCtx.Event().UserID),
-				attribute.String("channel_id", cmdCtx.Event().Channel.ID),
+				attribute.String("channel_id", retrieveChannelIfExists(cmdCtx.Event())),
 			))
 
 			cmdCtx.WithContext(ctx)
@@ -35,6 +35,15 @@ func (b *Bot) tracingMiddleware() slacker.CommandMiddlewareHandler {
 			next(cmdCtx)
 		}
 	}
+}
+
+const unknownChannel = "unknown"
+
+func retrieveChannelIfExists(event *slacker.MessageEvent) string {
+	if event != nil && event.Channel != nil {
+		return event.Channel.ID
+	}
+	return unknownChannel
 }
 
 // assumes method is only called once.
