@@ -3345,9 +3345,9 @@
   integrity sha512-tQd/1efJuzPC6rCFwEvLtci/xNFcTZknmXs98FYDfGE4wP9ClFV98nyKrzJKVPMhdDnjzLhdUyMX4PsQAPjwIw==
 
 "@escape.tech/graphql-armor-max-aliases@^2.3.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-max-aliases/-/graphql-armor-max-aliases-2.4.0.tgz#434c2232a4b398fd3d532f5700ec314893aa4489"
-  integrity sha512-d4V9EgtPRG9HIoPHuanFNLHj1ENB1YkZi9FbiBiH88x5VahCjVpMXDgKQGkG6RUTOODU4XKp0/ZgaOq0pX5oEA==
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@escape.tech/graphql-armor-max-aliases/-/graphql-armor-max-aliases-2.5.0.tgz#82748ec3f3492e47d84566fdcda2d4d01de88da2"
+  integrity sha512-deaLZF3ASfJY9jUbBzoZW9IUHWqAVorpDR9Yez4mxk8iFltwCpgtJfVEb57T+R0RyiFrtjdUM5SQpNZJxhie7w==
   dependencies:
     graphql "^16.0.0"
   optionalDependencies:
@@ -4210,11 +4210,11 @@
     value-or-promise "^1.0.12"
 
 "@graphql-tools/executor@^1.2.5":
-  version "1.2.6"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/executor/-/executor-1.2.6.tgz#71caa7c52108e4744bfa5ffdc958126bb4b48ff2"
-  integrity sha512-+1kjfqzM5T2R+dCw7F4vdJ3CqG+fY/LYJyhNiWEFtq0ToLwYzR/KKyD8YuzTirEjSxWTVlcBh7endkx5n5F6ew==
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/executor/-/executor-1.2.8.tgz#6152bab5ef8e6f80a6b7cc8f81b5e3c1c22af375"
+  integrity sha512-0qZs/iuRiYRir7bBkA7oN+21wwmSMPQuFK8WcAcxUYJZRhvnlrJ8Nid++PN4OCzTgHPV70GNFyXOajseVCCffA==
   dependencies:
-    "@graphql-tools/utils" "^10.1.1"
+    "@graphql-tools/utils" "^10.2.3"
     "@graphql-typed-document-node/core" "3.2.0"
     "@repeaterjs/repeater" "^3.0.4"
     tslib "^2.4.0"
@@ -4401,10 +4401,10 @@
     dset "^3.1.2"
     tslib "^2.4.0"
 
-"@graphql-tools/utils@^10.1.0":
-  version "10.2.2"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-10.2.2.tgz#6477295fae051ffb5d6c28253aa6d8a449d4a820"
-  integrity sha512-ueoplzHIgFfxhFrF4Mf/niU/tYHuO6Uekm2nCYU72qpI+7Hn9dA2/o5XOBvFXDk27Lp5VSvQY5WfmRbqwVxaYQ==
+"@graphql-tools/utils@^10.1.0", "@graphql-tools/utils@^10.2.3":
+  version "10.3.1"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-10.3.1.tgz#d4ca59a3dae96d9ef9f9755e60552081a0843b95"
+  integrity sha512-Yhk1F0MNk4/ctgl3d0DKq++ZPovvZuh1ixWuUEVAxrFloYOAVwJ+rvGI1lsopArdJly8QXClT9lkvOxQszMw/w==
   dependencies:
     "@graphql-typed-document-node/core" "^3.1.1"
     cross-inspect "1.0.0"
@@ -4492,10 +4492,10 @@
   resolved "https://registry.yarnpkg.com/@heroicons/react/-/react-1.0.6.tgz#35dd26987228b39ef2316db3b1245c42eb19e324"
   integrity sha512-JJCXydOFWMDpCP4q13iEplA503MQO3xLoZiKum+955ZCtHINWnx26CUxVxxFQu/uLb4LW3ge15ZpzIkXKkJ8oQ==
 
-"@hono/node-server@^1.11.2":
-  version "1.11.4"
-  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-1.11.4.tgz#f0439a424e4a2037d5cbf2b2cc8e9f6a5f86d4db"
-  integrity sha512-8TOiiiAqcFC6f62P7M9p6adQREAlWdVi1awehAwgWW+3R65/rKzHnLARO/Hu/466z01VNViBoogqatqXJMyItA==
+"@hono/node-server@^1.8.2":
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-1.12.0.tgz#e0a8e93811c96e3bb9fc29ba23915989bd477995"
+  integrity sha512-e6oHjNiErRxsZRZBmc2KucuvY3btlO/XPncIpP2X75bRdTilF9GLjm3NHvKKunpJbbJJj31/FoPTksTf8djAVw==
 
 "@hookform/error-message@^2.0.1":
   version "2.0.1"
@@ -6762,20 +6762,20 @@
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.25.tgz#f077fdc0b5d0078d30893396ff4827a13f99e817"
   integrity sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==
 
-"@ponder/core@^0.4.12":
-  version "0.4.40"
-  resolved "https://registry.yarnpkg.com/@ponder/core/-/core-0.4.40.tgz#1748c64127650fe828f606f8ddc12ab0974adfc1"
-  integrity sha512-dxLocZj0jElWiGZWet2zg3Awxxdz53NY71+DN2jIzAjCt2KBJX8l5yHaAPDSbWKh18u1iZnvEVcZWsIme6Cnxw==
+"@ponder/core@0.4.28":
+  version "0.4.28"
+  resolved "https://registry.yarnpkg.com/@ponder/core/-/core-0.4.28.tgz#0c14688ad733136efe8ae56fb96aea4db19088df"
+  integrity sha512-LOtj/IItszVPictSF30RxwjaUxGj8AgQEaQW+2qc26RfRGFgHbouWTux6Ib+AHlOTkLKWa4bu7zZxj0nnsiNDQ==
   dependencies:
     "@babel/code-frame" "^7.23.4"
     "@commander-js/extra-typings" "^12.0.1"
     "@escape.tech/graphql-armor-max-aliases" "^2.3.0"
     "@escape.tech/graphql-armor-max-depth" "^2.2.0"
     "@escape.tech/graphql-armor-max-tokens" "^2.3.0"
-    "@hono/node-server" "^1.11.2"
-    "@ponder/utils" "0.1.6"
+    "@hono/node-server" "^1.8.2"
+    "@ponder/utils" "0.1.5"
     abitype "^0.10.2"
-    better-sqlite3 "^10.0.0"
+    better-sqlite3 "^9.1.1"
     commander "^12.0.0"
     conf "^12.0.0"
     dataloader "^2.2.2"
@@ -6787,7 +6787,7 @@
     graphql "^16.8.1"
     graphql-type-json "^0.3.2"
     graphql-yoga "^5.3.0"
-    hono "^4.4.2"
+    hono "^4.1.3"
     http-terminator "^3.2.0"
     ink "^4.4.1"
     kysely "^0.26.3"
@@ -6804,10 +6804,10 @@
     vite-node "^1.0.2"
     vite-tsconfig-paths "^4.3.1"
 
-"@ponder/utils@0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@ponder/utils/-/utils-0.1.6.tgz#76f8e50949a3585bb0dfd6299993dd6537e55c04"
-  integrity sha512-j0/nq8k356oZfHtNWn3NumVUlZdPjgIhtXTsiTR/7FYV+tvv6kj4FL1809WARxAhL4qDADHxErz9/A4/uxuw0w==
+"@ponder/utils@0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@ponder/utils/-/utils-0.1.5.tgz#e399e4c8f29b667eb06da913d2fbe3e2069901e7"
+  integrity sha512-bCP2WaKdZOvj0WEVX0QKTl4sm5oUumOPcaqlO0WppvDW8kH9IV4VJZMNIOq31zYd3GCj0Oy2/iMcqRD6XQjTbg==
 
 "@popperjs/core@^2.11.5", "@popperjs/core@^2.11.8":
   version "2.11.8"
@@ -11931,9 +11931,9 @@
     tslib "^2.3.1"
 
 "@whatwg-node/server@^0.9.33":
-  version "0.9.34"
-  resolved "https://registry.yarnpkg.com/@whatwg-node/server/-/server-0.9.34.tgz#6b4c578c90c57099984f6085b3e2db9ab01fad3f"
-  integrity sha512-1sHRjqUtZIyTR2m2dS/dJpzS5OcNDpPuUSVDa2PoEgzYVKr4GsqJaYtRaEXXFohvvyh6PkouYCc1rE7jMDWVCA==
+  version "0.9.36"
+  resolved "https://registry.yarnpkg.com/@whatwg-node/server/-/server-0.9.36.tgz#69524c6d4254e62777adf7ec7a7eea2f7f6c9314"
+  integrity sha512-KT9qKLmbuWSuFv0Vg4JyK2vN2+vSuQPeEa25xpndYFROAIZntYe7e2BlWAk9l7IrgnV+M4bCVhjrAwwRsaCeiA==
   dependencies:
     "@whatwg-node/fetch" "^0.9.17"
     tslib "^2.3.1"
@@ -13443,10 +13443,10 @@ better-path-resolve@1.0.0:
   dependencies:
     is-windows "^1.0.0"
 
-better-sqlite3@^10.0.0:
-  version "10.1.0"
-  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-10.1.0.tgz#8dc07e496fc014a7cd2211f79e591f6ba92838e8"
-  integrity sha512-hqpHJaCfKEZFaAWdMh6crdzRWyzQzfP6Ih8TYI0vFn01a6ZTDSbJIMXN+6AMBaBOh99DzUy8l3PsV9R3qnJDng==
+better-sqlite3@^9.1.1:
+  version "9.6.0"
+  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-9.6.0.tgz#b01e58ba7c48abcdc0383b8301206ee2ab81d271"
+  integrity sha512-yR5HATnqeYNVnkaUTf4bOP2dJSnyhP4puJN/QPRyx4YkBEEUxib422n2XzPqDEHjQQqazoYoADdAm5vE15+dAQ==
   dependencies:
     bindings "^1.5.0"
     prebuild-install "^7.1.1"
@@ -18048,10 +18048,10 @@ eslint-config-next@^13.5.6:
     eslint-plugin-react "^7.33.2"
     eslint-plugin-react-hooks "^4.5.0 || 5.0.0-canary-7118f5dd7-20230705"
 
-eslint-config-ponder@^0.4.6:
-  version "0.4.40"
-  resolved "https://registry.yarnpkg.com/eslint-config-ponder/-/eslint-config-ponder-0.4.40.tgz#bd82571875a16de3c32887e33008e5148c63c575"
-  integrity sha512-il4PcuZreijepQrIM05+gQplkvKdOMOeTVT/bQ5WIhqedkMiub7qnabBzqSAIQr/piWIy45mVQxF0eSXSXBeaQ==
+eslint-config-ponder@0.4.28:
+  version "0.4.28"
+  resolved "https://registry.yarnpkg.com/eslint-config-ponder/-/eslint-config-ponder-0.4.28.tgz#5fe0db5ed6354d4e31a78eecc1dfb59bd5c5b30e"
+  integrity sha512-YeExRhVQTTJdothC2sxuXnLaNEqEI5VNmCdyUxEegVOhtkOUNR3PILgwH/03ecZ7XR/8br7qaWj69sD05n6Vmw==
 
 eslint-config-prettier@^6.0.0:
   version "6.15.0"
@@ -20873,9 +20873,9 @@ graphql-ws@^5.14.0:
   integrity sha512-xWGAtm3fig9TIhSaNsg0FaDZ8Pyn/3re3RFlP4rhQcmjRDIPpk1EhRuNB+YSJtLzttyuToaDiNhwT1OMoGnJnw==
 
 graphql-yoga@^5.3.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/graphql-yoga/-/graphql-yoga-5.4.0.tgz#75873e21d47ca270da7923a5fd48785430af4105"
-  integrity sha512-o91DJjjAMwhb7PFJFA9yb/K55oCbT+0oFKqbwg5RHWAiy7YMgKMVgmbQFmtGPgkKdfbnJCVdYkX5OF30FTq46g==
+  version "5.6.0"
+  resolved "https://registry.yarnpkg.com/graphql-yoga/-/graphql-yoga-5.6.0.tgz#2e3e354e33bae5ade1a67c1dc3b8e94274f1bc03"
+  integrity sha512-MqzHRPmiMSilYLDbJtAnXN7oyggd446a4F9dyj/H4gCmM/3YllCYw3vtKcmsykorsfiSKCYpCf5CimNXIVaHHg==
   dependencies:
     "@envelop/core" "^5.0.0"
     "@graphql-tools/executor" "^1.2.5"
@@ -20889,15 +20889,20 @@ graphql-yoga@^5.3.0:
     lru-cache "^10.0.0"
     tslib "^2.5.2"
 
-graphql@^16.0.0, graphql@^16.8.1:
-  version "16.8.2"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-16.8.2.tgz#54771c7ff195da913f5e70af8044a026d32eca2a"
-  integrity sha512-cvVIBILwuoSyD54U4cF/UXDh5yAobhNV/tPygI4lZhgOIJQE/WLWC4waBRb4I6bDVYb3OVx3lfHbaQOEoUD5sg==
+graphql@^16.0.0:
+  version "16.9.0"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-16.9.0.tgz#1c310e63f16a49ce1fbb230bd0a000e99f6f115f"
+  integrity sha512-GGTKBX4SD7Wdb8mqeDLni2oaRGYQWjWHGKPQ24ZMnUtKfcsVoiv4uX8+LJr1K6U5VW2Lu1BwJnj7uiori0YtRw==
 
 graphql@^16.5.0, graphql@^16.7.1:
   version "16.8.1"
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-16.8.1.tgz#1930a965bef1170603702acdb68aedd3f3cf6f07"
   integrity sha512-59LZHPdGZVh695Ud9lRzPBVTtlX9ZCV150Er2W43ro37wVof0ctenSaskPPjN7lVTIN8mSZt8PHUNKZuNQUuxw==
+
+graphql@^16.8.1:
+  version "16.8.2"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-16.8.2.tgz#54771c7ff195da913f5e70af8044a026d32eca2a"
+  integrity sha512-cvVIBILwuoSyD54U4cF/UXDh5yAobhNV/tPygI4lZhgOIJQE/WLWC4waBRb4I6bDVYb3OVx3lfHbaQOEoUD5sg==
 
 gray-matter@^4.0.3:
   version "4.0.3"
@@ -21490,10 +21495,10 @@ homedir-polyfill@^1.0.1:
   dependencies:
     parse-passwd "^1.0.0"
 
-hono@^4.4.2:
-  version "4.4.7"
-  resolved "https://registry.yarnpkg.com/hono/-/hono-4.4.7.tgz#c7b195bdeff0b46e829189c08049decc0c6510c0"
-  integrity sha512-WoQWFQyVFEVRtIzP5sHPv7nvIw+RYL/HRnvnOCDxj6A+BtrwuC9S0vryZbV4IyFcNgOJ87r/phDiC1x2eEo4Gg==
+hono@^4.1.3:
+  version "4.4.12"
+  resolved "https://registry.yarnpkg.com/hono/-/hono-4.4.12.tgz#dbde2d474cd996016ee53f779125efc7c1534879"
+  integrity sha512-Lx4Vwbws0IqFfXIVYychxUW0A4EE+7dn/jsjVeM34OXSA2Xs45MkDDP14Mzznp7LlDemUNHQG2uv2N5jQld0hA==
 
 hosted-git-info@^2.1.4:
   version "2.8.9"
@@ -24802,9 +24807,9 @@ lpad-align@^1.0.1:
     meow "^3.3.0"
 
 lru-cache@^10.0.0:
-  version "10.2.2"
-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-10.2.2.tgz#48206bc114c1252940c41b25b41af5b545aca878"
-  integrity sha512-9hp3Vp2/hFQUiIwKo8XCeFVnrg8Pk3TYNPIR7tJADKi5YfcF7vEaK7avFHTlSy3kOKYaJQaalfEo6YuXdceBOQ==
+  version "10.4.0"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-10.4.0.tgz#cb29b4b2dd55b22e4a729cdb096093d7f85df02d"
+  integrity sha512-bfJaPTuEiTYBu+ulDaeQ0F+uLmlfFkMgXj4cbwfuMSjgObGMzb55FMMbDvbRU0fAHZ4sLGkz2mKwcMg8Dvm8Ww==
 
 lru-cache@^10.2.0, "lru-cache@^9.1.1 || ^10.0.0":
   version "10.2.0"
