@@ -1,8 +1,8 @@
 [
   {
     "id": "base-chain-pause",
-    "pausedFromChains": [111],
-    "pausedToChains": [111],
+    "pausedFromChains": [8453],
+    "pausedToChains": [8453],
     "pauseBridge": true,
     "pauseSwap": false,
     "startTimePauseChain": "2024-04-12T17:41:00Z",
@@ -18,8 +18,8 @@
   },
   {
     "id": "arbitrum-chain-pause",
-    "pausedFromChains": [420],
-    "pausedToChains": [420],
+    "pausedFromChains": [42161],
+    "pausedToChains": [],
     "pauseBridge": true,
     "pauseSwap": false,
     "startTimePauseChain": "2024-07-03T22:38:49Z",
