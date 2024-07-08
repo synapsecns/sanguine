@@ -48,6 +48,8 @@ type Reader interface {
 	GetRebalanceByID(ctx context.Context, rebalanceID string) (*Rebalance, error)
 	// GetDBStats gets the database stats.
 	GetDBStats(ctx context.Context) (*sql.DBStats, error)
+	// GetStatusCounts gets the counts of quote requests by status.
+	GetStatusCounts(ctx context.Context, matchStatuses ...QuoteRequestStatus) (map[QuoteRequestStatus]int, error)
 }
 
 // Service is the interface for the database service.
