@@ -28,8 +28,8 @@ type otelRecorder struct {
 	metrics metrics.Handler
 	// meter is the metrics meter.
 	meter metric.Meter
-	// statusGauge is the gauge for the status.
-	statusGauge metric.Int64ObservableGauge
+	// statusCountGauge is the gauge for the status.
+	statusCountGauge metric.Int64ObservableGauge
 	// statusCounts is used for metrics.
 	// status -> count
 	statusCounts *hashmap.Map[int, int]
@@ -45,12 +45,12 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 		signer:       signer,
 	}
 
-	or.statusGauge, err = or.meter.Int64ObservableGauge("status")
+	or.statusCountGauge, err = or.meter.Int64ObservableGauge("status_count")
 	if err != nil {
 		return nil, fmt.Errorf("could not create last block gauge")
 	}
 
-	_, err = or.meter.RegisterCallback(or.recordStatusCounts, or.statusGauge)
+	_, err = or.meter.RegisterCallback(or.recordStatusCounts, or.statusCountGauge)
 	if err != nil {
 		return nil, fmt.Errorf("could not register callback for status gauge")
 	}
@@ -59,7 +59,7 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 }
 
 func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Observer) (err error) {
-	if o.metrics == nil || o.statusGauge == nil || o.statusCounts == nil {
+	if o.metrics == nil || o.statusCountGauge == nil || o.statusCounts == nil {
 		return nil
 	}
 
@@ -68,7 +68,7 @@ func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Obs
 			attribute.Int("status", int(status)),
 			attribute.String("wallet", o.signer.Address().Hex()),
 		)
-		observer.ObserveInt64(o.statusGauge, int64(count), opts)
+		observer.ObserveInt64(o.statusCountGauge, int64(count), opts)
 
 		return true
 	})
