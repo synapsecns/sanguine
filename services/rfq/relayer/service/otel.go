@@ -31,8 +31,8 @@ type otelRecorder struct {
 	// statusGauge is the gauge for the status.
 	statusGauge metric.Int64ObservableGauge
 	// statuses is used for metrics.
-	// chainID -> status
-	statuses *hashmap.Map[uint32, int]
+	// status -> count
+	statuses *hashmap.Map[int, int]
 	// signer is the signer for signing transactions.
 	signer signer.Signer
 }
@@ -41,7 +41,7 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 	or := otelRecorder{
 		metrics:  meterHandler,
 		meter:    meterHandler.Meter(meterName),
-		statuses: hashmap.New[uint32, int](),
+		statuses: hashmap.New[int, int](),
 		signer:   signer,
 	}
 
@@ -50,7 +50,7 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 		return nil, fmt.Errorf("could not create last block gauge")
 	}
 
-	_, err = or.meter.RegisterCallback(or.recordStatuses, or.statusGauge)
+	_, err = or.meter.RegisterCallback(or.recordStatusCounts, or.statusGauge)
 	if err != nil {
 		return nil, fmt.Errorf("could not register callback for status gauge")
 	}
@@ -58,17 +58,17 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 	return &or, nil
 }
 
-func (o *otelRecorder) recordStatuses(_ context.Context, observer metric.Observer) (err error) {
+func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Observer) (err error) {
 	if o.metrics == nil || o.statusGauge == nil || o.statuses == nil {
 		return nil
 	}
 
-	o.statuses.Range(func(chainID uint32, status int) bool {
+	o.statuses.Range(func(status int, count int) bool {
 		opts := metric.WithAttributes(
-			attribute.Int(metrics.ChainID, int(chainID)),
+			attribute.Int("status", int(status)),
 			attribute.String("wallet", o.signer.Address().Hex()),
 		)
-		observer.ObserveInt64(o.statusGauge, int64(status), opts)
+		observer.ObserveInt64(o.statusGauge, int64(count), opts)
 
 		return true
 	})
@@ -76,7 +76,7 @@ func (o *otelRecorder) recordStatuses(_ context.Context, observer metric.Observe
 	return nil
 }
 
-// RecordStatuses records the request status for a given chain.
-func (o *otelRecorder) RecordStatusForChain(chainID uint32, status int) {
-	o.statuses.Set(chainID, status)
+// RecordStatuses records the request status count.
+func (o *otelRecorder) RecordStatusCount(status, count int) {
+	o.statuses.Set(status, count)
 }

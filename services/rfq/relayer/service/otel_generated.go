@@ -4,6 +4,6 @@ package service
 
 // iOtelRecorder ...
 type iOtelRecorder interface {
-	// RecordStatuses records the request status for a given chain.
-	RecordStatusForChain(chainID uint32, status int)
+	// RecordStatuses records the request status count.
+	RecordStatusCount(status, count int)
 }
