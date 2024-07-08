@@ -14,7 +14,8 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Purge CDN Caches
-        uses: egad13/purge-jsdelivr-cache@v1
+        uses: gacts/purge-jsdelivr-cache@v1
         with:
-          url: 'https://cdn.jsdelivr.net/gh/synapsecns/sanguine@master/packages/synapse-interface/public/pauses/v1/paused-chains.json' |
-               'https://cdn.jsdelivr.net/gh/synapsecns/sanguine@master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
+          url: |
+            https://cdn.jsdelivr.net/gh/synapsecns/sanguine@master/packages/synapse-interface/public/pauses/v1/paused-chains.json
+            https://cdn.jsdelivr.net/gh/synapsecns/sanguine@master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json
