@@ -30,19 +30,19 @@ type otelRecorder struct {
 	meter metric.Meter
 	// statusGauge is the gauge for the status.
 	statusGauge metric.Int64ObservableGauge
-	// statuses is used for metrics.
+	// statusCounts is used for metrics.
 	// status -> count
-	statuses *hashmap.Map[int, int]
+	statusCounts *hashmap.Map[int, int]
 	// signer is the signer for signing transactions.
 	signer signer.Signer
 }
 
 func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOtelRecorder, err error) {
 	or := otelRecorder{
-		metrics:  meterHandler,
-		meter:    meterHandler.Meter(meterName),
-		statuses: hashmap.New[int, int](),
-		signer:   signer,
+		metrics:      meterHandler,
+		meter:        meterHandler.Meter(meterName),
+		statusCounts: hashmap.New[int, int](),
+		signer:       signer,
 	}
 
 	or.statusGauge, err = or.meter.Int64ObservableGauge("status")
@@ -59,11 +59,11 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 }
 
 func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Observer) (err error) {
-	if o.metrics == nil || o.statusGauge == nil || o.statuses == nil {
+	if o.metrics == nil || o.statusGauge == nil || o.statusCounts == nil {
 		return nil
 	}
 
-	o.statuses.Range(func(status int, count int) bool {
+	o.statusCounts.Range(func(status int, count int) bool {
 		opts := metric.WithAttributes(
 			attribute.Int("status", int(status)),
 			attribute.String("wallet", o.signer.Address().Hex()),
@@ -76,7 +76,7 @@ func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Obs
 	return nil
 }
 
-// RecordStatuses records the request status count.
+// RecordstatusCounts records the request status count.
 func (o *otelRecorder) RecordStatusCount(status, count int) {
-	o.statuses.Set(status, count)
+	o.statusCounts.Set(status, count)
 }
