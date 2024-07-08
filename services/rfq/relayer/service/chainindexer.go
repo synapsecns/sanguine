@@ -59,12 +59,6 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			return nil
 		}
 
-		defer func() {
-			if err != nil {
-				err = nil
-			}
-		}()
-
 		ctx, span := r.metrics.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
 			attribute.String(metrics.TxHash, log.TxHash.String()),
 			attribute.Int(metrics.Origin, chainID),
