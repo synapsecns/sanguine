@@ -76,7 +76,7 @@ func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Obs
 	return nil
 }
 
-// RecordstatusCounts records the request status count.
+// RecordStatusCounts records the request status count.
 func (o *otelRecorder) RecordStatusCount(status, count int) {
 	o.statusCounts.Set(status, count)
 }
