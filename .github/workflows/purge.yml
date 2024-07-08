@@ -9,16 +9,10 @@ jobs:
   purge-cache:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Purge CDN Caches
         uses: gacts/purge-jsdelivr-cache@v1
         with:
           url: |
             https://cdn.jsdelivr.net/gh/synapsecns/sanguine@master/packages/synapse-interface/public/pauses/v1/paused-chains.json
             https://cdn.jsdelivr.net/gh/synapsecns/sanguine@master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json
-            https://cdn.jsdelivr.net/gh/synapsecns/sanguine@test/maintenance/packages/synapse-interface/public/pauses/v1/paused-chains.json
-            https://cdn.jsdelivr.net/gh/synapsecns/sanguine@test/maintenance/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json
 
