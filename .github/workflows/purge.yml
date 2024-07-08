@@ -8,7 +8,7 @@ on:
 jobs:
   purge-cache:
     runs-on: ubuntu-latest
-
+    steps:
       - name: Purge CDN Caches
         uses: gacts/purge-jsdelivr-cache@v1
         with:
