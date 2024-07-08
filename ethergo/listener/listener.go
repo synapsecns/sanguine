@@ -80,7 +80,7 @@ func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB
 	}
 
 	var err error
-	c.otelRecorder, err = newOtelRecorder(handler)
+	c.otelRecorder, err = newOtelRecorder(handler, int(c.chainID))
 	if err != nil {
 		return nil, fmt.Errorf("could not create otel recorder: %w", err)
 	}

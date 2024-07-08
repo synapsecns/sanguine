@@ -36,15 +36,16 @@ type otelRecorder struct {
 	// lastBlockFetchTime is the time the last block was fetched (used to calculate last block age).
 	lastBlockFetchTime *time.Time
 	// chainID is the chain ID for the listener.
-	chainID uint32
+	chainID int
 }
 
-func newOtelRecorder(meterHandler metrics.Handler) (_ iOtelRecorder, err error) {
+func newOtelRecorder(meterHandler metrics.Handler, chainID int) (_ iOtelRecorder, err error) {
 	or := otelRecorder{
 		metrics:            meterHandler,
 		meter:              meterHandler.Meter(meterName),
 		lastBlock:          nil,
 		lastBlockFetchTime: nil,
+		chainID:            chainID,
 	}
 
 	or.lastBlockGauge, err = or.meter.Int64ObservableGauge("last_block")
@@ -76,7 +77,7 @@ func (o *otelRecorder) recordLastBlock(_ context.Context, observer metric.Observ
 	}
 
 	opts := metric.WithAttributes(
-		attribute.Int(metrics.ChainID, int(o.chainID)),
+		attribute.Int(metrics.ChainID, o.chainID),
 	)
 	observer.ObserveInt64(o.lastBlockGauge, int64(*o.lastBlock), opts)
 
@@ -90,7 +91,7 @@ func (o *otelRecorder) recordLastBlockAge(_ context.Context, observer metric.Obs
 
 	age := time.Since(*o.lastBlockFetchTime).Seconds()
 	opts := metric.WithAttributes(
-		attribute.Int(metrics.ChainID, int(o.chainID)),
+		attribute.Int(metrics.ChainID, o.chainID),
 	)
 	observer.ObserveFloat64(o.lastBlockAgeGauge, age, opts)
 
