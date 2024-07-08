@@ -29,8 +29,8 @@ type otelRecorder struct {
 	meter metric.Meter
 	// lastBlockGauge is the gauge for the last block.
 	lastBlockGauge metric.Int64ObservableGauge
-	// lastBlockAgeGauge is the gauge for the last block age.
-	lastBlockAgeGauge metric.Float64ObservableGauge
+	// lastFetchedBlockAgeGauge is the gauge for the last block age.
+	lastFetchedBlockAgeGauge metric.Float64ObservableGauge
 	// lastBlock is the last block processed by the listener.
 	lastBlock *uint64
 	// lastBlockFetchTime is the time the last block was fetched (used to calculate last block age).
@@ -53,7 +53,7 @@ func newOtelRecorder(meterHandler metrics.Handler, chainID int) (_ iOtelRecorder
 		return nil, fmt.Errorf("could not create last block gauge")
 	}
 
-	or.lastBlockAgeGauge, err = or.meter.Float64ObservableGauge("last_block_age")
+	or.lastFetchedBlockAgeGauge, err = or.meter.Float64ObservableGauge("last_block_age")
 	if err != nil {
 		return nil, fmt.Errorf("could not create last block age gauge")
 	}
@@ -63,7 +63,7 @@ func newOtelRecorder(meterHandler metrics.Handler, chainID int) (_ iOtelRecorder
 		return nil, fmt.Errorf("could not register callback for last block gauge")
 	}
 
-	_, err = or.meter.RegisterCallback(or.recordLastBlockAge, or.lastBlockAgeGauge)
+	_, err = or.meter.RegisterCallback(or.recordLastFetchedBlockAge, or.lastFetchedBlockAgeGauge)
 	if err != nil {
 		return nil, fmt.Errorf("could not register callback for last block age gauge")
 	}
@@ -84,8 +84,8 @@ func (o *otelRecorder) recordLastBlock(_ context.Context, observer metric.Observ
 	return nil
 }
 
-func (o *otelRecorder) recordLastBlockAge(_ context.Context, observer metric.Observer) (err error) {
-	if o.metrics == nil || o.lastBlockAgeGauge == nil || o.lastBlockFetchTime == nil {
+func (o *otelRecorder) recordLastFetchedBlockAge(_ context.Context, observer metric.Observer) (err error) {
+	if o.metrics == nil || o.lastFetchedBlockAgeGauge == nil || o.lastBlockFetchTime == nil {
 		return nil
 	}
 
@@ -93,7 +93,7 @@ func (o *otelRecorder) recordLastBlockAge(_ context.Context, observer metric.Obs
 	opts := metric.WithAttributes(
 		attribute.Int(metrics.ChainID, o.chainID),
 	)
-	observer.ObserveFloat64(o.lastBlockAgeGauge, age, opts)
+	observer.ObserveFloat64(o.lastFetchedBlockAgeGauge, age, opts)
 
 	return nil
 }
