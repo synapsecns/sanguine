@@ -23,8 +23,10 @@ export const getSynapsePauseData = () => {
 
   const randomValue: number = randomNumberGenerator()
 
-  const PAUSED_CHAINS_URL = `https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json?rId=${randomValue}`
-  const PAUSED_MODULES_URL = `https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json?rId=${randomValue}`
+  // const PAUSED_CHAINS_URL = `https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json?rId=${randomValue}`
+  // const PAUSED_MODULES_URL = `https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json?rId=${randomValue}`
+  const PAUSED_CHAINS_URL = `https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-chains.json?rId=${randomValue}`
+  const PAUSED_MODULES_URL = `https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json?rId=${randomValue}`
 
   const fetchAndStoreData = async () => {
     if (isFetching) return
