@@ -104,7 +104,7 @@ func (o *otelRecorder) RecordLastBlock(lastBlock uint64) {
 	if o.lastBlock == nil {
 		hasChanged = true
 	} else {
-		hasChanged = *o.lastBlock == lastBlock
+		hasChanged = *o.lastBlock != lastBlock
 	}
 	if !hasChanged {
 		return
