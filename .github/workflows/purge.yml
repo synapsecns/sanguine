@@ -1,6 +1,9 @@
 name: Purge Cache (jsDelivr)
 
 on:
+  pull_request:
+    paths:
+      - 'packages/synapse-interface/public/pauses/v1/**'
   push:
     paths:
       - 'packages/synapse-interface/public/pauses/v1/**'
