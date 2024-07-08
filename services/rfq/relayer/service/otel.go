@@ -47,12 +47,12 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 
 	or.statusCountGauge, err = or.meter.Int64ObservableGauge("status_count")
 	if err != nil {
-		return nil, fmt.Errorf("could not create last block gauge")
+		return nil, fmt.Errorf("could not create status count gauge")
 	}
 
 	_, err = or.meter.RegisterCallback(or.recordStatusCounts, or.statusCountGauge)
 	if err != nil {
-		return nil, fmt.Errorf("could not register callback for status gauge")
+		return nil, fmt.Errorf("could not register callback for status count gauge")
 	}
 
 	return &or, nil
@@ -60,10 +60,12 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 
 func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Observer) (err error) {
 	if o.metrics == nil || o.statusCountGauge == nil || o.statusCounts == nil {
+		fmt.Println("something is nil")
 		return nil
 	}
 
 	o.statusCounts.Range(func(status int, count int) bool {
+		fmt.Printf("recordStatusCounts with status: %d and count: %d\n", status, count)
 		opts := metric.WithAttributes(
 			attribute.Int("status", status),
 			attribute.String("wallet", o.signer.Address().Hex()),
@@ -78,5 +80,6 @@ func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Obs
 
 // RecordStatusCounts records the request status count.
 func (o *otelRecorder) RecordStatusCount(status, count int) {
+	fmt.Printf("RecordStatusCount with status: %d and count: %d\n", status, count)
 	o.statusCounts.Set(status, count)
 }

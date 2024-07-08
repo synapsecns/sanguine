@@ -4,6 +4,6 @@ package service
 
 // iOtelRecorder ...
 type iOtelRecorder interface {
-	// RecordStatuses records the request status count.
+	// RecordStatusCounts records the request status count.
 	RecordStatusCount(status, count int)
 }
