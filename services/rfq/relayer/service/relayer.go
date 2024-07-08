@@ -387,13 +387,7 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 		} else {
 			// process in parallel (new goroutine)
 			request := req // capture func literal
-			ok := r.semaphore.TryAcquire(1)
-			if !ok {
-				span.AddEvent("could not acquire semaphore", trace.WithAttributes(
-					attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
-				))
-				continue
-			}
+			err = r.semaphore.Acquire(ctx, 1)
 			if err != nil {
 				return fmt.Errorf("could not acquire semaphore: %w", err)
 			}
