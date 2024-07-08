@@ -7,15 +7,24 @@ import { fetchJsonData } from './fetchJsonData'
 import pausedChains from '@/public/pauses/v1/paused-chains.json'
 import pausedBridgeModules from '@/public/pauses/v1/paused-bridge-modules.json'
 
-export const PAUSED_CHAINS_URL =
+const randomNumberGenerator = (): number => {
+  return Math.floor(Math.random() * 100) + 1
+}
+
+export const PAUSED_CHAINS_CDN_URL =
   'https://cdn.jsdelivr.net/gh/synapsecns/sanguine@master/packages/synapse-interface/public/pauses/v1/paused-chains.json'
-export const PAUSED_MODULES_URL =
+export const PAUSED_MODULES_CDN_URL =
   'https://cdn.jsdelivr.net/gh/synapsecns/sanguine@master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
 
 let isFetching = false
 
 export const getSynapsePauseData = () => {
   const dispatch = useAppDispatch()
+
+  const randomValue: number = randomNumberGenerator()
+
+  const PAUSED_CHAINS_URL = `https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-chains.json?rId=${randomValue}`
+  const PAUSED_MODULES_URL = `https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json?rId=${randomValue}`
 
   const fetchAndStoreData = async () => {
     if (isFetching) return
