@@ -51,8 +51,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	if !errors.Is(err, reldb.ErrNoQuoteForID) {
 		// maybe a db err? if so error out & try again later
 		if err != nil {
-			span.SetAttributes(attribute.String("db_error", err.Error()))
-			return nil
+			return fmt.Errorf("could not call db: %w", err)
 		}
 
 		span.AddEvent("already known")
