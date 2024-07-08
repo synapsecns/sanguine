@@ -383,7 +383,7 @@ func (r *Relayer) recordMetrics(ctx context.Context) (err error) {
 		case <-ctx.Done():
 			return fmt.Errorf("could not record metrics: %w", ctx.Err())
 		case <-time.After(defaultMetricsInterval * time.Second):
-			statusCounts, err := r.db.GetStatusCounts(ctx)
+			statusCounts, err := r.db.GetStatusCounts(ctx, reldb.Seen, reldb.NotEnoughInventory, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayStarted, reldb.RelayCompleted, reldb.ProvePosting, reldb.ProvePosted, reldb.ClaimPending)
 			if err != nil {
 				return fmt.Errorf("could not get status counts: %w", err)
 			}
