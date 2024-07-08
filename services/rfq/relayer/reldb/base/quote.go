@@ -93,7 +93,7 @@ func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status
 	if prevStatus == nil {
 		req, err := s.GetQuoteRequestByID(ctx, id)
 		if err != nil {
-			return fmt.Errorf("could not get quote: %w", err)
+			return fmt.Errorf("could not get quote: %w", reldb.ErrNoQuoteForID)
 		}
 		prevStatus = &req.Status
 	}

@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -85,7 +87,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost, nil)
+				return r.setRelayRaceLost(ctx, event.TransactionId)
 			}
 
 			err = r.handleRelayLog(ctx, event)
@@ -99,7 +101,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost, nil)
+				return r.setRelayRaceLost(ctx, event.TransactionId)
 			}
 
 			err = r.handleProofProvided(ctx, event)
@@ -113,7 +115,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost, nil)
+				return r.setRelayRaceLost(ctx, event.TransactionId)
 			}
 
 			err = r.handleDepositClaimed(ctx, event)
@@ -209,6 +211,18 @@ func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.Fa
 	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted, nil)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
+	}
+	return nil
+}
+
+func (r *Relayer) setRelayRaceLost(ctx context.Context, transactionID [32]byte) error {
+	err := r.db.UpdateQuoteRequestStatus(ctx, transactionID, reldb.RelayRaceLost, nil)
+	// quote does not exist, no need to update status
+	if err != nil && (errors.Is(err, reldb.ErrNoQuoteForID) || strings.Contains(err.Error(), reldb.ErrNoQuoteForID.Error())) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("could not set relay race lost: %w", err)
 	}
 	return nil
 }
