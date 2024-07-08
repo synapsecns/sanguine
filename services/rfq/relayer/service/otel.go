@@ -65,7 +65,7 @@ func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Obs
 
 	o.statusCounts.Range(func(status int, count int) bool {
 		opts := metric.WithAttributes(
-			attribute.Int("status", int(status)),
+			attribute.Int("status", status),
 			attribute.String("wallet", o.signer.Address().Hex()),
 		)
 		observer.ObserveInt64(o.statusCountGauge, int64(count), opts)
