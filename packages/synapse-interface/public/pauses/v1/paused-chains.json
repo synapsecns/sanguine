@@ -18,7 +18,7 @@
   },
   {
     "id": "arbitrum-chain-pause",
-    "pausedFromChains": [42161],
+    "pausedFromChains": [111],
     "pausedToChains": [],
     "pauseBridge": true,
     "pauseSwap": false,
