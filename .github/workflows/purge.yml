@@ -19,3 +19,6 @@ jobs:
           url: |
             https://cdn.jsdelivr.net/gh/synapsecns/sanguine@master/packages/synapse-interface/public/pauses/v1/paused-chains.json
             https://cdn.jsdelivr.net/gh/synapsecns/sanguine@master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json
+            https://cdn.jsdelivr.net/gh/synapsecns/sanguine@test/maintenance/packages/synapse-interface/public/pauses/v1/paused-chains.json
+            https://cdn.jsdelivr.net/gh/synapsecns/sanguine@test/maintenance/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json
+
