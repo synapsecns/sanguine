@@ -69,6 +69,10 @@ type ChainConfig struct {
 	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
 	// TokenMessengerAddress is the TokenMessenger address.
 	TokenMessengerAddress string `yaml:"token_messenger_address"`
+	// L1GatewayAddress is the L1Gateway address [scroll].
+	L1GatewayAddress string `yaml:"l1_gateway_address"`
+	// L2GatewayAddress is the L2Gateway address [scroll].
+	L2GatewayAddress string `yaml:"l2_gateway_address"`
 	// Confirmations is the number of required confirmations.
 	Confirmations uint64 `yaml:"confirmations"`
 	// Tokens is a map of token name -> token config.

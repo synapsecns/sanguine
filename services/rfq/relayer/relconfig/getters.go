@@ -131,6 +131,34 @@ func (c Config) GetTokenMessengerAddress(chainID int) (value string, err error) 
 	return value, nil
 }
 
+// GetL1GatewayAddress returns the L1Gateway address for the given chainID.
+func (c Config) GetL1GatewayAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "L1GatewayAddress")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast L1GatewayAddress to string")
+	}
+	return value, nil
+}
+
+// GetL2GatewayAddress returns the L2Gateway address for the given chainID.
+func (c Config) GetL2GatewayAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "L2GatewayAddress")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast L2GatewayAddress to string")
+	}
+	return value, nil
+}
+
 // GetConfirmations returns the Confirmations for the given chainID.
 func (c Config) GetConfirmations(chainID int) (value uint64, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "Confirmations")
