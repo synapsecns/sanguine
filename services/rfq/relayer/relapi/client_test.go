@@ -1,6 +1,11 @@
 package relapi_test
 
 import (
+	"context"
+	"fmt"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/core/retry"
@@ -229,6 +234,7 @@ func (c *RelayerClientSuite) TestERC20WithdrawCLI() {
 
 	c.Require().NoError(err)
 	c.Require().NotNil(res)
+}
 func (c *RelayerClientSuite) TestGetQuoteByTX() {
 	testReq := c.underlying.getTestQuoteRequest(reldb.Seen)
 	err := c.underlying.database.StoreQuoteRequest(c.GetTestContext(), testReq)
