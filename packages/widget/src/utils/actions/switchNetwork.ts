@@ -16,9 +16,9 @@ export const switchNetwork = async (chainId: number, provider: any) => {
     await provider.send('wallet_addEthereumChain', [
       {
         chainId: hexChainId,
-        chainName: chain.name,
+        chainName: chain.networkName,
         nativeCurrency: chain.nativeCurrency,
-        rpcUrls: [chain.rpcUrls.primary, chain.rpcUrls.fallback],
+        rpcUrls: [chain.networkUrl],
       },
     ])
     await provider.send('wallet_switchEthereumChain', [{ chainId: hexChainId }])

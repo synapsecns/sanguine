@@ -84,6 +84,8 @@ export interface Chain {
   explorerName: string
   blockTime: number
   imgUrl: string
+  networkName: string
+  networkUrl: string
   nativeCurrency: {
     name: string
     symbol: string
