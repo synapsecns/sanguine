@@ -231,3 +231,4 @@ The metrics exposed by the relayer are:
 
 - `inventory_balance`: The balance of the inventory on the chain for a given `token_name` and `relayer`.
 - `quote_amount`: The amount quoted for a given `token_name` and `relayer`.
+- `status_count`: The distribution of non-terminal `QuoteRequestStatus` values over time.
