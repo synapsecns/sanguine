@@ -244,6 +244,43 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"nonce": nonce})
 }
 
+// GetTxByNonceRequest is the request for getting a transaction hash by nonce.
+type GetTxByNonceRequest struct {
+	ChainID uint32 `json:"chain_id"`
+	Nonce   uint64 `json:"nonce"`
+}
+
+// GetTxHashByNonce gets the transaction hash by submitter nonce.
+func (h *Handler) GetTxHashByNonce(c *gin.Context) {
+	chainIDStr := c.Query("chain_id")
+	nonceStr := c.Query("nonce")
+
+	chainID, ok := new(big.Int).SetString(chainIDStr, 10)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid chainID"})
+		return
+	}
+
+	nonce, ok := new(big.Int).SetString(nonceStr, 10)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid nonce"})
+		return
+	}
+
+	tx, err := h.submitter.GetSubmissionStatus(c, chainID, nonce.Uint64())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not get tx hash: %s", err.Error())})
+		return
+	}
+
+	if tx.HasTx() {
+		c.JSON(http.StatusOK, gin.H{"withdrawTxHash": tx.TxHash().String()})
+		return
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{"error": "transaction not found"})
+}
+
 // tokenIDExists checks if a token ID exists in the config.
 // note: this method assumes that SanitizeTokenID is a method of relconfig.Config
 func tokenIDExists(cfg relconfig.Config, tokenAddress common.Address, chainID int) bool {

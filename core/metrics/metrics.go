@@ -3,6 +3,10 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
 	experimentalLogger "github.com/synapsecns/sanguine/core/metrics/logger"
@@ -11,9 +15,6 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
-	"net/http"
-	"os"
-	"strings"
 )
 
 // Handler collects metrics.

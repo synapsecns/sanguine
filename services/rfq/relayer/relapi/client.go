@@ -3,12 +3,13 @@ package relapi
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/dubonzi/otelresty"
 	"github.com/go-http-utils/headers"
 	"github.com/go-resty/resty/v2"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/valyala/fastjson"
-	"net/http"
 )
 
 // RelayerClient is the interface for the relayer client.
@@ -18,6 +19,7 @@ type RelayerClient interface {
 	GetQuoteRequestStatusByTxID(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
 	RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error)
 	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)
+	GetTxHashByNonce(ctx context.Context, req *GetTxByNonceRequest) (*TxHashByNonceResponse, error)
 	GetQuoteRequestByTXID(ctx context.Context, txid string) (*GetQuoteRequestResponse, error)
 }
 
@@ -108,6 +110,7 @@ type WithdrawResponse struct {
 	Nonce uint64 `json:"nonce"`
 }
 
+// Withdraw withdraws an ERC20 or Ether from the relayer.
 func (r *relayerClient) Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error) {
 	var res WithdrawResponse
 	resp, err := r.client.R().SetContext(ctx).
@@ -117,6 +120,32 @@ func (r *relayerClient) Withdraw(ctx context.Context, req *WithdrawRequest) (*Wi
 	if err != nil {
 		return nil, fmt.Errorf("failed to withdraw transaction: %w", err)
 	}
+	if resp.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
+	}
+
+	return &res, nil
+}
+
+// TxHashByNonceResponse is the request for getting a transaction hash by nonce.
+type TxHashByNonceResponse struct {
+	Hash string `json:"withdrawTxHash"`
+}
+
+// GetTxByNonceRequest is the request for getting a transaction hash by nonce.
+func (r *relayerClient) GetTxHashByNonce(ctx context.Context, req *GetTxByNonceRequest) (*TxHashByNonceResponse, error) {
+	var res TxHashByNonceResponse
+
+	resp, err := r.client.R().SetContext(ctx).
+		SetResult(&res).
+		SetQueryParam("chain_id", fmt.Sprintf("%d", req.ChainID)).
+		SetQueryParam("nonce", fmt.Sprintf("%d", req.Nonce)).
+		Get(getTxHashByNonceRoute)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tx hash by nonce: %w", err)
+	}
+
 	if resp.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
 	}
