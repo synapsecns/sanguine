@@ -47,12 +47,12 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 
 	or.statusCountGauge, err = or.meter.Int64ObservableGauge("status_count")
 	if err != nil {
-		return nil, fmt.Errorf("could not create status count gauge")
+		return nil, fmt.Errorf("could not create status count gauge: %w", err)
 	}
 
 	_, err = or.meter.RegisterCallback(or.recordStatusCounts, or.statusCountGauge)
 	if err != nil {
-		return nil, fmt.Errorf("could not register callback for status count gauge")
+		return nil, fmt.Errorf("could not register callback for status count gauge: %w", err)
 	}
 
 	return &or, nil
