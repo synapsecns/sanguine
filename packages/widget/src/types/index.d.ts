@@ -84,6 +84,11 @@ export interface Chain {
   explorerName: string
   blockTime: number
   imgUrl: string
+  nativeCurrency: {
+    name: string
+    symbol: string
+    decimals: number
+  }
 }
 
 export declare function Bridge(props: BridgeProps): JSX.Element

@@ -13,6 +13,11 @@ export const ETHEREUM: Chain = {
   blockTime: 12000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/ethereum.4a372106.svg',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const ARBITRUM: Chain = {
@@ -27,6 +32,11 @@ export const ARBITRUM: Chain = {
   blockTime: 300,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/arbitrum.8ddb1b22.svg',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const BNBCHAIN: Chain = {
@@ -41,6 +51,11 @@ export const BNBCHAIN: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.5948fe5e.svg',
+  nativeCurrency: {
+    name: 'Binance Coin',
+    symbol: 'BNB',
+    decimals: 18,
+  },
 }
 
 export const AVALANCHE: Chain = {
@@ -55,6 +70,11 @@ export const AVALANCHE: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/avalanche.9d53cbf0.svg',
+  nativeCurrency: {
+    name: 'Avax',
+    symbol: 'AVAX',
+    decimals: 18,
+  },
 }
 
 export const CANTO: Chain = {
@@ -69,6 +89,11 @@ export const CANTO: Chain = {
   blockTime: 6000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/canto.cb85e14f.svg',
+  nativeCurrency: {
+    name: 'Canto',
+    symbol: 'CANTO',
+    decimals: 18,
+  },
 }
 
 export const OPTIMISM: Chain = {
@@ -83,6 +108,11 @@ export const OPTIMISM: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/optimism.84d4f0ef.svg',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const POLYGON: Chain = {
@@ -97,6 +127,11 @@ export const POLYGON: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/polygon.237cd2b6.svg',
+  nativeCurrency: {
+    name: 'Matic',
+    symbol: 'MATIC',
+    decimals: 18,
+  },
 }
 
 export const DFK: Chain = {
@@ -111,6 +146,11 @@ export const DFK: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dfk.2bd1f0e4.svg',
+  nativeCurrency: {
+    name: 'Jewel',
+    symbol: 'JEWEL',
+    decimals: 18,
+  },
 }
 
 export const KLAYTN: Chain = {
@@ -125,6 +165,11 @@ export const KLAYTN: Chain = {
   blockTime: 1000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/klaytn.59495fbb.svg',
+  nativeCurrency: {
+    name: 'Klaytn',
+    symbol: 'KLAY',
+    decimals: 18,
+  },
 }
 
 export const FANTOM: Chain = {
@@ -139,6 +184,11 @@ export const FANTOM: Chain = {
   blockTime: 1000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/fantom.1e444dad.svg',
+  nativeCurrency: {
+    name: 'Fantom',
+    symbol: 'FTM',
+    decimals: 18,
+  },
 }
 
 export const CRONOS: Chain = {
@@ -153,6 +203,11 @@ export const CRONOS: Chain = {
   blockTime: 6000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/cronos.b06f8311.svg',
+  nativeCurrency: {
+    name: 'Cronos',
+    symbol: 'CRO',
+    decimals: 18,
+  },
 }
 
 export const BOBA: Chain = {
@@ -167,6 +222,11 @@ export const BOBA: Chain = {
   blockTime: 1000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/boba.2072e50b.svg',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const METIS: Chain = {
@@ -181,6 +241,11 @@ export const METIS: Chain = {
   blockTime: 4000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/metis.3114f675.svg',
+  nativeCurrency: {
+    name: 'Metis',
+    symbol: 'METIS',
+    decimals: 18,
+  },
 }
 
 export const AURORA: Chain = {
@@ -195,6 +260,11 @@ export const AURORA: Chain = {
   blockTime: 1000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/aurora.5a46037d.svg',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const HARMONY: Chain = {
@@ -209,6 +279,11 @@ export const HARMONY: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/harmony.af12f77e.svg',
+  nativeCurrency: {
+    name: 'Harmony One',
+    symbol: 'ONE',
+    decimals: 18,
+  },
 }
 
 export const MOONBEAM: Chain = {
@@ -223,6 +298,11 @@ export const MOONBEAM: Chain = {
   blockTime: 12000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
+  nativeCurrency: {
+    name: 'Glimmer',
+    symbol: 'GLMR',
+    decimals: 18,
+  },
 }
 
 export const MOONRIVER: Chain = {
@@ -237,6 +317,11 @@ export const MOONRIVER: Chain = {
   blockTime: 12000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
+  nativeCurrency: {
+    name: 'Moonriver',
+    symbol: 'MOVR',
+    decimals: 18,
+  },
 }
 
 export const DOGE: Chain = {
@@ -251,6 +336,11 @@ export const DOGE: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dogechain.36935650.svg',
+  nativeCurrency: {
+    name: 'DOGE',
+    symbol: 'DOGE',
+    decimals: 18,
+  },
 }
 
 export const BASE: Chain = {
@@ -265,6 +355,11 @@ export const BASE: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/base.d919fbef.svg',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const BLAST: Chain = {
@@ -280,6 +375,11 @@ export const BLAST: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/blast.e39807f8.svg',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const SCROLL: Chain = {
@@ -294,6 +394,11 @@ export const SCROLL: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://fe-adds-scroll.sanguine-fe.pages.dev/_next/static/media/scroll.a805c122.svg',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const CHAINS = {
