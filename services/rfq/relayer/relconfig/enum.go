@@ -14,8 +14,6 @@ const (
 	RebalanceMethodCircleCCTP
 	// RebalanceMethodScroll is the rebalance method for Scroll.
 	RebalanceMethodScroll
-	// RebalanceMethodNative is the rebalance method for native bridge.
-	RebalanceMethodNative
 )
 
 // RebalanceMethodFromString converts a string to a RebalanceMethod.
@@ -27,8 +25,6 @@ func RebalanceMethodFromString(str string) (RebalanceMethod, error) {
 		return RebalanceMethodCircleCCTP, nil
 	case "scroll":
 		return RebalanceMethodScroll, nil
-	case "native":
-		return RebalanceMethodNative, nil
 	case "":
 		return RebalanceMethodNone, nil
 	default:
@@ -46,8 +42,6 @@ func (i RebalanceMethod) String() string {
 		return "circlecctp"
 	case RebalanceMethodScroll:
 		return "scroll"
-	case RebalanceMethodNative:
-		return "native"
 	default:
 		return ""
 	}
