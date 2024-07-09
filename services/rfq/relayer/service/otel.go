@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 
 	"github.com/cornelk/hashmap"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -32,7 +33,7 @@ type otelRecorder struct {
 	statusCountGauge metric.Int64ObservableGauge
 	// statusCounts is used for metrics.
 	// status -> count
-	statusCounts *hashmap.Map[int, int]
+	statusCounts *hashmap.Map[reldb.QuoteRequestStatus, int]
 	// signer is the signer for signing transactions.
 	signer signer.Signer
 }
@@ -41,7 +42,7 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 	or := otelRecorder{
 		metrics:      meterHandler,
 		meter:        meterHandler.Meter(meterName),
-		statusCounts: hashmap.New[int, int](),
+		statusCounts: hashmap.New[reldb.QuoteRequestStatus, int](),
 		signer:       signer,
 	}
 
@@ -63,9 +64,10 @@ func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Obs
 		return nil
 	}
 
-	o.statusCounts.Range(func(status int, count int) bool {
+	o.statusCounts.Range(func(status reldb.QuoteRequestStatus, count int) bool {
 		opts := metric.WithAttributes(
-			attribute.Int("status", status),
+			attribute.Int("status_int", int(status.Int())),
+			attribute.String("status", status.String()),
 			attribute.String("wallet", o.signer.Address().Hex()),
 		)
 		observer.ObserveInt64(o.statusCountGauge, int64(count), opts)
@@ -76,7 +78,7 @@ func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Obs
 	return nil
 }
 
-// RecordStatusCounts records the request status count.
-func (o *otelRecorder) RecordStatusCount(status, count int) {
+// RecordStatusCount records the request status count.
+func (o *otelRecorder) RecordStatusCount(status reldb.QuoteRequestStatus, count int) {
 	o.statusCounts.Set(status, count)
 }

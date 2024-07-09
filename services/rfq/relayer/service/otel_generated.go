@@ -2,8 +2,12 @@
 
 package service
 
+import (
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+)
+
 // iOtelRecorder ...
 type iOtelRecorder interface {
 	// RecordStatusCounts records the request status count.
-	RecordStatusCount(status, count int)
+	RecordStatusCount(status reldb.QuoteRequestStatus, count int)
 }
