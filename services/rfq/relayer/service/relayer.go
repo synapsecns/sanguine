@@ -62,7 +62,8 @@ type Relayer struct {
 	// semaphore is used to limit the number of concurrent requests
 	semaphore *semaphore.Weighted
 	// handlerMtx is used to synchronize handling of relay requests
-	handlerMtx mapmutex.StringMapMutex
+	handlerMtx   mapmutex.StringMapMutex
+	otelRecorder iOtelRecorder
 }
 
 var logger = log.Logger("relayer")
@@ -142,6 +143,11 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get api server: %w", err)
 	}
 
+	otelRecorder, err := newOtelRecorder(metricHandler, sg)
+	if err != nil {
+		return nil, fmt.Errorf("could not get otel recorder: %w", err)
+	}
+
 	cache := ttlcache.New[common.Hash, bool](ttlcache.WithTTL[common.Hash, bool](time.Second * 30))
 	rel := Relayer{
 		db:             store,
@@ -159,6 +165,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		apiClient:      apiClient,
 		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
 		handlerMtx:     mapmutex.NewStringMapMutex(),
+		otelRecorder:   otelRecorder,
 	}
 	return &rel, nil
 }
@@ -280,6 +287,14 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		return nil
 	})
 
+	g.Go(func() error {
+		err = r.recordMetrics(ctx)
+		if err != nil {
+			return fmt.Errorf("could not record metrics: %w", err)
+		}
+		return nil
+	})
+
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not start: %w", err)
@@ -358,6 +373,25 @@ func (r *Relayer) startGuard(ctx context.Context) (err error) {
 	}
 
 	return nil
+}
+
+const defaultMetricsInterval = 10
+
+func (r *Relayer) recordMetrics(ctx context.Context) (err error) {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("could not record metrics: %w", ctx.Err())
+		case <-time.After(defaultMetricsInterval * time.Second):
+			statusCounts, err := r.db.GetStatusCounts(ctx, reldb.Seen, reldb.NotEnoughInventory, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayStarted, reldb.RelayCompleted, reldb.ProvePosting, reldb.ProvePosted, reldb.ClaimPending)
+			if err != nil {
+				return fmt.Errorf("could not get status counts: %w", err)
+			}
+			for status, count := range statusCounts {
+				r.otelRecorder.RecordStatusCount(int(status.Int()), count)
+			}
+		}
+	}
 }
 
 func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...reldb.QuoteRequestStatus) (err error) {
