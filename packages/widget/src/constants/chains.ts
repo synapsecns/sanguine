@@ -55,8 +55,8 @@ export const BNBCHAIN: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.5948fe5e.svg',
-  networkName: 'BNB Smart Chain',
-  networkUrl: 'https://bsc-dataseed.binance.org/',
+  networkName: 'BNB Smart Chain Mainnet',
+  networkUrl: 'https://bsc-dataseed1.bnbchain.org',
   nativeCurrency: {
     name: 'Binance Coin',
     symbol: 'BNB',
@@ -76,7 +76,7 @@ export const AVALANCHE: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/avalanche.9d53cbf0.svg',
-  networkName: 'Avalanche Network C-Chain',
+  networkName: 'Avalanche C-Chain',
   networkUrl: 'https://api.avax.network/ext/bc/C/rpc',
   nativeCurrency: {
     name: 'Avax',
@@ -160,7 +160,7 @@ export const DFK: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dfk.2bd1f0e4.svg',
-  networkName: 'DFK Chain Mainnet',
+  networkName: 'DFK Chain',
   networkUrl: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
   nativeCurrency: {
     name: 'Jewel',
@@ -181,7 +181,7 @@ export const KLAYTN: Chain = {
   blockTime: 1000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/klaytn.59495fbb.svg',
-  networkName: 'Klaytn Cypress Mainnet',
+  networkName: 'Klaytn Mainnet Cypress',
   networkUrl: 'https://public-en-cypress.klaytn.net',
   nativeCurrency: {
     name: 'Klaytn',
@@ -203,7 +203,7 @@ export const FANTOM: Chain = {
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/fantom.1e444dad.svg',
   networkName: 'Fantom Opera',
-  networkUrl: 'https://rpcapi.fantom.network',
+  networkUrl: 'https://rpc.ftm.tools/',
   nativeCurrency: {
     name: 'Fantom',
     symbol: 'FTM',
@@ -223,7 +223,7 @@ export const CRONOS: Chain = {
   blockTime: 6000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/cronos.b06f8311.svg',
-  networkName: 'Cronos',
+  networkName: 'Cronos Mainnet',
   networkUrl: 'https://evm.cronos.org',
   nativeCurrency: {
     name: 'Cronos',
@@ -307,7 +307,7 @@ export const HARMONY: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/harmony.af12f77e.svg',
-  networkName: 'Harmony Mainnet',
+  networkName: 'Harmony Mainnet Shard 0',
   networkUrl: 'https://api.harmony.one',
   nativeCurrency: {
     name: 'Harmony One',
@@ -391,7 +391,7 @@ export const BASE: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/base.d919fbef.svg',
-  networkName: 'Base Mainnet',
+  networkName: 'Base',
   networkUrl: 'https://mainnet.base.org',
   nativeCurrency: {
     name: 'Ethereum',
@@ -413,7 +413,7 @@ export const BLAST: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/blast.e39807f8.svg',
-  networkName: 'Blast Mainnet',
+  networkName: 'Blast',
   networkUrl: 'https://rpc.blast.io',
   nativeCurrency: {
     name: 'Ethereum',
