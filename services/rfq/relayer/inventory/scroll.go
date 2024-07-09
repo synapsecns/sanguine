@@ -58,12 +58,21 @@ func newRebalanceManagerScroll(cfg relconfig.Config, handler metrics.Handler, ch
 	}
 }
 
+const mainnetChainID = 1
+const scrollChainID = 534352
+const sepoliaChainID = 11155111
+const scrollSepoliaChainID = 534351
+
 func isScrollChain(chainID int) bool {
-	return chainID == 534352
+	return chainID == scrollChainID || chainID == scrollSepoliaChainID
 }
 
-func isMainnetChain(chainID int) bool {
-	return chainID == 1
+func isEthereumChain(chainID int) bool {
+	return chainID == mainnetChainID || chainID == sepoliaChainID
+}
+
+func isTestnetChain(chainID int) bool {
+	return chainID == scrollSepoliaChainID || chainID == sepoliaChainID
 }
 
 func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
@@ -93,6 +102,11 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 		return c.listenL2Gateway(ctx, l2Client)
 	})
 
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not listen: %w", err)
+	}
+
 	return nil
 }
 
@@ -103,7 +117,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	}(err)
 
 	for chainID := range c.cfg.Chains {
-		if isMainnetChain(chainID) {
+		if isEthereumChain(chainID) {
 			c.l1ChainID = chainID
 			addr, err := c.cfg.GetL1GatewayAddress(chainID)
 			if err != nil {
@@ -138,6 +152,9 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	}
 	if c.boundL2Gateway == nil {
 		return fmt.Errorf("l2 gateway contract not set")
+	}
+	if isTestnetChain(c.l1ChainID) != isTestnetChain(c.l2ChainID) {
+		return fmt.Errorf("testnet chain mismatch: %d %d", c.l1ChainID, c.l2ChainID)
 	}
 
 	return nil
@@ -292,6 +309,7 @@ func (c *rebalanceManagerScroll) listenL1Gateway(ctx context.Context, ethClient 
 				Origin:          uint64(c.l1ChainID),
 				OriginTxHash:    log.TxHash,
 				OriginTokenAddr: chain.EthAddress,
+				Destination:     uint64(c.l2ChainID),
 				Status:          reldb.RebalancePending,
 			}
 			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
@@ -310,6 +328,7 @@ func (c *rebalanceManagerScroll) listenL1Gateway(ctx context.Context, ethClient 
 				Origin:          uint64(c.l1ChainID),
 				OriginTxHash:    log.TxHash,
 				OriginTokenAddr: event.L1Token,
+				Destination:     uint64(c.l2ChainID),
 				Status:          reldb.RebalancePending,
 			}
 			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
