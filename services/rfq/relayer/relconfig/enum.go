@@ -12,6 +12,8 @@ const (
 	RebalanceMethodSynapseCCTP
 	// RebalanceMethodCircleCCTP is the rebalance method for Circle CCTP.
 	RebalanceMethodCircleCCTP
+	// RebalanceMethodScroll is the rebalance method for Scroll.
+	RebalanceMethodScroll
 	// RebalanceMethodNative is the rebalance method for native bridge.
 	RebalanceMethodNative
 )
@@ -23,6 +25,8 @@ func RebalanceMethodFromString(str string) (RebalanceMethod, error) {
 		return RebalanceMethodSynapseCCTP, nil
 	case "circlecctp":
 		return RebalanceMethodCircleCCTP, nil
+	case "scroll":
+		return RebalanceMethodScroll, nil
 	case "native":
 		return RebalanceMethodNative, nil
 	case "":
@@ -40,6 +44,8 @@ func (i RebalanceMethod) String() string {
 		return "synapsecctp"
 	case RebalanceMethodCircleCCTP:
 		return "circlecctp"
+	case RebalanceMethodScroll:
+		return "scroll"
 	case RebalanceMethodNative:
 		return "native"
 	default:
