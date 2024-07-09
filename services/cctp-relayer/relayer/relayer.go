@@ -2,6 +2,7 @@ package relayer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -304,11 +305,13 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 	})
 
 	g.Go(func() error {
-		err := c.txSubmitter.Start(ctx)
-		if err != nil {
-			err = fmt.Errorf("could not start tx submitter: %w", err)
+		if !c.txSubmitter.Started() {
+			err := c.txSubmitter.Start(ctx)
+			if err != nil && !errors.Is(err, submitter.ErrSubmitterAlreadyStarted) {
+				return fmt.Errorf("could not start tx submitter: %w", err)
+			}
 		}
-		return err
+		return nil
 	})
 
 	g.Go(func() error {

@@ -11,6 +11,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"strings"
 )
 
 // RPCClient is an interface for the omnirpc service.
@@ -55,7 +56,13 @@ func (c *rpcClient) GetClient(ctx context.Context, chainID *big.Int) (client.EVM
 	return c.GetChainClient(ctx, int(chainID.Uint64()))
 }
 
-func (c *rpcClient) GetEndpoint(chainID, confirmations int) string {
+func (c *rpcClient) GetEndpoint(chainID, confirmations int) (res string) {
+	defer func() {
+		res = strings.ReplaceAll(res, "://", "TEMP_PROTOCOL")
+		res = strings.ReplaceAll(res, "//", "/")
+		res = strings.ReplaceAll(res, "TEMP_PROTOCOL", "://")
+	}()
+
 	if confirmations == 0 {
 		return fmt.Sprintf("%s/rpc/%d", c.endpoint, chainID)
 	}

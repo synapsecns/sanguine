@@ -55,6 +55,10 @@ type Config struct {
 	EnableAPIWithdrawals bool `yaml:"enable_api_withdrawals"`
 	// WithdrawalWhitelist is a list of addresses that are allowed to withdraw.
 	WithdrawalWhitelist []string `yaml:"withdrawal_whitelist"`
+	// UseEmbeddedGuard enables the embedded guard.
+	UseEmbeddedGuard bool `yaml:"enable_guard"`
+	// SubmitSingleQuotes enables submitting single quotes.
+	SubmitSingleQuotes bool `yaml:"submit_single_quotes"`
 }
 
 // ChainConfig represents the configuration for a chain.

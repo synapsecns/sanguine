@@ -136,7 +136,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Set up cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build

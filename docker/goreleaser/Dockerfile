@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:11-slim
+FROM --platform=linux/amd64 debian:12-slim
 
 ARG VERSION_ARG=1.24.0-pro
 ARG SHA_ARG=01237f7151d2c46c307f21de183eb863ce47a4b5244507487ec663640b077d7d

@@ -9,7 +9,7 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.27.0
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/gen2brain/beeep v0.0.0-20240516210008-9c006672e7f4
-	github.com/gofrs/flock v0.8.1
+	github.com/gofrs/flock v0.12.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/markbates/pkger v0.17.1
 	github.com/nanmu42/etherscan-api v1.10.0
@@ -18,7 +18,7 @@ require (
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/thoas/go-funk v0.9.0
 	github.com/urfave/cli/v2 v2.27.2
-	golang.org/x/mod v0.18.0
+	golang.org/x/mod v0.19.0
 	golang.org/x/tools v0.22.0
 )
 
@@ -60,7 +60,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gorilla/websocket v1.5.1 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/holiman/uint256 v1.2.4 // indirect
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc // indirect
 	github.com/ipfs/go-log/v2 v2.5.1 // indirect

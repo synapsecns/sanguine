@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"sync"
@@ -26,6 +27,8 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
+	serviceGuard "github.com/synapsecns/sanguine/services/rfq/guard/service"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
@@ -39,7 +42,7 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-const maxConcurrentRequests = 150
+const maxConcurrentRequests = 15
 
 // Relayer is the core of the relayer application.
 type Relayer struct {
@@ -59,7 +62,8 @@ type Relayer struct {
 	// semaphore is used to limit the number of concurrent requests
 	semaphore *semaphore.Weighted
 	// handlerMtx is used to synchronize handling of relay requests
-	handlerMtx mapmutex.StringMapMutex
+	handlerMtx   mapmutex.StringMapMutex
+	otelRecorder iOtelRecorder
 }
 
 var logger = log.Logger("relayer")
@@ -139,6 +143,11 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get api server: %w", err)
 	}
 
+	otelRecorder, err := newOtelRecorder(metricHandler, sg)
+	if err != nil {
+		return nil, fmt.Errorf("could not get otel recorder: %w", err)
+	}
+
 	cache := ttlcache.New[common.Hash, bool](ttlcache.WithTTL[common.Hash, bool](time.Second * 30))
 	rel := Relayer{
 		db:             store,
@@ -156,6 +165,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		apiClient:      apiClient,
 		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
 		handlerMtx:     mapmutex.NewStringMapMutex(),
+		otelRecorder:   otelRecorder,
 	}
 	return &rel, nil
 }
@@ -235,9 +245,12 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 	})
 
 	g.Go(func() error {
-		err := r.submitter.Start(ctx)
-		if err != nil {
-			return fmt.Errorf("could not start submitter: %w", err)
+		if !r.submitter.Started() {
+			err := r.submitter.Start(ctx)
+			if err != nil && !errors.Is(err, submitter.ErrSubmitterAlreadyStarted) {
+				return fmt.Errorf("could not start submitter: %w", err)
+			}
+			return nil
 		}
 		return nil
 	})
@@ -262,6 +275,22 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		err = r.startCCTPRelayer(ctx)
 		if err != nil {
 			return fmt.Errorf("could not start cctp relayer: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		err = r.startGuard(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start guard: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		err = r.recordMetrics(ctx)
+		if err != nil {
+			return fmt.Errorf("could not record metrics: %w", err)
 		}
 		return nil
 	})
@@ -326,6 +355,45 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	return nil
 }
 
+// startGuard starts the guard, if specified.
+func (r *Relayer) startGuard(ctx context.Context) (err error) {
+	if !r.cfg.UseEmbeddedGuard {
+		return nil
+	}
+
+	guardCfg := guardconfig.NewGuardConfigFromRelayer(r.cfg)
+	guard, err := serviceGuard.NewGuard(ctx, r.metrics, guardCfg, r.submitter)
+	if err != nil {
+		return fmt.Errorf("could not create guard: %w", err)
+	}
+
+	err = guard.Start(ctx)
+	if err != nil {
+		return fmt.Errorf("could not start guard: %w", err)
+	}
+
+	return nil
+}
+
+const defaultMetricsInterval = 10
+
+func (r *Relayer) recordMetrics(ctx context.Context) (err error) {
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("could not record metrics: %w", ctx.Err())
+		case <-time.After(defaultMetricsInterval * time.Second):
+			statusCounts, err := r.db.GetStatusCounts(ctx, reldb.Seen, reldb.NotEnoughInventory, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayStarted, reldb.RelayCompleted, reldb.ProvePosting, reldb.ProvePosted, reldb.ClaimPending)
+			if err != nil {
+				return fmt.Errorf("could not get status counts: %w", err)
+			}
+			for status, count := range statusCounts {
+				r.otelRecorder.RecordStatusCount(int(status.Int()), count)
+			}
+		}
+	}
+}
+
 func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...reldb.QuoteRequestStatus) (err error) {
 	ctx, span := r.metrics.Tracer().Start(ctx, "processDB", trace.WithAttributes(
 		attribute.Bool("serial", serial),
@@ -353,13 +421,7 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 		} else {
 			// process in parallel (new goroutine)
 			request := req // capture func literal
-			ok := r.semaphore.TryAcquire(1)
-			if !ok {
-				span.AddEvent("could not acquire semaphore", trace.WithAttributes(
-					attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
-				))
-				continue
-			}
+			err = r.semaphore.Acquire(ctx, 1)
 			if err != nil {
 				return fmt.Errorf("could not acquire semaphore: %w", err)
 			}

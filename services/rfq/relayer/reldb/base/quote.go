@@ -93,7 +93,7 @@ func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status
 	if prevStatus == nil {
 		req, err := s.GetQuoteRequestByID(ctx, id)
 		if err != nil {
-			return fmt.Errorf("could not get quote: %w", err)
+			return fmt.Errorf("could not get quote: %w", reldb.ErrNoQuoteForID)
 		}
 		prevStatus = &req.Status
 	}
@@ -137,4 +137,36 @@ func isValidStateTransition(prevStatus, status reldb.QuoteRequestStatus) bool {
 		return true
 	}
 	return status >= prevStatus
+}
+
+type statusCount struct {
+	Status int
+	Count  int64
+}
+
+// GetStatusCounts gets the counts of quote requests by status.
+func (s Store) GetStatusCounts(ctx context.Context, matchStatuses ...reldb.QuoteRequestStatus) (map[reldb.QuoteRequestStatus]int, error) {
+	inArgs := make([]int, len(matchStatuses))
+	for i := range matchStatuses {
+		inArgs[i] = int(matchStatuses[i].Int())
+	}
+
+	var results []statusCount
+	tx := s.DB().
+		WithContext(ctx).
+		Model(&RequestForQuote{}).
+		Select(fmt.Sprintf("%s, COUNT(*) as count", statusFieldName)).
+		Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).
+		Group(statusFieldName).
+		Scan(&results)
+	if tx.Error != nil {
+		return nil, fmt.Errorf("could not get db results: %w", tx.Error)
+	}
+
+	statuses := make(map[reldb.QuoteRequestStatus]int)
+	for _, result := range results {
+		statuses[reldb.QuoteRequestStatus(result.Status)] = int(result.Count)
+	}
+
+	return statuses, nil
 }
