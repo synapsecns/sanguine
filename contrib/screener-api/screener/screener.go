@@ -323,9 +323,6 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 	defer s.blacklistCacheMux.Unlock()
 	s.blacklist[blacklistBody.Data.Address] = true
 
-	span.SetAttributes(attribute.Int("number of blacklisted addresses", len(s.blacklist)))
-	span.SetAttributes(attribute.Int("number of blacklisted addresses", len(s.blacklist)))
-
 	switch blacklistBody.Type {
 	case "create":
 		if err := s.db.PutBlacklistedAddress(ctx, blacklistedAddress); err != nil {
