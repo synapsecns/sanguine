@@ -127,7 +127,6 @@ func (r *relayerClient) Withdraw(ctx context.Context, req *WithdrawRequest) (*Wi
 	return &res, nil
 }
 
-<<<<<<< HEAD
 // TxHashByNonceResponse is the request for getting a transaction hash by nonce.
 type TxHashByNonceResponse struct {
 	Hash string `json:"withdrawTxHash"`
@@ -146,7 +145,6 @@ func (r *relayerClient) GetTxHashByNonce(ctx context.Context, req *GetTxByNonceR
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tx hash by nonce: %w", err)
 	}
-=======
 func (r *relayerClient) GetQuoteRequestByTXID(ctx context.Context, txid string) (*GetQuoteRequestResponse, error) {
 	var res GetQuoteRequestResponse
 	resp, err := r.client.R().SetContext(ctx).
@@ -157,7 +155,6 @@ func (r *relayerClient) GetQuoteRequestByTXID(ctx context.Context, txid string) 
 		return nil, fmt.Errorf("failed to get quote request by tx id: %w", err)
 	}
 
->>>>>>> 15d18e8ef6180546fce269c8c00f56324ece9385
 	if resp.StatusCode() != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
 	}

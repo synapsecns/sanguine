@@ -2671,11 +2671,8 @@ github.com/kataras/sitemap v0.0.6 h1:w71CRMMKYMJh6LR2wTgnk5hSgjVNB9KL60n5e2KHvLY
 github.com/kataras/sitemap v0.0.6/go.mod h1:dW4dOCNs896OR1HmG+dMLdT7JjDk7mYBzoIRwuj5jA4=
 github.com/kataras/tunnel v0.0.4 h1:sCAqWuJV7nPzGrlb0os3j49lk2JhILT0rID38NHNLpA=
 github.com/kataras/tunnel v0.0.4/go.mod h1:9FkU4LaeifdMWqZu7o20ojmW4B7hdhv2CMLwfnHGpYw=
-<<<<<<< HEAD
-=======
 github.com/kathiouchka/slacker v0.0.0-20240629123301-04d4e71c3a96 h1:/RfYfEL6WutfEvEGx7JM3lG7dKdeKT/tnhXpaiaBILw=
 github.com/kathiouchka/slacker v0.0.0-20240629123301-04d4e71c3a96/go.mod h1:VPW+xhTrmB4lUoxA5tiB180fmWFt6UFW+96ZWYtj0Qg=
->>>>>>> 15d18e8ef6180546fce269c8c00f56324ece9385
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 h1:Z9n2FFNUXsshfwJMBgNA0RU6/i7WVaAegv3PtuIHPMs=
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51/go.mod h1:CzGEWj7cYgsdH8dAjBGEr58BoE7ScuLd+fwFZ44+/x8=
 github.com/keep-network/keep-common v1.7.1-0.20211012131917-7102d7b9c6a0 h1:pQ6IV5wK1v5GESbLUQlQASCBorc13FJHFYoO1O7ftNU=
