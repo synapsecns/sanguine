@@ -74,493 +74,53 @@ Please see [here](https://pkg.go.dev/github.com/synapsecns/sanguine/ethergo@v0.9
 
 `SubmitTransaction` abstracts many of the complexities of on-chain transaction submission such as nonce management and gas bumping. In addition, sent transactions are stored in the database for easy indexing of older transactions.
 
-## Learning how to use Submitter via Go Tests and Anvil via Docker
+## How to Use a Service with Submitter
 
-We will make a small test suite in Go which will send transactions to a local Anvil chain via Docker.
-This should leave you understanding both how to use Submitter and familiarzing yourself with some of the tools and idioms commonly seen in Ethergo.
+Suppose you want to run our interchain Executor, which, from a high-level, listens for an event on a certain chain and calls a function on a smart contract deployed on another remote chain, namely the `Execute()` function. This is an event-driven architecture, which Submitter thrives in.
 
-### 1: Make sure you have Docker
+The Executor naturally uses the Submitter because we want to asynchronously listen for events, process them, and fire off the respective transaction since many of the triggering events can happen simultanously.
 
-First, check if Docker is installed:
+You will need a couple things in order to use the Transaciton submitter that signs with your own private key, RPC url(s) (OmniRPC is recommended), DB service, and config values. We'll tackle these in order.
 
-```
-docker --version
-```
+Firstly, you will create a signer. For this example, our signer will just be a text file `signer.txt` with a private key. You may also use GCP or the other supported signer types (link here).
 
-If Docker is not installed, you can install it using the following steps:
-
-For **Mac**:
+signer.txt
 
 ```
-brew install --cask docker
+<some long private key>
 ```
 
-For **Ubuntu**:
+Secondly, you want to create a `config.yml` using the values above, like so.
 
-```
-sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io
-```
+config.yml
 
-For **Windows**, download the installer from the official Docker website and follow the installation instructions.
-
-### 2: Initialize project
-
-```
-mkdir submitter_example
-cd submitter_example
-go mod init submitter_example
-```
-
-This will create a new Go module for our test.
-
-### 3: create test files
-
-```
-touch suite_test.go submitter_test.go
+```yaml
+submitter_config:
+  chains:
+    1:
+      supports_eip_1559: true
+      gas_estimate: 1000000
+    10:
+      gas_estimate: 5000000
+      max_gas_price: 200000000000
+      supports_eip_1559: true
 ```
 
-`suite_test.go` will contain the setup and hold the actual suite, while `submitter_test.go` will contain the test.
+For chain ID 1 (mainnet) and chain ID 10 (Optimism), the transactions will use these configs.
 
-### 4. Write code
+Thirdly, you want to have an OmniRPC client for multichain transaction sending support.
 
-#### 4.1 Submitter Suite
+4. Our services use a db store that implements the `gorm.DB` type. Idk what to put here.
 
-We will first setup the Submitter Suite, which handles creating the Anvil backends, database, metrics, and more. This can be seen as the actual blockchain test environment.
+5. Finally, run the service and pass in `config.yml` like so: `<service_name> --config=config.yml`
 
-<details>
-<summary><code>submitter_example/suite_test.go</code></summary>
+You will then have successfully created a submitter
 
-```go title = "suite_test.go"
-package submitter_example_test
-
-import (
-	"context"
-	"fmt"
-	"math/big"
-	"os"
-	"sync"
-	"testing"
-	"time"
-
-	"github.com/Flaque/filet"
-	"github.com/brianvoe/gofakeit"
-	"github.com/ethereum/go-ethereum/accounts/keystore"
-	"github.com/ethereum/go-ethereum/params"
-	"github.com/ipfs/go-log"
-	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/core/config"
-	cmn "github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
-	"github.com/synapsecns/sanguine/core/processlog"
-	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
-	"github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
-	"github.com/synapsecns/sanguine/ethergo/manager"
-	"github.com/synapsecns/sanguine/ethergo/mocks"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
-	"github.com/synapsecns/sanguine/ethergo/submitter/db"
-	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
-)
-
-var buildInfo = config.NewBuildInfo(
-	config.DefaultVersion,
-	config.DefaultCommit,
-	"submitter",
-	config.DefaultDate,
-)
-var tenEth = new(big.Int).Mul(
-	new(big.Int).SetUint64(uint64(params.Ether)),
-	big.NewInt(10),
-)
-
-type SubmitterSuite struct {
-	// TestSuite is the base test suite.
-	*testsuite.TestSuite
-	// TestBackends are the backends to use for the test.
-	testBackends []backends.SimulatedTestBackend
-	// metrics is the metrics handler to use for the test.
-	metrics metrics.Handler
-	// deployer is the deployer to use for the counter contracts.
-	deployer *manager.DeployerManager
-	// store is the store to use for the test
-	store db.Service
-	// signer is the signer to use for the Submitter.
-	signer signer.Signer
-	// localAccount is the account used to construct the signer.
-	localAccount *keystore.Key
-}
-
-// SetupSuite sets up 3 backends and metrics.
-func (s *SubmitterSuite) SetupSuite() {
-	s.TestSuite.SetupSuite()
-
-	// Create three simulated backends with chain IDs 1, 3, and 4.
-	testChainIDs := []uint64{1, 3, 4}
-	s.testBackends = make(
-		[]backends.SimulatedTestBackend,
-		len(testChainIDs),
-	)
-	s.deployer = manager.NewDeployerManager(
-		s.T(),
-		contracttests.NewCounterDeployer,
-	)
-
-	var wg sync.WaitGroup
-	// Wait for all the backends to be created,
-	// add 1 to the wait group for the metrics
-	wg.Add(len(testChainIDs) + 1)
-
-	logDir := filet.TmpDir(s.T(), "")
-
-	// create the jaeger instance
-	go func() {
-		defer wg.Done()
-		var err error
-		// don't use metrics on ci for integration tests
-		isCI := core.GetEnvBool("CI", false)
-		useMetrics := !isCI
-		metricsHandler := metrics.Null
-
-		if useMetrics {
-			localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
-			metricsHandler = metrics.Jaeger
-		}
-		s.metrics, err = metrics.NewByType(
-			s.GetSuiteContext(),
-			buildInfo,
-			metricsHandler,
-		)
-		s.Require().NoError(err)
-	}()
-
-	// create the backends
-	for i, chainID := range testChainIDs {
-		go func(index int, chainID uint64) {
-			defer wg.Done()
-			options := anvil.NewAnvilOptionBuilder()
-			options.SetChainID(chainID)
-			// make sure all the docker containers log to the same directory
-			options.SetProcessLogOptions(
-				processlog.WithLogFileName(
-					fmt.Sprintf("chain-%d.log", chainID),
-				),
-				processlog.WithLogDir(logDir),
-			)
-
-			s.testBackends[index] = anvil.NewAnvilBackend(
-				s.GetSuiteContext(),
-				s.T(),
-				options,
-			)
-			s.deployer.Get(
-				s.GetSuiteContext(),
-				s.testBackends[index],
-				contracttests.CounterType,
-			)
-		}(i, chainID)
-	}
-	wg.Wait()
-}
-
-// SetupTest sets up the signer and
-// funds the account with 10 eth on each backend.
-func (s *SubmitterSuite) SetupTest() {
-	s.TestSuite.SetupTest()
-	s.localAccount = mocks.MockAccount(s.T())
-	// create the local signer
-	s.signer = localsigner.NewSigner(s.localAccount.PrivateKey)
-	var wg sync.WaitGroup
-	wg.Add(len(s.testBackends) + 1)
-
-	// setup the db
-	go func() {
-		defer wg.Done()
-		var err error
-		s.store, err = NewSqliteStore(
-			s.GetTestContext(),
-			filet.TmpDir(s.T(), ""),
-			s.metrics,
-		)
-		s.Require().NoError(err)
-	}()
-
-	// fund the account on each chain
-	for i := range s.testBackends {
-		go func(index int) {
-			defer wg.Done()
-
-			s.testBackends[index].FundAccount(
-				s.GetTestContext(),
-				s.signer.Address(),
-				*tenEth,
-			)
-		}(i)
-	}
-	wg.Wait()
-}
-
-// NewGasSuite creates a new chain testing suite.
-func NewSubmitterSuite(tb testing.TB) *SubmitterSuite {
-	tb.Helper()
-	return &SubmitterSuite{
-		TestSuite: testsuite.NewTestSuite(tb),
-	}
-}
-
-func TestSubmitterSuite(t *testing.T) {
-	suite.Run(t, NewSubmitterSuite(t))
-}
-
-// Store wraps the store. Since tx submitter is a library and not a standalone
-// service, we simulate db creation here and then proceed as we would with
-// any other db test.
-type Store struct {
-	*txdb.Store
-}
-
-func (s SubmitterSuite) GetClient(
-	ctx context.Context,
-	chainID *big.Int,
-) (client.EVM, error) {
-	for _, backend := range s.testBackends {
-		if backend.GetBigChainID().Cmp(chainID) == 0 {
-			//nolint: wrapcheck
-			return client.DialBackend(ctx, backend.RPCAddress(), s.metrics)
-		}
-	}
-	return nil, fmt.Errorf("could not find client for chain id %v", chainID)
-}
-
-// NewSqliteStore creates a new sqlite data store.
-func NewSqliteStore(
-	parentCtx context.Context,
-	dbPath string,
-	handler metrics.Handler,
-) (_ *Store, err error) {
-	logger := log.Logger("sqlite-store")
-
-	logger.Debugf("creating sqlite store at %s", dbPath)
-
-	ctx, span := handler.Tracer().Start(parentCtx, "start-sqlite")
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
-
-	// create the directory to the store if it doesn't exist
-	err = os.MkdirAll(dbPath, os.ModePerm)
-	if err != nil {
-		return nil, fmt.Errorf("could not create sqlite store")
-	}
-
-	logger.Warnf("submitter database is at %s/synapse.db", dbPath)
-
-	namingStrategy := schema.NamingStrategy{
-		TablePrefix: fmt.Sprintf(
-			"test%d_%d_",
-			gofakeit.Int64(),
-			time.Now().Unix(),
-		),
-	}
-
-	gdb, err := gorm.Open(
-		sqlite.Open(fmt.Sprintf("%s/%s", dbPath, "synapse.db")),
-		&gorm.Config{
-			DisableForeignKeyConstraintWhenMigrating: true,
-			Logger:                                   cmn.GetGormLogger(logger),
-			FullSaveAssociations:                     true,
-			SkipDefaultTransaction:                   true,
-			NamingStrategy:                           namingStrategy,
-		})
-	if err != nil {
-		return nil, fmt.Errorf("could not connect to db %s: %w", dbPath, err)
-	}
-
-	handler.AddGormCallbacks(gdb)
-
-	err = gdb.WithContext(ctx).AutoMigrate(txdb.GetAllModels()...)
-	if err != nil {
-		return nil, fmt.Errorf("could not migrate models: %w", err)
-	}
-	return &Store{txdb.NewTXStore(gdb, handler)}, nil
-}
+```go
+txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, dbService, &config.SubmitterConfig)
 ```
 
-</details>
-
-#### 4.2 Submitter test
-
-Now for the actual test. Copy and paste the following in `submitter_test.go`.
-The comments walk you through the test to help you understand how to use
-Submitter as a library.
-
-<details>
-<summary><code>submitter_example/submitter_test.go</code></summary>
-
-```go title = "submitter_test.go
-package submitter_example_test
-
-import (
-	"fmt"
-	"math/big"
-
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
-	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
-	"github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
-	"github.com/synapsecns/sanguine/ethergo/manager"
-	"github.com/synapsecns/sanguine/ethergo/submitter"
-	"github.com/synapsecns/sanguine/ethergo/submitter/config"
-	"github.com/synapsecns/sanguine/ethergo/submitter/db"
-)
-
-// This test below is a good example of how the Submitter works.
-// It shows off the database/queue aspect of the Submitter, and
-// how it can be used to queue up transactions to be submitted later.
-func (s SubmitterSuite) TestSubmitTransaction() {
-	// Get the counter contract binding.
-	// If you do not want to use manager, you can also use the go-ethereum
-	// bindings directly, like
-	// `contract, err := someContact.NewSomeContract(contractAddress, backend)`
-	_, cntr := manager.GetContract[*counter.CounterRef](
-		s.GetTestContext(), s.T(),
-		s.deployer, s.testBackends[0], contracttests.CounterType,
-	)
-
-	// Grab the origin chain ID.
-	chainID := s.testBackends[0].GetBigChainID()
-
-	// Get the current count.
-	startingCount, err := cntr.GetCount(&bind.CallOpts{
-		Context: s.GetTestContext(),
-	})
-	s.Require().NoError(err)
-
-	// Get the legacy and dynamic chain IDs and set the gas prices.
-	legacyChainID := s.testBackends[0].GetBigChainID()
-	dynamicChainID := s.testBackends[1].GetBigChainID()
-
-	maxGasPrice := big.NewInt(1000 * params.GWei)
-	minGasPrice := big.NewInt(1 * params.GWei)
-
-	cfg := &config.Config{
-		Chains: map[int]config.ChainConfig{
-			int(legacyChainID.Int64()): {
-				MinGasPrice:     minGasPrice,
-				MaxGasPrice:     maxGasPrice,
-				SupportsEIP1559: false,
-			},
-			int(dynamicChainID.Int64()): {
-				MinGasPrice:     minGasPrice,
-				MaxGasPrice:     maxGasPrice,
-				SupportsEIP1559: true,
-			},
-		},
-	}
-
-	// Create a new transaction submitter.
-	ts := submitter.NewTransactionSubmitter(s.metrics, s.signer, s, s.store, cfg)
-
-	// Submit a transaction to increment the counter.
-	// Notice that a nonce is returned from the SubmitTransaction method, which
-	// can be used to check the status of the transaction.
-	nonce, err := ts.SubmitTransaction(
-		s.GetTestContext(),
-		chainID,
-		func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-			tx, err = cntr.IncrementCounter(transactor)
-			if err != nil {
-				return nil, fmt.Errorf("failed to increment counter: %w", err)
-			}
-
-			return tx, nil
-		})
-	s.Require().NoError(err)
-
-	// Check the status of the transaction.
-	submissionStatus, err := ts.GetSubmissionStatus(
-		s.GetTestContext(),
-		chainID,
-		nonce,
-	)
-	s.Require().NoError(err)
-	// The transaction should be in the pending state,
-	// because we never called `Start` method.
-	s.Require().Equal(submissionStatus.State(), submitter.Pending)
-
-	// Get the current count.
-	currentCount, err := cntr.GetCount(&bind.CallOpts{
-		Context: s.GetTestContext(),
-	})
-	s.Require().NoError(err)
-
-	// The original transaction should not be submitted yet because remember,
-	// we never called `Start` method.
-	s.Equal(startingCount.Uint64(), currentCount.Uint64())
-
-	// There is, however one transaction queued in the Submitter database,
-	// ready to be fired off.
-	txs, err := s.store.GetTXS(
-		s.GetTestContext(),
-		s.signer.Address(),
-		chainID,
-		db.Stored,
-	)
-	s.Require().NoError(err)
-	s.Require().NotNil(txs[0])
-	s.Require().Equal(len(txs), 1)
-
-	go func() {
-		// Now we'll start a new submitter with a new signer and submit the tx.
-		err = ts.Start(s.GetTestContext())
-		s.Require().NoError(err)
-	}()
-
-	// Eventually, two things should happen:
-	// 1. The transaction should be submitted and confirmed.
-	// 2. The counter should be incremented.
-	s.Eventually(func() bool {
-		currentCount, err = cntr.GetCount(&bind.CallOpts{
-			Context: s.GetTestContext(),
-		})
-		s.Require().NoError(err)
-
-		submissionStatus, err = ts.GetSubmissionStatus(
-			s.GetTestContext(),
-			chainID,
-			nonce,
-		)
-		s.Require().NoError(err)
-
-		return currentCount.Uint64() > startingCount.Uint64() &&
-			submissionStatus.State() == submitter.Confirmed
-	})
-
-}
-```
-
-</details>
-
-### 5: Run tests
-
-In the console run `go test ./...`. You should see the output
-
-```zsh
-$ go test ./...
-ok      submitter_example       95.372s
-```
-
-Congrats! You should now have learned how to use Submitter in your own projects while
-also learning about Ethergo, our comprehensive embedded test suite.
+and ready to send multichain transactions.
 
 ## Nonce Management, Database, Internals
 
