@@ -80,21 +80,19 @@ Suppose you want to run our interchain Executor, which, from a high-level, liste
 
 The Executor naturally uses the Submitter because we want to asynchronously listen for events, process them, and fire off the respective transaction since many of the triggering events can happen simultanously.
 
-You will need a couple things in order to use the Transaciton submitter that signs with your own private key, RPC url(s) (OmniRPC is recommended), DB service, and config values. We'll tackle these in order.
+You will need a couple things in order to use the Transaciton submitter that signs with your own private key, config values, and more.
 
 Firstly, you will create a signer. For this example, our signer will just be a text file `signer.txt` with a private key. You may also use GCP or the other supported signer types (link here).
 
-signer.txt
-
+```yaml
+# signer.txt
+55a4bb8f1bdaec6a8b7a9aa45824f91a96200dc316297eb82ad19e3d035ee5af
 ```
-<some long private key>
-```
 
-Secondly, you want to create a `config.yml` using the values above, like so.
-
-config.yml
+Secondly, you want to create a `config.yml` that matches the config of the respective service you want. If the service uses a submitter, it will for sure have the `submitter_config` below.
 
 ```yaml
+# config.yml
 submitter_config:
   chains:
     1:
@@ -108,19 +106,9 @@ submitter_config:
 
 For chain ID 1 (mainnet) and chain ID 10 (Optimism), the transactions will use these configs.
 
-Thirdly, you want to have an OmniRPC client for multichain transaction sending support.
+Finally, run the service and pass in `config.yml` like so: `<service_name> --config=config.yml`
 
-4. Our services use a db store that implements the `gorm.DB` type. Idk what to put here.
-
-5. Finally, run the service and pass in `config.yml` like so: `<service_name> --config=config.yml`
-
-You will then have successfully created a submitter
-
-```go
-txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, dbService, &config.SubmitterConfig)
-```
-
-and ready to send multichain transactions.
+You will then have successfully created the service that uses the submitter and able to send multi/interchain transactions!
 
 ## Nonce Management, Database, Internals
 
