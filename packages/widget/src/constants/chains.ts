@@ -203,7 +203,7 @@ export const FANTOM: Chain = {
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/fantom.1e444dad.svg',
   networkName: 'Fantom Opera',
-  networkUrl: 'https://rpc.ftm.tools/',
+  networkUrl: 'https://rpc.ftm.tools',
   nativeCurrency: {
     name: 'Fantom',
     symbol: 'FTM',
@@ -435,7 +435,7 @@ export const SCROLL: Chain = {
   imgUrl:
     'https://fe-adds-scroll.sanguine-fe.pages.dev/_next/static/media/scroll.a805c122.svg',
   networkName: 'Scroll',
-  networkUrl: '	https://rpc.scroll.io/',
+  networkUrl: 'https://rpc.scroll.io',
   nativeCurrency: {
     name: 'Ethereum',
     symbol: 'ETH',
