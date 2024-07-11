@@ -23,6 +23,8 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -537,23 +539,30 @@ type scrollAPIResponse struct {
 				BlockNumber    int         `json:"blockNumber"`
 				BlockTimestamp interface{} `json:"blockTimestamp"`
 			} `json:"finalizeTx"`
-			ClaimInfo struct {
-				From       string `json:"from"`
-				To         string `json:"to"`
-				Value      string `json:"value"`
-				Nonce      string `json:"nonce"`
-				BatchHash  string `json:"batch_hash"`
-				Message    string `json:"message"`
-				Proof      string `json:"proof"`
-				BatchIndex string `json:"batch_index"`
-			} `json:"claimInfo"`
+			ClaimInfo   ClaimInfo   `json:"claimInfo"`
 			CreatedTime interface{} `json:"createdTime"`
 		} `json:"result"`
 		Total int `json:"total"`
 	} `json:"data"`
 }
 
-func (c *rebalanceManagerScroll) claimL2ToL1(ctx context.Context) (err error) {
+type ClaimInfo struct {
+	From       string `json:"from"`
+	To         string `json:"to"`
+	Value      string `json:"value"`
+	Nonce      string `json:"nonce"`
+	BatchHash  string `json:"batch_hash"`
+	Message    string `json:"message"`
+	Proof      string `json:"proof"`
+	BatchIndex string `json:"batch_index"`
+}
+
+func (c *rebalanceManagerScroll) claimL2ToL1(parentCtx context.Context) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "claimL2ToL1")
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
 	if c.apiURL == nil {
 		return fmt.Errorf("api URL not set")
 	}
@@ -586,44 +595,60 @@ func (c *rebalanceManagerScroll) claimL2ToL1(ctx context.Context) (err error) {
 	}
 
 	for _, result := range claimableResp.Data.Result {
-		_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(c.l1ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-			if transactor == nil {
-				return nil, fmt.Errorf("transactor is nil")
-			}
-			// Note: we hardcode the 'to' parameter as our own relayerAddress as a safety measure.
-			value, ok := new(big.Int).SetString(result.ClaimInfo.Value, 10)
-			if !ok {
-				return nil, fmt.Errorf("could not parse value: %w", err)
-			}
-			nonce, ok := new(big.Int).SetString(result.ClaimInfo.Nonce, 10)
-			if !ok {
-				return nil, fmt.Errorf("could not parse nonce: %w", err)
-			}
-			batchIndex, ok := new(big.Int).SetString(result.ClaimInfo.BatchIndex, 10)
-			if !ok {
-				return nil, fmt.Errorf("could not parse batch index: %w", err)
-			}
-			message, err := hexutil.Decode(result.ClaimInfo.Message)
-			if err != nil {
-				return nil, fmt.Errorf("could not decode message: %w", err)
-			}
-			merkleProof, err := hexutil.Decode(result.ClaimInfo.Proof)
-			if err != nil {
-				return nil, fmt.Errorf("could not decode merkle proof: %w", err)
-			}
-			proof := l1scrollmessenger.IL1ScrollMessengerL2MessageProof{
-				BatchIndex:  batchIndex,
-				MerkleProof: merkleProof,
-			}
-			tx, err = c.boundL1ScrollMessenger.RelayMessageWithProof(transactor, common.HexToAddress(result.ClaimInfo.From), c.relayerAddress, value, nonce, message, proof)
-			if err != nil {
-				return nil, fmt.Errorf("could not relay message: %w", err)
-			}
-			return tx, nil
-		})
+		err = c.submitClaim(ctx, result.ClaimInfo)
 		if err != nil {
 			return fmt.Errorf("could not submit transaction: %w", err)
 		}
 	}
+	return nil
+}
+
+func (c *rebalanceManagerScroll) submitClaim(parentCtx context.Context, claimInfo ClaimInfo) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "submitClaim", trace.WithAttributes(
+		attribute.String("from", claimInfo.From),
+		attribute.String("to", claimInfo.To),
+		attribute.String("value", claimInfo.Value),
+		attribute.String("nonce", claimInfo.Nonce),
+		attribute.String("batch_index", claimInfo.BatchIndex),
+	))
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
+	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(c.l1ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		if transactor == nil {
+			return nil, fmt.Errorf("transactor is nil")
+		}
+		// Note: we hardcode the 'to' parameter as our own relayerAddress as a safety measure.
+		value, ok := new(big.Int).SetString(claimInfo.Value, 10)
+		if !ok {
+			return nil, fmt.Errorf("could not parse value: %w", err)
+		}
+		nonce, ok := new(big.Int).SetString(claimInfo.Nonce, 10)
+		if !ok {
+			return nil, fmt.Errorf("could not parse nonce: %w", err)
+		}
+		batchIndex, ok := new(big.Int).SetString(claimInfo.BatchIndex, 10)
+		if !ok {
+			return nil, fmt.Errorf("could not parse batch index: %w", err)
+		}
+		message, err := hexutil.Decode(claimInfo.Message)
+		if err != nil {
+			return nil, fmt.Errorf("could not decode message: %w", err)
+		}
+		merkleProof, err := hexutil.Decode(claimInfo.Proof)
+		if err != nil {
+			return nil, fmt.Errorf("could not decode merkle proof: %w", err)
+		}
+		proof := l1scrollmessenger.IL1ScrollMessengerL2MessageProof{
+			BatchIndex:  batchIndex,
+			MerkleProof: merkleProof,
+		}
+		tx, err = c.boundL1ScrollMessenger.RelayMessageWithProof(transactor, common.HexToAddress(claimInfo.From), c.relayerAddress, value, nonce, message, proof)
+		if err != nil {
+			return nil, fmt.Errorf("could not relay message: %w", err)
+		}
+		return tx, nil
+	})
 	return nil
 }
