@@ -9,7 +9,7 @@ export const fetchJsonData = async (url: string): Promise<any> => {
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      const response = await fetch(url, { method: 'GET' })
+      const response = await fetch(url, { method: 'GET', cache: 'no-store' })
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
