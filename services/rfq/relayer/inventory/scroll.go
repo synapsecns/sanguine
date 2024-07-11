@@ -336,11 +336,21 @@ func (c *rebalanceManagerScroll) listenL1Gateway(ctx context.Context) (err error
 	if err != nil {
 		return fmt.Errorf("could not get l1 gateway parser: %w", err)
 	}
-	err = c.l1GatewayListener.Listen(ctx, func(ctx context.Context, log types.Log) (err error) {
-		_, parsedEvent, ok := parser.ParseEvent(log)
+	err = c.l1GatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+		et, parsedEvent, ok := parser.ParseEvent(log)
 		if !ok {
 			return nil
 		}
+
+		ctx, span := c.handler.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
+			attribute.String(metrics.TxHash, log.TxHash.String()),
+			attribute.String(metrics.Contract, log.Address.String()),
+			attribute.String("block_hash", log.BlockHash.String()),
+			attribute.Int64("block_number", int64(log.BlockNumber)),
+		))
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
 
 		switch event := parsedEvent.(type) {
 		case *l1gateway.L1GatewayRouterDepositETH:
@@ -416,11 +426,21 @@ func (c *rebalanceManagerScroll) listenL2Gateway(ctx context.Context) (err error
 	if err != nil {
 		return fmt.Errorf("could not get l2 gateway parser: %w", err)
 	}
-	err = c.l2GatewayListener.Listen(ctx, func(ctx context.Context, log types.Log) (err error) {
-		_, parsedEvent, ok := parser.ParseEvent(log)
+	err = c.l2GatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+		et, parsedEvent, ok := parser.ParseEvent(log)
 		if !ok {
 			return nil
 		}
+
+		ctx, span := c.handler.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
+			attribute.String(metrics.TxHash, log.TxHash.String()),
+			attribute.String(metrics.Contract, log.Address.String()),
+			attribute.String("block_hash", log.BlockHash.String()),
+			attribute.Int64("block_number", int64(log.BlockNumber)),
+		))
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
 
 		switch event := parsedEvent.(type) {
 		case *l2gateway.L2GatewayRouterWithdrawETH:
