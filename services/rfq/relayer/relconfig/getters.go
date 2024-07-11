@@ -145,6 +145,20 @@ func (c Config) GetL1GatewayAddress(chainID int) (value string, err error) {
 	return value, nil
 }
 
+// GetL1ScrollMessengerAddress returns the L1ScrollMessenger address for the given chainID.
+func (c Config) GetL1ScrollMessengerAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "L1ScrollMessengerAddress")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast L1ScrollMessengerAddress to string")
+	}
+	return value, nil
+}
+
 // GetL2GatewayAddress returns the L2Gateway address for the given chainID.
 func (c Config) GetL2GatewayAddress(chainID int) (value string, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "L2GatewayAddress")

@@ -71,6 +71,8 @@ type ChainConfig struct {
 	TokenMessengerAddress string `yaml:"token_messenger_address"`
 	// L1GatewayAddress is the L1Gateway address [scroll].
 	L1GatewayAddress string `yaml:"l1_gateway_address"`
+	// L1ScrollMessengerAddress is the L1ScrollMessenger address [scroll].
+	L1ScrollMessengerAddress string `yaml:"l1_scroll_messenger_address"`
 	// L2GatewayAddress is the L2Gateway address [scroll].
 	L2GatewayAddress string `yaml:"l2_gateway_address"`
 	// Confirmations is the number of required confirmations.
