@@ -239,9 +239,9 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 func (c *rebalanceManagerScroll) Execute(ctx context.Context, rebalance *RebalanceData) (err error) {
 	switch rebalance.OriginMetadata.ChainID {
 	case c.l1ChainID:
-		err = c.executeL1ToL2(ctx, rebalance)
+		err = c.initiateL1ToL2(ctx, rebalance)
 	case c.l2ChainID:
-		err = c.executeL2ToL1(ctx, rebalance)
+		err = c.initiateL2ToL1(ctx, rebalance)
 	default:
 		return fmt.Errorf("unexpected origin: %d", rebalance.OriginMetadata.ChainID)
 	}
@@ -266,7 +266,7 @@ func (c *rebalanceManagerScroll) Execute(ctx context.Context, rebalance *Rebalan
 // TODO: configurable?
 const scrollGasLimit = 200_000
 
-func (c *rebalanceManagerScroll) executeL1ToL2(ctx context.Context, rebalance *RebalanceData) (err error) {
+func (c *rebalanceManagerScroll) initiateL1ToL2(ctx context.Context, rebalance *RebalanceData) (err error) {
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		if transactor == nil {
 			return nil, fmt.Errorf("transactor is nil")
@@ -290,7 +290,7 @@ func (c *rebalanceManagerScroll) executeL1ToL2(ctx context.Context, rebalance *R
 	return nil
 }
 
-func (c *rebalanceManagerScroll) executeL2ToL1(ctx context.Context, rebalance *RebalanceData) (err error) {
+func (c *rebalanceManagerScroll) initiateL2ToL1(ctx context.Context, rebalance *RebalanceData) (err error) {
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		if transactor == nil {
 			return nil, fmt.Errorf("transactor is nil")
