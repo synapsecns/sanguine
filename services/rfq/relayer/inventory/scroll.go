@@ -2,17 +2,22 @@ package inventory
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"math/big"
+	"net/http"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/l1gateway"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/l1scrollmessenger"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/l2gateway"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
@@ -33,6 +38,8 @@ type rebalanceManagerScroll struct {
 	relayerAddress common.Address
 	// boundL1Gateway is the L1GatewayRouter contract
 	boundL1Gateway *l1gateway.L1GatewayRouter
+	// boundL1ScrollMessenger is the L1ScrollMessenger contract
+	boundL1ScrollMessenger *l1scrollmessenger.L1ScrollMessenger
 	// boundL2Gateway is the L2GatewayRouter contract
 	boundL2Gateway *l2gateway.L2GatewayRouter
 	// l1GatewayListener is the listener for the L1GatewayRouter contract
@@ -45,6 +52,10 @@ type rebalanceManagerScroll struct {
 	l2ChainID int
 	// db is the database
 	db reldb.Service
+	// apiURL is the URL for the scroll API
+	apiURL *string
+	// httpClient is the client for http requests
+	httpClient *http.Client
 }
 
 func newRebalanceManagerScroll(cfg relconfig.Config, handler metrics.Handler, chainClient submitter.ClientFetcher, txSubmitter submitter.TransactionSubmitter, relayerAddress common.Address, db reldb.Service) *rebalanceManagerScroll {
@@ -55,6 +66,7 @@ func newRebalanceManagerScroll(cfg relconfig.Config, handler metrics.Handler, ch
 		txSubmitter:    txSubmitter,
 		relayerAddress: relayerAddress,
 		db:             db,
+		httpClient:     &http.Client{},
 	}
 }
 
@@ -110,6 +122,9 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 	return nil
 }
 
+const mainnetScrollAPIURL = "https://mainnet-api-bridge-v2.scroll.io/api/"
+const testnetScrollAPIURL = "https://sepolia-api-bridge-v2.scroll.io/api/"
+
 func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initContracts")
 	defer func(err error) {
@@ -119,17 +134,25 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	for chainID := range c.cfg.Chains {
 		if isEthereumChain(chainID) {
 			c.l1ChainID = chainID
-			addr, err := c.cfg.GetL1GatewayAddress(chainID)
-			if err != nil {
-				return fmt.Errorf("could not get l1 gateway address: %w", err)
-			}
 			chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 			if err != nil {
 				return fmt.Errorf("could not get chain client: %w", err)
 			}
+			addr, err := c.cfg.GetL1GatewayAddress(chainID)
+			if err != nil {
+				return fmt.Errorf("could not get l1 gateway address: %w", err)
+			}
 			c.boundL1Gateway, err = l1gateway.NewL1GatewayRouter(common.HexToAddress(addr), chainClient)
 			if err != nil {
 				return fmt.Errorf("could not get l1 gateway contract: %w", err)
+			}
+			addr, err = c.cfg.GetL1ScrollMessengerAddress(chainID)
+			if err != nil {
+				return fmt.Errorf("could not get l1 scroll messenger address: %w", err)
+			}
+			c.boundL1ScrollMessenger, err = l1scrollmessenger.NewL1ScrollMessenger(common.HexToAddress(addr), chainClient)
+			if err != nil {
+				return fmt.Errorf("could not get l1 scroll messenger contract: %w", err)
 			}
 		} else if isScrollChain(chainID) {
 			c.l2ChainID = chainID
@@ -156,6 +179,14 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	if isTestnetChain(c.l1ChainID) != isTestnetChain(c.l2ChainID) {
 		return fmt.Errorf("testnet chain mismatch: %d %d", c.l1ChainID, c.l2ChainID)
 	}
+
+	// set API URL
+	baseURL := mainnetScrollAPIURL
+	if isTestnetChain(c.l1ChainID) {
+		baseURL = testnetScrollAPIURL
+	}
+	url := fmt.Sprintf("%s/claimable?address=%s", baseURL, c.relayerAddress.Hex())
+	c.apiURL = &url
 
 	return nil
 }
@@ -465,6 +496,118 @@ func (c *rebalanceManagerScroll) listenL2Gateway(ctx context.Context, ethClient 
 	})
 	if err != nil {
 		return fmt.Errorf("could not listen for L2GatewayRouter events: %w", err)
+	}
+	return nil
+}
+
+type scrollAPIResponse struct {
+	Errcode int    `json:"errcode"`
+	Errmsg  string `json:"errmsg"`
+	Data    struct {
+		Result []struct {
+			Hash           string      `json:"hash"`
+			Amount         string      `json:"amount"`
+			To             string      `json:"to"`
+			IsL1           bool        `json:"isL1"`
+			L1Token        string      `json:"l1Token"`
+			L2Token        string      `json:"l2Token"`
+			BlockNumber    int         `json:"blockNumber"`
+			BlockTimestamp interface{} `json:"blockTimestamp"`
+			FinalizeTx     struct {
+				Hash           string      `json:"hash"`
+				Amount         string      `json:"amount"`
+				To             string      `json:"to"`
+				IsL1           bool        `json:"isL1"`
+				BlockNumber    int         `json:"blockNumber"`
+				BlockTimestamp interface{} `json:"blockTimestamp"`
+			} `json:"finalizeTx"`
+			ClaimInfo struct {
+				From       string `json:"from"`
+				To         string `json:"to"`
+				Value      string `json:"value"`
+				Nonce      string `json:"nonce"`
+				BatchHash  string `json:"batch_hash"`
+				Message    string `json:"message"`
+				Proof      string `json:"proof"`
+				BatchIndex string `json:"batch_index"`
+			} `json:"claimInfo"`
+			CreatedTime interface{} `json:"createdTime"`
+		} `json:"result"`
+		Total int `json:"total"`
+	} `json:"data"`
+}
+
+func (c *rebalanceManagerScroll) claimL2ToL1(ctx context.Context) (err error) {
+	if c.apiURL == nil {
+		return fmt.Errorf("api URL not set")
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, *c.apiURL, nil)
+	if err != nil {
+		return fmt.Errorf("could not create request: %w", err)
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not get response: %w", err)
+	}
+	//nolint:errcheck
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
+		return
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	var claimableResp scrollAPIResponse
+	err = json.Unmarshal(body, &claimableResp)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal body: %w", err)
+	}
+
+	for _, result := range claimableResp.Data.Result {
+		_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(c.l1ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+			if transactor == nil {
+				return nil, fmt.Errorf("transactor is nil")
+			}
+			// Note: we hardcode the 'to' parameter as our own relayerAddress as a safety measure.
+			value, ok := new(big.Int).SetString(result.ClaimInfo.Value, 10)
+			if !ok {
+				return nil, fmt.Errorf("could not parse value: %w", err)
+			}
+			nonce, ok := new(big.Int).SetString(result.ClaimInfo.Nonce, 10)
+			if !ok {
+				return nil, fmt.Errorf("could not parse nonce: %w", err)
+			}
+			batchIndex, ok := new(big.Int).SetString(result.ClaimInfo.BatchIndex, 10)
+			if !ok {
+				return nil, fmt.Errorf("could not parse batch index: %w", err)
+			}
+			message, err := hexutil.Decode(result.ClaimInfo.Message)
+			if err != nil {
+				return nil, fmt.Errorf("could not decode message: %w", err)
+			}
+			merkleProof, err := hexutil.Decode(result.ClaimInfo.Proof)
+			if err != nil {
+				return nil, fmt.Errorf("could not decode merkle proof: %w", err)
+			}
+			proof := l1scrollmessenger.IL1ScrollMessengerL2MessageProof{
+				BatchIndex:  batchIndex,
+				MerkleProof: merkleProof,
+			}
+			tx, err = c.boundL1ScrollMessenger.RelayMessageWithProof(transactor, common.HexToAddress(result.ClaimInfo.From), c.relayerAddress, value, nonce, message, proof)
+			if err != nil {
+				return nil, fmt.Errorf("could not relay message: %w", err)
+			}
+			return tx, nil
+		})
+		if err != nil {
+			return fmt.Errorf("could not submit transaction: %w", err)
+		}
 	}
 	return nil
 }
