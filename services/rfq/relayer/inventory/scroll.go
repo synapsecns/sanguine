@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -87,6 +88,8 @@ func isTestnetChain(chainID int) bool {
 	return chainID == scrollSepoliaChainID || chainID == sepoliaChainID
 }
 
+const claimCheckInterval = 30
+
 func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 	err = c.initContracts(ctx)
 	if err != nil {
@@ -112,6 +115,19 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
 		return c.listenL2Gateway(ctx, l2Client)
+	})
+	g.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(claimCheckInterval * time.Second):
+				err := c.claimL2ToL1(ctx)
+				if err != nil {
+					logger.Warnf("could not claim: %v", err)
+				}
+			}
+		}
 	})
 
 	err = g.Wait()
