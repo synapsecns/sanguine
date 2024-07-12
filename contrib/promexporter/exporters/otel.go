@@ -27,7 +27,6 @@ type otelRecorder struct {
 	// dfk stats
 	stuckHeroes int64
 
-	tokenID string
 	chainID int
 
 	// sbumitter stats
@@ -120,6 +119,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to create gauge: %v", err)
 	}
 
+	// Register VPrice callback
 	if _, err = otr.meter.RegisterCallback(
 		otr.recordVpriceGauge,
 		otr.vpriceGauge,
@@ -127,6 +127,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to register callback for vprice gauge: %v", err)
 	}
 
+	// Register DFK Stuck Heroes Callback
 	if _, err = otr.meter.RegisterCallback(
 		otr.recordStuckHeroCount,
 		otr.stuckCount,
@@ -134,6 +135,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to register callback for gas balance gauge: %v", err)
 	}
 
+	// Register Token Balance Callback
 	if _, err = otr.meter.RegisterCallback(
 		otr.recordTokenBalance,
 		otr.gasBalanceGauge,
@@ -144,6 +146,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to register callback for gas balance gauge: %v", err)
 	}
 
+	// Register Submitter Stats Callback
 	if _, err = otr.meter.RegisterCallback(
 		otr.recordSubmitterStats,
 		otr.balanceGauge,
@@ -178,8 +181,6 @@ func (o *otelRecorder) recordVpriceGauge(
 	return nil
 }
 
-// Token Balance Metrics
-
 type tokenData struct {
 	metadata        TokenConfig
 	contractBalance *big.Int
@@ -187,6 +188,7 @@ type tokenData struct {
 	feeBalance      *big.Int
 }
 
+// Token Balance Metrics
 func (o *otelRecorder) RecordTokenBalance(
 	parentCtx context.Context,
 	bridgeBalance float64,
@@ -265,8 +267,7 @@ func (o *otelRecorder) recordStuckHeroCount(
 	return nil
 }
 
-// submitter stats
-
+// Submitter stats
 func (o *otelRecorder) RecordSubmitterStats(nonce int64, balance float64, gasCheckName string) {
 	o.nonce = nonce
 	o.balance = balance
