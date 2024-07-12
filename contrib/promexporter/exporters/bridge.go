@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -42,11 +41,6 @@ func (e *exporter) getBridgeConfig(ctx context.Context) (*bridgeconfig.BridgeCon
 // Will be a lot faster w/: https://github.com/open-telemetry/opentelemetry-go/issues/3034
 // nolint: cyclop
 func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string) error {
-	meter := e.metrics.Meter(meterName)
-	vpriceMetric, err := meter.Float64ObservableGauge("vpriceMetric")
-	if err != nil {
-		return fmt.Errorf("could not create gauge: %w", err)
-	}
 
 	attributes := attribute.NewSet(attribute.Int(metrics.ChainID, chainID), attribute.String("tokenID", tokenID))
 
@@ -90,30 +84,51 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 		return fmt.Errorf("could not get iswap contract: %w", err)
 	}
 
-	if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
-		ctx, span := e.metrics.Tracer().Start(parentCtx, "vprice_stats", trace.WithAttributes(
-			attribute.Int(metrics.ChainID, chainID), attribute.String("tokenID", tokenID),
-		))
-
-		defer func() {
-			metrics.EndSpanWithErr(span, err)
-		}()
-
-		ctx, cancel := context.WithTimeout(ctx, time.Minute)
-		defer cancel()
-
-		realvPrice, err := iswap.GetVirtualPrice(&bind.CallOpts{Context: ctx})
-		if err != nil {
-			return fmt.Errorf("could not get virtual price: %w", err)
-		}
-
-		// Use floatVPrice as required
-		o.ObserveFloat64(vpriceMetric, core.BigToDecimals(realvPrice, decimals), metric.WithAttributeSet(attributes))
-
-		return nil
-	}, vpriceMetric); err != nil {
-		return fmt.Errorf("registering callback on instruments: %w", err)
+	realvPrice, err := iswap.GetVirtualPrice(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get virtual price: %w", err)
 	}
+
+	// otelRecorder should be handling all of this shit below.
+	if _, err := meter.RegisterCallback(
+		func(parentCtx context.Context, observer metric.Observer) (err error) {
+			e.otelRecorder.recordVpriceGauge(
+				parentCtx,
+				core.BigToDecimals(realvPrice, decimals),
+				chainID,
+				tokenID,
+				observer,
+			)
+			return nil
+		},
+	); err != nil {
+		return fmt.Errorf("could not register callback for vprice")
+	}
+
+	//if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+	//	ctx, span := e.metrics.Tracer().Start(parentCtx, "vprice_stats", trace.WithAttributes(
+	//		attribute.Int(metrics.ChainID, chainID), attribute.String("tokenID", tokenID),
+	//	))
+
+	//	defer func() {
+	//		metrics.EndSpanWithErr(span, err)
+	//	}()
+
+	//	ctx, cancel := context.WithTimeout(ctx, time.Minute)
+	//	defer cancel()
+
+	//	realvPrice, err := iswap.GetVirtualPrice(&bind.CallOpts{Context: ctx})
+	//	if err != nil {
+	//		return fmt.Errorf("could not get virtual price: %w", err)
+	//	}
+
+	//	// Use floatVPrice as required
+	//	o.ObserveFloat64(vpriceMetric, core.BigToDecimals(realvPrice, decimals), metric.WithAttributeSet(attributes))
+
+	//	return nil
+	//}, vpriceMetric); err != nil {
+	//	return fmt.Errorf("registering callback on instruments: %w", err)
+	//}
 
 	return nil
 }

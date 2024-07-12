@@ -44,6 +44,8 @@ type exporter struct {
 	metrics       metrics.Handler
 	cfg           config.Config
 	omnirpcClient omnirpcClient.RPCClient
+
+	otelRecorder otelRecorder
 }
 
 // StartExporterServer starts the exporter server.
@@ -81,6 +83,7 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 		metrics:       handler,
 		cfg:           cfg,
 		omnirpcClient: omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes()),
+		otelRecorder:  newOtelRecorder(handler),
 	}
 
 	// register dfk metrics
