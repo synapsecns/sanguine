@@ -24,6 +24,7 @@ require (
 	github.com/creasty/defaults v1.7.0
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/gin-gonic/gin v1.10.0
+	github.com/hedzr/log v1.6.3
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
