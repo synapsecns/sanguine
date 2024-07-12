@@ -89,7 +89,7 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	// register dfk metrics
 	for _, pending := range cfg.DFKPending {
 		// heroes on both chains
-		err = exp.stuckHeroCountStats(common.HexToAddress(pending.Owner), pending.ChainName)
+		err = exp.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName)
 		if err != nil {
 			return fmt.Errorf("could setup metric: %w", err)
 		}
