@@ -7,10 +7,9 @@ export const destinationAddressMiddleware: Middleware =
   (_store) => (next) => async (action) => {
     if (setDestinationAddress.match(action) && action.payload !== null) {
       const isRisky = await screenAddress(action.payload)
-      if (!isRisky) {
-        return next(action)
+      if (isRisky) {
+        return
       }
-      return
     }
     return next(action)
   }
