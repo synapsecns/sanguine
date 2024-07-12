@@ -15,11 +15,13 @@ import (
 
 // note: this kind of check should be deprecated in favor of submitter metrics once everything has been moved over.
 func (e *exporter) submitterStats(address common.Address, chainID int, name string) (err error) {
-
-	ctx, span := e.metrics.Tracer().Start(context.Background(), "submitter_stats", trace.WithAttributes(
-		attribute.Int(metrics.ChainID, chainID),
-		attribute.String(metrics.EOAAddress, address.String()),
-	))
+	ctx, span := e.metrics.Tracer().Start(
+		context.Background(),
+		"submitter_stats",
+		trace.WithAttributes(
+			attribute.Int(metrics.ChainID, chainID),
+			attribute.String(metrics.EOAAddress, address.String()),
+		))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -33,19 +35,17 @@ func (e *exporter) submitterStats(address common.Address, chainID int, name stri
 	var nonce uint64
 	var balance big.Int
 
-	err = client.BatchWithContext(ctx,
+	if err = client.BatchWithContext(ctx,
 		eth.Nonce(address, nil).Returns(&nonce),
 		eth.Balance(address, nil).Returns(&balance),
-	)
-
-	if err != nil {
+	); err != nil {
 		return fmt.Errorf("could not get balance: %w", err)
 	}
 
 	ethBalance := new(big.Float).Quo(new(big.Float).SetInt(&balance), new(big.Float).SetInt64(params.Ether))
 	truncEthBalance, _ := ethBalance.Float64()
 
-	e.otelRecorder.RecordSubmitterStats(int64(nonce), truncEthBalance, name)
+	e.otelRecorder.RecordSubmitterStats(chainID, int64(nonce), truncEthBalance, name)
 
 	return nil
 }

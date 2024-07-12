@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/cornelk/hashmap"
 	"github.com/hedzr/log"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
@@ -16,25 +17,23 @@ type otelRecorder struct {
 	meter   metric.Meter
 
 	// vprice stats
-	vPrice float64
+	vPrice *hashmap.Map[int, float64]
 
 	// tokenBalance stats
-	gasBalance    float64
-	bridgeBalance float64
-	feeBalance    float64
-	totalSupply   float64
+	gasBalance    *hashmap.Map[int, float64]
+	bridgeBalance *hashmap.Map[int, float64]
+	feeBalance    *hashmap.Map[int, float64]
+	totalSupply   *hashmap.Map[int, float64]
 
 	// dfk stats
 	stuckHeroes int64
 
-	chainID int
-
 	// sbumitter stats
-	td      tokenData
-	nonce   int64
-	address string
-	balance float64
-	name    string
+	td      *hashmap.Map[int, tokenData]
+	nonce   *hashmap.Map[int, int64]
+	address *hashmap.Map[int, string]
+	balance *hashmap.Map[int, float64]
+	name    *hashmap.Map[int, string]
 
 	// vprice
 	vpriceGauge metric.Float64ObservableGauge
@@ -160,8 +159,8 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 }
 
 // Virtual Price Metrics
-func (o *otelRecorder) RecordVPrice(vPrice float64) {
-	o.vPrice = vPrice
+func (o *otelRecorder) RecordVPrice(chainid int, vPrice float64) {
+	o.vPrice.Set(chainid, vPrice)
 }
 
 func (o *otelRecorder) recordVpriceGauge(
@@ -172,11 +171,17 @@ func (o *otelRecorder) recordVpriceGauge(
 		return nil
 	}
 
-	observer.ObserveFloat64(
-		o.vpriceGauge,
-		o.vPrice,
-		metric.WithAttributes(attribute.Int(metrics.ChainID, o.chainID)),
-	)
+	observeCallback := func(chainid int, vprice float64) bool {
+		observer.ObserveFloat64(
+			o.vpriceGauge,
+			vprice,
+			metric.WithAttributes(attribute.Int(metrics.ChainID, chainid)),
+		)
+
+		return true
+	}
+
+	o.vPrice.Range(observeCallback)
 
 	return nil
 }
@@ -197,9 +202,11 @@ func (o *otelRecorder) RecordTokenBalance(
 	chainID int,
 	tokenData []tokenData,
 ) (err error) {
-	o.bridgeBalance = bridgeBalance
-	o.feeBalance = feeBalance
-	o.totalSupply = totalSupply
+
+	o.bridgeBalance.Set(chainID, bridgeBalance)
+	o.feeBalance.Set(chainID, feeBalance)
+	o.totalSupply.Set(chainID, totalSupply)
+
 	return nil
 }
 
@@ -208,38 +215,58 @@ func (o *otelRecorder) recordTokenBalance(
 	observer metric.Observer,
 ) (err error) {
 
-	tokenAttributes := attribute.NewSet(
-		attribute.String("tokenID", o.td.metadata.TokenID),
-		attribute.Int(metrics.ChainID, o.td.metadata.ChainID),
-	)
-
 	if o.metrics == nil || o.bridgeBalanceGauge == nil {
 		return nil
 	}
 
-	observer.ObserveFloat64(
-		o.gasBalanceGauge,
-		o.gasBalance,
-		metric.WithAttributes(attribute.Int(metrics.ChainID, o.chainID)),
-	)
+	o.td.Range(func(chainID int, td tokenData) bool {
+		tokenAttributes := attribute.NewSet(
+			attribute.String("tokenID", td.metadata.TokenID),
+			attribute.Int(metrics.ChainID, td.metadata.ChainID),
+		)
 
-	observer.ObserveFloat64(
-		o.bridgeBalanceGauge,
-		o.bridgeBalance,
-		metric.WithAttributeSet(tokenAttributes),
-	)
+		gasBalance, ok := o.gasBalance.Get(chainID)
+		if !ok {
+			return false
+		}
+		observer.ObserveFloat64(
+			o.gasBalanceGauge,
+			gasBalance,
+			metric.WithAttributeSet(tokenAttributes),
+		)
 
-	observer.ObserveFloat64(
-		o.feeBalanceGauge,
-		o.feeBalance,
-		metric.WithAttributeSet(tokenAttributes),
-	)
+		bridgeBalance, ok := o.bridgeBalance.Get(chainID)
+		if !ok {
+			return false
+		}
+		observer.ObserveFloat64(
+			o.bridgeBalanceGauge,
+			bridgeBalance,
+			metric.WithAttributeSet(tokenAttributes),
+		)
 
-	observer.ObserveFloat64(
-		o.totalSupplyGauge,
-		o.totalSupply,
-		metric.WithAttributeSet(tokenAttributes),
-	)
+		feeBalance, ok := o.feeBalance.Get(chainID)
+		if !ok {
+			return false
+		}
+		observer.ObserveFloat64(
+			o.feeBalanceGauge,
+			feeBalance,
+			metric.WithAttributeSet(tokenAttributes),
+		)
+
+		totalSupply, ok := o.totalSupply.Get(chainID)
+		if !ok {
+			return false
+		}
+		observer.ObserveFloat64(
+			o.totalSupplyGauge,
+			totalSupply,
+			metric.WithAttributeSet(tokenAttributes),
+		)
+
+		return true
+	})
 
 	return nil
 
@@ -261,17 +288,16 @@ func (o *otelRecorder) recordStuckHeroCount(
 	observer.ObserveInt64(
 		o.stuckCount,
 		o.stuckHeroes,
-		metric.WithAttributes(attribute.Int(metrics.ChainID, o.chainID)),
 	)
 
 	return nil
 }
 
 // Submitter stats
-func (o *otelRecorder) RecordSubmitterStats(nonce int64, balance float64, gasCheckName string) {
-	o.nonce = nonce
-	o.balance = balance
-	o.name = gasCheckName
+func (o *otelRecorder) RecordSubmitterStats(chainid int, nonce int64, balance float64, gasCheckName string) {
+	o.nonce.Set(chainid, nonce)
+	o.balance.Set(chainid, balance)
+	o.name.Set(chainid, gasCheckName)
 }
 
 func (o *otelRecorder) recordSubmitterStats(
@@ -282,21 +308,25 @@ func (o *otelRecorder) recordSubmitterStats(
 		return nil
 	}
 
-	observer.ObserveInt64(
-		o.nonceGauge,
-		o.nonce,
-		metric.WithAttributes(attribute.Int(metrics.ChainID, o.chainID)),
-	)
+	o.nonce.Range(func(chainID int, nonce int64) bool {
+		observer.ObserveInt64(
+			o.nonceGauge,
+			nonce,
+			metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)),
+		)
+		return true
+	})
 
-	observer.ObserveFloat64(
-		o.balanceGauge,
-		o.balance,
-		metric.WithAttributes(
-			attribute.Int(metrics.ChainID, o.chainID),
-			attribute.String(metrics.EOAAddress, o.address),
-			attribute.String("name", o.name),
-		),
-	)
+	o.balance.Range(func(chainID int, balance float64) bool {
+		observer.ObserveFloat64(
+			o.balanceGauge,
+			balance,
+			metric.WithAttributes(
+				attribute.Int(metrics.ChainID, chainID),
+			),
+		)
+		return true
+	})
 
 	return nil
 }

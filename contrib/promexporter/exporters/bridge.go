@@ -65,7 +65,7 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 		return fmt.Errorf("could not get decimals: %w", err)
 	}
 
-	e.otelRecorder.RecordVPrice(core.BigToDecimals(realvPrice, decimals))
+	e.otelRecorder.RecordVPrice(chainID, core.BigToDecimals(realvPrice, decimals))
 
 	return nil
 }

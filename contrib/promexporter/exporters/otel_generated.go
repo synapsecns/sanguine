@@ -9,11 +9,11 @@ import (
 // iOtelRecorder ...
 type iOtelRecorder interface {
 	// Virtual Price Metrics
-	RecordVPrice(vPrice float64)
-	// Bridge Token Balance Metrics
+	RecordVPrice(chainid int, vPrice float64)
+	// Token Balance Metrics
 	RecordTokenBalance(parentCtx context.Context, bridgeBalance float64, feeBalance float64, totalSupply float64, chainID int, tokenData []tokenData) (err error)
 	// DFK Metrics
 	RecordStuckHeroCount(stuckHeroes int64)
-	// Submitter Metrics
-	RecordSubmitterStats(nonce int64, balance float64, gasCheckName string)
+	// Submitter stats
+	RecordSubmitterStats(chainid int, nonce int64, balance float64, gasCheckName string)
 }
