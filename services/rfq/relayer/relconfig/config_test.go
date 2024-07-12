@@ -356,7 +356,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 25,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
@@ -365,7 +365,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 25,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
@@ -383,7 +383,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     51,
 							MaintenanceBalancePct: 50,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
@@ -392,7 +392,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 50,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
@@ -411,7 +411,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 50,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
@@ -420,7 +420,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 50.1,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},

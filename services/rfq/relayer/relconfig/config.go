@@ -218,7 +218,7 @@ func (c Config) Validate() (err error) {
 	initialPctSums := map[string]float64{}
 	for _, chainCfg := range c.Chains {
 		for tokenName, tokenCfg := range chainCfg.Tokens {
-			if tokenCfg.RebalanceMethod != "" {
+			if len(tokenCfg.RebalanceMethods) != 0 {
 				maintenancePctSums[tokenName] += tokenCfg.MaintenanceBalancePct
 				initialPctSums[tokenName] += tokenCfg.InitialBalancePct
 			}

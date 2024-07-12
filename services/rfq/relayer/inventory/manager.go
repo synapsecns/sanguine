@@ -177,7 +177,7 @@ const meterName = "github.com/synapsecns/sanguine/services/rfq/relayer/inventory
 //
 //nolint:gocognit
 func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetcher, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, txSubmitter submitter.TransactionSubmitter, db reldb.Service) (Manager, error) {
-	rebalanceMethods, err := cfg.GetRebalanceMethods()
+	rebalanceMethods, err := cfg.GetAllRebalanceMethods()
 	if err != nil {
 		return nil, fmt.Errorf("could not get rebalance methods: %w", err)
 	}
@@ -473,7 +473,7 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	// execute the rebalance
 	manager, ok := i.rebalanceManagers[rebalance.Method]
 	if !ok {
-		return fmt.Errorf("no rebalance manager for method: %s", methodOrigin)
+		return fmt.Errorf("no rebalance manager for method: %s", rebalance.Method)
 	}
 	err = manager.Execute(ctx, rebalance)
 	if err != nil {
