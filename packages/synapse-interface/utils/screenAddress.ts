@@ -1,7 +1,8 @@
 import { Address } from 'viem'
-import { GlobalEventEmitter } from '@/utils/globalEventEmitter'
+
 import { DISCORD_URL } from '@/constants/urls'
-import { isBlacklisted } from './isBlacklisted'
+import { GlobalEventEmitter } from '@/utils/globalEventEmitter'
+import { isBlacklisted } from '@/utils/isBlacklisted'
 
 const createRiskDetectedEvent = (address: Address | string) => {
   return new CustomEvent('riskDetected', {
