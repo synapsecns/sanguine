@@ -496,7 +496,7 @@ func (c Config) GetRebalanceMethods(chainID int, tokenAddr string) (methods []Re
 		return nil, err
 	}
 
-	methods = make([]RebalanceMethod, len(tokenCfg.RebalanceMethods))
+	methods = []RebalanceMethod{}
 	for _, m := range tokenCfg.RebalanceMethods {
 		method, err := RebalanceMethodFromString(m)
 		if err != nil {
