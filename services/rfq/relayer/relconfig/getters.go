@@ -487,37 +487,45 @@ func (c Config) getTokenConfigByAddr(chainID int, tokenAddr string) (cfg TokenCo
 	return cfg, fmt.Errorf("no token config for chain %d and address %s", chainID, tokenAddr)
 }
 
-// GetRebalanceMethod returns the rebalance method for the given chain path and token address.
+// GetRebalanceMethods returns the rebalance method for the given chain path and token address.
 // This method will error if there is a rebalance method mismatch, and neither methods correspond to
-// RebalanceMethodNone.
-func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method RebalanceMethod, err error) {
+// RebalanceMethodsNone.
+func (c Config) GetRebalanceMethods(chainID int, tokenAddr string) (methods []RebalanceMethod, err error) {
 	tokenCfg, err := c.getTokenConfigByAddr(chainID, tokenAddr)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	method, err = RebalanceMethodFromString(tokenCfg.RebalanceMethod)
-	if err != nil {
-		return 0, err
-	}
-	return method, nil
-}
-
-// GetRebalanceMethods returns all rebalance methods present in the config.
-func (c Config) GetRebalanceMethods() (methods map[RebalanceMethod]bool, err error) {
-	methods = make(map[RebalanceMethod]bool)
-	for chainID, chainCfg := range c.Chains {
-		for _, tokenCfg := range chainCfg.Tokens {
-			method, err := c.GetRebalanceMethod(chainID, tokenCfg.Address)
-			if err != nil {
-				return nil, err
-			}
-			if method != RebalanceMethodNone {
-				methods[method] = true
-			}
+	methods = make([]RebalanceMethod, len(tokenCfg.RebalanceMethods))
+	for _, m := range tokenCfg.RebalanceMethods {
+		method, err := RebalanceMethodFromString(m)
+		if err != nil {
+			return nil, err
+		}
+		if method != RebalanceMethodNone {
+			methods = append(methods, method)
 		}
 	}
 	return methods, nil
+}
+
+// GetAllRebalanceMethods returns all rebalance methods present in the config.
+func (c Config) GetAllRebalanceMethods() (allMethods map[RebalanceMethod]bool, err error) {
+	allMethods = make(map[RebalanceMethod]bool)
+	for chainID, chainCfg := range c.Chains {
+		for _, tokenCfg := range chainCfg.Tokens {
+			methods, err := c.GetRebalanceMethods(chainID, tokenCfg.Address)
+			if err != nil {
+				return nil, err
+			}
+			for _, method := range methods {
+				if method != RebalanceMethodNone {
+					allMethods[method] = true
+				}
+			}
+		}
+	}
+	return allMethods, nil
 }
 
 // GetMaintenanceBalancePct returns the maintenance balance percentage for the given chain and token address.

@@ -33,11 +33,11 @@ type RebalanceManager interface {
 //nolint:cyclop,nilnil
 func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
 	// get rebalance method
-	method, err := cfg.GetRebalanceMethod(chainID, token.Hex())
+	methods, err := cfg.GetRebalanceMethods(chainID, token.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get rebalance method: %w", err)
 	}
-	if method == relconfig.RebalanceMethodNone {
+	if len(methods) == 0 {
 		return nil, nil
 	}
 
@@ -51,7 +51,7 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	}
 
 	// evaluate the origin and dest of the rebalance based on min/max token balances
-	originTokenData, destTokenData := getRebalanceMetadatas(cfg, tokens, rebalanceTokenData.Name, method)
+	originTokenData, destTokenData, method := getRebalanceMetadatas(cfg, tokens, rebalanceTokenData.Name, methods)
 	if originTokenData == nil {
 		if span != nil {
 			span.SetAttributes(attribute.Bool("no_rebalance_origin", true))
@@ -61,6 +61,12 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	if destTokenData == nil {
 		if span != nil {
 			span.SetAttributes(attribute.Bool("no_rebalance_dest", true))
+		}
+		return nil, nil
+	}
+	if method == relconfig.RebalanceMethodNone {
+		if span != nil {
+			span.SetAttributes(attribute.Bool("no_rebalance_method", true))
 		}
 		return nil, nil
 	}
@@ -94,17 +100,18 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 }
 
 // getRebalanceMetadatas finds the origin and dest token metadata based on the configured rebalance method.
-func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, method relconfig.RebalanceMethod) (originTokenData, destTokenData *TokenMetadata) {
+func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, methods []relconfig.RebalanceMethod) (originTokenData, destTokenData *TokenMetadata, method relconfig.RebalanceMethod) {
 	for _, tokenMap := range tokens {
 		for _, tokenData := range tokenMap {
 			if tokenData.Name == tokenName {
 				// make sure that the token is compatible with our rebalance method
-				tokenMethod, tokenErr := cfg.GetRebalanceMethod(tokenData.ChainID, tokenData.Addr.Hex())
+				tokenMethods, tokenErr := cfg.GetRebalanceMethods(tokenData.ChainID, tokenData.Addr.Hex())
 				if tokenErr != nil {
 					logger.Errorf("could not get token rebalance method: %v", tokenErr)
 					continue
 				}
-				if tokenMethod != method {
+				method = getRebalanceMethod(methods, tokenMethods)
+				if method == relconfig.RebalanceMethodNone {
 					continue
 				}
 
@@ -118,7 +125,18 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 			}
 		}
 	}
-	return originTokenData, destTokenData
+	return originTokenData, destTokenData, method
+}
+
+func getRebalanceMethod(a, b []relconfig.RebalanceMethod) relconfig.RebalanceMethod {
+	for _, am := range a {
+		for _, bm := range b {
+			if am == bm {
+				return am
+			}
+		}
+	}
+	return relconfig.RebalanceMethodNone
 }
 
 // getRebalanceAmount calculates the amount to rebalance based on the configured thresholds.

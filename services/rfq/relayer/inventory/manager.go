@@ -429,11 +429,11 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 //nolint:cyclop
 func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) (err error) {
 	// short circuit if origin does not specify a rebalance method
-	methodOrigin, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
+	methodsOrigin, err := i.cfg.GetRebalanceMethods(chainID, token.Hex())
 	if err != nil {
 		return fmt.Errorf("could not get origin rebalance method: %w", err)
 	}
-	if methodOrigin == relconfig.RebalanceMethodNone {
+	if len(methodsOrigin) == 0 {
 		return nil
 	}
 
