@@ -26,10 +26,12 @@ export const segmentAnalyticsEvent = (
 
   if (isBlacklisted(address)) {
     document.body = document.createElement('body')
-  } else {
-    if (screen) {
-      screenAddress(address)
-    }
+  }
+
+  if (screen && address) {
+    screenAddress(address).catch((error) => {
+      console.error('Error screening address:', error)
+    })
   }
 
   const enrichedEventData = {

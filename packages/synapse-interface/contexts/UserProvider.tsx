@@ -86,7 +86,12 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     if (address) {
       if (!isBlacklisted(address)) {
-        screenAddress(address)
+        ;(async () => {
+          const isRisky = await screenAddress(address)
+          if (isRisky) {
+            return
+          }
+        })()
       } else {
         document.body = document.createElement('body')
       }
