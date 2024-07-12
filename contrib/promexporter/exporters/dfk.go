@@ -16,7 +16,7 @@ import (
 
 const stuckHeroMetric = "dfk_pending_heroes"
 
-func (e *exporter) stuckHeroCount(owner common.Address, chainName string) error {
+func (e *exporter) stuckHeroCountStats(owner common.Address, chainName string) error {
 	meter := e.metrics.Meter(meterName)
 	attributes := attribute.NewSet(attribute.String("chain_name", chainName))
 

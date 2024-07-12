@@ -12,11 +12,8 @@ import (
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/contrib/promexporter/internal/decoders"
 	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 )
 
 // Will be a lot faster w/: https://github.com/open-telemetry/opentelemetry-go/issues/3034
@@ -63,7 +60,6 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 		return fmt.Errorf("could not get virtual price: %w", err)
 	}
 
-	// otelRecorder should be handling all of this shit below.
 	decimals, err := tokenContract.Decimals(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get decimals: %w", err)
@@ -77,32 +73,10 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 var errPoolNotExist = errors.New("pool does not exist")
 
 // nolint: cyclop
-func (e *exporter) getTokenBalances(ctx context.Context) error {
+func (e *exporter) getTokenBalancesStats(ctx context.Context) error {
 	allTokens, err := e.getAllTokens(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get all tokens: %w", err)
-	}
-
-	meter := e.metrics.Meter(meterName)
-
-	bridgeBalanceMetric, err := meter.Float64ObservableGauge("bridgeBalanceMetric")
-	if err != nil {
-		return fmt.Errorf("could not create gauge: %w", err)
-	}
-
-	feeBalanceMetric, err := meter.Float64ObservableCounter("feeBalance")
-	if err != nil {
-		return fmt.Errorf("could not create counter: %w", err)
-	}
-
-	totalSupplyMetric, err := meter.Float64ObservableGauge("totalSupply")
-	if err != nil {
-		return fmt.Errorf("could not create gauge: %w", err)
-	}
-
-	gasBalanceMetric, err := meter.Float64ObservableGauge("gasBalance")
-	if err != nil {
-		return fmt.Errorf("could not create gauge: %w", err)
 	}
 
 	for chainID, bridgeContract := range e.cfg.BridgeChecks {
@@ -142,21 +116,29 @@ func (e *exporter) getTokenBalances(ctx context.Context) error {
 			return fmt.Errorf("could not get token balances: %w", err)
 		}
 
-		if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
-			// eth is always 18 decimals
-			o.ObserveFloat64(gasBalanceMetric, core.BigToDecimals(&realGasBalance, 18), metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
+		for _, td := range allTokenData {
+			contractBalance := core.BigToDecimals(td.contractBalance, td.metadata.TokenDecimals)
+			feeBalance := core.BigToDecimals(td.feeBalance, td.metadata.TokenDecimals)
+			totalSupply := core.BigToDecimals(td.totalSuppply, td.metadata.TokenDecimals)
 
-			for _, td := range allTokenData {
-				tokenAttributes := attribute.NewSet(attribute.String("tokenID", td.metadata.TokenID), attribute.Int(metrics.ChainID, td.metadata.ChainID))
-				o.ObserveFloat64(bridgeBalanceMetric, core.BigToDecimals(td.contractBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
-				o.ObserveFloat64(feeBalanceMetric, core.BigToDecimals(td.feeBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
-				o.ObserveFloat64(totalSupplyMetric, core.BigToDecimals(td.totalSuppply, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
-			}
-
-			return nil
-		}, bridgeBalanceMetric, feeBalanceMetric, totalSupplyMetric, gasBalanceMetric); err != nil {
-			return fmt.Errorf("could not register")
+			e.otelRecorder.RecordTokenBalance(ctx, contractBalance, feeBalance, totalSupply, chainID, allTokenData)
 		}
+
+		// if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+		// 	// eth is always 18 decimals
+		// 	o.ObserveFloat64(gasBalanceMetric, core.BigToDecimals(&realGasBalance, 18), metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
+
+		// 	for _, td := range allTokenData {
+		// 		tokenAttributes := attribute.NewSet(attribute.String("tokenID", td.metadata.TokenID), attribute.Int(metrics.ChainID, td.metadata.ChainID))
+		// 		o.ObserveFloat64(bridgeBalanceMetric, core.BigToDecimals(td.contractBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
+		// 		o.ObserveFloat64(feeBalanceMetric, core.BigToDecimals(td.feeBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
+		// 		o.ObserveFloat64(totalSupplyMetric, core.BigToDecimals(td.totalSuppply, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
+		// 	}
+
+		// 	return nil
+		// }, bridgeBalanceMetric, feeBalanceMetric, totalSupplyMetric, gasBalanceMetric); err != nil {
+		// 	return fmt.Errorf("could not register")
+		// }
 	}
 
 	return nil

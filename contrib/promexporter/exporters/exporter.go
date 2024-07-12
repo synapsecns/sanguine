@@ -45,7 +45,7 @@ type exporter struct {
 	cfg           config.Config
 	omnirpcClient omnirpcClient.RPCClient
 
-	otelRecorder otelRecorder
+	otelRecorder iOtelRecorder
 }
 
 // StartExporterServer starts the exporter server.
@@ -89,7 +89,7 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	// register dfk metrics
 	for _, pending := range cfg.DFKPending {
 		// heroes on both chains
-		err = exp.stuckHeroCount(common.HexToAddress(pending.Owner), pending.ChainName)
+		err = exp.stuckHeroCountStats(common.HexToAddress(pending.Owner), pending.ChainName)
 		if err != nil {
 			return fmt.Errorf("could setup metric: %w", err)
 		}
@@ -129,7 +129,7 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	}
 
 	g.Go(func() error {
-		return exp.getTokenBalances(ctx)
+		return exp.getTokenBalancesStats(ctx)
 	})
 
 	if err := g.Wait(); err != nil {
