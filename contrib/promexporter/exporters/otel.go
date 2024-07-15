@@ -31,7 +31,6 @@ type otelRecorder struct {
 	// sbumitter stats
 	td      *hashmap.Map[int, tokenData]
 	nonce   *hashmap.Map[int, int64]
-	address *hashmap.Map[int, string]
 	balance *hashmap.Map[int, float64]
 	name    *hashmap.Map[int, string]
 
@@ -171,17 +170,17 @@ func (o *otelRecorder) recordVpriceGauge(
 		return nil
 	}
 
-	observeCallback := func(chainid int, vprice float64) bool {
-		observer.ObserveFloat64(
-			o.vpriceGauge,
-			vprice,
-			metric.WithAttributes(attribute.Int(metrics.ChainID, chainid)),
-		)
+	o.vPrice.Range(
+		func(chainid int, vprice float64) bool {
+			observer.ObserveFloat64(
+				o.vpriceGauge,
+				vprice,
+				metric.WithAttributes(attribute.Int(metrics.ChainID, chainid)),
+			)
 
-		return true
-	}
-
-	o.vPrice.Range(observeCallback)
+			return true
+		},
+	)
 
 	return nil
 }
@@ -201,20 +200,16 @@ func (o *otelRecorder) RecordTokenBalance(
 	totalSupply float64,
 	chainID int,
 	tokenData []tokenData,
-) (err error) {
-
+) {
 	o.bridgeBalance.Set(chainID, bridgeBalance)
 	o.feeBalance.Set(chainID, feeBalance)
 	o.totalSupply.Set(chainID, totalSupply)
-
-	return nil
 }
 
 func (o *otelRecorder) recordTokenBalance(
 	parentCtx context.Context,
 	observer metric.Observer,
 ) (err error) {
-
 	if o.metrics == nil || o.bridgeBalanceGauge == nil {
 		return nil
 	}
@@ -269,7 +264,6 @@ func (o *otelRecorder) recordTokenBalance(
 	})
 
 	return nil
-
 }
 
 // DFK Metrics

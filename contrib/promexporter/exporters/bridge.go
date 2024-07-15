@@ -19,7 +19,6 @@ import (
 // Will be a lot faster w/: https://github.com/open-telemetry/opentelemetry-go/issues/3034
 // nolint: cyclop
 func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string) error {
-
 	client, err := e.omnirpcClient.GetConfirmationsClient(ctx, chainID, 1)
 	if err != nil {
 		return fmt.Errorf("could not get confirmations client: %w", err)
@@ -105,9 +104,23 @@ func (e *exporter) getTokenBalancesStats(ctx context.Context) error {
 			}
 
 			calls = append(calls,
-				eth.CallFunc(decoders.FuncBalanceOf(), tokenConfig.TokenAddress, common.HexToAddress(bridgeContract)).Returns(allTokenData[i].contractBalance),
-				eth.CallFunc(decoders.FuncTotalSupply(), tokenConfig.TokenAddress).Returns(allTokenData[i].totalSuppply),
-				eth.CallFunc(decoders.FuncFeeBalance(), common.HexToAddress(bridgeContract), tokenConfig.TokenAddress).Returns(allTokenData[i].feeBalance),
+				eth.CallFunc(
+					decoders.FuncBalanceOf(),
+					tokenConfig.TokenAddress,
+					common.HexToAddress(bridgeContract),
+				).
+					Returns(allTokenData[i].contractBalance),
+				eth.CallFunc(
+					decoders.FuncTotalSupply(),
+					tokenConfig.TokenAddress,
+				).
+					Returns(allTokenData[i].totalSuppply),
+				eth.CallFunc(
+					decoders.FuncFeeBalance(),
+					common.HexToAddress(bridgeContract),
+					tokenConfig.TokenAddress,
+				).
+					Returns(allTokenData[i].feeBalance),
 			)
 		}
 

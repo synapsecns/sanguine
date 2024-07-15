@@ -14,7 +14,6 @@ import (
 )
 
 func (e *exporter) stuckHeroCountStats(parentCtx context.Context, owner common.Address, chainName string) (err error) {
-
 	ctx, span := e.metrics.Tracer().Start(parentCtx, "dfk_stats", trace.WithAttributes(
 		attribute.String("chain_name", chainName),
 	))

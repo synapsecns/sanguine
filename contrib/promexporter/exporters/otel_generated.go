@@ -6,14 +6,14 @@ import (
 	"context"
 )
 
-// iOtelRecorder ...
+// iOtelRecorder abstracts otel instrumentation.
 type iOtelRecorder interface {
-	// Virtual Price Metrics
+	// RecordVPrice records the vPrice.
 	RecordVPrice(chainid int, vPrice float64)
-	// Token Balance Metrics
-	RecordTokenBalance(parentCtx context.Context, bridgeBalance float64, feeBalance float64, totalSupply float64, chainID int, tokenData []tokenData) (err error)
-	// DFK Metrics
+	// RecordTokenBalance records the token balance.
+	RecordTokenBalance(parentCtx context.Context, bridgeBalance float64, feeBalance float64, totalSupply float64, chainID int, tokenData []tokenData)
+	// RecordStuckHeroCount records the number of stuck heroes on DFK.
 	RecordStuckHeroCount(stuckHeroes int64)
-	// Submitter stats
+	// RecordSubmitterStats records the submitter stats.
 	RecordSubmitterStats(chainid int, nonce int64, balance float64, gasCheckName string)
 }
