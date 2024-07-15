@@ -13,8 +13,24 @@ import (
 	"github.com/synapsecns/sanguine/contrib/promexporter/internal/decoders"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
+
+func (e *exporter) getBridgeConfig(ctx context.Context) (*bridgeconfig.BridgeConfigRef, error) {
+	// client, err := e.omnirpcClient.GetClient(ctx, big.NewInt(int64(e.cfg.BridgeConfig.ChainID)))
+	client, err := e.omnirpcClient.GetConfirmationsClient(ctx, e.cfg.BridgeConfig.ChainID, 1)
+	if err != nil {
+		return nil, fmt.Errorf("could not get confirmations client: %w", err)
+	}
+
+	// note this will not update
+	configContract, err := bridgeconfig.NewBridgeConfigRef(common.HexToAddress(e.cfg.BridgeConfig.Address), client)
+	if err != nil {
+		return nil, fmt.Errorf("could not get bridge config contract: %w", err)
+	}
+	return configContract, nil
+}
 
 // Will be a lot faster w/: https://github.com/open-telemetry/opentelemetry-go/issues/3034
 // nolint: cyclop
@@ -77,22 +93,20 @@ var errPoolNotExist = errors.New("pool does not exist")
 // nolint: cyclop
 func (e *exporter) getTokenBalancesStats(ctx context.Context) error {
 	allTokens, err := e.getAllTokens(ctx)
+
 	if err != nil {
 		return fmt.Errorf("could not get all tokens: %w", err)
 	}
 
 	for chainID, bridgeContract := range e.cfg.BridgeChecks {
-		chainID := chainID
-		bridgeContract := bridgeContract // capture func literals
-
 		client, err := e.omnirpcClient.GetConfirmationsClient(ctx, chainID, 1)
 		if err != nil {
 			return fmt.Errorf("could not get confirmations client: %w", err)
 		}
 
-		var realGasBalance *big.Int
+		var realGasBalance big.Int
 		calls := []w3types.Caller{
-			eth.Balance(common.HexToAddress(bridgeContract), nil).Returns(realGasBalance),
+			eth.Balance(common.HexToAddress(bridgeContract), nil).Returns(&realGasBalance),
 		}
 
 		allTokenData := make([]tokenData, len(allTokens.GetForChainID(chainID)))
@@ -107,28 +121,15 @@ func (e *exporter) getTokenBalancesStats(ctx context.Context) error {
 			}
 
 			calls = append(calls,
-				eth.CallFunc(
-					decoders.FuncBalanceOf(),
-					tokenConfig.TokenAddress,
-					common.HexToAddress(bridgeContract),
-				).Returns(allTokenData[i].contractBalance),
-				eth.CallFunc(
-					decoders.FuncTotalSupply(),
-					tokenConfig.TokenAddress,
-				).Returns(allTokenData[i].totalSuppply),
-				eth.CallFunc(
-					decoders.FuncFeeBalance(),
-					common.HexToAddress(bridgeContract),
-					tokenConfig.TokenAddress,
-				).Returns(allTokenData[i].feeBalance),
+				eth.CallFunc(decoders.FuncBalanceOf(), tokenConfig.TokenAddress, common.HexToAddress(bridgeContract)).Returns(allTokenData[i].contractBalance),
+				eth.CallFunc(decoders.FuncTotalSupply(), tokenConfig.TokenAddress).Returns(allTokenData[i].totalSuppply),
+				eth.CallFunc(decoders.FuncFeeBalance(), common.HexToAddress(bridgeContract), tokenConfig.TokenAddress).Returns(allTokenData[i].feeBalance),
 			)
-		}
-		err = e.batchCalls(ctx, client, calls)
-		if err != nil {
-			return fmt.Errorf("could not get token balances: %w", err)
-		}
 
-		e.otelRecorder.RecordBridgeGasBalance(chainID, core.BigToDecimals(realGasBalance, 18))
+		}
+		_ = e.batchCalls(ctx, client, calls)
+
+		e.otelRecorder.RecordBridgeGasBalance(chainID, core.BigToDecimals(&realGasBalance, 18))
 
 		for _, td := range allTokenData {
 			contractBalance := core.BigToDecimals(td.contractBalance, td.metadata.TokenDecimals)

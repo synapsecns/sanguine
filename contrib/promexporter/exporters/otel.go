@@ -85,13 +85,13 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to create feeBalance gauge: %v", err)
 	}
 	if otr.totalSupplyGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("promexporter.totalSupply"),
+		metricName("promexporter.totalSupplyGauge"),
 		metric.WithDescription("total supply gauge"),
 		metric.WithUnit("eth")); err != nil {
 		log.Warnf("failed to create totalSupply gauge: %v", err)
 	}
 	if otr.gasBalanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("promexporter.gasBalance"),
+		metricName("promexporter.gasBalanceGauge"),
 		metric.WithDescription("gas balance"),
 		metric.WithUnit("gwei")); err != nil {
 		log.Warnf("failed to create gasBalance gauge: %v", err)
@@ -191,13 +191,6 @@ func (o *otelRecorder) recordVpriceGauge(
 	return nil
 }
 
-type tokenData struct {
-	metadata        TokenConfig
-	contractBalance *big.Int
-	totalSuppply    *big.Int
-	feeBalance      *big.Int
-}
-
 // Token Balance Metrics.
 func (o *otelRecorder) RecordBridgeGasBalance(chainid int, gasBalance float64) {
 	o.gasBalance.Set(chainid, gasBalance)
@@ -221,6 +214,13 @@ func (o *otelRecorder) recordBridgeGasBalance(_ context.Context, observer metric
 	return nil
 }
 
+type tokenData struct {
+	metadata        TokenConfig
+	contractBalance *big.Int
+	totalSuppply    *big.Int
+	feeBalance      *big.Int
+}
+
 func (o *otelRecorder) RecordTokenBalance(
 	bridgeBalance float64,
 	feeBalance float64,
@@ -233,7 +233,6 @@ func (o *otelRecorder) RecordTokenBalance(
 	o.totalSupply.Set(chainID, totalSupply)
 	o.td.Set(chainID, tokenData)
 }
-
 func (o *otelRecorder) recordTokenBalance(
 	_ context.Context,
 	observer metric.Observer,
