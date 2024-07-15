@@ -132,11 +132,7 @@ func (e *exporter) getTokenBalancesStats(ctx context.Context) error {
 		e.otelRecorder.RecordBridgeGasBalance(chainID, core.BigToDecimals(&realGasBalance, 18))
 
 		for _, td := range allTokenData {
-			contractBalance := core.BigToDecimals(td.contractBalance, td.metadata.TokenDecimals)
-			feeBalance := core.BigToDecimals(td.feeBalance, td.metadata.TokenDecimals)
-			totalSupply := core.BigToDecimals(td.totalSuppply, td.metadata.TokenDecimals)
-
-			e.otelRecorder.RecordTokenBalance(contractBalance, feeBalance, totalSupply, chainID, td)
+			e.otelRecorder.RecordTokenBalance(chainID, td)
 		}
 
 	}

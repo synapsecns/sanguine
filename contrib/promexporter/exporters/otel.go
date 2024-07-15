@@ -6,6 +6,7 @@ import (
 
 	"github.com/cornelk/hashmap"
 	"github.com/hedzr/log"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -21,10 +22,11 @@ type otelRecorder struct {
 	vpriceGauge metric.Float64ObservableGauge
 
 	// BRIDGE
-	gasBalance         *hashmap.Map[int, float64]
-	bridgeBalance      *hashmap.Map[int, float64]
-	feeBalance         *hashmap.Map[int, float64]
-	totalSupply        *hashmap.Map[int, float64]
+	// chainID -> []tokenData
+	td *hashmap.Map[int, []tokenData]
+	// How much gas is left on the bridge.
+	gasBalance *hashmap.Map[int, float64]
+	// How much of this token is on the bridge.
 	gasBalanceGauge    metric.Float64ObservableGauge
 	bridgeBalanceGauge metric.Float64ObservableGauge
 	feeBalanceGauge    metric.Float64ObservableGauge
@@ -35,7 +37,6 @@ type otelRecorder struct {
 	stuckHeroesGauge metric.Int64ObservableGauge
 
 	// submitter stats
-	td           *hashmap.Map[int, tokenData]
 	nonce        *hashmap.Map[int, int64]
 	balance      *hashmap.Map[int, float64]
 	name         *hashmap.Map[int, string]
@@ -47,17 +48,14 @@ type otelRecorder struct {
 // nolint: cyclop
 func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 	otr := otelRecorder{
-		metrics:       meterHandler,
-		meter:         meterHandler.Meter(meterName),
-		vPrice:        hashmap.New[int, float64](),
-		gasBalance:    hashmap.New[int, float64](),
-		bridgeBalance: hashmap.New[int, float64](),
-		feeBalance:    hashmap.New[int, float64](),
-		totalSupply:   hashmap.New[int, float64](),
-		td:            hashmap.New[int, tokenData](),
-		nonce:         hashmap.New[int, int64](),
-		balance:       hashmap.New[int, float64](),
-		name:          hashmap.New[int, string](),
+		metrics:    meterHandler,
+		meter:      meterHandler.Meter(meterName),
+		vPrice:     hashmap.New[int, float64](),
+		gasBalance: hashmap.New[int, float64](),
+		td:         hashmap.New[int, []tokenData](),
+		nonce:      hashmap.New[int, int64](),
+		balance:    hashmap.New[int, float64](),
+		name:       hashmap.New[int, string](),
 	}
 	// todo: make an option
 	metricName := func(metricName string) string {
@@ -222,16 +220,13 @@ type tokenData struct {
 }
 
 func (o *otelRecorder) RecordTokenBalance(
-	bridgeBalance float64,
-	feeBalance float64,
-	totalSupply float64,
 	chainID int,
 	tokenData tokenData,
 ) {
-	o.bridgeBalance.Set(chainID, bridgeBalance)
-	o.feeBalance.Set(chainID, feeBalance)
-	o.totalSupply.Set(chainID, totalSupply)
-	o.td.Set(chainID, tokenData)
+	td, _ := o.td.Get(chainID)
+	td = append(td, tokenData)
+
+	o.td.Set(chainID, td)
 }
 func (o *otelRecorder) recordTokenBalance(
 	_ context.Context,
@@ -241,41 +236,37 @@ func (o *otelRecorder) recordTokenBalance(
 		return nil
 	}
 
-	o.td.Range(func(chainID int, td tokenData) bool {
-		tokenAttributes := attribute.NewSet(
-			attribute.String("tokenID", td.metadata.TokenID),
-			attribute.Int(metrics.ChainID, td.metadata.ChainID),
-		)
+	o.td.Range(func(chainID int, td []tokenData) bool {
+		for _, token := range td {
+			tokenAttributes := attribute.NewSet(
+				attribute.String("tokenID", token.metadata.TokenID),
+				attribute.Int(metrics.ChainID, token.metadata.ChainID),
+			)
 
-		bridgeBalance, ok := o.bridgeBalance.Get(chainID)
-		if !ok {
-			return false
-		}
-		observer.ObserveFloat64(
-			o.bridgeBalanceGauge,
-			bridgeBalance,
-			metric.WithAttributeSet(tokenAttributes),
-		)
+			bridgeBalance := core.BigToDecimals(token.contractBalance, token.metadata.TokenDecimals)
 
-		feeBalance, ok := o.feeBalance.Get(chainID)
-		if !ok {
-			return false
-		}
-		observer.ObserveFloat64(
-			o.feeBalanceGauge,
-			feeBalance,
-			metric.WithAttributeSet(tokenAttributes),
-		)
+			observer.ObserveFloat64(
+				o.bridgeBalanceGauge,
+				bridgeBalance,
+				metric.WithAttributeSet(tokenAttributes),
+			)
 
-		totalSupply, ok := o.totalSupply.Get(chainID)
-		if !ok {
-			return false
+			feeBalance := core.BigToDecimals(token.feeBalance, token.metadata.TokenDecimals)
+
+			observer.ObserveFloat64(
+				o.feeBalanceGauge,
+				feeBalance,
+				metric.WithAttributeSet(tokenAttributes),
+			)
+
+			totalSupply := core.BigToDecimals(token.totalSuppply, token.metadata.TokenDecimals)
+
+			observer.ObserveFloat64(
+				o.totalSupplyGauge,
+				totalSupply,
+				metric.WithAttributeSet(tokenAttributes),
+			)
 		}
-		observer.ObserveFloat64(
-			o.totalSupplyGauge,
-			totalSupply,
-			metric.WithAttributeSet(tokenAttributes),
-		)
 
 		return true
 	})

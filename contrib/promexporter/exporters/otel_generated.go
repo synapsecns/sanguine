@@ -4,14 +4,13 @@ package exporters
 
 // iOtelRecorder ...
 type iOtelRecorder interface {
-	// Virtual Price Metrics
+	// Virtual Price Metrics.
 	RecordVPrice(chainid int, vPrice float64)
-	// Bridge Gas Balance metrics
+	// Token Balance Metrics.
 	RecordBridgeGasBalance(chainid int, gasBalance float64)
-	// Bridge Token Balance Metrics
-	RecordTokenBalance(bridgeBalance float64, feeBalance float64, totalSupply float64, chainID int, tokenData tokenData)
-	// DFK Metrics
+	RecordTokenBalance(chainID int, tokenData tokenData)
+	// DFK Metrics.
 	RecordStuckHeroCount(stuckHeroes int64)
-	// Submitter stats
+	// Submitter stats.
 	RecordSubmitterStats(chainid int, nonce int64, balance float64, gasCheckName string)
 }
