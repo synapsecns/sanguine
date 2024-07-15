@@ -69,57 +69,53 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		metricName("promexporter.vpriceGauge"),
 		metric.WithDescription("vprice gauge"),
 		metric.WithUnit("price")); err != nil {
-		log.Warnf("failed to create gauge: %v", err)
+		log.Warnf("failed to create vprice gauge: %v", err)
 	}
 
-	// cooked
 	if otr.bridgeBalanceGauge, err = otr.meter.Float64ObservableGauge(
 		metricName("promexporter.bridgeBalanceGauge"),
 		metric.WithDescription("bridge balance"),
 		metric.WithUnit("eth")); err != nil {
-		log.Warnf("failed to create gauge: %v", err)
+		log.Warnf("failed to create bridgeBalance gauge: %v", err)
 	}
-	// cooked
 	if otr.feeBalanceGauge, err = otr.meter.Float64ObservableGauge(
 		metricName("promexporter.feeBalanceGauage"),
 		metric.WithDescription("fee balance gauge"),
 		metric.WithUnit("gwei")); err != nil {
-		log.Warnf("failed to create gauge: %v", err)
+		log.Warnf("failed to create feeBalance gauge: %v", err)
 	}
-	// cooked
 	if otr.totalSupplyGauge, err = otr.meter.Float64ObservableGauge(
 		metricName("promexporter.totalSupply"),
 		metric.WithDescription("total supply gauge"),
 		metric.WithUnit("eth")); err != nil {
-		log.Warnf("failed to create gauge: %v", err)
+		log.Warnf("failed to create totalSupply gauge: %v", err)
 	}
-	// cooked
 	if otr.gasBalanceGauge, err = otr.meter.Float64ObservableGauge(
 		metricName("promexporter.gasBalance"),
 		metric.WithDescription("gas balance"),
 		metric.WithUnit("gwei")); err != nil {
-		log.Warnf("failed to create gauge: %v", err)
+		log.Warnf("failed to create gasBalance gauge: %v", err)
 	}
 
 	if otr.balanceGauge, err = otr.meter.Float64ObservableGauge(
 		metricName("promexporter.balanceGauge"),
 		metric.WithDescription("balance gauge"),
 		metric.WithUnit("eth")); err != nil {
-		log.Warnf("failed to create gauge: %v", err)
+		log.Warnf("failed to create balance gauge: %v", err)
 	}
 
 	if otr.nonceGauge, err = otr.meter.Int64ObservableGauge(
 		metricName("promexporter.nonceGauge"),
 		metric.WithDescription("nonce gauge"),
 		metric.WithUnit("nonce")); err != nil {
-		log.Warnf("failed to create gauge: %v", err)
+		log.Warnf("failed to create nonce gauge: %v", err)
 	}
 
 	if otr.stuckHeroesGauge, err = otr.meter.Int64ObservableGauge(
 		metricName("promexporter.stuckHeroesGauge"),
 		metric.WithDescription("stuck count gauge"),
 		metric.WithUnit("count")); err != nil {
-		log.Warnf("failed to create gauge: %v", err)
+		log.Warnf("failed to create stuckHeroes gauge: %v", err)
 	}
 
 	// Register VPrice callback
@@ -127,7 +123,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		otr.recordVpriceGauge,
 		otr.vpriceGauge,
 	); err != nil {
-		log.Warnf("failed to register callback for vprice gauge: %v", err)
+		log.Warnf("failed to register callback for vprice metrics: %v", err)
 	}
 
 	// Register DFK Stuck Heroes Callback
@@ -135,7 +131,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		otr.recordStuckHeroCount,
 		otr.stuckHeroesGauge,
 	); err != nil {
-		log.Warnf("failed to register callback for gas balance gauge: %v", err)
+		log.Warnf("failed to register callback for dfk stuck heroes metrics: %v", err)
 	}
 
 	// Register Token Balance Callback
@@ -146,7 +142,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		otr.feeBalanceGauge,
 		otr.totalSupplyGauge,
 	); err != nil {
-		log.Warnf("failed to register callback for gas balance gauge: %v", err)
+		log.Warnf("failed to register callback for bridge metrics : %v", err)
 	}
 
 	// Register Submitter Stats Callback
@@ -155,14 +151,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		otr.balanceGauge,
 		otr.nonceGauge,
 	); err != nil {
-		log.Warnf("failed to register callback for bridge balance gauge: %v", err)
-	}
-
-	if _, err := otr.meter.RegisterCallback(
-		otr.recordBridgeGasBalance,
-		otr.gasBalanceGauge,
-	); err != nil {
-		log.Warnf("failed to register callback for gas balance gauge: %v", err)
+		log.Warnf("failed to register callback for submitter metrics: %v", err)
 	}
 
 	return &otr
