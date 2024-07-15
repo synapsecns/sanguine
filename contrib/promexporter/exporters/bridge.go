@@ -34,7 +34,11 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 		return fmt.Errorf("could not get token: %w", err)
 	}
 
-	poolConfig, err := bridgeConfig.GetPoolConfig(&bind.CallOpts{Context: ctx}, common.HexToAddress(token.TokenAddress), big.NewInt(int64(chainID)))
+	poolConfig, err := bridgeConfig.GetPoolConfig(
+		&bind.CallOpts{Context: ctx},
+		common.HexToAddress(token.TokenAddress),
+		big.NewInt(int64(chainID)),
+	)
 	if err != nil {
 		return errPoolNotExist
 	}
@@ -48,6 +52,10 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 	if err != nil {
 		return fmt.Errorf("could not get tokenID contract: %w", err)
 	}
+	decimals, err := tokenContract.Decimals(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get decimals: %w", err)
+	}
 
 	iswap, err := swap.NewISwap(poolConfig.PoolAddress, client)
 	if err != nil {
@@ -57,11 +65,6 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 	realvPrice, err := iswap.GetVirtualPrice(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get virtual price: %w", err)
-	}
-
-	decimals, err := tokenContract.Decimals(&bind.CallOpts{Context: ctx})
-	if err != nil {
-		return fmt.Errorf("could not get decimals: %w", err)
 	}
 
 	e.otelRecorder.RecordVPrice(chainID, core.BigToDecimals(realvPrice, decimals))
@@ -87,9 +90,9 @@ func (e *exporter) getTokenBalancesStats(ctx context.Context) error {
 			return fmt.Errorf("could not get confirmations client: %w", err)
 		}
 
-		var realGasBalance big.Int
+		var realGasBalance *big.Int
 		calls := []w3types.Caller{
-			eth.Balance(common.HexToAddress(bridgeContract), nil).Returns(&realGasBalance),
+			eth.Balance(common.HexToAddress(bridgeContract), nil).Returns(realGasBalance),
 		}
 
 		allTokenData := make([]tokenData, len(allTokens.GetForChainID(chainID)))
@@ -108,50 +111,33 @@ func (e *exporter) getTokenBalancesStats(ctx context.Context) error {
 					decoders.FuncBalanceOf(),
 					tokenConfig.TokenAddress,
 					common.HexToAddress(bridgeContract),
-				).
-					Returns(allTokenData[i].contractBalance),
+				).Returns(allTokenData[i].contractBalance),
 				eth.CallFunc(
 					decoders.FuncTotalSupply(),
 					tokenConfig.TokenAddress,
-				).
-					Returns(allTokenData[i].totalSuppply),
+				).Returns(allTokenData[i].totalSuppply),
 				eth.CallFunc(
 					decoders.FuncFeeBalance(),
 					common.HexToAddress(bridgeContract),
 					tokenConfig.TokenAddress,
-				).
-					Returns(allTokenData[i].feeBalance),
+				).Returns(allTokenData[i].feeBalance),
 			)
 		}
-
 		err = e.batchCalls(ctx, client, calls)
 		if err != nil {
 			return fmt.Errorf("could not get token balances: %w", err)
 		}
+
+		e.otelRecorder.RecordBridgeGasBalance(chainID, core.BigToDecimals(realGasBalance, 18))
 
 		for _, td := range allTokenData {
 			contractBalance := core.BigToDecimals(td.contractBalance, td.metadata.TokenDecimals)
 			feeBalance := core.BigToDecimals(td.feeBalance, td.metadata.TokenDecimals)
 			totalSupply := core.BigToDecimals(td.totalSuppply, td.metadata.TokenDecimals)
 
-			e.otelRecorder.RecordTokenBalance(ctx, contractBalance, feeBalance, totalSupply, chainID, allTokenData)
+			e.otelRecorder.RecordTokenBalance(contractBalance, feeBalance, totalSupply, chainID, td)
 		}
 
-		// if _, err := meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
-		// 	// eth is always 18 decimals
-		// 	o.ObserveFloat64(gasBalanceMetric, core.BigToDecimals(&realGasBalance, 18), metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
-
-		// 	for _, td := range allTokenData {
-		// 		tokenAttributes := attribute.NewSet(attribute.String("tokenID", td.metadata.TokenID), attribute.Int(metrics.ChainID, td.metadata.ChainID))
-		// 		o.ObserveFloat64(bridgeBalanceMetric, core.BigToDecimals(td.contractBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
-		// 		o.ObserveFloat64(feeBalanceMetric, core.BigToDecimals(td.feeBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
-		// 		o.ObserveFloat64(totalSupplyMetric, core.BigToDecimals(td.totalSuppply, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
-		// 	}
-
-		// 	return nil
-		// }, bridgeBalanceMetric, feeBalanceMetric, totalSupplyMetric, gasBalanceMetric); err != nil {
-		// 	return fmt.Errorf("could not register")
-		// }
 	}
 
 	return nil

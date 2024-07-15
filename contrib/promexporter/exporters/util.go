@@ -58,7 +58,7 @@ func (e *exporter) getAllTokens(parentCtx context.Context) (allTokens Tokens, er
 	}
 
 	bridgeTokens := make([]*bridgeconfig.BridgeConfigV3Token, len(tokenIDs)*len(e.cfg.BridgeChecks))
-	tokenIDS := make([]string, len(tokenIDs)*len(e.cfg.BridgeChecks))
+	tokenIDsPerBridge := make([]string, len(tokenIDs)*len(e.cfg.BridgeChecks))
 
 	var calls []w3types.Caller
 
@@ -75,7 +75,7 @@ func (e *exporter) getAllTokens(parentCtx context.Context) (allTokens Tokens, er
 					big.NewInt(int64(chainID)),
 				).Returns(token))
 			bridgeTokens[i] = token
-			tokenIDS[i] = tokenID
+			tokenIDsPerBridge[i] = tokenID
 			i++
 		}
 	}
@@ -87,7 +87,7 @@ func (e *exporter) getAllTokens(parentCtx context.Context) (allTokens Tokens, er
 	}
 
 	for i, token := range bridgeTokens {
-		tokenID := tokenIDS[i]
+		tokenID := tokenIDsPerBridge[i]
 
 		if token.TokenAddress == "" {
 			continue
@@ -111,7 +111,6 @@ func (e *exporter) batchCalls(ctx context.Context, evmClient ethergoClient.EVM, 
 
 	g, ctx := errgroup.WithContext(ctx)
 	for _, task := range tasks {
-		task := task // capture func literal
 		g.Go(func() error {
 			err = evmClient.BatchWithContext(ctx, task...)
 			if err != nil {

@@ -2,6 +2,7 @@ package decoders
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/lmittmann/w3"
 	"github.com/lmittmann/w3/w3types"
@@ -33,9 +34,7 @@ func (c *customDecodedFunc) DecodeReturns(output []byte, returns ...any) (err er
 	}
 
 	abi.ConvertType(raw[0], returns[0])
-	if err != nil {
-		return fmt.Errorf("could not decode returns: %w", err)
-	}
+
 	return nil
 }
 

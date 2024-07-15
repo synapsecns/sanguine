@@ -16,44 +16,48 @@ type otelRecorder struct {
 	metrics metrics.Handler
 	meter   metric.Meter
 
-	// vprice stats
-	vPrice *hashmap.Map[int, float64]
-
-	// tokenBalance stats
-	gasBalance    *hashmap.Map[int, float64]
-	bridgeBalance *hashmap.Map[int, float64]
-	feeBalance    *hashmap.Map[int, float64]
-	totalSupply   *hashmap.Map[int, float64]
-
-	// dfk stats
-	stuckHeroes int64
-
-	// sbumitter stats
-	td      *hashmap.Map[int, tokenData]
-	nonce   *hashmap.Map[int, int64]
-	balance *hashmap.Map[int, float64]
-	name    *hashmap.Map[int, string]
-
-	// vprice
+	// VPRICE
+	vPrice      *hashmap.Map[int, float64]
 	vpriceGauge metric.Float64ObservableGauge
 
-	// bridge
+	// BRIDGE
+	gasBalance         *hashmap.Map[int, float64]
+	bridgeBalance      *hashmap.Map[int, float64]
+	feeBalance         *hashmap.Map[int, float64]
+	totalSupply        *hashmap.Map[int, float64]
 	gasBalanceGauge    metric.Float64ObservableGauge
 	bridgeBalanceGauge metric.Float64ObservableGauge
 	feeBalanceGauge    metric.Float64ObservableGauge
 	totalSupplyGauge   metric.Float64ObservableGauge
 
-	//submitter
+	// dfk stats
+	stuckHeroes      int64
+	stuckHeroesGauge metric.Int64ObservableGauge
+
+	// submitter stats
+	td           *hashmap.Map[int, tokenData]
+	nonce        *hashmap.Map[int, int64]
+	balance      *hashmap.Map[int, float64]
+	name         *hashmap.Map[int, string]
 	balanceGauge metric.Float64ObservableGauge
 	nonceGauge   metric.Int64ObservableGauge
-	// dfk
-	stuckCount metric.Int64ObservableGauge
 }
 
+// TODO: unexport all methods.
+// nolint: cyclop
 func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 	otr := otelRecorder{
-		metrics: meterHandler,
-		meter:   meterHandler.Meter(meterName),
+		metrics:       meterHandler,
+		meter:         meterHandler.Meter(meterName),
+		vPrice:        hashmap.New[int, float64](),
+		gasBalance:    hashmap.New[int, float64](),
+		bridgeBalance: hashmap.New[int, float64](),
+		feeBalance:    hashmap.New[int, float64](),
+		totalSupply:   hashmap.New[int, float64](),
+		td:            hashmap.New[int, tokenData](),
+		nonce:         hashmap.New[int, int64](),
+		balance:       hashmap.New[int, float64](),
+		name:          hashmap.New[int, string](),
 	}
 	// todo: make an option
 	metricName := func(metricName string) string {
@@ -68,31 +72,32 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to create gauge: %v", err)
 	}
 
+	// cooked
 	if otr.bridgeBalanceGauge, err = otr.meter.Float64ObservableGauge(
 		metricName("promexporter.bridgeBalanceGauge"),
 		metric.WithDescription("bridge balance"),
 		metric.WithUnit("eth")); err != nil {
 		log.Warnf("failed to create gauge: %v", err)
 	}
-
+	// cooked
 	if otr.feeBalanceGauge, err = otr.meter.Float64ObservableGauge(
 		metricName("promexporter.feeBalanceGauage"),
 		metric.WithDescription("fee balance gauge"),
 		metric.WithUnit("gwei")); err != nil {
 		log.Warnf("failed to create gauge: %v", err)
 	}
-
+	// cooked
 	if otr.totalSupplyGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("promexporter.vpriceGauage"),
-		metric.WithDescription("vprice gauge"),
-		metric.WithUnit("virtual price")); err != nil {
+		metricName("promexporter.totalSupply"),
+		metric.WithDescription("total supply gauge"),
+		metric.WithUnit("eth")); err != nil {
 		log.Warnf("failed to create gauge: %v", err)
 	}
-
+	// cooked
 	if otr.gasBalanceGauge, err = otr.meter.Float64ObservableGauge(
 		metricName("promexporter.gasBalance"),
-		metric.WithDescription("vprice gauge"),
-		metric.WithUnit("virtual price")); err != nil {
+		metric.WithDescription("gas balance"),
+		metric.WithUnit("gwei")); err != nil {
 		log.Warnf("failed to create gauge: %v", err)
 	}
 
@@ -110,8 +115,8 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to create gauge: %v", err)
 	}
 
-	if otr.stuckCount, err = otr.meter.Int64ObservableGauge(
-		metricName("promexporter.stuckCount"),
+	if otr.stuckHeroesGauge, err = otr.meter.Int64ObservableGauge(
+		metricName("promexporter.stuckHeroesGauge"),
 		metric.WithDescription("stuck count gauge"),
 		metric.WithUnit("count")); err != nil {
 		log.Warnf("failed to create gauge: %v", err)
@@ -128,7 +133,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 	// Register DFK Stuck Heroes Callback
 	if _, err = otr.meter.RegisterCallback(
 		otr.recordStuckHeroCount,
-		otr.stuckCount,
+		otr.stuckHeroesGauge,
 	); err != nil {
 		log.Warnf("failed to register callback for gas balance gauge: %v", err)
 	}
@@ -153,17 +158,23 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to register callback for bridge balance gauge: %v", err)
 	}
 
-	// register callbacks
+	if _, err := otr.meter.RegisterCallback(
+		otr.recordBridgeGasBalance,
+		otr.gasBalanceGauge,
+	); err != nil {
+		log.Warnf("failed to register callback for gas balance gauge: %v", err)
+	}
+
 	return &otr
 }
 
-// Virtual Price Metrics
+// Virtual Price Metrics.
 func (o *otelRecorder) RecordVPrice(chainid int, vPrice float64) {
 	o.vPrice.Set(chainid, vPrice)
 }
 
 func (o *otelRecorder) recordVpriceGauge(
-	parentCtx context.Context,
+	_ context.Context,
 	observer metric.Observer,
 ) (err error) {
 	if o.metrics == nil || o.vpriceGauge == nil {
@@ -192,22 +203,44 @@ type tokenData struct {
 	feeBalance      *big.Int
 }
 
-// Token Balance Metrics
+// Token Balance Metrics.
+func (o *otelRecorder) RecordBridgeGasBalance(chainid int, gasBalance float64) {
+	o.gasBalance.Set(chainid, gasBalance)
+}
+
+func (o *otelRecorder) recordBridgeGasBalance(_ context.Context, observer metric.Observer) (err error) {
+	if o.metrics == nil || o.bridgeBalanceGauge == nil {
+		return nil
+	}
+
+	o.gasBalance.Range(func(chainID int, gasBalance float64) bool {
+		observer.ObserveFloat64(
+			o.gasBalanceGauge,
+			gasBalance,
+			metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)),
+		)
+
+		return true
+	})
+
+	return nil
+}
+
 func (o *otelRecorder) RecordTokenBalance(
-	parentCtx context.Context,
 	bridgeBalance float64,
 	feeBalance float64,
 	totalSupply float64,
 	chainID int,
-	tokenData []tokenData,
+	tokenData tokenData,
 ) {
 	o.bridgeBalance.Set(chainID, bridgeBalance)
 	o.feeBalance.Set(chainID, feeBalance)
 	o.totalSupply.Set(chainID, totalSupply)
+	o.td.Set(chainID, tokenData)
 }
 
 func (o *otelRecorder) recordTokenBalance(
-	parentCtx context.Context,
+	_ context.Context,
 	observer metric.Observer,
 ) (err error) {
 	if o.metrics == nil || o.bridgeBalanceGauge == nil {
@@ -218,16 +251,6 @@ func (o *otelRecorder) recordTokenBalance(
 		tokenAttributes := attribute.NewSet(
 			attribute.String("tokenID", td.metadata.TokenID),
 			attribute.Int(metrics.ChainID, td.metadata.ChainID),
-		)
-
-		gasBalance, ok := o.gasBalance.Get(chainID)
-		if !ok {
-			return false
-		}
-		observer.ObserveFloat64(
-			o.gasBalanceGauge,
-			gasBalance,
-			metric.WithAttributeSet(tokenAttributes),
 		)
 
 		bridgeBalance, ok := o.bridgeBalance.Get(chainID)
@@ -266,7 +289,7 @@ func (o *otelRecorder) recordTokenBalance(
 	return nil
 }
 
-// DFK Metrics
+// DFK Metrics.
 func (o *otelRecorder) RecordStuckHeroCount(stuckHeroes int64) {
 	o.stuckHeroes = stuckHeroes
 }
@@ -275,19 +298,19 @@ func (o *otelRecorder) recordStuckHeroCount(
 	_ context.Context,
 	observer metric.Observer,
 ) (err error) {
-	if o.metrics == nil || o.stuckCount == nil {
+	if o.metrics == nil || o.stuckHeroesGauge == nil {
 		return nil
 	}
 
 	observer.ObserveInt64(
-		o.stuckCount,
+		o.stuckHeroesGauge,
 		o.stuckHeroes,
 	)
 
 	return nil
 }
 
-// Submitter stats
+// Submitter stats.
 func (o *otelRecorder) RecordSubmitterStats(chainid int, nonce int64, balance float64, gasCheckName string) {
 	o.nonce.Set(chainid, nonce)
 	o.balance.Set(chainid, balance)

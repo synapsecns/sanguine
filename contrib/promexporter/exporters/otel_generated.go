@@ -2,18 +2,16 @@
 
 package exporters
 
-import (
-	"context"
-)
-
-// iOtelRecorder abstracts otel instrumentation.
+// iOtelRecorder ...
 type iOtelRecorder interface {
-	// RecordVPrice records the vPrice.
+	// Virtual Price Metrics
 	RecordVPrice(chainid int, vPrice float64)
-	// RecordTokenBalance records the token balance.
-	RecordTokenBalance(parentCtx context.Context, bridgeBalance float64, feeBalance float64, totalSupply float64, chainID int, tokenData []tokenData)
-	// RecordStuckHeroCount records the number of stuck heroes on DFK.
+	// Bridge Gas Balance metrics
+	RecordBridgeGasBalance(chainid int, gasBalance float64)
+	// Bridge Token Balance Metrics
+	RecordTokenBalance(bridgeBalance float64, feeBalance float64, totalSupply float64, chainID int, tokenData tokenData)
+	// DFK Metrics
 	RecordStuckHeroCount(stuckHeroes int64)
-	// RecordSubmitterStats records the submitter stats.
+	// Submitter stats
 	RecordSubmitterStats(chainid int, nonce int64, balance float64, gasCheckName string)
 }
