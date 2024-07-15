@@ -220,6 +220,8 @@ export const DestinationAddressInput = ({
   const adjustInputSize = () => {
     const addressInput: HTMLElement = document.getElementById('address-input')
 
+    if (!addressInput) return
+
     if (isInputFocused || isInputInvalid) {
       addressInput.style.width = '12rem'
     } else if (inputValue.length > 0) {
