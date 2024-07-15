@@ -137,7 +137,6 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 	// Register Token Balance Callback
 	if _, err = otr.meter.RegisterCallback(
 		otr.recordTokenBalance,
-		otr.gasBalanceGauge,
 		otr.bridgeBalanceGauge,
 		otr.feeBalanceGauge,
 		otr.totalSupplyGauge,
@@ -152,6 +151,13 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		otr.nonceGauge,
 	); err != nil {
 		log.Warnf("failed to register callback for submitter metrics: %v", err)
+	}
+
+	if _, err = otr.meter.RegisterCallback(
+		otr.recordBridgeGasBalance,
+		otr.gasBalanceGauge,
+	); err != nil {
+		log.Warnf("failed to register callback for bridge gas balance metrics: %v", err)
 	}
 
 	return &otr
