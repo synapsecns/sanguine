@@ -61,6 +61,7 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.BASE,
   SupportedChainId.ARBITRUM,
   SupportedChainId.SCROLL,
+  SupportedChainId.BSC,
 ]
 
 /**
