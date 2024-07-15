@@ -3,6 +3,7 @@ package submitter
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/params"
 	"math/big"
 	"sort"
 	"sync"
@@ -19,7 +20,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -63,7 +63,11 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		return fmt.Errorf("could not get nonce: %w", err)
 	}
 	span.SetAttributes(attribute.Int("nonce", int(currentNonce)))
-	t.currentNonces.Set(uint32(chainID.Int64()), currentNonce)
+
+	// record metrics for txes.
+	t.otelRecorder.RecordNonceForChain(uint32(chainID.Int64()), currentNonce)
+	t.otelRecorder.RecordNumPendingTxes(uint32(chainID.Int64()), calculatePendingTxes(txes, currentNonce))
+	t.otelRecorder.RecordOldestPendingTx(uint32(chainID.Int64()), time.Since(fetchOldestPendingTx(txes, currentNonce)))
 
 	wg := &sync.WaitGroup{}
 
@@ -84,7 +88,9 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	if err != nil {
 		return fmt.Errorf("could not get gas balance: %w", err)
 	}
+	t.otelRecorder.RecordGasBalanceForChain(uint32(chainID.Int64()), core.CopyBigInt(gasBalance))
 	span.SetAttributes(attribute.String("gas_balance", gasBalance.String()))
+
 	for i := range txes {
 		tx := txes[i]
 
@@ -119,7 +125,6 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 			logger.Errorf("could not update old tx statuses: %v", updateErr)
 		}
 	}()
-
 	wg.Wait()
 
 	sort.Slice(cq.reprocessQueue, func(i, j int) bool {
@@ -133,44 +138,17 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	}
 
 	cq.storeAndSubmit(ctx, calls, span)
-	t.numPendingTxes.Set(uint32(chainID.Int64()), len(cq.reprocessQueue))
 
 	return nil
 }
 
-func (t *txSubmitterImpl) recordNumPending(_ context.Context, observer metric.Observer) (err error) {
-	if t.metrics == nil || t.numPendingGauge == nil || t.numPendingTxes == nil {
-		return nil
-	}
+func toFloat(wei *big.Int) float64 {
+	// Convert wei to float64
+	weiFloat := new(big.Float).SetInt(wei)
+	weiAsFloat64, _ := weiFloat.Float64()
 
-	t.numPendingTxes.Range(func(chainID uint32, numPending int) bool {
-		opts := metric.WithAttributes(
-			attribute.Int(metrics.ChainID, int(chainID)),
-			attribute.String("wallet", t.signer.Address().Hex()),
-		)
-		observer.ObserveInt64(t.numPendingGauge, int64(numPending), opts)
-
-		return true
-	})
-
-	return nil
-}
-
-func (t *txSubmitterImpl) recordNonces(_ context.Context, observer metric.Observer) (err error) {
-	if t.metrics == nil || t.nonceGauge == nil || t.currentNonces == nil {
-		return nil
-	}
-
-	t.currentNonces.Range(func(chainID uint32, nonce uint64) bool {
-		opts := metric.WithAttributes(
-			attribute.Int(metrics.ChainID, int(chainID)),
-			attribute.String("wallet", t.signer.Address().Hex()),
-		)
-		observer.ObserveInt64(t.nonceGauge, int64(nonce), opts)
-		return true
-	})
-
-	return nil
+	// Perform the division to convert wei to ether
+	return weiAsFloat64 / params.Ether
 }
 
 // storeAndSubmit stores the txes in the database and submits them to the chain.

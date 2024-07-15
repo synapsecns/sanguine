@@ -57,10 +57,8 @@ func (n nullHandler) ConfigureHTTPClient(client *http.Client, opts ...otelhttp.O
 	// Do nothing
 }
 
-func (n nullHandler) Gin() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Next()
-	}
+func (n nullHandler) Gin() []gin.HandlerFunc {
+	return []gin.HandlerFunc{}
 }
 
 func (n nullHandler) Start(_ context.Context) error {

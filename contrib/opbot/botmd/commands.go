@@ -3,25 +3,49 @@
 package botmd
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hako/durafmt"
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
+	rfqClient "github.com/synapsecns/sanguine/services/rfq/api/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"log"
+	"math/big"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
 )
 
+func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.CommandDefinition {
+	if b.signozEnabled {
+		return definition
+	}
+	return &slacker.CommandDefinition{
+		Command:     definition.Command,
+		Description: fmt.Sprintf("normally this would \"%s\", but signoz is not configured", definition.Description),
+		Examples:    definition.Examples,
+		Handler: func(ctx *slacker.CommandContext) {
+			_, err := ctx.Response().Reply("cannot run command: signoz is not configured")
+			if err != nil {
+				log.Println(err)
+			}
+		},
+	}
+}
+
 // nolint: traceCommand, gocognit
 // TODO: add trace middleware.
 func (b *Bot) traceCommand() *slacker.CommandDefinition {
-	return &slacker.CommandDefinition{
+	return b.requiresSignoz(&slacker.CommandDefinition{
 		Command:     "trace <tags>",
 		Description: "find a transaction in signoz",
 		Examples: []string{
@@ -85,8 +109,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 				spanID := results.Data["spanID"].(string)
 				serviceName := results.Data["serviceName"].(string)
 
-				// anon.to is used here to prevent unfurl https://github.com/slack-io/slacker/issues/11
-				url := fmt.Sprintf("https://anon.to/?%s/trace/%s?spanId=%s", b.cfg.SignozBaseURL, trace, spanID)
+				url := fmt.Sprintf("%s/trace/%s?spanId=%s", b.cfg.SignozBaseURL, trace, spanID)
 				traceName := fmt.Sprintf("<%s|%s>", url, results.Data["name"].(string))
 
 				relativeTime := durafmt.Parse(time.Since(results.Timestamp)).LimitFirstN(1).String()
@@ -107,12 +130,12 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 				}, nil))
 			}
 
-			_, err = ctx.Response().ReplyBlocks(slackBlocks)
+			_, err = ctx.Response().ReplyBlocks(slackBlocks, slacker.WithUnfurlLinks(false))
 			if err != nil {
 				log.Println(err)
 			}
 		},
-	}
+	})
 }
 
 func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
@@ -216,11 +239,99 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, objects, nil))
 			}
 
-			_, err := ctx.Response().ReplyBlocks(slackBlocks)
+			_, err := ctx.Response().ReplyBlocks(slackBlocks, slacker.WithUnfurlLinks(false))
 			if err != nil {
 				log.Println(err)
 			}
 		}}
+}
+
+// nolint: gocognit, cyclop.
+func (b *Bot) rfqRefund() *slacker.CommandDefinition {
+	return &slacker.CommandDefinition{
+		Command:     "refund <tx>",
+		Description: "refund a quote request",
+		Examples:    []string{"refund 0x1234"},
+		Handler: func(ctx *slacker.CommandContext) {
+			tx := stripLinks(ctx.Request().Param("tx"))
+
+			if len(tx) == 0 {
+				_, err := ctx.Response().Reply("please provide a tx hash")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+
+			for _, relayer := range b.cfg.RelayerURLS {
+				relClient := relapi.NewRelayerClient(b.handler, relayer)
+
+				rawRequest, err := getQuoteRequest(ctx.Context(), relClient, tx)
+				if err != nil {
+					_, err := ctx.Response().Reply("error fetching quote request")
+					if err != nil {
+						log.Println(err)
+					}
+					return
+				}
+
+				fastBridgeContract, err := b.makeFastBridge(ctx.Context(), rawRequest)
+				if err != nil {
+					_, err := ctx.Response().Reply(err.Error())
+					if err != nil {
+						log.Println(err)
+					}
+					return
+				}
+				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+					tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
+					if err != nil {
+						return nil, fmt.Errorf("error submitting refund: %w", err)
+					}
+					return tx, nil
+				})
+				if err != nil {
+					log.Printf("error submitting refund: %v\n", err)
+					continue
+				}
+
+				// TODO: follow the lead of https://github.com/synapsecns/sanguine/pull/2845
+				_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+		},
+	}
+}
+
+func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestResponse) (*fastbridge.FastBridge, error) {
+	client, err := rfqClient.NewUnauthenticatedClient(b.handler, b.cfg.RFQApiURL)
+	if err != nil {
+		return nil, fmt.Errorf("error creating rfq client: %w", err)
+	}
+
+	contracts, err := client.GetRFQContracts(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching rfq contracts: %w", err)
+	}
+
+	chainClient, err := b.rpcClient.GetChainClient(ctx, int(req.OriginChainID))
+	if err != nil {
+		return nil, fmt.Errorf("error getting chain client: %w", err)
+	}
+
+	contractAddress, ok := contracts.Contracts[req.OriginChainID]
+	if !ok {
+		return nil, errors.New("contract address not found")
+	}
+
+	fastBridgeHandle, err := fastbridge.NewFastBridge(common.HexToAddress(contractAddress), chainClient)
+	if err != nil {
+		return nil, fmt.Errorf("error creating fast bridge: %w", err)
+	}
+	return fastBridgeHandle, nil
 }
 
 func toExplorerSlackLink(ogHash string) string {
@@ -230,7 +341,7 @@ func toExplorerSlackLink(ogHash string) string {
 		rfqHash = strings.ToLower(rfqHash[2:])
 	}
 
-	return fmt.Sprintf("<https://anon.to/?https://explorer.synapseprotocol.com/tx/%s|%s>", rfqHash, ogHash)
+	return fmt.Sprintf("<https://explorer.synapseprotocol.com/tx/%s|%s>", rfqHash, ogHash)
 }
 
 // produce a salck link if the explorer exists.
@@ -241,10 +352,27 @@ func toTXSlackLink(txHash string, chainID uint32) string {
 	}
 
 	// TODO: remove when we can contorl unfurl
-	return fmt.Sprintf("<https://anon.to/?%s|%s>", url, txHash)
+	return fmt.Sprintf("<%s|%s>", url, txHash)
 }
 
 func stripLinks(input string) string {
 	linkRegex := regexp.MustCompile(`<https?://[^|>]+\|([^>]+)>`)
 	return linkRegex.ReplaceAllString(input, "$1")
+}
+
+func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (*relapi.GetQuoteRequestResponse, error) {
+	// at this point tx can be a txid or a has, we try both
+	txRequest, err := client.GetQuoteRequestStatusByTxHash(ctx, tx)
+	if err == nil {
+		// override tx with txid
+		tx = txRequest.TxID
+	}
+
+	// look up quote request
+	qr, err := client.GetQuoteRequestByTXID(ctx, tx)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching quote request: %w", err)
+	}
+
+	return qr, nil
 }

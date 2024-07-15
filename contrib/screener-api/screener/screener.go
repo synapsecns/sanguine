@@ -37,6 +37,11 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+const (
+	okResponse  = "OK"
+	errResponse = "ERROR"
+)
+
 // Screener is the interface for the screener.
 type Screener interface {
 	Start(ctx context.Context) error
@@ -49,7 +54,7 @@ type screenerImpl struct {
 	cfg               config.Config
 	client            chainalysis.Client
 	whitelist         map[string]bool
-	blacklistCache    map[string]bool
+	blacklist         map[string]bool
 	blacklistCacheMux sync.RWMutex
 	requestMux        mapmutex.StringMapMutex
 }
@@ -69,10 +74,14 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 
 	screener.client = chainalysis.NewClient(metricHandler, cfg.RiskLevels, cfg.ChainalysisKey, core.GetEnv("CHAINALYSIS_URL", cfg.ChainalysisURL))
 
-	screener.blacklistCache = make(map[string]bool)
+	screener.blacklist = make(map[string]bool)
 	screener.whitelist = make(map[string]bool)
 	for _, item := range cfg.Whitelist {
 		screener.whitelist[strings.ToLower(item)] = true
+	}
+
+	for _, item := range cfg.Blacklist {
+		screener.blacklist[strings.ToLower(item)] = true
 	}
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
@@ -85,7 +94,7 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	}
 
 	screener.router = ginhelper.New(logger)
-	screener.router.Use(screener.metrics.Gin())
+	screener.router.Use(screener.metrics.Gin()...)
 
 	// Blacklist route
 	screener.router.POST("/api/data/sync", ginhelper.TraceMiddleware(metricHandler.Tracer(), true), screener.authMiddleware(cfg), screener.blacklistAddress)
@@ -161,7 +170,7 @@ func (s *screenerImpl) fetchBlacklist(ctx context.Context) {
 	s.blacklistCacheMux.Lock()
 	defer s.blacklistCacheMux.Unlock()
 	for _, item := range blacklist {
-		s.blacklistCache[strings.ToLower(item)] = true
+		s.blacklist[strings.ToLower(item)] = true
 	}
 }
 
@@ -245,7 +254,7 @@ func (s *screenerImpl) isDBBlacklisted(ctx context.Context, address string) (boo
 func (s *screenerImpl) isBlacklistedCache(address string) bool {
 	s.blacklistCacheMux.RLock()
 	defer s.blacklistCacheMux.RUnlock()
-	return s.blacklistCache[address]
+	return s.blacklist[address]
 }
 
 // @dev Protected Method
@@ -269,7 +278,7 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 	// Grab the body of the JSON request and unmarshal it into the blacklistBody struct.
 	if err := c.ShouldBindBodyWith(&blacklistBody, binding.JSON); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": errResponse})
 		return
 	}
 
@@ -293,44 +302,44 @@ func (s *screenerImpl) blacklistAddress(c *gin.Context) {
 
 	s.blacklistCacheMux.Lock()
 	defer s.blacklistCacheMux.Unlock()
-	s.blacklistCache[blacklistBody.Data.Address] = true
+	s.blacklist[blacklistBody.Data.Address] = true
 
 	switch blacklistBody.Type {
 	case "create":
 		if err := s.db.PutBlacklistedAddress(ctx, blacklistedAddress); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": errResponse})
 			return
 		}
 
 		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
-		c.JSON(http.StatusOK, gin.H{"status": "success"})
+		c.JSON(http.StatusOK, gin.H{"status": okResponse})
 		return
 
 	case "update":
 		if err := s.db.UpdateBlacklistedAddress(ctx, blacklistedAddress.ID, blacklistedAddress); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": errResponse})
 			return
 		}
 
 		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
-		c.JSON(http.StatusOK, gin.H{"status": "success"})
+		c.JSON(http.StatusOK, gin.H{"status": okResponse})
 		return
 
 	case "delete":
 		if err := s.db.DeleteBlacklistedAddress(ctx, blacklistedAddress.ID); err != nil {
 			span.AddEvent("error", trace.WithAttributes(attribute.String("error", err.Error())))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": errResponse})
 			return
 		}
 
 		span.AddEvent("blacklistedAddress", trace.WithAttributes(attribute.String("address", blacklistBody.Data.Address)))
-		c.JSON(http.StatusOK, gin.H{"status": "success"})
+		c.JSON(http.StatusOK, gin.H{"status": okResponse})
 		return
 
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": errResponse})
 		return
 	}
 }
@@ -351,7 +360,7 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 
 		bodyBz, err := io.ReadAll(c.Request.Body)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "could not read request body"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": errResponse})
 			c.Abort()
 			return
 		}
@@ -360,7 +369,7 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 
 		bodyStr, err := core.BytesToJSONString(bodyBz)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "could not convert bytes to json"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": errResponse})
 			c.Abort()
 			return
 		}
@@ -396,7 +405,7 @@ func (s *screenerImpl) authMiddleware(cfg config.Config) gin.HandlerFunc {
 				"error",
 				trace.WithAttributes(attribute.String("error", "Invalid signature"+expectedSignature)),
 			)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid signature"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": errResponse})
 			c.Abort()
 			return
 		}

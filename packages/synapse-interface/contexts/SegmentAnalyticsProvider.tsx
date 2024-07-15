@@ -2,7 +2,6 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { getAccount } from '@wagmi/core'
 import { createContext, useContext } from 'react'
 
-import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
 import { wagmiConfig } from '@/wagmiConfig'
 
@@ -24,12 +23,10 @@ export const segmentAnalyticsEvent = (
 
   const { address } = getAccount(wagmiConfig)
 
-  if (isBlacklisted(address)) {
-    document.body = document.createElement('body')
-  } else {
-    if (screen) {
-      screenAddress(address)
-    }
+  if (screen && address) {
+    screenAddress(address).catch((error) => {
+      console.error('Error screening address:', error)
+    })
   }
 
   const enrichedEventData = {

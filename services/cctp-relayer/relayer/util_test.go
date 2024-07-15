@@ -1,9 +1,9 @@
 package relayer_test
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 
-	"github.com/alecthomas/assert"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 )

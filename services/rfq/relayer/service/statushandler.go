@@ -49,8 +49,8 @@ type QuoteRequestHandler struct {
 	// mutexMiddlewareFunc is used to wrap the handler in a mutex middleware.
 	// this should only be done if Handling, not forwarding.
 	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
-	// relayMtx is the mutex for relaying.
-	relayMtx mapmutex.StringMapMutex
+	// handlerMtx is the mutex for relaying.
+	handlerMtx mapmutex.StringMapMutex
 }
 
 // Handler is the handler for a quote request.
@@ -79,7 +79,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		claimCache:          r.claimCache,
 		apiClient:           r.apiClient,
 		mutexMiddlewareFunc: r.mutexMiddleware,
-		relayMtx:            r.relayMtx,
+		handlerMtx:          r.handlerMtx,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened
@@ -102,9 +102,12 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 
 func (r *Relayer) mutexMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
 	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) (err error) {
-		unlocker, ok := r.relayMtx.TryLock(hexutil.Encode(req.TransactionID[:]))
+		unlocker, ok := r.handlerMtx.TryLock(hexutil.Encode(req.TransactionID[:]))
 		if !ok {
-			span.SetAttributes(attribute.Bool("locked", true))
+			span.SetAttributes(
+				attribute.Bool("locked", true),
+				attribute.StringSlice("current_locks", r.handlerMtx.Keys()),
+			)
 			return nil
 		}
 		defer unlocker.Unlock()
@@ -138,7 +141,7 @@ func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.S
 
 		// if deadline < now, we don't even have to bother calling the underlying function
 		if req.Transaction.Deadline.Cmp(big.NewInt(almostNow.Unix())) < 0 {
-			err := r.db.UpdateQuoteRequestStatus(ctx, req.TransactionID, reldb.DeadlineExceeded)
+			err := r.db.UpdateQuoteRequestStatus(ctx, req.TransactionID, reldb.DeadlineExceeded, &req.Status)
 			if err != nil {
 				return fmt.Errorf("could not update request status: %w", err)
 			}
@@ -248,7 +251,7 @@ func (q *QuoteRequestHandler) Forward(ctx context.Context, request reldb.QuoteRe
 	}()
 
 	// sanity check to make sure that the lock is already acquired for this tx
-	_, ok := q.relayMtx.TryLock(txID)
+	_, ok := q.handlerMtx.TryLock(txID)
 	if ok {
 		panic(fmt.Sprintf("attempted forward while lock was not acquired for tx: %s", txID))
 	}

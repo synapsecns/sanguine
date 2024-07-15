@@ -100,6 +100,26 @@ func convertTXS(ethTxes []ETHTX) (txs []db.TX, err error) {
 	return txs, nil
 }
 
+// GetDistinctChainIDs gets a list of all chains that have been used.
+func (s *Store) GetDistinctChainIDs(ctx context.Context) ([]*big.Int, error) {
+	var chainIDs []string
+	err := s.db.WithContext(ctx).
+		Model(&ETHTX{}).
+		Distinct(chainIDFieldName).
+		Pluck(chainIDFieldName, &chainIDs).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*big.Int
+	for _, chainIDStr := range chainIDs {
+		chainID := new(big.Int)
+		chainID.SetString(chainIDStr, 10)
+		result = append(result, chainID)
+	}
+	return result, nil
+}
+
 // GetTXS returns all transactions for a given address on a given (or any) chain id that match a given status.
 // there is a limit of 50 transactions per chain id. The limit does not make any guarantees about the number of nonces per chain.
 // the submitter will get only the most recent tx submitted for each chain so this can be used for gas pricing.

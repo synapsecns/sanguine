@@ -24,7 +24,7 @@ type Writer interface {
 	// StoreRebalance stores a rebalance.
 	StoreRebalance(ctx context.Context, rebalance Rebalance) error
 	// UpdateQuoteRequestStatus updates the status of a quote request
-	UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status QuoteRequestStatus) error
+	UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status QuoteRequestStatus, prevStatus *QuoteRequestStatus) error
 	// UpdateRebalance updates the status of a rebalance action.
 	// If the origin is supplied, it will be used to update the ID for the corresponding rebalance model.
 	UpdateRebalance(ctx context.Context, rebalance Rebalance, updateID bool) error
@@ -48,6 +48,8 @@ type Reader interface {
 	GetRebalanceByID(ctx context.Context, rebalanceID string) (*Rebalance, error)
 	// GetDBStats gets the database stats.
 	GetDBStats(ctx context.Context) (*sql.DBStats, error)
+	// GetStatusCounts gets the counts of quote requests by status.
+	GetStatusCounts(ctx context.Context, matchStatuses ...QuoteRequestStatus) (map[QuoteRequestStatus]int, error)
 }
 
 // Service is the interface for the database service.

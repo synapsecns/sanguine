@@ -40,10 +40,17 @@ type Service interface {
 	GetChainIDsByStatus(ctx context.Context, fromAddress common.Address, matchStatuses ...Status) (chainIDs []*big.Int, err error)
 	// DeleteTXS deletes txs that are older than a given duration.
 	DeleteTXS(ctx context.Context, maxAge time.Duration, matchStatuses ...Status) error
+	// GetDistinctChainIDs gets the distinct chain ids for all txs.
+	GetDistinctChainIDs(ctx context.Context) ([]*big.Int, error)
 }
 
 // TransactionFunc is a function that can be passed to DBTransaction.
 type TransactionFunc func(ctx context.Context, svc Service) error
+
+// SubmitterDBFactory is the interface for the tx queue database factory.
+type SubmitterDBFactory interface {
+	SubmitterDB() Service
+}
 
 // Status is the status of a tx.
 //

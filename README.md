@@ -40,6 +40,7 @@ There are a variety of different packages in this repo, covered comprehensively 
   - [Contracts](https://github.com/synapsecns/synapse-contracts): The contracts used to power the synapse bridge.
   - [Frontend](packages/synapse-interface): The frontend used to interact with the bridge.
   - [SDK](packages/sdk-router): The SDK used to interact with the bridge.
+  - [Widget](packages/widget): The widget used to access the synapse bridge externally.
 - Explorer: A bridge explorer that allows users to view on-chain data state about the bridge.
   - [Backend](services/explorer): The backend used to power the explorer.
   - [Frontend](packages/explorer-ui): The frontend used to interact with the explorer.

@@ -39,8 +39,8 @@ func TxToAttributes(transaction *types.Transaction, UUID string) []attribute.Key
 }
 
 // SortTxes exports sortTxesByChainID for testing.
-func SortTxes(txs []db.TX) map[uint64][]db.TX {
-	return sortTxesByChainID(txs)
+func SortTxes(txs []db.TX, maxPerChain int) map[uint64][]db.TX {
+	return sortTxesByChainID(txs, maxPerChain)
 }
 
 // GroupTxesByNonce exports groupTxesByNonce for testing.
@@ -113,4 +113,14 @@ func (t *txSubmitterImpl) GetNonce(parentCtx context.Context, chainID *big.Int, 
 // CheckAndSetConfirmation exports checkAndSetConfirmation for testing.
 func (t *txSubmitterImpl) CheckAndSetConfirmation(ctx context.Context, chainClient client.EVM, txes []db.TX) error {
 	return t.checkAndSetConfirmation(ctx, chainClient, txes)
+}
+
+// Outersection exports outersection for testing.
+func Outersection(set, superset []*big.Int) []*big.Int {
+	return outersection(set, superset)
+}
+
+// MapToBigIntSlice exports mapToBigIntSlice for testing.
+func MapToBigIntSlice[T any](m map[uint64]T) []*big.Int {
+	return mapToBigIntSlice(m)
 }

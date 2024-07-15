@@ -11,8 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cornelk/hashmap"
-
 	"github.com/google/uuid"
 	"github.com/puzpuzpuz/xsync/v2"
 
@@ -32,14 +30,11 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
 
 var logger = log.Logger("ethergo-submitter")
-
-const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
 
 // TransactionSubmitter is the interface for submitting transactions to the chain.
 type TransactionSubmitter interface {
@@ -51,12 +46,15 @@ type TransactionSubmitter interface {
 	SubmitTransaction(ctx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error)
 	// GetSubmissionStatus returns the status of a transaction and any metadata associated with it if it is complete.
 	GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error)
+	// Address returns the address of the signer.
+	Address() common.Address
+	// Started returns whether the submitter is running.
+	Started() bool
 }
 
 // txSubmitterImpl is the implementation of the transaction submitter.
 type txSubmitterImpl struct {
 	metrics metrics.Handler
-	meter   metric.Meter
 	// signer is the signer for signing transactions.
 	signer signer.Signer
 	// nonceMux is the mutex for the nonces. It is keyed by chain.
@@ -69,6 +67,8 @@ type txSubmitterImpl struct {
 	db db.Service
 	// retryOnce is used to return 0 on the first call to GetRetryInterval.
 	retryOnce sync.Once
+	// distinctOnce is used to return 0 on the first call to GetDistinctInterval.
+	distinctOnce sync.Once
 	// retryNow is used to trigger a retry immediately.
 	// it circumvents the retry interval.
 	// to prevent memory leaks, this has a buffer of 1.
@@ -78,14 +78,17 @@ type txSubmitterImpl struct {
 	lastGasBlockCache *xsync.MapOf[int, *types.Header]
 	// config is the config for the transaction submitter.
 	config config.IConfig
-	// numPendingGauge is the gauge for the number of pending transactions.
-	numPendingGauge metric.Int64ObservableGauge
-	// nonceGauge is the gauge for the current nonce.
-	nonceGauge metric.Int64ObservableGauge
-	// numPendingTxes is used for metrics.
-	numPendingTxes *hashmap.Map[uint32, int]
-	// currentNonces is used for metrics.
-	currentNonces *hashmap.Map[uint32, uint64]
+	// otelRecorder is the recorder for the otel metrics.
+	otelRecorder iOtelRecorder
+	// distinctChainIDMux is the mutex for the distinct chain ids.
+	distinctChainIDMux sync.RWMutex
+	// distinctChainIDs is the distinct chain ids for the transaction submitter.
+	// note: this map should not be appended to!
+	distinctChainIDs []*big.Int
+	// started indicates whether the submitter has started.
+	started bool
+	// startMux is the mutex for started.
+	startMux sync.RWMutex
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -97,21 +100,24 @@ type ClientFetcher interface {
 
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
-
 	return &txSubmitterImpl{
 		db:                db,
 		config:            config,
 		metrics:           metrics,
-		meter:             metrics.Meter(meterName),
 		signer:            signer,
 		fetcher:           fetcher,
 		nonceMux:          mapmutex.NewStringerMapMutex(),
 		statusMux:         mapmutex.NewStringMapMutex(),
 		retryNow:          make(chan bool, 1),
 		lastGasBlockCache: xsync.NewIntegerMapOf[int, *types.Header](),
-		numPendingTxes:    hashmap.New[uint32, int](),
-		currentNonces:     hashmap.New[uint32, uint64](),
 	}
+}
+
+// Started returns whether the submitter is running.
+func (t *txSubmitterImpl) Started() bool {
+	t.startMux.RLock()
+	defer t.startMux.RUnlock()
+	return t.started
 }
 
 // GetRetryInterval returns the retry interval for the transaction submitter.
@@ -123,10 +129,42 @@ func (t *txSubmitterImpl) GetRetryInterval() time.Duration {
 	return retryInterval
 }
 
+// GetDistinctInterval returns the interval at which distinct chain ids should be queried.
+// this is used for metric updates.
+func (t *txSubmitterImpl) GetDistinctInterval() time.Duration {
+	retryInterval := time.Minute
+	t.distinctOnce.Do(func() {
+		retryInterval = time.Duration(0)
+	})
+	return retryInterval
+}
+
+// attemptMarkStarted attempts to mark the submitter as started.
+// if the submitter is already started, an error is returned.
+func (t *txSubmitterImpl) attemptMarkStarted() error {
+	t.startMux.Lock()
+	defer t.startMux.Unlock()
+	if t.started {
+		return ErrSubmitterAlreadyStarted
+	}
+	t.started = true
+	return nil
+}
+
+// ErrSubmitterAlreadyStarted is the error for when the submitter is already started.
+var ErrSubmitterAlreadyStarted = errors.New("submitter already started")
+
+// Start starts the transaction submitter.
+// nolint: cyclop
 func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
-	err = t.setupMetrics()
+	err = t.attemptMarkStarted()
 	if err != nil {
-		return fmt.Errorf("could not setup metrics: %w", err)
+		return err
+	}
+
+	t.otelRecorder, err = newOtelRecorder(t.metrics, t.signer)
+	if err != nil {
+		return fmt.Errorf("could not create otel recorder: %w", err)
 	}
 
 	// start reaper process
@@ -145,6 +183,23 @@ func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
 		}
 	}()
 
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(t.GetDistinctInterval()):
+				tmpChainIDs, err := t.db.GetDistinctChainIDs(ctx)
+				if err != nil {
+					logger.Errorf("could not update distinct chain ids: %v", err)
+				}
+				t.distinctChainIDMux.Lock()
+				t.distinctChainIDs = tmpChainIDs
+				t.distinctChainIDMux.Unlock()
+			}
+		}
+	}()
+
 	i := 0
 	for {
 		i++
@@ -158,30 +213,6 @@ func (t *txSubmitterImpl) Start(parentCtx context.Context) (err error) {
 			return nil
 		}
 	}
-}
-
-func (t *txSubmitterImpl) setupMetrics() (err error) {
-	t.numPendingGauge, err = t.meter.Int64ObservableGauge("num_pending_txes")
-	if err != nil {
-		return fmt.Errorf("could not create num pending txes gauge: %w", err)
-	}
-
-	_, err = t.meter.RegisterCallback(t.recordNumPending, t.numPendingGauge)
-	if err != nil {
-		return fmt.Errorf("could not register callback: %w", err)
-	}
-
-	t.nonceGauge, err = t.meter.Int64ObservableGauge("current_nonce")
-	if err != nil {
-		return fmt.Errorf("could not create nonce gauge: %w", err)
-	}
-
-	_, err = t.meter.RegisterCallback(t.recordNonces, t.nonceGauge)
-	if err != nil {
-		return fmt.Errorf("could not register callback: %w", err)
-	}
-
-	return nil
 }
 
 func (t *txSubmitterImpl) GetSubmissionStatus(ctx context.Context, chainID *big.Int, nonce uint64) (status SubmissionStatus, err error) {
@@ -315,6 +346,9 @@ func (t *txSubmitterImpl) triggerProcessQueue(ctx context.Context) {
 	}
 }
 
+// ErrNotStarted is the error for when the submitter is not started.
+var ErrNotStarted = errors.New("submitter is not started")
+
 // nolint: cyclop
 func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *big.Int, call ContractCallType) (nonce uint64, err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.SubmitTransaction", trace.WithAttributes(
@@ -325,6 +359,10 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	if !t.Started() {
+		logger.Errorf("%v in a future version, this will hard error", ErrNotStarted.Error())
+	}
 
 	// make sure we have a client for this chain.
 	chainClient, err := t.fetcher.GetClient(ctx, chainID)
@@ -667,6 +705,10 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	}
 
 	return gasEstimate, nil
+}
+
+func (t *txSubmitterImpl) Address() common.Address {
+	return t.signer.Address()
 }
 
 var _ TransactionSubmitter = &txSubmitterImpl{}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	"sort"
 	"sync"
 	"testing"
 	"time"
@@ -238,10 +239,21 @@ func (s *SubmitterSuite) TestSortTxes() {
 	}
 	wg.Wait()
 
-	sorted := submitter.SortTxes(allTxes)
+	sorted := submitter.SortTxes(allTxes, 50)
 	assert.Equal(s.T(), len(sorted), len(expected))
 	for chainID, txes := range expected {
 		for i := range txes {
+			assert.Equal(s.T(), sorted[chainID][i].Hash(), txes[i].Hash())
+		}
+	}
+
+	// check tx cap
+	numTxes := 10
+	sorted = submitter.SortTxes(allTxes, numTxes)
+	assert.Equal(s.T(), len(sorted), len(expected))
+	for chainID, txes := range expected {
+		chainTxes := txes[:numTxes]
+		for i := range chainTxes {
 			assert.Equal(s.T(), sorted[chainID][i].Hash(), txes[i].Hash())
 		}
 	}
@@ -284,4 +296,107 @@ func makeAttrMap(tx *types.Transaction, UUID string) map[string]attribute.Value 
 		mapAttr[string(a.Key)] = a.Value
 	}
 	return mapAttr
+}
+
+// Test for the outersection function.
+func TestOutersection(t *testing.T) {
+	set := []*big.Int{
+		big.NewInt(2),
+		big.NewInt(4),
+	}
+
+	superset := []*big.Int{
+		big.NewInt(1),
+		big.NewInt(2),
+		big.NewInt(3),
+		big.NewInt(4),
+		big.NewInt(5),
+	}
+
+	expected := []*big.Int{
+		big.NewInt(1),
+		big.NewInt(3),
+		big.NewInt(5),
+	}
+
+	result := submitter.Outersection(set, superset)
+
+	if len(result) != len(expected) {
+		t.Fatalf("Expected %d elements, but got %d", len(expected), len(result))
+	}
+
+	for i, v := range result {
+		if v.Cmp(expected[i]) != 0 {
+			t.Errorf("Expected %s but got %s at index %d", expected[i], v, i)
+		}
+	}
+}
+
+// bigIntSlice is a type for sorting []*big.Int.
+type bigIntSlice []*big.Int
+
+func (p bigIntSlice) Len() int           { return len(p) }
+func (p bigIntSlice) Less(i, j int) bool { return p[i].Cmp(p[j]) < 0 }
+func (p bigIntSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+// Test for the MapToBigIntSlice function with generics.
+func TestMapToBigIntSlice(t *testing.T) {
+	m := map[uint64]struct{}{
+		1: {},
+		2: {},
+		3: {},
+	}
+
+	expected := []*big.Int{
+		big.NewInt(1),
+		big.NewInt(2),
+		big.NewInt(3),
+	}
+
+	result := submitter.MapToBigIntSlice(m)
+
+	if len(result) != len(expected) {
+		t.Fatalf("Expected %d elements, but got %d", len(expected), len(result))
+	}
+
+	sort.Sort(bigIntSlice(result))
+	sort.Sort(bigIntSlice(expected))
+
+	for i, v := range result {
+		if v.Cmp(expected[i]) != 0 {
+			t.Errorf("Expected %s but got %s at index %d", expected[i], v, i)
+		}
+	}
+}
+
+func TestMapToBigIntSliceWithStruct(t *testing.T) {
+	type MyStruct struct {
+		Value int
+	}
+	m := map[uint64]MyStruct{
+		1: {Value: 10},
+		2: {Value: 20},
+		3: {Value: 30},
+	}
+
+	expected := []*big.Int{
+		big.NewInt(1),
+		big.NewInt(2),
+		big.NewInt(3),
+	}
+
+	result := submitter.MapToBigIntSlice(m)
+
+	if len(result) != len(expected) {
+		t.Fatalf("Expected %d elements, but got %d", len(expected), len(result))
+	}
+
+	sort.Sort(bigIntSlice(result))
+	sort.Sort(bigIntSlice(expected))
+
+	for i, v := range result {
+		if v.Cmp(expected[i]) != 0 {
+			t.Errorf("Expected %s but got %s at index %d", expected[i], v, i)
+		}
+	}
 }
