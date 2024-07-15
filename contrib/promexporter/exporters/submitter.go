@@ -45,7 +45,13 @@ func (e *exporter) submitterStats(address common.Address, chainID int, name stri
 	ethBalance := new(big.Float).Quo(new(big.Float).SetInt(&balance), new(big.Float).SetInt64(params.Ether))
 	truncEthBalance, _ := ethBalance.Float64()
 
-	e.otelRecorder.RecordSubmitterStats(chainID, int64(nonce), truncEthBalance, name)
+	submitterMetadata := submitterMetadata{
+		name:    name,
+		nonce:   int64(nonce),
+		balance: truncEthBalance,
+	}
+
+	e.otelRecorder.RecordSubmitterStats(chainID, submitterMetadata)
 
 	return nil
 }

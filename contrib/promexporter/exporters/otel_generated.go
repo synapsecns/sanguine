@@ -12,5 +12,5 @@ type iOtelRecorder interface {
 	// DFK Metrics.
 	RecordStuckHeroCount(stuckHeroes int64)
 	// Submitter stats.
-	RecordSubmitterStats(chainid int, nonce int64, balance float64, gasCheckName string)
+	RecordSubmitterStats(chainid int, metadata submitterMetadata)
 }
