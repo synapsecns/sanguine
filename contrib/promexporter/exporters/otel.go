@@ -79,7 +79,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to create bridgeBalance gauge: %v", err)
 	}
 	if otr.feeBalanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("promexporter.feeBalanceGauage"),
+		metricName("promexporter.feeBalanceGauge"),
 		metric.WithDescription("fee balance gauge"),
 		metric.WithUnit("gwei")); err != nil {
 		log.Warnf("failed to create feeBalance gauge: %v", err)

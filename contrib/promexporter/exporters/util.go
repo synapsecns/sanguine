@@ -111,14 +111,17 @@ func (e *exporter) batchCalls(ctx context.Context, evmClient ethergoClient.EVM, 
 
 	g, ctx := errgroup.WithContext(ctx)
 	for _, task := range tasks {
-		g.Go(func() error {
-			err = evmClient.BatchWithContext(ctx, task...)
-			if err != nil {
-				return fmt.Errorf("could not batch calls: %w", err)
-			}
+		g.Go(
+			func(task []w3types.Caller) func() error {
+				return func() error {
+					err = evmClient.BatchWithContext(ctx, task...)
+					if err != nil {
+						return fmt.Errorf("could not batch calls: %w", err)
+					}
 
-			return nil
-		})
+					return nil
+				}
+			}(task))
 	}
 
 	err = g.Wait()
