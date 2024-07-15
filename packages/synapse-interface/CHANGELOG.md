@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.28.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.27.3...@synapsecns/synapse-interface@0.28.0) (2024-07-15)
+
+
+### Features
+
+* **synapse-interface:** Dest address screener middleware ([#2870](https://github.com/synapsecns/sanguine/issues/2870)) ([df288f5](https://github.com/synapsecns/sanguine/commit/df288f522a733e049df1d227e566a6d4bde43820))
+
+
+
+
+
 ## [0.27.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.27.2...@synapsecns/synapse-interface@0.27.3) (2024-07-03)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
