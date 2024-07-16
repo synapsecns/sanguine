@@ -36,7 +36,7 @@ const LifiPage = () => {
               const fetchAllowances = async () => {
                 if (address) {
                   const usdcAllowance = await getErc20TokenAllowance({
-                    address: "0xbc6f5a4ed57f16af3db54da801aba8d1dc4ed675",
+                    address: currentAddress,
                     chainId: connectedChainId,
                     tokenAddress: usdcAddress,
                     spender: "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
@@ -44,7 +44,7 @@ const LifiPage = () => {
                   setUsdcAllowance(usdcAllowance)
 
                   const usdtAllowance = await getErc20TokenAllowance({
-                    address: "0xbc6f5a4ed57f16af3db54da801aba8d1dc4ed675",
+                    address: currentAddress,
                     chainId: connectedChainId,
                     tokenAddress: usdtAddress,
                     spender: "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
@@ -52,7 +52,7 @@ const LifiPage = () => {
                   setUsdtAllowance(usdtAllowance)
 
                   const wethAllowance = await getErc20TokenAllowance({
-                    address: "0xbc6f5a4ed57f16af3db54da801aba8d1dc4ed675",
+                    address: currentAddress,
                     chainId: connectedChainId,
                     tokenAddress: wethAddress,
                     spender: "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
