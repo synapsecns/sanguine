@@ -117,7 +117,7 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 	// first, get the corresponding bridge request
 	bridgeRequest, err := g.db.GetBridgeRequestByID(ctx, proven.TransactionID)
 	if err != nil {
-		return fmt.Errorf("could not get bridge request: %w", err)
+		return fmt.Errorf("could not get bridge request for txid %s: %w", hexutil.Encode(proven.TransactionID[:]), err)
 	}
 
 	valid, err := g.isProveValid(ctx, proven, bridgeRequest)
