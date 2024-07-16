@@ -91,9 +91,13 @@ const LifiPage = () => {
               <br />
               <h3> Check to see if you have any approvals at risk below:</h3>
               <br />
-                <div>USDC Allowance At Risk: {usdcAllowance.toString()}</div>
-                <div>USDT Allowance At Risk: {usdtAllowance.toString()}</div>
-                <div>WETH Allowance at Risk: {wethAllowance.toString()}</div>
+                {isConnected && (
+                  <>
+                    <div>USDC Allowance At Risk: {usdcAllowance.toString()}</div>
+                    <div>USDT Allowance At Risk: {usdtAllowance.toString()}</div>
+                    <div>WETH Allowance at Risk: {wethAllowance.toString()}</div>
+                  </>
+                )}
               </div>
             </div>
             {!isConnected && (
@@ -105,7 +109,7 @@ const LifiPage = () => {
                     border: '1px solid #9B6DD7',
                     borderRadius: '4px',
                   }}
-                  label="Connect wallet"
+                  label="Connect wallet to check for approvals"
                   pendingLabel="Connecting"
                   onClick={() =>
                     new Promise((resolve, reject) => {
