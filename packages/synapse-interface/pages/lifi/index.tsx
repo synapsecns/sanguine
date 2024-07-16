@@ -1,8 +1,6 @@
 import Grid from '@tw/Grid'
 import { useEffect, useState } from 'react'
 import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
-
-
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import StandardPageContainer from '@layouts/StandardPageContainer'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
@@ -14,10 +12,22 @@ const CHAIN_IDS = [1, 42161, 10]
 const LIFI_SPENDER = "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae"
 
 const TOKENS = {
-  USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-  USDT: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-  WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
-} as const;
+  1: { // Ethereum Mainnet
+    USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    USDT: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+    WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+  },
+  42161: { // Arbitrum
+    USDC: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+    USDT: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+    WETH: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+  },
+  10: { // Optimism
+    USDC: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
+    USDT: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
+    WETH: '0x4200000000000000000000000000000000000006'
+  }
+}
 
 interface TokenAllowances {
   [chainId: number]: {
@@ -40,11 +50,11 @@ const LifiPage = () => {
         for (const chainId of CHAIN_IDS) {
           newAllowances[chainId] = {}
 
-          for (const [tokenName, tokenAddress] of Object.entries(TOKENS)) {
+          for (const [tokenName, tokenAddress] of Object.entries(TOKENS[chainId])) {
             const allowance = await getErc20TokenAllowance({
               address,
               chainId,
-              tokenAddress,
+              tokenAddress: tokenAddress as `0x${string}`,
               spender: LIFI_SPENDER,
             })
             newAllowances[chainId][tokenName] = allowance
@@ -60,10 +70,11 @@ const LifiPage = () => {
     }
   }, [address, isConnected])
 
-  const handleRevoke = async (chainId: number, tokenName: string, tokenAddress: string) => {
+  const handleRevoke = async (chainId: number, tokenName: string) => {
     if (chain?.id !== chainId) {
       await switchNetwork({chainId: chainId})
     }
+    const tokenAddress = TOKENS[chainId][tokenName]
     await approveToken(LIFI_SPENDER, chainId, tokenAddress, 0n)
     setAllowances(prev => ({
       ...prev,
@@ -111,7 +122,7 @@ const LifiPage = () => {
                               className="btn btn-primary ml-2"
                               pendingLabel="Revoking..."
                               label={`Revoke ${tokenName} Approval`}
-                              onClick={() => handleRevoke(chainId, tokenName, TOKENS[tokenName])}
+                              onClick={() => handleRevoke(chainId, tokenName)}
                             />
                           )}
                         </div>
