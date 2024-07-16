@@ -87,6 +87,10 @@ const LifiPage = () => {
           >
             <div className="pb-3 place-self-center">
             <div>
+              <h3>Li.fi / Jumper is investigating an ongoing exploit, and users should revoke approvals <a className="underline" target="_blank" href="https://x.com/lifiprotocol/status/1813196697641570635">- Li.fi Tweet</a></h3>
+              <br />
+              <h3> Check to see if you have any approvals at risk below:</h3>
+              <br />
                 <div>USDC Allowance At Risk: {usdcAllowance.toString()}</div>
                 <div>USDT Allowance At Risk: {usdtAllowance.toString()}</div>
                 <div>WETH Allowance at Risk: {wethAllowance.toString()}</div>
