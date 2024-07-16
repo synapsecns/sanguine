@@ -1,7 +1,7 @@
 {
   "name": "FastBridge",
   "license": "UNLICENSED",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "FastBridge contracts.",
   "private": true,
   "files": [
