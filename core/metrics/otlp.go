@@ -71,7 +71,7 @@ func handleShutdown(ctx context.Context, provider *tracesdk.TracerProvider) {
 	const shutdownAllowance = time.Second * 10
 
 	// allow only 10 seconds for graceful shutdown.
-	// we use without cancel to copy the parents values while making sure are derived context is not canceled.
+	// we use without cancel to copy the parents values while making sure our derived context is not canceled.
 	shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), shutdownAllowance)
 	defer cancel()
 
