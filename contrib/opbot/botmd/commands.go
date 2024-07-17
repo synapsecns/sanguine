@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -207,6 +208,8 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 			var slackBlocks []slack.Block
 
 			for _, status := range statuses {
+
+				// TODO: add CreatedAt field to GetQuoteRequestStatusResponse so we don't need to make network calls?
 				client, err := b.rpcClient.GetChainClient(ctx.Context(), int(status.OriginChainID))
 				if err != nil {
 					log.Printf("error getting chain client: %v\n", err)
@@ -216,14 +219,12 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				if err != nil {
 					log.Printf("error getting transaction receipt: %v\n", err)
 				}
-
-				txBlockNum := receipt.BlockNumber.Uint64()
-				nowBlockNum, err := client.BlockByNumber(ctx.Context(), nil)
+				txBlock, err := client.BlockByHash(ctx.Context(), receipt.BlockHash)
 				if err != nil {
-					log.Printf("error getting block by number: %v\n", err)
+					log.Printf("error getting block by hash: %v\n", err)
 				}
 
-				deltaBlockNumber := (nowBlockNum.NumberU64() - txBlockNum) * 12.0
+				txTime := time.Unix(int64(txBlock.Time()), 0)
 
 				objects := []*slack.TextBlockObject{
 					{
@@ -244,7 +245,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 					},
 					{
 						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Estimated Tx Age*: %d", deltaBlockNumber),
+						Text: fmt.Sprintf("*Estimated Tx Age*: %s", humanize.Time(txTime)),
 					},
 				}
 
