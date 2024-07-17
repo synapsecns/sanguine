@@ -79,12 +79,6 @@ func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB
 		option(c)
 	}
 
-	var err error
-	c.otelRecorder, err = newOtelRecorder(handler, int(c.chainID))
-	if err != nil {
-		return nil, fmt.Errorf("could not create otel recorder: %w", err)
-	}
-
 	return c, nil
 }
 
@@ -97,6 +91,13 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 	c.startBlock, c.chainID, err = c.getMetadata(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get metadata: %w", err)
+	}
+
+	if c.otelRecorder == nil {
+		c.otelRecorder, err = newOtelRecorder(c.handler, int(c.chainID))
+		if err != nil {
+			return fmt.Errorf("could not create otel recorder: %w", err)
+		}
 	}
 
 	c.pollInterval = time.Duration(0)
