@@ -149,9 +149,11 @@ func WithBackoff(ctx context.Context, doFunc RetryableFunc, configurators ...Wit
 	}
 
 	if config.exceedsMaxAttempts(attempts) {
+		// nolint: wrapcheck
 		return multierr.Append(ErrMaxAttempts, fmt.Errorf("after %d attempts (attempt errors: %w)", attempts, multierr.Combine(errs...)))
 	}
 	if config.exceedsMaxTime(startTime) {
+		// nolint: wrapcheck
 		return multierr.Append(ErrMaxTime, fmt.Errorf("after %s (max was %s) %w", time.Since(startTime).String(), config.maxAllAttemptsTime.String(), multierr.Combine(errs...)))
 	}
 

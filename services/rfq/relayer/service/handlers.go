@@ -72,15 +72,6 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 
 	var bridgeTx fastbridge.IFastBridgeBridgeTransaction
 	call := func(parentCtx context.Context) error {
-		ctx, newSpan := r.metrics.Tracer().Start(parentCtx, "fetchBridgeTx", trace.WithAttributes(
-			attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:])),
-			attribute.String("bridge_address", req.Raw.Address.String()),
-		))
-
-		defer func() {
-			metrics.EndSpanWithErr(newSpan, err)
-		}()
-
 		bridgeTx, err = fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
 		if err != nil {
 			return fmt.Errorf("could not get bridge transaction: %w", err)
