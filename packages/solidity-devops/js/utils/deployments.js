@@ -181,6 +181,13 @@ const getNewDeploymentReceipts = (chainName, scriptFN, timestamp) => {
   const chainId = getChainId(chainName)
   const scriptBaseName = path.basename(scriptFN)
   const broadcastDir = path.join('broadcast', scriptBaseName, chainId)
+  // Silent exit if the broadcast directory does not exist
+  if (!fs.existsSync(broadcastDir)) {
+    logError(
+      `No broadcast directory found for ${scriptBaseName} at ${broadcastDir}`
+    )
+    return []
+  }
   // Look for "*-latest.json" files created after the given timestamp.
   // These are named after the script entry function, which is usually "run", but could be different.
   // In practice there should be only one file, but we implement a generic logic just in case.
