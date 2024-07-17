@@ -2,7 +2,8 @@ import React from 'react'
 import Image from 'next/image'
 import { Token } from '@/utils/types'
 import { getParsedBalance } from '@/utils/getParsedBalance'
-import { HoverTooltip } from '../../HoverTooltip'
+import { HoverTooltip } from '@/components/HoverTooltip'
+import { formatAmount } from '@/utils/formatAmount'
 import GasIcon from '@/components/icons/GasIcon'
 
 export const GasTokenAsset = ({
@@ -13,8 +14,7 @@ export const GasTokenAsset = ({
   balance: bigint
 }) => {
   const { icon, symbol, decimals } = token
-  const parsedBalance = getParsedBalance(balance, decimals as number, 3)
-  const parsedBalanceLong = getParsedBalance(balance, decimals as number, 8)
+  const parsedBalance = getParsedBalance(balance, decimals as number)
 
   return (
     <div
@@ -34,12 +34,12 @@ export const GasTokenAsset = ({
         <HoverTooltip
           hoverContent={
             <div className="whitespace-nowrap">
-              {parsedBalanceLong} {symbol}
+              {parsedBalance} {symbol}
             </div>
           }
         >
           <div>
-            {parsedBalance} {symbol}
+            {formatAmount(parsedBalance)} {symbol}
           </div>
         </HoverTooltip>
         <HoverTooltip

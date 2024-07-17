@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/solidity-devops",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "A collection of utils to effortlessly test, deploy and maintain the smart contracts on EVM compatible blockchains",
   "license": "MIT",
   "repository": {
