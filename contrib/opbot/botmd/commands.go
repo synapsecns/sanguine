@@ -6,6 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"math/big"
+	"regexp"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -17,12 +24,6 @@ import (
 	rfqClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
-	"log"
-	"math/big"
-	"regexp"
-	"strings"
-	"sync"
-	"time"
 )
 
 func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.CommandDefinition {
@@ -204,7 +205,26 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 			}
 
 			var slackBlocks []slack.Block
+
 			for _, status := range statuses {
+				client, err := b.rpcClient.GetChainClient(ctx.Context(), int(status.OriginChainID))
+				if err != nil {
+					log.Printf("error getting chain client: %v\n", err)
+				}
+
+				receipt, err := client.TransactionReceipt(ctx.Context(), common.HexToHash(status.OriginTxHash))
+				if err != nil {
+					log.Printf("error getting transaction receipt: %v\n", err)
+				}
+
+				txBlockNum := receipt.BlockNumber.Uint64()
+				nowBlockNum, err := client.BlockByNumber(ctx.Context(), nil)
+				if err != nil {
+					log.Printf("error getting block by number: %v\n", err)
+				}
+
+				deltaBlockNumber := (nowBlockNum.NumberU64() - txBlockNum) * 12.0
+
 				objects := []*slack.TextBlockObject{
 					{
 						Type: slack.MarkdownType,
@@ -221,6 +241,10 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 					{
 						Type: slack.MarkdownType,
 						Text: fmt.Sprintf("*OriginTxHash*: %s", toTXSlackLink(status.OriginTxHash, status.OriginChainID)),
+					},
+					{
+						Type: slack.MarkdownType,
+						Text: fmt.Sprintf("*Estimaed Tx Age*: %d", deltaBlockNumber),
 					},
 				}
 
