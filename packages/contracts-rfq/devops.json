@@ -1,9 +1,9 @@
 {
   "chains": {
-    "arbitrum": "--with-gas-price 100000000",
+    "arbitrum": "--auto-gas-1559",
     "aurora": "--legacy --slow",
-    "base": "--with-gas-price 100000000",
-    "blast": "--with-gas-price 100000000",
+    "base": "--auto-gas-1559",
+    "blast": "--auto-gas-1559",
     "boba": "--legacy --skip-simulation --slow",
     "canto": "--legacy --slow",
     "cronos": "--slow",
@@ -11,10 +11,11 @@
     "dogechain": "--legacy --slow",
     "harmony": "--legacy --slow",
     "klaytn": "--skip-simulation",
+    "mainnet": "--auto-gas-1559",
     "metis": "--legacy",
     "moonbeam": "--skip-simulation --slow",
     "moonriver": "--skip-simulation --slow",
-    "optimism": "--with-gas-price 100000000",
+    "optimism": "--auto-gas-1559",
     "polygon": "--slow",
     "scroll": "--legacy"
   },
