@@ -430,6 +430,14 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 
 	var canClaim bool
 	claimCall := func(ctx context.Context) error {
+		ctx, newSpan := q.metrics.Tracer().Start(ctx, "checkClaimCheck", trace.WithAttributes(
+			attribute.String("transaction_id", hexutil.Encode(request.TransactionID[:])),
+		))
+
+		defer func() {
+			metrics.EndSpanWithErr(newSpan, err)
+		}()
+
 		canClaim, err = q.Origin.Bridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionID, q.RelayerAddress)
 		if err != nil {
 			return fmt.Errorf("could not check if can claim: %w", err)
