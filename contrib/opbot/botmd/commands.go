@@ -244,7 +244,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 					},
 					{
 						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Estimaed Tx Age*: %d", deltaBlockNumber),
+						Text: fmt.Sprintf("*Estimated Tx Age*: %d", deltaBlockNumber),
 					},
 				}
 
