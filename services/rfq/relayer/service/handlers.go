@@ -71,7 +71,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	}
 
 	var bridgeTx fastbridge.IFastBridgeBridgeTransaction
-	call := func(parentCtx context.Context) error {
+	call := func(ctx context.Context) error {
 		bridgeTx, err = fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
 		if err != nil {
 			return fmt.Errorf("could not get bridge transaction: %w", err)
