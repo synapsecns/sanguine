@@ -3,6 +3,68 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.28.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.3...@synapsecns/synapse-interface@0.28.4) (2024-07-17)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.28.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.2...@synapsecns/synapse-interface@0.28.3) (2024-07-16)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.28.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.1...@synapsecns/synapse-interface@0.28.2) (2024-07-16)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.28.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.0...@synapsecns/synapse-interface@0.28.1) (2024-07-15)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.28.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.27.3...@synapsecns/synapse-interface@0.28.0) (2024-07-15)
+
+
+### Features
+
+* **synapse-interface:** Dest address screener middleware ([#2870](https://github.com/synapsecns/sanguine/issues/2870)) ([df288f5](https://github.com/synapsecns/sanguine/commit/df288f522a733e049df1d227e566a6d4bde43820))
+
+
+
+
+
+## [0.27.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.27.2...@synapsecns/synapse-interface@0.27.3) (2024-07-03)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.27.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.27.1...@synapsecns/synapse-interface@0.27.2) (2024-07-02)
+
+
+### Bug Fixes
+
+* **synapse-interface:** max gas estimates ([#2831](https://github.com/synapsecns/sanguine/issues/2831)) ([6d5fdfe](https://github.com/synapsecns/sanguine/commit/6d5fdfefd249165ec959c10e882fc14119aaf8c6))
+
+
+
+
+
 ## [0.27.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.27.0...@synapsecns/synapse-interface@0.27.1) (2024-06-27)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

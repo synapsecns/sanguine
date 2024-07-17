@@ -1,6 +1,11 @@
 // Package config provides a simple way to read and write configuration files.
 package config
 
+import (
+	"github.com/synapsecns/sanguine/ethergo/signer/config"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
+)
+
 // Config represents the configuration of the application.
 type Config struct {
 	// SlackBotToken is the token of the slack bot.
@@ -15,6 +20,23 @@ type Config struct {
 	// inject only with init container!
 	SignozPassword string `yaml:"signoz_password"`
 	// SignozBaseURL is the base url of the signoz instance.
-	SignozBaseURL string   `yaml:"signoz_base_url"`
-	RelayerURLS   []string `yaml:"rfq_relayer_urls"`
+	SignozBaseURL string `yaml:"signoz_base_url"`
+	// RelayerURLS is the list of RFQ relayer URLs.
+	RelayerURLS []string `yaml:"rfq_relayer_urls"`
+	// RFQApiURL is the URL of the RFQ API.
+	RFQApiURL string `yaml:"rfq_api_url"`
+	// OmniRPCURL is the URL of the Omni RPC.
+	OmniRPCURL string `yaml:"omnirpc_url"`
+	// Signer is the signer config.
+	Signer config.SignerConfig `yaml:"signer"`
+	// SubmitterConfig is the submitter config.
+	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
+	// Database is the database config.
+	Database DatabaseConfig `yaml:"database"`
+}
+
+// DatabaseConfig represents the configuration for the database.
+type DatabaseConfig struct {
+	Type string `yaml:"type"`
+	DSN  string `yaml:"dsn"` // Data Source Name
 }

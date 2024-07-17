@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.27.1",
+  "version": "0.28.4",
   "private": true,
   "engines": {
     "node": ">=18.18.0"
@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@cloudflare/next-on-pages": "^1.11.0",
+    "@codecov/webpack-plugin": "^0.0.1-beta.10",
     "@ethersproject/bignumber": "5.7.0",
     "@ethersproject/providers": "5.7.2",
     "@ethersproject/units": "5.7.0",
@@ -33,7 +34,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
-    "@synapsecns/sdk-router": "^0.7.0",
+    "@synapsecns/sdk-router": "^0.8.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",

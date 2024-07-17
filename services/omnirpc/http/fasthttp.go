@@ -21,7 +21,7 @@ type fastHTTPClient struct {
 	// defaultClient is used when host client cannot be used
 	defaultClient *fasthttp.Client
 
-	clients *xsync.MapOf[FastClient]
+	clients *xsync.MapOf[string, FastClient]
 	// reqPool stores Request instances that may be passed to ReleaseRequest when it is
 	// no longer needed. This allows Request recycling, reduces GC pressure
 	// and usually improves performance.
