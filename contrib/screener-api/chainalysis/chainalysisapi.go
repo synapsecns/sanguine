@@ -98,6 +98,11 @@ func (c *clientImpl) pessimisticRegister(ctx context.Context, address string) er
 }
 
 func (c *clientImpl) checkBlacklist(ctx context.Context, address string) (bool, error) {
+	// check the cache first
+	if riskLevel, ok := c.registrationCache.Get(address); ok {
+		return slices.Contains(c.riskLevels, riskLevel.(string)), nil
+	}
+
 	var resp *resty.Response
 	// Retry until the user is registered.
 	err := retry.WithBackoff(ctx,
@@ -119,10 +124,10 @@ func (c *clientImpl) checkBlacklist(ctx context.Context, address string) (bool, 
 		return false, fmt.Errorf("could not get response: %w", err)
 	}
 
-	// address has been found, let's screen it.
-	c.registrationCache.Set(address, struct{}{})
-
+	// address has been registered and retrieved, let's screen it and cache whether it is risky or not.
 	risk := fastjson.GetString(resp.Body(), "risk")
+	c.registrationCache.Set(address, risk)
+
 	return slices.Contains(c.riskLevels, risk), nil
 }
 
