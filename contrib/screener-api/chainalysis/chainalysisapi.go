@@ -98,9 +98,9 @@ func (c *clientImpl) pessimisticRegister(ctx context.Context, address string) er
 }
 
 func (c *clientImpl) checkBlacklist(ctx context.Context, address string) (bool, error) {
-	// check the cache first
-	if riskLevel, ok := c.registrationCache.Get(address); ok {
-		return slices.Contains(c.riskLevels, riskLevel.(string)), nil
+	// check the cache first before making any requests
+	if _, ok := c.registrationCache.Get(address); ok {
+		return true, nil
 	}
 
 	var resp *resty.Response
@@ -126,9 +126,13 @@ func (c *clientImpl) checkBlacklist(ctx context.Context, address string) (bool, 
 
 	// address has been registered and retrieved, let's screen it and cache whether it is risky or not.
 	risk := fastjson.GetString(resp.Body(), "risk")
-	c.registrationCache.Set(address, risk)
 
-	return slices.Contains(c.riskLevels, risk), nil
+	if slices.Contains(c.riskLevels, risk) {
+		c.registrationCache.Set(address, struct{}{})
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // registerAddress registers an address in the case that we try and screen for a nonexistent address.
