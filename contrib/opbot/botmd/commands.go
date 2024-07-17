@@ -140,6 +140,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 	})
 }
 
+// nolint: gocognit
 func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 	return &slacker.CommandDefinition{
 		Command:     "rfq <tx>",
@@ -208,23 +209,10 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 			var slackBlocks []slack.Block
 
 			for _, status := range statuses {
-
-				// TODO: add CreatedAt field to GetQuoteRequestStatusResponse so we don't need to make network calls?
-				client, err := b.rpcClient.GetChainClient(ctx.Context(), int(status.OriginChainID))
+				time, err := b.getTxAge(ctx, status.GetQuoteRequestStatusResponse)
 				if err != nil {
-					log.Printf("error getting chain client: %v\n", err)
+					log.Printf("error getting tx age: %v\n", err)
 				}
-
-				receipt, err := client.TransactionReceipt(ctx.Context(), common.HexToHash(status.OriginTxHash))
-				if err != nil {
-					log.Printf("error getting transaction receipt: %v\n", err)
-				}
-				txBlock, err := client.BlockByHash(ctx.Context(), receipt.BlockHash)
-				if err != nil {
-					log.Printf("error getting block by hash: %v\n", err)
-				}
-
-				txTime := time.Unix(int64(txBlock.Time()), 0)
 
 				objects := []*slack.TextBlockObject{
 					{
@@ -245,7 +233,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 					},
 					{
 						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Estimated Tx Age*: %s", humanize.Time(txTime)),
+						Text: fmt.Sprintf("*Estimated Tx Age*: %s", humanize.Time(time)),
 					},
 				}
 
@@ -357,6 +345,25 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 		return nil, fmt.Errorf("error creating fast bridge: %w", err)
 	}
 	return fastBridgeHandle, nil
+}
+
+func (b *Bot) getTxAge(ctx *slacker.CommandContext, status *relapi.GetQuoteRequestStatusResponse) (time.Time, error) {
+	// TODO: add CreatedAt field to GetQuoteRequestStatusResponse so we don't need to make network calls?
+	client, err := b.rpcClient.GetChainClient(ctx.Context(), int(status.OriginChainID))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("error getting chain client: %w", err)
+	}
+
+	receipt, err := client.TransactionReceipt(ctx.Context(), common.HexToHash(status.OriginTxHash))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("error fetching transaction receipt: %w", err)
+	}
+	txBlock, err := client.BlockByHash(ctx.Context(), receipt.BlockHash)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("error fetching block by hash: %w", err)
+	}
+
+	return time.Unix(int64(txBlock.Time()), 0), nil
 }
 
 func toExplorerSlackLink(ogHash string) string {
