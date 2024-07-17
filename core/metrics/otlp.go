@@ -11,6 +11,7 @@ import (
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"os"
 	"strings"
+	"time"
 )
 
 type otlpHandler struct {
@@ -51,11 +52,37 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 		return fmt.Errorf("could not start base handler: %w", err)
 	}
 
+	go func() {
+		handleShutdown(ctx, n.baseHandler.unwrappedTP)
+	}()
+
 	return nil
 }
 
 func (n *otlpHandler) Type() HandlerType {
 	return OTLP
+}
+
+// wait for the context to be canceled.
+// then flush the traces and shutdown the exporter.
+func handleShutdown(ctx context.Context, provider *tracesdk.TracerProvider) {
+	<-ctx.Done()
+
+	const shutdownAllowance = time.Second * 10
+
+	// allow only 10 seconds for graceful shutdown.
+	// we use without cancel to copy the parents values while making sure are derived context is not canceled.
+	shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), shutdownAllowance)
+	defer cancel()
+
+	err := provider.ForceFlush(shutdownCtx)
+	if err != nil {
+		logger.Warnf("could not flush traces: %v", err)
+	}
+	err = provider.Shutdown(shutdownCtx)
+	if err != nil {
+		logger.Warnf("could not shutdown traces: %v", err)
+	}
 }
 
 const (
