@@ -18,7 +18,15 @@ contract ConfigureFastBridge is SynapseScript {
     function testConfigureFastBridge() external {}
 
     function run() external broadcastWithHooks {
-        loadConfig();
+        configureFB(ENVIRONMENT_PROD);
+    }
+
+    function runTestnet() external broadcastWithHooks {
+        configureFB("testnet");
+    }
+
+    function configureFB(string memory environment) internal {
+        loadConfig(environment);
         syncRole("governor", fastBridge.GOVERNOR_ROLE());
         setChainGasAmount();
         setProtocolFeeRate();
@@ -27,8 +35,8 @@ contract ConfigureFastBridge is SynapseScript {
         syncRole("refunder", fastBridge.REFUNDER_ROLE());
     }
 
-    function loadConfig() internal {
-        config = readGlobalDeployConfig({contractName: NAME, environment: "", revertIfNotFound: true});
+    function loadConfig(string memory environment) internal {
+        config = readGlobalDeployConfig({contractName: NAME, environment: environment, revertIfNotFound: true});
         fastBridge = FastBridge(getDeploymentAddress({contractName: NAME, revertIfNotFound: true}));
     }
 
