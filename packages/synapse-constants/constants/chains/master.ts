@@ -54,7 +54,7 @@ export const ETH: Chain = {
     primary: 'https://rpc.ankr.com/eth',
     fallback: 'https://1rpc.io/eth',
   },
-  explorerUrl: 'https://etherscan.com',
+  explorerUrl: 'https://etherscan.io',
   explorerName: 'Etherscan',
   explorerImg: ethExplorerImg,
   blockTime: 12000,
