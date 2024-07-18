@@ -148,7 +148,7 @@ jobs:
 
       - name: Setup Go cache
         uses: namespacelabs/nscloud-cache-action@v1
-        if: contains(env.RUNNER_LABEL, 'nsc')
+        if: ${{ contains(runner.name, 'nsc') }}
         with:
           cache: go
 
