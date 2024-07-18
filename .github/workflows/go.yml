@@ -230,11 +230,11 @@ jobs:
         #if: failure()
         run: tar cvzf ./logs.tgz /tmp/logs
       - name: Upload logs to GitHub
-        if: failure()
+#        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.package}}-logs.tgz
-          path: ./logs.tgz
+          path: logs.tgz
 
       - name: Show Logs
         run: ls
