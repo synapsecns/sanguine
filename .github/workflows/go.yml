@@ -226,18 +226,13 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
         with:
           dest: '/tmp/logs'
-      - name: Tar logs
-        #if: failure()
-        run: tar cvzf ./logs.tgz /tmp/logs
+
       - name: Upload logs to GitHub
 #        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.package}}-logs.tgz
-          path: logs.tgz
-
-      - name: Show Logs
-        run: pwd && ls
+          path: /tmp/logs/**
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
