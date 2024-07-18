@@ -136,7 +136,6 @@ jobs:
           submodules: 'recursive'
 
       - name: Set up cache
-        if: ${{ !contains(runner.name, 'nsc') }}
         uses: actions/cache@v4
         with:
           path: |
@@ -146,11 +145,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-${{matrix.package}}
 
-      - name: Setup Go cache
-        uses: namespacelabs/nscloud-cache-action@v1
-        if: ${{ contains(runner.name, 'nsc') }}
-        with:
-          cache: go
 
       - name: Get branch name
         id: branch-name
