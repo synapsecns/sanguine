@@ -238,7 +238,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.replace.outputs.package_name }}
-          path: /tmp/**
+          path: /tmp/logs/**
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
