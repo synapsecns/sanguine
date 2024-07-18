@@ -227,7 +227,7 @@ jobs:
         with:
           dest: '/tmp/logs'
       - name: Tar logs
-        if: failure()
+        #if: failure()
         run: tar cvzf ./logs.tgz /tmp/logs
       - name: Upload logs to GitHub
         if: failure()
@@ -235,6 +235,9 @@ jobs:
         with:
           name: ${{matrix.package}}-logs.tgz
           path: ./logs.tgz
+
+      - name: Show Logs
+        run: ls
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
@@ -493,7 +496,7 @@ jobs:
     if: ${{ github.event_name != 'push' && needs.changes.outputs.package_count_deps > 0 }}
     strategy:
       fail-fast: false
-      max-parallel: 8
+      max-parallel: 12
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
