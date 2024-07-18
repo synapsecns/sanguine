@@ -4,6 +4,4 @@ package service
 
 // iOtelRecorder ...
 type iOtelRecorder interface {
-	// RecordDisputeCount records the request dispute count.
-	RecordDispute(chainID int)
 }

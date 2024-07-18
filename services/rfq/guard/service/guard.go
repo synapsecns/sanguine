@@ -97,7 +97,7 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		txSubmitter = submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 	}
 
-	otelRecorder, err := newOtelRecorder(metricHandler, txSubmitter.Address())
+	otelRecorder, err := newOtelRecorder(metricHandler, txSubmitter.Address(), store)
 	if err != nil {
 		return nil, fmt.Errorf("could not get otel recorder: %w", err)
 	}

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cornelk/hashmap"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
@@ -30,18 +30,17 @@ type otelRecorder struct {
 	meter metric.Meter
 	// disputeGauge is the gauge for the disputeCounts.
 	disputeGauge metric.Int64ObservableGauge
-	// disputeCounts is used for metrics.
-	// chainID -> count
-	disputeCounts *hashmap.Map[int, int]
+	// db is a database connection for fetching disputes.
+	db guarddb.Service
 	// walletAddress is the wallet address for the signer.
 	walletAddress common.Address
 }
 
-func newOtelRecorder(meterHandler metrics.Handler, walletAddress common.Address) (_ iOtelRecorder, err error) {
+func newOtelRecorder(meterHandler metrics.Handler, walletAddress common.Address, db guarddb.Service) (_ iOtelRecorder, err error) {
 	or := otelRecorder{
 		metrics:       meterHandler,
 		meter:         meterHandler.Meter(meterName),
-		disputeCounts: hashmap.New[int, int](),
+		db:            db,
 		walletAddress: walletAddress,
 	}
 
@@ -58,30 +57,19 @@ func newOtelRecorder(meterHandler metrics.Handler, walletAddress common.Address)
 	return &or, nil
 }
 
-func (o *otelRecorder) recordDisputeCounts(_ context.Context, observer metric.Observer) (err error) {
-	if o.metrics == nil || o.disputeGauge == nil || o.disputeCounts == nil {
+func (o *otelRecorder) recordDisputeCounts(ctx context.Context, observer metric.Observer) (err error) {
+	if o.metrics == nil || o.disputeGauge == nil || o.db == nil {
 		return nil
 	}
 
-	o.disputeCounts.Range(func(chainID int, count int) bool {
-		opts := metric.WithAttributes(
-			attribute.Int("chain_id", int(chainID)),
-			attribute.String("wallet", o.walletAddress.Hex()),
-		)
-		observer.ObserveInt64(o.disputeGauge, int64(count), opts)
-
-		return true
-	})
+	results, err := o.db.GetPendingProvensByStatus(ctx, guarddb.DisputePending, guarddb.Disputed)
+	if err != nil {
+		return fmt.Errorf("could not get disputes: %w", err)
+	}
+	opts := metric.WithAttributes(
+		attribute.String("wallet", o.walletAddress.Hex()),
+	)
+	observer.ObserveInt64(o.disputeGauge, int64(len(results)), opts)
 
 	return nil
-}
-
-// RecordDisputeCount records the request dispute count.
-func (o *otelRecorder) RecordDispute(chainID int) {
-	count, ok := o.disputeCounts.Get(chainID)
-	if ok {
-		o.disputeCounts.Set(chainID, count+1)
-	} else {
-		o.disputeCounts.Set(chainID, 1)
-	}
 }
