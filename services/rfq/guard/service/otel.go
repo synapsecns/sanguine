@@ -66,7 +66,7 @@ func (o *otelRecorder) recordDisputeCounts(_ context.Context, observer metric.Ob
 	o.disputeCounts.Range(func(chainID int, count int) bool {
 		opts := metric.WithAttributes(
 			attribute.Int("chain_id", int(chainID)),
-			attribute.String("wallet", o.signer.Address().Hex()),
+			attribute.String("wallet", o.walletAddress.Hex()),
 		)
 		observer.ObserveInt64(o.disputeGauge, int64(count), opts)
 
