@@ -130,17 +130,10 @@ jobs:
       volumes: [ /repo ]
     steps:
       - name: Git Checkout (gh)
-        if: ${{ !contains(runner.name, 'nsc') }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: 'recursive'
-
-      - name: Git Checkout (namespace)
-        if: contains(runner.name, 'nsc')
-        uses: namespacelabs/nscloud-checkout-action@v5
-        with:
-            fetch-depth: 0
+#          submodules: 'recursive'
 
       - name: Git submodules (namespace)
         if: contains(runner.name, 'nsc')
