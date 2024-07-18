@@ -106,23 +106,13 @@ jobs:
         working-directory: ${{ matrix.package }}
     steps:
       - uses: actions/checkout@v4
-        if:  ${{ !contains(runner.name, 'nsc') }}
         with:
           fetch-depth: 2
           submodules: 'recursive'
 
-      - name: Checkout with Namespace Git mirrors cache
-        uses: namespacelabs/nscloud-checkout-action@v5
-        if:  ${{ contains(runner.name, 'nsc') }}
-        with:
-          fetch-depth: 2
-          submodules: 'false'
-
-      - name: F
-        run: nsc git-checkout update-submodules --mirror_base_path=${NSC_GIT_MIRROR} --repository_path=${GITHUB_WORKSPACE} --recurse
-
       - name: Go modules cache
         uses: actions/cache@v4
+        if:  ${{ !contains(runner.name, 'nsc') }}
         with:
           # see https://github.com/mvdan/github-actions-golang
           # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
@@ -139,6 +129,13 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
+          cache: ${{ contains(runner.name, 'nsc') && 'false' || 'true' }}
+
+      - name: Setup Go cache
+        uses: namespacelabs/nscloud-cache-action@v1
+        if: ${{ contains(runner.name, 'nsc') }}
+        with:
+          cache: go
 
       - name: Verify MariaDB connection
         env:
