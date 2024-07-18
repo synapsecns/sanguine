@@ -30,7 +30,6 @@ func (g *Guard) handleBridgeRequestedLog(parentCtx context.Context, req *fastbri
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
-
 	originClient, err := g.client.GetChainClient(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not get correct omnirpc client: %w", err)
