@@ -225,7 +225,7 @@ jobs:
         if: always()
         uses: jwalton/gh-docker-logs@v2
         with:
-          dest: '/tmp/logs'
+          dest: '/tmp/**'
 
       - name: Replace forward slashes with dashes
         id: replace
