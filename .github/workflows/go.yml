@@ -227,11 +227,18 @@ jobs:
         with:
           dest: '/tmp/logs'
 
+      - name: Replace forward slashes with dashes
+        id: replace
+        run: echo "package_name=${{ matrix.package }}" | sed 's/\//-/g'
+        shell: bash
+        env:
+          package_name: ${{ matrix.package }}
+
       - name: Upload logs to GitHub
 #        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{matrix.package}}-logs.tgz
+          name: ${{ steps.replace.outputs.package_name }}"
           path: /tmp/logs/**
 
       - name: Send Coverage (Codecov)
