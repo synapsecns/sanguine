@@ -237,7 +237,7 @@ jobs:
           path: logs.tgz
 
       - name: Show Logs
-        run: ls
+        run: pwd && ls
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
