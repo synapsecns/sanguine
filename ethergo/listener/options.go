@@ -39,7 +39,7 @@ func WithFinalityMode(mode string) Option {
 		case "finalized":
 			c.finalityMode = rpc.FinalizedBlockNumber
 		default:
-			c.finalityMode = rpc.SafeBlockNumber
+			c.finalityMode = rpc.LatestBlockNumber
 		}
 	}
 }

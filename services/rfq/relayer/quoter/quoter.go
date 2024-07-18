@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
@@ -270,21 +271,31 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	span.SetAttributes(attribute.Int("num_quotes", len(allQuotes)))
 
 	// Now, submit all the generated quotes
-	for _, quote := range allQuotes {
-		if err := m.submitQuote(ctx, quote); err != nil {
-			span.AddEvent("error submitting quote; setting relayPaused to true", trace.WithAttributes(
-				attribute.String("error", err.Error()),
-				attribute.Int(metrics.Origin, quote.OriginChainID),
-				attribute.Int(metrics.Destination, quote.DestChainID),
-				attribute.String("origin_token_addr", quote.OriginTokenAddr),
-				attribute.String("dest_token_addr", quote.DestTokenAddr),
-				attribute.String("max_origin_amount", quote.MaxOriginAmount),
-				attribute.String("dest_amount", quote.DestAmount),
-			))
-			m.relayPaused.Store(true)
+	if m.config.SubmitSingleQuotes {
+		for _, quote := range allQuotes {
+			if err := m.submitQuote(ctx, quote); err != nil {
+				span.AddEvent("error submitting quote; setting relayPaused to true", trace.WithAttributes(
+					attribute.String("error", err.Error()),
+					attribute.Int(metrics.Origin, quote.OriginChainID),
+					attribute.Int(metrics.Destination, quote.DestChainID),
+					attribute.String("origin_token_addr", quote.OriginTokenAddr),
+					attribute.String("dest_token_addr", quote.DestTokenAddr),
+					attribute.String("max_origin_amount", quote.MaxOriginAmount),
+					attribute.String("dest_amount", quote.DestAmount),
+				))
+				m.relayPaused.Store(true)
 
-			// Suppress error so that we can continue submitting quotes
-			return nil
+				// Suppress error so that we can continue submitting quotes
+				return nil
+			}
+		}
+	} else {
+		err = m.submitBulkQuotes(ctx, allQuotes)
+		if err != nil {
+			span.AddEvent("error submitting bulk quotes; setting relayPaused to true", trace.WithAttributes(
+				attribute.String("error", err.Error())))
+			m.relayPaused.Store(true)
+			return fmt.Errorf("error submitting bulk quotes: %w", err)
 		}
 	}
 
@@ -314,26 +325,40 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 	if err != nil {
 		return nil, fmt.Errorf("error getting destination RFQ address: %w", err)
 	}
-
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
+
+	// generate quotes in parallel
+	g, gctx := errgroup.WithContext(ctx)
+	quoteMtx := &sync.Mutex{}
 	quotes = []model.PutQuoteRequest{}
-	for keyTokenID, itemTokenIDs := range m.quotableTokens {
+	for k, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			//nolint:nestif
 			if tokenID == destTokenID {
-				quote, quoteErr := m.generateQuote(ctx, keyTokenID, chainID, address, balance, destRFQAddr)
-				if quoteErr != nil {
-					// continue generating quotes even if one fails
-					span.AddEvent("error generating quote", trace.WithAttributes(
-						attribute.String("key_token_id", keyTokenID),
-						attribute.String("error", quoteErr.Error()),
-					))
-					continue
-				}
-				quotes = append(quotes, *quote)
+				keyTokenID := k
+				g.Go(func() error {
+					quote, quoteErr := m.generateQuote(gctx, keyTokenID, chainID, address, balance, destRFQAddr)
+					if quoteErr != nil {
+						// continue generating quotes even if one fails
+						span.AddEvent("error generating quote", trace.WithAttributes(
+							attribute.String("key_token_id", keyTokenID),
+							attribute.String("error", quoteErr.Error()),
+						))
+						return nil
+					}
+					quoteMtx.Lock()
+					defer quoteMtx.Unlock()
+					quotes = append(quotes, *quote)
+					return nil
+				})
 			}
 		}
 	}
+	err = g.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("error generating quotes: %w", err)
+	}
+
 	m.currentQuotes = quotes
 	return quotes, nil
 }
@@ -597,6 +622,21 @@ func (m *Manager) submitQuote(ctx context.Context, quote model.PutQuoteRequest) 
 	err := m.rfqClient.PutQuote(quoteCtx, &quote)
 	if err != nil {
 		return fmt.Errorf("error submitting quote: %w", err)
+	}
+	return nil
+}
+
+// Submits multiple quotes.
+func (m *Manager) submitBulkQuotes(ctx context.Context, quotes []model.PutQuoteRequest) error {
+	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
+	defer quoteCancel()
+
+	req := model.PutBulkQuotesRequest{
+		Quotes: quotes,
+	}
+	err := m.rfqClient.PutBulkQuotes(quoteCtx, &req)
+	if err != nil {
+		return fmt.Errorf("error submitting bulk quotes: %w", err)
 	}
 	return nil
 }

@@ -115,6 +115,7 @@ jobs:
     needs: [build-goreleaser,changes]
     if: ${{ needs.changes.outputs.package_count > 0 }}
     permissions:
+      id-token: write
       # always required
       packages: write
       # only required for private repos
@@ -136,7 +137,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Set up cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build

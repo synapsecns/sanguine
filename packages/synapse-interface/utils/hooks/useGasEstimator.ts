@@ -100,7 +100,7 @@ export const useGasEstimator = () => {
     const gasData = (await dispatch(
       fetchGasData(fromChainId)
     )) as PayloadAction<GasDataState>
-    const { maxFeePerGas } = gasData?.payload?.gasData.formatted
+    const { maxFeePerGas } = gasData?.payload?.gasData.formatted || {}
 
     const gasLimit = await estimateGasLimit()
     const { parsedGasCost } = calculateGasCost(

@@ -43,7 +43,7 @@ export const ETH: Chain = {
       'https://eth-mainnet.g.alchemy.com/v2/rJ3f0IWjZbpgEwnzrRS6yYO3WNH0jGle',
     fallback: 'https://eth.llamarpc.com',
   },
-  explorerUrl: 'https://etherscan.com',
+  explorerUrl: 'https://etherscan.io',
   explorerName: 'Etherscan',
   explorerImg: ethExplorerImg,
   blockTime: 12000,

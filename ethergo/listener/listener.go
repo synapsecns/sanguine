@@ -51,6 +51,8 @@ type chainListener struct {
 	newBlockHandler NewBlockHandler
 	finalityMode    rpc.BlockNumber
 	blockWait       uint64
+	// otelRecorder is the recorder for the otel metrics.
+	otelRecorder iOtelRecorder
 }
 
 var (
@@ -75,6 +77,12 @@ func NewChainListener(omnirpcClient client.EVM, store listenerDB.ChainListenerDB
 
 	for _, option := range options {
 		option(c)
+	}
+
+	var err error
+	c.otelRecorder, err = newOtelRecorder(handler, int(c.chainID))
+	if err != nil {
+		return nil, fmt.Errorf("could not create otel recorder: %w", err)
 	}
 
 	return c, nil
@@ -183,6 +191,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	if err != nil {
 		return fmt.Errorf("could not put latest block: %w", err)
 	}
+	c.otelRecorder.RecordLastBlock(endBlock)
 
 	c.startBlock = lastUnconfirmedBlock
 	return nil

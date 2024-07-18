@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 )
 
 type config struct {
@@ -32,7 +32,7 @@ func defaultConfig() *config {
 
 var DefaultAttributes = func(serverName, route string, request *http.Request) []attribute.KeyValue {
 	attrs := []attribute.KeyValue{
-		semconv.HTTPMethodKey.String(request.Method),
+		semconv.HTTPRequestMethodKey.String(request.Method),
 	}
 
 	if serverName != "" {

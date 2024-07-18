@@ -1,7 +1,7 @@
 {
   "name": "FastBridge",
   "license": "UNLICENSED",
-  "version": "0.2.9",
+  "version": "0.2.12",
   "description": "FastBridge contracts.",
   "private": true,
   "files": [
@@ -11,12 +11,13 @@
     "@openzeppelin/contracts": "5.0.1"
   },
   "devDependencies": {
-    "@synapsecns/solidity-devops": "^0.4.2",
+    "@synapsecns/solidity-devops": "^0.4.4",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.6"
   },
   "scripts": {
+    "build": " ",
     "build:contracts": "forge build",
     "build:slither": "forge build --out=out --build-info --force",
     "test:coverage": "echo 'Please use foundry'",

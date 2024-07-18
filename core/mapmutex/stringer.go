@@ -1,11 +1,14 @@
 package mapmutex
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // StringerMapMutex is an implementation of mapMutex for the fmt.Stringer conforming types.
 type StringerMapMutex interface {
 	Lock(key fmt.Stringer) Unlocker
 	TryLock(key fmt.Stringer) (Unlocker, bool)
+	Keys() []string
 }
 
 // stringerLockerImpl is the implementation of StringerMapMutex.
@@ -22,6 +25,16 @@ func (s stringerLockerImpl) Lock(key fmt.Stringer) Unlocker {
 	return s.mapMux.Lock(key.String())
 }
 
+// Keys returns the keys of the map.
+func (s stringerLockerImpl) Keys() []string {
+	var keys []string
+	for _, key := range s.mapMux.Keys() {
+		// nolint: forcetypeassert
+		keys = append(keys, key.(string))
+	}
+	return keys
+}
+
 // NewStringerMapMutex creates an initialized locker that locks on fmt.String.
 func NewStringerMapMutex() StringerMapMutex {
 	return &stringerLockerImpl{
@@ -33,6 +46,7 @@ func NewStringerMapMutex() StringerMapMutex {
 type StringMapMutex interface {
 	Lock(key string) Unlocker
 	TryLock(key string) (Unlocker, bool)
+	Keys() []string
 }
 
 // stringMutexImpl locks on a string type.
@@ -57,10 +71,21 @@ func (s stringMutexImpl) TryLock(key string) (Unlocker, bool) {
 	return s.mapMux.TryLock(key)
 }
 
+// Keys returns the keys of the map.
+func (s stringMutexImpl) Keys() []string {
+	keys := []string{}
+	for _, key := range s.mapMux.Keys() {
+		// nolint: forcetypeassert
+		keys = append(keys, key.(string))
+	}
+	return keys
+}
+
 // IntMapMutex is a map mutex that allows locking on an int.
 type IntMapMutex interface {
 	Lock(key int) Unlocker
 	TryLock(key int) (Unlocker, bool)
+	Keys() []int
 }
 
 // intMapMux locks on an int.
@@ -75,6 +100,16 @@ func (i intMapMux) TryLock(key int) (Unlocker, bool) {
 // Lock locks an int map mux.
 func (i intMapMux) Lock(key int) Unlocker {
 	return i.mapMux.Lock(key)
+}
+
+// Keys returns the keys of the map.
+func (i intMapMux) Keys() []int {
+	var keys []int
+	for _, key := range i.mapMux.Keys() {
+		// nolint: forcetypeassert
+		keys = append(keys, key.(int))
+	}
+	return keys
 }
 
 // NewIntMapMutex creates a map mutex for locking on an integer.

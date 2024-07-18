@@ -67,6 +67,7 @@ import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
+import { screenAddress } from '@/utils/screenAddress'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -352,6 +353,14 @@ const StateManagedBridge = () => {
 
   const executeBridge = async () => {
     let pendingPopup: any
+
+    if (destinationAddress) {
+      const isRisky = await screenAddress(destinationAddress)
+      if (isRisky) {
+        return
+      }
+    }
+
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
@@ -365,6 +374,7 @@ const StateManagedBridge = () => {
         destinationToken: toToken?.routeSymbol,
         exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
         routerAddress: bridgeQuote.routerAddress,
+        bridgeQuote,
       },
       true
     )
@@ -458,6 +468,7 @@ const StateManagedBridge = () => {
         destinationToken: toToken?.routeSymbol,
         exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
         routerAddress: bridgeQuote.routerAddress,
+        bridgeQuote,
       })
       dispatch(
         updatePendingBridgeTransaction({
