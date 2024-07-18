@@ -116,7 +116,10 @@ jobs:
         if:  ${{ contains(runner.name, 'nsc') }}
         with:
           fetch-depth: 2
-          submodules: 'recursive'
+          submodules: 'false'
+
+      - name: F
+        run: nsc git-checkout update-submodules --mirror_base_path=${NSC_GIT_MIRROR} --repository_path=${GITHUB_WORKSPACE} --recurse
 
       - name: Go modules cache
         uses: actions/cache@v4
