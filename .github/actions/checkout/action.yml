@@ -1,0 +1,17 @@
+name: Checkout
+description: Checkotu a repo using either the namespace action or the github action
+inputs:
+  fetch-depth:
+    description: 'The fetch depth'
+    default: '0'
+  sbumodules:
+    description: 'wether to checkout submodules'
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set environment variable
+      shell: bash
+      run: echo "RUNNER_LABEL=${{ runner.labels }}" >> $GITHUB_ENV
+
