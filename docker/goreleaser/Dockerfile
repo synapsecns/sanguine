@@ -121,6 +121,4 @@ RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | 
 
 RUN rm -rf /var/lib/apt/lists/* /var/log/apt/* /tmp/* /var/tmp/*
 
-RUN curl -fsSL https://get.namespace.so/cloud/install.sh | sh && \
-      export NS_ROOT="$HOME/.ns" && \
-      export PATH="$NS_ROOT/bin:$PATH"
+RUN curl -fsSL https://get.namespace.so/cloud/install.sh | NS_ROOT=/usr/local/bin
