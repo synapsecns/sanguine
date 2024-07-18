@@ -141,9 +141,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	}(err)
 
 	for chainID := range c.cfg.Chains {
-		fmt.Printf("setting up scroll contracts on chain %d\n", chainID)
 		if isEthereumChain(chainID) {
-			fmt.Println("eth chain")
 			c.l1ChainID = chainID
 			chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 			if err != nil {
@@ -166,7 +164,6 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 				return fmt.Errorf("could not get l1 scroll messenger contract: %w", err)
 			}
 		} else if isScrollChain(chainID) {
-			fmt.Println("scroll chain")
 			c.l2ChainID = chainID
 			addr, err := c.cfg.GetL2GatewayAddress(chainID)
 			if err != nil {

@@ -88,34 +88,28 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 
 	// setup chain listeners
 	for chainID := range cfg.GetChains() {
-		_, chainErr := func() (*Relayer, error) {
-			rfqAddr, err := cfg.GetRFQAddress(chainID)
-			if err != nil {
-				return nil, fmt.Errorf("could not get rfq address: %w", err)
-			}
-			chainClient, err := omniClient.GetChainClient(ctx, chainID)
-			if err != nil {
-				return nil, fmt.Errorf("could not get chain client: %w", err)
-			}
-
-			contract, err := fastbridge.NewFastBridgeRef(common.HexToAddress(rfqAddr), chainClient)
-			if err != nil {
-				return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
-			}
-			startBlock, err := contract.DeployBlock(&bind.CallOpts{Context: ctx})
-			if err != nil {
-				return nil, fmt.Errorf("could not get deploy block: %w", err)
-			}
-			chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), metricHandler)
-			if err != nil {
-				return nil, fmt.Errorf("could not get chain listener: %w", err)
-			}
-			chainListeners[chainID] = chainListener
-			return nil, nil
-		}()
-		if chainErr != nil {
-			fmt.Printf("could not setup chain listener: %s\n", chainErr)
+		rfqAddr, err := cfg.GetRFQAddress(chainID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get rfq address: %w", err)
 		}
+		chainClient, err := omniClient.GetChainClient(ctx, chainID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get chain client: %w", err)
+		}
+
+		contract, err := fastbridge.NewFastBridgeRef(common.HexToAddress(rfqAddr), chainClient)
+		if err != nil {
+			return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
+		}
+		startBlock, err := contract.DeployBlock(&bind.CallOpts{Context: ctx})
+		if err != nil {
+			return nil, fmt.Errorf("could not get deploy block: %w", err)
+		}
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), metricHandler)
+		if err != nil {
+			return nil, fmt.Errorf("could not get chain listener: %w", err)
+		}
+		chainListeners[chainID] = chainListener
 	}
 
 	sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
