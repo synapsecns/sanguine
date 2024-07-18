@@ -1,4 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { uuidv7 } from 'uuidv7'
 import invariant from 'tiny-invariant'
 
 import { BigintIsh } from '../constants'
@@ -199,6 +200,7 @@ export abstract class SynapseModuleSet {
       bridgeRoute.bridgeModuleName === this.bridgeModuleName,
       'Invalid bridge module name'
     )
+    const uuid = uuidv7()
     const { originQuery, destQuery } = bridgeRoute
     const { originModuleDeadline, destModuleDeadline } =
       this.getModuleDeadlines(originDeadline, destDeadline)
@@ -206,6 +208,7 @@ export abstract class SynapseModuleSet {
     destQuery.deadline = destModuleDeadline
     const { feeAmount, feeConfig } = await this.getFeeData(bridgeRoute)
     return {
+      id: uuid,
       feeAmount,
       feeConfig,
       routerAddress: originModule.address,
