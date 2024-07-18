@@ -98,7 +98,7 @@ func newBase() *gin.Engine {
 		MaxAge:          12 * time.Hour,
 	}))
 
-	uuid.SetVersion(8)
+	_ = uuid.SetVersion(8)
 
 	// configure the request id
 	server.Use(requestid.New(
