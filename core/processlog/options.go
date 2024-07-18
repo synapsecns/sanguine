@@ -181,6 +181,8 @@ func makeRawArgs(opts []StdStreamLogArgsOption) *stdStreamLogArgs {
 	args.LogFrequency = time.Second
 	// not a problem unless it's missing from user too, we'll validate at the end
 	args.LogDir, _ = os.MkdirTemp("/tmp/logs", "")
+	// just in case
+	_ = os.Mkdir(args.LogDir, os.ModePerm)
 
 	args.LogFileName = "log"
 	args.PrintFunc = func(s []byte) {
