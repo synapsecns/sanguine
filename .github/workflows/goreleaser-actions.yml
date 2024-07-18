@@ -146,7 +146,6 @@ jobs:
         if: contains(runner.name, 'nsc')
         run: nsc git-checkout update-submodules --mirror_base_path=${NSC_GIT_MIRROR} --repository_path=${GITHUB_WORKSPACE} --recurse
 
-
       - name: Set up cache
         if: !contains(runner.name, 'nsc')
         uses: actions/cache@v4
