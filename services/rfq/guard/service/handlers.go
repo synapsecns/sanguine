@@ -135,7 +135,6 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 		}
 	} else {
 		// trigger dispute
-		g.otelRecorder.RecordDispute(int(bridgeRequest.Transaction.OriginChainId))
 		contract, ok := g.contracts[int(bridgeRequest.Transaction.OriginChainId)]
 		if !ok {
 			return fmt.Errorf("could not get contract for chain: %d", bridgeRequest.Transaction.OriginChainId)
