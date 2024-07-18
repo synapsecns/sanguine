@@ -130,25 +130,25 @@ jobs:
       volumes: [ /repo ]
     steps:
       - name: Git Checkout (gh)
-        if: ${{ !contains(runner.name, 'namespace') }}
+        if: ${{ !contains(runner.name, 'nsc') }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'recursive'
 
       - name: Git Checkout (namespace)
-        if: contains(runner.name, 'namespace')
+        if: contains(runner.name, 'nsc')
         uses: namespacelabs/nscloud-checkout-action@v5
         with:
             fetch-depth: 0
 
       - name: Git submodules (namespace)
-        if: contains(runner.name, 'namespace')
+        if: contains(runner.name, 'nsc')
         run: nsc git-checkout update-submodules --mirror_base_path=${NSC_GIT_MIRROR} --repository_path=${GITHUB_WORKSPACE} --recurse
 
 
       - name: Set up cache
-        if: contains(runner.name, 'ubuntu-latest')
+        if: !contains(runner.name, 'nsc')
         uses: actions/cache@v4
         with:
           path: |
@@ -160,7 +160,7 @@ jobs:
 
       - name: Setup Go cache
         uses: namespacelabs/nscloud-cache-action@v1
-        if: contains(env.RUNNER_LABEL, 'namespace')
+        if: contains(env.RUNNER_LABEL, 'nsc')
         with:
           cache: go
 
