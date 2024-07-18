@@ -133,7 +133,6 @@ jobs:
       - name: Set environment variable
         run: echo "RUNNER_LABEL=${{ runner.labels }}" >> $GITHUB_ENV
 
-      # can't be turned into a composite action
       - name: Git Checkout (gh)
         if: !contains(env.RUNNER_LABEL, 'namespace')
         uses: actions/checkout@v4
@@ -150,7 +149,6 @@ jobs:
       - name: Git submodules (namespace)
         if: contains(env.RUNNER_LABEL, 'namespace')
         run: nsc git-checkout update-submodules --mirror_base_path=${NSC_GIT_MIRROR} --repository_path=${GITHUB_WORKSPACE} --recurse
-
 
 
       - name: Set up cache
