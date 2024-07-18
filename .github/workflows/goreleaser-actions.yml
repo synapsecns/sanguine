@@ -133,11 +133,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-#          submodules: 'recursive'
-
-      - name: Git submodules (namespace)
-        if: contains(runner.name, 'nsc')
-        run: nsc git-checkout update-submodules --mirror_base_path=${NSC_GIT_MIRROR} --repository_path=${GITHUB_WORKSPACE} --recurse
+          submodules: 'recursive'
 
       - name: Set up cache
         if: ${{ !contains(runner.name, 'nsc') }}
