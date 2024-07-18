@@ -120,3 +120,7 @@ RUN apt-get update && apt-get install -y nodejs
 RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
 RUN rm -rf /var/lib/apt/lists/* /var/log/apt/* /tmp/* /var/tmp/*
+
+RUN curl -fsSL https://get.namespace.so/cloud/install.sh | sh && \
+      export NS_ROOT="$HOME/.ns" && \
+      export PATH="$NS_ROOT/bin:$PATH"
