@@ -37,7 +37,6 @@ type otelRecorder struct {
 }
 
 func newOtelRecorder(meterHandler metrics.Handler, walletAddress common.Address, db guarddb.Service) (_ iOtelRecorder, err error) {
-	fmt.Println("guard newOtelRecorder")
 	or := otelRecorder{
 		metrics:       meterHandler,
 		meter:         meterHandler.Meter(meterName),
@@ -59,21 +58,18 @@ func newOtelRecorder(meterHandler metrics.Handler, walletAddress common.Address,
 }
 
 func (o *otelRecorder) recordDisputeCounts(ctx context.Context, observer metric.Observer) (err error) {
-	fmt.Println("recordDisputeCounts")
 	if o.metrics == nil || o.disputeGauge == nil || o.db == nil {
 		return nil
 	}
 
 	results, err := o.db.GetPendingProvensByStatus(ctx, guarddb.DisputePending, guarddb.Disputed)
 	if err != nil {
-		fmt.Printf("dispute error: %v\n", err)
 		return fmt.Errorf("could not get disputes: %w", err)
 	}
 	opts := metric.WithAttributes(
 		attribute.String("wallet", o.walletAddress.Hex()),
 	)
 	observer.ObserveInt64(o.disputeGauge, int64(len(results)), opts)
-	fmt.Printf("recorded dispute count: %d\n", len(results))
 
 	return nil
 }
