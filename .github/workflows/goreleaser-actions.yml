@@ -129,9 +129,8 @@ jobs:
       image: ${{ needs.build-goreleaser.outputs.goreleaser-image }}
       volumes: [ /repo ]
     steps:
-
       - name: Set environment variable
-        run: echo "RUNNER_LABEL=${{ runner.labels }}" >> $GITHUB_ENV
+        run: echo "RUNNER_LABELS=${{ runner.labels }}" >> $GITHUB_ENV
 
       - name: Git Checkout (gh)
         if: !contains(env.RUNNER_LABEL, 'namespace')
