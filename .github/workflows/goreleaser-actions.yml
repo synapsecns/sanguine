@@ -133,25 +133,25 @@ jobs:
         run: echo "RUNNER_LABELS=${{ runner.labels }}" >> $GITHUB_ENV
 
       - name: Git Checkout (gh)
-        if: !contains(env.RUNNER_LABEL, 'namespace')
+        if: !contains(env.RUNNER_LABELS, 'namespace')
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'recursive'
 
       - name: Git Checkout (namespace)
-        if: contains(env.RUNNER_LABEL, 'namespace')
+        if: contains(env.RUNNER_LABELS, 'namespace')
         uses: namespacelabs/nscloud-checkout-action@v5
         with:
             fetch-depth: 0
 
       - name: Git submodules (namespace)
-        if: contains(env.RUNNER_LABEL, 'namespace')
+        if: contains(env.RUNNER_LABELS, 'namespace')
         run: nsc git-checkout update-submodules --mirror_base_path=${NSC_GIT_MIRROR} --repository_path=${GITHUB_WORKSPACE} --recurse
 
 
       - name: Set up cache
-        if: contains(env.RUNNER_LABEL, 'ubuntu-latest')
+        if: contains(env.RUNNER_LABELS, 'ubuntu-latest')
         uses: actions/cache@v4
         with:
           path: |
