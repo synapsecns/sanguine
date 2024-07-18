@@ -115,6 +115,7 @@ jobs:
     needs: [build-goreleaser,changes]
     if: ${{ needs.changes.outputs.package_count > 0 }}
     permissions:
+      id-token: write
       # always required
       packages: write
       # only required for private repos

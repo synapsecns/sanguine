@@ -371,6 +371,7 @@ const StateManagedBridge = () => {
         destinationToken: toToken?.routeSymbol,
         exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
         routerAddress: bridgeQuote.routerAddress,
+        bridgeQuote,
       },
       true
     )
@@ -464,6 +465,7 @@ const StateManagedBridge = () => {
         destinationToken: toToken?.routeSymbol,
         exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
         routerAddress: bridgeQuote.routerAddress,
+        bridgeQuote,
       })
       dispatch(
         updatePendingBridgeTransaction({

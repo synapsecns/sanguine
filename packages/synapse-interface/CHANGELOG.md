@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.28.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.5...@synapsecns/synapse-interface@0.28.6) (2024-07-17)
+
+
+### Bug Fixes
+
+* **synapse-interface:** Fixes explorer link ([#2885](https://github.com/synapsecns/sanguine/issues/2885)) ([a9c1073](https://github.com/synapsecns/sanguine/commit/a9c1073f02258808c2ed748253535a2f747ee8e3))
+
+
+
+
+
+## [0.28.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.4...@synapsecns/synapse-interface@0.28.5) (2024-07-17)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.28.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.3...@synapsecns/synapse-interface@0.28.4) (2024-07-17)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.28.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.2...@synapsecns/synapse-interface@0.28.3) (2024-07-16)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.28.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.1...@synapsecns/synapse-interface@0.28.2) (2024-07-16)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.28.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.0...@synapsecns/synapse-interface@0.28.1) (2024-07-15)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

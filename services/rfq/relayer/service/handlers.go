@@ -373,6 +373,10 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.
 //
 // This is the seventh step in the bridge process. Here we process the event that the proof was posted on chain.
 func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastBridgeBridgeProofProvided) (err error) {
+	if req.Relayer != r.signer.Address() {
+		return nil
+	}
+
 	// TODO: this can still get re-orged
 	// ALso: we should make sure the previous status  is ProvePosting
 	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.ProvePosted, nil)

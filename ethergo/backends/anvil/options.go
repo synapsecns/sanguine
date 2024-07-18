@@ -29,7 +29,7 @@ func NewAnvilOptionBuilder() *OptionBuilder {
 	// set default non-anvil values
 	optionsBuilder.SetMaxWaitTime(time.Minute * 2)
 	optionsBuilder.SetRestartPolicy(Autoremove)
-	optionsBuilder.SetExpirySeconds(600)
+	optionsBuilder.SetExpirySeconds(900)
 
 	optionsBuilder.SetAccounts(10)
 	optionsBuilder.SetBlockTime(0)
