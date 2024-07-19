@@ -147,20 +147,25 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 	backend.FundAccount(i.GetTestContext(), i.guardWallet.Address(), ethAmount)
 	backend.FundAccount(i.GetTestContext(), i.userWallet.Address(), ethAmount)
 
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		i.manager.BulkDeploy(i.GetTestContext(), core.ToSlice(backend), predeploys...)
 	}()
 
 	// TODO: in the case of relayer this not finishing before the test starts can lead to race conditions since
 	// nonce may be shared between submitter and relayer. Think about how to deal w/ this.
 	for _, user := range []wallet.Wallet{i.relayerWallet, i.guardWallet, i.userWallet} {
+		wg.Add(1)
 		go func(userWallet wallet.Wallet) {
+			defer wg.Done()
 			for _, token := range predeployTokens {
 				i.Approve(backend, i.manager.Get(i.GetTestContext(), backend, token), userWallet)
 			}
 		}(user)
 	}
-
+	wg.Wait()
 }
 
 func (i *IntegrationSuite) setupCCTP() {
