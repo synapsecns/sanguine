@@ -111,7 +111,8 @@ jobs:
 
   # TODO: we may want to dry run this on prs
   run-goreleaser:
-    runs-on: namespace-profile-fast-goreleaser
+    runs-on:
+      - namespace-profile-fast-goreleaser
     needs: [build-goreleaser,changes]
     if: ${{ needs.changes.outputs.package_count > 0 }}
     permissions:
@@ -128,6 +129,8 @@ jobs:
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
     container:
       image: ${{ needs.build-goreleaser.outputs.goreleaser-image }}
+      env:
+        NSC_CACHE_PATH: ${{ env.NSC_CACHE_PATH }} # env.NSC_CACHE_PATH contains the path to Cache Volume directory, that is `/cache`.
       volumes:
         - /repo
         - /cache:/cache
