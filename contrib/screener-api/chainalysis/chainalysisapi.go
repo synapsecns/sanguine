@@ -75,6 +75,11 @@ func (c *clientImpl) ScreenAddress(parentCtx context.Context, address string) (b
 
 	address = strings.ToLower(address)
 
+	// check the cache before we make any network calls.
+	if _, ok := c.registrationCache.Get(address); ok {
+		return true, nil
+	}
+
 	// we don't even wait on pessimistic register since if the address is already registered, but not in the in-memory cache
 	// this will just get canceled.
 	go func() {
@@ -98,11 +103,6 @@ func (c *clientImpl) pessimisticRegister(ctx context.Context, address string) er
 }
 
 func (c *clientImpl) checkBlacklist(ctx context.Context, address string) (bool, error) {
-	// check the cache first before making any requests
-	if _, ok := c.registrationCache.Get(address); ok {
-		return true, nil
-	}
-
 	var resp *resty.Response
 	// Retry until the user is registered.
 	err := retry.WithBackoff(ctx,
