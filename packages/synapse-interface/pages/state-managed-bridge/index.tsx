@@ -193,6 +193,7 @@ const StateManagedBridge = () => {
       }
 
       const {
+        id,
         feeAmount,
         routerAddress,
         maxAmountOut,
@@ -280,6 +281,7 @@ const StateManagedBridge = () => {
             timestamp: currentTimestamp,
             originChainId,
             destChainId,
+            id,
           })
         )
 
