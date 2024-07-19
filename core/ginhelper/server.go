@@ -98,13 +98,11 @@ func newBase() *gin.Engine {
 		MaxAge:          12 * time.Hour,
 	}))
 
-	_ = uuid.SetVersion(8)
-
 	// configure the request id
 	server.Use(requestid.New(
 		requestid.WithCustomHeaderStrKey(RequestIDHeader),
 		requestid.WithGenerator(func() string {
-			return uuid.New().String()
+			return uuid.NewV8().String()
 		})))
 
 	// set the request id header if the client didn't
