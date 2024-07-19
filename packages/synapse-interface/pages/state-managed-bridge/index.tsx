@@ -73,6 +73,7 @@ import {
 } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
+import { getValidAddress } from '@/utils/isValidAddress'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -355,6 +356,7 @@ const StateManagedBridge = () => {
       `[Bridge] initiates bridge`,
       {
         address,
+        id: bridgeQuote.id,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -448,6 +450,7 @@ const StateManagedBridge = () => {
       )
       segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
         address,
+        id: bridgeQuote.id,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
