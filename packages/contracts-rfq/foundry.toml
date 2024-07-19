@@ -26,6 +26,7 @@ scroll = "${SCROLL_RPC}"
 # Testnets
 arb_sepolia = "${ARB_SEPOLIA_RPC}"
 base_sepolia = "${BASE_SEPOLIA_RPC}"
+bnb_testnet = "${BNB_TESTNET_RPC}"
 eth_sepolia = "${ETH_SEPOLIA_RPC}"
 op_sepolia = "${OP_SEPOLIA_RPC}"
 scroll_sepolia = "${SCROLL_SEPOLIA_RPC}"
@@ -40,6 +41,7 @@ scroll = { key = "${SCROLL_VERIFIER_KEY}", url = "${SCROLL_VERIFIER_URL}" }
 # Testnets
 arb_sepolia = { key = "${ARB_SEPOLIA_VERIFIER_KEY}", url = "${ARB_SEPOLIA_VERIFIER_URL}" }
 base_sepolia = { key = "${BASE_SEPOLIA_VERIFIER_KEY}", url = "${BASE_SEPOLIA_VERIFIER_URL}" }
+bnb_testnet = { key = "${BNB_TESTNET_VERIFIER_KEY}", url = "${BNB_TESTNET_VERIFIER_URL}" }
 eth_sepolia = { key = "${ETH_SEPOLIA_VERIFIER_KEY}", url = "${ETH_SEPOLIA_VERIFIER_URL}" }
 op_sepolia = { key = "${OP_SEPOLIA_VERIFIER_KEY}", url = "${OP_SEPOLIA_VERIFIER_URL}" }
 scroll_sepolia = { key = "${SCROLL_SEPOLIA_VERIFIER_KEY}", url = "${SCROLL_SEPOLIA_VERIFIER_URL}" }
