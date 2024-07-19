@@ -44,6 +44,7 @@ import {
   SynapseModuleSet,
 } from './module'
 import * as operations from './operations'
+import { validateUUID } from './utils/validateUUID'
 
 // Override fetch to exclude RFQ from tests
 global.fetch = jest.fn(() =>
@@ -99,6 +100,10 @@ const createBridgeQuoteTests = (
   let result: BridgeQuote
   beforeAll(async () => {
     result = await resultPromise
+  })
+
+  it('Generates a bridge quote with valid uuid', async () => {
+    expect(validateUUID(result.id)).toBe(true)
   })
 
   it('Fetches a bridge quote', async () => {
