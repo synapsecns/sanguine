@@ -20,7 +20,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-var maxRPCRetryTime = 15 * time.Second
+var maxRPCRetryTime = 30 * time.Second
 
 // handleBridgeRequestedLog handles the BridgeRequestedLog event.
 // Step 1: Seen
@@ -332,13 +332,14 @@ func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridge
 	}
 
 	// TODO: this can still get re-orged
-	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.RelayCompleted, nil)
-	if err != nil {
-		return fmt.Errorf("could not update request status: %w", err)
-	}
 	err = r.db.UpdateDestTxHash(ctx, req.TransactionId, req.Raw.TxHash)
 	if err != nil {
 		return fmt.Errorf("could not update dest tx hash: %w", err)
+	}
+
+	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.RelayCompleted, nil)
+	if err != nil {
+		return fmt.Errorf("could not update request status: %w", err)
 	}
 	return nil
 }
