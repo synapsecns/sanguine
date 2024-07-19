@@ -111,7 +111,7 @@ jobs:
 
   # TODO: we may want to dry run this on prs
   run-goreleaser:
-    runs-on: github-namespace-profile-fast-goreleaser-synapsecns-sanguine
+    runs-on: namespace-profile-fast-goreleaser
     needs: [build-goreleaser,changes]
     if: ${{ needs.changes.outputs.package_count > 0 }}
     permissions:
