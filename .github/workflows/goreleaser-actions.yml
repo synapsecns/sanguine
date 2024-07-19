@@ -111,7 +111,7 @@ jobs:
 
   # TODO: we may want to dry run this on prs
   run-goreleaser:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-default
     needs: [build-goreleaser,changes]
     if: ${{ needs.changes.outputs.package_count > 0 }}
     permissions:
