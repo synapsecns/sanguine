@@ -6,7 +6,6 @@ import (
 
 	"github.com/cornelk/hashmap"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/hedzr/log"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -337,7 +336,7 @@ func (o *otelRecorder) recordSubmitterStats(
 
 			observer.ObserveFloat64(
 				o.balanceGauge,
-				submitter.balance/params.Ether,
+				submitter.balance,
 				metric.WithAttributes(
 					attribute.Int(metrics.ChainID, chainID),
 					attribute.String(metrics.EOAAddress, submitter.address.String()),
