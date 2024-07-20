@@ -42,7 +42,7 @@ type otelRecorder struct {
 	totalSupplyGauge   metric.Float64ObservableGauge
 
 	// dfk stats
-	stuckHeroes      int64
+	stuckHeroes      *hashmap.Map[string, int64]
 	stuckHeroesGauge metric.Int64ObservableGauge
 
 	// submitter stats
@@ -55,12 +55,13 @@ type otelRecorder struct {
 // nolint: cyclop
 func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 	otr := otelRecorder{
-		metrics:    meterHandler,
-		meter:      meterHandler.Meter(meterName),
-		vPrice:     hashmap.New[int, float64](),
-		gasBalance: hashmap.New[int, float64](),
-		td:         hashmap.New[int, []tokenData](),
-		submitters: hashmap.New[int, []submitterMetadata](),
+		metrics:     meterHandler,
+		meter:       meterHandler.Meter(meterName),
+		stuckHeroes: hashmap.New[string, int64](),
+		vPrice:      hashmap.New[int, float64](),
+		gasBalance:  hashmap.New[int, float64](),
+		td:          hashmap.New[int, []tokenData](),
+		submitters:  hashmap.New[int, []submitterMetadata](),
 	}
 	// todo: make an option
 	metricName := func(metricName string) string {
@@ -280,8 +281,8 @@ func (o *otelRecorder) recordTokenBalance(
 }
 
 // DFK Metrics.
-func (o *otelRecorder) RecordStuckHeroCount(stuckHeroes int64) {
-	o.stuckHeroes = stuckHeroes
+func (o *otelRecorder) RecordStuckHeroCount(stuckHeroes int64, chainname string) {
+	o.stuckHeroes.Set(chainname, stuckHeroes)
 }
 
 func (o *otelRecorder) recordStuckHeroCount(
@@ -292,10 +293,18 @@ func (o *otelRecorder) recordStuckHeroCount(
 		return nil
 	}
 
-	observer.ObserveInt64(
-		o.stuckHeroesGauge,
-		o.stuckHeroes,
-	)
+	o.stuckHeroes.Range(
+		func(chainName string, stuckHeroes int64) bool {
+			observer.ObserveInt64(
+				o.stuckHeroesGauge,
+				stuckHeroes,
+				metric.WithAttributes(
+					attribute.String("chain_name", chainName),
+				),
+			)
+
+			return true
+		})
 
 	return nil
 }

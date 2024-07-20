@@ -32,7 +32,7 @@ func (e *exporter) stuckHeroCountStats(parentCtx context.Context, owner common.A
 		return fmt.Errorf("could not get stuck hero count: %w", err)
 	}
 
-	e.otelRecorder.RecordStuckHeroCount(int64(len(stuckHeroes.Heroes)))
+	e.otelRecorder.RecordStuckHeroCount(int64(len(stuckHeroes.Heroes)), chainName)
 
 	return nil
 }
