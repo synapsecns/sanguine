@@ -6,6 +6,7 @@ import (
 
 	"github.com/cornelk/hashmap"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/hedzr/log"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -81,7 +82,7 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to create bridgeBalance gauge: %v", err)
 	}
 	if otr.feeBalanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("feeBalance"),
+		metricName("feeBalance_total"),
 		metric.WithDescription("fee balance gauge"),
 		metric.WithUnit("gwei")); err != nil {
 		log.Warnf("failed to create feeBalance gauge: %v", err)
@@ -327,7 +328,7 @@ func (o *otelRecorder) recordSubmitterStats(
 
 			observer.ObserveFloat64(
 				o.balanceGauge,
-				submitter.balance,
+				submitter.balance/params.Ether,
 				metric.WithAttributes(
 					attribute.Int(metrics.ChainID, chainID),
 					attribute.String(metrics.EOAAddress, submitter.address.String()),

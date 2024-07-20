@@ -8,6 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/contrib/promexporter/internal/decoders"
@@ -129,7 +130,7 @@ func (e *exporter) getTokenBalancesStats(ctx context.Context) error {
 		}
 		_ = e.batchCalls(ctx, client, calls)
 
-		e.otelRecorder.RecordBridgeGasBalance(chainID, core.BigToDecimals(&realGasBalance, 18))
+		e.otelRecorder.RecordBridgeGasBalance(chainID, core.BigToDecimals(&realGasBalance, 18)*params.Ether)
 
 		for _, td := range allTokenData {
 			e.otelRecorder.RecordTokenBalance(chainID, td)
