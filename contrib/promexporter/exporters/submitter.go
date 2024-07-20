@@ -46,6 +46,7 @@ func (e *exporter) submitterStats(address common.Address, chainID int, name stri
 	truncEthBalance, _ := ethBalance.Float64()
 
 	submitterMetadata := submitterMetadata{
+		address: address,
 		name:    name,
 		nonce:   int64(nonce),
 		balance: truncEthBalance,

@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/cornelk/hashmap"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/hedzr/log"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -13,6 +14,7 @@ import (
 )
 
 type submitterMetadata struct {
+	address common.Address
 	name    string
 	nonce   int64
 	balance float64
@@ -43,10 +45,7 @@ type otelRecorder struct {
 	stuckHeroesGauge metric.Int64ObservableGauge
 
 	// submitter stats
-	submitters *hashmap.Map[int, []submitterMetadata]
-	// nonce        *hashmap.Map[int, int64]
-	// balance      *hashmap.Map[int, float64]
-	// name         *hashmap.Map[int, string]
+	submitters   *hashmap.Map[int, []submitterMetadata]
 	balanceGauge metric.Float64ObservableGauge
 	nonceGauge   metric.Int64ObservableGauge
 }
@@ -69,53 +68,53 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 
 	var err error
 	if otr.vpriceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("promexporter.vpriceGauge"),
+		metricName("vpriceMetric"),
 		metric.WithDescription("vprice gauge"),
 		metric.WithUnit("price")); err != nil {
 		log.Warnf("failed to create vprice gauge: %v", err)
 	}
 
 	if otr.bridgeBalanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("promexporter.bridgeBalanceGauge"),
+		metricName("bridgeBalanceMetric"),
 		metric.WithDescription("bridge balance"),
 		metric.WithUnit("eth")); err != nil {
 		log.Warnf("failed to create bridgeBalance gauge: %v", err)
 	}
 	if otr.feeBalanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("promexporter.feeBalanceGauge"),
+		metricName("feeBalance"),
 		metric.WithDescription("fee balance gauge"),
 		metric.WithUnit("gwei")); err != nil {
 		log.Warnf("failed to create feeBalance gauge: %v", err)
 	}
 	if otr.totalSupplyGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("promexporter.totalSupplyGauge"),
+		metricName("totalSupply"),
 		metric.WithDescription("total supply gauge"),
 		metric.WithUnit("eth")); err != nil {
 		log.Warnf("failed to create totalSupply gauge: %v", err)
 	}
 	if otr.gasBalanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("promexporter.gasBalanceGauge"),
+		metricName("gasBalance"),
 		metric.WithDescription("gas balance"),
 		metric.WithUnit("gwei")); err != nil {
 		log.Warnf("failed to create gasBalance gauge: %v", err)
 	}
 
 	if otr.balanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("promexporter.balanceGauge"),
+		metricName("gas_balance"),
 		metric.WithDescription("balance gauge"),
 		metric.WithUnit("eth")); err != nil {
 		log.Warnf("failed to create balance gauge: %v", err)
 	}
 
 	if otr.nonceGauge, err = otr.meter.Int64ObservableGauge(
-		metricName("promexporter.nonceGauge"),
+		metricName("nonce"),
 		metric.WithDescription("nonce gauge"),
 		metric.WithUnit("nonce")); err != nil {
 		log.Warnf("failed to create nonce gauge: %v", err)
 	}
 
 	if otr.stuckHeroesGauge, err = otr.meter.Int64ObservableGauge(
-		metricName("promexporter.stuckHeroesGauge"),
+		metricName("dfk_pending_heroes"),
 		metric.WithDescription("stuck count gauge"),
 		metric.WithUnit("count")); err != nil {
 		log.Warnf("failed to create stuckHeroes gauge: %v", err)
@@ -320,7 +319,10 @@ func (o *otelRecorder) recordSubmitterStats(
 			observer.ObserveInt64(
 				o.nonceGauge,
 				submitter.nonce,
-				metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)),
+				metric.WithAttributes(attribute.Int(metrics.ChainID, chainID),
+					attribute.String(metrics.EOAAddress, submitter.address.String()),
+					attribute.String("name", submitter.name),
+				),
 			)
 
 			observer.ObserveFloat64(
@@ -328,6 +330,8 @@ func (o *otelRecorder) recordSubmitterStats(
 				submitter.balance,
 				metric.WithAttributes(
 					attribute.Int(metrics.ChainID, chainID),
+					attribute.String(metrics.EOAAddress, submitter.address.String()),
+					attribute.String("name", submitter.name),
 				),
 			)
 		}
