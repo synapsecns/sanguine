@@ -1,6 +1,6 @@
 import { UUID } from 'uuidv7';
 
-const convertUuidToUnix = (uuid: string) => {
+export const convertUuidToUnix = (uuid: string) => {
   const timestampBytes = new Uint8Array(8);
   timestampBytes.set(
     new Uint8Array(UUID.parse(uuid).bytes.buffer.slice(0, 6)),

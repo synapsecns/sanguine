@@ -60,7 +60,7 @@ import {
 } from '@/slices/transactions/actions'
 import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
-import { getTimeMinutesFromNow } from '@/utils/time'
+import { calculateTimeBetween, getTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 import {
@@ -74,6 +74,7 @@ import {
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { getValidAddress } from '@/utils/isValidAddress'
+import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -324,12 +325,12 @@ const StateManagedBridge = () => {
     }
   }
 
-  useStaleQuoteUpdater(
-    bridgeQuote,
-    getAndSetBridgeQuote,
-    isQuoteLoading,
-    isWalletPending
-  )
+  // useStaleQuoteUpdater(
+  //   bridgeQuote,
+  //   getAndSetBridgeQuote,
+  //   isQuoteLoading,
+  //   isWalletPending
+  // )
 
   const approveTxn = async () => {
     try {
@@ -352,6 +353,18 @@ const StateManagedBridge = () => {
 
   const executeBridge = async () => {
     let pendingPopup: any
+
+    const currentTimestamp: number = getTimeMinutesFromNow(0)
+    const bridgeQuoteTimestamp = convertUuidToUnix(bridgeQuote.id)
+    const timeDifference = calculateTimeBetween(
+      currentTimestamp,
+      bridgeQuoteTimestamp
+    )
+
+    if (timeDifference > 15000) {
+      await getAndSetBridgeQuote()
+    }
+
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
@@ -369,7 +382,7 @@ const StateManagedBridge = () => {
       },
       true
     )
-    const currentTimestamp: number = getTimeMinutesFromNow(0)
+
     dispatch(
       addPendingBridgeTransaction({
         id: currentTimestamp,
