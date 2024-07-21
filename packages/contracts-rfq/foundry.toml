@@ -23,6 +23,8 @@ mainnet = "${MAINNET_RPC}"
 optimism = "${OPTIMISM_RPC}"
 scroll = "${SCROLL_RPC}"
 bnb = "${BNB_RPC}"
+blast = "${BLAST_RPC}"
+linea = "${LINEA_RPC}"
 
 [etherscan]
 arbitrum = { key = "${ARBITRUM_VERIFIER_KEY}", url = "${ARBITRUM_VERIFIER_URL}" }
@@ -31,4 +33,7 @@ mainnet = { key = "${MAINNET_VERIFIER_KEY}", url = "${MAINNET_VERIFIER_URL}" }
 optimism = { key = "${OPTIMISM_VERIFIER_KEY}", url = "${OPTIMISM_VERIFIER_URL}" }
 scroll = { key = "${SCROLL_VERIFIER_KEY}", url = "${SCROLL_VERIFIER_URL}" }
 bnb = { key = "${BNB_VERIFIER_KEY}", url = "${BNB_VERIFIER_URL}" }
+blast = { key = "${BLAST_VERIFIER_KEY}", url = "${BLAST_VERIFIER_URL}" }
+linea = { key = "${LINEA_VERIFIER_KEY}", url = "${LINEA_VERIFIER_URL}" }
+
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
