@@ -77,17 +77,14 @@ jobs:
 
   test:
     name: Go Coverage
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ (matrix.package == 'agents' || matrix.package == 'core' || matrix.package == 'tools' || contains(matrix.package, 'explorer') || contains(matrix.package, 'contrib')) && 'ubuntu-latest' || 'namespace-profile-default-coverage-runner' }}
     if: ${{ needs.changes.outputs.package_count_deps > 0 && (github.event_name != 'push' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
     needs: changes
     strategy:
       fail-fast: false
-      max-parallel: 8
       matrix:
         go-version:
           - 1.22.x
-        platform:
-          - ubuntu-latest
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     services:
@@ -112,6 +109,7 @@ jobs:
 
       - name: Go modules cache
         uses: actions/cache@v4
+        if:  ${{ !contains(runner.name, 'nsc') }}
         with:
           # see https://github.com/mvdan/github-actions-golang
           # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
@@ -128,6 +126,14 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
+          cache: ${{ contains(runner.name, 'nsc') && 'false' || 'true' }}
+
+      # TODO: consider setting up cache key, see: https://discord.com/channels/975088590705012777/1263347501721714793/1263534719954452560
+      - name: Setup Go cache
+        uses: namespacelabs/nscloud-cache-action@v1
+        if: ${{ contains(runner.name, 'nsc') }}
+        with:
+          cache: go
 
       - name: Verify MariaDB connection
         env:
@@ -201,7 +207,7 @@ jobs:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: password
           MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
-          GOMEMLIMIT: 3GiB
+          GOMEMLIMIT: 8GiB
           GOGC: -1
           ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
           GOPROXY: https://proxy.golang.org
@@ -220,15 +226,19 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
         with:
           dest: '/tmp/logs'
-      - name: Tar logs
-        if: failure()
-        run: tar cvzf ./logs.tgz /tmp/logs
+
+      - name: Replace forward slashes with dashes
+        id: replace
+        run: echo "::set-output name=package_name::$(echo ${{ matrix.package }} | sed 's/\//-/g')"
+        shell: bash
+
+
       - name: Upload logs to GitHub
-        if: failure()
+#        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{matrix.package}}-logs.tgz
-          path: ./logs.tgz
+          name: ${{ steps.replace.outputs.package_name }}
+          path: /tmp/logs/**
 
       - name: Send Coverage (Codecov)
         uses: Wandalen/wretry.action@v1.0.36
@@ -254,8 +264,6 @@ jobs:
       matrix:
         go-version:
           - 1.22.x
-        platform:
-          - ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -489,7 +497,7 @@ jobs:
     if: ${{ github.event_name != 'push' && needs.changes.outputs.package_count_deps > 0 }}
     strategy:
       fail-fast: false
-      max-parallel: 8
+      max-parallel: 12
       matrix:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
