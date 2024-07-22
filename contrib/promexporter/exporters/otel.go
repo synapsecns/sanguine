@@ -62,78 +62,47 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		td:          hashmap.New[int, []tokenData](),
 		submitters:  hashmap.New[int, []submitterMetadata](),
 	}
-	// todo: make an option
-	metricName := func(metricName string) string {
-		return metricName
-	}
 
 	var err error
-	if otr.vpriceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("vpriceMetric"),
-		metric.WithDescription("vprice gauge"),
-		metric.WithUnit("price")); err != nil {
+	if otr.vpriceGauge, err = otr.meter.Float64ObservableGauge("vpriceMetric"); err != nil {
 		log.Warnf("failed to create vprice gauge: %v", err)
 	}
 
-	if otr.bridgeBalanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("bridgeBalanceMetric"),
-		metric.WithDescription("bridge balance"),
-		metric.WithUnit("eth")); err != nil {
+	if otr.bridgeBalanceGauge, err = otr.meter.Float64ObservableGauge("bridgeBalanceMetric"); err != nil {
 		log.Warnf("failed to create bridgeBalance gauge: %v", err)
 	}
-	if otr.feeBalanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("feeBalance_total"),
-		metric.WithDescription("fee balance gauge"),
-		metric.WithUnit("gwei")); err != nil {
+
+	if otr.feeBalanceGauge, err = otr.meter.Float64ObservableGauge("feeBalance_total"); err != nil {
 		log.Warnf("failed to create feeBalance gauge: %v", err)
 	}
-	if otr.totalSupplyGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("totalSupply"),
-		metric.WithDescription("total supply gauge"),
-		metric.WithUnit("eth")); err != nil {
+
+	if otr.totalSupplyGauge, err = otr.meter.Float64ObservableGauge("totalSupply"); err != nil {
 		log.Warnf("failed to create totalSupply gauge: %v", err)
 	}
-	if otr.gasBalanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("gasBalance"),
-		metric.WithDescription("gas balance"),
-		metric.WithUnit("gwei")); err != nil {
+
+	if otr.gasBalanceGauge, err = otr.meter.Float64ObservableGauge("gasBalance"); err != nil {
 		log.Warnf("failed to create gasBalance gauge: %v", err)
 	}
 
-	if otr.balanceGauge, err = otr.meter.Float64ObservableGauge(
-		metricName("gas_balance"),
-		metric.WithDescription("balance gauge"),
-		metric.WithUnit("eth")); err != nil {
+	if otr.balanceGauge, err = otr.meter.Float64ObservableGauge("gas_balance"); err != nil {
 		log.Warnf("failed to create balance gauge: %v", err)
 	}
 
-	if otr.nonceGauge, err = otr.meter.Int64ObservableGauge(
-		metricName("nonce"),
-		metric.WithDescription("nonce gauge"),
-		metric.WithUnit("nonce")); err != nil {
+	if otr.nonceGauge, err = otr.meter.Int64ObservableGauge("nonce"); err != nil {
 		log.Warnf("failed to create nonce gauge: %v", err)
 	}
 
-	if otr.stuckHeroesGauge, err = otr.meter.Int64ObservableGauge(
-		metricName("dfk_pending_heroes"),
-		metric.WithDescription("stuck count gauge"),
-		metric.WithUnit("count")); err != nil {
+	if otr.stuckHeroesGauge, err = otr.meter.Int64ObservableGauge("dfk_pending_heroes"); err != nil {
 		log.Warnf("failed to create stuckHeroes gauge: %v", err)
 	}
 
 	// Register VPrice callback
-	if _, err = otr.meter.RegisterCallback(
-		otr.recordVpriceGauge,
-		otr.vpriceGauge,
-	); err != nil {
+	if _, err = otr.meter.RegisterCallback(otr.recordVpriceGauge, otr.vpriceGauge); err != nil {
 		log.Warnf("failed to register callback for vprice metrics: %v", err)
 	}
 
 	// Register DFK Stuck Heroes Callback
-	if _, err = otr.meter.RegisterCallback(
-		otr.recordStuckHeroCount,
-		otr.stuckHeroesGauge,
-	); err != nil {
+	if _, err = otr.meter.RegisterCallback(otr.recordStuckHeroCount, otr.stuckHeroesGauge); err != nil {
 		log.Warnf("failed to register callback for dfk stuck heroes metrics: %v", err)
 	}
 
@@ -148,18 +117,11 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 	}
 
 	// Register Submitter Stats Callback
-	if _, err = otr.meter.RegisterCallback(
-		otr.recordSubmitterStats,
-		otr.balanceGauge,
-		otr.nonceGauge,
-	); err != nil {
+	if _, err = otr.meter.RegisterCallback(otr.recordSubmitterStats, otr.balanceGauge, otr.nonceGauge); err != nil {
 		log.Warnf("failed to register callback for submitter metrics: %v", err)
 	}
 
-	if _, err = otr.meter.RegisterCallback(
-		otr.recordBridgeGasBalance,
-		otr.gasBalanceGauge,
-	); err != nil {
+	if _, err = otr.meter.RegisterCallback(otr.recordBridgeGasBalance, otr.gasBalanceGauge); err != nil {
 		log.Warnf("failed to register callback for bridge gas balance metrics: %v", err)
 	}
 

@@ -86,50 +86,8 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 		otelRecorder:  newOtelRecorder(handler),
 	}
 
-	// register dfk metrics
-	for _, pending := range cfg.DFKPending {
-		// heroes on both chains
-		err = exp.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName)
-		if err != nil {
-			return fmt.Errorf("could setup metric: %w", err)
-		}
-	}
-
-	// register gas check metrics
-	for _, gasCheck := range cfg.SubmitterChecks {
-		for _, chainID := range gasCheck.ChainIDs {
-			err := exp.submitterStats(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name)
-			if err != nil {
-				return fmt.Errorf("could setup metric: %w", err)
-			}
-		}
-	}
-
-	for chainID := range cfg.BridgeChecks {
-		for _, token := range cfg.VpriceCheckTokens {
-			chainID := chainID
-			token := token // capture func literals
-
-			g.Go(func() error {
-				//nolint: wrapcheck
-				return retry.WithBackoff(ctx, func(ctx context.Context) error {
-					err = exp.vpriceStats(ctx, chainID, token)
-					if errors.Is(err, errPoolNotExist) {
-						return nil
-					}
-
-					if err != nil {
-						return fmt.Errorf("error starting vprice:%w", err)
-					}
-
-					return nil
-				}, retry.WithMaxAttempts(-1), retry.WithMaxAttemptTime(time.Second*10), retry.WithMaxTotalTime(-1))
-			})
-		}
-	}
-
 	g.Go(func() error {
-		return exp.getTokenBalancesStats(ctx)
+		return exp.recordMetrics(ctx)
 	})
 
 	if err := g.Wait(); err != nil {
@@ -137,4 +95,62 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	}
 
 	return nil
+}
+
+const defaultMetricsInterval = 10
+
+func (e *exporter) recordMetrics(ctx context.Context) (err error) {
+	g, _ := errgroup.WithContext(ctx)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("could not record metrics: %w", ctx.Err())
+		case <-time.After(defaultMetricsInterval * time.Second):
+			// bridge token balances
+			if err := e.getTokenBalancesStats(ctx); err != nil {
+				return fmt.Errorf("could not record metrics: %w", err)
+			}
+
+			// dfk stuck heroes
+			for _, pending := range e.cfg.DFKPending {
+				if err = e.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName); err != nil {
+					return fmt.Errorf("could setup metric: %w", err)
+				}
+			}
+
+			// submitter stats
+			for _, gasCheck := range e.cfg.SubmitterChecks {
+				for _, chainID := range gasCheck.ChainIDs {
+					if err := e.submitterStats(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name); err != nil {
+						return fmt.Errorf("could setup metric: %w", err)
+					}
+				}
+			}
+
+			for chainID := range e.cfg.BridgeChecks {
+				for _, token := range e.cfg.VpriceCheckTokens {
+					chainID := chainID
+					token := token // capture func literals
+
+					g.Go(func() error {
+						//nolint: wrapcheck
+						return retry.WithBackoff(ctx, func(ctx context.Context) error {
+							err = e.vpriceStats(ctx, chainID, token)
+							if errors.Is(err, errPoolNotExist) {
+								return nil
+							}
+
+							if err != nil {
+								return fmt.Errorf("error starting vprice:%w", err)
+							}
+
+							return nil
+						}, retry.WithMaxAttempts(-1), retry.WithMaxAttemptTime(time.Second*10), retry.WithMaxTotalTime(-1))
+					})
+				}
+			}
+
+		}
+	}
 }
