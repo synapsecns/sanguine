@@ -28,11 +28,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 )
 
-type Status struct {
-	relayer string
-	*relapi.GetQuoteRequestStatusResponse
-}
-
 func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.CommandDefinition {
 	if b.signozEnabled {
 		return definition
@@ -155,6 +150,11 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 			"rfq 0x30f96b45ba689c809f7e936c140609eb31c99b182bef54fccf49778716a7e1ca",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
+			type Status struct {
+				relayer string
+				*relapi.GetQuoteRequestStatusResponse
+			}
+
 			var statuses []Status
 			var sliceMux sync.Mutex
 
@@ -234,7 +234,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 					},
 					{
 						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Estimated Tx Age*: %s", getTxAge(ctx.Context(), client, status)),
+						Text: fmt.Sprintf("*Estimated Tx Age*: %s", getTxAge(ctx.Context(), client, status.GetQuoteRequestStatusResponse)),
 					},
 				}
 
@@ -348,9 +348,9 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 	return fastBridgeHandle, nil
 }
 
-func getTxAge(ctx context.Context, client client.EVM, status Status) string {
+func getTxAge(ctx context.Context, client client.EVM, res *relapi.GetQuoteRequestStatusResponse) string {
 	// TODO: add CreatedAt field to GetQuoteRequestStatusResponse so we don't need to make network calls?
-	receipt, err := client.TransactionReceipt(ctx, common.HexToHash(status.GetQuoteRequestStatusResponse.OriginTxHash))
+	receipt, err := client.TransactionReceipt(ctx, common.HexToHash(res.OriginTxHash))
 	if err != nil {
 		return "unknown time ago"
 	}

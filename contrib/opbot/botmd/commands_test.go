@@ -22,12 +22,11 @@ func TestStripLinks(t *testing.T) {
 func TestTxAge(t *testing.T) {
 	notExpected := "unknown time ago" // should be a definite time
 
-	status := botmd.Status{
-		GetQuoteRequestStatusResponse: &relapi.GetQuoteRequestStatusResponse{
-			OriginTxHash:  "0x954264d120f5f3cf50edc39ebaf88ea9dc647d9d6843b7a120ed3677e23d7890",
-			OriginChainID: 421611,
-		},
+	status := &relapi.GetQuoteRequestStatusResponse{
+		OriginTxHash:  "0x954264d120f5f3cf50edc39ebaf88ea9dc647d9d6843b7a120ed3677e23d7890",
+		OriginChainID: 421611,
 	}
+
 	ctx := context.Background()
 
 	client := omnirpcClient.NewOmnirpcClient("https://arb1.arbitrum.io/rpc", metrics.Get())
