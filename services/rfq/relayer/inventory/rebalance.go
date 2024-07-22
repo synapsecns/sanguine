@@ -127,7 +127,7 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 			}
 		}
 	}
-	fmt.Printf("returning method: %v", method)
+	fmt.Printf("returning method: %v, originTokenData: %v, destTokenData: %v\n", method, originTokenData, destTokenData)
 	return originTokenData, destTokenData, method
 }
 
