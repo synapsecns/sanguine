@@ -62,7 +62,6 @@ import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
 import { calculateTimeBetween, getTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
-import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 import {
   MaintenanceWarningMessages,
   useMaintenanceCountdownProgresses,
@@ -73,7 +72,6 @@ import {
 } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
-import { getValidAddress } from '@/utils/isValidAddress'
 import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
 
 const StateManagedBridge = () => {
@@ -507,11 +505,10 @@ const StateManagedBridge = () => {
 
       toast.dismiss(pendingPopup)
 
-      const transactionReceipt = await waitForTransactionReceipt(wagmiConfig, {
+      await waitForTransactionReceipt(wagmiConfig, {
         hash: tx as Address,
         timeout: 60_000,
       })
-      console.log('Transaction Receipt: ', transactionReceipt)
 
       /** Update Origin Chain token balances after resolved tx or timeout reached */
       /** Assume tx has been actually resolved if above times out */
@@ -529,12 +526,8 @@ const StateManagedBridge = () => {
         errorCode: error.code,
       })
       dispatch(removePendingBridgeTransaction(currentTimestamp))
-      console.log('Error executing bridge', error)
+      console.error('Error executing bridge: ', error)
       toast.dismiss(pendingPopup)
-
-      if (isTransactionUserRejectedError(error)) {
-        getAndSetBridgeQuote()
-      }
 
       /** Fetch balances if await transaction receipt times out */
       if (isTransactionReceiptError(error)) {
