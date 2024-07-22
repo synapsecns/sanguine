@@ -325,12 +325,12 @@ const StateManagedBridge = () => {
     }
   }
 
-  // useStaleQuoteUpdater(
-  //   bridgeQuote,
-  //   getAndSetBridgeQuote,
-  //   isQuoteLoading,
-  //   isWalletPending
-  // )
+  useStaleQuoteUpdater(
+    bridgeQuote,
+    getAndSetBridgeQuote,
+    isQuoteLoading,
+    isWalletPending
+  )
 
   const approveTxn = async () => {
     try {

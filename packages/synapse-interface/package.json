@@ -34,7 +34,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
-    "@synapsecns/sdk-router": "../sdk-router/",
+    "@synapsecns/sdk-router": "file:../sdk-router",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
@@ -71,7 +71,8 @@
     "tailwindcss-border-gradient-radius": "^3.0.1",
     "typescript": "5.1.6",
     "use-persisted-state": "^0.3.3",
-    "viem": "^2.13.6",
+    "uuidv7": "^1.0.1",
+"viem": "^2.13.6",
     "wagmi": "^2.9.8",
     "yarn": "^1.22.19"
   },
