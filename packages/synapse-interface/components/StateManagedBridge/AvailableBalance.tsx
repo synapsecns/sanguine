@@ -1,5 +1,6 @@
 import React from 'react'
 import { joinClassNames } from '@/utils/joinClassNames'
+import { formatAmount } from '@/utils/formatAmount'
 
 export const AvailableBalance = ({
   balance,
@@ -35,7 +36,7 @@ export const AvailableBalance = ({
     return (
       <label className={labelClassName} htmlFor="inputRow">
         <span className="text-zinc-500 dark:text-zinc-400">Available: </span>
-        {maxBridgeableBalance?.toFixed(4) ?? balance ?? '0.0'}
+        {formatAmount(maxBridgeableBalance?.toString()) ?? balance ?? '0.0'}
       </label>
     )
   }
