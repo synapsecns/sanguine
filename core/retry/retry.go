@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jpillora/backoff"
-	errorUtil "github.com/pkg/errors"
+	"go.uber.org/multierr"
 	"time"
 )
 
@@ -118,6 +118,8 @@ func WithBackoff(ctx context.Context, doFunc RetryableFunc, configurators ...Wit
 	timeout := time.Duration(0)
 	startTime := time.Now()
 
+	var errs []error
+
 	attempts := 0
 	for !config.exceedsMaxAttempts(attempts) && !config.exceedsMaxTime(startTime) {
 		select {
@@ -135,6 +137,7 @@ func WithBackoff(ctx context.Context, doFunc RetryableFunc, configurators ...Wit
 
 			err := doFunc(funcCtx)
 			if err != nil {
+				errs = append(errs, err)
 				timeout = b.Duration()
 				attempts++
 				cancel()
@@ -146,10 +149,12 @@ func WithBackoff(ctx context.Context, doFunc RetryableFunc, configurators ...Wit
 	}
 
 	if config.exceedsMaxAttempts(attempts) {
-		return errorUtil.Wrapf(ErrMaxAttempts, "after %d attempts", attempts)
+		// nolint: wrapcheck
+		return multierr.Append(ErrMaxAttempts, fmt.Errorf("after %d attempts (attempt errors: %w)", attempts, multierr.Combine(errs...)))
 	}
 	if config.exceedsMaxTime(startTime) {
-		return errorUtil.Wrapf(ErrMaxTime, "after %s (max was %s)", time.Since(startTime).String(), config.maxAllAttemptsTime.String())
+		// nolint: wrapcheck
+		return multierr.Append(ErrMaxTime, fmt.Errorf("after %s (max was %s) %w", time.Since(startTime).String(), config.maxAllAttemptsTime.String(), multierr.Combine(errs...)))
 	}
 
 	return ErrUnknown

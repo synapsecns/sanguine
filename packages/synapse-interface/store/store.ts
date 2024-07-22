@@ -6,6 +6,7 @@ import { api } from '@/slices/api/slice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { storageKey, persistConfig, persistedReducer } from './reducer'
 import { resetReduxCache } from '@/slices/application/actions'
+import { destinationAddressMiddleware } from '@/store/destinationAddressMiddleware'
 
 const checkVersionAndResetCache = (): boolean => {
   if (typeof window !== 'undefined') {
@@ -27,7 +28,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(api.middleware),
+    }).concat(api.middleware, destinationAddressMiddleware),
 })
 
 if (checkVersionAndResetCache()) {
@@ -73,6 +74,7 @@ store.subscribe(() => {
       outputAmountString,
       routerAddress,
       exchangeRate: BigInt(exchangeRate.toString()),
+      bridgeQuote: currentState.bridge.bridgeQuote,
     }
     segmentAnalyticsEvent(eventTitle, eventData)
   }

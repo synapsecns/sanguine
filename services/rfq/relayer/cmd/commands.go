@@ -3,7 +3,9 @@ package cmd
 
 import (
 	"fmt"
+	"math/big"
 
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/commandline"
@@ -87,8 +89,8 @@ var withdrawCommand = &cli.Command{
 			return fmt.Errorf("could not create relayer: %w", err)
 		}
 
-		chainID := c.Uint(chainIDFlag.Name)
-		if chainID == 0 {
+		chainID := big.NewInt(c.Int64(chainIDFlag.Name))
+		if chainID.Cmp(big.NewInt(0)) == 0 {
 			return fmt.Errorf("valid chain ID is required")
 		}
 
@@ -108,16 +110,40 @@ var withdrawCommand = &cli.Command{
 		}
 
 		withdrawRequest := relapi.WithdrawRequest{
-			ChainID:      uint32(chainID),
+			ChainID:      uint32(chainID.Uint64()),
 			Amount:       amount,
 			TokenAddress: common.HexToAddress(tokenAddress),
 			To:           common.HexToAddress(to),
 		}
 
-		_, err = client.Withdraw(c.Context, &withdrawRequest)
+		res, err := client.Withdraw(c.Context, &withdrawRequest)
 		if err != nil {
 			return fmt.Errorf("could not start relayer: %w", err)
 		}
+
+		var errClient error
+		var status *relapi.TxHashByNonceResponse
+		err = spinner.New().
+			Title("Waiting for tx...").
+			Action(func() {
+				status, err = client.GetTxHashByNonce(
+					c.Context,
+					&relapi.GetTxByNonceRequest{
+						ChainID: uint32(chainID.Uint64()),
+						Nonce:   res.Nonce,
+					})
+				if err != nil {
+					errClient = fmt.Errorf("could not login: %w", err)
+				}
+			}).Run()
+		if err != nil {
+			return fmt.Errorf("could not get withdrawal tx hash: %w", err)
+		}
+		if errClient != nil {
+			return fmt.Errorf("client error: could not get withdrawal tx hash: %w", err)
+		}
+
+		fmt.Printf("Withdraw Tx Hash: %s\n", status.Hash)
 
 		return nil
 	},

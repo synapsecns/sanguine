@@ -388,7 +388,7 @@ func (r *Relayer) recordMetrics(ctx context.Context) (err error) {
 				return fmt.Errorf("could not get status counts: %w", err)
 			}
 			for status, count := range statusCounts {
-				r.otelRecorder.RecordStatusCount(int(status.Int()), count)
+				r.otelRecorder.RecordStatusCount(status, count)
 			}
 		}
 	}

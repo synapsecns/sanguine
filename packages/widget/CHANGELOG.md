@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.6.0...@synapsecns/widget@0.6.1) (2024-07-15)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+# [0.6.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.5.1...@synapsecns/widget@0.6.0) (2024-07-10)
+
+
+### Features
+
+* **widget:** add unsupported network ([#2860](https://github.com/synapsecns/sanguine/issues/2860)) ([5ba1cb5](https://github.com/synapsecns/sanguine/commit/5ba1cb5a3014b4a77bbd3131067a0370895c45b0))
+
+
+
+
+
 ## [0.5.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.5.0...@synapsecns/widget@0.5.1) (2024-07-03)
 
 **Note:** Version bump only for package @synapsecns/widget

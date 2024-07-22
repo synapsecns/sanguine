@@ -308,7 +308,7 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 	defer unlocker.Unlock()
 
 	prevBalance, err := f.Backend.BalanceAt(ctx, address, nil)
-	require.Nil(f.T(), err)
+	require.NoError(f.T(), err)
 
 	newBal := new(big.Int).Add(prevBalance, &amount)
 

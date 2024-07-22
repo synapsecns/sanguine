@@ -1,10 +1,10 @@
 package relconfig_test
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 
-	"github.com/alecthomas/assert"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
