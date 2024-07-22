@@ -3,6 +3,7 @@ package inventory
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math/big"
@@ -103,6 +104,16 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 	}
 
 	g, _ := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		if !c.txSubmitter.Started() {
+			err := c.txSubmitter.Start(ctx)
+			if err != nil && !errors.Is(err, submitter.ErrSubmitterAlreadyStarted) {
+				return fmt.Errorf("could not start submitter: %w", err)
+			}
+			return nil
+		}
+		return nil
+	})
 	g.Go(func() error {
 		return c.listenL1Gateway(ctx)
 	})
