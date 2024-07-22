@@ -555,6 +555,7 @@ func (c *rebalanceManagerScroll) claimL2ToL1(parentCtx context.Context) (err err
 	if c.apiURL == nil {
 		return fmt.Errorf("api URL not set")
 	}
+	span.SetAttributes(attribute.String("api_url", *c.apiURL))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, *c.apiURL, nil)
 	if err != nil {
 		return fmt.Errorf("could not create request: %w", err)
