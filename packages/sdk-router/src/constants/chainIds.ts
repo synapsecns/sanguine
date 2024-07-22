@@ -57,15 +57,14 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
 /**
  * List of chain ids where FastBridge (RFQ) is deployed, ordered by chain id
  *
- * Note: This is a subset of SUPPORTED_CHAIN_IDS.
  */
 export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.ETH,
   SupportedChainId.OPTIMISM,
+  SupportedChainId.BSC,
   SupportedChainId.BASE,
   SupportedChainId.ARBITRUM,
   SupportedChainId.SCROLL,
-  SupportedChainId.BSC,
 ]
 
 /**
