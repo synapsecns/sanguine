@@ -275,7 +275,18 @@ func (c *rebalanceManagerScroll) Execute(ctx context.Context, rebalance *Rebalan
 // TODO: configurable?
 const scrollGasLimit = 200_000
 
-func (c *rebalanceManagerScroll) initiateL1ToL2(ctx context.Context, rebalance *RebalanceData) (err error) {
+func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebalance *RebalanceData) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "initiateL1ToL2", trace.WithAttributes(
+		attribute.Int(metrics.Origin, rebalance.OriginMetadata.ChainID),
+		attribute.Int(metrics.Destination, rebalance.DestMetadata.ChainID),
+		attribute.String("origin_token", rebalance.OriginMetadata.Name),
+		attribute.String("dest_token", rebalance.OriginMetadata.Name),
+		attribute.String("amount", rebalance.Amount.String()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		if transactor == nil {
 			return nil, fmt.Errorf("transactor is nil")
@@ -299,7 +310,17 @@ func (c *rebalanceManagerScroll) initiateL1ToL2(ctx context.Context, rebalance *
 	return nil
 }
 
-func (c *rebalanceManagerScroll) initiateL2ToL1(ctx context.Context, rebalance *RebalanceData) (err error) {
+func (c *rebalanceManagerScroll) initiateL2ToL1(parentCtx context.Context, rebalance *RebalanceData) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "initiateL2ToL1", trace.WithAttributes(
+		attribute.Int(metrics.Origin, rebalance.OriginMetadata.ChainID),
+		attribute.Int(metrics.Destination, rebalance.DestMetadata.ChainID),
+		attribute.String("origin_token", rebalance.OriginMetadata.Name),
+		attribute.String("dest_token", rebalance.OriginMetadata.Name),
+		attribute.String("amount", rebalance.Amount.String()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		if transactor == nil {
 			return nil, fmt.Errorf("transactor is nil")
