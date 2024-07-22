@@ -101,6 +101,7 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 
 // getRebalanceMetadatas finds the origin and dest token metadata based on the configured rebalance method.
 func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, methods []relconfig.RebalanceMethod) (originTokenData, destTokenData *TokenMetadata, method relconfig.RebalanceMethod) {
+	fmt.Printf("getRebalanceMetadatas with tokens: %v, tokenName: %v, methods: %v\n", tokens, tokenName, methods)
 	for _, tokenMap := range tokens {
 		for _, tokenData := range tokenMap {
 			if tokenData.Name == tokenName {
@@ -114,6 +115,7 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 				if method == relconfig.RebalanceMethodNone {
 					continue
 				}
+				fmt.Printf("got rebalance method: %v\n", method)
 
 				// assign origin / dest metadata based on min / max balances
 				if originTokenData == nil || tokenData.Balance.Cmp(originTokenData.Balance) > 0 {
@@ -125,6 +127,7 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 			}
 		}
 	}
+	fmt.Printf("returning method: %v", method)
 	return originTokenData, destTokenData, method
 }
 
