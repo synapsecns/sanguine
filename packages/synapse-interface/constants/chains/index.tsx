@@ -55,6 +55,7 @@ export const ChainId = {
   SCROLL: 534352,
   AVALANCHE: 43114,
   DFK: 53935,
+  LINEA: 59144,
   AURORA: 1313161554,
   HARMONY: 1666600000,
   TERRA: 121014925, //"columbus-5", the day columbus reportedly landed in america followed by 5
