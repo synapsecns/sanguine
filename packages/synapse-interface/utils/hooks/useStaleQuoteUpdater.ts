@@ -1,4 +1,4 @@
-import { isEmpty, isNull, isNumber, isUndefined } from 'lodash'
+import { isNull, isNumber } from 'lodash'
 import { useEffect, useRef } from 'react'
 
 import { BridgeQuote } from '@/utils/types'
@@ -15,7 +15,7 @@ export const useStaleQuoteUpdater = (
   refreshQuoteCallback: () => Promise<void>,
   isQuoteLoading: boolean,
   isWalletPending: boolean,
-  staleTimeout: number = 15000 // 15_000ms or 15s
+  staleTimeout: number = 15000 // Default 15_000ms or 15s
 ) => {
   const eventListenerRef = useRef<null | (() => void)>(null)
 

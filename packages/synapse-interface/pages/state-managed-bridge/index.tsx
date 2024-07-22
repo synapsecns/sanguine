@@ -75,6 +75,7 @@ import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
 
 const StateManagedBridge = () => {
+  const dispatch = useAppDispatch()
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()
   const router = useRouter()
@@ -83,6 +84,7 @@ const StateManagedBridge = () => {
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
   const quoteToastRef = useRef({ id: '' })
+  const quoteTimeout = 15000
 
   const {
     fromChainId,
@@ -95,13 +97,12 @@ const StateManagedBridge = () => {
     isLoading: isQuoteLoading,
     isWalletPending,
   }: BridgeState = useBridgeState()
-  const { showSettingsSlideOver, showDestinationAddress } = useSelector(
+
+  const { showSettingsSlideOver } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
 
   const [isApproved, setIsApproved] = useState<boolean>(false)
-
-  const dispatch = useAppDispatch()
 
   useEffect(() => {
     segmentAnalyticsEvent(`[Bridge page] arrives`, {
@@ -327,7 +328,8 @@ const StateManagedBridge = () => {
     bridgeQuote,
     getAndSetBridgeQuote,
     isQuoteLoading,
-    isWalletPending
+    isWalletPending,
+    quoteTimeout
   )
 
   const approveTxn = async () => {
@@ -359,7 +361,7 @@ const StateManagedBridge = () => {
       bridgeQuoteTimestamp
     )
 
-    if (timeDifference > 15000) {
+    if (timeDifference > quoteTimeout) {
       await getAndSetBridgeQuote()
     }
 
