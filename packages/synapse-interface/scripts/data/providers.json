@@ -17,6 +17,7 @@
   "42161": "https://arbitrum-one.publicnode.com",
   "43114": "https://api.avax.network/ext/bc/C/rpc",
   "53935": "https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc",
+  "59144": "https://rpc.linea.build",
   "534352": "https://rpc.scroll.io",
   "1313161554": "https://mainnet.aurora.dev",
   "1666600000": "https://api.s0.t.hmny.io"
