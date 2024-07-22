@@ -107,6 +107,8 @@ func (e *exporter) recordMetrics(ctx context.Context) (err error) {
 		case <-ctx.Done():
 			return fmt.Errorf("could not record metrics: %w", ctx.Err())
 		case <-time.After(defaultMetricsInterval * time.Second):
+			// TODO: parellelize these ?
+
 			// bridge token balances
 			if err := e.getTokenBalancesStats(ctx); err != nil {
 				return fmt.Errorf("could not record metrics: %w", err)
