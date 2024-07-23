@@ -128,19 +128,19 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 
 					// assign origin / dest metadata based on min / max balances
 					if originTokenData == nil || tokenData.Balance.Cmp(originTokenData.Balance) > 0 {
+						fmt.Printf("assigning originTokenData: %v -> %v\n", originTokenData, tokenData)
 						originTokenData = tokenData
-						fmt.Printf("assigned originTokenData: %v\n", originTokenData)
 					}
 					if destTokenData == nil || tokenData.Balance.Cmp(destTokenData.Balance) < 0 {
+						fmt.Printf("assigning destTokenData: %v -> %v\n", destTokenData, tokenData)
 						destTokenData = tokenData
-						fmt.Printf("assigned destTokenData: %v\n", destTokenData)
 					}
 				}
 			}
+		}
+		if originTokenData != nil && destTokenData != nil {
 			fmt.Printf("returning method: %v, originTokenData: %v, destTokenData: %v\n", method, originTokenData, destTokenData)
-			if originTokenData != nil && destTokenData != nil {
-				return originTokenData, destTokenData, method
-			}
+			return originTokenData, destTokenData, method
 		}
 	}
 	return nil, nil, relconfig.RebalanceMethodNone
