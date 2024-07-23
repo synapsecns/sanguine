@@ -87,7 +87,12 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 	}
 
 	g.Go(func() error {
-		return exp.recordMetrics(ctx)
+		err := exp.recordMetrics(ctx)
+		if err != nil {
+			return fmt.Errorf("could not record metrics: %w", err)
+		}
+
+		return nil
 	})
 
 	if err := g.Wait(); err != nil {
@@ -100,73 +105,61 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 const defaultMetricsInterval = 10
 
 func (e *exporter) recordMetrics(ctx context.Context) (err error) {
-	g, _ := errgroup.WithContext(ctx)
-
 	for {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("could not record metrics: %w", ctx.Err())
 		case <-time.After(defaultMetricsInterval * time.Second):
-
-			// bridge token balances
-			g.Go(func() error {
-				if err := e.getTokenBalancesStats(ctx); err != nil {
-					return fmt.Errorf("could not record metrics: %w", err)
-				}
-				return nil
-			})
-
-			// dfk stuck heroes
-			for _, pending := range e.cfg.DFKPending {
-				pending := pending // capture func literal
-				g.Go(func() error {
-					if err := e.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName); err != nil {
-						return fmt.Errorf("could setup metric: %w", err)
-					}
-					return nil
-				})
+			err = e.collectMetrics(ctx)
+			if err != nil {
+				logger.Errorf("could not collect metrics: %v", err)
 			}
-
-			// submitter stats
-			for _, gasCheck := range e.cfg.SubmitterChecks {
-				for _, chainID := range gasCheck.ChainIDs {
-					gasCheck := gasCheck
-					chainID := chainID // capture func literals
-					g.Go(func() error {
-						if err := e.submitterStats(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name); err != nil {
-							return fmt.Errorf("could setup metric: %w", err)
-						}
-						return nil
-					})
-				}
-			}
-
-			for chainID := range e.cfg.BridgeChecks {
-				for _, token := range e.cfg.VpriceCheckTokens {
-					chainID := chainID
-					token := token // capture func literals
-					g.Go(func() error {
-						//nolint: wrapcheck
-						return retry.WithBackoff(ctx, func(ctx context.Context) error {
-							err := e.vpriceStats(ctx, chainID, token)
-							if errors.Is(err, errPoolNotExist) {
-								return nil
-							}
-
-							if err != nil {
-								return fmt.Errorf("error starting vprice:%w", err)
-							}
-
-							return nil
-						}, retry.WithMaxAttempts(-1), retry.WithMaxAttemptTime(time.Second*10), retry.WithMaxTotalTime(-1))
-					})
-				}
-			}
-
-			if err := g.Wait(); err != nil {
-				return fmt.Errorf("could not record metrics: %w", err)
-			}
-
 		}
 	}
+}
+
+func (e *exporter) collectMetrics(ctx context.Context) error {
+	var errs []error
+	if err := e.getTokenBalancesStats(ctx); err != nil {
+		errs = append(errs, fmt.Errorf("could not get token balances: %w", err))
+	}
+
+	for _, pending := range e.cfg.DFKPending {
+		pending := pending // capture func literal
+		if err := e.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName); err != nil {
+			errs = append(errs, fmt.Errorf("could not get stuck hero count: %w", err))
+		}
+	}
+
+	for _, gasCheck := range e.cfg.SubmitterChecks {
+		for _, chainID := range gasCheck.ChainIDs {
+			gasCheck := gasCheck
+			chainID := chainID // capture func literals
+			if err := e.submitterStats(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name); err != nil {
+				errs = append(errs, fmt.Errorf("could setup metric: %w", err))
+			}
+		}
+	}
+
+	for chainID := range e.cfg.BridgeChecks {
+		for _, token := range e.cfg.VpriceCheckTokens {
+			chainID := chainID
+			token := token // capture func literals
+			//nolint: wrapcheck
+			return retry.WithBackoff(ctx, func(ctx context.Context) error {
+				err := e.vpriceStats(ctx, chainID, token)
+				if err != nil && !errors.Is(err, errPoolNotExist) {
+					errs = append(errs, fmt.Errorf("stuck hero stats: %w", err))
+				}
+
+				return nil
+			}, retry.WithMaxAttempts(-1), retry.WithMaxAttemptTime(time.Second*10), retry.WithMaxTotalTime(-1))
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("could not collect metrics: %v", errs)
+	}
+
+	return nil
 }
