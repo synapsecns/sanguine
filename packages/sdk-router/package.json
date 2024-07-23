@@ -60,6 +60,7 @@
   },
   "dependencies": {
     "@babel/core": "^7.20.12",
+    "@babel/plugin-transform-modules-commonjs": "^7.24.8",
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/abstract-provider": "^5.7.0",
     "@ethersproject/address": "^5.7.0",
