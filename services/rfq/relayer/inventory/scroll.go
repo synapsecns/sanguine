@@ -166,14 +166,18 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 			if err != nil {
 				return fmt.Errorf("could not get l1 gateway contract: %w", err)
 			}
-			addr, err = c.cfg.GetL1ScrollMessengerAddress(chainID)
+			messengerAddr, err := c.cfg.GetL1ScrollMessengerAddress(chainID)
 			if err != nil {
 				return fmt.Errorf("could not get l1 scroll messenger address: %w", err)
 			}
-			c.boundL1ScrollMessenger, err = l1scrollmessenger.NewL1ScrollMessenger(common.HexToAddress(addr), chainClient)
+			c.boundL1ScrollMessenger, err = l1scrollmessenger.NewL1ScrollMessenger(common.HexToAddress(messengerAddr), chainClient)
 			if err != nil {
 				return fmt.Errorf("could not get l1 scroll messenger contract: %w", err)
 			}
+			span.SetAttributes(
+				attribute.String(fmt.Sprintf("l1_gateway_%d", chainID), addr),
+				attribute.String(fmt.Sprintf("scroll_messenger_%d", chainID), messengerAddr),
+			)
 		} else if isScrollChain(chainID) {
 			c.l2ChainID = chainID
 			addr, err := c.cfg.GetL2GatewayAddress(chainID)
@@ -188,10 +192,16 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 			if err != nil {
 				return fmt.Errorf("could not get l2 gateway contract: %w", err)
 			}
+			span.SetAttributes(
+				attribute.String(fmt.Sprintf("l2_gateway_%d", chainID), addr),
+			)
 		}
 	}
 	if c.boundL1Gateway == nil {
 		return fmt.Errorf("l1 gateway contract not set")
+	}
+	if c.boundL1ScrollMessenger == nil {
+		return fmt.Errorf("l1 scroll messenger not set")
 	}
 	if c.boundL2Gateway == nil {
 		return fmt.Errorf("l2 gateway contract not set")
