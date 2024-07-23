@@ -325,6 +325,7 @@ func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebal
 				return nil, fmt.Errorf("could not deposit gas token: %w", err)
 			}
 		} else {
+			fmt.Printf("calling depositERC20 on chain %v contract %v with token %v, amount %v, gas limit %v\n", rebalance.OriginMetadata.ChainID, c.boundL1Gateway, rebalance.OriginMetadata.Addr, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
 			tx, err = c.boundL1Gateway.DepositERC20(transactor, rebalance.OriginMetadata.Addr, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
 			if err != nil {
 				return nil, fmt.Errorf("could not deposit erc20 token: %w", err)
