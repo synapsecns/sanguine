@@ -7,6 +7,6 @@ module.exports = {
      * because Jest does not support package.json.exports.
      * See https://github.com/uuidjs/uuid/issues/451
      */
-    "uuidv7": require.resolve('uuidv7'),
-  }
+    uuidv7: require.resolve('uuidv7'),
+  },
 }
