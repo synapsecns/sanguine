@@ -319,7 +319,9 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 // This is the fifth step in the bridge process. Here we check if the relay has been completed on the destination chain.
 // Notably, this is polled from the chain listener rather than the database since we wait for the log to show up.
 func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRelayed) (err error) {
-	ctx, span := r.metrics.Tracer().Start(parentCtx, "handleRelayLog")
+	ctx, span := r.metrics.Tracer().Start(parentCtx, "handleRelayLog",
+		trace.WithAttributes(attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:]))),
+	)
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
