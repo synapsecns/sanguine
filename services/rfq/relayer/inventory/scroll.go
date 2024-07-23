@@ -96,8 +96,10 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 	fmt.Println("starting rebalance manager scroll")
 	err = c.initContracts(ctx)
 	if err != nil {
+		fmt.Printf("could not initialize contracts: %v\n", err)
 		return fmt.Errorf("could not initialize contracts: %w", err)
 	}
+	fmt.Println("initialized contracts")
 
 	err = c.initListeners(ctx)
 	if err != nil {
@@ -148,12 +150,14 @@ const testnetScrollAPIURL = "https://sepolia-api-bridge-v2.scroll.io/api/"
 
 func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initContracts-scroll")
-	defer func(err error) {
+	defer func() {
 		metrics.EndSpanWithErr(span, err)
-	}(err)
+	}()
 
 	for chainID := range c.cfg.Chains {
+		fmt.Printf("inspecting chain: %d\n", chainID)
 		if isEthereumChain(chainID) {
+			fmt.Printf("found ethereum chain: %d\n", chainID)
 			c.l1ChainID = chainID
 			chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 			if err != nil {
@@ -180,6 +184,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 				attribute.String(fmt.Sprintf("scroll_messenger_%d", chainID), messengerAddr),
 			)
 		} else if isScrollChain(chainID) {
+			fmt.Printf("found scroll chain: %d\n", chainID)
 			c.l2ChainID = chainID
 			addr, err := c.cfg.GetL2GatewayAddress(chainID)
 			if err != nil {
@@ -210,6 +215,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	if isTestnetChain(c.l1ChainID) != isTestnetChain(c.l2ChainID) {
 		return fmt.Errorf("testnet chain mismatch: %d %d", c.l1ChainID, c.l2ChainID)
 	}
+	fmt.Println("contracts ok")
 
 	// set API URL
 	baseURL := mainnetScrollAPIURL
