@@ -1,6 +1,6 @@
 module github.com/synapsecns/sanguine/agents
 
-go 1.22
+go 1.22.1
 
 toolchain go1.22.4
 
@@ -95,6 +95,7 @@ require (
 	github.com/peterh/liner v1.2.1 // indirect
 	github.com/puzpuzpuz/xsync/v2 v2.5.1 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
+	github.com/samborkent/uuid v0.0.0-20240324164324-079317f91359 // indirect
 	github.com/status-im/keycard-go v0.2.0 // indirect
 	github.com/supranational/blst v0.3.11 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelutil v0.3.1 // indirect
