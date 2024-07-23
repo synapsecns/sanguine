@@ -399,6 +399,8 @@ func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastB
 // Step 8: ClaimPending
 //
 // we'll wait until optimistic period is over to check if we can claim.
+//
+//nolint:cyclop
 func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	// we shouldnt' check the claim yet
 	if !q.shouldCheckClaim(request) {
@@ -421,6 +423,7 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.
 	}
 	switch bs {
 	case fastbridge.RelayerProved.Int():
+		// no op
 	case fastbridge.RelayerClaimed.Int():
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimCompleted, &request.Status)
 		if err != nil {
