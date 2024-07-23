@@ -171,6 +171,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 			if err != nil {
 				return fmt.Errorf("could not get l1 gateway contract: %w", err)
 			}
+			fmt.Printf("assigned l1 gateway on chain %v at address %v\n", chainID, addr)
 			messengerAddr, err := c.cfg.GetL1ScrollMessengerAddress(chainID)
 			if err != nil {
 				return fmt.Errorf("could not get l1 scroll messenger address: %w", err)
@@ -183,6 +184,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 				attribute.String(fmt.Sprintf("l1_gateway_%d", chainID), addr),
 				attribute.String(fmt.Sprintf("scroll_messenger_%d", chainID), messengerAddr),
 			)
+			fmt.Printf("assigned scroll messenger on chain %v at address %v\n", chainID, addr)
 		} else if isScrollChain(chainID) {
 			fmt.Printf("found scroll chain: %d\n", chainID)
 			c.l2ChainID = chainID
