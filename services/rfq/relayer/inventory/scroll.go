@@ -93,6 +93,7 @@ func isTestnetChain(chainID int) bool {
 const claimCheckInterval = 30
 
 func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
+	fmt.Println("starting rebalance manager scroll")
 	err = c.initContracts(ctx)
 	if err != nil {
 		return fmt.Errorf("could not initialize contracts: %w", err)
@@ -146,7 +147,7 @@ const mainnetScrollAPIURL = "https://mainnet-api-bridge-v2.scroll.io/api/"
 const testnetScrollAPIURL = "https://sepolia-api-bridge-v2.scroll.io/api/"
 
 func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err error) {
-	ctx, span := c.handler.Tracer().Start(parentCtx, "initContracts")
+	ctx, span := c.handler.Tracer().Start(parentCtx, "initContracts-scroll")
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
 	}(err)
