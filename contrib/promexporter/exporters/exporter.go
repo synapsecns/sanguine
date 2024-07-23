@@ -107,26 +107,37 @@ func (e *exporter) recordMetrics(ctx context.Context) (err error) {
 		case <-ctx.Done():
 			return fmt.Errorf("could not record metrics: %w", ctx.Err())
 		case <-time.After(defaultMetricsInterval * time.Second):
-			// TODO: parellelize these ?
 
 			// bridge token balances
-			if err := e.getTokenBalancesStats(ctx); err != nil {
-				return fmt.Errorf("could not record metrics: %w", err)
-			}
+			g.Go(func() error {
+				if err := e.getTokenBalancesStats(ctx); err != nil {
+					return fmt.Errorf("could not record metrics: %w", err)
+				}
+				return nil
+			})
 
 			// dfk stuck heroes
 			for _, pending := range e.cfg.DFKPending {
-				if err = e.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName); err != nil {
-					return fmt.Errorf("could setup metric: %w", err)
-				}
+				pending := pending // capture func literal
+				g.Go(func() error {
+					if err := e.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName); err != nil {
+						return fmt.Errorf("could setup metric: %w", err)
+					}
+					return nil
+				})
 			}
 
 			// submitter stats
 			for _, gasCheck := range e.cfg.SubmitterChecks {
 				for _, chainID := range gasCheck.ChainIDs {
-					if err := e.submitterStats(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name); err != nil {
-						return fmt.Errorf("could setup metric: %w", err)
-					}
+					gasCheck := gasCheck
+					chainID := chainID // capture func literals
+					g.Go(func() error {
+						if err := e.submitterStats(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name); err != nil {
+							return fmt.Errorf("could setup metric: %w", err)
+						}
+						return nil
+					})
 				}
 			}
 
@@ -134,11 +145,10 @@ func (e *exporter) recordMetrics(ctx context.Context) (err error) {
 				for _, token := range e.cfg.VpriceCheckTokens {
 					chainID := chainID
 					token := token // capture func literals
-
 					g.Go(func() error {
 						//nolint: wrapcheck
 						return retry.WithBackoff(ctx, func(ctx context.Context) error {
-							err = e.vpriceStats(ctx, chainID, token)
+							err := e.vpriceStats(ctx, chainID, token)
 							if errors.Is(err, errPoolNotExist) {
 								return nil
 							}
@@ -151,6 +161,10 @@ func (e *exporter) recordMetrics(ctx context.Context) (err error) {
 						}, retry.WithMaxAttempts(-1), retry.WithMaxAttemptTime(time.Second*10), retry.WithMaxTotalTime(-1))
 					})
 				}
+			}
+
+			if err := g.Wait(); err != nil {
+				return fmt.Errorf("could not record metrics: %w", err)
 			}
 
 		}
