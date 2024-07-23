@@ -105,6 +105,7 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 	for _, method := range methods {
 		for _, tokenMap := range tokens {
 			for _, tokenData := range tokenMap {
+				fmt.Printf("inspecitng token data with balance %v: %v\n", tokenData.Balance, tokenData)
 				if tokenData.Name == tokenName {
 					// make sure that the token is compatible with our rebalance method
 					tokenMethods, tokenErr := cfg.GetRebalanceMethods(tokenData.ChainID, tokenData.Addr.Hex())
@@ -120,6 +121,7 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 						}
 					}
 					if !isCompatible {
+						fmt.Println("not compatible")
 						continue
 					}
 					fmt.Printf("got rebalance method: %v\n", method)
@@ -127,9 +129,11 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 					// assign origin / dest metadata based on min / max balances
 					if originTokenData == nil || tokenData.Balance.Cmp(originTokenData.Balance) > 0 {
 						originTokenData = tokenData
+						fmt.Printf("assigned originTokenData: %v\n", originTokenData)
 					}
 					if destTokenData == nil || tokenData.Balance.Cmp(destTokenData.Balance) < 0 {
 						destTokenData = tokenData
+						fmt.Printf("assigned destTokenData: %v\n", destTokenData)
 					}
 				}
 			}
