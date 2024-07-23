@@ -118,14 +118,16 @@ func (e *exporter) recordMetrics(ctx context.Context) (err error) {
 	}
 }
 
+// nolint: cyclop
 func (e *exporter) collectMetrics(ctx context.Context) error {
 	var errs []error
 	if err := e.getTokenBalancesStats(ctx); err != nil {
 		errs = append(errs, fmt.Errorf("could not get token balances: %w", err))
 	}
 
+	// TODO: parallelize
+
 	for _, pending := range e.cfg.DFKPending {
-		pending := pending // capture func literal
 		if err := e.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName); err != nil {
 			errs = append(errs, fmt.Errorf("could not get stuck hero count: %w", err))
 		}
@@ -133,8 +135,6 @@ func (e *exporter) collectMetrics(ctx context.Context) error {
 
 	for _, gasCheck := range e.cfg.SubmitterChecks {
 		for _, chainID := range gasCheck.ChainIDs {
-			gasCheck := gasCheck
-			chainID := chainID // capture func literals
 			if err := e.submitterStats(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name); err != nil {
 				errs = append(errs, fmt.Errorf("could setup metric: %w", err))
 			}
@@ -143,8 +143,6 @@ func (e *exporter) collectMetrics(ctx context.Context) error {
 
 	for chainID := range e.cfg.BridgeChecks {
 		for _, token := range e.cfg.VpriceCheckTokens {
-			chainID := chainID
-			token := token // capture func literals
 			//nolint: wrapcheck
 			return retry.WithBackoff(ctx, func(ctx context.Context) error {
 				err := e.vpriceStats(ctx, chainID, token)
