@@ -560,28 +560,25 @@ const StateManagedBridge = () => {
             title="Bridge"
             subtitle="Send your assets across chains."
           />
-          <div>
-            <Button
-              className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
-              onClick={() =>
-                dispatch(setShowSettingsSlideOver(!showSettingsSlideOver))
-              }
-            >
-              <SettingsToggle showSettingsToggle={!showSettingsSlideOver} />
-            </Button>
-          </div>
+          <Button
+            className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
+            onClick={() =>
+              dispatch(setShowSettingsSlideOver(!showSettingsSlideOver))
+            }
+          >
+            <SettingsToggle showSettingsToggle={!showSettingsSlideOver} />
+          </Button>
         </div>
         <BridgeCard bridgeRef={bridgeDisplayRef}>
           {maintenanceCountdownProgressInstances.map((instance) => (
             <>{instance.MaintenanceCountdownProgressBar}</>
           ))}
 
-          {showSettingsSlideOver && (
-            <div className="min-h-[472px] ">
+          {showSettingsSlideOver ? (
+            <div className="min-h-[472px]">
               <SettingsSlideOver key="settings" />
             </div>
-          )}
-          {!showSettingsSlideOver && (
+          ) : (
             <>
               <InputContainer />
               <SwitchButton
