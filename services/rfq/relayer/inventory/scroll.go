@@ -304,7 +304,7 @@ func (c *rebalanceManagerScroll) Execute(ctx context.Context, rebalance *Rebalan
 
 // TODO: configurable?
 const scrollGasLimit = 200_000
-const scrollMsgFee = 1e13
+const scrollMsgFee = 1e14
 
 func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebalance *RebalanceData) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initiateL1ToL2", trace.WithAttributes(
@@ -313,6 +313,7 @@ func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebal
 		attribute.String("origin_token", rebalance.OriginMetadata.Name),
 		attribute.String("dest_token", rebalance.OriginMetadata.Name),
 		attribute.String("amount", rebalance.Amount.String()),
+		attribute.Int("msg_fee", scrollMsgFee),
 	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
