@@ -189,7 +189,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 
 	latestBlock := q.Origin.LatestBlock()
 
-	canRelay, err := q.canRelayBasedOnVolumeAndConfirmations(latestBlock, uint64(q.volumeLimit), q.Origin.Confirmations)
+	canRelay, err := q.canRelayBasedOnVolumeAndConfirmations(latestBlock, request.BlockNumber, q.volumeLimit)
 	if err != nil {
 		span.AddEvent("could not determine if can relay")
 		return fmt.Errorf("could not determine if can relay: %w", err)

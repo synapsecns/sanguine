@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -51,10 +52,12 @@ type QuoteRequestHandler struct {
 	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
 	// handlerMtx is the mutex for relaying.
 	handlerMtx mapmutex.StringMapMutex
-	// ringBuffer is the ring buffer for the relayed amounts
-	relayBuffer *relayBuffer
+	// relayedAmount is a mapping of block number to relayed amount in that block.
+	relayedAmountWindow map[uint64]float64
 	// volumeLimit is the volume limit for the relayed amounts
 	volumeLimit float64
+	// tokenNames is the map of addresses to token names
+	tokenNames map[string]relconfig.TokenConfig
 }
 
 // Handler is the handler for a quote request.
@@ -84,8 +87,8 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		apiClient:           r.apiClient,
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
-		relayBuffer:         NewRelayBuffer(r.cfg.GetBlockWindow()),
 		volumeLimit:         r.cfg.GetVolumeLimit(),
+		tokenNames:          r.cfg.Chains[int(req.Transaction.OriginChainId)].Tokens,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened
@@ -229,13 +232,13 @@ func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool 
 	q.claimCache.Set(request.TransactionID, true, 30*time.Second)
 	return true
 }
-func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlockNumber uint64, requestBlockNumber uint64, volumeLimit uint64) (bool, error) {
-	// check if the cumulative relay amount over the block window is less than the volume limit
-	amtRelayed := big.NewInt(int64(q.relayBuffer.Sum()))
-	volumeLimitBig := big.NewInt(int64(volumeLimit))
 
+// sliding window rate limiter to see if we have relayed too much in the last block window
+func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlockNumber uint64, requestBlockNumber uint64, volumeLimit float64) (bool, error) {
+	// check if the cumulative relay amount over the block window is less than the volume limit
 	numConfirmations := currentBlockNumber - requestBlockNumber
-	if amtRelayed.Cmp(volumeLimitBig) >= 0 && numConfirmations < 1 {
+
+	if q.getBlockWindowRelayedAmount() > volumeLimit && numConfirmations < 1 {
 		return false, nil
 	}
 
@@ -244,12 +247,50 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlock
 
 func (q *QuoteRequestHandler) addRelayToBuffer(ctx context.Context, request *reldb.QuoteRequest) error {
 	// fetch the pricesomehow.
-	price, err := q.Quoter.GetPrice(ctx, request.Transaction.OriginToken.String())
+	// need to get the name.
+	price, err := q.getTokenPrice(ctx, request)
+
 	if err != nil {
 		return fmt.Errorf("could not get price: %w", err)
 	}
-	q.relayBuffer.Add(price)
+
+	for blockNumber := range q.relayedAmountWindow {
+		if request.BlockNumber < blockNumber {
+			delete(q.relayedAmountWindow, blockNumber)
+		}
+	}
+
+	if _, present := q.relayedAmountWindow[request.BlockNumber]; !present {
+		q.relayedAmountWindow[request.BlockNumber] = price
+	} else {
+		q.relayedAmountWindow[request.BlockNumber] += price
+	}
+
 	return nil
+}
+
+func (q *QuoteRequestHandler) getBlockWindowRelayedAmount() float64 {
+	var total float64
+	for _, amount := range q.relayedAmountWindow {
+		total += amount
+	}
+	return total
+}
+
+func (q *QuoteRequestHandler) getTokenPrice(ctx context.Context, request *reldb.QuoteRequest) (float64, error) {
+	var tokenName string
+	for tn, tokenConfig := range q.tokenNames {
+		if common.HexToAddress(tokenConfig.Address).Hex() == request.Transaction.OriginToken.Hex() {
+			tokenName = tn
+		}
+	}
+
+	price, err := q.Quoter.GetPrice(ctx, tokenName)
+	if err != nil {
+		return 0, fmt.Errorf("could not get price: %w", err)
+	}
+
+	return price, nil
 }
 
 // Handle handles a quote request.
@@ -285,36 +326,4 @@ func (q *QuoteRequestHandler) Forward(ctx context.Context, request reldb.QuoteRe
 	}
 
 	return q.handlers[request.Status](ctx, span, request)
-}
-
-type relayBuffer struct {
-	data   []float64
-	size   int
-	cursor int
-	sum    float64
-}
-
-func NewRelayBuffer(size int) *relayBuffer {
-	return &relayBuffer{
-		data:   make([]float64, size),
-		size:   size,
-		cursor: 0,
-		sum:    0,
-	}
-}
-
-func (rb *relayBuffer) Add(usdAmount float64) {
-	// Subtract the value that's being overwritten
-	rb.sum -= rb.data[rb.cursor]
-
-	// Add the new value
-	rb.data[rb.cursor] = usdAmount
-	rb.sum += usdAmount
-
-	// Move the cursor
-	rb.cursor = (rb.cursor + 1) % rb.size
-}
-
-func (rb *relayBuffer) Sum() float64 {
-	return rb.sum
 }
