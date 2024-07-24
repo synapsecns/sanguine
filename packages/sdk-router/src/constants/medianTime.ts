@@ -22,9 +22,9 @@ export const MEDIAN_TIME_BRIDGE = {
   [SupportedChainId.ARBITRUM]: 30,
   [SupportedChainId.AVALANCHE]: 30,
   [SupportedChainId.DFK]: 30,
+  [SupportedChainId.BLAST]: 1230,
   [SupportedChainId.AURORA]: 30,
   [SupportedChainId.HARMONY]: 30,
-  [SupportedChainId.BLAST]: 1230,
 }
 
 /**
@@ -48,8 +48,10 @@ export const MEDIAN_TIME_CCTP = {
 export const MEDIAN_TIME_RFQ = {
   [SupportedChainId.ETH]: 25,
   [SupportedChainId.OPTIMISM]: 15,
-  [SupportedChainId.ARBITRUM]: 15,
-  [SupportedChainId.BASE]: 15,
-  [SupportedChainId.SCROLL]: 15,
   [SupportedChainId.BSC]: 15,
+  [SupportedChainId.BASE]: 15,
+  [SupportedChainId.ARBITRUM]: 15,
+  [SupportedChainId.LINEA]: 15,
+  [SupportedChainId.BLAST]: 15,
+  [SupportedChainId.SCROLL]: 15,
 }
