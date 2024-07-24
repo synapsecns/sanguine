@@ -363,18 +363,6 @@ func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridge
 	return nil
 }
 
-func (r *Relayer) getPriceOfToken(ctx context.Context, req reldb.QuoteRequest) (float64, error) {
-
-	tokenName := req.Transaction.OriginToken.String()
-
-	price, err := r.quoter.GetPrice(ctx, tokenName)
-	if err != nil {
-		return 0, fmt.Errorf("could not get price: %w", err)
-	}
-
-	return price, nil
-}
-
 // handleRelayCompleted handles the relay completed status and marks the claim as started.
 // Step 6: ProvePosting
 //
