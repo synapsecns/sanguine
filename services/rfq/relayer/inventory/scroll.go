@@ -304,6 +304,7 @@ func (c *rebalanceManagerScroll) Execute(ctx context.Context, rebalance *Rebalan
 
 // TODO: configurable?
 const scrollGasLimit = 200_000
+const scrollMsgFee = 1e13
 
 func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebalance *RebalanceData) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initiateL1ToL2", trace.WithAttributes(
@@ -321,6 +322,7 @@ func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebal
 		if transactor == nil {
 			return nil, fmt.Errorf("transactor is nil")
 		}
+		transactor.Value = big.NewInt(int64(scrollMsgFee))
 		if chain.IsGasToken(rebalance.OriginMetadata.Addr) {
 			tx, err = c.boundL1Gateway.DepositETH(transactor, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
 			if err != nil {
