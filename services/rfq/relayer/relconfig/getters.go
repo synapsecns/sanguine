@@ -17,10 +17,15 @@ var DefaultChainConfig = ChainConfig{
 	OriginGasEstimate:       160000,
 	DestGasEstimate:         100000,
 	MinGasToken:             "100000000000000000", // 1 ETH
-	QuotePct:                100,
+	QuotePct:                NewFloat64Pointer(100),
 	QuoteWidthBps:           0,
 	QuoteFixedFeeMultiplier: 1,
 	RelayFixedFeeMultiplier: 1,
+}
+
+// NewFloat64Pointer returns a pointer to a float64.
+func NewFloat64Pointer(val float64) *float64 {
+	return &val
 }
 
 // getChainConfigValue gets the value of a field from ChainConfig.
@@ -34,8 +39,8 @@ func (c Config) getChainConfigValue(chainID int, fieldName string) (interface{},
 		if err != nil {
 			return nil, err
 		}
-		if isNonZero(value) {
-			return value, nil
+		if !isNilOrZero(value) {
+			return derefPointer(value), nil
 		}
 	}
 
@@ -43,15 +48,15 @@ func (c Config) getChainConfigValue(chainID int, fieldName string) (interface{},
 	if err != nil {
 		return nil, err
 	}
-	if isNonZero(baseValue) {
-		return baseValue, nil
+	if !isNilOrZero(baseValue) {
+		return derefPointer(baseValue), nil
 	}
 
 	defaultValue, err := getFieldValue(DefaultChainConfig, fieldName)
 	if err != nil {
 		return nil, err
 	}
-	return defaultValue, nil
+	return derefPointer(defaultValue), nil
 }
 
 func getFieldValue(obj interface{}, fieldName string) (interface{}, error) {
@@ -85,8 +90,20 @@ func isChainConfigField(fieldName string) bool {
 	return ok
 }
 
-func isNonZero(value interface{}) bool {
-	return reflect.ValueOf(value).Interface() != reflect.Zero(reflect.TypeOf(value)).Interface()
+func derefPointer(value interface{}) interface{} {
+	val := reflect.ValueOf(value)
+	if val.Kind() == reflect.Ptr && !val.IsNil() {
+		return val.Elem().Interface()
+	}
+	return value
+}
+
+func isNilOrZero(value interface{}) bool {
+	val := reflect.ValueOf(value)
+	if val.Kind() == reflect.Ptr {
+		return val.IsNil()
+	}
+	return reflect.DeepEqual(value, reflect.Zero(val.Type()).Interface())
 }
 
 // GetRFQAddress returns the RFQ address for the given chainID.

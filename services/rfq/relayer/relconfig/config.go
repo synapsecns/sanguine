@@ -90,7 +90,7 @@ type ChainConfig struct {
 	// MinGasToken is minimum amount of gas that should be leftover after bridging a gas token.
 	MinGasToken string `yaml:"min_gas_token"`
 	// QuotePct is the percent of balance to quote.
-	QuotePct float64 `yaml:"quote_pct"`
+	QuotePct *float64 `yaml:"quote_pct"`
 	// QuoteWidthBps is the number of basis points to deduct from the dest amount.
 	// Note that this parameter is applied on a chain level and must be positive.
 	QuoteWidthBps float64 `yaml:"quote_width_bps"`

@@ -1,9 +1,10 @@
 package relconfig_test
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -30,7 +31,7 @@ func TestChainGetters(t *testing.T) {
 				L1FeeOriginGasEstimate:  30000,
 				L1FeeDestGasEstimate:    40000,
 				MinGasToken:             "1000",
-				QuotePct:                50,
+				QuotePct:                relconfig.NewFloat64Pointer(0),
 				QuoteWidthBps:           10,
 				QuoteFixedFeeMultiplier: 1.1,
 			},
@@ -48,7 +49,7 @@ func TestChainGetters(t *testing.T) {
 			L1FeeOriginGasEstimate:  30001,
 			L1FeeDestGasEstimate:    40001,
 			MinGasToken:             "1001",
-			QuotePct:                51,
+			QuotePct:                relconfig.NewFloat64Pointer(51),
 			QuoteWidthBps:           11,
 			QuoteFixedFeeMultiplier: 1.2,
 		},
@@ -68,7 +69,7 @@ func TestChainGetters(t *testing.T) {
 				L1FeeOriginGasEstimate:  30000,
 				L1FeeDestGasEstimate:    40000,
 				MinGasToken:             "1000",
-				QuotePct:                50,
+				QuotePct:                relconfig.NewFloat64Pointer(50),
 				QuoteWidthBps:           10,
 				QuoteFixedFeeMultiplier: 1.1,
 				Tokens: map[string]relconfig.TokenConfig{
@@ -253,15 +254,15 @@ func TestChainGetters(t *testing.T) {
 	t.Run("GetQuotePct", func(t *testing.T) {
 		defaultVal, err := cfg.GetQuotePct(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.QuotePct)
+		assert.Equal(t, defaultVal, 100.)
 
 		baseVal, err := cfgWithBase.GetQuotePct(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.QuotePct)
+		assert.Equal(t, baseVal, 51.)
 
 		chainVal, err := cfgWithBase.GetQuotePct(chainID)
 		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuotePct)
+		assert.Equal(t, chainVal, 0.)
 	})
 
 	t.Run("GetQuoteWidthBps", func(t *testing.T) {
@@ -319,7 +320,7 @@ func TestGetQuoteOffset(t *testing.T) {
 				L1FeeOriginGasEstimate:  30000,
 				L1FeeDestGasEstimate:    40000,
 				MinGasToken:             "1000",
-				QuotePct:                50,
+				QuotePct:                relconfig.NewFloat64Pointer(50),
 				QuoteWidthBps:           10,
 				QuoteFixedFeeMultiplier: 1.1,
 				Tokens: map[string]relconfig.TokenConfig{
