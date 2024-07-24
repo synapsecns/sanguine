@@ -159,6 +159,8 @@ const (
 	contractRFQ = iota + 1
 	contractSynapseCCTP
 	contractTokenMessenger
+	contractL1Gateway
+	contractL2Gateway
 )
 
 var (
@@ -344,6 +346,32 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
 				if err != nil {
 					return fmt.Errorf("could not approve TokenMessenger contract: %w", err)
+				}
+			}
+
+			// approve L1GatewayRouter contract
+			if address != chain.EthAddress && token.Allowances[contractL1Gateway].Cmp(big.NewInt(0)) == 0 {
+				tokenAddr := address // capture func literal
+				contractAddr, err := i.cfg.GetL1GatewayAddress(chainID)
+				if err != nil {
+					return fmt.Errorf("could not get L1Gateway address: %w", err)
+				}
+				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve L1Gateway contract: %w", err)
+				}
+			}
+
+			// approve L2GatewayRouter contract
+			if address != chain.EthAddress && token.Allowances[contractL2Gateway].Cmp(big.NewInt(0)) == 0 {
+				tokenAddr := address // capture func literal
+				contractAddr, err := i.cfg.GetL2GatewayAddress(chainID)
+				if err != nil {
+					return fmt.Errorf("could not get L2Gateway address: %w", err)
+				}
+				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve L2Gateway contract: %w", err)
 				}
 			}
 		}
