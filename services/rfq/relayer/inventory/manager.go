@@ -330,9 +330,11 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 				if err != nil {
 					return fmt.Errorf("could not get CCTP address: %w", err)
 				}
-				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
-				if err != nil {
-					return fmt.Errorf("could not approve SynapseCCTP contract: %w", err)
+				if len(contractAddr) > 0 {
+					err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+					if err != nil {
+						return fmt.Errorf("could not approve SynapseCCTP contract: %w", err)
+					}
 				}
 			}
 
@@ -343,9 +345,11 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 				if err != nil {
 					return fmt.Errorf("could not get CCTP address: %w", err)
 				}
-				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
-				if err != nil {
-					return fmt.Errorf("could not approve TokenMessenger contract: %w", err)
+				if len(contractAddr) > 0 {
+					err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+					if err != nil {
+						return fmt.Errorf("could not approve TokenMessenger contract: %w", err)
+					}
 				}
 			}
 
@@ -356,9 +360,11 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 				if err != nil {
 					return fmt.Errorf("could not get L1Gateway address: %w", err)
 				}
-				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
-				if err != nil {
-					return fmt.Errorf("could not approve L1Gateway contract: %w", err)
+				if len(contractAddr) > 0 {
+					err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+					if err != nil {
+						return fmt.Errorf("could not approve L1Gateway contract: %w", err)
+					}
 				}
 			}
 
@@ -369,9 +375,11 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 				if err != nil {
 					return fmt.Errorf("could not get L2Gateway address: %w", err)
 				}
-				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
-				if err != nil {
-					return fmt.Errorf("could not approve L2Gateway contract: %w", err)
+				if len(contractAddr) > 0 {
+					err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+					if err != nil {
+						return fmt.Errorf("could not approve L2Gateway contract: %w", err)
+					}
 				}
 			}
 		}
