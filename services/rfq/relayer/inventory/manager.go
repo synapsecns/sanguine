@@ -552,9 +552,9 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				rtoken.Allowances[contract] = new(big.Int)
 			}
 
+			rtoken.Name = tokenName
 			if rtoken.IsGasToken {
 				rtoken.Decimals = 18
-				rtoken.Name = tokenName
 				rtoken.Balance = i.gasBalances[chainID]
 				// TODO: start allowance?
 			} else {
@@ -565,7 +565,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				deferredCalls[chainID] = append(deferredCalls[chainID],
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.Balance),
 					eth.CallFunc(funcDecimals, token).Returns(&rtoken.Decimals),
-					eth.CallFunc(funcName, token).Returns(&rtoken.Name),
+					// eth.CallFunc(funcName, token).Returns(&rtoken.Name),
 					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.Allowances[contractRFQ]),
 				)
 				cctpAddr, _ := cfg.GetSynapseCCTPAddress(chainID)
