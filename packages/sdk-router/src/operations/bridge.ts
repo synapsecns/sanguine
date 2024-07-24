@@ -141,6 +141,8 @@ export async function allBridgeQuotes(
         tokenOut,
         amountIn
       )
+      console.log('routes: ', routes)
+
       // Filter out routes with zero minAmountOut and finalize the rest
       return Promise.all(
         routes
