@@ -2,6 +2,7 @@
 package relconfig
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"os"
@@ -9,14 +10,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	cctpConfig "github.com/synapsecns/sanguine/services/cctp-relayer/config"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"gopkg.in/yaml.v2"
 
 	"path/filepath"
+
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 )
 
 // Config represents the configuration for the relayer.
@@ -228,5 +233,34 @@ func (c Config) Validate() (err error) {
 			return fmt.Errorf("total initial percent does not total 100 for %s: %f", token, sum)
 		}
 	}
+
+	return nil
+}
+
+// Validate calls decimals() on the ERC20s to ensure that the decimals in the config match the actual token decimals.
+func (c Config) ValidateTokenDecimals(ctx context.Context, omniClient omniClient.RPCClient) (err error) {
+	for chainID, chainCfg := range c.Chains {
+		for tokenName, tokenCFG := range chainCfg.Tokens {
+			chainClient, err := omniClient.GetChainClient(ctx, chainID)
+			if err != nil {
+				return fmt.Errorf("could not get chain client for chain %d: %w", chainID, err)
+			}
+
+			ierc20, err := ierc20.NewIERC20Caller(common.HexToAddress(tokenCFG.Address), chainClient)
+			if err != nil {
+				return fmt.Errorf("could not get decimals for token %s on chain %d: %w", tokenName, chainID, err)
+			}
+
+			actualDecimals, err := ierc20.Decimals(&bind.CallOpts{Context: ctx})
+			if err != nil {
+				return fmt.Errorf("could not get decimals for token %s on chain %d: %w", tokenName, chainID, err)
+			}
+
+			if actualDecimals != tokenCFG.Decimals {
+				return fmt.Errorf("decimals mismatch for token %s on chain %d: expected %d, got %d", tokenName, chainID, tokenCFG.Decimals, actualDecimals)
+			}
+		}
+	}
+
 	return nil
 }

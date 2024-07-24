@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
@@ -36,8 +37,12 @@ var runCommand = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("could not read config file: %w", err)
 		}
-
 		metricsProvider := metrics.Get()
+
+		omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricsProvider, omniClient.WithCaptureReqRes())
+		if err = cfg.ValidateTokenDecimals(c.Context, omniClient); err != nil {
+			return fmt.Errorf("could not validate token decimals: %w", err)
+		}
 
 		relayer, err := service.NewRelayer(c.Context, metricsProvider, cfg)
 		if err != nil {
