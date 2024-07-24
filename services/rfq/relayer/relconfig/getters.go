@@ -19,8 +19,8 @@ var DefaultChainConfig = ChainConfig{
 	MinGasToken:             "100000000000000000", // 1 ETH
 	QuotePct:                NewFloat64Pointer(100),
 	QuoteWidthBps:           0,
-	QuoteFixedFeeMultiplier: 1,
-	RelayFixedFeeMultiplier: 1,
+	QuoteFixedFeeMultiplier: NewFloat64Pointer(1),
+	RelayFixedFeeMultiplier: NewFloat64Pointer(1),
 }
 
 // NewFloat64Pointer returns a pointer to a float64.
@@ -344,7 +344,7 @@ func (c Config) GetQuoteFixedFeeMultiplier(chainID int) (value float64, err erro
 		return value, fmt.Errorf("failed to cast QuoteFixedFeeMultiplier to int")
 	}
 	if value <= 0 {
-		value = DefaultChainConfig.QuoteFixedFeeMultiplier
+		value = *DefaultChainConfig.QuoteFixedFeeMultiplier
 	}
 	return value, nil
 }

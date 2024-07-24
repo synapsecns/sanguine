@@ -33,7 +33,7 @@ func TestChainGetters(t *testing.T) {
 				MinGasToken:             "1000",
 				QuotePct:                relconfig.NewFloat64Pointer(0),
 				QuoteWidthBps:           10,
-				QuoteFixedFeeMultiplier: 1.1,
+				QuoteFixedFeeMultiplier: relconfig.NewFloat64Pointer(1.1),
 			},
 		},
 		BaseChainConfig: relconfig.ChainConfig{
@@ -51,7 +51,7 @@ func TestChainGetters(t *testing.T) {
 			MinGasToken:             "1001",
 			QuotePct:                relconfig.NewFloat64Pointer(51),
 			QuoteWidthBps:           11,
-			QuoteFixedFeeMultiplier: 1.2,
+			QuoteFixedFeeMultiplier: relconfig.NewFloat64Pointer(1.2),
 		},
 	}
 	cfg := relconfig.Config{
@@ -71,7 +71,7 @@ func TestChainGetters(t *testing.T) {
 				MinGasToken:             "1000",
 				QuotePct:                relconfig.NewFloat64Pointer(50),
 				QuoteWidthBps:           10,
-				QuoteFixedFeeMultiplier: 1.1,
+				QuoteFixedFeeMultiplier: relconfig.NewFloat64Pointer(1.1),
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:            usdcAddr,
@@ -282,15 +282,15 @@ func TestChainGetters(t *testing.T) {
 	t.Run("GetQuoteFixedFeeMultiplier", func(t *testing.T) {
 		defaultVal, err := cfg.GetQuoteFixedFeeMultiplier(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.QuoteFixedFeeMultiplier)
+		assert.Equal(t, defaultVal, *relconfig.DefaultChainConfig.QuoteFixedFeeMultiplier)
 
 		baseVal, err := cfgWithBase.GetQuoteFixedFeeMultiplier(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.QuoteFixedFeeMultiplier)
+		assert.Equal(t, baseVal, *cfgWithBase.BaseChainConfig.QuoteFixedFeeMultiplier)
 
 		chainVal, err := cfgWithBase.GetQuoteFixedFeeMultiplier(chainID)
 		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuoteFixedFeeMultiplier)
+		assert.Equal(t, chainVal, *cfgWithBase.Chains[chainID].QuoteFixedFeeMultiplier)
 	})
 
 	t.Run("GetMaxRebalanceAmount", func(t *testing.T) {
@@ -322,7 +322,7 @@ func TestGetQuoteOffset(t *testing.T) {
 				MinGasToken:             "1000",
 				QuotePct:                relconfig.NewFloat64Pointer(50),
 				QuoteWidthBps:           10,
-				QuoteFixedFeeMultiplier: 1.1,
+				QuoteFixedFeeMultiplier: relconfig.NewFloat64Pointer(1.1),
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:            usdcAddr,

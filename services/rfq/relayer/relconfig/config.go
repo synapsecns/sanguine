@@ -95,9 +95,9 @@ type ChainConfig struct {
 	// Note that this parameter is applied on a chain level and must be positive.
 	QuoteWidthBps float64 `yaml:"quote_width_bps"`
 	// QuoteFixedFeeMultiplier is the multiplier for the fixed fee, applied when generating quotes.
-	QuoteFixedFeeMultiplier float64 `yaml:"quote_fixed_fee_multiplier"`
+	QuoteFixedFeeMultiplier *float64 `yaml:"quote_fixed_fee_multiplier"`
 	// RelayFixedFeeMultiplier is the multiplier for the fixed fee, applied when relaying.
-	RelayFixedFeeMultiplier float64 `yaml:"relay_fixed_fee_multiplier"`
+	RelayFixedFeeMultiplier *float64 `yaml:"relay_fixed_fee_multiplier"`
 	// CCTP start block is the block at which the chain listener will listen for CCTP events.
 	CCTPStartBlock uint64 `yaml:"cctp_start_block"`
 }
