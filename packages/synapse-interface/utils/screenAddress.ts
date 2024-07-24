@@ -7,7 +7,7 @@ import { isBlacklisted } from '@/utils/isBlacklisted'
 const createRiskDetectedEvent = (address: Address | string) => {
   return new CustomEvent('riskDetected', {
     detail: {
-      message: `This address ${address} has been flagged for being associated with illicit activities. If you think this is a mistake, please contact <a style="text-decoration: underline; text-underline-offset: 0.2em;" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">support</a>.`,
+      message: `This address ${address} has been flagged for violating the terms of service. Find out more at https://explorer.synapseprotocol.com/terms. If you think this is a mistake, please contact <a style="text-decoration: underline; text-underline-offset: 0.2em;" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">support</a>.`,
     },
   })
 }
