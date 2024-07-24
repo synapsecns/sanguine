@@ -157,6 +157,16 @@ const StateManagedBridge = () => {
       dispatch(setIsLoading(true))
       const currentTimestamp: number = getTimeMinutesFromNow(0)
 
+      const testQuotes = await synapseSDK.allBridgeQuotes(
+        81457,
+        42161,
+        "0x4300000000000000000000000000000000000003",
+        "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        stringToBigInt(debouncedFromValue, 6)
+      )
+
+      console.log('testQuotes: ', testQuotes)
+
       const allQuotes = await synapseSDK.allBridgeQuotes(
         fromChainId,
         toChainId,
@@ -170,6 +180,8 @@ const StateManagedBridge = () => {
           module.chainId ? module.chainId === fromChainId : true
         ).flatMap(getBridgeModuleNames)
       )
+
+      console.log('allQuotes: ', allQuotes)
 
       const activeQuotes = allQuotes.filter(
         (quote) => !pausedBridgeModules.has(quote.bridgeModuleName)
