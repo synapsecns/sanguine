@@ -317,9 +317,7 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 	span.AddEvent("relay successfully submitted")
 	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
 
-	price := q.Quoter.GetPrice(request.Transaction.OriginToken.Hex())
-
-	q.addRelayToBuffer(request)
+	q.addRelayToBuffer(ctx, &request)
 
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted, &request.Status)
 	if err != nil {
@@ -363,6 +361,18 @@ func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridge
 		return fmt.Errorf("could not update request status: %w", err)
 	}
 	return nil
+}
+
+func (r *Relayer) getPriceOfToken(ctx context.Context, req reldb.QuoteRequest) (float64, error) {
+
+	tokenName := req.Transaction.OriginToken.String()
+
+	price, err := r.quoter.GetPrice(ctx, tokenName)
+	if err != nil {
+		return 0, fmt.Errorf("could not get price: %w", err)
+	}
+
+	return price, nil
 }
 
 // handleRelayCompleted handles the relay completed status and marks the claim as started.

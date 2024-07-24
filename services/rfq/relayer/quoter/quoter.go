@@ -47,6 +47,8 @@ type Quoter interface {
 	ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
 	// IsProfitable determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
 	IsProfitable(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
+	// GetPrice gets the price of a token.
+	GetPrice(ctx context.Context, tokenName string) (float64, error)
 }
 
 // Manager submits quotes to the RFQ API.

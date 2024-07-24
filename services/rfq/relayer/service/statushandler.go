@@ -14,7 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
@@ -231,7 +230,6 @@ func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool 
 	return true
 }
 func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlockNumber uint64, requestBlockNumber uint64, volumeLimit uint64) (bool, error) {
-
 	// check if the cumulative relay amount over the block window is less than the volume limit
 	amtRelayed := big.NewInt(int64(q.relayBuffer.Sum()))
 	volumeLimitBig := big.NewInt(int64(volumeLimit))
@@ -244,16 +242,14 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlock
 	return true, nil
 }
 
-// In QuoteRequestHandler
-func (q *QuoteRequestHandler) addRelayToBuffer(request *reldb.QuoteRequest) {
+func (q *QuoteRequestHandler) addRelayToBuffer(ctx context.Context, request *reldb.QuoteRequest) error {
 	// fetch the pricesomehow.
-	gecko := pricer.NewCoingeckoPriceFetcher(time.Second * 5)
-	name := config.GetTokenName(string(request.Transaction.OriginToken.String()))
-	price, err := gecko.GetPrice(context.Background(), name)
+	price, err := q.Quoter.GetPrice(ctx, request.Transaction.OriginToken.String())
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("could not get price: %w", err)
 	}
 	q.relayBuffer.Add(price)
+	return nil
 }
 
 // Handle handles a quote request.
