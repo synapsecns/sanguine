@@ -45,10 +45,14 @@ type rebalanceManagerScroll struct {
 	boundL1ScrollMessenger *l1scrollmessenger.L1ScrollMessenger
 	// boundL2Gateway is the L2GatewayRouter contract
 	boundL2Gateway *l2gateway.L2GatewayRouter
-	// l1GatewayListener is the listener for the L1GatewayRouter contract
-	l1GatewayListener listener.ContractListener
-	// l2GatewayListener is the listener for the L2GatewayRouter contract
-	l2GatewayListener listener.ContractListener
+	// l1ETHGatewayListener is the listener for the L1GatewayRouter contract
+	l1ETHGatewayListener listener.ContractListener
+	// l1ERC20GatewayListener is the listener for the L1GatewayRouter contract
+	l1ERC20GatewayListener listener.ContractListener
+	// l2ETHGatewayListener is the listener for the L2GatewayRouter contract
+	l2ETHGatewayListener listener.ContractListener
+	// l2ERC20GatewayListener is the listener for the L2GatewayRouter contract
+	l2ERC20GatewayListener listener.ContractListener
 	// l1ChainID is the chain ID for the L1 chain
 	l1ChainID int
 	// l2ChainID is the chain ID for the L2 chain
@@ -118,10 +122,16 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 		return nil
 	})
 	g.Go(func() error {
-		return c.listenL1Gateway(ctx)
+		return c.listenL1ETHGateway(ctx)
 	})
 	g.Go(func() error {
-		return c.listenL2Gateway(ctx)
+		return c.listenL1ERC20Gateway(ctx)
+	})
+	g.Go(func() error {
+		return c.listenL2ETHGateway(ctx)
+	})
+	g.Go(func() error {
+		return c.listenL2ERC20Gateway(ctx)
 	})
 	g.Go(func() error {
 		for {
@@ -236,7 +246,7 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 		metrics.EndSpanWithErr(span, err)
 	}(err)
 
-	// setup l1 listener
+	// setup l1 listeners
 	l1Client, err := c.chainClient.GetClient(ctx, big.NewInt(int64(c.l1ChainID)))
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
@@ -245,16 +255,24 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get cctp start block: %w", err)
 	}
-	l1Addr, err := c.cfg.GetL1GatewayAddress(c.l1ChainID)
+	l1ETHAddr, err := c.boundL1Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return fmt.Errorf("could not get l1 gateway address: %w", err)
+		return fmt.Errorf("could not get L1ETHGateway address: %w", err)
 	}
-	c.l1GatewayListener, err = listener.NewChainListener(l1Client, c.db, common.HexToAddress(l1Addr), l1InitialBlock, c.handler)
+	c.l1ETHGatewayListener, err = listener.NewChainListener(l1Client, c.db, l1ETHAddr, l1InitialBlock, c.handler)
 	if err != nil {
-		return fmt.Errorf("could not get messenger listener: %w", err)
+		return fmt.Errorf("could not get L1ETHGateway listener: %w", err)
+	}
+	l1ERC20Addr, err := c.boundL1Gateway.EthGateway(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get L1ERC20Gateway address: %w", err)
+	}
+	c.l1ERC20GatewayListener, err = listener.NewChainListener(l1Client, c.db, l1ERC20Addr, l1InitialBlock, c.handler)
+	if err != nil {
+		return fmt.Errorf("could not get L1ERC20Gateway listener: %w", err)
 	}
 
-	// setup l2 listener
+	// setup l2 listeners
 	l2Client, err := c.chainClient.GetClient(ctx, big.NewInt(int64(c.l2ChainID)))
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
@@ -263,13 +281,21 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get cctp start block: %w", err)
 	}
-	l2Addr, err := c.cfg.GetL2GatewayAddress(c.l2ChainID)
+	l2ETHAddr, err := c.boundL2Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return fmt.Errorf("could not get l2 gateway address: %w", err)
+		return fmt.Errorf("could not get L2ETHGateway address: %w", err)
 	}
-	c.l2GatewayListener, err = listener.NewChainListener(l2Client, c.db, common.HexToAddress(l2Addr), l2InitialBlock, c.handler)
+	c.l2ETHGatewayListener, err = listener.NewChainListener(l2Client, c.db, l2ETHAddr, l2InitialBlock, c.handler)
 	if err != nil {
-		return fmt.Errorf("could not get messenger listener: %w", err)
+		return fmt.Errorf("could not get L2ETHGateway listener: %w", err)
+	}
+	l2ERC20Addr, err := c.boundL2Gateway.EthGateway(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
+	}
+	c.l2ERC20GatewayListener, err = listener.NewChainListener(l2Client, c.db, l2ERC20Addr, l2InitialBlock, c.handler)
+	if err != nil {
+		return fmt.Errorf("could not get L2ERC20Gateway listener: %w", err)
 	}
 
 	return nil
@@ -382,16 +408,16 @@ func getScrollRebalanceID(eventData []byte) string {
 	return common.BytesToHash(eventData).Hex()
 }
 
-func (c *rebalanceManagerScroll) listenL1Gateway(ctx context.Context) (err error) {
-	addr, err := c.cfg.GetL1GatewayAddress(c.l1ChainID)
+func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err error) {
+	addr, err := c.boundL1Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return fmt.Errorf("could not get l1 gateway address: %w", err)
+		return fmt.Errorf("could not get ETHGateway address: %w", err)
 	}
-	parser, err := l1gateway.NewParser(common.HexToAddress(addr))
+	parser, err := l1gateway.NewParser(addr)
 	if err != nil {
 		return fmt.Errorf("could not get l1 gateway parser: %w", err)
 	}
-	err = c.l1GatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+	err = c.l1ETHGatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
 		et, parsedEvent, ok := parser.ParseEvent(log)
 		if !ok {
 			return nil
@@ -423,6 +449,54 @@ func (c *rebalanceManagerScroll) listenL1Gateway(ctx context.Context) (err error
 				logger.Warnf("could not update rebalance status: %v", err)
 				return nil
 			}
+		case *l1gateway.L1GatewayRouterFinalizeWithdrawETH:
+			rebalanceID := getScrollRebalanceID(event.Data)
+			rebalanceModel := reldb.Rebalance{
+				RebalanceID: &rebalanceID,
+				DestTxHash:  log.TxHash,
+				Status:      reldb.RebalanceCompleted,
+			}
+			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
+			if err != nil {
+				logger.Warnf("could not update rebalance status: %v", err)
+				return nil
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("could not listen for L1GatewayRouter events: %w", err)
+	}
+	return nil
+}
+
+func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err error) {
+	addr, err := c.boundL1Gateway.EthGateway(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get ERC20Gateway address: %w", err)
+	}
+	parser, err := l1gateway.NewParser(addr)
+	if err != nil {
+		return fmt.Errorf("could not get l1 gateway parser: %w", err)
+	}
+	err = c.l1ERC20GatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+		et, parsedEvent, ok := parser.ParseEvent(log)
+		if !ok {
+			return nil
+		}
+
+		ctx, span := c.handler.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
+			attribute.String(metrics.TxHash, log.TxHash.String()),
+			attribute.String(metrics.Contract, log.Address.String()),
+			attribute.String("block_hash", log.BlockHash.String()),
+			attribute.Int64("block_number", int64(log.BlockNumber)),
+		))
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
+
+		switch event := parsedEvent.(type) {
 		case *l1gateway.L1GatewayRouterDepositERC20:
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
@@ -432,18 +506,6 @@ func (c *rebalanceManagerScroll) listenL1Gateway(ctx context.Context) (err error
 				OriginTokenAddr: event.L1Token,
 				Destination:     uint64(c.l2ChainID),
 				Status:          reldb.RebalancePending,
-			}
-			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
-			if err != nil {
-				logger.Warnf("could not update rebalance status: %v", err)
-				return nil
-			}
-		case *l1gateway.L1GatewayRouterFinalizeWithdrawETH:
-			rebalanceID := getScrollRebalanceID(event.Data)
-			rebalanceModel := reldb.Rebalance{
-				RebalanceID: &rebalanceID,
-				DestTxHash:  log.TxHash,
-				Status:      reldb.RebalanceCompleted,
 			}
 			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
 			if err != nil {
@@ -472,16 +534,16 @@ func (c *rebalanceManagerScroll) listenL1Gateway(ctx context.Context) (err error
 	return nil
 }
 
-func (c *rebalanceManagerScroll) listenL2Gateway(ctx context.Context) (err error) {
-	addr, err := c.cfg.GetL2GatewayAddress(c.l1ChainID)
+func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err error) {
+	addr, err := c.boundL2Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
-		return fmt.Errorf("could not get l2 gateway address: %w", err)
+		return fmt.Errorf("could not get L2ETHGateway address: %w", err)
 	}
-	parser, err := l2gateway.NewParser(common.HexToAddress(addr))
+	parser, err := l2gateway.NewParser(addr)
 	if err != nil {
 		return fmt.Errorf("could not get l2 gateway parser: %w", err)
 	}
-	err = c.l2GatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+	err = c.l2ETHGatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
 		et, parsedEvent, ok := parser.ParseEvent(log)
 		if !ok {
 			return nil
@@ -513,6 +575,54 @@ func (c *rebalanceManagerScroll) listenL2Gateway(ctx context.Context) (err error
 				logger.Warnf("could not update rebalance status: %v", err)
 				return nil
 			}
+		case *l2gateway.L2GatewayRouterFinalizeDepositETH:
+			rebalanceID := getScrollRebalanceID(event.Data)
+			rebalanceModel := reldb.Rebalance{
+				RebalanceID: &rebalanceID,
+				DestTxHash:  log.TxHash,
+				Status:      reldb.RebalanceCompleted,
+			}
+			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
+			if err != nil {
+				logger.Warnf("could not update rebalance status: %v", err)
+				return nil
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("could not listen for L2GatewayRouter events: %w", err)
+	}
+	return nil
+}
+
+func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err error) {
+	addr, err := c.boundL2Gateway.ERC20Gateway(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
+	}
+	parser, err := l2gateway.NewParser(addr)
+	if err != nil {
+		return fmt.Errorf("could not get l2 gateway parser: %w", err)
+	}
+	err = c.l2ERC20GatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+		et, parsedEvent, ok := parser.ParseEvent(log)
+		if !ok {
+			return nil
+		}
+
+		ctx, span := c.handler.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
+			attribute.String(metrics.TxHash, log.TxHash.String()),
+			attribute.String(metrics.Contract, log.Address.String()),
+			attribute.String("block_hash", log.BlockHash.String()),
+			attribute.Int64("block_number", int64(log.BlockNumber)),
+		))
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
+
+		switch event := parsedEvent.(type) {
 		case *l2gateway.L2GatewayRouterWithdrawERC20:
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
@@ -522,18 +632,6 @@ func (c *rebalanceManagerScroll) listenL2Gateway(ctx context.Context) (err error
 				OriginTokenAddr: event.L2Token,
 				Destination:     uint64(c.l1ChainID),
 				Status:          reldb.RebalancePending,
-			}
-			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
-			if err != nil {
-				logger.Warnf("could not update rebalance status: %v", err)
-				return nil
-			}
-		case *l2gateway.L2GatewayRouterFinalizeDepositETH:
-			rebalanceID := getScrollRebalanceID(event.Data)
-			rebalanceModel := reldb.Rebalance{
-				RebalanceID: &rebalanceID,
-				DestTxHash:  log.TxHash,
-				Status:      reldb.RebalanceCompleted,
 			}
 			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
 			if err != nil {
