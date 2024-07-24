@@ -130,7 +130,7 @@ var withdrawCommand = &cli.Command{
 		defer cancel()
 
 		action := func() {
-			retry.WithBackoff(ctx, func(ctx context.Context) error {
+			err = retry.WithBackoff(ctx, func(ctx context.Context) error {
 				status, err = client.GetTxHashByNonce(
 					c.Context,
 					&relapi.GetTxByNonceRequest{
@@ -139,10 +139,14 @@ var withdrawCommand = &cli.Command{
 					})
 				if err != nil {
 					errClient = err
-					return err
+					return fmt.Errorf("could not get withdrawal tx hash: %w", err)
 				}
 				return nil
 			})
+
+			if err != nil {
+				return
+			}
 		}
 
 		err = spinner.New().
