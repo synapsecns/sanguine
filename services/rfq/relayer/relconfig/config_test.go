@@ -31,9 +31,9 @@ func TestChainGetters(t *testing.T) {
 				L1FeeOriginGasEstimate:  30000,
 				L1FeeDestGasEstimate:    40000,
 				MinGasToken:             "1000",
-				QuotePct:                relconfig.NewFloat64Pointer(0),
+				QuotePct:                relconfig.NewFloatPtr(0),
 				QuoteWidthBps:           10,
-				QuoteFixedFeeMultiplier: relconfig.NewFloat64Pointer(1.1),
+				QuoteFixedFeeMultiplier: relconfig.NewFloatPtr(1.1),
 			},
 		},
 		BaseChainConfig: relconfig.ChainConfig{
@@ -49,9 +49,9 @@ func TestChainGetters(t *testing.T) {
 			L1FeeOriginGasEstimate:  30001,
 			L1FeeDestGasEstimate:    40001,
 			MinGasToken:             "1001",
-			QuotePct:                relconfig.NewFloat64Pointer(51),
+			QuotePct:                relconfig.NewFloatPtr(51),
 			QuoteWidthBps:           11,
-			QuoteFixedFeeMultiplier: relconfig.NewFloat64Pointer(1.2),
+			QuoteFixedFeeMultiplier: relconfig.NewFloatPtr(1.2),
 		},
 	}
 	cfg := relconfig.Config{
@@ -69,9 +69,9 @@ func TestChainGetters(t *testing.T) {
 				L1FeeOriginGasEstimate:  30000,
 				L1FeeDestGasEstimate:    40000,
 				MinGasToken:             "1000",
-				QuotePct:                relconfig.NewFloat64Pointer(50),
+				QuotePct:                relconfig.NewFloatPtr(50),
 				QuoteWidthBps:           10,
-				QuoteFixedFeeMultiplier: relconfig.NewFloat64Pointer(1.1),
+				QuoteFixedFeeMultiplier: relconfig.NewFloatPtr(1.1),
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:            usdcAddr,
@@ -320,9 +320,9 @@ func TestGetQuoteOffset(t *testing.T) {
 				L1FeeOriginGasEstimate:  30000,
 				L1FeeDestGasEstimate:    40000,
 				MinGasToken:             "1000",
-				QuotePct:                relconfig.NewFloat64Pointer(50),
+				QuotePct:                relconfig.NewFloatPtr(50),
 				QuoteWidthBps:           10,
-				QuoteFixedFeeMultiplier: relconfig.NewFloat64Pointer(1.1),
+				QuoteFixedFeeMultiplier: relconfig.NewFloatPtr(1.1),
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:            usdcAddr,

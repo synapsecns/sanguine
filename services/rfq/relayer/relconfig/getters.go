@@ -17,14 +17,14 @@ var DefaultChainConfig = ChainConfig{
 	OriginGasEstimate:       160000,
 	DestGasEstimate:         100000,
 	MinGasToken:             "100000000000000000", // 1 ETH
-	QuotePct:                NewFloat64Pointer(100),
+	QuotePct:                NewFloatPtr(100),
 	QuoteWidthBps:           0,
-	QuoteFixedFeeMultiplier: NewFloat64Pointer(1),
-	RelayFixedFeeMultiplier: NewFloat64Pointer(1),
+	QuoteFixedFeeMultiplier: NewFloatPtr(1),
+	RelayFixedFeeMultiplier: NewFloatPtr(1),
 }
 
-// NewFloat64Pointer returns a pointer to a float64.
-func NewFloat64Pointer(val float64) *float64 {
+// NewFloatPtr returns a pointer to a float64.
+func NewFloatPtr(val float64) *float64 {
 	return &val
 }
 
