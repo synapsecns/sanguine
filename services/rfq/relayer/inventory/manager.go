@@ -584,7 +584,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 			// requires non-nil pointer
 			rtoken.Balance = new(big.Int)
-			for _, contract := range []spendableContract{contractRFQ, contractSynapseCCTP, contractTokenMessenger} {
+			for _, contract := range []spendableContract{contractRFQ, contractSynapseCCTP, contractTokenMessenger, contractL1Gateway, contractL2Gateway} {
 				rtoken.Allowances[contract] = new(big.Int)
 			}
 
