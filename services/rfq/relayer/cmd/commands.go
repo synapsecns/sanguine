@@ -130,7 +130,7 @@ var withdrawCommand = &cli.Command{
 		defer cancel()
 
 		action := func() {
-			err = retry.WithBackoff(ctx, func(ctx context.Context) error {
+			err = retry.WithBackoff(ctx, func(_ context.Context) error {
 				status, err = client.GetTxHashByNonce(
 					c.Context,
 					&relapi.GetTxByNonceRequest{
