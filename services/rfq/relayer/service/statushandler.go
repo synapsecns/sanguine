@@ -54,6 +54,8 @@ type QuoteRequestHandler struct {
 	handlerMtx mapmutex.StringMapMutex
 	// relayedAmount is a mapping of block number to relayed amount in that block.
 	relayedAmountWindow map[uint64]float64
+	//  blockWindowSize is the number of blocks to keep in the relayedAmountWindow
+	blockWindowSize uint64
 	// volumeLimit is the volume limit for the relayed amounts
 	volumeLimit float64
 	// tokenNames is the map of addresses to token names
@@ -88,6 +90,8 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
 		volumeLimit:         r.cfg.GetVolumeLimit(),
+		blockWindowSize:     r.cfg.GetBlockWindow(),
+		relayedAmountWindow: make(map[uint64]float64, r.cfg.GetBlockWindow()),
 		tokenNames:          r.cfg.Chains[int(req.Transaction.OriginChainId)].Tokens,
 	}
 
@@ -245,26 +249,17 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlock
 	return true, nil
 }
 
-func (q *QuoteRequestHandler) addRelayToBuffer(ctx context.Context, request *reldb.QuoteRequest) error {
-	// fetch the pricesomehow.
-	// need to get the name.
-	price, err := q.getTokenPrice(ctx, request)
-
+func (q *QuoteRequestHandler) addRelayToWindow(ctx context.Context, request *reldb.QuoteRequest) error {
+	priceOfOriginToken, err := q.getTokenPrice(ctx, request)
 	if err != nil {
 		return fmt.Errorf("could not get price: %w", err)
 	}
 
-	for blockNumber := range q.relayedAmountWindow {
-		if request.BlockNumber < blockNumber {
-			delete(q.relayedAmountWindow, blockNumber)
-		}
-	}
+	// Delete old blocks that should not be in the window anymore.
+	beginningOfWindow := q.Origin.LatestBlock() - q.blockWindowSize
+	delete(q.relayedAmountWindow, beginningOfWindow)
 
-	if _, present := q.relayedAmountWindow[request.BlockNumber]; !present {
-		q.relayedAmountWindow[request.BlockNumber] = price
-	} else {
-		q.relayedAmountWindow[request.BlockNumber] += price
-	}
+	q.relayedAmountWindow[request.BlockNumber] += priceOfOriginToken
 
 	return nil
 }

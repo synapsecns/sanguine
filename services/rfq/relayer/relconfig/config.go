@@ -62,7 +62,7 @@ type Config struct {
 	// BlockWindow is the number of recent blocks considered when checking the total dollar value
 	// of relayed transactions against the required confirmation count (currently 1). This is a preventaive measure
 	// against reorgs. If sumOfTxs(BlockWindow) > VolumeLimit and confirmations < 1, wait to relay.
-	BlockWindow int `yaml:"block_window"`
+	BlockWindow uint64 `yaml:"block_window"`
 	// VolumeLimit is the maximum dollar value of relayed transactions in the BlockWindow.
 	VolumeLimit float64 `yaml:"volume_limit"`
 }
