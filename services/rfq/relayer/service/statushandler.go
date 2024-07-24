@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
@@ -51,6 +52,10 @@ type QuoteRequestHandler struct {
 	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
 	// handlerMtx is the mutex for relaying.
 	handlerMtx mapmutex.StringMapMutex
+	// ringBuffer is the ring buffer for the relayed amounts
+	relayBuffer *relayBuffer
+	// volumeLimit is the volume limit for the relayed amounts
+	volumeLimit float64
 }
 
 // Handler is the handler for a quote request.
@@ -80,6 +85,8 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		apiClient:           r.apiClient,
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
+		relayBuffer:         NewRelayBuffer(r.cfg.GetBlockWindow()),
+		volumeLimit:         r.cfg.GetVolumeLimit(),
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened
@@ -223,6 +230,31 @@ func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool 
 	q.claimCache.Set(request.TransactionID, true, 30*time.Second)
 	return true
 }
+func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlockNumber uint64, requestBlockNumber uint64, volumeLimit uint64) (bool, error) {
+
+	// check if the cumulative relay amount over the block window is less than the volume limit
+	amtRelayed := big.NewInt(int64(q.relayBuffer.Sum()))
+	volumeLimitBig := big.NewInt(int64(volumeLimit))
+
+	numConfirmations := currentBlockNumber - requestBlockNumber
+	if amtRelayed.Cmp(volumeLimitBig) >= 0 && numConfirmations < 1 {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// In QuoteRequestHandler
+func (q *QuoteRequestHandler) addRelayToBuffer(request *reldb.QuoteRequest) {
+	// fetch the pricesomehow.
+	gecko := pricer.NewCoingeckoPriceFetcher(time.Second * 5)
+	name := config.GetTokenName(string(request.Transaction.OriginToken.String()))
+	price, err := gecko.GetPrice(context.Background(), name)
+	if err != nil {
+		panic(err)
+	}
+	q.relayBuffer.Add(price)
+}
 
 // Handle handles a quote request.
 // Note: this will panic if no method is available. This is done on purpose.
@@ -257,4 +289,36 @@ func (q *QuoteRequestHandler) Forward(ctx context.Context, request reldb.QuoteRe
 	}
 
 	return q.handlers[request.Status](ctx, span, request)
+}
+
+type relayBuffer struct {
+	data   []float64
+	size   int
+	cursor int
+	sum    float64
+}
+
+func NewRelayBuffer(size int) *relayBuffer {
+	return &relayBuffer{
+		data:   make([]float64, size),
+		size:   size,
+		cursor: 0,
+		sum:    0,
+	}
+}
+
+func (rb *relayBuffer) Add(usdAmount float64) {
+	// Subtract the value that's being overwritten
+	rb.sum -= rb.data[rb.cursor]
+
+	// Add the new value
+	rb.data[rb.cursor] = usdAmount
+	rb.sum += usdAmount
+
+	// Move the cursor
+	rb.cursor = (rb.cursor + 1) % rb.size
+}
+
+func (rb *relayBuffer) Sum() float64 {
+	return rb.sum
 }

@@ -92,6 +92,23 @@ func (_m *Manager) GetCommittableBalances(ctx context.Context, options ...invent
 	return r0, r1
 }
 
+// GetRelayedAmountOverBlockWindow provides a mock function with given fields: ctx, blockWindowSize
+func (_m *Manager) GetRelayedAmountOverBlockWindow() (*big.Int) {
+	ret := _m.Called()
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func() *big.Int); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+
+	return r0
+}
+
 // GetTokenMetadata provides a mock function with given fields: chainID, token
 func (_m *Manager) GetTokenMetadata(chainID int, token common.Address) (*inventory.TokenMetadata, error) {
 	ret := _m.Called(chainID, token)

@@ -136,6 +136,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 //
 //nolint:cyclop
 func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
+
 	shouldProcess, err := q.Quoter.ShouldProcess(ctx, request)
 	if err != nil {
 		// will retry later
@@ -180,6 +181,22 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 	// check if we have enough inventory to handle the request
 	if committableBalance.Cmp(request.Transaction.DestAmount) < 0 {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory, &request.Status)
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+		return nil
+	}
+
+	latestBlock := q.Origin.LatestBlock()
+
+	canRelay, err := q.canRelayBasedOnVolumeAndConfirmations(latestBlock, uint64(q.volumeLimit), q.Origin.Confirmations)
+	if err != nil {
+		span.AddEvent("could not determine if can relay")
+		return fmt.Errorf("could not determine if can relay: %w", err)
+	}
+	if !canRelay {
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending, &request.Status)
+		span.AddEvent("cannot relay due to volume")
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
@@ -299,6 +316,10 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 	}
 	span.AddEvent("relay successfully submitted")
 	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
+
+	price := q.Quoter.GetPrice(request.Transaction.OriginToken.Hex())
+
+	q.addRelayToBuffer(request)
 
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted, &request.Status)
 	if err != nil {

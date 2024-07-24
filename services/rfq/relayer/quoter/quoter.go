@@ -247,6 +247,21 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	return m.prepareAndSubmitQuotes(ctx, inv)
 }
 
+func (m *Manager) GetPrice(parentCtx context.Context, tokenName string) (_ float64, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "GetPrice")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+
+	}()
+
+	price, err := m.feePricer.GetTokenPrice(ctx, tokenName)
+	if err != nil {
+		return 0, fmt.Errorf("error getting price: %w", err)
+	}
+
+	return price, nil
+}
+
 // Prepares and submits quotes based on inventory.
 func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[common.Address]*big.Int) (err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "prepareAndSubmitQuotes")

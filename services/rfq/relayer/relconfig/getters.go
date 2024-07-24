@@ -673,3 +673,27 @@ func (c Config) GetQuoteSubmissionTimeout() time.Duration {
 	}
 	return timeout
 }
+
+const defaultBlockWindow = 5
+
+// GetBlockWindow returns the block window for the relayer.
+func (c Config) GetBlockWindow() int {
+	blockWindow := c.BlockWindow
+	if blockWindow == 0 {
+		blockWindow = defaultBlockWindow
+	}
+
+	return blockWindow
+}
+
+const defaultVolumeLimit = 10_000
+
+// GetVolumeLimit returns the volume limit for the relayer.
+func (c Config) GetVolumeLimit() float64 {
+	volumeLimit := c.VolumeLimit
+	if volumeLimit == 0 {
+		volumeLimit = defaultVolumeLimit
+	}
+
+	return volumeLimit
+}
