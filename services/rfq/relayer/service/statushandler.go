@@ -249,6 +249,8 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlock
 	return true, nil
 }
 
+// TODO: this is not good yet because the beginningOfWindow is not necessarily in the map, leading us to
+// never actually deleting the oldest entry in the map. We probably need to check whether we are on a new block or not.
 func (q *QuoteRequestHandler) addRelayToWindow(ctx context.Context, request *reldb.QuoteRequest) error {
 	priceOfOriginToken, err := q.getTokenPrice(ctx, request)
 	if err != nil {
