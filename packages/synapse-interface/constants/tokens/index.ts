@@ -135,6 +135,8 @@ export const tokenAddressToToken = (
   if (chainId) {
     if (tokenAddress === WETH.addresses[chainId]) {
       return WETH
+    } else if (tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
+      return ETH
     } else {
       const token = BRIDGABLE_TOKENS[chainId]?.find((token: Token) => {
         return token.addresses[chainId] === tokenAddress
