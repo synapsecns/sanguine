@@ -298,14 +298,14 @@ func (c Config) GetQuoteOffsetBps(chainID int, tokenName string, isOrigin bool) 
 	return offset, nil
 }
 
-const defaultMinBalance = 0
+const defaultMaxBalance = 0
 
-// GetMinBalance returns the MinBalance for the given chain and address.
+// GetMaxBalance returns the MaxBalance for the given chain and address.
 // Note that this getter returns the value in native token decimals.
-func (c Config) GetMinBalance(chainID int, addr common.Address) *big.Int {
+func (c Config) GetMaxBalance(chainID int, addr common.Address) *big.Int {
 	chainCfg, ok := c.Chains[chainID]
 	if !ok {
-		return big.NewInt(defaultMinBalance)
+		return big.NewInt(defaultMaxBalance)
 	}
 
 	var tokenCfg *TokenConfig
@@ -317,14 +317,14 @@ func (c Config) GetMinBalance(chainID int, addr common.Address) *big.Int {
 		}
 	}
 	if tokenCfg == nil {
-		return big.NewInt(defaultMinBalance)
+		return big.NewInt(defaultMaxBalance)
 	}
-	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinBalance)
+	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxBalance)
 	if !ok {
-		return big.NewInt(defaultMinBalance)
+		return big.NewInt(defaultMaxBalance)
 	}
 	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
-		return big.NewInt(defaultMinBalance)
+		return big.NewInt(defaultMaxBalance)
 	}
 
 	// Scale the minBalance by the token decimals.
