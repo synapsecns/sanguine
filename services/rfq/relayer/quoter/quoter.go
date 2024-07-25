@@ -519,13 +519,17 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 		quoteAmount = minQuoteAmount
 	}
 
-	// Finally, clip the quoteAmount by the balance
-	if quoteAmount.Cmp(balance) > 0 {
-		span.AddEvent("quote amount greater than balance", trace.WithAttributes(
+	// Finally, clip the quoteAmount by the minimum balance
+	minBalance := m.config.GetMinBalance(dest, address)
+	quotableBalance := new(big.Int).Sub(balance, minBalance)
+	if quoteAmount.Cmp(quotableBalance) > 0 {
+		span.AddEvent("quote amount greater than quotable balance", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
 			attribute.String("balance", balance.String()),
+			attribute.String("quotable_balance", quotableBalance.String()),
+			attribute.String("min_balance", minBalance.String()),
 		))
-		quoteAmount = balance
+		quoteAmount = quotableBalance
 	}
 
 	// Deduct gas cost from the quote amount, if necessary
