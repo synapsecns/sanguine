@@ -363,10 +363,11 @@ func (c *rebalanceManagerScroll) Execute(ctx context.Context, rebalance *Rebalan
 
 	// store the rebalance in the db
 	rebalanceModel := reldb.Rebalance{
-		Origin:       uint64(rebalance.OriginMetadata.ChainID),
-		Destination:  uint64(rebalance.DestMetadata.ChainID),
-		OriginAmount: rebalance.Amount,
-		Status:       reldb.RebalanceInitiated,
+		Origin:          uint64(rebalance.OriginMetadata.ChainID),
+		Destination:     uint64(rebalance.DestMetadata.ChainID),
+		OriginAmount:    rebalance.Amount,
+		OriginTokenAddr: rebalance.OriginMetadata.Addr,
+		Status:          reldb.RebalanceInitiated,
 	}
 	err = c.db.StoreRebalance(ctx, rebalanceModel)
 	if err != nil {
