@@ -35,6 +35,8 @@ var (
 	originTxHashFieldName string
 	// destTxHashFieldName is the dest tx hash field name.
 	destTxHashFieldName string
+	// originTokenAddrFieldName is the origin token address field name.
+	originTokenAddrFieldName string
 	// rebalanceIDFieldName is the rebalances id field name.
 	rebalanceIDFieldName string
 	// relayNonceFieldName is the relay nonce field name.

@@ -450,10 +450,6 @@ func (c *rebalanceManagerScroll) initiateL2ToL1(parentCtx context.Context, rebal
 	return nil
 }
 
-func getScrollRebalanceID(eventData []byte) string {
-	return common.BytesToHash(eventData).Hex()
-}
-
 func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err error) {
 	addr, err := c.boundL1Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
@@ -485,16 +481,14 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 				metrics.EndSpanWithErr(span, err)
 			}()
 
-			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
-				RebalanceID:     &rebalanceID,
 				Origin:          uint64(c.l1ChainID),
+				Destination:     uint64(c.l2ChainID),
 				OriginTxHash:    log.TxHash,
 				OriginTokenAddr: chain.EthAddress,
-				Destination:     uint64(c.l2ChainID),
 				Status:          reldb.RebalancePending,
 			}
-			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
+			err = c.db.UpdateLatestRebalance(ctx, rebalanceModel)
 			if err != nil {
 				logger.Warnf("could not update rebalance status: %v", err)
 				return nil
@@ -514,13 +508,13 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 				metrics.EndSpanWithErr(span, err)
 			}()
 
-			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
-				RebalanceID: &rebalanceID,
+				Origin:      uint64(c.l1ChainID),
+				Destination: uint64(c.l2ChainID),
 				DestTxHash:  log.TxHash,
 				Status:      reldb.RebalanceCompleted,
 			}
-			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
+			err = c.db.UpdateLatestRebalance(ctx, rebalanceModel)
 			if err != nil {
 				logger.Warnf("could not update rebalance status: %v", err)
 				return nil
@@ -566,16 +560,14 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 				metrics.EndSpanWithErr(span, err)
 			}()
 
-			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
-				RebalanceID:     &rebalanceID,
 				Origin:          uint64(c.l1ChainID),
+				Destination:     uint64(c.l2ChainID),
 				OriginTxHash:    log.TxHash,
 				OriginTokenAddr: event.L1Token,
-				Destination:     uint64(c.l2ChainID),
 				Status:          reldb.RebalancePending,
 			}
-			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
+			err = c.db.UpdateLatestRebalance(ctx, rebalanceModel)
 			if err != nil {
 				logger.Warnf("could not update rebalance status: %v", err)
 				return nil
@@ -595,13 +587,13 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 				metrics.EndSpanWithErr(span, err)
 			}()
 
-			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
-				RebalanceID: &rebalanceID,
+				Origin:      uint64(c.l1ChainID),
+				Destination: uint64(c.l2ChainID),
 				DestTxHash:  log.TxHash,
 				Status:      reldb.RebalanceCompleted,
 			}
-			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
+			err = c.db.UpdateLatestRebalance(ctx, rebalanceModel)
 			if err != nil {
 				logger.Warnf("could not update rebalance status: %v", err)
 				return nil
