@@ -506,6 +506,7 @@ export const USDT = new Token({
     [CHAINS.KLAYTN.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
+    [CHAINS.SCROLL.id]: 6,
   },
   symbol: 'USDT',
   name: 'USD Tether',
