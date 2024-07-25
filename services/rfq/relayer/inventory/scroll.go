@@ -325,6 +325,13 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 		return fmt.Errorf("could not get L2ERC20Gateway listener: %w", err)
 	}
 
+	span.SetAttributes(
+		attribute.String("l1_eth_gateway", l1ETHAddr.String()),
+		attribute.String("l1_erc20_gateway", l1ERC20Addr.String()),
+		attribute.String("l2_eth_gateway", l2ETHAddr.String()),
+		attribute.String("l2_erc20_gateway", l2ERC20Addr.String()),
+	)
+
 	return nil
 }
 
