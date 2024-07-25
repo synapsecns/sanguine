@@ -1,7 +1,6 @@
 import { Token } from '../types'
 import usdtLogo from '../assets/icons/usdt.svg'
 import usdcLogo from '../assets/icons/usdc.svg'
-
 import * as CHAINS from '../chains/master'
 
 export const SwapUSDC = new Token({
