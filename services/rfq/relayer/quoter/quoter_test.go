@@ -22,7 +22,8 @@ import (
 func (s *QuoterSuite) TestGenerateQuotes() {
 	// Generate quotes for USDC on the destination chain.
 	balance := big.NewInt(1000_000_000) // 1000 USDC
-	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destination), common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85"), balance)
+	inv := map[int]map[common.Address]*big.Int{}
+	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destination), common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85"), balance, inv)
 	s.Require().NoError(err)
 
 	// Verify the quotes are generated as expected.
@@ -43,7 +44,8 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	// Generate quotes for ETH on the destination chain.
 	balance, _ := new(big.Int).SetString("1000000000000000000", 10) // 1 ETH
-	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
+	inv := map[int]map[common.Address]*big.Int{}
+	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance, inv)
 	s.Require().NoError(err)
 
 	minGasToken, err := s.config.GetMinGasToken(int(s.destination))
@@ -68,7 +70,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	s.config.BaseChainConfig.MinGasToken = "100000000000000000" // 0.1 ETH
 	s.manager.SetConfig(s.config)
 
-	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
+	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance, inv)
 	s.Require().NoError(err)
 
 	minGasToken, err = s.config.GetMinGasToken(int(s.destination))
@@ -93,7 +95,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	s.config.BaseChainConfig.MinGasToken = "1000000000000000001" // 0.1 ETH
 	s.manager.SetConfig(s.config)
 
-	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
+	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance, inv)
 	s.NoError(err)
 	s.Equal(quotes[0].DestAmount, "0")
 	s.Equal(quotes[0].MaxOriginAmount, "0")
@@ -164,11 +166,10 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 	address := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
-	setQuoteParams := func(quotePct, quoteOffset float64, minQuoteAmount string, minBalance string) {
+	setQuoteParams := func(quotePct, quoteOffset float64, minQuoteAmount string) {
 		s.config.BaseChainConfig.QuotePct = quotePct
 		destTokenCfg := s.config.Chains[dest].Tokens["USDC"]
 		destTokenCfg.MinQuoteAmount = minQuoteAmount
-		destTokenCfg.MinBalance = minBalance
 		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
 		originTokenCfg.QuoteOffsetBps = quoteOffset
 		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
@@ -183,45 +184,38 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with MinQuoteAmount of 0; should be 50% of balance.
-	setQuoteParams(50, 0, "0", "0")
+	setQuoteParams(50, 0, "0")
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with QuoteOffset of -1%. Should be 1% less than 50% of balance.
-	setQuoteParams(50, -100, "0", "0")
+	setQuoteParams(50, -100, "0")
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(495_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
-	setQuoteParams(25, 0, "500", "0")
+	setQuoteParams(25, 0, "500")
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
-	setQuoteParams(25, 0, "500", "0")
+	setQuoteParams(25, 0, "500")
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 1500; should be total balance.
-	setQuoteParams(25, 0, "1500", "0")
+	setQuoteParams(25, 0, "1500")
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(1000_000_000)
-	s.Equal(expectedAmount, quoteAmount)
-
-	// Set QuotePct to 25 with MinQuoteAmount of 1500 and MinBalance of 200; should be total balance minus 200.
-	setQuoteParams(25, 0, "1500", "200")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
-	s.NoError(err)
-	expectedAmount = big.NewInt(800_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Toggle insufficient gas; should be 0.
