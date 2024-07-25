@@ -22,6 +22,7 @@ func init() {
 	transactionIDFieldName = namer.GetConsistentName("TransactionID")
 	originTxHashFieldName = namer.GetConsistentName("OriginTxHash")
 	destTxHashFieldName = namer.GetConsistentName("DestTxHash")
+	originTokenAddrFieldName = namer.GetConsistentName("OriginTokenAddr")
 	rebalanceIDFieldName = namer.GetConsistentName("RebalanceID")
 	relayNonceFieldName = namer.GetConsistentName("RelayNonce")
 }
