@@ -877,7 +877,7 @@ func (c *rebalanceManagerScroll) submitClaim(parentCtx context.Context, claimInf
 			BatchIndex:  batchIndex,
 			MerkleProof: merkleProof,
 		}
-		tx, err = c.boundL1ScrollMessenger.RelayMessageWithProof(transactor, common.HexToAddress(claimInfo.From), c.relayerAddress, value, nonce, message, proof)
+		tx, err = c.boundL1ScrollMessenger.RelayMessageWithProof(transactor, common.HexToAddress(claimInfo.From), common.HexToAddress(claimInfo.To), value, nonce, message, proof)
 		if err != nil {
 			return nil, fmt.Errorf("could not relay message: %w", err)
 		}
