@@ -294,7 +294,7 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get L1ETHGateway listener: %w", err)
 	}
-	l1ERC20Addr, err := c.boundL1Gateway.ERC20Gateway(&bind.CallOpts{Context: ctx}, c.l1ERC20Address)
+	l1ERC20Addr, err := c.boundL1Gateway.GetERC20Gateway(&bind.CallOpts{Context: ctx}, c.l1ERC20Address)
 	if err != nil {
 		return fmt.Errorf("could not get L1ERC20Gateway address: %w", err)
 	}
@@ -324,7 +324,7 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get L2ETHGateway listener: %w", err)
 	}
-	l2ERC20Addr, err := c.boundL2Gateway.ERC20Gateway(&bind.CallOpts{Context: ctx}, c.l2ERC20Address)
+	l2ERC20Addr, err := c.boundL2Gateway.GetERC20Gateway(&bind.CallOpts{Context: ctx}, c.l2ERC20Address)
 	if err != nil {
 		return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
 	}
@@ -536,7 +536,7 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 }
 
 func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err error) {
-	addr, err := c.boundL1Gateway.ERC20Gateway(&bind.CallOpts{Context: ctx}, c.l1ERC20Address)
+	addr, err := c.boundL1Gateway.GetERC20Gateway(&bind.CallOpts{Context: ctx}, c.l1ERC20Address)
 	if err != nil {
 		return fmt.Errorf("could not get ERC20Gateway address: %w", err)
 	}
@@ -698,7 +698,7 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 }
 
 func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err error) {
-	addr, err := c.boundL2Gateway.ERC20Gateway(&bind.CallOpts{Context: ctx}, c.l2ERC20Address)
+	addr, err := c.boundL2Gateway.GetERC20Gateway(&bind.CallOpts{Context: ctx}, c.l2ERC20Address)
 	if err != nil {
 		return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
 	}
