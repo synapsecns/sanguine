@@ -298,6 +298,41 @@ func (c Config) GetQuoteOffsetBps(chainID int, tokenName string, isOrigin bool) 
 	return offset, nil
 }
 
+const defaultMinBalance = 0
+
+// GetMinBalance returns the MinBalance for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+func (c Config) GetMinBalance(chainID int, addr common.Address) *big.Int {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return big.NewInt(defaultMinBalance)
+	}
+
+	var tokenCfg *TokenConfig
+	for _, cfg := range chainCfg.Tokens {
+		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
+			cfgCopy := cfg
+			tokenCfg = &cfgCopy
+			break
+		}
+	}
+	if tokenCfg == nil {
+		return big.NewInt(defaultMinBalance)
+	}
+	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinBalance)
+	if !ok {
+		return big.NewInt(defaultMinBalance)
+	}
+	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
+		return big.NewInt(defaultMinBalance)
+	}
+
+	// Scale the minBalance by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return quoteAmountScaled
+}
+
 // GetQuoteWidthBps returns the QuoteWidthBps for the given chainID.
 func (c Config) GetQuoteWidthBps(chainID int) (value float64, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "QuoteWidthBps")

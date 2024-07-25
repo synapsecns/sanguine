@@ -128,6 +128,8 @@ type TokenConfig struct {
 	// Note that this value can be positive or negative; if positive it effectively increases the quoted price
 	// of the given token, and vice versa.
 	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
+	// MinBalance is the minimum balance that should be leftover from quoting, in human-readable units.
+	MinBalance string `yaml:"min_balance"`
 }
 
 // DatabaseConfig represents the configuration for the database.
