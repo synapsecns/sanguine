@@ -509,8 +509,8 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 			}()
 
 			rebalanceModel := reldb.Rebalance{
-				Origin:      uint64(c.l1ChainID),
-				Destination: uint64(c.l2ChainID),
+				Origin:      uint64(c.l2ChainID),
+				Destination: uint64(c.l1ChainID),
 				DestTxHash:  log.TxHash,
 				Status:      reldb.RebalanceCompleted,
 			}
@@ -588,8 +588,8 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 			}()
 
 			rebalanceModel := reldb.Rebalance{
-				Origin:      uint64(c.l1ChainID),
-				Destination: uint64(c.l2ChainID),
+				Origin:      uint64(c.l2ChainID),
+				Destination: uint64(c.l1ChainID),
 				DestTxHash:  log.TxHash,
 				Status:      reldb.RebalanceCompleted,
 			}
@@ -667,8 +667,8 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 			}()
 
 			rebalanceModel := reldb.Rebalance{
-				Origin:      uint64(c.l2ChainID),
-				Destination: uint64(c.l1ChainID),
+				Origin:      uint64(c.l1ChainID),
+				Destination: uint64(c.l2ChainID),
 				DestTxHash:  log.TxHash,
 				Status:      reldb.RebalanceCompleted,
 			}
