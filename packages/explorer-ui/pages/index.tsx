@@ -1,10 +1,5 @@
 import { Home } from '@components/pages/Home'
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
-import {
-  AMOUNT_STATISTIC,
-  DAILY_STATISTICS_BY_CHAIN,
-  RANKED_CHAINIDS_BY_VOLUME,
-} from '@graphql/queries'
 import { API_URL } from '@graphql'
 import ReactGA from 'react-ga'
 
@@ -25,7 +20,7 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 })
 
-function Index() {
+const Index = () => {
   return <Home />
 }
 

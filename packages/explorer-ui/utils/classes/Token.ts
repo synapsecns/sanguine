@@ -149,7 +149,7 @@ export class Token {
   // }
 }
 
-function makeMultiChainObj(valOrObj) {
+const makeMultiChainObj = (valOrObj) => {
   if (_.isObject(valOrObj)) {
     return valOrObj
   } else {

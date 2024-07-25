@@ -1,27 +1,14 @@
-import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import {
-  TOKEN_HASH_MAP,
-  AVWETH,
-  tokenAddressToToken,
-  ETH,
-  USDC,
-  tokenSymbolToToken,
-} from 'synapse-constants'
-import { getTokenAddressUrl } from '@urls'
 import Image from 'next/image'
+import { TOKEN_HASH_MAP, AVWETH, USDC } from 'synapse-constants'
+import { getTokenAddressUrl } from '@urls'
 
-export function AssetImage({
-  tokenAddress,
-  chainId,
-  className,
-  tokenSymbol = '',
-}) {
+export const AssetImage = ({ tokenAddress, chainId, className }) => {
   tokenAddress = tokenAddress
   if (hasRequiredData({ tokenAddress, chainId })) {
     const t = chainId && tokenAddress && TOKEN_HASH_MAP[chainId]?.[tokenAddress]
     return (
       <a href={getTokenAddressUrl({ tokenAddress, chainId })}>
-        <div className="w-full relative">
+        <div className="relative w-full">
           <div className="flex justify-between ">
             <div className="flex flex-row w-[90%] items-center">
               <Image className={`${className}`} src={t?.icon} alt="" />
@@ -57,7 +44,7 @@ export function AssetImage({
   }
 }
 
-function hasRequiredData({ tokenAddress, chainId }) {
+const hasRequiredData = ({ tokenAddress, chainId }) => {
   return (
     tokenAddress &&
     chainId &&

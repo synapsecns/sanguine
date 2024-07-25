@@ -30,7 +30,7 @@ for (const [colorName, chainIdArr] of Object.entries(COLOR_NETWORK_MAP)) {
 
 export { NETWORK_COLORS }
 
-export function getNetworkCurrencyColor(chainId) {
+export const getNetworkCurrencyColor = (chainId) => {
   switch (parseInt(chainId)) {
     case ChainId.BSC:
       return 'text-[#ecae0b] dark:text-[#ecae0b]'
@@ -67,7 +67,7 @@ export function getNetworkCurrencyColor(chainId) {
   }
 }
 
-export function getNetworkButtonBgClassName(chainId) {
+export const getNetworkButtonBgClassName = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'bg-stone-800 hover:bg-stone-900 active:bg-[#3c3c44]'
@@ -94,7 +94,7 @@ export function getNetworkButtonBgClassName(chainId) {
   }
 }
 
-export function getNetworkButtonBgClassNameActive(chainId) {
+export const getNetworkButtonBgClassNameActive = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'dark:active:!bg-[#3c3c44] '
@@ -121,7 +121,7 @@ export function getNetworkButtonBgClassNameActive(chainId) {
   }
 }
 
-export function getNetworkButtonBorderHover(chainId) {
+export const getNetworkButtonBorderHover = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'hover:!border-[#ecae0b]'
@@ -148,7 +148,7 @@ export function getNetworkButtonBorderHover(chainId) {
   }
 }
 
-export function getNetworkButtonBorderActive(chainId) {
+export const getNetworkButtonBorderActive = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'focus:!border-[#ecae0b] active:!border-[#ecae0b]'
@@ -175,7 +175,7 @@ export function getNetworkButtonBorderActive(chainId) {
   }
 }
 
-export function getNetworkButtonBorder(chainId) {
+export const getNetworkButtonBorder = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'border-[#ecae0b] dark:border-[#ecae0b]'
@@ -202,7 +202,7 @@ export function getNetworkButtonBorder(chainId) {
   }
 }
 
-export function getNetworkButtonBorderImportant(chainId) {
+export const getNetworkButtonBorderImportant = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return '!border-[#ecae0b] dark:!border-[#ecae0b]'
@@ -229,7 +229,7 @@ export function getNetworkButtonBorderImportant(chainId) {
   }
 }
 
-export function getNetworkTextColor(chainId) {
+export const getNetworkTextColor = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'text-[#ecae0b] dark:text-[#ecae0b]'
@@ -256,7 +256,7 @@ export function getNetworkTextColor(chainId) {
   }
 }
 
-export function getNetworkTextHoverColor(chainId) {
+export const getNetworkTextHoverColor = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'hover:text-[#ecae0b]'
@@ -283,7 +283,7 @@ export function getNetworkTextHoverColor(chainId) {
   }
 }
 
-export function getNetworkLinkTextColor(chainId) {
+export const getNetworkLinkTextColor = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return '!text-gray-800 hover:!text-[#ecae0b] dark:!text-[#ecae0b] dark:hover:!text-[#ecae0b]'
@@ -310,7 +310,7 @@ export function getNetworkLinkTextColor(chainId) {
   }
 }
 
-export function getNetworkTextColorContrast(chainId) {
+export const getNetworkTextColorContrast = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'text-[#ecae0b]'
@@ -337,7 +337,7 @@ export function getNetworkTextColorContrast(chainId) {
   }
 }
 
-export function getNetworkTextColorContrastHover(chainId) {
+export const getNetworkTextColorContrastHover = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'group-hover:text-[#ecae0b]'
@@ -364,7 +364,7 @@ export function getNetworkTextColorContrastHover(chainId) {
   }
 }
 
-export function getNetworkBgClassName(chainId) {
+export const getNetworkBgClassName = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'bg-stone-800'
@@ -391,7 +391,7 @@ export function getNetworkBgClassName(chainId) {
   }
 }
 
-export function getNetworkBgClassNameLightDark(chainId) {
+export const getNetworkBgClassNameLightDark = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'bg-[#ecae0b] '
@@ -418,7 +418,7 @@ export function getNetworkBgClassNameLightDark(chainId) {
   }
 }
 
-export function getNetworkShadow(chainId) {
+export const getNetworkShadow = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return ' !shadow-yellow-600 hover:shadow-yellow-500'
@@ -445,7 +445,7 @@ export function getNetworkShadow(chainId) {
   }
 }
 
-export function getNetworkHoverShadow(chainId) {
+export const getNetworkHoverShadow = (chainId) => {
   switch (NETWORK_COLORS[chainId]) {
     case 'yellow':
       return 'hover:!shadow-yellow-500'

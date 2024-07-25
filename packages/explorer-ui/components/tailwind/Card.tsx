@@ -10,14 +10,14 @@ interface CardProps {
   onClick?: any
 }
 
-export default function Card({
+export const Card = ({
   title,
   className,
   children,
   titleClassName,
   divider = true,
   ...props
-}: CardProps): JSX.Element {
+}: CardProps): JSX.Element => {
   const mergedClassName = twMerge(`
     bg-gray-800 shadow-lg pt-3 px-6 pb-6 rounded-lg ${className ?? ''}
   `)

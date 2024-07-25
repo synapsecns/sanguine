@@ -9,13 +9,13 @@ interface TooltipProps {
   tooltipClassName?: string
 }
 
-export default function Tooltip({
+export const Tooltip = ({
   children,
   title,
   content,
   className,
   tooltipClassName,
-}: TooltipProps) {
+}: TooltipProps) => {
   const [tooltipShow, setTooltipShow] = useState(false)
   const btnRef = createRef<HTMLDivElement>()
   const tooltipRef = createRef<HTMLDivElement>()

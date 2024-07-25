@@ -1,7 +1,7 @@
 import { ellipsizeString } from '@utils/ellipsizeString'
 import { getAddressesUrl } from '@urls'
 
-export function StyleAddress({ sourceInfo, limiter = 4 }) {
+export const StyleAddress = ({ sourceInfo, limiter = 4 }) => {
   if (sourceInfo.address) {
     return (
       <a

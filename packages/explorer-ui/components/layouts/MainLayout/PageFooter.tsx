@@ -14,7 +14,7 @@ import {
   FORUM_URL,
   TELEGRAM_URL,
 } from '@urls'
-import Grid from '@components/tailwind/Grid'
+import { Grid } from '@components/tailwind/Grid'
 
 import { SynapseTitleLogo } from '.'
 
@@ -126,7 +126,7 @@ const admin = [
   },
 ]
 
-export function PageFooter() {
+export const PageFooter = () => {
   return (
     <footer>
       <div className="max-w-md px-4 pt-4 pb-6 mx-auto sm:max-w-3xl sm:pt-6 sm:px-6 lg:max-w-7xl lg:px-8">
@@ -157,7 +157,7 @@ export function PageFooter() {
   )
 }
 
-function FooterBlock({ elements }) {
+const FooterBlock = ({ elements }) => {
   return (
     <div className="text-left text-white md:text-left lg:text-right hover:cursor-pointer">
       {elements.map((element, i) => (
@@ -167,7 +167,7 @@ function FooterBlock({ elements }) {
   )
 }
 
-function DisplayText({ element }) {
+const DisplayText = ({ element }) => {
   const { text, url, type } = element
 
   if (type === 'url') {

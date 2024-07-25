@@ -1,14 +1,14 @@
 import Image from 'next/image'
-import copyImg from '@assets/icons/copy.png'
 import { useState, useEffect } from 'react'
+import copyImg from '@assets/icons/copy.png'
 
-export default function CopyTitle({
+export const CopyTitle = ({
   title,
   className,
 }: {
   title: string
   className?: string
-}) {
+}) => {
   const [copy, setCopy] = useState(false)
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function CopyTitle({
     <div className={className}>
       <div className={`flex flex-row hover:opacity-[0.8] transition-all`}>
         <h3
-          className="cursor-pointer text-white text-2xl font-semibold"
+          className="text-2xl font-semibold text-white cursor-pointer"
           onClick={() => {
             handleCopy()
           }}

@@ -1,16 +1,16 @@
-import { TRANSACTIONS_PATH } from '@urls'
+import _ from 'lodash'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { useQuery } from '@apollo/client'
+import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
+import { CopyTitle } from '@components/misc/CopyTitle'
+import { HolisticStats } from '@components/misc/HolisticStats'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
-import { useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { useRouter } from 'next/router'
 import { checksumAddress } from '@utils/checksum'
-import CopyTitle from '@components/misc/CopyTitle'
-import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
-import HolisticStats from '@components/misc/HolisticStats'
-import _ from 'lodash'
+import { TRANSACTIONS_PATH } from '@urls'
 
 const titles = {
   VOLUME: 'Volume',
@@ -28,7 +28,7 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 })
 
-function truncateAddress(address) {
+const truncateAddress = (address) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
@@ -39,7 +39,7 @@ interface variableTypes {
   addressTo?: string
 }
 
-export default function address() {
+export const address = () => {
   const router = useRouter()
   const { address } = router.query
 
@@ -121,8 +121,8 @@ export default function address() {
       <HorizontalDivider />
       <HorizontalDivider />
       <br /> <br />
-      <p className="text-white text-2xl font-bold">Recent Transactions</p>
-      <div className="h-full flex items-center mt-4">
+      <p className="text-2xl font-bold text-white">Recent Transactions</p>
+      <div className="flex items-center h-full mt-4">
         <button
           onClick={() =>
             setVariables({ page: 1, addressFrom: walletAddress, useMv: true })
@@ -158,7 +158,7 @@ export default function address() {
         <BridgeTransactionTable queryResult={transactionsArr} />
       )}
       <br />
-      <div className="text-center text-white my-6 ">
+      <div className="my-6 text-center text-white ">
         <div className="mt-2 mb-14 ">
           <a
             className="text-white rounded-md px-5 py-3 text-opacity-100 transition-all ease-in hover:bg-synapse-radial border-l-0 border-gray-700 border-opacity-30 bg-gray-700 bg-opacity-30 hover:border-[#BE78FF] cursor-pointer"

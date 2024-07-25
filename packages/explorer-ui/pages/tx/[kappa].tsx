@@ -27,15 +27,15 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 })
 
-function truncateAddress(address) {
+const truncateAddress = (address) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
-function truncateHash(hash) {
+const truncateHash = (hash) => {
   return `${hash.slice(0, 8)}...${hash.slice(-5)}`
 }
 
-export default function BridgeTransaction({ queryResult }) {
+export const BridgeTransaction = ({ queryResult }) => {
   const router = useRouter()
   const search = useSearchParams()
   const { kappa } = router.query
@@ -65,16 +65,16 @@ export default function BridgeTransaction({ queryResult }) {
   if (!!transaction) {
     content = (
       <>
-        <div className="flex flex-row mt-5 mb-1 text-white pb-12">
+        <div className="flex flex-row pb-12 mt-5 mb-1 text-white">
           <a
             className="text-[#99E6FF] cursor-pointer mr-2"
             href={TRANSACTIONS_PATH}
           >
             ← Explorer
           </a>
-          <span className="text-gray-500 mr-2">/</span>
+          <span className="mr-2 text-gray-500">/</span>
           <span
-            className="text-white hover:text-gray-500 cursor-pointer"
+            className="text-white cursor-pointer hover:text-gray-500"
             onClick={() => {
               try {
                 navigator.clipboard
@@ -91,18 +91,18 @@ export default function BridgeTransaction({ queryResult }) {
           </span>
         </div>
         <div className="py-4 border border-[#252537] rounded-xl w-4/5 mx-auto">
-          <div className="flex px-4 gap-y-2 flex-col">
-            <div className="flex mt-4 flex-col">
+          <div className="flex flex-col px-4 gap-y-2">
+            <div className="flex flex-col mt-4">
               <div className="flex flex-col">
-                <div className="flex justify-between items-center w-full">
+                <div className="flex items-center justify-between w-full">
                   <div className="flex gap-x-[1.8rem] py-1">
-                    <p className="text-white text-opacity-60 w-24">Timestamp</p>
+                    <p className="w-24 text-white text-opacity-60">Timestamp</p>
                     <p className="text-white">
                       {formatDateTimestamp(new Date(fromInfo.time * 1000))}
                     </p>
                   </div>
                   <div className="flex gap-x-[1.8rem] py-1">
-                    <p className="text-white hidden sm:block">
+                    <p className="hidden text-white sm:block">
                       {new Date(fromInfo.time * 1000)
                         .toISOString()
                         .replace('T', ' ')
@@ -112,13 +112,13 @@ export default function BridgeTransaction({ queryResult }) {
                 </div>
 
                 <div className="flex gap-x-[1.8rem] py-1">
-                  <p className="text-white text-opacity-60 w-24">Status</p>
+                  <p className="w-24 text-white text-opacity-60">Status</p>
                   <p className="text-white ">
                     {pending ? 'Pending' : 'Confirmed'}{' '}
                   </p>
                 </div>
                 <div className="flex gap-x-[1.8rem] py-1 pb-4">
-                  <p className="text-white text-opacity-60 w-24">Elapsed</p>
+                  <p className="w-24 text-white text-opacity-60">Elapsed</p>
                   <p className="text-white ">
                     {toInfo
                       ? getTimeDifference(fromInfo.time, toInfo.time) +
@@ -128,11 +128,11 @@ export default function BridgeTransaction({ queryResult }) {
                 </div>
                 <HorizontalDivider className="mx-[-1rem] bg-[#252537]" />
                 <div className="flex gap-x-[1.8rem] py-1 pt-4">
-                  <p className="text-white text-opacity-60 w-24">From</p>
+                  <p className="w-24 text-white text-opacity-60">From</p>
                   <a
                     target="_blank"
                     rel="noreferrer"
-                    className="text-white break-all text-sm hover:text-gray-500 cursor-pointer"
+                    className="text-sm text-white break-all cursor-pointer hover:text-gray-500"
                     href={ACCOUNTS_PATH + '/' + fromInfo.address}
                   >
                     <span className="hidden sm:inline">{fromInfo.address}</span>
@@ -142,11 +142,11 @@ export default function BridgeTransaction({ queryResult }) {
                   </a>
                 </div>
                 <div className="flex gap-x-[1.8rem] py-1 pb-4">
-                  <p className="text-white text-opacity-60 w-24">To</p>
+                  <p className="w-24 text-white text-opacity-60">To</p>
                   <a
                     target="_blank"
                     rel="noreferrer"
-                    className="text-white break-all text-sm hover:text-gray-500 cursor-pointer"
+                    className="text-sm text-white break-all cursor-pointer hover:text-gray-500"
                     href={toInfo ? ACCOUNTS_PATH + '/' + toInfo.address : ''}
                   >
                     {toInfo ? (
@@ -166,8 +166,8 @@ export default function BridgeTransaction({ queryResult }) {
                 <HorizontalDivider className="mx-[-1rem] bg-[#252537]" />
 
                 <div className="flex gap-x-[1.8rem] pt-4">
-                  <p className="text-white text-opacity-60 w-24">Sent</p>
-                  <div className="flex flex-col sm:flex-row items-center">
+                  <p className="w-24 text-white text-opacity-60">Sent</p>
+                  <div className="flex flex-col items-center sm:flex-row">
                     <IconAndAmount
                       formattedValue={fromInfo.formattedValue}
                       tokenAddress={fromInfo.tokenAddress}
@@ -177,7 +177,7 @@ export default function BridgeTransaction({ queryResult }) {
                       textSize="text-sm"
                       styledCoin={true}
                     />
-                    <div className="flex flex-col sm:flex-row items-center">
+                    <div className="flex flex-col items-center sm:flex-row">
                       <span className="px-2 text-white text-opacity-60">
                         on
                       </span>
@@ -191,9 +191,9 @@ export default function BridgeTransaction({ queryResult }) {
                 </div>
                 <HorizontalDivider className="mx-[-1rem] bg-[#252537] block sm:hidden my-4" />
                 <div className="flex gap-x-[1.8rem] mt-3 pb-1 items-center">
-                  <p className="text-white text-opacity-60 w-24">Received</p>
+                  <p className="w-24 text-white text-opacity-60">Received</p>
                   {toInfo ? (
-                    <div className="flex flex-col sm:flex-row items-center">
+                    <div className="flex flex-col items-center sm:flex-row">
                       <IconAndAmount
                         formattedValue={toInfo.formattedValue}
                         tokenAddress={toInfo.tokenAddress}
@@ -203,7 +203,7 @@ export default function BridgeTransaction({ queryResult }) {
                         textSize="text-sm"
                         styledCoin={true}
                       />
-                      <div className="flex flex-col sm:flex-row items-center">
+                      <div className="flex flex-col items-center sm:flex-row">
                         <span className="px-2 text-white text-opacity-60">
                           on
                         </span>
@@ -215,7 +215,7 @@ export default function BridgeTransaction({ queryResult }) {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-white break-all text-sm">--</p>
+                    <p className="text-sm text-white break-all">--</p>
                   )}
                 </div>
               </div>
@@ -223,22 +223,22 @@ export default function BridgeTransaction({ queryResult }) {
 
               <HorizontalDivider className="mx-[-1rem] bg-[#252537]" />
 
-              <div className="flex mt-8 flex-col">
+              <div className="flex flex-col mt-8">
                 <div className="flex gap-x-[1.8rem] py-1">
-                  <p className="text-white text-opacity-60 w-24">Txn Hash</p>
-                  <p className="text-white break-all text-sm">
+                  <p className="w-24 text-white text-opacity-60">Txn Hash</p>
+                  <p className="text-sm text-white break-all">
                     <span className="hidden sm:inline">{kappa}</span>
                     <span className="sm:hidden">{truncateHash(kappa)}</span>
                   </p>
                 </div>
 
                 <div className="flex gap-x-[1.8rem] py-1">
-                  <p className="text-white text-opacity-60 w-24">From Txn</p>
+                  <p className="w-24 text-white text-opacity-60">From Txn</p>
                   {fromInfo ? (
                     <a
                       target="_blank"
                       rel="noreferrer"
-                      className="text-white break-all text-sm hover:text-gray-500 cursor-pointer"
+                      className="text-sm text-white break-all cursor-pointer hover:text-gray-500"
                       href={
                         CHAINS_BY_ID[fromInfo.chainID]?.explorerUrl +
                         '/tx/' +
@@ -251,17 +251,17 @@ export default function BridgeTransaction({ queryResult }) {
                       </span>
                     </a>
                   ) : (
-                    <p className="text-white break-all text-sm">--</p>
+                    <p className="text-sm text-white break-all">--</p>
                   )}
                 </div>
 
                 <div className="flex gap-x-[1.8rem] py-1">
-                  <p className="text-white text-opacity-60 w-24">Dest Txn</p>
+                  <p className="w-24 text-white text-opacity-60">Dest Txn</p>
                   {toInfo ? (
                     <a
                       target="_blank"
                       rel="noreferrer"
-                      className="text-white break-all text-sm hover:text-gray-500 cursor-pointer"
+                      className="text-sm text-white break-all cursor-pointer hover:text-gray-500"
                       href={
                         CHAINS_BY_ID[toInfo.chainID]?.explorerUrl +
                         '/tx/' +
@@ -274,7 +274,7 @@ export default function BridgeTransaction({ queryResult }) {
                       </span>
                     </a>
                   ) : (
-                    <p className="text-white break-all text-sm">--</p>
+                    <p className="text-sm text-white break-all">--</p>
                   )}
                 </div>
               </div>
@@ -296,7 +296,7 @@ export default function BridgeTransaction({ queryResult }) {
 
   return <StandardPageContainer>{content}</StandardPageContainer>
 }
-export async function getServerSideProps(context) {
+export const getServerSideProps = (context) => {
   const { data } = await client.query({
     query: GET_BRIDGE_TRANSACTIONS_QUERY,
     variables: {

@@ -215,7 +215,7 @@ interface Props {
   [key: string]: any
 }
 
-export default function Grid({
+export const Grid = ({
   children,
   cols,
   gap,
@@ -224,7 +224,7 @@ export default function Grid({
   as,
   className: providedClassName,
   ...props
-}: Props) {
+}: Props) => {
   let novelClassName = 'grid '
 
   const { xs, sm, md, lg, xl } = cols ?? {}

@@ -45,14 +45,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   innerRef?: Ref<HTMLButtonElement>
 }
 
-export default function Button({
+export const Button = ({
   className,
   children,
   fancy,
   outline,
   innerRef,
   ...props
-}: ButtonProps) {
+}: ButtonProps) => {
   let btnStyleClassname
   if (fancy) {
     btnStyleClassname = fancyBgClassname

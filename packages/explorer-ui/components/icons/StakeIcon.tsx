@@ -1,4 +1,4 @@
-export default function StakeIcon({ className }) {
+export const StakeIcon = ({ className }) => {
   return (
     <svg
       className={`h-6 w-6 ${className}`}

@@ -1,6 +1,6 @@
-import Button from '@components/tailwind/Button'
-import { DotsHorizontalIcon } from '@heroicons/react/outline'
 import React from 'react'
+import { DotsHorizontalIcon } from '@heroicons/react/outline'
+import { Button } from '@components/tailwind/Button'
 
 interface MoreButtonProps {
   open: boolean

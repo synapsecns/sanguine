@@ -1,13 +1,13 @@
+import Link from 'next/link'
 import { Table } from '@components/TransactionTable/Table'
 import { StyleAddress } from '@components/misc/StyleAddress'
 import { IconAndAmount } from '@components/misc/IconAndAmount'
 import { ChainInfo } from '@components/misc/ChainInfo'
-import { timeAgo } from '@utils/timeAgo'
 import { addressToSymbol } from '@utils/addressToSymbol'
-import { formatDate } from '@utils/formatDate'
 import Arrow from '@components/icons/Arrow'
+import { timeAgo } from '@utils/timeAgo'
+import { formatDate } from '@utils/formatDate'
 import { getBridgeTransactionUrl } from '@urls'
-import Link from 'next/link'
 
 export const BridgeTransactionTable = ({ queryResult }) => {
   const tableRows = []

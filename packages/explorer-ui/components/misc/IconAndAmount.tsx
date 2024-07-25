@@ -1,10 +1,10 @@
-import { getCoinTextColor } from '@styles/coins'
-import { formatAmount } from '@utils/formatAmount'
-import { AssetImage } from '@components/misc/AssetImage'
-import { addressToSymbol } from '@utils/addressToSymbol'
-import { TOKEN_HASH_MAP, tokenAddressToToken } from 'synapse-constants'
-import { addressToDecimals } from '@utils/addressToDecimals'
+import { tokenAddressToToken } from 'synapse-constants'
 import { Tooltip as ReactTooltip } from 'react-tooltip'
+import { getCoinTextColor } from '@styles/coins'
+import { AssetImage } from '@components/misc/AssetImage'
+import { formatAmount } from '@utils/formatAmount'
+import { addressToSymbol } from '@utils/addressToSymbol'
+import { addressToDecimals } from '@utils/addressToDecimals'
 
 export const IconAndAmount = ({
   formattedValue,

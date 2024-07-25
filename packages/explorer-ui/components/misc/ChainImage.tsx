@@ -1,10 +1,10 @@
-import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { CHAINS } from 'synapse-constants'
 import Image from 'next/image'
+import { CHAINS } from 'synapse-constants'
+import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
-export function ChainImage({ chainId, imgSize = 'w-4 h-4', className }) {
+export const ChainImage = ({ chainId, imgSize = 'w-4 h-4', className }) => {
   if (chainId) {
     const chain = CHAINS_BY_ID[chainId]
     return (

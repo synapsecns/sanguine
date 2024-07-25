@@ -1,20 +1,19 @@
-import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
-import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
-import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
+import { CHAINS } from 'synapse-constants'
+import { useState, useEffect } from 'react'
+import { useLazyQuery } from '@apollo/client'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import { useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
-import _ from 'lodash'
 import { Pagination } from '@components/Pagination'
-import { useLazyQuery } from '@apollo/client'
+import { HorizontalDivider } from '@components/misc/HorizontalDivider'
+import { UniversalSearch } from '@components/pages/Home/UniversalSearch'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { checksumAddress, checkAddressChecksum } from '@utils/checksum'
-import { CHAINS } from 'synapse-constants'
+import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
+import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
+import { checksumAddress } from '@utils/checksum'
 
 const CHAIN_ID_NAMES_REVERSE = CHAINS.CHAIN_ID_NAMES_REVERSE
 
-export default function Txs() {
+export const Txs = () => {
   const search = useSearchParams()
   const p = Number(search.get('p'))
   const hashSearch = String(search.get('hash'))
@@ -179,7 +178,7 @@ export default function Txs() {
     <>
       <StandardPageContainer title="Synapse Analytics">
         <div className="flex items-center mt-10 mb-2">
-          <h3 className="text-white text-2xl font-semibold">
+          <h3 className="text-2xl font-semibold text-white">
             Bridge Transactions
           </h3>
         </div>

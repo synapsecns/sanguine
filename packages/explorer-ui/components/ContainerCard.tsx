@@ -1,4 +1,4 @@
-import Card from '@components/tailwind/Card'
+import { Card } from '@components/tailwind/Card'
 
 interface ContainerCardProps {
   title?: any
@@ -10,7 +10,7 @@ interface ContainerCardProps {
   titleClassName?: string
 }
 
-export function ContainerCard({
+export const ContainerCard = ({
   title,
   subtitle,
   icon,
@@ -19,7 +19,7 @@ export function ContainerCard({
   subtitleClassName,
   titleClassName,
   ...props
-}: ContainerCardProps) {
+}: ContainerCardProps) => {
   return (
     <Card
       title={title}
@@ -51,13 +51,13 @@ interface ContainerTitleProps {
   titleClassName?: string
 }
 
-function ContainerTitle({
+const ContainerTitle = ({
   icon,
   title,
   subtitle,
   subtitleClassName,
   titleClassName = 'text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600',
-}: ContainerTitleProps) {
+}: ContainerTitleProps) => {
   return (
     <div className="flex items-center">
       <div className="mr-2 align-middle">{icon}</div>

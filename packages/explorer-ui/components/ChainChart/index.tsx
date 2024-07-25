@@ -67,7 +67,7 @@ export const OverviewChart: React.FC<OverviewChartProps> = ({
     }
 
     // Sort the array based on the second element
-    items.sort(function (first, second) {
+    items.sort((first, second) => {
       return second[1] - first[1]
     })
 

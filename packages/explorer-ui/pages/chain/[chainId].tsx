@@ -1,20 +1,20 @@
-import { TRANSACTIONS_PATH } from '@urls'
+import _ from 'lodash'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { CHAINS } from 'synapse-constants'
+import { useLazyQuery, useQuery } from '@apollo/client'
+import {
+  GET_BRIDGE_TRANSACTIONS_QUERY,
+  DAILY_STATISTICS_BY_CHAIN,
+} from '@graphql/queries'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { OverviewChart } from '@components/ChainChart'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
-import { useLazyQuery, useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { CHAINS } from 'synapse-constants'
-import { useRouter } from 'next/router'
-import {
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-  DAILY_STATISTICS_BY_CHAIN,
-} from '@graphql/queries'
-import HolisticStats from '@components/misc/HolisticStats'
-import _ from 'lodash'
+import { HolisticStats } from '@components/misc/HolisticStats'
+import { TRANSACTIONS_PATH } from '@urls'
 
 const CHAIN_ID_NAMES_REVERSE = CHAINS.CHAIN_ID_NAMES_REVERSE
 const titles = {
@@ -39,7 +39,7 @@ interface variablesType {
   useMv?: boolean
 }
 
-export default function chainId() {
+export const chainId = () => {
   const router = useRouter()
   const { chainId: chainIdRouter } = router.query
   const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
@@ -154,7 +154,7 @@ export default function chainId() {
   return (
     <StandardPageContainer title={''}>
       <div className="flex items-center mt-10 mb-2">
-        <h3 className="text-white text-2xl font-semibold">
+        <h3 className="text-2xl font-semibold text-white">
           <ChainInfo
             chainId={chainId}
             imgClassName="w-10 h-10"
@@ -180,13 +180,13 @@ export default function chainId() {
       <HorizontalDivider />
       <div className="grid grid-cols-4 gap-4">
         <div className="col-span-1">
-          <div className="z-1 w-full h-full flex bg-synapse-logo bg-no-repeat bg-center">
+          <div className="flex w-full h-full bg-center bg-no-repeat z-1 bg-synapse-logo">
             <div id="tooltip-sidebar" className="w-full " />
           </div>
         </div>
-        <div className="col-span-3 flex justify-end flex-col my-6	">
+        <div className="flex flex-col justify-end col-span-3 my-6 ">
           <div className="flex flex-wrap justify-end ">
-            <div className="h-full flex items-center mr-4">
+            <div className="flex items-center h-full mr-4">
               {platform === 'MESSAGE_BUS' ? null : (
                 <button
                   onClick={() => setDailyStatisticType('VOLUME')}
@@ -239,7 +239,7 @@ export default function chainId() {
                 Addr
               </button>
             </div>
-            <div className="h-full flex items-center mr-4">
+            <div className="flex items-center h-full mr-4">
               <button
                 onClick={() => SetDailyStatisticDuration('PAST_MONTH')}
                 className={
@@ -277,7 +277,7 @@ export default function chainId() {
                 6mo
               </button>
             </div>
-            <div className="h-full flex items-center">
+            <div className="flex items-center h-full">
               <button
                 onClick={() => SetDailyStatisticCumulative(false)}
                 className={
@@ -322,8 +322,8 @@ export default function chainId() {
       <br /> <br />
       <HorizontalDivider />
       <br /> <br />
-      <p className="text-white text-2xl font-bold">Recent Transactions</p>
-      <div className="h-full flex items-center mt-4">
+      <p className="text-2xl font-bold text-white">Recent Transactions</p>
+      <div className="flex items-center h-full mt-4">
         <button
           onClick={() => setVariables({ chainIDFrom: chainId, useMv: true })}
           className={
@@ -355,7 +355,7 @@ export default function chainId() {
         <BridgeTransactionTable queryResult={transactionsArr} />
       )}
       <br />
-      <div className="text-center text-white my-6 ">
+      <div className="my-6 text-center text-white ">
         <div className="mt-2 mb-14 ">
           <a
             className="text-white rounded-md px-5 py-3 text-opacity-100 transition-all ease-in hover:bg-synapse-radial border-l-0 border-gray-700 border-opacity-30 bg-gray-700 bg-opacity-30 hover:border-[#BE78FF] cursor-pointer"

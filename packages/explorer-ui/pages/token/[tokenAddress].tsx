@@ -1,20 +1,20 @@
-import { TRANSACTIONS_PATH, getChainUrl } from '@urls'
+import _ from 'lodash'
+import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
-import { TOKEN_HASH_MAP } from 'synapse-constants'
-import { AssetImage } from '@components/misc/AssetImage'
 import { useSearchParams } from 'next/navigation'
-import { HorizontalDivider } from '@components/misc/HorizontalDivider'
+import { TOKEN_HASH_MAP } from 'synapse-constants'
+import { useQuery } from '@apollo/client'
+import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
+import { TRANSACTIONS_PATH, getChainUrl } from '@urls'
+import { CopyTitle } from '@components/misc/CopyTitle'
+import { AssetImage } from '@components/misc/AssetImage'
 import { ChainInfo } from '@components/misc/ChainInfo'
+import { HolisticStats } from '@components/misc/HolisticStats'
+import { HorizontalDivider } from '@components/misc/HorizontalDivider'
+import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
-import { useQuery } from '@apollo/client'
-import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { useRouter } from 'next/router'
-import CopyTitle from '@components/misc/CopyTitle'
 import { checksumAddress } from '@utils/checksum'
-import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
-import HolisticStats from '@components/misc/HolisticStats'
-import _ from 'lodash'
 
 const titles = {
   VOLUME: 'Volume',
@@ -44,7 +44,7 @@ interface variableTypes {
   chainId?: any
 }
 
-export default function chainId() {
+export const chainId = () => {
   const router = useRouter()
   const { tokenAddress } = router.query
   const search = useSearchParams()
@@ -115,7 +115,7 @@ export default function chainId() {
   return (
     <StandardPageContainer title={''}>
       <a href={getChainUrl({ chainId: tokenChainID })}>
-        <div className="rounded-md py-1 px-2 bg-gray-800/50 mb-2 w-fit hover:bg-gray-500/50">
+        <div className="px-2 py-1 mb-2 rounded-md bg-gray-800/50 w-fit hover:bg-gray-500/50">
           <ChainInfo
             chainId={tokenChainID}
             imgClassName="w-6 h-6 rounded-full"
@@ -129,7 +129,7 @@ export default function chainId() {
           chainId={tokenChainID}
           className={`w-9 h-9 inline mr-3 rounded-lg`}
         />
-        <h3 className="text-white text-5xl font-semibold">
+        <h3 className="text-5xl font-semibold text-white">
           {TOKEN_HASH_MAP[tokenChainID]?.[address]?.symbol}{' '}
         </h3>
       </div>
@@ -154,8 +154,8 @@ export default function chainId() {
       <HorizontalDivider />
       <HorizontalDivider />
       <br /> <br />
-      <p className="text-white text-2xl font-bold">Recent Transactions</p>
-      <div className="h-full flex items-center mt-4">
+      <p className="text-2xl font-bold text-white">Recent Transactions</p>
+      <div className="flex items-center h-full mt-4">
         <button
           onClick={() =>
             setVariables({
@@ -201,7 +201,7 @@ export default function chainId() {
         <BridgeTransactionTable queryResult={transactionsArr} />
       )}
       <br />
-      <div className="text-center text-white my-6 ">
+      <div className="my-6 text-center text-white ">
         <div className="mt-2 mb-14 ">
           <a
             className="text-white rounded-md px-5 py-3 text-opacity-100 transition-all ease-in hover:bg-synapse-radial border-l-0 border-gray-700 border-opacity-30 bg-gray-700 bg-opacity-30 hover:border-[#BE78FF] cursor-pointer"

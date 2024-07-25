@@ -1,6 +1,6 @@
-import CloseIcon from '@components/icons/CloseIcon'
+import { CloseIcon } from '@components/icons/CloseIcon'
 
-export default function CloseButton({ onClick }) {
+export const CloseButton = ({ onClick }) => {
   return (
     <button
       onClick={onClick}

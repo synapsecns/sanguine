@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@apollo/client'
 import { AMOUNT_STATISTIC } from '@graphql/queries'
-import Card from '@components/tailwind/Card'
-import Grid from '@components/tailwind/Grid'
-import numeral from 'numeral'
+import { Card } from '@components/tailwind/Card'
 import { formatUSD } from '@utils/formatUSD'
 
 interface HolisticStatsProps {
@@ -15,14 +13,14 @@ interface HolisticStatsProps {
   noMessaging?: boolean
 }
 
-export default function HolisticStats({
+export const HolisticStats = ({
   platform: parentPlatform,
   setPlatform: parentSetPlatform,
   loading,
   chainID,
   baseVariables,
   noMessaging,
-}: HolisticStatsProps) {
+}: HolisticStatsProps) => {
   const [volume, setVolume] = useState<string>('--')
   const [fee, setFee] = useState<string>('--')
   const [addresses, setAddresses] = useState<string>('--')
@@ -225,7 +223,7 @@ export default function HolisticStats({
               <div className="text-xl opacity-80">{stat.title}</div>
               <div className="text-4xl font-bold text-white">
                 {stat.loading ? (
-                  <div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>
+                  <div className="w-full mt-4 rounded h-9 bg-slate-700 animate-pulse"></div>
                 ) : stat.usd ? (
                   '$' + stat.value
                 ) : (
@@ -238,12 +236,12 @@ export default function HolisticStats({
               key={i}
               className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
             >
-              <div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>
+              <div className="w-full mt-4 rounded h-9 bg-slate-700 animate-pulse"></div>
             </Card>
           ) : null
         })}
       </div>
-      <div className="flex space-x-2 text-sm pt-3 font-medium">
+      <div className="flex pt-3 space-x-2 text-sm font-medium">
         <div className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-400">
           All Time
         </div>
