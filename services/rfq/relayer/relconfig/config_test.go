@@ -1,12 +1,21 @@
 package relconfig_test
 
 import (
-	"github.com/stretchr/testify/assert"
+	"context"
+	"math/big"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
@@ -501,5 +510,50 @@ func TestDecodeTokenID(t *testing.T) {
 				assert.Equal(t, tt.wantAddr, gotAddr)
 			}
 		})
+	}
+}
+
+type ValidateDecimalsSuite struct {
+	*testsuite.TestSuite
+	// testBackends contains a list of all test backends
+	testBackends []backends.SimulatedTestBackend
+	// testOmnirpc setup in SetupTest
+	testOmnirpc string
+	// metricsHandler is the metrics handler for the test
+	metricsHandler metrics.Handler
+}
+
+// NewTestSuite creates a new test suite.
+func NewTestSuite(tb testing.TB) *ValidateDecimalsSuite {
+	tb.Helper()
+	return &ValidateDecimalsSuite{
+		TestSuite: testsuite.NewTestSuite(tb),
+	}
+}
+
+func (v *ValidateDecimalsSuite) TestValidateDecimals(t *testing.T) {
+	usdcAddr := "0x123"
+	ctx := context.Background()
+
+	backend := geth.NewEmbeddedBackendForChainID(ctx, v.T(), big.NewInt(1))
+	testOmniRPC := omnirpcHelper.NewOmnirpcServer(ctx, v.T(), backend)
+
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			1: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:            usdcAddr,
+						Decimals:           18, // WRONG
+						MaxRebalanceAmount: "1000",
+					},
+				},
+			},
+		},
+	}
+	omniClient := omniClient.NewOmnirpcClient(testOmniRPC, metrics.Get(), omniClient.WithCaptureReqRes())
+	err := cfg.ValidateTokenDecimals(ctx, omniClient)
+	if err != nil {
+		t.Fail()
 	}
 }
