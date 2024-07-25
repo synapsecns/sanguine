@@ -452,26 +452,27 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 		return fmt.Errorf("could not get l1 gateway parser: %w", err)
 	}
 	err = c.l1ETHGatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
-		et, parsedEvent, ok := parser.ParseEvent(log)
+		_, parsedEvent, ok := parser.ParseEvent(log)
 		if !ok {
 			return nil
 		}
-
-		ctx, span := c.handler.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
-			attribute.String(metrics.TxHash, log.TxHash.String()),
-			attribute.String(metrics.Contract, log.Address.String()),
-			attribute.String("block_hash", log.BlockHash.String()),
-			attribute.Int64("block_number", int64(log.BlockNumber)),
-		))
-		defer func() {
-			metrics.EndSpanWithErr(span, err)
-		}()
 
 		switch event := parsedEvent.(type) {
 		case *l1gateway.L1GatewayRouterDepositETH:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
 				return
 			}
+
+			ctx, span := c.handler.Tracer().Start(parentCtx, "handleDepositETH", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+				attribute.String(metrics.Contract, log.Address.String()),
+				attribute.String("block_hash", log.BlockHash.String()),
+				attribute.Int64("block_number", int64(log.BlockNumber)),
+			))
+			defer func() {
+				metrics.EndSpanWithErr(span, err)
+			}()
+
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID:     &rebalanceID,
@@ -490,6 +491,17 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
 				return
 			}
+
+			ctx, span := c.handler.Tracer().Start(parentCtx, "handleFinalizeWithdrawETH", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+				attribute.String(metrics.Contract, log.Address.String()),
+				attribute.String("block_hash", log.BlockHash.String()),
+				attribute.Int64("block_number", int64(log.BlockNumber)),
+			))
+			defer func() {
+				metrics.EndSpanWithErr(span, err)
+			}()
+
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID: &rebalanceID,
@@ -521,26 +533,27 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 		return fmt.Errorf("could not get l1 gateway parser: %w", err)
 	}
 	err = c.l1ERC20GatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
-		et, parsedEvent, ok := parser.ParseEvent(log)
+		_, parsedEvent, ok := parser.ParseEvent(log)
 		if !ok {
 			return nil
 		}
-
-		ctx, span := c.handler.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
-			attribute.String(metrics.TxHash, log.TxHash.String()),
-			attribute.String(metrics.Contract, log.Address.String()),
-			attribute.String("block_hash", log.BlockHash.String()),
-			attribute.Int64("block_number", int64(log.BlockNumber)),
-		))
-		defer func() {
-			metrics.EndSpanWithErr(span, err)
-		}()
 
 		switch event := parsedEvent.(type) {
 		case *l1gateway.L1GatewayRouterDepositERC20:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
 				return
 			}
+
+			ctx, span := c.handler.Tracer().Start(parentCtx, "handleDepositERC20", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+				attribute.String(metrics.Contract, log.Address.String()),
+				attribute.String("block_hash", log.BlockHash.String()),
+				attribute.Int64("block_number", int64(log.BlockNumber)),
+			))
+			defer func() {
+				metrics.EndSpanWithErr(span, err)
+			}()
+
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID:     &rebalanceID,
@@ -559,6 +572,17 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
 				return
 			}
+
+			ctx, span := c.handler.Tracer().Start(parentCtx, "handleFinalizeWithdrawERC20", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+				attribute.String(metrics.Contract, log.Address.String()),
+				attribute.String("block_hash", log.BlockHash.String()),
+				attribute.Int64("block_number", int64(log.BlockNumber)),
+			))
+			defer func() {
+				metrics.EndSpanWithErr(span, err)
+			}()
+
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID: &rebalanceID,
@@ -590,26 +614,27 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 		return fmt.Errorf("could not get l2 gateway parser: %w", err)
 	}
 	err = c.l2ETHGatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
-		et, parsedEvent, ok := parser.ParseEvent(log)
+		_, parsedEvent, ok := parser.ParseEvent(log)
 		if !ok {
 			return nil
 		}
-
-		ctx, span := c.handler.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
-			attribute.String(metrics.TxHash, log.TxHash.String()),
-			attribute.String(metrics.Contract, log.Address.String()),
-			attribute.String("block_hash", log.BlockHash.String()),
-			attribute.Int64("block_number", int64(log.BlockNumber)),
-		))
-		defer func() {
-			metrics.EndSpanWithErr(span, err)
-		}()
 
 		switch event := parsedEvent.(type) {
 		case *l2gateway.L2GatewayRouterWithdrawETH:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
 				return
 			}
+
+			ctx, span := c.handler.Tracer().Start(parentCtx, "handleWithdrawETH", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+				attribute.String(metrics.Contract, log.Address.String()),
+				attribute.String("block_hash", log.BlockHash.String()),
+				attribute.Int64("block_number", int64(log.BlockNumber)),
+			))
+			defer func() {
+				metrics.EndSpanWithErr(span, err)
+			}()
+
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID:     &rebalanceID,
@@ -628,6 +653,17 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
 				return
 			}
+
+			ctx, span := c.handler.Tracer().Start(parentCtx, "handleFinalizeDepositETH", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+				attribute.String(metrics.Contract, log.Address.String()),
+				attribute.String("block_hash", log.BlockHash.String()),
+				attribute.Int64("block_number", int64(log.BlockNumber)),
+			))
+			defer func() {
+				metrics.EndSpanWithErr(span, err)
+			}()
+
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID: &rebalanceID,
@@ -659,26 +695,27 @@ func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err 
 		return fmt.Errorf("could not get l2 gateway parser: %w", err)
 	}
 	err = c.l2ERC20GatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
-		et, parsedEvent, ok := parser.ParseEvent(log)
+		_, parsedEvent, ok := parser.ParseEvent(log)
 		if !ok {
 			return nil
 		}
-
-		ctx, span := c.handler.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
-			attribute.String(metrics.TxHash, log.TxHash.String()),
-			attribute.String(metrics.Contract, log.Address.String()),
-			attribute.String("block_hash", log.BlockHash.String()),
-			attribute.Int64("block_number", int64(log.BlockNumber)),
-		))
-		defer func() {
-			metrics.EndSpanWithErr(span, err)
-		}()
 
 		switch event := parsedEvent.(type) {
 		case *l2gateway.L2GatewayRouterWithdrawERC20:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
 				return
 			}
+
+			ctx, span := c.handler.Tracer().Start(parentCtx, "handleWithdrawERC20", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+				attribute.String(metrics.Contract, log.Address.String()),
+				attribute.String("block_hash", log.BlockHash.String()),
+				attribute.Int64("block_number", int64(log.BlockNumber)),
+			))
+			defer func() {
+				metrics.EndSpanWithErr(span, err)
+			}()
+
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID:     &rebalanceID,
@@ -697,6 +734,17 @@ func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err 
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
 				return
 			}
+
+			ctx, span := c.handler.Tracer().Start(parentCtx, "handleFinalizeDepositERC20", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+				attribute.String(metrics.Contract, log.Address.String()),
+				attribute.String("block_hash", log.BlockHash.String()),
+				attribute.Int64("block_number", int64(log.BlockNumber)),
+			))
+			defer func() {
+				metrics.EndSpanWithErr(span, err)
+			}()
+
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID: &rebalanceID,
