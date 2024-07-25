@@ -336,24 +336,24 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 			//nolint:nestif
 			if tokenID == destTokenID {
 				keyTokenID := k // Parse token info
+				originStr := strings.Split(keyTokenID, "-")[0]
+				origin, tokenErr := strconv.Atoi(originStr)
+				if err != nil {
+					span.AddEvent("error converting origin chainID", trace.WithAttributes(
+						attribute.String("key_token_id", keyTokenID),
+						attribute.String("error", tokenErr.Error()),
+					))
+					continue
+				}
+				originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
+
+				var originBalance *big.Int
+				originTokens, ok := inv[origin]
+				if ok {
+					originBalance = originTokens[originTokenAddr]
+				}
+
 				g.Go(func() error {
-					originStr := strings.Split(keyTokenID, "-")[0]
-					origin, tokenErr := strconv.Atoi(originStr)
-					if err != nil {
-						span.AddEvent("error converting origin chainID", trace.WithAttributes(
-							attribute.String("key_token_id", keyTokenID),
-							attribute.String("error", tokenErr.Error()),
-						))
-						return nil
-					}
-					originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
-
-					var originBalance *big.Int
-					originTokens, ok := inv[origin]
-					if ok {
-						originBalance = originTokens[originTokenAddr]
-					}
-
 					input := quoteInput{
 						originChainID:   origin,
 						destChainID:     chainID,
