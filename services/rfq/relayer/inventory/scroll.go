@@ -57,6 +57,10 @@ type rebalanceManagerScroll struct {
 	l1ChainID int
 	// l2ChainID is the chain ID for the L2 chain
 	l2ChainID int
+	// l1ERC20Address is the address of the ERC20 to rebalance on the L1.
+	l1ERC20Address common.Address
+	// l2ERC20Address is the address of the ERC20 to rebalance on the L2.
+	l2ERC20Address common.Address
 	// db is the database
 	db reldb.Service
 	// apiURL is the URL for the scroll API
@@ -157,6 +161,7 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 
 const mainnetScrollAPIURL = "https://mainnet-api-bridge-v2.scroll.io/api/"
 const testnetScrollAPIURL = "https://sepolia-api-bridge-v2.scroll.io/api/"
+const erc20Name = "USDC"
 
 func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initContracts-scroll")
@@ -228,6 +233,28 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 		return fmt.Errorf("testnet chain mismatch: %d %d", c.l1ChainID, c.l2ChainID)
 	}
 	fmt.Println("contracts ok")
+
+	// set ERC20 addresses
+	for chainID, chainCfg := range c.cfg.Chains {
+		for tokenName, tokenCfg := range chainCfg.Tokens {
+			if tokenName != erc20Name {
+				continue
+			}
+			if chainID == c.l1ChainID {
+				c.l1ERC20Address = common.HexToAddress(tokenCfg.Address)
+			}
+			if chainID == c.l2ChainID {
+				c.l2ERC20Address = common.HexToAddress(tokenCfg.Address)
+			}
+		}
+	}
+	zeroAddress := common.Address{}
+	if c.l1ERC20Address == zeroAddress {
+		return fmt.Errorf("l1 erc20 address not set")
+	}
+	if c.l2ERC20Address == zeroAddress {
+		return fmt.Errorf("l2 erc20 address not set")
+	}
 
 	// set API URL
 	baseURL := mainnetScrollAPIURL
@@ -472,7 +499,7 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 }
 
 func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err error) {
-	addr, err := c.boundL1Gateway.EthGateway(&bind.CallOpts{Context: ctx})
+	addr, err := c.boundL1Gateway.ERC20Gateway(&bind.CallOpts{Context: ctx}, c.l1ERC20Address)
 	if err != nil {
 		return fmt.Errorf("could not get ERC20Gateway address: %w", err)
 	}
@@ -598,7 +625,7 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 }
 
 func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err error) {
-	addr, err := c.boundL2Gateway.ERC20Gateway(&bind.CallOpts{Context: ctx})
+	addr, err := c.boundL2Gateway.ERC20Gateway(&bind.CallOpts{Context: ctx}, c.l2ERC20Address)
 	if err != nil {
 		return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
 	}
