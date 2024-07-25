@@ -402,7 +402,7 @@ type quoteInput struct {
 
 func (m *Manager) generateQuote(ctx context.Context, input quoteInput) (quote *model.PutQuoteRequest, err error) {
 	// Calculate the quote amount for this route
-	originAmount, err := m.getOriginAmount(ctx, input.originChainID, input.destChainID, input.destTokenAddr, input.originBalance, input.destBalance)
+	originAmount, err := m.getOriginAmount(ctx, input.originChainID, input.destChainID, input.originTokenAddr, input.destTokenAddr, input.originBalance, input.destBalance)
 	// don't quote if gas exceeds quote
 	if errors.Is(err, errMinGasExceedsQuoteAmount) {
 		originAmount = big.NewInt(0)
@@ -486,11 +486,11 @@ func (m *Manager) recordQuoteAmounts(_ context.Context, observer metric.Observer
 // getOriginAmount calculates the origin quote amount for a given route.
 //
 //nolint:cyclop
-func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, address common.Address, originBalance, destBalance *big.Int) (quoteAmount *big.Int, err error) {
+func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, originAddress, destAddress common.Address, originBalance, destBalance *big.Int) (quoteAmount *big.Int, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getOriginAmount", trace.WithAttributes(
 		attribute.String(metrics.Origin, strconv.Itoa(origin)),
 		attribute.String(metrics.Destination, strconv.Itoa(dest)),
-		attribute.String("address", address.String()),
+		attribute.String("address", destAddress.String()),
 		attribute.String("origin_balance", originBalance.String()),
 		attribute.String("dest_balance", destBalance.String()),
 	))
@@ -528,7 +528,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
 	// Apply the quoteOffset to origin token.
-	tokenName, err := m.config.GetTokenName(uint32(dest), address.Hex())
+	tokenName, err := m.config.GetTokenName(uint32(dest), destAddress.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("error getting token name: %w", err)
 	}
@@ -539,7 +539,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	quoteAmount = m.applyOffset(ctx, quoteOffsetBps, quoteAmount)
 
 	// Clip the quoteAmount by the minQuoteAmount
-	minQuoteAmount := m.config.GetMinQuoteAmount(dest, address)
+	minQuoteAmount := m.config.GetMinQuoteAmount(dest, destAddress)
 	if quoteAmount.Cmp(minQuoteAmount) < 0 {
 		span.AddEvent("quote amount less than min quote amount", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
@@ -548,7 +548,23 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 		quoteAmount = minQuoteAmount
 	}
 
-	// Finally, clip the quoteAmount by the balance
+	// Clip the quoteAmount by the max origin balance
+	maxBalance := m.config.GetMaxBalance(origin, originAddress)
+	fmt.Printf("maxBalance: %v originBalance: %v\n", maxBalance, originBalance)
+	if originBalance != nil && maxBalance.Cmp(big.NewInt(0)) > 0 {
+		quotableBalance := new(big.Int).Sub(maxBalance, originBalance)
+		if quoteAmount.Cmp(quotableBalance) > 0 {
+			span.AddEvent("quote amount greater than quotable balance", trace.WithAttributes(
+				attribute.String("quote_amount", quoteAmount.String()),
+				attribute.String("quotable_balance", quotableBalance.String()),
+				attribute.String("max_balance", maxBalance.String()),
+				attribute.String("origin_balance", originBalance.String()),
+			))
+			quoteAmount = quotableBalance
+		}
+	}
+
+	// Finally, clip the quoteAmount by the dest balance
 	if quoteAmount.Cmp(destBalance) > 0 {
 		span.AddEvent("quote amount greater than quotable balance", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
@@ -558,7 +574,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	}
 
 	// Deduct gas cost from the quote amount, if necessary
-	quoteAmount, err = m.deductGasCost(ctx, quoteAmount, address, dest)
+	quoteAmount, err = m.deductGasCost(ctx, quoteAmount, destAddress, dest)
 	if err != nil {
 		return nil, fmt.Errorf("error deducting gas cost: %w", err)
 	}

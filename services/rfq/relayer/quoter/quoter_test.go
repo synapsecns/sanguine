@@ -164,63 +164,72 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 	origin := int(s.origin)
 	dest := int(s.destination)
 	address := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
+	originAddr := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
-	setQuoteParams := func(quotePct, quoteOffset float64, minQuoteAmount string) {
+	setQuoteParams := func(quotePct, quoteOffset float64, minQuoteAmount, maxBalance string) {
 		s.config.BaseChainConfig.QuotePct = quotePct
 		destTokenCfg := s.config.Chains[dest].Tokens["USDC"]
 		destTokenCfg.MinQuoteAmount = minQuoteAmount
 		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
 		originTokenCfg.QuoteOffsetBps = quoteOffset
+		originTokenCfg.MaxBalance = maxBalance
 		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
 		s.config.Chains[origin].Tokens["USDC"] = originTokenCfg
 		s.manager.SetConfig(s.config)
 	}
 
 	// Set default quote params; should return the balance.
-	quoteAmount, err := s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, nil, balance)
+	quoteAmount, err := s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, originAddr, address, balance, balance)
 	s.NoError(err)
 	expectedAmount := balance
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with MinQuoteAmount of 0; should be 50% of balance.
-	setQuoteParams(50, 0, "0")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, nil, balance)
+	setQuoteParams(50, 0, "0", "0")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, originAddr, address, balance, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with QuoteOffset of -1%. Should be 1% less than 50% of balance.
-	setQuoteParams(50, -100, "0")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, nil, balance)
+	setQuoteParams(50, -100, "0", "0")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, originAddr, address, balance, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(495_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
-	setQuoteParams(25, 0, "500")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, nil, balance)
+	setQuoteParams(25, 0, "500", "0")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, originAddr, address, balance, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
-	setQuoteParams(25, 0, "500")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, nil, balance)
+	setQuoteParams(25, 0, "500", "0")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, originAddr, address, balance, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 1500; should be total balance.
-	setQuoteParams(25, 0, "1500")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, nil, balance)
+	setQuoteParams(25, 0, "1500", "0")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, originAddr, address, balance, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(1000_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
+	// Set QuotePct to 25 with MinQuoteAmount of 1500 and MaxBalance of 1200; should be 200.
+	setQuoteParams(25, 0, "1500", "1200")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, originAddr, address, balance, balance)
+	s.NoError(err)
+	expectedAmount = big.NewInt(200_000_000)
+	s.Equal(expectedAmount, quoteAmount)
+
 	// Toggle insufficient gas; should be 0.
 	s.setGasSufficiency(false)
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, nil, balance)
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, originAddr, address, balance, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(0)
 	s.Equal(expectedAmount, quoteAmount)
