@@ -402,7 +402,7 @@ type quoteInput struct {
 
 func (m *Manager) generateQuote(ctx context.Context, input quoteInput) (quote *model.PutQuoteRequest, err error) {
 	// Calculate the quote amount for this route
-	originAmount, err := m.getOriginAmount(ctx, input.originChainID, input.destChainID, input.destTokenAddr, input.destBalance)
+	originAmount, err := m.getOriginAmount(ctx, input.originChainID, input.destChainID, input.destTokenAddr, input.originBalance, input.destBalance)
 	// don't quote if gas exceeds quote
 	if errors.Is(err, errMinGasExceedsQuoteAmount) {
 		originAmount = big.NewInt(0)
@@ -486,12 +486,13 @@ func (m *Manager) recordQuoteAmounts(_ context.Context, observer metric.Observer
 // getOriginAmount calculates the origin quote amount for a given route.
 //
 //nolint:cyclop
-func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, address common.Address, balance *big.Int) (quoteAmount *big.Int, err error) {
+func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, address common.Address, originBalance, destBalance *big.Int) (quoteAmount *big.Int, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getOriginAmount", trace.WithAttributes(
 		attribute.String(metrics.Origin, strconv.Itoa(origin)),
 		attribute.String(metrics.Destination, strconv.Itoa(dest)),
 		attribute.String("address", address.String()),
-		attribute.String("balance", balance.String()),
+		attribute.String("origin_balance", originBalance.String()),
+		attribute.String("dest_balance", destBalance.String()),
 	))
 
 	defer func() {
@@ -523,7 +524,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote pct: %w", err)
 	}
-	balanceFlt := new(big.Float).SetInt(balance)
+	balanceFlt := new(big.Float).SetInt(destBalance)
 	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
 	// Apply the quoteOffset to origin token.
@@ -548,12 +549,12 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	}
 
 	// Finally, clip the quoteAmount by the balance
-	if quoteAmount.Cmp(balance) > 0 {
+	if quoteAmount.Cmp(destBalance) > 0 {
 		span.AddEvent("quote amount greater than quotable balance", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
-			attribute.String("balance", balance.String()),
+			attribute.String("balance", destBalance.String()),
 		))
-		quoteAmount = balance
+		quoteAmount = destBalance
 	}
 
 	// Deduct gas cost from the quote amount, if necessary
