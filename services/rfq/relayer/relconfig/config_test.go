@@ -505,9 +505,11 @@ func TestDecodeTokenID(t *testing.T) {
 	}
 }
 
-func (v *ValidateDecimalsSuite) TestValidateWrongDecimals() {
-	usdcAddr := "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+const usdcAddr = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+const arbAddr = "0x912CE59144191C1204E64559FE8253a0e49E6548"
+const opAddr = "0x4200000000000000000000000000000000000042"
 
+func (v *ValidateDecimalsSuite) TestValidateWrongDecimals() {
 	cfg := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			1: {
@@ -526,8 +528,6 @@ func (v *ValidateDecimalsSuite) TestValidateWrongDecimals() {
 }
 
 func (v *ValidateDecimalsSuite) TestValidateCorrectDecimals() {
-	usdcAddr := "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-
 	cfg := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			1: {
@@ -545,9 +545,6 @@ func (v *ValidateDecimalsSuite) TestValidateCorrectDecimals() {
 }
 
 func (v *ValidateDecimalsSuite) TestMixtureDecimals() {
-	usdcAddr := "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-	arbAddr := "0x912CE59144191C1204E64559FE8253a0e49E6548"
-	opAddr := "0x4200000000000000000000000000000000000042"
 	cfg := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			1: {

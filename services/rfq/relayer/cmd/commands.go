@@ -40,6 +40,7 @@ var runCommand = &cli.Command{
 		metricsProvider := metrics.Get()
 
 		omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricsProvider, omniClient.WithCaptureReqRes())
+
 		if err = cfg.ValidateTokenDecimals(c.Context, omniClient); err != nil {
 			return fmt.Errorf("could not validate token decimals: %w", err)
 		}

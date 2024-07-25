@@ -237,7 +237,7 @@ func (c Config) Validate() (err error) {
 	return nil
 }
 
-// Validate calls decimals() on the ERC20s to ensure that the decimals in the config match the actual token decimals.
+// ValidateTokenDecimals calls decimals() on the ERC20s to ensure that the decimals in the config match the actual token decimals.
 func (c Config) ValidateTokenDecimals(ctx context.Context, omniClient omniClient.RPCClient) (err error) {
 	for chainID, chainCfg := range c.Chains {
 		for tokenName, tokenCFG := range chainCfg.Tokens {
