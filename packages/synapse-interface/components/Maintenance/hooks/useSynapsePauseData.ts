@@ -1,9 +1,11 @@
+import { useState, useCallback } from 'react'
+
 import { useAppDispatch } from '@/store/hooks'
 import {
   setPausedChainsData,
   setPausedModulesData,
 } from '@/slices/maintenance/reducer'
-import { fetchJsonData } from './fetchJsonData'
+import { fetchJsonData } from '../functions/fetchJsonData'
 import pausedChains from '@/public/pauses/v1/paused-chains.json'
 import pausedBridgeModules from '@/public/pauses/v1/paused-bridge-modules.json'
 
@@ -12,16 +14,15 @@ const PAUSED_CHAINS_URL =
 const PAUSED_MODULES_URL =
   'https://synapsecns.github.io/sanguine/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
 
-let isFetching = false
-
-export const getSynapsePauseData = () => {
+export const useSynapsePauseData = () => {
   const dispatch = useAppDispatch()
+  const [isFetching, setIsFetching] = useState(false)
 
-  const fetchAndStoreData = async () => {
+  const fetchAndStoreData = useCallback(async () => {
     if (isFetching) return
-    try {
-      isFetching = true
+    setIsFetching(true)
 
+    try {
       const pausedChainsData = await fetchJsonData(PAUSED_CHAINS_URL)
       const pausedModulesData = await fetchJsonData(PAUSED_MODULES_URL)
 
@@ -38,10 +39,10 @@ export const getSynapsePauseData = () => {
       dispatch(setPausedModulesData(pausedBridgeModules))
     } finally {
       setTimeout(() => {
-        isFetching = false
+        setIsFetching(false)
       }, 1000)
     }
-  }
+  }, [dispatch, isFetching])
 
   return fetchAndStoreData
 }
