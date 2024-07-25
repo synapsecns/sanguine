@@ -255,6 +255,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	if c.l2ERC20Address == zeroAddress {
 		return fmt.Errorf("l2 erc20 address not set")
 	}
+	fmt.Printf("erc20 addresses ok: %v %v\n", c.l1ERC20Address, c.l2ERC20Address)
 
 	// set API URL
 	baseURL := mainnetScrollAPIURL
@@ -266,6 +267,8 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 
 	return nil
 }
+
+var zeroAddress = common.Address{}
 
 func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initListeners")
@@ -294,6 +297,9 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get L1ERC20Gateway address: %w", err)
 	}
+	if l1ERC20Addr == zeroAddress {
+		return fmt.Errorf("got zero address for L1ERC20Gateway and token address %v", c.l1ERC20Address)
+	}
 	c.l1ERC20GatewayListener, err = listener.NewChainListener(l1Client, c.db, l1ERC20Addr, l1InitialBlock, c.handler)
 	if err != nil {
 		return fmt.Errorf("could not get L1ERC20Gateway listener: %w", err)
@@ -319,6 +325,9 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	l2ERC20Addr, err := c.boundL2Gateway.ERC20Gateway(&bind.CallOpts{Context: ctx}, c.l2ERC20Address)
 	if err != nil {
 		return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
+	}
+	if l2ERC20Addr == zeroAddress {
+		return fmt.Errorf("got zero address for L2ERC20Gateway and token address %v", c.l2ERC20Address)
 	}
 	c.l2ERC20GatewayListener, err = listener.NewChainListener(l2Client, c.db, l2ERC20Addr, l2InitialBlock, c.handler)
 	if err != nil {
