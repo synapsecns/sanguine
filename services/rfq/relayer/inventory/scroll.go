@@ -159,8 +159,8 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 	return nil
 }
 
-const mainnetScrollAPIURL = "https://mainnet-api-bridge-v2.scroll.io/api/"
-const testnetScrollAPIURL = "https://sepolia-api-bridge-v2.scroll.io/api/"
+const mainnetScrollAPIURL = "https://mainnet-api-bridge-v2.scroll.io/api/l2"
+const testnetScrollAPIURL = "https://sepolia-api-bridge-v2.scroll.io/api/l2"
 const erc20Name = "USDC"
 
 func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err error) {
@@ -261,7 +261,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	if isTestnetChain(c.l1ChainID) {
 		baseURL = testnetScrollAPIURL
 	}
-	url := fmt.Sprintf("%s/claimable?address=%s", baseURL, c.relayerAddress.Hex())
+	url := fmt.Sprintf("%s/unclaimed/withdrawals?address=%s", baseURL, c.relayerAddress.Hex())
 	c.apiURL = &url
 
 	return nil
