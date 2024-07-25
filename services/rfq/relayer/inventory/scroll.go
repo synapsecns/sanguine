@@ -127,16 +127,32 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 		return nil
 	})
 	g.Go(func() error {
-		return c.listenL1ETHGateway(ctx)
+		err := c.listenL1ETHGateway(ctx)
+		if err != nil {
+			return fmt.Errorf("could not listen on L1ETHGateway: %w", err)
+		}
+		return nil
 	})
 	g.Go(func() error {
-		return c.listenL1ERC20Gateway(ctx)
+		if err != nil {
+			return fmt.Errorf("could not listen on L1ERC20Gateway: %w", err)
+		}
+		return nil
 	})
 	g.Go(func() error {
-		return c.listenL2ETHGateway(ctx)
+		err := c.listenL2ETHGateway(ctx)
+		if err != nil {
+			fmt.Printf("could not listen on L2ETHGateway: %v\n", err)
+			return fmt.Errorf("could not listen on L2ETHGateway: %w", err)
+		}
+		return nil
 	})
 	g.Go(func() error {
-		return c.listenL2ERC20Gateway(ctx)
+		if err != nil {
+			fmt.Printf("could not listen on L2ERC20Gateway: %v\n", err)
+			return fmt.Errorf("could not listen on L2ERC20Gateway: %w", err)
+		}
+		return nil
 	})
 	g.Go(func() error {
 		for {
@@ -313,18 +329,23 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
+	fmt.Println("got l2 client")
 	l2InitialBlock, err := c.cfg.GetCCTPStartBlock(c.l2ChainID)
 	if err != nil {
 		return fmt.Errorf("could not get cctp start block: %w", err)
 	}
+	fmt.Printf("got l2 inital block: %v\n", l2InitialBlock)
 	l2ETHAddr, err := c.boundL2Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get L2ETHGateway address: %w", err)
 	}
+	fmt.Printf("got l2 eth addr: %v\n", l2ETHAddr)
 	c.l2ETHGatewayListener, err = listener.NewChainListener(l2Client, c.db, l2ETHAddr, l2InitialBlock, c.handler)
 	if err != nil {
+		fmt.Printf("could not get L2ETHGateway listener: %v\n", err)
 		return fmt.Errorf("could not get L2ETHGateway listener: %w", err)
 	}
+	fmt.Println("got l2 eth listener")
 	l2ERC20Addr, err := c.boundL2Gateway.GetERC20Gateway(&bind.CallOpts{Context: ctx}, c.l2ERC20Address)
 	if err != nil {
 		return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
@@ -337,6 +358,7 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get L2ERC20Gateway listener: %w", err)
 	}
+	fmt.Println("got l2erc20gatewaylistener")
 
 	span.SetAttributes(
 		attribute.String("l1_eth_gateway", l1ETHAddr.String()),
@@ -700,7 +722,9 @@ func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err 
 	if err != nil {
 		return fmt.Errorf("could not get l2 gateway parser: %w", err)
 	}
+	fmt.Println("listening on l2 erc20 gateawy")
 	err = c.l2ERC20GatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+		fmt.Printf("got l2 erc20gateway log: %v\n", log)
 		_, parsedEvent, ok := parser.ParseEvent(log)
 		if !ok {
 			return nil
