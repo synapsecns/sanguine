@@ -2,7 +2,10 @@ export function TableRow({ items, className }) {
   return (
     <tr className={`transition ease-out ${className}`}>
       {items.map((item, index) => (
-        <td key={index} className="whitespace-nowrap px-2 py-2 text-sm text-white">
+        <td
+          key={index}
+          className="whitespace-nowrap px-2 py-2 text-sm text-white"
+        >
           {item}
         </td>
       ))}

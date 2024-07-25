@@ -1,20 +1,19 @@
-import Button from '@components/tailwind/Button';
-import { DotsHorizontalIcon } from '@heroicons/react/outline';
-import React from 'react';
-
+import Button from '@components/tailwind/Button'
+import { DotsHorizontalIcon } from '@heroicons/react/outline'
+import React from 'react'
 
 interface MoreButtonProps {
-  open: boolean;
-  onClick?: () => void;
-  className?: string;
+  open: boolean
+  onClick?: () => void
+  className?: string
 }
 
 const MoreButton: React.FC<MoreButtonProps> = ({
-                                                 open,
-                                                 onClick,
-                                                 className,
-                                                 ...props
-                                               }) => {
+  open,
+  onClick,
+  className,
+  ...props
+}) => {
   return (
     <Button
       onClick={onClick}
@@ -36,7 +35,7 @@ const MoreButton: React.FC<MoreButtonProps> = ({
         </div>
       </div>
     </Button>
-  );
-};
+  )
+}
 
-export default MoreButton;
+export default MoreButton

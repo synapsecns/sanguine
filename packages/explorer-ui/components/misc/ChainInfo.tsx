@@ -58,7 +58,11 @@ export function ChainInfo({
               src={chain?.chainImg}
               alt={chain?.name}
             />
-            <p className={`${textClassName} group-hover:text-[#8FEBFF] transition-colors duration-200`}>{chain.name}</p>
+            <p
+              className={`${textClassName} group-hover:text-[#8FEBFF] transition-colors duration-200`}
+            >
+              {chain.name}
+            </p>
           </div>
         </Link>
       </div>

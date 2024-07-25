@@ -10,7 +10,8 @@ import {
   CONTRACTS_PATH,
   DISCORD_URL,
   DOCS_URL,
-  FORUM_URL, INTERCHAIN_PATH,
+  FORUM_URL,
+  INTERCHAIN_PATH,
   LANDING_PATH,
   POOLS_PATH,
   PORTFOLIO_PATH,
@@ -328,13 +329,18 @@ function MobileBarItem({ to, labelText }) {
 }
 
 interface MoreInfoItemProps {
-  to: string,
-  labelText: string,
+  to: string
+  labelText: string
   className?: string
   description?: string
 }
 
-const MoreInfoItem: React.FC<MoreInfoItemProps> = ({ to, labelText, description, className }) => {
+const MoreInfoItem: React.FC<MoreInfoItemProps> = ({
+  to,
+  labelText,
+  description,
+  className,
+}) => {
   return (
     <a
       key={labelText}

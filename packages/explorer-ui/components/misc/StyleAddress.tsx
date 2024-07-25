@@ -16,11 +16,12 @@ export function StyleAddress({ sourceInfo, limiter = 4 }) {
           string: sourceInfo.address,
           limiter,
           isZeroX: true,
-        }).slice(0, 4) + ellipsizeString({
-          string: sourceInfo.address,
-          limiter,
-          isZeroX: true,
-        }).slice(6)}
+        }).slice(0, 4) +
+          ellipsizeString({
+            string: sourceInfo.address,
+            limiter,
+            isZeroX: true,
+          }).slice(6)}
       </a>
     )
   } else {

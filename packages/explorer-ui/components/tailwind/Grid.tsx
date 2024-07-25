@@ -199,87 +199,87 @@ const GAP_Y_LOOKUP = {
 }
 
 interface Props {
-  children: React.ReactNode;
+  children: React.ReactNode
   cols?: {
-    xs?: number;
-    sm?: number;
-    md?: number;
-    lg?: number;
-    xl?: number;
-  };
-  gap?: number | Array<number>;
-  gapX?: number;
-  gapY?: number;
-  as?: React.ElementType;
-  className?: string;
-  [key: string]: any;
+    xs?: number
+    sm?: number
+    md?: number
+    lg?: number
+    xl?: number
+  }
+  gap?: number | Array<number>
+  gapX?: number
+  gapY?: number
+  as?: React.ElementType
+  className?: string
+  [key: string]: any
 }
 
 export default function Grid({
-                               children,
-                               cols,
-                               gap,
-                               gapX,
-                               gapY,
-                               as,
-                               className: providedClassName,
-                               ...props
-                             }: Props) {
-  let novelClassName = 'grid ';
+  children,
+  cols,
+  gap,
+  gapX,
+  gapY,
+  as,
+  className: providedClassName,
+  ...props
+}: Props) {
+  let novelClassName = 'grid '
 
-  const { xs, sm, md, lg, xl } = cols ?? {};
+  const { xs, sm, md, lg, xl } = cols ?? {}
 
   if (cols ?? false) {
     if (xs ?? false) {
-      novelClassName += GRID_COLS_LOOKUP[xs];
+      novelClassName += GRID_COLS_LOOKUP[xs]
     }
     if (sm ?? false) {
-      novelClassName += SM_GRID_COLS_LOOKUP[sm];
+      novelClassName += SM_GRID_COLS_LOOKUP[sm]
     }
     if (md ?? false) {
-      novelClassName += MD_GRID_COLS_LOOKUP[md];
+      novelClassName += MD_GRID_COLS_LOOKUP[md]
     }
     if (lg ?? false) {
-      novelClassName += LG_GRID_COLS_LOOKUP[lg];
+      novelClassName += LG_GRID_COLS_LOOKUP[lg]
     }
     if (xl ?? false) {
-      novelClassName += XL_GRID_COLS_LOOKUP[xl];
+      novelClassName += XL_GRID_COLS_LOOKUP[xl]
     }
   } else {
-    novelClassName += GRID_COLS_LOOKUP[12];
+    novelClassName += GRID_COLS_LOOKUP[12]
   }
 
   if (!((gap ?? false) || (gapX ?? false) || (gapY ?? false))) {
-    novelClassName += GAP_LOOKUP[0];
+    novelClassName += GAP_LOOKUP[0]
   }
 
   if (gap ?? false) {
     if (Number.isInteger(gap)) {
-      novelClassName += GAP_LOOKUP[String(gap)];
+      novelClassName += GAP_LOOKUP[String(gap)]
     } else {
       for (const [screenSize, gapSize] of (gap as Array<number>).entries()) {
-        novelClassName += SIZE_GAP_LOOKUP[screenSize][gapSize];
+        novelClassName += SIZE_GAP_LOOKUP[screenSize][gapSize]
       }
     }
   }
 
   if (gapX ?? false) {
-    novelClassName += GAP_X_LOOKUP[gapX];
+    novelClassName += GAP_X_LOOKUP[gapX]
   }
 
   if (gapY ?? false) {
-    novelClassName += GAP_Y_LOOKUP[gapY];
+    novelClassName += GAP_Y_LOOKUP[gapY]
   }
 
   if (providedClassName ?? false) {
-    novelClassName = `${novelClassName} ${providedClassName} `;
+    novelClassName = `${novelClassName} ${providedClassName} `
   }
 
-  const BaseComponent = as ?? 'div';
+  const BaseComponent = as ?? 'div'
 
   return (
     <BaseComponent className={novelClassName} {...props}>
       {children}
     </BaseComponent>
-  );
+  )
 }

@@ -9,7 +9,9 @@ export function TableBody({ rows }) {
           items={row.items}
           className={`hover:bg-[#0F172A] hover:cursor-pointer ${
             index % 2 === 0 ? 'bg-[#101018]' : 'bg-[#100C13]'
-          } ${index === 0 ? 'border-t-0' : ''} ${index === rows.length - 1 ? 'border-b-0' : ''}`}
+          } ${index === 0 ? 'border-t-0' : ''} ${
+            index === rows.length - 1 ? 'border-b-0' : ''
+          }`}
         />
       ))}
     </tbody>

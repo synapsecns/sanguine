@@ -116,7 +116,7 @@ export function UniversalSearch({
   return (
     <>
       <div className="border-y border-white border-opacity-10 ">
-      <div className="flex flex-col sm:flex-row justify-center items-center p-2 gap-x-4 py-6 space-y-2 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row justify-center items-center p-2 gap-x-4 py-6 space-y-2 sm:space-y-0">
           <h3
             className="text-white flex items-center mr-4 hidden sm:flex"
             onClick={() => setShowText(!showText)}
@@ -151,34 +151,35 @@ export function UniversalSearch({
             Filters
           </h3>
           <div className="flex flex-col sm:flex-row gap-2 grow">
-              <TextField
-                size="small"
-                value={kappa}
-                onChange={(e) => {
-                  setKappa(e.target.value)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    window.location.href = TRANSACTIONS_PATH + (kappa ? '?hash=' + kappa : '');
-                  }
-                }}
-                id="outlined-basic"
-                label="Search by TXID / TXHash"
-                variant="outlined"
-                sx={inputStyle}
-                className="grow sm:flex-1"
-              />
-              <button
-                onClick={() => executeSearch()}
-                className={
-                  'type-"button" font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700 px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ' +
-                  (loading ? ' pointer-events-none opacity-[0.4]' : '') +
-                  ' sm:flex-none sm:w-auto'
+            <TextField
+              size="small"
+              value={kappa}
+              onChange={(e) => {
+                setKappa(e.target.value)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  window.location.href =
+                    TRANSACTIONS_PATH + (kappa ? '?hash=' + kappa : '')
                 }
-              >
-                Search
-              </button>
-            </div>
+              }}
+              id="outlined-basic"
+              label="Search by TXID / TXHash"
+              variant="outlined"
+              sx={inputStyle}
+              className="grow sm:flex-1"
+            />
+            <button
+              onClick={() => executeSearch()}
+              className={
+                'type-"button" font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700 px-4 py-1 hover:bg-opacity-70 ease-in-out duration-200 ' +
+                (loading ? ' pointer-events-none opacity-[0.4]' : '') +
+                ' sm:flex-none sm:w-auto'
+              }
+            >
+              Search
+            </button>
+          </div>
           {/* <button onClick={() => executeSearch()} className="font-medium rounded-md border border-l-0 border-gray-700 text-white bg-gray-700  px-4 py-2 hover:bg-opacity-70 ease-in-out duration-200">
             <a href={searchLink}>Search</a>
           </button> */}

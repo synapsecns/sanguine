@@ -10,7 +10,9 @@ import {
   SWAP_PATH,
   TWITTER_URL,
   BUILD_ON_URL,
-  MIRROR_URL, FORUM_URL, TELEGRAM_URL,
+  MIRROR_URL,
+  FORUM_URL,
+  TELEGRAM_URL,
 } from '@urls'
 import Grid from '@components/tailwind/Grid'
 

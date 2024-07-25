@@ -3,7 +3,11 @@ interface TopBarNavLinkProps {
   to?: string
   className?: string
 }
-const TopBarNavLink: React.FC<TopBarNavLinkProps> = ({ labelText, to, className }) => {
+const TopBarNavLink: React.FC<TopBarNavLinkProps> = ({
+  labelText,
+  to,
+  className,
+}) => {
   // const location = useLocation()
 
   // const match =
@@ -62,4 +66,4 @@ const TopBarNavLink: React.FC<TopBarNavLinkProps> = ({ labelText, to, className 
   // }
 }
 
-export default TopBarNavLink;
+export default TopBarNavLink

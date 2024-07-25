@@ -1,18 +1,18 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode } from 'react'
 
 interface StandardPageContainerProps {
-  title?: string;
-  subtitle?: string;
-  children: ReactNode;
-  rightContent?: ReactNode;
+  title?: string
+  subtitle?: string
+  children: ReactNode
+  rightContent?: ReactNode
 }
 
 export function StandardPageContainer({
-                                        title,
-                                        subtitle,
-                                        children,
-                                        rightContent,
-                                      }: StandardPageContainerProps) {
+  title,
+  subtitle,
+  children,
+  rightContent,
+}: StandardPageContainerProps) {
   return (
     <main className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none">
       <div className="items-center px-4 py-8 mx-auto mt-4 2xl:w-5/6 sm:mt-6 sm:px-8 md:px-12 md:pb-14">
@@ -33,5 +33,5 @@ export function StandardPageContainer({
         {children}
       </div>
     </main>
-  );
+  )
 }

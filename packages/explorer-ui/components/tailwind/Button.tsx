@@ -1,4 +1,4 @@
-import React, { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
+import React, { ButtonHTMLAttributes, ReactNode, Ref } from 'react'
 
 // TEST
 const baseClassname = `
@@ -10,7 +10,7 @@ const baseClassname = `
   group
 
   dark:disabled:text-gray-500
-`;
+`
 
 const fancyBgClassname = `
   bg-gradient-to-r from-purple-600 to-blue-600
@@ -19,13 +19,13 @@ const fancyBgClassname = `
   disabled:from-gray-300 disabled:to-gray-200
 
   dark:disabled:from-gray-700 dark:disabled:to-gray-600
-`;
+`
 
 const bgClassname = `
   bg-indigo-600 hover:bg-indigo-800 active:bg-indigo-900
   disabled:bg-gray-300
   dark:disabled:bg-gray-700
-`;
+`
 
 const outlineClassname = `
   bg-transparent active:bg-gray-50 disabled:bg-gray-300
@@ -35,31 +35,31 @@ const outlineClassname = `
   active:bg-gray-800
   dark:border-gray-700 dark:hover:border-purple-500
   dark:text-gray-500 dark:hover:text-gray-400
-`;
+`
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  className?: string;
-  children: ReactNode;
-  fancy?: boolean;
-  outline?: boolean;
-  innerRef?: Ref<HTMLButtonElement>;
+  className?: string
+  children: ReactNode
+  fancy?: boolean
+  outline?: boolean
+  innerRef?: Ref<HTMLButtonElement>
 }
 
 export default function Button({
-                                 className,
-                                 children,
-                                 fancy,
-                                 outline,
-                                 innerRef,
-                                 ...props
-                               }: ButtonProps) {
-  let btnStyleClassname;
+  className,
+  children,
+  fancy,
+  outline,
+  innerRef,
+  ...props
+}: ButtonProps) {
+  let btnStyleClassname
   if (fancy) {
-    btnStyleClassname = fancyBgClassname;
+    btnStyleClassname = fancyBgClassname
   } else if (outline) {
-    btnStyleClassname = outlineClassname;
+    btnStyleClassname = outlineClassname
   } else {
-    btnStyleClassname = bgClassname;
+    btnStyleClassname = bgClassname
   }
 
   return (
@@ -70,5 +70,5 @@ export default function Button({
     >
       {children}
     </button>
-  );
+  )
 }

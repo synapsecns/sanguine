@@ -8,9 +8,7 @@ import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
 import { useRouter } from 'next/router'
 import { checksumAddress } from '@utils/checksum'
 import CopyTitle from '@components/misc/CopyTitle'
-import {
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-} from '@graphql/queries'
+import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import HolisticStats from '@components/misc/HolisticStats'
 import _ from 'lodash'
 
@@ -31,14 +29,14 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
 })
 
 function truncateAddress(address) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
 interface variableTypes {
   page: number
-  addressFrom?: string,
-  useMv?: boolean,
-  addressTo?: string,
+  addressFrom?: string
+  useMv?: boolean
+  addressTo?: string
 }
 
 export default function address() {
@@ -101,7 +99,10 @@ export default function address() {
   return (
     <StandardPageContainer title={'Address'}>
       <CopyTitle title={walletAddress} className="hidden sm:block" />
-      <CopyTitle title={truncateAddress(walletAddress)} className="block sm:hidden" />
+      <CopyTitle
+        title={truncateAddress(walletAddress)}
+        className="block sm:hidden"
+      />
       {walletAddress != '' ? (
         <HolisticStats
           platform={platform}
