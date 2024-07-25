@@ -469,6 +469,9 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 
 		switch event := parsedEvent.(type) {
 		case *l1gateway.L1GatewayRouterDepositETH:
+			if event.To != c.relayerAddress || event.From != c.relayerAddress {
+				return
+			}
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID:     &rebalanceID,
@@ -484,6 +487,9 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 				return nil
 			}
 		case *l1gateway.L1GatewayRouterFinalizeWithdrawETH:
+			if event.To != c.relayerAddress || event.From != c.relayerAddress {
+				return
+			}
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID: &rebalanceID,
@@ -532,6 +538,9 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 
 		switch event := parsedEvent.(type) {
 		case *l1gateway.L1GatewayRouterDepositERC20:
+			if event.To != c.relayerAddress || event.From != c.relayerAddress {
+				return
+			}
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID:     &rebalanceID,
@@ -547,6 +556,9 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 				return nil
 			}
 		case *l1gateway.L1GatewayRouterFinalizeWithdrawERC20:
+			if event.To != c.relayerAddress || event.From != c.relayerAddress {
+				return
+			}
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID: &rebalanceID,
@@ -595,6 +607,9 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 
 		switch event := parsedEvent.(type) {
 		case *l2gateway.L2GatewayRouterWithdrawETH:
+			if event.To != c.relayerAddress || event.From != c.relayerAddress {
+				return
+			}
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID:     &rebalanceID,
@@ -610,6 +625,9 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 				return nil
 			}
 		case *l2gateway.L2GatewayRouterFinalizeDepositETH:
+			if event.To != c.relayerAddress || event.From != c.relayerAddress {
+				return
+			}
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID: &rebalanceID,
@@ -658,6 +676,9 @@ func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err 
 
 		switch event := parsedEvent.(type) {
 		case *l2gateway.L2GatewayRouterWithdrawERC20:
+			if event.To != c.relayerAddress || event.From != c.relayerAddress {
+				return
+			}
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID:     &rebalanceID,
@@ -673,6 +694,9 @@ func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err 
 				return nil
 			}
 		case *l2gateway.L2GatewayRouterFinalizeDepositERC20:
+			if event.To != c.relayerAddress || event.From != c.relayerAddress {
+				return
+			}
 			rebalanceID := getScrollRebalanceID(event.Data)
 			rebalanceModel := reldb.Rebalance{
 				RebalanceID: &rebalanceID,
