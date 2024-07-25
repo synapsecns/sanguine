@@ -111,6 +111,7 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 
 	err = c.initListeners(ctx)
 	if err != nil {
+		fmt.Printf("init listener err: %v\n", err)
 		return fmt.Errorf("could not initialize listeners: %w", err)
 	}
 
@@ -297,6 +298,7 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get L1ERC20Gateway address: %w", err)
 	}
+	fmt.Printf("got l1ERC20Addr %v from token addr %v\n", l1ERC20Addr, c.l1ERC20Address)
 	if l1ERC20Addr == zeroAddress {
 		return fmt.Errorf("got zero address for L1ERC20Gateway and token address %v", c.l1ERC20Address)
 	}
@@ -326,6 +328,7 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
 	}
+	fmt.Printf("got l2ERC20Addr %v from token addr %v\n", l2ERC20Addr, c.l2ERC20Address)
 	if l2ERC20Addr == zeroAddress {
 		return fmt.Errorf("got zero address for L2ERC20Gateway and token address %v", c.l2ERC20Address)
 	}
