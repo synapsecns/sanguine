@@ -719,30 +719,10 @@ func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err 
 }
 
 type scrollAPIResponse struct {
-	Errcode int    `json:"errcode"`
-	Errmsg  string `json:"errmsg"`
-	Data    struct {
-		Result []struct {
-			Hash           string      `json:"hash"`
-			Amount         string      `json:"amount"`
-			To             string      `json:"to"`
-			IsL1           bool        `json:"isL1"`
-			L1Token        string      `json:"l1Token"`
-			L2Token        string      `json:"l2Token"`
-			BlockNumber    int         `json:"blockNumber"`
-			BlockTimestamp interface{} `json:"blockTimestamp"`
-			FinalizeTx     struct {
-				Hash           string      `json:"hash"`
-				Amount         string      `json:"amount"`
-				To             string      `json:"to"`
-				IsL1           bool        `json:"isL1"`
-				BlockNumber    int         `json:"blockNumber"`
-				BlockTimestamp interface{} `json:"blockTimestamp"`
-			} `json:"finalizeTx"`
-			ClaimInfo   ClaimInfo   `json:"claimInfo"`
-			CreatedTime interface{} `json:"createdTime"`
-		} `json:"result"`
-		Total int `json:"total"`
+	Data struct {
+		Results []struct {
+			ClaimInfo ClaimInfo `json:"claim_info"`
+		} `json:"results"`
 	} `json:"data"`
 }
 
@@ -795,7 +775,7 @@ func (c *rebalanceManagerScroll) claimL2ToL1(parentCtx context.Context) (err err
 		return fmt.Errorf("could not unmarshal body: %w", err)
 	}
 
-	for _, result := range claimableResp.Data.Result {
+	for _, result := range claimableResp.Data.Results {
 		err = c.submitClaim(ctx, result.ClaimInfo)
 		if err != nil {
 			return fmt.Errorf("could not submit transaction: %w", err)
