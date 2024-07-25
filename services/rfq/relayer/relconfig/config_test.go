@@ -1,8 +1,6 @@
 package relconfig_test
 
 import (
-	"context"
-	"math/big"
 	"testing"
 	"time"
 
@@ -10,12 +8,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/ethergo/backends"
-	"github.com/synapsecns/sanguine/ethergo/backends/geth"
-	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
@@ -513,47 +505,78 @@ func TestDecodeTokenID(t *testing.T) {
 	}
 }
 
-type ValidateDecimalsSuite struct {
-	*testsuite.TestSuite
-	// testBackends contains a list of all test backends
-	testBackends []backends.SimulatedTestBackend
-	// testOmnirpc setup in SetupTest
-	testOmnirpc string
-	// metricsHandler is the metrics handler for the test
-	metricsHandler metrics.Handler
-}
-
-// NewTestSuite creates a new test suite.
-func NewTestSuite(tb testing.TB) *ValidateDecimalsSuite {
-	tb.Helper()
-	return &ValidateDecimalsSuite{
-		TestSuite: testsuite.NewTestSuite(tb),
-	}
-}
-
-func (v *ValidateDecimalsSuite) TestValidateDecimals(t *testing.T) {
-	usdcAddr := "0x123"
-	ctx := context.Background()
-
-	backend := geth.NewEmbeddedBackendForChainID(ctx, v.T(), big.NewInt(1))
-	testOmniRPC := omnirpcHelper.NewOmnirpcServer(ctx, v.T(), backend)
+func (v *ValidateDecimalsSuite) TestValidateWrongDecimals() {
+	usdcAddr := "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
 
 	cfg := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			1: {
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
-						Address:            usdcAddr,
-						Decimals:           18, // WRONG
-						MaxRebalanceAmount: "1000",
+						Address:  usdcAddr,
+						Decimals: 18, // WRONG
 					},
 				},
 			},
 		},
 	}
-	omniClient := omniClient.NewOmnirpcClient(testOmniRPC, metrics.Get(), omniClient.WithCaptureReqRes())
-	err := cfg.ValidateTokenDecimals(ctx, omniClient)
-	if err != nil {
-		t.Fail()
+	err := cfg.ValidateTokenDecimals(v.GetTestContext(), v.omniClient)
+	// we should error because the decimals are wrong
+	v.Require().Error(err)
+}
+
+func (v *ValidateDecimalsSuite) TestValidateCorrectDecimals() {
+	usdcAddr := "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			1: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:  usdcAddr,
+						Decimals: 6,
+					},
+				},
+			},
+		},
 	}
+	err := cfg.ValidateTokenDecimals(v.GetTestContext(), v.omniClient)
+	v.Require().NoError(err)
+}
+
+func (v *ValidateDecimalsSuite) TestMixtureDecimals() {
+	usdcAddr := "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+	arbAddr := "0x912CE59144191C1204E64559FE8253a0e49E6548"
+	opAddr := "0x4200000000000000000000000000000000000042"
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			1: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:  usdcAddr,
+						Decimals: 6,
+					},
+				},
+			},
+			42161: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"ARB": {
+						Address:  arbAddr,
+						Decimals: 18,
+					},
+				},
+			},
+			10: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"OP": {
+						Address:  opAddr,
+						Decimals: 69,
+					},
+				},
+			},
+		},
+	}
+
+	err := cfg.ValidateTokenDecimals(v.GetTestContext(), v.omniClient)
+	v.Require().Error(err)
 }

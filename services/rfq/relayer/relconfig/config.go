@@ -246,9 +246,9 @@ func (c Config) ValidateTokenDecimals(ctx context.Context, omniClient omniClient
 				return fmt.Errorf("could not get chain client for chain %d: %w", chainID, err)
 			}
 
-			ierc20, err := ierc20.NewIERC20Caller(common.HexToAddress(tokenCFG.Address), chainClient)
+			ierc20, err := ierc20.NewIERC20(common.HexToAddress(tokenCFG.Address), chainClient)
 			if err != nil {
-				return fmt.Errorf("could not get decimals for token %s on chain %d: %w", tokenName, chainID, err)
+				return fmt.Errorf("could not create caller for token %s at address %s on chain %d: %w", tokenName, tokenCFG.Address, chainID, err)
 			}
 
 			actualDecimals, err := ierc20.Decimals(&bind.CallOpts{Context: ctx})
