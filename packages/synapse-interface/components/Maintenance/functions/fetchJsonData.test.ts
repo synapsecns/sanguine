@@ -1,7 +1,7 @@
 import { fetchJsonData } from './fetchJsonData'
 
 const mockUrl =
-  'https://raw.githubusercontent.com/synapsecns/sanguine/test/maintenance/packages/synapse-interface/public/pauses/v1/paused-chains.json'
+  'https://synapsecns.github.io/sanguine/packages/synapse-interface/public/pauses/v1/paused-chains.json'
 
 // Mock the global fetch function
 global.fetch = jest.fn()
