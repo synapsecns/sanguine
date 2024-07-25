@@ -134,6 +134,7 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 		return nil
 	})
 	g.Go(func() error {
+		err := c.listenL1ERC20Gateway(ctx)
 		if err != nil {
 			return fmt.Errorf("could not listen on L1ERC20Gateway: %w", err)
 		}
@@ -148,6 +149,7 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 		return nil
 	})
 	g.Go(func() error {
+		err := c.listenL2ERC20Gateway(ctx)
 		if err != nil {
 			fmt.Printf("could not listen on L2ERC20Gateway: %v\n", err)
 			return fmt.Errorf("could not listen on L2ERC20Gateway: %w", err)
