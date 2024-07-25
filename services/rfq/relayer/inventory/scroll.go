@@ -398,6 +398,7 @@ func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebal
 		}
 		transactor.Value = big.NewInt(int64(scrollMsgFee))
 		if chain.IsGasToken(rebalance.OriginMetadata.Addr) {
+			transactor.Value = new(big.Int).Add(transactor.Value, rebalance.Amount)
 			tx, err = c.boundL1Gateway.DepositETH(transactor, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
 			if err != nil {
 				return nil, fmt.Errorf("could not deposit gas token: %w", err)
@@ -433,6 +434,7 @@ func (c *rebalanceManagerScroll) initiateL2ToL1(parentCtx context.Context, rebal
 			return nil, fmt.Errorf("transactor is nil")
 		}
 		if chain.IsGasToken(rebalance.OriginMetadata.Addr) {
+			transactor.Value = rebalance.Amount
 			tx, err = c.boundL2Gateway.WithdrawETH(transactor, c.relayerAddress, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
 			if err != nil {
 				return nil, fmt.Errorf("could not withdraw gas token: %w", err)
