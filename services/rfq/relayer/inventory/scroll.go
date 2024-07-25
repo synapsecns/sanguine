@@ -774,15 +774,18 @@ type scrollAPIResponse struct {
 	} `json:"data"`
 }
 
+// ClaimInfo represents the data structure returned by the Scroll API
 type ClaimInfo struct {
-	From       string `json:"from"`
-	To         string `json:"to"`
-	Value      string `json:"value"`
-	Nonce      string `json:"nonce"`
-	BatchHash  string `json:"batch_hash"`
-	Message    string `json:"message"`
-	Proof      string `json:"proof"`
-	BatchIndex string `json:"batch_index"`
+	From    string `json:"from"`
+	To      string `json:"to"`
+	Value   string `json:"value"`
+	Nonce   string `json:"nonce"`
+	Message string `json:"message"`
+	Proof   struct {
+		BatchIndex  string `json:"batch_index"`
+		MerkleProof string `json:"merkle_proof"`
+	} `json:"proof"`
+	Claimable bool `json:"claimable"`
 }
 
 func (c *rebalanceManagerScroll) claimL2ToL1(parentCtx context.Context) (err error) {
@@ -838,7 +841,7 @@ func (c *rebalanceManagerScroll) submitClaim(parentCtx context.Context, claimInf
 		attribute.String("to", claimInfo.To),
 		attribute.String("value", claimInfo.Value),
 		attribute.String("nonce", claimInfo.Nonce),
-		attribute.String("batch_index", claimInfo.BatchIndex),
+		attribute.String("batch_index", claimInfo.Proof.BatchIndex),
 	))
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
@@ -857,7 +860,7 @@ func (c *rebalanceManagerScroll) submitClaim(parentCtx context.Context, claimInf
 		if !ok {
 			return nil, fmt.Errorf("could not parse nonce: %w", err)
 		}
-		batchIndex, ok := new(big.Int).SetString(claimInfo.BatchIndex, 10)
+		batchIndex, ok := new(big.Int).SetString(claimInfo.Proof.BatchIndex, 10)
 		if !ok {
 			return nil, fmt.Errorf("could not parse batch index: %w", err)
 		}
@@ -865,7 +868,7 @@ func (c *rebalanceManagerScroll) submitClaim(parentCtx context.Context, claimInf
 		if err != nil {
 			return nil, fmt.Errorf("could not decode message: %w", err)
 		}
-		merkleProof, err := hexutil.Decode(claimInfo.Proof)
+		merkleProof, err := hexutil.Decode(claimInfo.Proof.MerkleProof)
 		if err != nil {
 			return nil, fmt.Errorf("could not decode merkle proof: %w", err)
 		}
