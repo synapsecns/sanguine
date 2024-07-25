@@ -13,7 +13,7 @@ import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
   DAILY_STATISTICS_BY_CHAIN,
 } from '@graphql/queries'
-import HolisticStats from '@components/misc/HolisticStats'
+import { HolisticStats } from '@components/misc/HolisticStats'
 import _ from 'lodash'
 
 const CHAIN_ID_NAMES_REVERSE = CHAINS.CHAIN_ID_NAMES_REVERSE

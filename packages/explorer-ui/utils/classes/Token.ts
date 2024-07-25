@@ -50,7 +50,7 @@ export class Token {
    * @param {boolean} [obj.forceMeta] - force the token to be treated as a
    * @param {boolean} [obj.isNative] - whether the token is a native token
    * @param {string} [obj.swapableType] - the type of swap a la `SYN`, `ETH`, etc
-   *  metaswap even if swapDepositAddresses isnt present
+   * metaswap even if swapDepositAddresses isnt present
    */
   constructor({
     addresses,

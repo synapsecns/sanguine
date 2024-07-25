@@ -12,22 +12,6 @@ import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
 import { checksumAddress } from '@utils/checksum'
 import { TRANSACTIONS_PATH } from '@urls'
 
-const titles = {
-  VOLUME: 'Volume',
-  FEE: 'Fees',
-  ADDRESSES: 'Addrs',
-  TRANSACTIONS: 'TXs',
-}
-const platformTitles = {
-  BRIDGE: 'Bridge',
-  SWAP: 'Swap',
-  MESSAGE_BUS: 'Message Bus',
-}
-const formatCurrency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
-
 const truncateAddress = (address) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
@@ -103,7 +87,7 @@ export const address = () => {
         title={truncateAddress(walletAddress)}
         className="block sm:hidden"
       />
-      {walletAddress != '' ? (
+      {walletAddress !== '' ? (
         <HolisticStats
           platform={platform}
           loading={false}

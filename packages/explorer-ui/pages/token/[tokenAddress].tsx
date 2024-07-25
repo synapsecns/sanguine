@@ -16,22 +16,6 @@ import { StandardPageContainer } from '@components/layouts/StandardPageContainer
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { checksumAddress } from '@utils/checksum'
 
-const titles = {
-  VOLUME: 'Volume',
-  FEE: 'Fees',
-  ADDRESSES: 'Addrs',
-  TRANSACTIONS: 'TXs',
-}
-const platformTitles = {
-  BRIDGE: 'Bridge',
-  SWAP: 'Swap',
-  MESSAGE_BUS: 'Message Bus',
-}
-const formatCurrency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
-
 interface variableTypes {
   page: number
   addressFrom?: string

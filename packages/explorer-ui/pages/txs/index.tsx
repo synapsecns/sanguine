@@ -97,11 +97,11 @@ export const Txs = () => {
   const executeSearch = (p?: any, txOrKappaHash?: any) => {
     const queryPage = p ? p : page
     const queryKappa = txOrKappaHash ? txOrKappaHash : kappa
-    if (queryKappa && queryKappa != '' && queryKappa.length < 64) {
+    if (queryKappa && queryKappa !== '' && queryKappa.length < 64) {
       alert('Invalid hash entered')
       return
     }
-    if (wallet && wallet != '' && wallet.length !== 42) {
+    if (wallet && wallet !== '' && wallet.length !== 42) {
       alert('Invalid wallet address entered')
       return
     }

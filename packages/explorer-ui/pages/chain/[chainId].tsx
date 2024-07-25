@@ -17,21 +17,6 @@ import { HolisticStats } from '@components/misc/HolisticStats'
 import { TRANSACTIONS_PATH } from '@urls'
 
 const CHAIN_ID_NAMES_REVERSE = CHAINS.CHAIN_ID_NAMES_REVERSE
-const titles = {
-  VOLUME: 'Volume',
-  FEE: 'Fees',
-  ADDRESSES: 'Addrs',
-  TRANSACTIONS: 'TXs',
-}
-const platformTitles = {
-  BRIDGE: 'Bridge',
-  SWAP: 'Swap',
-  MESSAGE_BUS: 'Message Bus',
-}
-const formatCurrency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
 
 interface variablesType {
   chainIDFrom?: any
