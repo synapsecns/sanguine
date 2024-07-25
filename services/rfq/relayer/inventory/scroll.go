@@ -703,6 +703,16 @@ func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err 
 			return nil
 		}
 
+		_, span := c.handler.Tracer().Start(parentCtx, "handleL2ERC20GatewayEvent", trace.WithAttributes(
+			attribute.String(metrics.TxHash, log.TxHash.String()),
+			attribute.String(metrics.Contract, log.Address.String()),
+			attribute.String("block_hash", log.BlockHash.String()),
+			attribute.Int64("block_number", int64(log.BlockNumber)),
+		))
+		defer func() {
+			metrics.EndSpanWithErr(span, err)
+		}()
+
 		switch event := parsedEvent.(type) {
 		case *l2gateway.L2GatewayRouterWithdrawERC20:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
