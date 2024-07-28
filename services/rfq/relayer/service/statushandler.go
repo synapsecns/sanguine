@@ -239,9 +239,9 @@ func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool 
 }
 
 // sliding window rate limiter to see if we have relayed too much in the last block window
-func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlockNumber uint64, requestBlockNumber uint64, volumeLimit float64) (bool, error) {
+func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlockNumber uint64, volumeLimit float64) (bool, error) {
 	// check if the cumulative relay amount over the block window is less than the volume limit
-	numConfirmations := currentBlockNumber - requestBlockNumber
+	numConfirmations := currentBlockNumber - q.relayedAmountWindow.Back().Key
 
 	if q.getBlockWindowRelayedAmount() > volumeLimit && numConfirmations < 1 {
 		return false, nil
@@ -250,8 +250,6 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlock
 	return true, nil
 }
 
-// TODO: this is not good yet because the beginningOfWindow is not necessarily in the map, leading us to
-// never actually deleting the oldest entry in the map. We probably need to check whether we are on a new block or not.
 func (q *QuoteRequestHandler) addRelayToWindow(ctx context.Context, request *reldb.QuoteRequest) error {
 
 	priceOfOriginToken, err := q.getTokenPrice(ctx, request)
@@ -281,7 +279,10 @@ func (q *QuoteRequestHandler) addRelayToWindow(ctx context.Context, request *rel
 	if beginningOfWindowItem != nil {
 		beginningBlockNumber := beginningOfWindowItem.Key
 
-		// if the request older than block number, we don't care. window for that is gone
+		// if the request older than block number, we don't care. window for that is gone.
+		// actually this is not so clear. this could have passed the threshold for an older block
+		// say that this is block 9, and beginning of window is 10. instead of
+		// sum(blocks 10 - 15) > $10k, what if sum(blocks 9- 14) > $10k?
 		if beginningBlockNumber > request.BlockNumber {
 			return nil
 		}
