@@ -322,7 +322,6 @@ var defaultMaxBalance *big.Int // default to nil, signifies 'positive inf'
 // GetMaxBalance returns the MaxBalance for the given chain and address.
 // Note that this getter returns the value in native token decimals.
 func (c Config) GetMaxBalance(chainID int, addr common.Address) *big.Int {
-	fmt.Printf("getmaxbalance for chain %v addr %v\n", chainID, addr)
 	chainCfg, ok := c.Chains[chainID]
 	if !ok {
 		return defaultMaxBalance
@@ -330,7 +329,6 @@ func (c Config) GetMaxBalance(chainID int, addr common.Address) *big.Int {
 
 	var tokenCfg *TokenConfig
 	for _, cfg := range chainCfg.Tokens {
-		fmt.Printf("checking token cfg: %v\n", cfg)
 		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
 			cfgCopy := cfg
 			tokenCfg = &cfgCopy
