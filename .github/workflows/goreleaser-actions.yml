@@ -140,7 +140,7 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: ${{ github.ref == 'refs/heads/master' && '0' || '1' }}
 
       - name: Set up cache
         if:  ${{ !contains(runner.name, 'nsc') }}
