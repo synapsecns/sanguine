@@ -574,7 +574,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 
 	// Finally, clip the quoteAmount by the dest balance
 	if quoteAmount.Cmp(input.DestBalance) > 0 {
-		span.AddEvent("quote amount greater than quotable balance", trace.WithAttributes(
+		span.AddEvent("quote amount greater than destination balance", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
 			attribute.String("balance", input.DestBalance.String()),
 		))
