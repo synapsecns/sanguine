@@ -53,12 +53,12 @@ func (s Store) GetQuoteRequestByOriginTxHash(ctx context.Context, txHash common.
 	}
 
 	if tx.Error != nil {
-		return nil, fmt.Errorf("could not get quote")
+		return nil, fmt.Errorf("could not get quote %w", tx.Error)
 	}
 
 	qr, err := modelResult.ToQuoteRequest()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not convert to quote request %w", err)
 	}
 	return qr, nil
 }
