@@ -1,6 +1,7 @@
 package relconfig_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -372,7 +373,7 @@ func TestValidation(t *testing.T) {
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.Nil(t, err)
 	})
 
@@ -399,7 +400,7 @@ func TestValidation(t *testing.T) {
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.NotNil(t, err)
 		assert.Equal(t, "total initial percent does not total 100 for USDC: 101.000000", err.Error())
 	})
@@ -427,7 +428,7 @@ func TestValidation(t *testing.T) {
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.NotNil(t, err)
 		assert.Equal(t, "total maintenance percent exceeds 100 for USDC: 100.100000", err.Error())
 	})
@@ -453,7 +454,7 @@ func TestValidation(t *testing.T) {
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.Nil(t, err)
 	})
 }
@@ -522,7 +523,7 @@ func (v *ValidateDecimalsSuite) TestValidateWrongDecimals() {
 			},
 		},
 	}
-	err := cfg.ValidateTokenDecimals(v.GetTestContext(), v.omniClient)
+	err := cfg.Validate(v.GetTestContext(), v.omniClient)
 	// we should error because the decimals are wrong
 	v.Require().Error(err)
 }
@@ -540,7 +541,7 @@ func (v *ValidateDecimalsSuite) TestValidateCorrectDecimals() {
 			},
 		},
 	}
-	err := cfg.ValidateTokenDecimals(v.GetTestContext(), v.omniClient)
+	err := cfg.Validate(v.GetTestContext(), v.omniClient)
 	v.Require().NoError(err)
 }
 
@@ -574,6 +575,6 @@ func (v *ValidateDecimalsSuite) TestMixtureDecimals() {
 		},
 	}
 
-	err := cfg.ValidateTokenDecimals(v.GetTestContext(), v.omniClient)
+	err := cfg.Validate(v.GetTestContext(), v.omniClient)
 	v.Require().Error(err)
 }

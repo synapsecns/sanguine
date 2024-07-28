@@ -205,15 +205,12 @@ func LoadConfig(path string) (config Config, err error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
 	}
-	err = config.Validate()
-	if err != nil {
-		return config, fmt.Errorf("error validating config: %w", err)
-	}
+
 	return config, nil
 }
 
 // Validate validates the config.
-func (c Config) Validate() (err error) {
+func (c Config) Validate(ctx context.Context, omniclient omniClient.RPCClient) (err error) {
 	maintenancePctSums := map[string]float64{}
 	initialPctSums := map[string]float64{}
 	for _, chainCfg := range c.Chains {
@@ -235,11 +232,18 @@ func (c Config) Validate() (err error) {
 		}
 	}
 
+	if omniclient != nil {
+		err = c.validateTokenDecimals(ctx, omniclient)
+		if err != nil {
+			return fmt.Errorf("error validating token decimals: %w", err)
+		}
+	}
+
 	return nil
 }
 
 // ValidateTokenDecimals calls decimals() on the ERC20s to ensure that the decimals in the config match the actual token decimals.
-func (c Config) ValidateTokenDecimals(ctx context.Context, omniClient omniClient.RPCClient) (err error) {
+func (c Config) validateTokenDecimals(ctx context.Context, omniClient omniClient.RPCClient) (err error) {
 	for chainID, chainCfg := range c.Chains {
 		for tokenName, tokenCFG := range chainCfg.Tokens {
 			chainClient, err := omniClient.GetChainClient(ctx, chainID)

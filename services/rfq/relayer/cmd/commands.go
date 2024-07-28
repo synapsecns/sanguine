@@ -33,16 +33,17 @@ var runCommand = &cli.Command{
 	Flags:       []cli.Flag{configFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
+
 		cfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not read config file: %w", err)
 		}
-		metricsProvider := metrics.Get()
 
+		metricsProvider := metrics.Get()
 		omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricsProvider, omniClient.WithCaptureReqRes())
 
-		if err = cfg.ValidateTokenDecimals(c.Context, omniClient); err != nil {
-			return fmt.Errorf("could not validate token decimals: %w", err)
+		if err := cfg.Validate(c.Context, omniClient); err != nil {
+			return fmt.Errorf("config validation failed: %w", err)
 		}
 
 		relayer, err := service.NewRelayer(c.Context, metricsProvider, cfg)
