@@ -1,21 +1,21 @@
-const fs = require('fs')
-const { execSync } = require('child_process')
-
 const { ethers } = require('ethers')
 
+const { prettyPrintTS } = require('./utils/prettyPrintTs')
+const { fetchRfqData } = require('./utils/fetchRfqData')
 // Provider URLs
-const providers = require('../data/providers.json')
+const providers = require('./data/providers.json')
 // List of ignored bridge symbols
-const ignoredBridgeSymbols = require('../data/ignoredBridgeSymbols.json')
+const ignoredBridgeSymbols = require('./data/ignoredBridgeSymbols.json')
 // Symbol overrides (for tokens with incorrect on-chain symbols)
-const symbolOverrides = require('../data/symbolOverrides.json')
+const symbolOverrides = require('./data/symbolOverrides.json')
 // Contract ABIs
-const SynapseRouterABI = require('../abi/SynapseRouter.json')
-const SynapseCCTPABI = require('../abi/SynapseCCTP.json')
-const SynapseCCTPRouterABI = require('../abi/SynapseCCTPRouter.json')
-const SwapQuoterABI = require('../abi/SwapQuoter.json')
-const ERC20ABI = require('../abi/IERC20Metadata.json')
-const DefaultPoolABI = require('../abi/IDefaultPool.json')
+const SynapseRouterABI = require('./abi/SynapseRouter.json')
+const SynapseCCTPABI = require('./abi/SynapseCCTP.json')
+const SynapseCCTPRouterABI = require('./abi/SynapseCCTPRouter.json')
+const SwapQuoterABI = require('./abi/SwapQuoter.json')
+const ERC20ABI = require('./abi/IERC20Metadata.json')
+const DefaultPoolABI = require('./abi/IDefaultPool.json')
+// const rfqResponse = require('./data/rfqResponse.json')
 // ETH address
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
@@ -30,13 +30,22 @@ const SynapseRouterAddress = '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a'
 const SynapseCCTPRouterAddress = '0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48'
 const SynapseCCTPAddress = '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
 
+// Chain IDs where SynapseBridge is allowed
+const allowedChainIdsForSynapseBridge = [
+  1, 10, 25, 56, 137, 250, 288, 1088, 1284, 1285, 2000, 7700, 8217, 8453, 81457,
+  42161, 43114, 53935, 1313161554, 1666600000,
+]
+
 // Chain IDs where SynapseCCTPRouter is allowed
 const allowedChainIdsForSynapseCCTPRouter = [1, 10, 137, 8453, 42161, 43114]
+
+// Chain IDs where RFQ is allowed
+const allowedChainIdsForRfq = [1, 10, 56, 8453, 42161, 59144, 81457, 534352]
 
 // Get SynapseRouter contract instances for each chain
 const SynapseRouters = {}
 const SwapQuoters = {}
-Object.keys(providers).forEach((chainId) => {
+allowedChainIdsForSynapseBridge.forEach((chainId) => {
   SynapseRouters[chainId] = new ethers.Contract(
     SynapseRouterAddress,
     SynapseRouterABI,
@@ -69,6 +78,13 @@ allowedChainIdsForSynapseCCTPRouter.forEach((chainId) => {
 // Function to get list of tokens that could be swapped
 // into SynapseBridge tokens for a given chain.
 const getBridgeOriginMap = async (chainId) => {
+  if (!SwapQuoters[chainId]) {
+    return {
+      originMap: {},
+      poolSets: [],
+    }
+  }
+
   // Get WETH address
   const weth = await SwapQuoters[chainId].weth()
   // Get list of supported tokens
@@ -254,11 +270,12 @@ const sortMapByKeys = (map) => {
     })
   return sortedMap
 }
-
 const printMaps = async () => {
   const bridgeMap = {}
   const bridgeSymbolsMap = {}
   console.log('Starting on chains: ', Object.keys(providers))
+
+  const rfqResponse = await fetchRfqData()
   await Promise.all(
     Object.keys(providers).map(async (chainId) => {
       // Get map from token to set of bridge token symbols
@@ -268,6 +285,17 @@ const printMaps = async () => {
       Object.keys(cctpOriginMap).forEach((token) => {
         addSetToMap(originMap, token, cctpOriginMap[token])
       })
+      // Add RFQ.ETH and RFQ.USDC to origin map of tokens bridgeable into nETH or CCTP.USDC respectively
+      if (allowedChainIdsForRfq.includes(Number(chainId))) {
+        Object.keys(originMap).forEach((token) => {
+          if (originMap[token].has('nETH')) {
+            originMap[token].add('RFQ.ETH')
+          }
+          if (originMap[token].has('CCTP.USDC')) {
+            originMap[token].add('RFQ.USDC')
+          }
+        })
+      }
       const tokens = {}
       await Promise.all(
         Object.keys(originMap).map(async (token) => {
@@ -280,12 +308,72 @@ const printMaps = async () => {
           }
         })
       )
+
+      if (allowedChainIdsForRfq.includes(Number(chainId))) {
+        await Promise.all(
+          rfqResponse.map(async (quote) => {
+            const {
+              origin_chain_id,
+              origin_token_addr,
+              dest_chain_id,
+              dest_token_addr,
+            } = quote
+
+            const normalizedOriginAddress =
+              ethers.utils.getAddress(origin_token_addr)
+
+            const normalizedDestAddress =
+              ethers.utils.getAddress(dest_token_addr)
+
+            if (origin_chain_id === Number(chainId)) {
+              const originTokenSymbol = await getTokenSymbol(
+                origin_chain_id,
+                normalizedOriginAddress
+              )
+
+              const rfqOriginSymbol = getRFQSymbol(originTokenSymbol)
+
+              if (!tokens[normalizedOriginAddress]) {
+                tokens[normalizedOriginAddress] = {
+                  origin: [],
+                  destination: [],
+                  swappable: [], // poolSets are handled during SynapseBridge portion
+                  symbol: originTokenSymbol,
+                  decimals: await getTokenDecimals(
+                    origin_chain_id,
+                    normalizedOriginAddress
+                  ),
+                }
+              }
+              // Add RFQ symbol to origin list if not already present
+              if (
+                !tokens[normalizedOriginAddress].origin.includes(
+                  rfqOriginSymbol
+                )
+              ) {
+                tokens[normalizedOriginAddress].origin.push(rfqOriginSymbol)
+              }
+              // Add RFQ symbol to destination list if not already present
+              if (
+                !tokens[normalizedOriginAddress].destination.includes(
+                  rfqOriginSymbol
+                )
+              ) {
+                tokens[normalizedOriginAddress].destination.push(
+                  rfqOriginSymbol
+                )
+              }
+            }
+          })
+        )
+      }
+
       bridgeMap[chainId] = sortMapByKeys(tokens)
       bridgeSymbolsMap[chainId] = sortMapByKeys(extractBridgeSymbolsMap(tokens))
       console.log('Finished chain: ', chainId)
     })
   )
-  prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/tokens/bridgeMap.ts')
+
   prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/bridgeMap.ts')
 }
 
@@ -323,6 +411,7 @@ const extractBridgeSymbolsMap = (tokens) => {
     ...Object.keys(bridgeSymbolsDestinationSets),
   ])
   const bridgeSymbolsMap = {}
+
   bridgeSymbols.forEach((symbol) => {
     bridgeSymbolsMap[symbol] = {
       origin: Array.from(bridgeSymbolsOriginSets[symbol]).sort(),
@@ -335,6 +424,9 @@ const extractBridgeSymbolsMap = (tokens) => {
 const getTokenSymbol = async (chainId, token) => {
   // Check if token is ETH
   if (token === ETH) {
+    if (!SwapQuoters[chainId]) {
+      return 'ETH'
+    }
     // Get WETH address from SwapQuoter
     const weth = await SwapQuoters[chainId].weth()
     // Return "WETH" symbol without first character
@@ -367,13 +459,8 @@ const getTokenDecimals = async (chainId, token) => {
   return decimals
 }
 
-// Writes map export to a TypeScript file, then runs prettier on the file
-const prettyPrintTS = (map, mapName, fn) => {
-  console.log(`Writing ${mapName} to ${fn}`)
-  const json = JSON.stringify(map)
-  fs.writeFileSync(fn, `export const ${mapName} = ${json}`)
-  // Run prettier on the file using terminal command:
-  execSync(`npx prettier --write ${fn}`)
+const getRFQSymbol = (symbol) => {
+  return `RFQ.${symbol}`
 }
 
 printMaps()

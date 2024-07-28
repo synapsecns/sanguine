@@ -2,14 +2,17 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
@@ -115,7 +118,6 @@ var withdrawCommand = &cli.Command{
 			TokenAddress: common.HexToAddress(tokenAddress),
 			To:           common.HexToAddress(to),
 		}
-
 		res, err := client.Withdraw(c.Context, &withdrawRequest)
 		if err != nil {
 			return fmt.Errorf("could not start relayer: %w", err)
@@ -123,9 +125,12 @@ var withdrawCommand = &cli.Command{
 
 		var errClient error
 		var status *relapi.TxHashByNonceResponse
-		err = spinner.New().
-			Title("Waiting for tx...").
-			Action(func() {
+
+		ctx, cancel := context.WithTimeout(c.Context, 30*time.Second)
+		defer cancel()
+
+		action := func() {
+			err = retry.WithBackoff(ctx, func(_ context.Context) error {
 				status, err = client.GetTxHashByNonce(
 					c.Context,
 					&relapi.GetTxByNonceRequest{
@@ -133,9 +138,21 @@ var withdrawCommand = &cli.Command{
 						Nonce:   res.Nonce,
 					})
 				if err != nil {
-					errClient = fmt.Errorf("could not login: %w", err)
+					errClient = err
+					return fmt.Errorf("could not get withdrawal tx hash: %w", err)
 				}
-			}).Run()
+				return nil
+			})
+
+			if err != nil {
+				return
+			}
+		}
+
+		err = spinner.New().
+			Title("Getting withdrawal tx hash...").
+			Action(action).Run()
+
 		if err != nil {
 			return fmt.Errorf("could not get withdrawal tx hash: %w", err)
 		}
