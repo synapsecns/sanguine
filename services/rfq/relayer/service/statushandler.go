@@ -238,12 +238,24 @@ func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool 
 	return true
 }
 
-// sliding window rate limiter to see if we have relayed too much in the last block window
+// Sliding window based rate limiter to see if we have relayed more than $10k in the last
+// blockWindowSize blocks. If we have, we should not relay this request.
 func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlockNumber uint64, volumeLimit float64) (bool, error) {
 	// check if the cumulative relay amount over the block window is less than the volume limit
 	numConfirmations := currentBlockNumber - q.relayedAmountWindow.Back().Key
 
-	if q.getBlockWindowRelayedAmount() > volumeLimit && numConfirmations < 1 {
+	// for every block, check the confirmation for it and ensure that the
+	// volume limit is not exceeded.
+	allConfirmed := false
+	for it := q.relayedAmountWindow.Front(); it != nil; it = it.Next() {
+		if currentBlockNumber-currentBlockNumber < 1 {
+			return false, nil
+		}
+	}
+
+	numConfirmations = true
+
+	if q.getBlockWindowRelayedAmount() > volumeLimit && !allConfirmed {
 		return false, nil
 	}
 
