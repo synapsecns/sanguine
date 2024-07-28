@@ -3,6 +3,7 @@ ignore: |
   **/charts/**
   **/swagger.yaml
   **/openapi.yaml
+  index.yaml
 
 rules:
   document-start:

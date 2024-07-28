@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.8.0...@synapsecns/sdk-router@0.9.0) (2024-07-24)
+
+
+### Features
+
+* **sdk-router:** add Blast, Linea support ([#2903](https://github.com/synapsecns/sanguine/issues/2903)) ([c5cf52a](https://github.com/synapsecns/sanguine/commit/c5cf52a80c6f0bc16c29a0a9496713777d49654d))
+
+
+
+
+
+# [0.8.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.7.1...@synapsecns/sdk-router@0.8.0) (2024-07-15)
+
+
+### Features
+
+* **sdk:** Adds BSC to RFQ ([#2830](https://github.com/synapsecns/sanguine/issues/2830)) ([5fb5e8a](https://github.com/synapsecns/sanguine/commit/5fb5e8a429511da6cd271719fcd2a43dad47d1f7))
+
+
+
+
+
 ## [0.7.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.7.0...@synapsecns/sdk-router@0.7.1) (2024-07-03)
 
 **Note:** Version bump only for package @synapsecns/sdk-router

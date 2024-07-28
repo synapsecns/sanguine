@@ -111,10 +111,12 @@ jobs:
 
   # TODO: we may want to dry run this on prs
   run-goreleaser:
-    runs-on: ubuntu-latest
+    runs-on:
+      - namespace-profile-fast-goreleaser
     needs: [build-goreleaser,changes]
     if: ${{ needs.changes.outputs.package_count > 0 }}
     permissions:
+      id-token: write
       # always required
       packages: write
       # only required for private repos
@@ -127,15 +129,21 @@ jobs:
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
     container:
       image: ${{ needs.build-goreleaser.outputs.goreleaser-image }}
-      volumes: [ /repo ]
+      env:
+        NSC_CACHE_PATH: ${{ env.NSC_CACHE_PATH }} # env.NSC_CACHE_PATH contains the path to Cache Volume directory, that is `/cache`.
+      volumes:
+        - /repo
+        - /cache:/cache
+      options: --cap-add=SYS_ADMIN # Required to by nscloud-cache-action to call `mount`.
+
     steps:
       - name: Git Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          submodules: 'recursive'
+          fetch-depth: ${{ github.ref == 'refs/heads/master' && '0' || '1' }}
 
       - name: Set up cache
+        if:  ${{ !contains(runner.name, 'nsc') }}
         uses: actions/cache@v4
         with:
           path: |
@@ -144,6 +152,12 @@ jobs:
           key: ${{ runner.os }}-go-${{matrix.package}}-${{ hashFiles(format('{0}/go.sum', matrix.package)) }}
           restore-keys: |
             ${{ runner.os }}-go-${{matrix.package}}
+
+      - name: Setup Go cache
+        uses: namespacelabs/nscloud-cache-action@v1
+        if:  ${{ contains(runner.name, 'nsc') }}
+        with:
+          cache: go
 
       - name: Get branch name
         id: branch-name
@@ -164,10 +178,12 @@ jobs:
 
       -
         name: Fetch all tags
+        if: steps.branch-name.outputs.is_default == 'true'
         run: git fetch --force --tags
 
       # get the tag we just created
       - name: Git Fetch Unshallow
+        if: steps.branch-name.outputs.is_default == 'true'
         run: git fetch
 
       - name: Import GPG key

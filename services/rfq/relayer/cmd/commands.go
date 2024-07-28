@@ -2,12 +2,17 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"math/big"
+	"time"
 
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
@@ -87,8 +92,8 @@ var withdrawCommand = &cli.Command{
 			return fmt.Errorf("could not create relayer: %w", err)
 		}
 
-		chainID := c.Uint(chainIDFlag.Name)
-		if chainID == 0 {
+		chainID := big.NewInt(c.Int64(chainIDFlag.Name))
+		if chainID.Cmp(big.NewInt(0)) == 0 {
 			return fmt.Errorf("valid chain ID is required")
 		}
 
@@ -108,16 +113,54 @@ var withdrawCommand = &cli.Command{
 		}
 
 		withdrawRequest := relapi.WithdrawRequest{
-			ChainID:      uint32(chainID),
+			ChainID:      uint32(chainID.Uint64()),
 			Amount:       amount,
 			TokenAddress: common.HexToAddress(tokenAddress),
 			To:           common.HexToAddress(to),
 		}
-
-		_, err = client.Withdraw(c.Context, &withdrawRequest)
+		res, err := client.Withdraw(c.Context, &withdrawRequest)
 		if err != nil {
 			return fmt.Errorf("could not start relayer: %w", err)
 		}
+
+		var errClient error
+		var status *relapi.TxHashByNonceResponse
+
+		ctx, cancel := context.WithTimeout(c.Context, 30*time.Second)
+		defer cancel()
+
+		action := func() {
+			err = retry.WithBackoff(ctx, func(_ context.Context) error {
+				status, err = client.GetTxHashByNonce(
+					c.Context,
+					&relapi.GetTxByNonceRequest{
+						ChainID: uint32(chainID.Uint64()),
+						Nonce:   res.Nonce,
+					})
+				if err != nil {
+					errClient = err
+					return fmt.Errorf("could not get withdrawal tx hash: %w", err)
+				}
+				return nil
+			})
+
+			if err != nil {
+				return
+			}
+		}
+
+		err = spinner.New().
+			Title("Getting withdrawal tx hash...").
+			Action(action).Run()
+
+		if err != nil {
+			return fmt.Errorf("could not get withdrawal tx hash: %w", err)
+		}
+		if errClient != nil {
+			return fmt.Errorf("client error: could not get withdrawal tx hash: %w", err)
+		}
+
+		fmt.Printf("Withdraw Tx Hash: %s\n", status.Hash)
 
 		return nil
 	},
