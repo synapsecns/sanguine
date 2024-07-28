@@ -3,6 +3,7 @@ package relapi
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"math/big"
 	"net/http"
 
@@ -22,6 +23,7 @@ import (
 
 // Handler is the REST API handler.
 type Handler struct {
+	metrics   metrics.Handler
 	db        reldb.Service
 	chains    map[uint32]*chain.Chain
 	cfg       relconfig.Config
@@ -29,8 +31,9 @@ type Handler struct {
 }
 
 // NewHandler creates a new REST API handler.
-func NewHandler(db reldb.Service, chains map[uint32]*chain.Chain, cfg relconfig.Config, txSubmitter submitter.TransactionSubmitter) *Handler {
+func NewHandler(metricsHelper metrics.Handler, db reldb.Service, chains map[uint32]*chain.Chain, cfg relconfig.Config, txSubmitter submitter.TransactionSubmitter) *Handler {
 	return &Handler{
+		metrics:   metricsHelper,
 		db:        db, // Store the database connection in the handler
 		chains:    chains,
 		cfg:       cfg,
@@ -178,8 +181,14 @@ func (h *Handler) GetQuoteRequestByTxID(c *gin.Context) {
 //
 //nolint:cyclop
 func (h *Handler) Withdraw(c *gin.Context) {
+	ctx, span := h.metrics.Tracer().Start(c, "withdraw")
+	var err error
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	var req WithdrawRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err = c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -197,7 +206,6 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	}
 
 	var nonce uint64
-	var err error
 
 	value, ok := new(big.Int).SetString(req.Amount, 10)
 	if !ok {
@@ -207,14 +215,15 @@ func (h *Handler) Withdraw(c *gin.Context) {
 
 	//nolint: nestif
 	if chain.IsGasToken(req.TokenAddress) {
-		nonce, err = h.submitter.SubmitTransaction(c, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		nonce, err = h.submitter.SubmitTransaction(ctx, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 			bc := bind.NewBoundContract(req.To, abi.ABI{}, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client)
 			if transactor.GasPrice != nil {
 				transactor.Value = value
 				// nolint: wrapcheck
 				return bc.Transfer(transactor)
 			}
-			signer, err := transactor.Signer(h.submitter.Address(), tx)
+			var signer *types.Transaction
+			signer, err = transactor.Signer(h.submitter.Address(), tx)
 			if err != nil {
 				return nil, fmt.Errorf("could not get signer: %w", err)
 			}
@@ -225,13 +234,14 @@ func (h *Handler) Withdraw(c *gin.Context) {
 			return
 		}
 	} else {
-		erc20Contract, err := ierc20.NewIERC20(req.TokenAddress, h.chains[req.ChainID].Client)
+		var erc20Contract *ierc20.IERC20
+		erc20Contract, err = ierc20.NewIERC20(req.TokenAddress, h.chains[req.ChainID].Client)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not create erc20 contract: %s", err.Error())})
 			return
 		}
 
-		nonce, err = h.submitter.SubmitTransaction(c, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		nonce, err = h.submitter.SubmitTransaction(ctx, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 			// nolint: wrapcheck
 			return erc20Contract.Transfer(transactor, req.To, value)
 		})
