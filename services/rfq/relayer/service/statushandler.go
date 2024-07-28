@@ -276,22 +276,25 @@ func (q *QuoteRequestHandler) addRelayToWindow(ctx context.Context, request *rel
 		return nil
 	}
 
-	beginningOfWindow := q.relayedAmountWindow.Front().Key
+	beginningOfWindowItem := q.relayedAmountWindow.Front()
 
-	// if the request older than block number, we don't care. window for that is gone
-	if beginningOfWindow > request.BlockNumber {
-		return nil
+	if beginningOfWindowItem != nil {
+		beginningBlockNumber := beginningOfWindowItem.Key
+
+		// if the request older than block number, we don't care. window for that is gone
+		if beginningBlockNumber > request.BlockNumber {
+			return nil
+		}
+		q.relayedAmountWindow.Delete(beginningBlockNumber)
+
+		// add the most recent block to the window
+		prev, ok := q.relayedAmountWindow.Get(request.BlockNumber)
+		if !ok {
+			q.relayedAmountWindow.Set(request.BlockNumber, priceOfOriginToken)
+		} else {
+			q.relayedAmountWindow.Set(request.BlockNumber, prev+priceOfOriginToken)
+		}
 	}
-	q.relayedAmountWindow.Delete(beginningOfWindow)
-
-	// add the most recent block to the window
-	prev, ok := q.relayedAmountWindow.Get(request.BlockNumber)
-	if !ok {
-		q.relayedAmountWindow.Set(request.BlockNumber, priceOfOriginToken)
-	} else {
-		q.relayedAmountWindow.Set(request.BlockNumber, prev+priceOfOriginToken)
-	}
-
 	return nil
 }
 
