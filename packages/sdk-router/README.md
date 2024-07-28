@@ -95,6 +95,8 @@ If either of the input/output tokens is a native gas token (e.g. ETH on Ethereum
 
 ```ts
 export type BridgeQuote = {
+  // UUID (v7), unique id corresponding to quote
+  id: string
   // Address of the Router contract that user will be interacting with
   routerAddress: string
   // Expected final amount of tokens to be received on the destination chain by the user,
