@@ -104,8 +104,8 @@ type ChainConfig struct {
 	QuoteFixedFeeMultiplier float64 `yaml:"quote_fixed_fee_multiplier"`
 	// RelayFixedFeeMultiplier is the multiplier for the fixed fee, applied when relaying.
 	RelayFixedFeeMultiplier float64 `yaml:"relay_fixed_fee_multiplier"`
-	// CCTP start block is the block at which the chain listener will listen for CCTP events.
-	CCTPStartBlock uint64 `yaml:"cctp_start_block"`
+	// RebalanceStartBlock is the block at which the chain listener will listen for rebalance events.
+	RebalanceStartBlock uint64 `yaml:"cctp_start_block"`
 }
 
 // TokenConfig represents the configuration for a token.

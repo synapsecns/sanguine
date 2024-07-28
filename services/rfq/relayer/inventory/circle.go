@@ -149,7 +149,7 @@ func (c *rebalanceManagerCircleCCTP) initListeners(parentCtx context.Context) (e
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-		initialBlock, err := c.cfg.GetCCTPStartBlock(chainID)
+		initialBlock, err := c.cfg.GetRebalanceStartBlock(chainID)
 		if err != nil {
 			return fmt.Errorf("could not get cctp start block: %w", err)
 		}

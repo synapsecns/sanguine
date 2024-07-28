@@ -118,7 +118,7 @@ func (c *rebalanceManagerSynapseCCTP) initListeners(ctx context.Context) (err er
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-		initialBlock, err := c.cfg.GetCCTPStartBlock(chainID)
+		initialBlock, err := c.cfg.GetRebalanceStartBlock(chainID)
 		if err != nil {
 			return fmt.Errorf("could not get cctp start block: %w", err)
 		}

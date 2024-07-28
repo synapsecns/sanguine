@@ -395,16 +395,16 @@ func (c Config) GetRelayFixedFeeMultiplier(chainID int) (value float64, err erro
 	return value, nil
 }
 
-// GetCCTPStartBlock returns the CCTPStartBlock for the given chainID.
-func (c Config) GetCCTPStartBlock(chainID int) (value uint64, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "CCTPStartBlock")
+// GetRebalanceStartBlock returns the RebalanceStartBlock for the given chainID.
+func (c Config) GetRebalanceStartBlock(chainID int) (value uint64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "RebalanceStartBlock")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(uint64)
 	if !ok {
-		return value, fmt.Errorf("failed to cast CCTPStartBlock to int")
+		return value, fmt.Errorf("failed to cast RebalanceStartBlock to int")
 	}
 	return value, nil
 }

@@ -288,7 +288,7 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
-	l1InitialBlock, err := c.cfg.GetCCTPStartBlock(c.l1ChainID)
+	l1InitialBlock, err := c.cfg.GetRebalanceStartBlock(c.l1ChainID)
 	if err != nil {
 		return fmt.Errorf("could not get cctp start block: %w", err)
 	}
@@ -317,7 +317,7 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
-	l2InitialBlock, err := c.cfg.GetCCTPStartBlock(c.l2ChainID)
+	l2InitialBlock, err := c.cfg.GetRebalanceStartBlock(c.l2ChainID)
 	if err != nil {
 		return fmt.Errorf("could not get cctp start block: %w", err)
 	}
