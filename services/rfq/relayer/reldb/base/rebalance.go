@@ -98,9 +98,6 @@ func (s Store) UpdateLatestRebalance(ctx context.Context, rebalance reldb.Rebala
 	if rebalanceModel.DestTxHash.Valid {
 		updates[destTxHashFieldName] = rebalanceModel.DestTxHash
 	}
-	if rebalanceModel.OriginTokenAddr.Valid {
-		updates[originTokenAddrFieldName] = rebalanceModel.OriginTokenAddr
-	}
 
 	matchStatuses := []reldb.RebalanceStatus{reldb.RebalanceInitiated, reldb.RebalancePending}
 	inArgs := make([]int, len(matchStatuses))
