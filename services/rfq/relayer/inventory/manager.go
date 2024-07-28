@@ -144,7 +144,10 @@ func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, optio
 
 // TokenMetadata contains metadata for a token.
 type TokenMetadata struct {
-	Name       string
+	// Name is the name of the token in the config
+	Name string
+	// ChainName is the name of the token onchain
+	ChainName  string
 	Balance    *big.Int
 	Decimals   uint8
 	Allowances map[spendableContract]*big.Int
@@ -568,6 +571,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				return fmt.Errorf("could not get native token: %w", err)
 			}
 			rtoken := &TokenMetadata{
+				Name:       tokenName,
 				IsGasToken: tokenName == nativeToken,
 				ChainID:    chainID,
 				Allowances: make(map[spendableContract]*big.Int),
@@ -588,11 +592,10 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				rtoken.Allowances[contract] = new(big.Int)
 			}
 
-			rtoken.Name = tokenName
 			if rtoken.IsGasToken {
 				rtoken.Decimals = 18
 				rtoken.Balance = i.gasBalances[chainID]
-				// TODO: start allowance?
+				rtoken.ChainName = tokenName
 			} else {
 				rfqAddr, err := cfg.GetRFQAddress(chainID)
 				if err != nil {
@@ -601,7 +604,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				deferredCalls[chainID] = append(deferredCalls[chainID],
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.Balance),
 					eth.CallFunc(funcDecimals, token).Returns(&rtoken.Decimals),
-					// eth.CallFunc(funcName, token).Returns(&rtoken.Name),
+					eth.CallFunc(funcName, token).Returns(&rtoken.ChainName),
 					eth.CallFunc(funcAllowance, token, i.relayerAddress, rfqAddr).Returns(rtoken.Allowances[contractRFQ]),
 				)
 				cctpAddr, _ := cfg.GetSynapseCCTPAddress(chainID)
