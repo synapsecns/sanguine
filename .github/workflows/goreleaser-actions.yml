@@ -178,10 +178,12 @@ jobs:
 
       -
         name: Fetch all tags
+        if: steps.branch-name.outputs.is_default == 'true'
         run: git fetch --force --tags
 
       # get the tag we just created
       - name: Git Fetch Unshallow
+        if: steps.branch-name.outputs.is_default == 'true'
         run: git fetch
 
       - name: Import GPG key
