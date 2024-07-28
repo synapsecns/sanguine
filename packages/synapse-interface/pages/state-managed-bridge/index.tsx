@@ -21,7 +21,7 @@ import { SwitchButton } from '@/components/buttons/SwitchButton'
 import { PageHeader } from '@/components/PageHeader'
 import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
 import Button from '@/components/ui/tailwind/Button'
-import { SettingsIcon } from '@/components/icons/SettingsIcon'
+import { SettingsToggle } from '@/components/StateManagedBridge/SettingsToggle'
 import { BridgeCard } from '@/components/ui/BridgeCard'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
 import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
@@ -560,39 +560,25 @@ const StateManagedBridge = () => {
             title="Bridge"
             subtitle="Send your assets across chains."
           />
-          <div>
-            <Button
-              className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
-              onClick={() => {
-                if (showSettingsSlideOver === true) {
-                  dispatch(setShowSettingsSlideOver(false))
-                } else {
-                  dispatch(setShowSettingsSlideOver(true))
-                }
-              }}
-            >
-              {!showSettingsSlideOver ? (
-                <>
-                  <SettingsIcon className="w-5 h-5 mr-2" />
-                  <span>Settings</span>
-                </>
-              ) : (
-                <span>Close</span>
-              )}
-            </Button>
-          </div>
+          <Button
+            className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
+            onClick={() =>
+              dispatch(setShowSettingsSlideOver(!showSettingsSlideOver))
+            }
+          >
+            <SettingsToggle showSettingsToggle={!showSettingsSlideOver} />
+          </Button>
         </div>
         <BridgeCard bridgeRef={bridgeDisplayRef}>
           {maintenanceCountdownProgressInstances.map((instance) => (
             <>{instance.MaintenanceCountdownProgressBar}</>
           ))}
 
-          {showSettingsSlideOver && (
-            <div className="min-h-[472px] ">
+          {showSettingsSlideOver ? (
+            <div className="min-h-[472px]">
               <SettingsSlideOver key="settings" />
             </div>
-          )}
-          {!showSettingsSlideOver && (
+          ) : (
             <>
               <InputContainer />
               <SwitchButton
