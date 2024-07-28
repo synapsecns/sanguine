@@ -2,10 +2,11 @@ package relconfig
 
 import (
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"reflect"
 	"time"
+
+	"github.com/synapsecns/sanguine/core"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -316,7 +317,7 @@ func (c Config) GetQuoteOffsetBps(chainID int, tokenName string, isOrigin bool) 
 	return offset, nil
 }
 
-const defaultMaxBalance = 0
+var defaultMaxBalance *big.Int // default to nil, signifies 'positive inf'
 
 // GetMaxBalance returns the MaxBalance for the given chain and address.
 // Note that this getter returns the value in native token decimals.
@@ -324,7 +325,7 @@ func (c Config) GetMaxBalance(chainID int, addr common.Address) *big.Int {
 	fmt.Printf("getmaxbalance for chain %v addr %v\n", chainID, addr)
 	chainCfg, ok := c.Chains[chainID]
 	if !ok {
-		return big.NewInt(defaultMaxBalance)
+		return defaultMaxBalance
 	}
 
 	var tokenCfg *TokenConfig
@@ -336,15 +337,15 @@ func (c Config) GetMaxBalance(chainID int, addr common.Address) *big.Int {
 			break
 		}
 	}
-	if tokenCfg == nil {
-		return big.NewInt(defaultMaxBalance)
+	if tokenCfg == nil || tokenCfg.MaxBalance == nil {
+		return defaultMaxBalance
 	}
-	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxBalance)
+	quoteAmountFlt, ok := new(big.Float).SetString(*tokenCfg.MaxBalance)
 	if !ok {
-		return big.NewInt(defaultMaxBalance)
+		return defaultMaxBalance
 	}
 	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
-		return big.NewInt(defaultMaxBalance)
+		return defaultMaxBalance
 	}
 
 	// Scale the minBalance by the token decimals.

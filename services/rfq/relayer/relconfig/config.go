@@ -129,7 +129,7 @@ type TokenConfig struct {
 	// of the given token, and vice versa.
 	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
 	// MaxBalance is the maximum balance that should be accumulated for this token on this chain (human-readable units)
-	MaxBalance string `yaml:"max_balance"`
+	MaxBalance *string `yaml:"max_balance"`
 }
 
 // DatabaseConfig represents the configuration for the database.

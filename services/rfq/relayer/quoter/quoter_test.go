@@ -173,7 +173,7 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 		destTokenCfg.MinQuoteAmount = minQuoteAmount
 		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
 		originTokenCfg.QuoteOffsetBps = quoteOffset
-		originTokenCfg.MaxBalance = maxBalance
+		originTokenCfg.MaxBalance = &maxBalance
 		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
 		s.config.Chains[origin].Tokens["USDC"] = originTokenCfg
 		s.manager.SetConfig(s.config)
