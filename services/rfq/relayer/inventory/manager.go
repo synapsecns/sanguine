@@ -331,7 +331,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 					return fmt.Errorf("could not get CCTP address: %w", err)
 				}
 				if len(contractAddr) > 0 {
-					err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve SynapseCCTP contract: %w", err)
 					}
@@ -346,7 +346,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 					return fmt.Errorf("could not get CCTP address: %w", err)
 				}
 				if len(contractAddr) > 0 {
-					err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve TokenMessenger contract: %w", err)
 					}
@@ -361,7 +361,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 					return fmt.Errorf("could not get L1Gateway address: %w", err)
 				}
 				if len(contractAddr) > 0 {
-					err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve L1Gateway contract: %w", err)
 					}
@@ -376,7 +376,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 					return fmt.Errorf("could not get L2Gateway address: %w", err)
 				}
 				if len(contractAddr) > 0 {
-					err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve L2Gateway contract: %w", err)
 					}
@@ -602,30 +602,30 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.Balance),
 					eth.CallFunc(funcDecimals, token).Returns(&rtoken.Decimals),
 					// eth.CallFunc(funcName, token).Returns(&rtoken.Name),
-					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.Allowances[contractRFQ]),
+					eth.CallFunc(funcAllowance, token, i.relayerAddress, rfqAddr).Returns(rtoken.Allowances[contractRFQ]),
 				)
 				cctpAddr, _ := cfg.GetSynapseCCTPAddress(chainID)
 				if len(cctpAddr) > 0 {
 					deferredCalls[chainID] = append(deferredCalls[chainID],
-						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(cctpAddr)).Returns(rtoken.Allowances[contractSynapseCCTP]),
+						eth.CallFunc(funcAllowance, token, i.relayerAddress, cctpAddr).Returns(rtoken.Allowances[contractSynapseCCTP]),
 					)
 				}
 				messengerAddr, _ := cfg.GetTokenMessengerAddress(chainID)
 				if len(messengerAddr) > 0 {
 					deferredCalls[chainID] = append(deferredCalls[chainID],
-						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(messengerAddr)).Returns(rtoken.Allowances[contractTokenMessenger]),
+						eth.CallFunc(funcAllowance, token, i.relayerAddress, messengerAddr).Returns(rtoken.Allowances[contractTokenMessenger]),
 					)
 				}
 				l1gatewayAddr, _ := cfg.GetL1GatewayAddress(chainID)
 				if len(l1gatewayAddr) > 0 {
 					deferredCalls[chainID] = append(deferredCalls[chainID],
-						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(l1gatewayAddr)).Returns(rtoken.Allowances[contractL1Gateway]),
+						eth.CallFunc(funcAllowance, token, i.relayerAddress, l1gatewayAddr).Returns(rtoken.Allowances[contractL1Gateway]),
 					)
 				}
 				l2gatewayAddr, _ := cfg.GetL2GatewayAddress(chainID)
 				if len(l2gatewayAddr) > 0 {
 					deferredCalls[chainID] = append(deferredCalls[chainID],
-						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(l2gatewayAddr)).Returns(rtoken.Allowances[contractL2Gateway]),
+						eth.CallFunc(funcAllowance, token, i.relayerAddress, l2gatewayAddr).Returns(rtoken.Allowances[contractL2Gateway]),
 					)
 				}
 			}

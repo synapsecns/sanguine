@@ -1,9 +1,10 @@
 package relconfig_test
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,8 +20,6 @@ func TestChainGetters(t *testing.T) {
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
 				RFQAddress:              "0x123",
-				SynapseCCTPAddress:      "0x456",
-				TokenMessengerAddress:   "0x789",
 				Confirmations:           1,
 				NativeToken:             "MATIC",
 				DeadlineBufferSeconds:   10,
@@ -33,12 +32,23 @@ func TestChainGetters(t *testing.T) {
 				QuotePct:                50,
 				QuoteWidthBps:           10,
 				QuoteFixedFeeMultiplier: 1.1,
+				RebalanceConfigs: relconfig.RebalanceConfigs{
+					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+						SynapseCCTPAddress: "0x456",
+					},
+					Circle: &relconfig.CircleCCTPRebalanceConfig{
+						TokenMessengerAddress: "0x789",
+					},
+					Scroll: &relconfig.ScrollRebalanceConfig{
+						L1GatewayAddress:         "0xabc",
+						L1ScrollMessengerAddress: "0xdef",
+						L2GatewayAddress:         "0xghi",
+					},
+				},
 			},
 		},
 		BaseChainConfig: relconfig.ChainConfig{
 			RFQAddress:              "0x1234",
-			SynapseCCTPAddress:      "0x456",
-			TokenMessengerAddress:   "0x789",
 			Confirmations:           2,
 			NativeToken:             "ARB",
 			DeadlineBufferSeconds:   11,
@@ -51,14 +61,25 @@ func TestChainGetters(t *testing.T) {
 			QuotePct:                51,
 			QuoteWidthBps:           11,
 			QuoteFixedFeeMultiplier: 1.2,
+			RebalanceConfigs: relconfig.RebalanceConfigs{
+				Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+					SynapseCCTPAddress: "0x456",
+				},
+				Circle: &relconfig.CircleCCTPRebalanceConfig{
+					TokenMessengerAddress: "0x789",
+				},
+				Scroll: &relconfig.ScrollRebalanceConfig{
+					L1GatewayAddress:         "0xabc",
+					L1ScrollMessengerAddress: "0xdef",
+					L2GatewayAddress:         "0xghi",
+				},
+			},
 		},
 	}
 	cfg := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
 				RFQAddress:              "0x123",
-				SynapseCCTPAddress:      "0x456",
-				TokenMessengerAddress:   "0x789",
 				Confirmations:           1,
 				NativeToken:             "MATIC",
 				DeadlineBufferSeconds:   10,
@@ -78,6 +99,19 @@ func TestChainGetters(t *testing.T) {
 						MaxRebalanceAmount: "1000",
 					},
 				},
+				RebalanceConfigs: relconfig.RebalanceConfigs{
+					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+						SynapseCCTPAddress: "0x456",
+					},
+					Circle: &relconfig.CircleCCTPRebalanceConfig{
+						TokenMessengerAddress: "0x789",
+					},
+					Scroll: &relconfig.ScrollRebalanceConfig{
+						L1GatewayAddress:         "0xabc",
+						L1ScrollMessengerAddress: "0xdef",
+						L2GatewayAddress:         "0xghi",
+					},
+				},
 			},
 		},
 	}
@@ -94,34 +128,6 @@ func TestChainGetters(t *testing.T) {
 		chainVal, err := cfgWithBase.GetRFQAddress(chainID)
 		assert.NoError(t, err)
 		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].RFQAddress)
-	})
-
-	t.Run("GetSynapseCCTPAddress", func(t *testing.T) {
-		defaultVal, err := cfg.GetSynapseCCTPAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.SynapseCCTPAddress)
-
-		baseVal, err := cfgWithBase.GetSynapseCCTPAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.SynapseCCTPAddress)
-
-		chainVal, err := cfgWithBase.GetSynapseCCTPAddress(chainID)
-		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].SynapseCCTPAddress)
-	})
-
-	t.Run("GetTokenMessengerAddress", func(t *testing.T) {
-		defaultVal, err := cfg.GetTokenMessengerAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.TokenMessengerAddress)
-
-		baseVal, err := cfgWithBase.GetTokenMessengerAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.TokenMessengerAddress)
-
-		chainVal, err := cfgWithBase.GetTokenMessengerAddress(chainID)
-		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].TokenMessengerAddress)
 	})
 
 	t.Run("GetConfirmations", func(t *testing.T) {
@@ -308,8 +314,6 @@ func TestGetQuoteOffset(t *testing.T) {
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
 				RFQAddress:              "0x123",
-				SynapseCCTPAddress:      "0x456",
-				TokenMessengerAddress:   "0x789",
 				Confirmations:           1,
 				NativeToken:             "MATIC",
 				DeadlineBufferSeconds:   10,

@@ -65,16 +65,6 @@ type Config struct {
 type ChainConfig struct {
 	// Bridge is the rfq bridge contract address.
 	RFQAddress string `yaml:"rfq_address"`
-	// SynapseCCTPAddress is the SynapseCCTP address.
-	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
-	// TokenMessengerAddress is the TokenMessenger address.
-	TokenMessengerAddress string `yaml:"token_messenger_address"`
-	// L1GatewayAddress is the L1Gateway address [scroll].
-	L1GatewayAddress string `yaml:"l1_gateway_address"`
-	// L1ScrollMessengerAddress is the L1ScrollMessenger address [scroll].
-	L1ScrollMessengerAddress string `yaml:"l1_scroll_messenger_address"`
-	// L2GatewayAddress is the L2Gateway address [scroll].
-	L2GatewayAddress string `yaml:"l2_gateway_address"`
 	// Confirmations is the number of required confirmations.
 	Confirmations uint64 `yaml:"confirmations"`
 	// Tokens is a map of token name -> token config.
@@ -106,6 +96,8 @@ type ChainConfig struct {
 	RelayFixedFeeMultiplier float64 `yaml:"relay_fixed_fee_multiplier"`
 	// RebalanceStartBlock is the block at which the chain listener will listen for rebalance events.
 	RebalanceStartBlock uint64 `yaml:"cctp_start_block"`
+	// RebalanceConfigs is the rebalance configurations.
+	RebalanceConfigs RebalanceConfigs `yaml:"rebalance_configs"`
 }
 
 // TokenConfig represents the configuration for a token.
@@ -150,6 +142,35 @@ type FeePricerConfig struct {
 	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
 	// HTTPTimeoutMs is the number of milliseconds to timeout on a HTTP request.
 	HTTPTimeoutMs int `yaml:"http_timeout_ms"`
+}
+
+// RebalanceConfigs represents the rebalance configurations.
+type RebalanceConfigs struct {
+	Synapse *SynapseCCTPRebalanceConfig `yaml:"synapse"`
+	Circle  *CircleCCTPRebalanceConfig  `yaml:"circle"`
+	Scroll  *ScrollRebalanceConfig      `yaml:"scroll"`
+}
+
+// SynapseCCTPRebalanceConfig represents the configuration for the SynapseCCTP rebalance.
+type SynapseCCTPRebalanceConfig struct {
+	// SynapseCCTPAddress is the SynapseCCTP address.
+	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
+}
+
+// CircleCCTPRebalanceConfig represents the configuration for the CircleCCTP rebalance.
+type CircleCCTPRebalanceConfig struct {
+	// TokenMessengerAddress is the TokenMessenger address.
+	TokenMessengerAddress string `yaml:"token_messenger_address"`
+}
+
+// ScrollRebalanceConfig represents the configuration for the Scroll rebalance.
+type ScrollRebalanceConfig struct {
+	// L1GatewayAddress is the L1Gateway address [scroll].
+	L1GatewayAddress string `yaml:"l1_gateway_address"`
+	// L1ScrollMessengerAddress is the L1ScrollMessenger address [scroll].
+	L1ScrollMessengerAddress string `yaml:"l1_scroll_messenger_address"`
+	// L2GatewayAddress is the L2Gateway address [scroll].
+	L2GatewayAddress string `yaml:"l2_gateway_address"`
 }
 
 // TokenIDDelimiter is the delimiter for token IDs.

@@ -104,73 +104,78 @@ func (c Config) GetRFQAddress(chainID int) (value string, err error) {
 }
 
 // GetSynapseCCTPAddress returns the SynapseCCTP address for the given chainID.
-func (c Config) GetSynapseCCTPAddress(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "SynapseCCTPAddress")
-	if err != nil {
-		return value, err
-	}
-
-	value, ok := rawValue.(string)
+func (c Config) GetSynapseCCTPAddress(chainID int) (value common.Address, err error) {
+	chainCfg, ok := c.Chains[chainID]
 	if !ok {
-		return value, fmt.Errorf("failed to cast SynapseCCTPAddress to string")
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	return value, nil
+	if chainCfg.RebalanceConfigs.Synapse == nil {
+		return value, fmt.Errorf("no synapse config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Synapse.SynapseCCTPAddress == "" {
+		return value, fmt.Errorf("no SynapseCCTPAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(chainCfg.RebalanceConfigs.Synapse.SynapseCCTPAddress), nil
 }
 
 // GetTokenMessengerAddress returns the TokenMessenger address for the given chainID.
-func (c Config) GetTokenMessengerAddress(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "TokenMessengerAddress")
-	if err != nil {
-		return value, err
-	}
-
-	value, ok := rawValue.(string)
+func (c Config) GetTokenMessengerAddress(chainID int) (value common.Address, err error) {
+	chainCfg, ok := c.Chains[chainID]
 	if !ok {
-		return value, fmt.Errorf("failed to cast TokenMessengerAddress to string")
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	return value, nil
+	if chainCfg.RebalanceConfigs.Circle == nil {
+		return value, fmt.Errorf("no synapse config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Circle.TokenMessengerAddress == "" {
+		return value, fmt.Errorf("no TokenMessengerAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(chainCfg.RebalanceConfigs.Circle.TokenMessengerAddress), nil
 }
 
 // GetL1GatewayAddress returns the L1Gateway address for the given chainID.
-func (c Config) GetL1GatewayAddress(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "L1GatewayAddress")
-	if err != nil {
-		return value, err
-	}
-
-	value, ok := rawValue.(string)
+func (c Config) GetL1GatewayAddress(chainID int) (value common.Address, err error) {
+	chainCfg, ok := c.Chains[chainID]
 	if !ok {
-		return value, fmt.Errorf("failed to cast L1GatewayAddress to string")
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	return value, nil
+	if chainCfg.RebalanceConfigs.Scroll == nil {
+		return value, fmt.Errorf("no scroll config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll.L1GatewayAddress == "" {
+		return value, fmt.Errorf("no L1GatewayAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(chainCfg.RebalanceConfigs.Scroll.L1GatewayAddress), nil
 }
 
 // GetL1ScrollMessengerAddress returns the L1ScrollMessenger address for the given chainID.
-func (c Config) GetL1ScrollMessengerAddress(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "L1ScrollMessengerAddress")
-	if err != nil {
-		return value, err
-	}
-
-	value, ok := rawValue.(string)
+func (c Config) GetL1ScrollMessengerAddress(chainID int) (value common.Address, err error) {
+	chainCfg, ok := c.Chains[chainID]
 	if !ok {
-		return value, fmt.Errorf("failed to cast L1ScrollMessengerAddress to string")
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	return value, nil
+	if chainCfg.RebalanceConfigs.Scroll == nil {
+		return value, fmt.Errorf("no scroll config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll.L1ScrollMessengerAddress == "" {
+		return value, fmt.Errorf("no L1ScrollMessengerAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(chainCfg.RebalanceConfigs.Scroll.L1ScrollMessengerAddress), nil
 }
 
 // GetL2GatewayAddress returns the L2Gateway address for the given chainID.
-func (c Config) GetL2GatewayAddress(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "L2GatewayAddress")
-	if err != nil {
-		return value, err
-	}
-
-	value, ok := rawValue.(string)
+func (c Config) GetL2GatewayAddress(chainID int) (value common.Address, err error) {
+	chainCfg, ok := c.Chains[chainID]
 	if !ok {
-		return value, fmt.Errorf("failed to cast L2GatewayAddress to string")
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	return value, nil
+	if chainCfg.RebalanceConfigs.Scroll == nil {
+		return value, fmt.Errorf("no scroll config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll.L2GatewayAddress == "" {
+		return value, fmt.Errorf("no L2GatewayAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(chainCfg.RebalanceConfigs.Scroll.L2GatewayAddress), nil
 }
 
 // GetConfirmations returns the Confirmations for the given chainID.

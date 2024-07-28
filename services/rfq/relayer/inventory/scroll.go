@@ -194,7 +194,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 			if err != nil {
 				return fmt.Errorf("could not get l1 gateway address: %w", err)
 			}
-			c.boundL1Gateway, err = l1gateway.NewL1GatewayRouter(common.HexToAddress(addr), chainClient)
+			c.boundL1Gateway, err = l1gateway.NewL1GatewayRouter(addr, chainClient)
 			if err != nil {
 				return fmt.Errorf("could not get l1 gateway contract: %w", err)
 			}
@@ -202,13 +202,13 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 			if err != nil {
 				return fmt.Errorf("could not get l1 scroll messenger address: %w", err)
 			}
-			c.boundL1ScrollMessenger, err = l1scrollmessenger.NewL1ScrollMessenger(common.HexToAddress(messengerAddr), chainClient)
+			c.boundL1ScrollMessenger, err = l1scrollmessenger.NewL1ScrollMessenger(messengerAddr, chainClient)
 			if err != nil {
 				return fmt.Errorf("could not get l1 scroll messenger contract: %w", err)
 			}
 			span.SetAttributes(
-				attribute.String(fmt.Sprintf("l1_gateway_%d", chainID), addr),
-				attribute.String(fmt.Sprintf("scroll_messenger_%d", chainID), messengerAddr),
+				attribute.String(fmt.Sprintf("l1_gateway_%d", chainID), addr.Hex()),
+				attribute.String(fmt.Sprintf("scroll_messenger_%d", chainID), messengerAddr.Hex()),
 			)
 		} else if isScrollChain(chainID) {
 			c.l2ChainID = chainID
@@ -220,12 +220,12 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 			if err != nil {
 				return fmt.Errorf("could not get chain client: %w", err)
 			}
-			c.boundL2Gateway, err = l2gateway.NewL2GatewayRouter(common.HexToAddress(addr), chainClient)
+			c.boundL2Gateway, err = l2gateway.NewL2GatewayRouter(addr, chainClient)
 			if err != nil {
 				return fmt.Errorf("could not get l2 gateway contract: %w", err)
 			}
 			span.SetAttributes(
-				attribute.String(fmt.Sprintf("l2_gateway_%d", chainID), addr),
+				attribute.String(fmt.Sprintf("l2_gateway_%d", chainID), addr.Hex()),
 			)
 		}
 	}
