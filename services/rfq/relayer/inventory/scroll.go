@@ -101,17 +101,13 @@ func isTestnetChain(chainID int) bool {
 const claimCheckInterval = 30
 
 func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
-	fmt.Println("starting rebalance manager scroll")
 	err = c.initContracts(ctx)
 	if err != nil {
-		fmt.Printf("could not initialize contracts: %v\n", err)
 		return fmt.Errorf("could not initialize contracts: %w", err)
 	}
-	fmt.Println("initialized contracts")
 
 	err = c.initListeners(ctx)
 	if err != nil {
-		fmt.Printf("init listener err: %v\n", err)
 		return fmt.Errorf("could not initialize listeners: %w", err)
 	}
 
@@ -143,7 +139,6 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 	g.Go(func() error {
 		err := c.listenL2ETHGateway(ctx)
 		if err != nil {
-			fmt.Printf("could not listen on L2ETHGateway: %v\n", err)
 			return fmt.Errorf("could not listen on L2ETHGateway: %w", err)
 		}
 		return nil
@@ -151,7 +146,6 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 	g.Go(func() error {
 		err := c.listenL2ERC20Gateway(ctx)
 		if err != nil {
-			fmt.Printf("could not listen on L2ERC20Gateway: %v\n", err)
 			return fmt.Errorf("could not listen on L2ERC20Gateway: %w", err)
 		}
 		return nil
@@ -190,9 +184,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	}()
 
 	for chainID := range c.cfg.Chains {
-		fmt.Printf("inspecting chain: %d\n", chainID)
 		if isEthereumChain(chainID) {
-			fmt.Printf("found ethereum chain: %d\n", chainID)
 			c.l1ChainID = chainID
 			chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 			if err != nil {
@@ -206,7 +198,6 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 			if err != nil {
 				return fmt.Errorf("could not get l1 gateway contract: %w", err)
 			}
-			fmt.Printf("assigned l1 gateway on chain %v at address %v\n", chainID, addr)
 			messengerAddr, err := c.cfg.GetL1ScrollMessengerAddress(chainID)
 			if err != nil {
 				return fmt.Errorf("could not get l1 scroll messenger address: %w", err)
@@ -219,9 +210,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 				attribute.String(fmt.Sprintf("l1_gateway_%d", chainID), addr),
 				attribute.String(fmt.Sprintf("scroll_messenger_%d", chainID), messengerAddr),
 			)
-			fmt.Printf("assigned scroll messenger on chain %v at address %v\n", chainID, addr)
 		} else if isScrollChain(chainID) {
-			fmt.Printf("found scroll chain: %d\n", chainID)
 			c.l2ChainID = chainID
 			addr, err := c.cfg.GetL2GatewayAddress(chainID)
 			if err != nil {
@@ -252,7 +241,6 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	if isTestnetChain(c.l1ChainID) != isTestnetChain(c.l2ChainID) {
 		return fmt.Errorf("testnet chain mismatch: %d %d", c.l1ChainID, c.l2ChainID)
 	}
-	fmt.Println("contracts ok")
 
 	// set ERC20 addresses
 	for chainID, chainCfg := range c.cfg.Chains {
@@ -275,7 +263,6 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	if c.l2ERC20Address == zeroAddress {
 		return fmt.Errorf("l2 erc20 address not set")
 	}
-	fmt.Printf("erc20 addresses ok: %v %v\n", c.l1ERC20Address, c.l2ERC20Address)
 
 	// set API URL
 	baseURL := mainnetScrollAPIURL
@@ -317,7 +304,6 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get L1ERC20Gateway address: %w", err)
 	}
-	fmt.Printf("got l1ERC20Addr %v from token addr %v\n", l1ERC20Addr, c.l1ERC20Address)
 	if l1ERC20Addr == zeroAddress {
 		return fmt.Errorf("got zero address for L1ERC20Gateway and token address %v", c.l1ERC20Address)
 	}
@@ -331,28 +317,22 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
-	fmt.Println("got l2 client")
 	l2InitialBlock, err := c.cfg.GetCCTPStartBlock(c.l2ChainID)
 	if err != nil {
 		return fmt.Errorf("could not get cctp start block: %w", err)
 	}
-	fmt.Printf("got l2 inital block: %v\n", l2InitialBlock)
 	l2ETHAddr, err := c.boundL2Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get L2ETHGateway address: %w", err)
 	}
-	fmt.Printf("got l2 eth addr: %v\n", l2ETHAddr)
 	c.l2ETHGatewayListener, err = listener.NewChainListener(l2Client, c.db, l2ETHAddr, l2InitialBlock, c.handler)
 	if err != nil {
-		fmt.Printf("could not get L2ETHGateway listener: %v\n", err)
 		return fmt.Errorf("could not get L2ETHGateway listener: %w", err)
 	}
-	fmt.Println("got l2 eth listener")
 	l2ERC20Addr, err := c.boundL2Gateway.GetERC20Gateway(&bind.CallOpts{Context: ctx}, c.l2ERC20Address)
 	if err != nil {
 		return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
 	}
-	fmt.Printf("got l2ERC20Addr %v from token addr %v\n", l2ERC20Addr, c.l2ERC20Address)
 	if l2ERC20Addr == zeroAddress {
 		return fmt.Errorf("got zero address for L2ERC20Gateway and token address %v", c.l2ERC20Address)
 	}
@@ -360,7 +340,6 @@ func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err e
 	if err != nil {
 		return fmt.Errorf("could not get L2ERC20Gateway listener: %w", err)
 	}
-	fmt.Println("got l2erc20gatewaylistener")
 
 	span.SetAttributes(
 		attribute.String("l1_eth_gateway", l1ETHAddr.String()),
@@ -429,7 +408,6 @@ func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebal
 				return nil, fmt.Errorf("could not deposit gas token: %w", err)
 			}
 		} else {
-			fmt.Printf("calling depositERC20 on chain %v contract %v with token %v, amount %v, gas limit %v\n", rebalance.OriginMetadata.ChainID, c.boundL1Gateway, rebalance.OriginMetadata.Addr, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
 			tx, err = c.boundL1Gateway.DepositERC20(transactor, rebalance.OriginMetadata.Addr, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
 			if err != nil {
 				return nil, fmt.Errorf("could not deposit erc20 token: %w", err)
@@ -724,9 +702,7 @@ func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err 
 	if err != nil {
 		return fmt.Errorf("could not get l2 gateway parser: %w", err)
 	}
-	fmt.Println("listening on l2 erc20 gateawy")
 	err = c.l2ERC20GatewayListener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
-		fmt.Printf("got l2 erc20gateway log: %v\n", log)
 		_, parsedEvent, ok := parser.ParseEvent(log)
 		if !ok {
 			return nil

@@ -101,11 +101,9 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 
 // getRebalanceMetadatas finds the origin and dest token metadata based on the configured rebalance method.
 func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, methods []relconfig.RebalanceMethod) (originTokenData, destTokenData *TokenMetadata, method relconfig.RebalanceMethod) {
-	fmt.Printf("getRebalanceMetadatas with tokens: %v, tokenName: %v, methods: %v\n", tokens, tokenName, methods)
 	for _, method := range methods {
 		for _, tokenMap := range tokens {
 			for _, tokenData := range tokenMap {
-				fmt.Printf("inspecitng token data with balance %v: %v\n", tokenData.Balance, tokenData)
 				if tokenData.Name == tokenName {
 					// make sure that the token is compatible with our rebalance method
 					tokenMethods, tokenErr := cfg.GetRebalanceMethods(tokenData.ChainID, tokenData.Addr.Hex())
@@ -121,25 +119,20 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 						}
 					}
 					if !isCompatible {
-						fmt.Println("not compatible")
 						continue
 					}
-					fmt.Printf("got rebalance method: %v\n", method)
 
 					// assign origin / dest metadata based on min / max balances
 					if originTokenData == nil || tokenData.Balance.Cmp(originTokenData.Balance) > 0 {
-						fmt.Printf("assigning originTokenData: %v -> %v\n", originTokenData, tokenData)
 						originTokenData = tokenData
 					}
 					if destTokenData == nil || tokenData.Balance.Cmp(destTokenData.Balance) < 0 {
-						fmt.Printf("assigning destTokenData: %v -> %v\n", destTokenData, tokenData)
 						destTokenData = tokenData
 					}
 				}
 			}
 		}
 		if originTokenData != nil && destTokenData != nil {
-			fmt.Printf("returning method: %v, originTokenData: %v, destTokenData: %v\n", method, originTokenData, destTokenData)
 			return originTokenData, destTokenData, method
 		}
 	}
