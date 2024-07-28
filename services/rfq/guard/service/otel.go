@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -34,6 +35,8 @@ type otelRecorder struct {
 	db guarddb.Service
 	// walletAddress is the wallet address for the signer.
 	walletAddress common.Address
+	// mux is a mutex used for making sure only one db query is run at a time.
+	mux sync.Mutex
 }
 
 func newOtelRecorder(meterHandler metrics.Handler, walletAddress common.Address, db guarddb.Service) (_ iOtelRecorder, err error) {
@@ -59,6 +62,13 @@ func newOtelRecorder(meterHandler metrics.Handler, walletAddress common.Address,
 
 func (o *otelRecorder) recordDisputeCounts(ctx context.Context, observer metric.Observer) (err error) {
 	if o.metrics == nil || o.disputeGauge == nil || o.db == nil {
+		return nil
+	}
+
+	// make sure we aren't making simultaneous db queries
+	if o.mux.TryLock() {
+		defer o.mux.Unlock()
+	} else {
 		return nil
 	}
 
