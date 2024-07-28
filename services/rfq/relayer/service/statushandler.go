@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/elliotchance/orderedmap/v2"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jellydator/ttlcache/v3"
@@ -53,7 +54,7 @@ type QuoteRequestHandler struct {
 	// handlerMtx is the mutex for relaying.
 	handlerMtx mapmutex.StringMapMutex
 	// relayedAmount is a mapping of block number to relayed amount in that block.
-	relayedAmountWindow map[uint64]float64
+	relayedAmountWindow orderedmap.OrderedMap[uint64, float64]
 	//  blockWindowSize is the number of blocks to keep in the relayedAmountWindow
 	blockWindowSize uint64
 	// volumeLimit is the volume limit for the relayed amounts
@@ -91,7 +92,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		handlerMtx:          r.handlerMtx,
 		volumeLimit:         r.cfg.GetVolumeLimit(),
 		blockWindowSize:     r.cfg.GetBlockWindow(),
-		relayedAmountWindow: make(map[uint64]float64, r.cfg.GetBlockWindow()),
+		relayedAmountWindow: *orderedmap.NewOrderedMap[uint64, float64](),
 		tokenNames:          r.cfg.Chains[int(req.Transaction.OriginChainId)].Tokens,
 	}
 
@@ -252,24 +253,53 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlock
 // TODO: this is not good yet because the beginningOfWindow is not necessarily in the map, leading us to
 // never actually deleting the oldest entry in the map. We probably need to check whether we are on a new block or not.
 func (q *QuoteRequestHandler) addRelayToWindow(ctx context.Context, request *reldb.QuoteRequest) error {
+
 	priceOfOriginToken, err := q.getTokenPrice(ctx, request)
 	if err != nil {
 		return fmt.Errorf("could not get price: %w", err)
 	}
 
-	// Delete old blocks that should not be in the window anymore.
-	beginningOfWindow := q.Origin.LatestBlock() - q.blockWindowSize
-	delete(q.relayedAmountWindow, beginningOfWindow)
+	sz := 0
+	for el := q.relayedAmountWindow.Front(); el != nil; el = el.Next() {
+		sz++
+	}
 
-	q.relayedAmountWindow[request.BlockNumber] += priceOfOriginToken
+	// if the window isn't large enough, then just add it.
+	// unless it's already in the map, in which case we just update the value.
+	if sz < int(q.blockWindowSize) {
+		prev, ok := q.relayedAmountWindow.Get(request.BlockNumber)
+		if !ok {
+			q.relayedAmountWindow.Set(request.BlockNumber, priceOfOriginToken)
+		} else {
+			q.relayedAmountWindow.Set(request.BlockNumber, prev+priceOfOriginToken)
+		}
+		return nil
+	}
+
+	beginningOfWindow := q.relayedAmountWindow.Front().Key
+
+	// if the request older than block number, we don't care. window for that is gone
+	if beginningOfWindow > request.BlockNumber {
+		return nil
+	}
+	q.relayedAmountWindow.Delete(beginningOfWindow)
+
+	// add the most recent block to the window
+	prev, ok := q.relayedAmountWindow.Get(request.BlockNumber)
+	if !ok {
+		q.relayedAmountWindow.Set(request.BlockNumber, priceOfOriginToken)
+	} else {
+		q.relayedAmountWindow.Set(request.BlockNumber, prev+priceOfOriginToken)
+	}
 
 	return nil
 }
 
 func (q *QuoteRequestHandler) getBlockWindowRelayedAmount() float64 {
 	var total float64
-	for _, amount := range q.relayedAmountWindow {
-		total += amount
+
+	for it := q.relayedAmountWindow.Front(); it != nil; it = it.Next() {
+		total += it.Value
 	}
 	return total
 }
