@@ -155,6 +155,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	didPoll := true
 	defer span.SetAttributes(attribute.Bool("did_poll", didPoll))
 	if c.latestBlock == c.startBlock {
+		//nolint:ineffassign
 		didPoll = false
 		return nil
 	}
