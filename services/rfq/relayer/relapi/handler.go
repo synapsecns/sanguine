@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/otel/attribute"
 	"math/big"
 	"net/http"
 
@@ -262,6 +263,12 @@ type GetTxByNonceRequest struct {
 
 // GetTxHashByNonce gets the transaction hash by submitter nonce.
 func (h *Handler) GetTxHashByNonce(c *gin.Context) {
+	ctx, span := h.metrics.Tracer().Start(c, "txByNonce")
+	var err error
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	chainIDStr := c.Query("chain_id")
 	nonceStr := c.Query("nonce")
 
@@ -271,13 +278,16 @@ func (h *Handler) GetTxHashByNonce(c *gin.Context) {
 		return
 	}
 
+	span.SetAttributes(attribute.Int("chain_id", int(chainID.Uint64())))
+
 	nonce, ok := new(big.Int).SetString(nonceStr, 10)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid nonce"})
 		return
 	}
+	span.SetAttributes(attribute.Int("nonce", int(nonce.Uint64())))
 
-	tx, err := h.submitter.GetSubmissionStatus(c, chainID, nonce.Uint64())
+	tx, err := h.submitter.GetSubmissionStatus(ctx, chainID, nonce.Uint64())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not get tx hash: %s", err.Error())})
 		return
