@@ -616,6 +616,18 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(messengerAddr)).Returns(rtoken.Allowances[contractTokenMessenger]),
 					)
 				}
+				l1gatewayAddr, _ := cfg.GetL1GatewayAddress(chainID)
+				if len(l1gatewayAddr) > 0 {
+					deferredCalls[chainID] = append(deferredCalls[chainID],
+						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(l1gatewayAddr)).Returns(rtoken.Allowances[contractL1Gateway]),
+					)
+				}
+				l2gatewayAddr, _ := cfg.GetL2GatewayAddress(chainID)
+				if len(l2gatewayAddr) > 0 {
+					deferredCalls[chainID] = append(deferredCalls[chainID],
+						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(l2gatewayAddr)).Returns(rtoken.Allowances[contractL2Gateway]),
+					)
+				}
 			}
 		}
 	}
