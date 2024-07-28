@@ -552,10 +552,10 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 
 	// Clip the quoteAmount by the max origin balance
 	maxBalance := m.config.GetMaxBalance(input.OriginChainID, input.OriginTokenAddr)
-	if input.OriginBalance != nil && maxBalance.Cmp(big.NewInt(0)) > 0 {
+	if maxBalance != nil && input.OriginBalance != nil {
 		quotableBalance := new(big.Int).Sub(maxBalance, input.OriginBalance)
-		if quotableBalance.Cmp(big.NewInt(0)) < 0 {
-			span.AddEvent("negative quotable balance", trace.WithAttributes(
+		if quotableBalance.Cmp(big.NewInt(0)) <= 0 {
+			span.AddEvent("non-positive quotable balance", trace.WithAttributes(
 				attribute.String("quotable_balance", quotableBalance.String()),
 				attribute.String("max_balance", maxBalance.String()),
 				attribute.String("origin_balance", input.OriginBalance.String()),
