@@ -2,6 +2,7 @@ package relconfig
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"reflect"
 	"time"
@@ -25,7 +26,7 @@ var DefaultChainConfig = ChainConfig{
 
 // NewFloatPtr returns a pointer to a float64.
 func NewFloatPtr(val float64) *float64 {
-	return &val
+	return core.PtrTo(val)
 }
 
 // getChainConfigValue gets the value of a field from ChainConfig.
