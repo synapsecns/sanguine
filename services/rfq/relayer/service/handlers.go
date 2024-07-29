@@ -195,7 +195,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 	}
 	if !canRelay {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending, &request.Status)
-		span.AddEvent("cannot relay due to volume")
+		span.AddEvent("cannot relay due to volume. waiting for one block confirmation before relaying.")
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
@@ -306,7 +306,6 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 // Step 4: RelayStarted
 //
 // This is the fourth step in the bridge process. Here we submit the relay transaction to the destination chain.
-// We also add it to the relay window so we can check how much has been relayed over the last block window.
 // TODO: just to be safe, we should probably check if another relayer has already relayed this.
 func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	// TODO: store the dest txhash connected to the nonce
