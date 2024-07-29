@@ -238,22 +238,18 @@ func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool 
 	return true
 }
 
-// Sliding window based rate limiter to see if we have relayed more than $10k in the last blockWindowSize blocks without
-// a confirmation.
+// Cache based rate limiter.
+// We don't want to commit a very large balance of the relayer in one block straight away without confirmations.
+// Case 1: If the RFQ demands over $10k in one block, we should not relay the request unless we have a confirmation.
+// Case 2: We should also not relay the request if the cumulative relayed amount over the last blockWindowSize blocks
+// exceeds the volume limit AND we have not confirmed.
 func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 	request reldb.QuoteRequest,
 	currentBlockNumber uint64,
 	volumeLimit float64,
 ) (bool, error) {
-	/* We don't want to commit the entire balance of the relayer in one block straight away. If the RFQ demands over
-	 * $10k in one block, then we should not relay the request unless we have a confirmation. Likewise, we should also
-	 * not relay the request if the cumulative relayed amount over the last blockWindowSize blocks exceeds the volume
-	 * limit AND we have not confirmed.
-	 * We do this by keeping a sliding window/cache of the last blockWindow block amounts, then flushing when we finally
-	 * confirm the latest window of blocks, e.g. the most recent block is confirmed.  */
-
-	// Case 1: Singular RFQ over volumeLimit
-	priceOfOriginToken, err := q.getTokenPrice(context.Background(), &request)
+	// Case 1: Singular RFQ over volumeLimit and inadequate confirmations
+	priceOfOriginToken, err := q.getTokenPrice(context.Background(), request)
 	if err != nil {
 		return false, fmt.Errorf("could not get price: %w", err)
 	}
@@ -264,7 +260,7 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 		return false, nil
 	}
 
-	// Case 2: Cumulative RFQs over volumeLimit
+	// Case 2: Cumulative RFQs over volumeLimit and inadequate confirmations
 	blockWindowUSDAmount := q.getBlockWindowRelayedAmount()
 	numOfConfirmations = currentBlockNumber - q.rfqCache.Front().Key
 
@@ -275,7 +271,8 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 	return true, nil
 }
 
-func (q *QuoteRequestHandler) addRelayToWindow(ctx context.Context, request *reldb.QuoteRequest) error {
+// addRelayToCache adds the relayed amount to the cache.
+func (q *QuoteRequestHandler) addRelayToCache(ctx context.Context, request reldb.QuoteRequest) error {
 	// If the block number is less than the first block in the window, then we don't need to add it.
 	if request.BlockNumber < q.rfqCache.Front().Key {
 		return nil
@@ -323,7 +320,7 @@ func (q *QuoteRequestHandler) getBlockWindowRelayedAmount() float64 {
 	return total
 }
 
-func (q *QuoteRequestHandler) getTokenPrice(ctx context.Context, request *reldb.QuoteRequest) (float64, error) {
+func (q *QuoteRequestHandler) getTokenPrice(ctx context.Context, request reldb.QuoteRequest) (float64, error) {
 	var tokenName string
 	for tn, tokenConfig := range q.tokenNames {
 		if common.HexToAddress(tokenConfig.Address).Hex() == request.Transaction.OriginToken.Hex() {
