@@ -274,7 +274,7 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 // addRelayToCache adds the relayed amount to the cache.
 func (q *QuoteRequestHandler) addRelayToCache(ctx context.Context, request reldb.QuoteRequest) error {
 	// If the block number is less than the first block in the window, then we don't need to add it.
-	if request.BlockNumber < q.rfqCache.Front().Key {
+	if q.rfqCache.Front() != nil && request.BlockNumber < q.rfqCache.Front().Key {
 		return nil
 	}
 
