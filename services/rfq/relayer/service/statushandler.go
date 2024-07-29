@@ -293,14 +293,18 @@ func (q *QuoteRequestHandler) addRelayToCache(ctx context.Context, request reldb
 	}
 
 	// Otherwise, we have reached capacity. Flush the entire cache if we have reached the blockWindowSize.
-	for el := q.rfqCache.Front(); el != nil; el = el.Next() {
-		q.rfqCache.Delete(el.Key)
-	}
+	q.clearCache()
 
 	// Add the most recent RFQ.
 	q.rfqCache.Set(request.BlockNumber, priceOfOriginToken)
 
 	return nil
+}
+
+func (q *QuoteRequestHandler) clearCache() {
+	for el := q.rfqCache.Front(); el != nil; el = el.Next() {
+		q.rfqCache.Delete(el.Key)
+	}
 }
 
 func (q *QuoteRequestHandler) getBlockCacheLength() int {
