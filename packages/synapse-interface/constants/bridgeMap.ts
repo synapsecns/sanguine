@@ -1799,14 +1799,14 @@ export const BRIDGE_MAP = {
       symbol: 'USDC',
       origin: ['RFQ.USDC'],
       destination: ['RFQ.USDC'],
-      swappable: [],
+      swappable: ['0xA219439258ca9da29E9Cc4cE5596924745e12B93'],
     },
     '0xA219439258ca9da29E9Cc4cE5596924745e12B93': {
       decimals: 6,
       symbol: 'USDT',
       origin: ['RFQ.USDC'],
       destination: [],
-      swappable: [],
+      swappable: ['0x176211869cA2b568f2A7D4EE941E073a821EE1ff'],
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
@@ -1882,7 +1882,7 @@ export const BRIDGE_MAP = {
       symbol: 'USDC',
       origin: ['RFQ.USDC'],
       destination: ['RFQ.USDC'],
-      swappable: [],
+      swappable: ['0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df'],
     },
     '0x5300000000000000000000000000000000000004': {
       decimals: 18,
@@ -1903,7 +1903,7 @@ export const BRIDGE_MAP = {
       symbol: 'USDT',
       origin: ['RFQ.USDC'],
       destination: [],
-      swappable: [],
+      swappable: ['0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4'],
     },
   },
   '1313161554': {
