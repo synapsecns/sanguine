@@ -604,7 +604,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				deferredCalls[chainID] = append(deferredCalls[chainID],
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.Balance),
 					eth.CallFunc(funcDecimals, token).Returns(&rtoken.Decimals),
-					eth.CallFunc(funcName, token).Returns(&rtoken.ChainName),
+					// eth.CallFunc(funcName, token).Returns(&rtoken.ChainName),
 					eth.CallFunc(funcAllowance, token, i.relayerAddress, rfqAddr).Returns(rtoken.Allowances[contractRFQ]),
 				)
 				cctpAddr, addrErr := cfg.GetSynapseCCTPAddress(chainID)
