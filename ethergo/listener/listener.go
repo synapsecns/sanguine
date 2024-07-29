@@ -153,9 +153,10 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 
 	// Check if latest block is the same as start block (for chains with slow block times)
 	didPoll := true
-	defer span.SetAttributes(attribute.Bool("did_poll", didPoll))
+	defer func() {
+		span.SetAttributes(attribute.Bool("did_poll", didPoll))
+	}()
 	if c.latestBlock == c.startBlock {
-		//nolint:ineffassign
 		didPoll = false
 		return nil
 	}
