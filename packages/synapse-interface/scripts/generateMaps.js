@@ -102,7 +102,7 @@ const getSwapQuoter = async (chainId) => {
 // into SynapseBridge tokens for a given chain.
 const getBridgeOriginMap = async (chainId) => {
   const swapQuoter = await getSwapQuoter(chainId)
-  if (!SynapseRouters[chainId] || !swapQuoter) {
+  if (!swapQuoter) {
     return {
       originMap: {},
       poolSets: [],
@@ -112,8 +112,8 @@ const getBridgeOriginMap = async (chainId) => {
   // Get WETH address
   const weth = await swapQuoter.weth()
   // Get list of supported tokens
-  let bridgeTokens = await SynapseRouters[chainId].bridgeTokens()
-  const pools = await SynapseRouters[chainId].allPools()
+  let bridgeTokens = (await SynapseRouters[chainId]?.bridgeTokens()) || []
+  const pools = await swapQuoter.allPools()
 
   // Collect map from bridge token to symbols by doing tokenToSymbol for each bridge token
   const allTokenSymbols = {}
