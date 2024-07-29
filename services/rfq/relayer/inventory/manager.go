@@ -329,11 +329,8 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			// approve SynapseCCTP contract
 			if address != chain.EthAddress && token.Allowances[contractSynapseCCTP].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
-				contractAddr, err := i.cfg.GetSynapseCCTPAddress(chainID)
-				if err != nil {
-					return fmt.Errorf("could not get CCTP address: %w", err)
-				}
-				if len(contractAddr) > 0 {
+				contractAddr, addrErr := i.cfg.GetSynapseCCTPAddress(chainID)
+				if addrErr != nil {
 					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve SynapseCCTP contract: %w", err)
@@ -344,11 +341,8 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			// approve TokenMessenger contract
 			if address != chain.EthAddress && token.Allowances[contractTokenMessenger].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
-				contractAddr, err := i.cfg.GetTokenMessengerAddress(chainID)
-				if err != nil {
-					return fmt.Errorf("could not get CCTP address: %w", err)
-				}
-				if len(contractAddr) > 0 {
+				contractAddr, addrErr := i.cfg.GetTokenMessengerAddress(chainID)
+				if addrErr != nil {
 					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve TokenMessenger contract: %w", err)
@@ -359,11 +353,8 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			// approve L1GatewayRouter contract
 			if address != chain.EthAddress && token.Allowances[contractL1Gateway].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
-				contractAddr, err := i.cfg.GetL1GatewayAddress(chainID)
-				if err != nil {
-					return fmt.Errorf("could not get L1Gateway address: %w", err)
-				}
-				if len(contractAddr) > 0 {
+				contractAddr, addrErr := i.cfg.GetL1GatewayAddress(chainID)
+				if addrErr != nil {
 					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve L1Gateway contract: %w", err)
@@ -374,11 +365,8 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			// approve L2GatewayRouter contract
 			if address != chain.EthAddress && token.Allowances[contractL2Gateway].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
-				contractAddr, err := i.cfg.GetL2GatewayAddress(chainID)
-				if err != nil {
-					return fmt.Errorf("could not get L2Gateway address: %w", err)
-				}
-				if len(contractAddr) > 0 {
+				contractAddr, addrErr := i.cfg.GetL2GatewayAddress(chainID)
+				if addrErr != nil {
 					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve L2Gateway contract: %w", err)
@@ -619,18 +607,18 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 						eth.CallFunc(funcAllowance, token, i.relayerAddress, messengerAddr).Returns(rtoken.Allowances[contractTokenMessenger]),
 					)
 				}
-				// l1gatewayAddr, addrErr := cfg.GetL1GatewayAddress(chainID)
-				// if addrErr == nil {
-				// 	deferredCalls[chainID] = append(deferredCalls[chainID],
-				// 		eth.CallFunc(funcAllowance, token, i.relayerAddress, l1gatewayAddr).Returns(rtoken.Allowances[contractL1Gateway]),
-				// 	)
-				// }
-				// l2gatewayAddr, addrErr := cfg.GetL2GatewayAddress(chainID)
-				// if addrErr == nil {
-				// 	deferredCalls[chainID] = append(deferredCalls[chainID],
-				// 		eth.CallFunc(funcAllowance, token, i.relayerAddress, l2gatewayAddr).Returns(rtoken.Allowances[contractL2Gateway]),
-				// 	)
-				// }
+				l1gatewayAddr, addrErr := cfg.GetL1GatewayAddress(chainID)
+				if addrErr == nil {
+					deferredCalls[chainID] = append(deferredCalls[chainID],
+						eth.CallFunc(funcAllowance, token, i.relayerAddress, l1gatewayAddr).Returns(rtoken.Allowances[contractL1Gateway]),
+					)
+				}
+				l2gatewayAddr, addrErr := cfg.GetL2GatewayAddress(chainID)
+				if addrErr == nil {
+					deferredCalls[chainID] = append(deferredCalls[chainID],
+						eth.CallFunc(funcAllowance, token, i.relayerAddress, l2gatewayAddr).Returns(rtoken.Allowances[contractL2Gateway]),
+					)
+				}
 			}
 		}
 	}
