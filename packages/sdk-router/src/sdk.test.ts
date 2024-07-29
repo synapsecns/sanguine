@@ -407,6 +407,14 @@ describe('SynapseSDK', () => {
         amount
       )
 
+      const secondResultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.ARBITRUM,
+        SupportedChainId.ETH,
+        ARB_USDC,
+        ETH_USDC,
+        amount
+      )
+
       createBridgeQuoteTests(
         synapse,
         SupportedChainId.ARBITRUM,
@@ -433,6 +441,13 @@ describe('SynapseSDK', () => {
         )
         expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
         expect(result.destChainId).toEqual(SupportedChainId.ETH)
+      })
+
+      it('Fetches a second Synapse bridge quote with a different ID', async () => {
+        const firstQuote = await resultPromise
+        const secondQuote = await secondResultPromise
+
+        expect(firstQuote.id).not.toEqual(secondQuote.id)
       })
     })
 
