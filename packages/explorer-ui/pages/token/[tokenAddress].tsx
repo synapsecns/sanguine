@@ -28,50 +28,41 @@ interface variableTypes {
   chainId?: any
 }
 
-export const chainId = () => {
+export const Token = () => {
   const router = useRouter()
   const { tokenAddress } = router.query
   const search = useSearchParams()
-  const chainId = Number(search.get('chainId')) || 1
+  const chain_id = Number(search.get('chainId')) || 1
 
-  const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
   const [platform, setPlatform] = useState('ALL')
   const [transactionsArr, setTransactionsArr] = useState([])
   const [tokenChainID, setTokenChainID] = useState<any>([])
   const [variables, setVariables] = useState<variableTypes>({ page: 1 })
-  const [completed, setCompleted] = useState(false)
+  const [completed] = useState(false)
   const [address, setAddress] = useState('')
-
-  const [dailyStatisticDuration, SetDailyStatisticDuration] =
-    useState('PAST_MONTH')
-  const [dailyStatisticCumulative, SetDailyStatisticCumulative] =
-    useState(false)
 
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
 
-  const {
-    loading,
-    error,
-    data: dataTx,
-    stopPolling,
-    startPolling,
-  } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
-    pollInterval: 5000,
-    variables,
-    fetchPolicy: 'network-only',
-    onCompleted: (data) => {
-      let bridgeTransactionsTable = data.bridgeTransactions
+  const { loading, stopPolling, startPolling } = useQuery(
+    GET_BRIDGE_TRANSACTIONS_QUERY,
+    {
+      pollInterval: 5000,
+      variables,
+      fetchPolicy: 'network-only',
+      onCompleted: (data) => {
+        let bridgeTransactionsTable = data.bridgeTransactions
 
-      bridgeTransactionsTable = _.orderBy(
-        bridgeTransactionsTable,
-        'fromInfo.time',
-        ['desc']
-      )
-      setTransactionsArr(bridgeTransactionsTable)
-    },
-  })
+        bridgeTransactionsTable = _.orderBy(
+          bridgeTransactionsTable,
+          'fromInfo.time',
+          ['desc']
+        )
+        setTransactionsArr(bridgeTransactionsTable)
+      },
+    }
+  )
 
   useEffect(() => {
     if (!completed) {
@@ -87,14 +78,14 @@ export const chainId = () => {
   // Get initial data
   useEffect(() => {
     setAddress(checksumAddress(tokenAddress))
-    setTokenChainID(chainId)
+    setTokenChainID(chain_id)
     setVariables({
       page: 1,
       tokenAddressFrom: [checksumAddress(tokenAddress)],
-      chainIDFrom: chainId,
+      chainIDFrom: chain_id,
       useMv: true,
     })
-  }, [chainId, tokenAddress])
+  }, [chain_id, tokenAddress])
 
   return (
     <StandardPageContainer title={''}>
@@ -199,3 +190,8 @@ export const chainId = () => {
     </StandardPageContainer>
   )
 }
+const TokenPage = () => {
+  return <Token />
+}
+
+export default TokenPage

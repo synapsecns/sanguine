@@ -68,8 +68,8 @@ export const BridgeTransactionTable = ({ queryResult }) => {
                 }) || fromInfo.tokenSymbol
               }
               iconSize="w-4 h-4 rounded-full"
-              textSize="text-sm"
-              styledCoin={true}
+              // textSize="text-sm"
+              // styledCoin={true}
             />
           </div>
           <div className="relative">
@@ -99,8 +99,8 @@ export const BridgeTransactionTable = ({ queryResult }) => {
                 }) || (pending ? fromInfo.tokenSymbol : toInfo?.tokenSymbol)
               }
               iconSize="w-4 h-4 rounded-full"
-              textSize="text-sm"
-              styledCoin={true}
+              // textSize="text-sm"
+              // styledCoin={true}
             />
           </div>
           <div className="text-gray-400">

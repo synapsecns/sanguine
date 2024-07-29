@@ -14,8 +14,7 @@ export const GetCsvButton = ({ address }) => {
   useEffect(() => {
     if (data) {
       setUrl(data.getCsv.ipfsGatewayUrl)
-      const { getCsv } = data
-      window.open(getCsv.ipfsGatewayUrl)
+      window.open(data.getCsv.ipfsGatewayUrl)
     }
   }, [data, ipfsGatewayUrl, click])
 

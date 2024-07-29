@@ -1,7 +1,6 @@
 export const SearchBox = ({
   searchField,
   setSearchField,
-  inputType,
   placeholder,
   extraStyling,
 }) => {

@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { useState } from 'react'
 import { CHAINS } from 'synapse-constants'
 import TextField from '@mui/material/TextField'
@@ -21,7 +20,6 @@ const ChainId = CHAINS.ChainId
 const CHAIN_ENUM_BY_ID = CHAINS.CHAIN_ENUM_BY_ID
 
 export const UniversalSearch = ({
-  placeholder,
   setPending,
   pending,
   loading,
@@ -31,30 +29,23 @@ export const UniversalSearch = ({
   minSize,
   setMaxSize,
   maxSize,
-
   setStartDate,
   startDate,
   setEndDate,
   endDate,
   setToTx,
-  toTx,
   setFromTx,
-  fromTx,
   setKappa,
   kappa,
   executeSearch,
   chains,
   setChains,
-  tokens,
-  setTokens,
   chainsLocale,
   setChainsLocale,
   walletLocale,
   setWalletLocale,
 }) => {
-  // const search = useSearchParams()
-
-  const [searchField, setSearchField] = useState('')
+  const [searchField] = useState('')
   const [showText, setShowText] = useState(false)
   // const [startDate, setStartDate] = useState("s");
   const handleChains = (event) => {
@@ -67,15 +58,6 @@ export const UniversalSearch = ({
     )
   }
 
-  const handleTokens = (event) => {
-    const {
-      target: { value },
-    } = event
-    setTokens(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value
-    )
-  }
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 hover:text-white'
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
@@ -90,27 +72,27 @@ export const UniversalSearch = ({
     setChains([])
     setKappa('')
   }
-  let isValid
-  let error
-  let inputType
-  let searchLink
+  // let isValid
+  // let error
+  // let inputType
+  // let searchLink
   if (!searchField || searchField === '') {
-    error = 'Field cannot be empty.'
+    // error = 'Field cannot be empty.'
   } else if (validateAndParseAddress(searchField)) {
-    isValid = true
-    inputType = 'ADDRESS'
-    searchLink = '/txs?account=' + searchField
+    // isValid = true
+    // inputType = 'ADDRESS'
+    // searchLink = '/txs?account=' + searchField
   } else if (validateAndParseHash(searchField)) {
-    isValid = true
-    inputType = 'TRANSACTION'
+    // isValid = true
+    // inputType = 'TRANSACTION'
     // searchLink = '/tx/' + searchField
     // @ts-ignore
-  } else if (_.values(ChainId).includes(searchField)) {
-    isValid = true
-    inputType = 'CHAIN'
-    searchLink = '/txs?chainId=' + searchField
+  } else if (Object.values(ChainId).includes(searchField as ChainId)) {
+    // isValid = true
+    // inputType = 'CHAIN'
+    // searchLink = '/txs?chainId=' + searchField
   } else {
-    error = 'Not a valid address or transaction hash'
+    // error = 'Not a valid address or transaction hash'
   }
 
   return (

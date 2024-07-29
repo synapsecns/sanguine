@@ -26,11 +26,11 @@ export const Txs = () => {
   const [maxSize, setMaxSize] = useState({ type: 'USD', value: '' })
   const [chains, setChains] = useState([])
   const [chainsLocale, setChainsLocale] = useState(false)
-  const [tokens, setTokens] = useState([])
+  // const [tokens, setTokens] = useState([])
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
-  const [toTx, setToTx] = useState(true)
-  const [fromTx, setFromTx] = useState(true)
+  const [, setToTx] = useState(true)
+  const [, setFromTx] = useState(true)
   const [kappa, setKappa] = useState('')
   const [page, setPage] = useState(1)
 
@@ -45,7 +45,7 @@ export const Txs = () => {
     executeSearch()
   }, [pending])
 
-  const [getBridgeTransactions, { loading, error, data }] = useLazyQuery(
+  const [getBridgeTransactions, { loading }] = useLazyQuery(
     GET_BRIDGE_TRANSACTIONS_QUERY,
     {
       onCompleted: (data) => {
@@ -79,24 +79,23 @@ export const Txs = () => {
     if (value && value !== '') {
       if (field === 'endTime' || field === 'startTime') {
         const timestamp = parseInt(
-          (new Date(value.$d).getTime() / 1000).toFixed(0)
+          (new Date(value.$d).getTime() / 1000).toFixed(0),
+          10
         )
         query[field] = timestamp
       } else if (field === 'chainIDTo' || field === 'chainIDFrom') {
-        const chainIDs = []
-        for (let i = 0; i < value.length; i++) {
-          chainIDs.push(parseInt(CHAIN_ID_NAMES_REVERSE[value[i]]))
-        }
-        query[field] = chainIDs
+        query[field] = value.map((chainName) =>
+          parseInt(CHAIN_ID_NAMES_REVERSE[chainName], 10)
+        )
       } else {
         query[field] = value
       }
     }
     return query
   }
-  const executeSearch = (p?: any, txOrKappaHash?: any) => {
-    const queryPage = p ? p : page
-    const queryKappa = txOrKappaHash ? txOrKappaHash : kappa
+  const executeSearch = (searchPage?: number, searchTxOrKappaHash?: string) => {
+    const queryPage = searchPage ?? page
+    const queryKappa = searchTxOrKappaHash ?? kappa
     if (queryKappa && queryKappa !== '' && queryKappa.length < 64) {
       alert('Invalid hash entered')
       return
@@ -135,13 +134,13 @@ export const Txs = () => {
       if (minSize.type === 'USD') {
         variables = createQueryField(
           'minAmountUsd',
-          parseInt(minSize.value),
+          parseInt(minSize.value, 10),
           variables
         )
       } else {
         variables = createQueryField(
           'minAmount',
-          parseInt(minSize.value),
+          parseInt(minSize.value, 10),
           variables
         )
       }
@@ -150,13 +149,13 @@ export const Txs = () => {
       if (maxSize.type === 'USD') {
         variables = createQueryField(
           'maxAmountUsd',
-          parseInt(maxSize.value),
+          parseInt(maxSize.value, 10),
           variables
         )
       } else {
         variables = createQueryField(
           'maxAmount',
-          parseInt(maxSize.value),
+          parseInt(maxSize.value, 10),
           variables
         )
       }
@@ -185,7 +184,7 @@ export const Txs = () => {
 
         <HorizontalDivider />
         <UniversalSearch
-          placeholder={'Search bridge transactions by bridge tx'}
+          // placeholder={'Search bridge transactions by bridge tx'}
           setPending={handlePending}
           pending={pending}
           loading={loading}
@@ -200,16 +199,16 @@ export const Txs = () => {
           setEndDate={setEndDate}
           endDate={endDate}
           setToTx={setToTx}
-          toTx={toTx}
+          // toTx={toTx}
           setFromTx={setFromTx}
-          fromTx={fromTx}
+          // fromTx={fromTx}
           setKappa={setKappa}
           kappa={kappa}
           executeSearch={executeSearch}
           chains={chains}
           setChains={setChains}
-          tokens={tokens}
-          setTokens={setTokens}
+          // tokens={tokens}
+          // setTokens={setTokens}
           chainsLocale={chainsLocale}
           setChainsLocale={setChainsLocale}
           walletLocale={walletLocale}
@@ -231,3 +230,8 @@ export const Txs = () => {
     </>
   )
 }
+
+const TxsPage = () => {
+  return <Txs />
+}
+export default TxsPage

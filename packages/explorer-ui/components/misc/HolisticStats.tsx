@@ -16,8 +16,7 @@ interface HolisticStatsProps {
 export const HolisticStats = ({
   platform: parentPlatform,
   setPlatform: parentSetPlatform,
-  loading,
-  chainID,
+
   baseVariables,
   noMessaging,
 }: HolisticStatsProps) => {
@@ -25,8 +24,6 @@ export const HolisticStats = ({
   const [fee, setFee] = useState<string>('--')
   const [addresses, setAddresses] = useState<string>('--')
   const [txs, setTxs] = useState<string>('--')
-  const [useCache, setUseCache] = useState<boolean>(true)
-  const [skip, setSkip] = useState<boolean>(false)
   const [variables, setVariables] = useState<any>({})
 
   const [platform, setPlatform] = useState<any>(true)
@@ -45,11 +42,7 @@ export const HolisticStats = ({
     return queryVariables
   }
 
-  const {
-    loading: loadingVolume,
-    error: errorVolume,
-    data: dataVolume,
-  } = useQuery(AMOUNT_STATISTIC, {
+  const { loading: loadingVolume } = useQuery(AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
     variables: baseVariables
       ? handleVariable('TOTAL_VOLUME_USD')
@@ -65,11 +58,7 @@ export const HolisticStats = ({
     },
   })
 
-  const {
-    loading: loadingFee,
-    error: errorFee,
-    data: dataFee,
-  } = useQuery(AMOUNT_STATISTIC, {
+  const { loading: loadingFee } = useQuery(AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
     variables: baseVariables
       ? handleVariable('TOTAL_FEE_USD')
@@ -84,11 +73,7 @@ export const HolisticStats = ({
     },
   })
 
-  const {
-    loading: loadingAddresses,
-    error: errorAddresses,
-    data: dataAddresses,
-  } = useQuery(AMOUNT_STATISTIC, {
+  const { loading: loadingAddresses } = useQuery(AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
     variables: baseVariables
       ? handleVariable('COUNT_ADDRESSES')
@@ -96,18 +81,14 @@ export const HolisticStats = ({
           platform,
           duration: 'ALL_TIME',
           type: 'COUNT_ADDRESSES',
-          useCache,
+          useCache: true,
         },
     onCompleted: (data: any) => {
       setAddresses(data.amountStatistic.value)
     },
   })
 
-  const {
-    loading: loadingTxs,
-    error: errorTxs,
-    data: dataTxs,
-  } = useQuery(AMOUNT_STATISTIC, {
+  const { loading: loadingTxs } = useQuery(AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
     variables: baseVariables
       ? handleVariable('COUNT_TRANSACTIONS')
@@ -115,7 +96,7 @@ export const HolisticStats = ({
           platform,
           duration: 'ALL_TIME',
           type: 'COUNT_TRANSACTIONS',
-          useCache,
+          useCache: true,
         },
     onCompleted: (data: any) => {
       setTxs(data.amountStatistic.value)
@@ -144,7 +125,7 @@ export const HolisticStats = ({
         },
     {
       title: 'Transactions',
-      loading: false,
+      loading: loadingTxs,
       usd: false,
       value: formatUSD(txs),
     },
@@ -152,7 +133,7 @@ export const HolisticStats = ({
       ? null
       : {
           title: 'Addresses',
-          loading: false,
+          loading: loadingAddresses,
           usd: false,
           value: formatUSD(addresses),
         },

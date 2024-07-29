@@ -442,3 +442,9 @@ export const Terms = () => {
     </StandardPageContainer>
   )
 }
+
+const TermsPage = () => {
+  return <Terms />
+}
+
+export default TermsPage

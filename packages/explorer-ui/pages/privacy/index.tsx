@@ -137,3 +137,9 @@ export const Privacy = () => {
     </StandardPageContainer>
   )
 }
+
+const PrivacyPage = () => {
+  return <Privacy />
+}
+
+export default PrivacyPage

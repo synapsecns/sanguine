@@ -24,16 +24,16 @@ interface variablesType {
   useMv?: boolean
 }
 
-export const chainId = () => {
+export const ChainSummary = () => {
   const router = useRouter()
   const { chainId: chainIdRouter } = router.query
-  const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
   const [platform, setPlatform] = useState('ALL')
   const [transactionsArr, setTransactionsArr] = useState([])
   const [dailyDataArr, setDailyDataArr] = useState([])
   const [variables, setVariables] = useState<variablesType>({})
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const [chainId, setChainId] = useState<any>(0)
-  const [completed, setCompleted] = useState(false)
+  const [completed] = useState(false)
   const [dailyStatisticType, setDailyStatisticType] = useState('VOLUME')
   const [dailyStatisticDuration, SetDailyStatisticDuration] =
     useState('PAST_6_MONTHS')
@@ -42,49 +42,44 @@ export const chainId = () => {
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
 
-  const {
-    loading,
-    error,
-    data: dataTx,
-    stopPolling,
-    startPolling,
-  } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
-    pollInterval: 5000,
-    variables,
-    fetchPolicy: 'network-only',
-    onCompleted: (data) => {
-      let bridgeTransactionsTable = data.bridgeTransactions
+  const { loading, stopPolling, startPolling } = useQuery(
+    GET_BRIDGE_TRANSACTIONS_QUERY,
+    {
+      pollInterval: 5000,
+      variables,
+      fetchPolicy: 'network-only',
+      onCompleted: (data) => {
+        let bridgeTransactionsTable = data.bridgeTransactions
 
-      bridgeTransactionsTable = _.orderBy(
-        bridgeTransactionsTable,
-        'fromInfo.time',
-        ['desc']
-      ).slice(0, 25)
-      setTransactionsArr(bridgeTransactionsTable)
-    },
-  })
+        bridgeTransactionsTable = _.orderBy(
+          bridgeTransactionsTable,
+          'fromInfo.time',
+          ['desc']
+        ).slice(0, 25)
+        setTransactionsArr(bridgeTransactionsTable)
+      },
+    }
+  )
 
-  const [
-    getDailyStatisticsByChain,
-    { loading: loadingDailyData, error: errorDailyData, data: dailyData },
-  ] = useLazyQuery(DAILY_STATISTICS_BY_CHAIN, {
-    onCompleted: (data) => {
-      let chartData = data.dailyStatisticsByChain
-      if (dailyStatisticCumulative) {
-        chartData = JSON.parse(JSON.stringify(data.dailyStatisticsByChain))
-        for (let i = 1; i < chartData.length; i++) {
-          for (const key in data.dailyStatisticsByChain[i]) {
-            if (key !== 'date' && key !== '__typename') {
-              chartData[i][key] += chartData[i - 1]?.[key]
-                ? chartData[i - 1][key]
-                : 0
+  const [getDailyStatisticsByChain, { loading: loadingDailyData }] =
+    useLazyQuery(DAILY_STATISTICS_BY_CHAIN, {
+      onCompleted: (data) => {
+        let chartData = data.dailyStatisticsByChain
+        if (dailyStatisticCumulative) {
+          chartData = JSON.parse(JSON.stringify(data.dailyStatisticsByChain))
+          for (let i = 1; i < chartData.length; i++) {
+            for (const key in data.dailyStatisticsByChain[i]) {
+              if (key !== 'date' && key !== '__typename') {
+                chartData[i][key] += chartData[i - 1]?.[key]
+                  ? chartData[i - 1][key]
+                  : 0
+              }
             }
           }
         }
-      }
-      setDailyDataArr(chartData)
-    },
-  })
+        setDailyDataArr(chartData)
+      },
+    })
 
   // update chart
   useEffect(() => {
@@ -354,3 +349,9 @@ export const chainId = () => {
     </StandardPageContainer>
   )
 }
+
+const ChainPage = () => {
+  return <ChainSummary />
+}
+
+export default ChainPage

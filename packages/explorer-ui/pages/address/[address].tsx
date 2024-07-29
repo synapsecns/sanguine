@@ -12,8 +12,8 @@ import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
 import { checksumAddress } from '@utils/checksum'
 import { TRANSACTIONS_PATH } from '@urls'
 
-const truncateAddress = (address) => {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
+const truncateAddress = (addr: string) => {
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`
 }
 
 interface variableTypes {
@@ -23,61 +23,53 @@ interface variableTypes {
   addressTo?: string
 }
 
-export const address = () => {
+export const AddressPage = () => {
   const router = useRouter()
   const { address } = router.query
 
-  const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
   const [platform, setPlatform] = useState('ALL')
   const [transactionsArr, setTransactionsArr] = useState([])
-  const [tokenChainID, setTokenChainID] = useState([])
   const [variables, setVariables] = useState<variableTypes>({ page: 1 })
-  const [completed, setCompleted] = useState(false)
   const [walletAddress, setWalletAddress] = useState('')
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
 
-  const {
-    loading,
-    error,
-    data: dataTx,
-    stopPolling,
-    startPolling,
-  } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
-    pollInterval: 5000,
-    variables,
-    fetchPolicy: 'network-only',
-    onCompleted: (data) => {
-      let bridgeTransactionsTable = data.bridgeTransactions
-      bridgeTransactionsTable = _.orderBy(
-        bridgeTransactionsTable,
-        'fromInfo.time',
-        ['desc']
-      )
-      setTransactionsArr(bridgeTransactionsTable)
-    },
-  })
+  const { loading, stopPolling, startPolling } = useQuery(
+    GET_BRIDGE_TRANSACTIONS_QUERY,
+    {
+      pollInterval: 5000,
+      variables,
+      fetchPolicy: 'network-only',
+      onCompleted: (data) => {
+        let bridgeTransactionsTable = data.bridgeTransactions
+        bridgeTransactionsTable = _.orderBy(
+          bridgeTransactionsTable,
+          'fromInfo.time',
+          ['desc']
+        )
+        setTransactionsArr(bridgeTransactionsTable)
+      },
+    }
+  )
 
   useEffect(() => {
-    if (!completed) {
-      startPolling(10000)
-    } else {
-      stopPolling()
-    }
+    startPolling(10000)
     return () => {
       stopPolling()
     }
-  }, [stopPolling, startPolling, completed])
+  }, [stopPolling, startPolling])
 
   // Get initial data
   useEffect(() => {
-    setWalletAddress(checksumAddress(address))
-    setVariables({
-      page: 1,
-      addressFrom: checksumAddress(address),
-      useMv: true,
-    })
+    if (typeof address === 'string') {
+      setWalletAddress(checksumAddress(address))
+      setVariables({
+        page: 1,
+        addressFrom: checksumAddress(address),
+        useMv: true,
+      })
+    }
   }, [address])
 
   return (
@@ -156,3 +148,9 @@ export const address = () => {
     </StandardPageContainer>
   )
 }
+
+const Address = () => {
+  return <AddressPage />
+}
+
+export default Address

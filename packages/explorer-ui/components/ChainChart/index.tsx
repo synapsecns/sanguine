@@ -97,7 +97,7 @@ export const OverviewChart: React.FC<OverviewChartProps> = ({
     active,
     payload,
     label,
-    isUSD,
+    isUSD: isUSDTooltip,
   }: {
     active: boolean
     payload: any[]
@@ -123,7 +123,7 @@ export const OverviewChart: React.FC<OverviewChartProps> = ({
           label={toolTipLabelRef.current}
           names={toolTipNamesRef.current}
           values={toolTipValuesRef.current}
-          isUSD={isUSD}
+          isUSD={isUSDTooltip}
           dailyStatisticType={dailyStatisticType}
           platform={platform}
           singleChain={singleChain}
@@ -137,7 +137,7 @@ export const OverviewChart: React.FC<OverviewChartProps> = ({
         label={toolTipLabelRef.current}
         names={toolTipNamesRef.current}
         values={toolTipValuesRef.current}
-        isUSD={isUSD}
+        isUSD={isUSDTooltip}
         dailyStatisticType={dailyStatisticType}
         platform={platform}
         singleChain={singleChain}

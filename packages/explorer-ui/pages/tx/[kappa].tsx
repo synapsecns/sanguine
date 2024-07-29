@@ -4,7 +4,6 @@ import { ChainInfo } from '@components/misc/ChainInfo'
 import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
-import { useSearchParams } from 'next/navigation'
 import { CHAINS } from 'synapse-constants'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import { API_URL } from '@graphql'
@@ -13,9 +12,6 @@ import { formatDateTimestamp } from '@utils/formatDate'
 import { IconAndAmount } from '@components/misc/IconAndAmount'
 
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
-const CCTP_CONTRACTS = CHAINS.CCTP_CONTRACTS
-const BRIDGE_CONTRACTS = CHAINS.BRIDGE_CONTRACTS
-const FASTBRIDGE_CONTRACTS = CHAINS.FASTBRIDGE_CONTRACTS
 
 const link = new HttpLink({
   uri: API_URL,
@@ -37,18 +33,7 @@ const truncateHash = (hash) => {
 
 export const BridgeTransaction = ({ queryResult }) => {
   const router = useRouter()
-  const search = useSearchParams()
   const { kappa } = router.query
-  const chainId = Number(search.get('chainIdFrom'))
-  const handlePending = (date) => {
-    const now = new Date().getTime()
-    const timeDiff = now - date * 1000
-    if (timeDiff > 86400000) {
-      return 'Indexing'
-    } else {
-      return 'Pending'
-    }
-  }
   const transaction = queryResult.bridgeTransactions[0]
   const { pending, fromInfo, toInfo } = transaction
 
@@ -60,7 +45,6 @@ export const BridgeTransaction = ({ queryResult }) => {
     return diff.toString()
   }
   let content
-  const pendingContent = handlePending(fromInfo?.time)
 
   if (!!transaction) {
     content = (
@@ -174,8 +158,8 @@ export const BridgeTransaction = ({ queryResult }) => {
                       chainId={fromInfo.chainID}
                       tokenSymbol={fromInfo.tokenSymbol}
                       iconSize="w-4 h-4"
-                      textSize="text-sm"
-                      styledCoin={true}
+                      // textSize="text-sm"
+                      // styledCoin={true}
                     />
                     <div className="flex flex-col items-center sm:flex-row">
                       <span className="px-2 text-white text-opacity-60">
@@ -200,8 +184,8 @@ export const BridgeTransaction = ({ queryResult }) => {
                         chainId={toInfo.chainID}
                         tokenSymbol={toInfo.tokenSymbol}
                         iconSize="w-4 h-4"
-                        textSize="text-sm"
-                        styledCoin={true}
+                        // textSize="text-sm"
+                        // styledCoin={true}
                       />
                       <div className="flex flex-col items-center sm:flex-row">
                         <span className="px-2 text-white text-opacity-60">
@@ -296,7 +280,14 @@ export const BridgeTransaction = ({ queryResult }) => {
 
   return <StandardPageContainer>{content}</StandardPageContainer>
 }
-export const getServerSideProps = (context) => {
+
+const TransactionPage = ({ queryResult }) => {
+  return <BridgeTransaction queryResult={queryResult} />
+}
+
+export default TransactionPage
+
+export const getServerSideProps = async (context) => {
   const { data } = await client.query({
     query: GET_BRIDGE_TRANSACTIONS_QUERY,
     variables: {

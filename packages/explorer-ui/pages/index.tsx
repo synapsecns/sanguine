@@ -14,6 +14,7 @@ const link = new HttpLink({
   useGETForQueries: true,
 })
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const client = new ApolloClient({
   link,
   ssrMode: true,
