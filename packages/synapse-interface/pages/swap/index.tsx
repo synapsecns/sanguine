@@ -41,10 +41,7 @@ import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWit
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { wagmiConfig } from '@/wagmiConfig'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
-import {
-  useMaintenanceCountdownProgresses,
-  MaintenanceWarningMessages,
-} from '@/components/Maintenance/Maintenance'
+import { useMaintenance } from '@/components/Maintenance/Maintenance'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -61,6 +58,14 @@ const StateManagedSwap = () => {
 
   const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
     useSwapState()
+
+  const {
+    isSwapPaused,
+    pausedChainsList,
+    pausedModulesList,
+    SwapMaintenanceProgressBar,
+    SwapMaintenanceWarningMessage,
+  } = useMaintenance()
 
   const [isApproved, setIsApproved] = useState(false)
 
@@ -345,13 +350,6 @@ const StateManagedSwap = () => {
     }
   }
 
-  const maintenanceCountdownProgressInstances =
-    useMaintenanceCountdownProgresses({ type: 'Swap' })
-
-  const isSwapPaused = maintenanceCountdownProgressInstances.some(
-    (instance) => instance.isCurrentChainDisabled
-  )
-
   return (
     <LandingPageWrapper>
       <div className="flex justify-center px-4 py-16 mx-auto lg:mx-0">
@@ -360,10 +358,7 @@ const StateManagedSwap = () => {
             <PageHeader title="Swap" subtitle="Exchange assets on chain." />
           </div>
           <BridgeCard bridgeRef={swapDisplayRef}>
-            {maintenanceCountdownProgressInstances.map((instance) => (
-              <>{instance.MaintenanceCountdownProgressBar}</>
-            ))}
-
+            <SwapMaintenanceProgressBar />
             <SwapInputContainer />
             <SwitchButton
               onClick={() => {
@@ -372,7 +367,7 @@ const StateManagedSwap = () => {
               }}
             />
             <SwapOutputContainer />
-            <MaintenanceWarningMessages type="Swap" />
+            <SwapMaintenanceWarningMessage />
             <SwapExchangeRateInfo
               fromAmount={
                 swapFromToken
