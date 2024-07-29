@@ -56,7 +56,7 @@ type QuoteRequestHandler struct {
 	// relayedAmount is a mapping of block number to relayed amount in that block.
 	relayedAmountWindow orderedmap.OrderedMap[uint64, float64]
 	//  blockWindowSize is the number of blocks to keep in the relayedAmountWindow
-	blockWindowSize uint64
+	blockWindowSize int
 	// volumeLimit is the volume limit for the relayed amounts
 	volumeLimit float64
 	// tokenNames is the map of addresses to token names
@@ -238,77 +238,85 @@ func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool 
 	return true
 }
 
-// Sliding window based rate limiter to see if we have relayed more than $10k in the last
-// blockWindowSize blocks. If we have, we should not relay this request.
-func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(currentBlockNumber uint64, volumeLimit float64) (bool, error) {
-	// check if the cumulative relay amount over the block window is less than the volume limit
-	numConfirmations := currentBlockNumber - q.relayedAmountWindow.Back().Key
+// Sliding window based rate limiter to see if we have relayed more than $10k in the last blockWindowSize blocks without
+// a confirmation.
+func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
+	request reldb.QuoteRequest,
+	currentBlockNumber uint64,
+	volumeLimit float64,
+) (bool, error) {
+	/* We don't want to commit the entire balance of the relayer in one block straight away. If the RFQ demands over
+	 * $10k in one block, then we should not relay the request unless we have a confirmation. Likewise, we should also
+	 * not relay the request if the cumulative relayed amount over the last blockWindowSize blocks exceeds the volume
+	 * limit AND we have not confirmed.
+	 * We do this by keeping a sliding window/cache of the last blockWindow block amounts, then flushing when we finally
+	 * confirm the latest window of blocks, e.g. the most recent block is confirmed.  */
 
-	// for every block, check the confirmation for it and ensure that the
-	// volume limit is not exceeded.
-	allConfirmed := false
-	for it := q.relayedAmountWindow.Front(); it != nil; it = it.Next() {
-		if currentBlockNumber-currentBlockNumber < 1 {
-			return false, nil
-		}
+	// Case 1: Singular RFQ over volumeLimit
+	priceOfOriginToken, err := q.getTokenPrice(context.Background(), &request)
+	if err != nil {
+		return false, fmt.Errorf("could not get price: %w", err)
 	}
 
-	numConfirmations = true
+	numOfConfirmations := currentBlockNumber - request.BlockNumber
 
-	if q.getBlockWindowRelayedAmount() > volumeLimit && !allConfirmed {
+	if priceOfOriginToken > volumeLimit && numOfConfirmations < 1 {
 		return false, nil
+	}
+
+	// Case 2: Cumulative RFQs over volumeLimit
+	blockWindowUSDAmount := q.getBlockWindowRelayedAmount()
+
+	// we are sure that this is the most recent block.
+
+	// only check when we have a full window
+	numOfConfirmations = currentBlockNumber - q.relayedAmountWindow.Front().Key
+	if q.getBlockCacheLength() == (q.blockWindowSize) {
+		if blockWindowUSDAmount > volumeLimit && numOfConfirmations < 1 {
+			return false, nil
+		}
 	}
 
 	return true, nil
 }
 
 func (q *QuoteRequestHandler) addRelayToWindow(ctx context.Context, request *reldb.QuoteRequest) error {
+	// if the block number is less than the first block in the window, then we don't need to add it.
+	if request.BlockNumber < q.relayedAmountWindow.Front().Key {
+		return nil
+	}
 
 	priceOfOriginToken, err := q.getTokenPrice(ctx, request)
 	if err != nil {
 		return fmt.Errorf("could not get price: %w", err)
 	}
 
-	sz := 0
-	for el := q.relayedAmountWindow.Front(); el != nil; el = el.Next() {
-		sz++
-	}
-
 	// if the window isn't large enough, then just add it.
 	// unless it's already in the map, in which case we just update the value.
-	if sz < int(q.blockWindowSize) {
-		prev, ok := q.relayedAmountWindow.Get(request.BlockNumber)
-		if !ok {
-			q.relayedAmountWindow.Set(request.BlockNumber, priceOfOriginToken)
-		} else {
-			q.relayedAmountWindow.Set(request.BlockNumber, prev+priceOfOriginToken)
-		}
+	cacheLength := q.getBlockCacheLength()
+	if cacheLength < q.blockWindowSize {
+		prev := q.relayedAmountWindow.GetOrDefault(request.BlockNumber, 0)
+		q.relayedAmountWindow.Set(request.BlockNumber, prev+priceOfOriginToken)
 		return nil
 	}
 
-	beginningOfWindowItem := q.relayedAmountWindow.Front()
-
-	if beginningOfWindowItem != nil {
-		beginningBlockNumber := beginningOfWindowItem.Key
-
-		// if the request older than block number, we don't care. window for that is gone.
-		// actually this is not so clear. this could have passed the threshold for an older block
-		// say that this is block 9, and beginning of window is 10. instead of
-		// sum(blocks 10 - 15) > $10k, what if sum(blocks 9- 14) > $10k?
-		if beginningBlockNumber > request.BlockNumber {
-			return nil
-		}
-		q.relayedAmountWindow.Delete(beginningBlockNumber)
-
-		// add the most recent block to the window
-		prev, ok := q.relayedAmountWindow.Get(request.BlockNumber)
-		if !ok {
-			q.relayedAmountWindow.Set(request.BlockNumber, priceOfOriginToken)
-		} else {
-			q.relayedAmountWindow.Set(request.BlockNumber, prev+priceOfOriginToken)
-		}
+	// flush the entire cache if we have reached the blockWindowSize.
+	for el := q.relayedAmountWindow.Front(); el != nil; el = el.Next() {
+		q.relayedAmountWindow.Delete(el.Key)
 	}
+
+	// add the most recent RFQ.
+	q.relayedAmountWindow.Set(request.BlockNumber, priceOfOriginToken)
+
 	return nil
+}
+
+func (q *QuoteRequestHandler) getBlockCacheLength() int {
+	cacheLength := 0
+	for el := q.relayedAmountWindow.Front(); el != nil; el = el.Next() {
+		cacheLength++
+	}
+	return cacheLength
 }
 
 func (q *QuoteRequestHandler) getBlockWindowRelayedAmount() float64 {

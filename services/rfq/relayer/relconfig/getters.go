@@ -677,7 +677,7 @@ func (c Config) GetQuoteSubmissionTimeout() time.Duration {
 const defaultBlockWindow = 5
 
 // GetBlockWindow returns the block window for the relayer.
-func (c Config) GetBlockWindow() uint64 {
+func (c Config) GetBlockWindow() int {
 	blockWindow := c.BlockWindow
 	if blockWindow == 0 {
 		blockWindow = defaultBlockWindow
