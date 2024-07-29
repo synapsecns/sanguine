@@ -918,6 +918,7 @@ func (c *rebalanceManagerScroll) submitClaim(parentCtx context.Context, claimInf
 		if err != nil {
 			return nil, fmt.Errorf("could not relay message: %w", err)
 		}
+		c.claimCache.Set(uint64(nonce.Int64()), true, 0)
 		return tx, nil
 	})
 	return nil
