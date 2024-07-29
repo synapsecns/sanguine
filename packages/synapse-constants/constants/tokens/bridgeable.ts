@@ -412,6 +412,7 @@ export const USDC = new Token({
     [CHAINS.BASE.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     [CHAINS.POLYGON.id]: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
     [CHAINS.SCROLL.id]: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+    [CHAINS.LINEA.id]: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
   },
   decimals: {
     [CHAINS.ETH.id]: 6,
@@ -428,6 +429,7 @@ export const USDC = new Token({
     [CHAINS.BASE.id]: 6,
     [CHAINS.POLYGON.id]: 6,
     [CHAINS.SCROLL.id]: 6,
+    [CHAINS.LINEA.id]: 6,
   },
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
@@ -487,6 +489,7 @@ export const USDT = new Token({
     [CHAINS.KLAYTN.id]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
     [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
     [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
+    [CHAINS.SCROLL.id]: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
   },
   swapExceptions: {
     [CHAINS.KLAYTN.id]: [CHAINS.ETH.id, CHAINS.DOGE.id],
@@ -503,6 +506,7 @@ export const USDT = new Token({
     [CHAINS.KLAYTN.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
+    [CHAINS.SCROLL.id]: 6,
   },
   symbol: 'USDT',
   name: 'USD Tether',
@@ -785,6 +789,7 @@ export const ETH = new Token({
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
     [CHAINS.BLAST.id]: zeroAddress,
     [CHAINS.SCROLL.id]: nullAddress,
+    [CHAINS.LINEA.id]: nullAddress,
   },
   decimals: 18,
   symbol: 'ETH',

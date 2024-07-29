@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.29.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.9...@synapsecns/synapse-interface@0.29.0) (2024-07-29)
+
+
+### Features
+
+* **synapse-interface:** adds BSC, Blast, Linea to RFQ ([#2905](https://github.com/synapsecns/sanguine/issues/2905)) ([8fde07a](https://github.com/synapsecns/sanguine/commit/8fde07aaf790a33c114b246169355e8a6d467ae0))
+
+
+
+
+
+## [0.28.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.8...@synapsecns/synapse-interface@0.28.9) (2024-07-24)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.28.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.7...@synapsecns/synapse-interface@0.28.8) (2024-07-23)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.28.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.6...@synapsecns/synapse-interface@0.28.7) (2024-07-22)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.28.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.5...@synapsecns/synapse-interface@0.28.6) (2024-07-17)
 
 
