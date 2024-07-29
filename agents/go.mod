@@ -140,7 +140,7 @@ require (
 	github.com/benbjohnson/immutable v0.4.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
-	github.com/btcsuite/btcd v0.22.1 // indirect
+	github.com/btcsuite/btcd v0.24.0 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.0 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
