@@ -249,6 +249,7 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	return m.prepareAndSubmitQuotes(ctx, inv)
 }
 
+// GetPrice gets the price of a token.
 func (m *Manager) GetPrice(parentCtx context.Context, tokenName string) (_ float64, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "GetPrice")
 	defer func() {

@@ -93,7 +93,7 @@ func (_m *Manager) GetCommittableBalances(ctx context.Context, options ...invent
 }
 
 // GetRelayedAmountOverBlockWindow provides a mock function with given fields: ctx, blockWindowSize
-func (_m *Manager) GetRelayedAmountOverBlockWindow() (*big.Int) {
+func (_m *Manager) GetRelayedAmountOverBlockWindow() *big.Int {
 	ret := _m.Called()
 
 	var r0 *big.Int
@@ -104,7 +104,6 @@ func (_m *Manager) GetRelayedAmountOverBlockWindow() (*big.Int) {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
-
 
 	return r0
 }
