@@ -209,7 +209,8 @@ func LoadConfig(path string) (config Config, err error) {
 	return config, nil
 }
 
-// Validate validates the config.
+// Validate validates the config. Omniclient may be nil, but if not then it will also check the chain to see if the decimals
+// match the actual token decimals.
 func (c Config) Validate(ctx context.Context, omniclient omniClient.RPCClient) (err error) {
 	maintenancePctSums := map[string]float64{}
 	initialPctSums := map[string]float64{}
