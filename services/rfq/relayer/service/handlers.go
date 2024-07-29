@@ -136,7 +136,6 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 //
 //nolint:cyclop
 func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
-
 	shouldProcess, err := q.Quoter.ShouldProcess(ctx, request)
 	if err != nil {
 		// will retry later
