@@ -607,26 +607,26 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 					eth.CallFunc(funcName, token).Returns(&rtoken.ChainName),
 					eth.CallFunc(funcAllowance, token, i.relayerAddress, rfqAddr).Returns(rtoken.Allowances[contractRFQ]),
 				)
-				cctpAddr, _ := cfg.GetSynapseCCTPAddress(chainID)
-				if len(cctpAddr) > 0 {
+				cctpAddr, addrErr := cfg.GetSynapseCCTPAddress(chainID)
+				if addrErr == nil {
 					deferredCalls[chainID] = append(deferredCalls[chainID],
 						eth.CallFunc(funcAllowance, token, i.relayerAddress, cctpAddr).Returns(rtoken.Allowances[contractSynapseCCTP]),
 					)
 				}
-				messengerAddr, _ := cfg.GetTokenMessengerAddress(chainID)
-				if len(messengerAddr) > 0 {
+				messengerAddr, addrErr := cfg.GetTokenMessengerAddress(chainID)
+				if addrErr == nil {
 					deferredCalls[chainID] = append(deferredCalls[chainID],
 						eth.CallFunc(funcAllowance, token, i.relayerAddress, messengerAddr).Returns(rtoken.Allowances[contractTokenMessenger]),
 					)
 				}
-				l1gatewayAddr, _ := cfg.GetL1GatewayAddress(chainID)
-				if len(l1gatewayAddr) > 0 {
+				l1gatewayAddr, addrErr := cfg.GetL1GatewayAddress(chainID)
+				if addrErr == nil {
 					deferredCalls[chainID] = append(deferredCalls[chainID],
 						eth.CallFunc(funcAllowance, token, i.relayerAddress, l1gatewayAddr).Returns(rtoken.Allowances[contractL1Gateway]),
 					)
 				}
-				l2gatewayAddr, _ := cfg.GetL2GatewayAddress(chainID)
-				if len(l2gatewayAddr) > 0 {
+				l2gatewayAddr, addrErr := cfg.GetL2GatewayAddress(chainID)
+				if addrErr == nil {
 					deferredCalls[chainID] = append(deferredCalls[chainID],
 						eth.CallFunc(funcAllowance, token, i.relayerAddress, l2gatewayAddr).Returns(rtoken.Allowances[contractL2Gateway]),
 					)
