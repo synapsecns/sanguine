@@ -330,7 +330,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			if address != chain.EthAddress && token.Allowances[contractSynapseCCTP].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
 				contractAddr, addrErr := i.cfg.GetSynapseCCTPAddress(chainID)
-				if addrErr != nil {
+				if addrErr == nil {
 					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve SynapseCCTP contract: %w", err)
@@ -342,7 +342,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			if address != chain.EthAddress && token.Allowances[contractTokenMessenger].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
 				contractAddr, addrErr := i.cfg.GetTokenMessengerAddress(chainID)
-				if addrErr != nil {
+				if addrErr == nil {
 					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve TokenMessenger contract: %w", err)
@@ -354,7 +354,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			if address != chain.EthAddress && token.Allowances[contractL1Gateway].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
 				contractAddr, addrErr := i.cfg.GetL1GatewayAddress(chainID)
-				if addrErr != nil {
+				if addrErr == nil {
 					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve L1Gateway contract: %w", err)
@@ -366,7 +366,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			if address != chain.EthAddress && token.Allowances[contractL2Gateway].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
 				contractAddr, addrErr := i.cfg.GetL2GatewayAddress(chainID)
-				if addrErr != nil {
+				if addrErr == nil {
 					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
 						return fmt.Errorf("could not approve L2Gateway contract: %w", err)
