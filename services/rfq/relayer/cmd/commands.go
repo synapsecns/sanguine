@@ -35,7 +35,7 @@ var runCommand = &cli.Command{
 
 		metricsProvider := metrics.Get()
 
-		cfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)), metricsProvider)
+		cfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not read config file: %w", err)
 		}

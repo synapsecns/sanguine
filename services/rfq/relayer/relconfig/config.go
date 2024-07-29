@@ -197,7 +197,7 @@ func DecodeTokenID(id string) (chainID int, addr common.Address, err error) {
 }
 
 // LoadConfig loads the config from the given path.
-func LoadConfig(path string, metricsProvider metrics.Handler) (config Config, err error) {
+func LoadConfig(path string) (config Config, err error) {
 	input, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return Config{}, fmt.Errorf("failed to read file: %w", err)
@@ -206,7 +206,7 @@ func LoadConfig(path string, metricsProvider metrics.Handler) (config Config, er
 	if err != nil {
 		return Config{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
 	}
-	omniClient := omniClient.NewOmnirpcClient(config.OmniRPCURL, metricsProvider, omniClient.WithCaptureReqRes())
+	omniClient := omniClient.NewOmnirpcClient(config.OmniRPCURL, metrics.NewNullHandler(), omniClient.WithCaptureReqRes())
 	err = config.Validate(context.Background(), omniClient)
 	if err != nil {
 		return Config{}, fmt.Errorf("config validation failed: %w", err)
