@@ -76,7 +76,7 @@ var claimCacheTTL = time.Hour
 
 func newRebalanceManagerScroll(cfg relconfig.Config, handler metrics.Handler, chainClient submitter.ClientFetcher, txSubmitter submitter.TransactionSubmitter, relayerAddress common.Address, db reldb.Service) *rebalanceManagerScroll {
 	claimCache := ttlcache.New[uint64, bool](
-		ttlcache.WithTTL[uint64, bool](time.Second*time.Duration(claimCacheTTL)),
+		ttlcache.WithTTL[uint64, bool](claimCacheTTL),
 		ttlcache.WithDisableTouchOnHit[uint64, bool](),
 	)
 	return &rebalanceManagerScroll{
@@ -110,6 +110,7 @@ func isTestnetChain(chainID int) bool {
 
 const claimCheckInterval = 30
 
+//nolint:cyclop
 func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 	err = c.initContracts(ctx)
 	if err != nil {
@@ -191,6 +192,7 @@ const testnetScrollAPIURL = "https://sepolia-api-bridge-v2.scroll.io/api/l2"
 const scrollClaimableAPISuffix = "&page=1&page_size=5"
 const erc20Name = "USDC"
 
+//nolint:gocognit,nestif
 func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initContracts-scroll")
 	defer func() {
@@ -291,6 +293,7 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 
 var zeroAddress = common.Address{}
 
+//nolint:cyclop
 func (c *rebalanceManagerScroll) initListeners(parentCtx context.Context) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initListeners")
 	defer func(err error) {
@@ -473,6 +476,7 @@ func (c *rebalanceManagerScroll) initiateL2ToL1(parentCtx context.Context, rebal
 	return nil
 }
 
+//nolint:dupl
 func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err error) {
 	addr, err := c.boundL1Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
@@ -491,7 +495,7 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 		switch event := parsedEvent.(type) {
 		case *l1gateway.L1GatewayRouterDepositETH:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
-				return
+				return nil
 			}
 
 			ctx, span := c.handler.Tracer().Start(parentCtx, "handleDepositETH", trace.WithAttributes(
@@ -518,7 +522,7 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 			}
 		case *l1gateway.L1GatewayRouterFinalizeWithdrawETH:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
-				return
+				return nil
 			}
 
 			ctx, span := c.handler.Tracer().Start(parentCtx, "handleFinalizeWithdrawETH", trace.WithAttributes(
@@ -552,6 +556,7 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 	return nil
 }
 
+//nolint:dupl
 func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err error) {
 	addr, err := c.boundL1Gateway.GetERC20Gateway(&bind.CallOpts{Context: ctx}, c.l1ERC20Address)
 	if err != nil {
@@ -570,7 +575,7 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 		switch event := parsedEvent.(type) {
 		case *l1gateway.L1GatewayRouterDepositERC20:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
-				return
+				return nil
 			}
 
 			ctx, span := c.handler.Tracer().Start(parentCtx, "handleDepositERC20", trace.WithAttributes(
@@ -597,7 +602,7 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 			}
 		case *l1gateway.L1GatewayRouterFinalizeWithdrawERC20:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
-				return
+				return nil
 			}
 
 			ctx, span := c.handler.Tracer().Start(parentCtx, "handleFinalizeWithdrawERC20", trace.WithAttributes(
@@ -631,6 +636,7 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 	return nil
 }
 
+//nolint:dupl
 func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err error) {
 	addr, err := c.boundL2Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
@@ -649,7 +655,7 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 		switch event := parsedEvent.(type) {
 		case *l2gateway.L2GatewayRouterWithdrawETH:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
-				return
+				return nil
 			}
 
 			ctx, span := c.handler.Tracer().Start(parentCtx, "handleWithdrawETH", trace.WithAttributes(
@@ -676,7 +682,7 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 			}
 		case *l2gateway.L2GatewayRouterFinalizeDepositETH:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
-				return
+				return nil
 			}
 
 			ctx, span := c.handler.Tracer().Start(parentCtx, "handleFinalizeDepositETH", trace.WithAttributes(
@@ -710,6 +716,7 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 	return nil
 }
 
+//nolint:dupl
 func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err error) {
 	addr, err := c.boundL2Gateway.GetERC20Gateway(&bind.CallOpts{Context: ctx}, c.l2ERC20Address)
 	if err != nil {
@@ -738,7 +745,7 @@ func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err 
 		switch event := parsedEvent.(type) {
 		case *l2gateway.L2GatewayRouterWithdrawERC20:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
-				return
+				return nil
 			}
 
 			ctx, span := c.handler.Tracer().Start(parentCtx, "handleWithdrawERC20", trace.WithAttributes(
@@ -765,7 +772,7 @@ func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err 
 			}
 		case *l2gateway.L2GatewayRouterFinalizeDepositERC20:
 			if event.To != c.relayerAddress || event.From != c.relayerAddress {
-				return
+				return nil
 			}
 
 			ctx, span := c.handler.Tracer().Start(parentCtx, "handleFinalizeDepositERC20", trace.WithAttributes(
@@ -807,7 +814,7 @@ type scrollAPIResponse struct {
 	} `json:"data"`
 }
 
-// ClaimInfo represents the data structure returned by the Scroll API
+// ClaimInfo represents the data structure returned by the Scroll API.
 type ClaimInfo struct {
 	From    string `json:"from"`
 	To      string `json:"to"`
@@ -845,12 +852,12 @@ func (c *rebalanceManagerScroll) claimL2ToL1(parentCtx context.Context) (err err
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
-		return
+		return nil
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return
+		return nil
 	}
 
 	var claimableResp scrollAPIResponse
@@ -887,7 +894,9 @@ func (c *rebalanceManagerScroll) submitClaim(parentCtx context.Context, claimInf
 
 	// check if this claim has been cached
 	cached := false
-	defer span.SetAttributes(attribute.Bool("cached", cached))
+	defer func() {
+		span.SetAttributes(attribute.Bool("cached", cached))
+	}()
 	if c.claimCache.Get(uint64(nonce.Int64())) != nil {
 		cached = true
 		return nil

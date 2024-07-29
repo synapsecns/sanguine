@@ -101,7 +101,7 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 
 // getRebalanceMetadatas finds the origin and dest token metadata based on the configured rebalance method.
 //
-//nolint:nestif
+//nolint:nestif,cyclop
 func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, methods []relconfig.RebalanceMethod) (originTokenData, destTokenData *TokenMetadata, method relconfig.RebalanceMethod) {
 	for _, method := range methods {
 		for _, tokenMap := range tokens {

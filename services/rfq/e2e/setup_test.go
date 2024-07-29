@@ -224,9 +224,12 @@ func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token 
 	if allowance.Cmp(big.NewInt(0)) == 0 {
 		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
 		var tx *types.Transaction
-		retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
 			tx, err = erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
-			return err
+			if err != nil {
+				return fmt.Errorf("could not approve token: %w", err)
+			}
+			return nil
 		}, retry.WithMaxAttemptTime(30*time.Second))
 		i.NoError(err)
 		backend.WaitForConfirmation(i.GetTestContext(), tx)
