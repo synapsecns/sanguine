@@ -236,9 +236,13 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
-				RFQAddress:         i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
-				SynapseCCTPAddress: cctpContractOrigin.Address().Hex(),
-				Confirmations:      0,
+				RFQAddress: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+				RebalanceConfigs: relconfig.RebalanceConfigs{
+					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+						SynapseCCTPAddress: cctpContractOrigin.Address().Hex(),
+					},
+				},
+				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
 						Address:  chain.EthAddress.String(),
@@ -249,9 +253,13 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 				NativeToken: "ETH",
 			},
 			destBackendChainID: {
-				RFQAddress:         i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
-				SynapseCCTPAddress: cctpContractDest.Address().Hex(),
-				Confirmations:      0,
+				RFQAddress: i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+				RebalanceConfigs: relconfig.RebalanceConfigs{
+					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+						SynapseCCTPAddress: cctpContractDest.Address().Hex(),
+					},
+				},
+				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
 						Address:  chain.EthAddress.String(),
@@ -344,7 +352,7 @@ func (i *IntegrationSuite) setupRelayer() {
 				Address:               tokenAddress,
 				Decimals:              decimals,
 				PriceUSD:              1, // TODO: this will break on non-stables
-				RebalanceMethod:       rebalanceMethod,
+				RebalanceMethods:      []string{rebalanceMethod},
 				MaintenanceBalancePct: 20,
 				InitialBalancePct:     50,
 			}
