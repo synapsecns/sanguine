@@ -22,7 +22,7 @@ var DefaultChainConfig = ChainConfig{
 	QuotePct:                NewFloatPtr(100),
 	QuoteWidthBps:           0,
 	QuoteFixedFeeMultiplier: NewFloatPtr(1),
-	RelayFixedFeeMultiplier: 1,
+	RelayFixedFeeMultiplier: NewFloatPtr(1),
 }
 
 // NewFloatPtr returns a pointer to a float64.

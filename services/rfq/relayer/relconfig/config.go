@@ -93,7 +93,7 @@ type ChainConfig struct {
 	// QuoteFixedFeeMultiplier is the multiplier for the fixed fee, applied when generating quotes.
 	QuoteFixedFeeMultiplier *float64 `yaml:"quote_fixed_fee_multiplier"`
 	// RelayFixedFeeMultiplier is the multiplier for the fixed fee, applied when relaying.
-	RelayFixedFeeMultiplier float64 `yaml:"relay_fixed_fee_multiplier"`
+	RelayFixedFeeMultiplier *float64 `yaml:"relay_fixed_fee_multiplier"`
 	// RebalanceStartBlock is the block at which the chain listener will listen for rebalance events.
 	RebalanceStartBlock uint64 `yaml:"cctp_start_block"`
 	// RebalanceConfigs is the rebalance configurations.
