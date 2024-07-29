@@ -53,9 +53,9 @@ type QuoteRequestHandler struct {
 	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
 	// handlerMtx is the mutex for relaying.
 	handlerMtx mapmutex.StringMapMutex
-	// relayedAmount is a mapping of block number to relayed amount in that block.
-	relayedAmountWindow orderedmap.OrderedMap[uint64, float64]
-	//  blockWindowSize is the number of blocks to keep in the relayedAmountWindow
+	// rfqCache is a cache mapping the last blockWindowSize blocks to the total relayed amount in USD.
+	rfqCache orderedmap.OrderedMap[uint64, float64]
+	//  blockWindowSize is the number of blocks to keep in the rfqCache
 	blockWindowSize int
 	// volumeLimit is the volume limit for the relayed amounts
 	volumeLimit float64
@@ -92,7 +92,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		handlerMtx:          r.handlerMtx,
 		volumeLimit:         r.cfg.GetVolumeLimit(),
 		blockWindowSize:     r.cfg.GetBlockWindow(),
-		relayedAmountWindow: *orderedmap.NewOrderedMap[uint64, float64](),
+		rfqCache:            *orderedmap.NewOrderedMap[uint64, float64](),
 		tokenNames:          r.cfg.Chains[int(req.Transaction.OriginChainId)].Tokens,
 	}
 
@@ -266,54 +266,49 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 
 	// Case 2: Cumulative RFQs over volumeLimit
 	blockWindowUSDAmount := q.getBlockWindowRelayedAmount()
+	numOfConfirmations = currentBlockNumber - q.rfqCache.Front().Key
 
-	// we are sure that this is the most recent block.
-
-	// only check when we have a full window
-	numOfConfirmations = currentBlockNumber - q.relayedAmountWindow.Front().Key
-	if q.getBlockCacheLength() == (q.blockWindowSize) {
-		if blockWindowUSDAmount > volumeLimit && numOfConfirmations < 1 {
-			return false, nil
-		}
+	if blockWindowUSDAmount > volumeLimit && numOfConfirmations < 1 {
+		return false, nil
 	}
 
 	return true, nil
 }
 
 func (q *QuoteRequestHandler) addRelayToWindow(ctx context.Context, request *reldb.QuoteRequest) error {
-	// if the block number is less than the first block in the window, then we don't need to add it.
-	if request.BlockNumber < q.relayedAmountWindow.Front().Key {
+	// If the block number is less than the first block in the window, then we don't need to add it.
+	if request.BlockNumber < q.rfqCache.Front().Key {
 		return nil
 	}
 
+	// Get the token price.
 	priceOfOriginToken, err := q.getTokenPrice(ctx, request)
 	if err != nil {
 		return fmt.Errorf("could not get price: %w", err)
 	}
 
-	// if the window isn't large enough, then just add it.
-	// unless it's already in the map, in which case we just update the value.
+	// If we have some room, add the RFQ to the cache.
 	cacheLength := q.getBlockCacheLength()
 	if cacheLength < q.blockWindowSize {
-		prev := q.relayedAmountWindow.GetOrDefault(request.BlockNumber, 0)
-		q.relayedAmountWindow.Set(request.BlockNumber, prev+priceOfOriginToken)
+		prev := q.rfqCache.GetOrDefault(request.BlockNumber, 0)
+		q.rfqCache.Set(request.BlockNumber, prev+priceOfOriginToken)
 		return nil
 	}
 
-	// flush the entire cache if we have reached the blockWindowSize.
-	for el := q.relayedAmountWindow.Front(); el != nil; el = el.Next() {
-		q.relayedAmountWindow.Delete(el.Key)
+	// Otheriwse, we have reached capacity. Flush the entire cache if we have reached the blockWindowSize.
+	for el := q.rfqCache.Front(); el != nil; el = el.Next() {
+		q.rfqCache.Delete(el.Key)
 	}
 
-	// add the most recent RFQ.
-	q.relayedAmountWindow.Set(request.BlockNumber, priceOfOriginToken)
+	// Add the most recent RFQ.
+	q.rfqCache.Set(request.BlockNumber, priceOfOriginToken)
 
 	return nil
 }
 
 func (q *QuoteRequestHandler) getBlockCacheLength() int {
 	cacheLength := 0
-	for el := q.relayedAmountWindow.Front(); el != nil; el = el.Next() {
+	for el := q.rfqCache.Front(); el != nil; el = el.Next() {
 		cacheLength++
 	}
 	return cacheLength
@@ -322,7 +317,7 @@ func (q *QuoteRequestHandler) getBlockCacheLength() int {
 func (q *QuoteRequestHandler) getBlockWindowRelayedAmount() float64 {
 	var total float64
 
-	for it := q.relayedAmountWindow.Front(); it != nil; it = it.Next() {
+	for it := q.rfqCache.Front(); it != nil; it = it.Next() {
 		total += it.Value
 	}
 	return total
