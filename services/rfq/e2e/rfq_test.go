@@ -1,7 +1,6 @@
 package e2e_test
 
 import (
-	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -163,7 +162,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	// now we can send the money
 	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
-	// we want 499 usdc for 500 requested within a day
 	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
 		DstChainId:   uint32(i.destBackend.GetChainID()),
 		To:           i.userWallet.Address(),
@@ -465,7 +463,6 @@ func (i *IntegrationSuite) TestDispute() {
 		if len(results) != 1 {
 			return false
 		}
-		fmt.Printf("GOT RESULTS: %v\n", results)
 		result, err := i.guardStore.GetPendingProvenByID(i.GetTestContext(), txID)
 		i.NoError(err)
 		return result.TxHash == fakeHash && result.Status == guarddb.Disputed && result.TransactionID == txID

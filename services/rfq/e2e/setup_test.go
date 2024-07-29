@@ -1,14 +1,17 @@
 package e2e_test
 
 import (
+	"context"
 	"fmt"
 	"math/big"
 	"net/http"
 	"slices"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -17,6 +20,7 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
@@ -219,7 +223,11 @@ func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token 
 	// TODO: can also use in mem cache
 	if allowance.Cmp(big.NewInt(0)) == 0 {
 		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
-		tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
+		var tx *types.Transaction
+		retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			tx, err = erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
+			return err
+		}, retry.WithMaxAttemptTime(30*time.Second))
 		i.NoError(err)
 		backend.WaitForConfirmation(i.GetTestContext(), tx)
 	}
