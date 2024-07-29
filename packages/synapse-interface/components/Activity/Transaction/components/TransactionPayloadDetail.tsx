@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react'
-import numeral from 'numeral'
 import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
 import {
@@ -11,6 +10,7 @@ import {
 import { Chain, Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+import { formatAmount } from '@/utils/formatAmount'
 
 function isObject(object): boolean {
   return typeof object === 'object' && object !== null
@@ -92,14 +92,14 @@ export const TransactionPayloadDetail = ({
           />
           {typeof tokenAmount === 'string' && tokenDecimals ? (
             <span>
-              {trimTrailingZeroesAfterDecimal(
-                formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 4)
+              {formatAmount(
+                formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 18)
               )}
             </span>
           ) : typeof tokenAmount === 'number' ? (
             <span>
               {trimTrailingZeroesAfterDecimal(
-                numeral(tokenAmount).format('0,0.000')
+                formatAmount(tokenAmount.toString())
               )}
             </span>
           ) : (
