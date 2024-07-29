@@ -186,21 +186,21 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
-	// latestBlock := q.Origin.LatestBlock()
+	latestBlock := q.Origin.LatestBlock()
 
-	// canRelay, err := q.canRelayBasedOnVolumeAndConfirmations(request, latestBlock, q.volumeLimit)
-	// if err != nil {
-	// 	span.AddEvent("could not determine if can relay")
-	// 	return fmt.Errorf("could not determine if can relay: %w", err)
-	// }
-	// if !canRelay {
-	// 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending, &request.Status)
-	// 	span.AddEvent("cannot relay due to volume. waiting for one block confirmation before relaying.")
-	// 	if err != nil {
-	// 		return fmt.Errorf("could not update request status: %w", err)
-	// 	}
-	// 	return nil
-	// }
+	canRelay, err := q.canRelayBasedOnVolumeAndConfirmations(request, latestBlock, q.volumeLimit)
+	if err != nil {
+		span.AddEvent("could not determine if can relay")
+		return fmt.Errorf("could not determine if can relay: %w", err)
+	}
+	if !canRelay {
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending, &request.Status)
+		span.AddEvent("cannot relay due to volume. waiting for one block confirmation before relaying.")
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+		return nil
+	}
 
 	// get ack from API to synchronize calls with other relayers and avoid reverts
 	req := model.PutAckRequest{
