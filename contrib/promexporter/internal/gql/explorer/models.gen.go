@@ -103,6 +103,7 @@ type DateResultByChain struct {
 	Base      *float64 `json:"base,omitempty"`
 	Blast     *float64 `json:"blast,omitempty"`
 	Scroll    *float64 `json:"scroll,omitempty"`
+	Linea     *float64 `json:"linea,omitempty"`
 	Total     *float64 `json:"total,omitempty"`
 }
 

@@ -19,6 +19,7 @@ import moonriverImg from '@assets/chains/moonriver.svg'
 import optimismImg from '@assets/chains/optimism.svg'
 import polygonImg from '@assets/chains/polygon.svg'
 import scrollImg from '@assets/chains/scroll.svg'
+import lineaImg from '@assets/chains/linea.svg'
 
 import ethExplorerImg from '@assets/explorer/etherscan.svg'
 import arbitrumExplorerImg from '@assets/explorer/arbiscan.svg'
@@ -561,5 +562,31 @@ export const SCROLL: Chain = {
     icon: scrollImg,
   },
   color: 'orange',
+  isNew: true,
+}
+
+export const LINEA: Chain = {
+  priorityRank: 90,
+  id: 59144,
+  chainSymbol: 'LINEA',
+  name: 'Linea',
+  chainImg: lineaImg,
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://rpc.linea.build',
+    fallback: 'https://linea.blockpi.network/v1/rpc/public',
+  },
+  explorerUrl: 'https://lineascan.build',
+  explorerName: 'LineaScan',
+  explorerImg: lineaImg,
+  blockTime: 3000,
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+    address: zeroAddress,
+    icon: lineaImg,
+  },
+  color: 'black',
   isNew: true,
 }

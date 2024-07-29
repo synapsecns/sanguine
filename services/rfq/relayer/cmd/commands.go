@@ -142,7 +142,7 @@ var withdrawCommand = &cli.Command{
 					return fmt.Errorf("could not get withdrawal tx hash: %w", err)
 				}
 				return nil
-			})
+			}, retry.WithMaxTotalTime(1*time.Minute))
 
 			if err != nil {
 				return
@@ -157,7 +157,7 @@ var withdrawCommand = &cli.Command{
 			return fmt.Errorf("could not get withdrawal tx hash: %w", err)
 		}
 		if errClient != nil {
-			return fmt.Errorf("client error: could not get withdrawal tx hash: %w", err)
+			return fmt.Errorf("client error: could not get withdrawal tx hash: %w", errClient)
 		}
 
 		fmt.Printf("Withdraw Tx Hash: %s\n", status.Hash)
