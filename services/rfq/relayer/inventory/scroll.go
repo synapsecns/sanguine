@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -67,9 +68,17 @@ type rebalanceManagerScroll struct {
 	apiURL *string
 	// httpClient is the client for http requests
 	httpClient *http.Client
+	// claimCache caches the nonces for claims to avoid resubmission
+	claimCache *ttlcache.Cache[uint64, bool]
 }
 
+var claimCacheTTL = time.Hour
+
 func newRebalanceManagerScroll(cfg relconfig.Config, handler metrics.Handler, chainClient submitter.ClientFetcher, txSubmitter submitter.TransactionSubmitter, relayerAddress common.Address, db reldb.Service) *rebalanceManagerScroll {
+	claimCache := ttlcache.New[uint64, bool](
+		ttlcache.WithTTL[uint64, bool](time.Second*time.Duration(claimCacheTTL)),
+		ttlcache.WithDisableTouchOnHit[uint64, bool](),
+	)
 	return &rebalanceManagerScroll{
 		cfg:            cfg,
 		handler:        handler,
@@ -78,6 +87,7 @@ func newRebalanceManagerScroll(cfg relconfig.Config, handler metrics.Handler, ch
 		relayerAddress: relayerAddress,
 		db:             db,
 		httpClient:     &http.Client{},
+		claimCache:     claimCache,
 	}
 }
 
@@ -148,6 +158,10 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 		if err != nil {
 			return fmt.Errorf("could not listen on L2ERC20Gateway: %w", err)
 		}
+		return nil
+	})
+	g.Go(func() error {
+		c.claimCache.Start()
 		return nil
 	})
 	g.Go(func() error {
@@ -863,18 +877,26 @@ func (c *rebalanceManagerScroll) submitClaim(parentCtx context.Context, claimInf
 		metrics.EndSpanWithErr(span, err)
 	}(err)
 
+	nonce, ok := new(big.Int).SetString(claimInfo.Nonce, 10)
+	if !ok {
+		return fmt.Errorf("could not parse nonce: %w", err)
+	}
+
+	// check if this claim has been cached
+	cached := false
+	defer span.SetAttributes(attribute.Bool("cached", cached))
+	if c.claimCache.Get(uint64(nonce.Int64())) != nil {
+		cached = true
+		return nil
+	}
+
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(c.l1ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		if transactor == nil {
 			return nil, fmt.Errorf("transactor is nil")
 		}
-		// Note: we hardcode the 'to' parameter as our own relayerAddress as a safety measure.
 		value, ok := new(big.Int).SetString(claimInfo.Value, 10)
 		if !ok {
 			return nil, fmt.Errorf("could not parse value: %w", err)
-		}
-		nonce, ok := new(big.Int).SetString(claimInfo.Nonce, 10)
-		if !ok {
-			return nil, fmt.Errorf("could not parse nonce: %w", err)
 		}
 		batchIndex, ok := new(big.Int).SetString(claimInfo.Proof.BatchIndex, 10)
 		if !ok {
