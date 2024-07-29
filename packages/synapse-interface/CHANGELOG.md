@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.31.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.0...@synapsecns/synapse-interface@0.31.1) (2024-07-29)
+
+
+### Bug Fixes
+
+* **synapse-interface:** use rfq origin pools when generating bridge maps ([#2955](https://github.com/synapsecns/sanguine/issues/2955)) ([07f57dc](https://github.com/synapsecns/sanguine/commit/07f57dc8550280696437f373673454958fe63cfd))
+
+
+
+
+
 # [0.31.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.30.1...@synapsecns/synapse-interface@0.31.0) (2024-07-29)
 
 
