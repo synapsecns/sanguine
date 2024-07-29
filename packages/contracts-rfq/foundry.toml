@@ -21,10 +21,10 @@ arbitrum = "${ARBITRUM_RPC}"
 base = "${BASE_RPC}"
 blast = "${BLAST_RPC}"
 bnb = "${BNB_RPC}"
+linea = "${LINEA_RPC}"
 mainnet = "${MAINNET_RPC}"
 optimism = "${OPTIMISM_RPC}"
 scroll = "${SCROLL_RPC}"
-linea = "${LINEA_RPC}"
 
 # Testnets
 arb_sepolia = "${ARB_SEPOLIA_RPC}"
