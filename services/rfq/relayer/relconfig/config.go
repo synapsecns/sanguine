@@ -171,6 +171,8 @@ type ScrollRebalanceConfig struct {
 	L1ScrollMessengerAddress string `yaml:"l1_scroll_messenger_address"`
 	// L2GatewayAddress is the L2Gateway address [scroll].
 	L2GatewayAddress string `yaml:"l2_gateway_address"`
+	// ScrollMessageFee is the scroll message fee.
+	ScrollMessageFee *string `yaml:"scroll_message_fee"`
 }
 
 // TokenIDDelimiter is the delimiter for token IDs.

@@ -395,16 +395,19 @@ func (c *rebalanceManagerScroll) Execute(ctx context.Context, rebalance *Rebalan
 
 // TODO: configurable?
 const scrollGasLimit = 200_000
-const scrollMsgFee = 1e17
 
 func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebalance *RebalanceData) (err error) {
+	scrollMsgFee, err := c.cfg.GetScrollMessageFee(c.l1ChainID)
+	if err != nil {
+		return fmt.Errorf("could not get scroll message fee: %w", err)
+	}
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initiateL1ToL2", trace.WithAttributes(
 		attribute.Int(metrics.Origin, rebalance.OriginMetadata.ChainID),
 		attribute.Int(metrics.Destination, rebalance.DestMetadata.ChainID),
 		attribute.String("origin_token", rebalance.OriginMetadata.Name),
 		attribute.String("dest_token", rebalance.OriginMetadata.Name),
 		attribute.String("amount", rebalance.Amount.String()),
-		attribute.Int("msg_fee", scrollMsgFee),
+		attribute.String("msg_fee", scrollMsgFee.String()),
 	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -414,7 +417,7 @@ func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebal
 		if transactor == nil {
 			return nil, fmt.Errorf("transactor is nil")
 		}
-		transactor.Value = big.NewInt(int64(scrollMsgFee))
+		transactor.Value = scrollMsgFee
 		if chain.IsGasToken(rebalance.OriginMetadata.Addr) {
 			transactor.Value = new(big.Int).Add(transactor.Value, rebalance.Amount)
 			tx, err = c.boundL1Gateway.DepositETH(transactor, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))

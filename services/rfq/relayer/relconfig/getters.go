@@ -319,12 +319,34 @@ func (c Config) GetMinGasToken(chainID int) (value *big.Int, err error) {
 
 	strValue, ok := rawValue.(string)
 	if !ok {
-		return value, fmt.Errorf("failed to cast MinGasToken to int")
+		return value, fmt.Errorf("failed to cast MinGasToken to string")
 	}
 
 	value, ok = new(big.Int).SetString(strValue, 10)
 	if !ok {
 		return value, fmt.Errorf("failed to cast MinGasToken to bigint")
+	}
+	return value, nil
+}
+
+const defaultScrollMessageFee = 1e17
+
+// GetScrollMessageFee returns the ScrollMessageFee for the given chainID.
+func (c Config) GetScrollMessageFee(chainID int) (value *big.Int, err error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll == nil {
+		return value, fmt.Errorf("no scroll config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll.ScrollMessageFee == nil {
+		return big.NewInt(defaultScrollMessageFee), nil
+	}
+
+	value, ok = new(big.Int).SetString(*chainCfg.RebalanceConfigs.Scroll.ScrollMessageFee, 10)
+	if !ok {
+		return value, fmt.Errorf("failed to cast ScrollMessageFee to bigint")
 	}
 	return value, nil
 }
