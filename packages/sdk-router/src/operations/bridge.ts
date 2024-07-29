@@ -82,7 +82,8 @@ export async function bridgeQuote(
   tokenOut: string,
   amountIn: BigintIsh,
   deadline?: BigNumber,
-  excludeCCTP: boolean = false
+  excludeCCTP: boolean = false,
+  excludeRFQ: boolean = false
 ): Promise<BridgeQuote> {
   // Get the quotes sorted by maxAmountOut
   const allQuotes = await allBridgeQuotes.call(
@@ -97,8 +98,11 @@ export async function bridgeQuote(
   // Get the first quote that is not excluded
   const bestQuote = allQuotes.find(
     (quote) =>
-      !excludeCCTP ||
-      quote.bridgeModuleName !== this.synapseCCTPRouterSet.bridgeModuleName
+      (!excludeCCTP ||
+        quote.bridgeModuleName !==
+          this.synapseCCTPRouterSet.bridgeModuleName) &&
+      (!excludeRFQ ||
+        quote.bridgeModuleName !== this.fastBridgeRouterSet.bridgeModuleName)
   )
   if (!bestQuote) {
     throw new Error('No route found')
