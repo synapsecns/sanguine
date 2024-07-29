@@ -153,7 +153,7 @@ func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	txs, err := t.db.GetAllTXAttemptByStatus(ctx, t.signer.Address(), nil, db.WithMaxResults(100), db.WithStatuses(db.ReplacedOrConfirmed))
+	txs, err := t.db.GetAllTXAttemptByStatus(ctx, t.signer.Address(), nil, db.WithMaxResults(1000), db.WithStatuses(db.ReplacedOrConfirmed))
 	if err != nil {
 		return fmt.Errorf("could not get txs: %w", err)
 	}
