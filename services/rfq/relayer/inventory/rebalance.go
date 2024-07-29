@@ -100,25 +100,14 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 }
 
 // getRebalanceMetadatas finds the origin and dest token metadata based on the configured rebalance method.
+//
+//nolint:nestif
 func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, methods []relconfig.RebalanceMethod) (originTokenData, destTokenData *TokenMetadata, method relconfig.RebalanceMethod) {
 	for _, method := range methods {
 		for _, tokenMap := range tokens {
 			for _, tokenData := range tokenMap {
 				if tokenData.Name == tokenName {
-					// make sure that the token is compatible with our rebalance method
-					tokenMethods, tokenErr := cfg.GetRebalanceMethods(tokenData.ChainID, tokenData.Addr.Hex())
-					if tokenErr != nil {
-						logger.Errorf("could not get token rebalance method: %v", tokenErr)
-						continue
-					}
-
-					isCompatible := false
-					for _, tm := range tokenMethods {
-						if tm == method {
-							isCompatible = true
-						}
-					}
-					if !isCompatible {
+					if !isTokenCompatible(tokenData, method, cfg) {
 						continue
 					}
 
@@ -139,15 +128,21 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 	return nil, nil, relconfig.RebalanceMethodNone
 }
 
-func getRebalanceMethod(a, b []relconfig.RebalanceMethod) relconfig.RebalanceMethod {
-	for _, am := range a {
-		for _, bm := range b {
-			if am == bm {
-				return am
-			}
+func isTokenCompatible(tokenData *TokenMetadata, method relconfig.RebalanceMethod, cfg relconfig.Config) bool {
+	// make sure that the token is compatible with our rebalance method
+	tokenMethods, tokenErr := cfg.GetRebalanceMethods(tokenData.ChainID, tokenData.Addr.Hex())
+	if tokenErr != nil {
+		logger.Errorf("could not get token rebalance method: %v", tokenErr)
+		return false
+	}
+
+	isCompatible := false
+	for _, tm := range tokenMethods {
+		if tm == method {
+			isCompatible = true
 		}
 	}
-	return relconfig.RebalanceMethodNone
+	return isCompatible
 }
 
 // getRebalanceAmount calculates the amount to rebalance based on the configured thresholds.
