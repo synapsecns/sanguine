@@ -292,7 +292,7 @@ func (q *QuoteRequestHandler) addRelayToCache(ctx context.Context, request reldb
 		return nil
 	}
 
-	// Otheriwse, we have reached capacity. Flush the entire cache if we have reached the blockWindowSize.
+	// Otherwise, we have reached capacity. Flush the entire cache if we have reached the blockWindowSize.
 	for el := q.rfqCache.Front(); el != nil; el = el.Next() {
 		q.rfqCache.Delete(el.Key)
 	}

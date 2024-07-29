@@ -316,7 +316,9 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 	span.AddEvent("relay successfully submitted")
 	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
 
-	q.addRelayToCache(ctx, request)
+	if err = q.addRelayToCache(ctx, request); err != nil {
+		return fmt.Errorf("could not add relay to cache: %w", err)
+	}
 
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted, &request.Status)
 	if err != nil {
