@@ -83,7 +83,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 			defer wg.Done()
 
 			// get all the pendingTxes in the queue
-			pendingTxes, err := t.db.GetTXS(ctx, t.signer.Address(), chainID, db.Stored, db.Pending, db.FailedSubmit, db.Submitted)
+			pendingTxes, err := t.db.GetTXS(ctx, t.signer.Address(), chainID, db.WithStatuses(db.Stored, db.Pending, db.FailedSubmit, db.Submitted))
 			if err != nil {
 				span.AddEvent("could not get pendingTxes", trace.WithAttributes(
 					attribute.String("error", err.Error()), attribute.Int64("chainID", chainID.Int64()),
@@ -153,7 +153,7 @@ func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	txs, err := t.db.GetAllTXAttemptByStatus(ctx, t.signer.Address(), nil, db.ReplacedOrConfirmed)
+	txs, err := t.db.GetAllTXAttemptByStatus(ctx, t.signer.Address(), nil, db.WithMaxResults(100), db.WithStatuses(db.ReplacedOrConfirmed))
 	if err != nil {
 		return fmt.Errorf("could not get txs: %w", err)
 	}
