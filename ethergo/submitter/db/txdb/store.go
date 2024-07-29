@@ -53,6 +53,7 @@ func (s *Store) MarkAllBeforeNonceReplacedOrConfirmed(ctx context.Context, signe
 	dbTX := s.db.WithContext(ctx).Model(&ETHTX{}).
 		Where(fmt.Sprintf("%s = ?", chainIDFieldName), chainID.Uint64()).
 		Where(fmt.Sprintf("%s < ?", nonceFieldName), nonce).
+		Where(fmt.Sprintf("%s < ?", statusFieldName), db.ReplacedOrConfirmed).
 		Where(fmt.Sprintf("`%s` = ?", fromFieldName), signer.String()).
 		// just in case we're updating a tx already marked as confirmed
 		Updates(map[string]interface{}{statusFieldName: db.ReplacedOrConfirmed.Int()})
