@@ -202,17 +202,65 @@ const getCCTPOriginMap = async (chainId) => {
   return tokensToSymbols
 }
 
+const getFastBridgeOriginMap = async (chainId, rfqResponse) => {
+  // Return empty map if FastBridge is not supported on the chain
+  if (!FastBridgeRouters[chainId]) {
+    return {}
+  }
+  const rfqTokens = getRFQBridgeTokens(chainId, rfqResponse)
+  // Create map from token to symbol
+  const rfqTokenSymbols = {}
+  await Promise.all(
+    rfqTokens.map(async (token) => {
+      rfqTokenSymbols[token] = getRFQSymbol(
+        await getTokenSymbol(chainId, token)
+      )
+    })
+  )
+  const tokensToSymbols = {}
+  // Add all bridge tokens to tokensToSymbols
+  Object.keys(rfqTokenSymbols).forEach((token) => {
+    tokensToSymbols[token] = new Set([rfqTokenSymbols[token]])
+  })
+  const swapQuoter = await getSwapQuoter(chainId)
+  if (!swapQuoter) {
+    return tokensToSymbols
+  }
+  const weth = await swapQuoter.weth()
+  if (rfqTokenSymbols[ETH]) {
+    rfqTokenSymbols[weth] = rfqTokenSymbols[ETH]
+    tokensToSymbols[weth] = new Set([rfqTokenSymbols[ETH]])
+  }
+  const pools = await swapQuoter.allPools()
+  pools.forEach((pool) => {
+    // Get the symbols of supported RFQ tokens in the pool
+    const poolRFQSymbols = pool.tokens
+      .filter((token) => rfqTokenSymbols[token.token])
+      .map((token) => rfqTokenSymbols[token.token])
+    if (poolRFQSymbols.length === 0) {
+      return
+    }
+    // Every token in the pools is swappable into these symbols
+    pool.tokens.forEach((token) => {
+      addSetToMap(tokensToSymbols, token.token, new Set(poolRFQSymbols))
+    })
+  })
+  return tokensToSymbols
+}
+
 // Function to get a list of bridge token symbols that could be swapped
 // into a token on a destination chain.
 const getDestinationBridgeSymbols = async (chainId, token) => {
-  // Get list of connected bridge tokens: (symbol, token) pairs
-  const connectedBridgeTokens = await SynapseRouters[
-    chainId
-  ].getConnectedBridgeTokens(token)
   const symbolSet = new Set()
-  connectedBridgeTokens.forEach((bridgeToken) => {
-    symbolSet.add(bridgeToken.symbol)
-  })
+  if (SynapseRouters[chainId]) {
+    // Get list of connected bridge tokens: (symbol, token) pairs
+    const connectedBridgeTokens = await SynapseRouters[
+      chainId
+    ].getConnectedBridgeTokens(token)
+    connectedBridgeTokens.forEach((bridgeToken) => {
+      symbolSet.add(bridgeToken.symbol)
+    })
+  }
   // Get a list of bridge token symbols from CCTP if CCTP is supported on the chain
   if (SynapseCCTPRouters[chainId]) {
     const connectedCctpTokens = await SynapseCCTPRouters[
@@ -240,6 +288,16 @@ const getCCTPBridgeSymbols = async (chainId) => {
     cctpTokenToSymbol[bridgeToken.token] = bridgeToken.symbol
   })
   return cctpTokenToSymbol
+}
+
+const getRFQBridgeTokens = (chainId, rfqResponse) => {
+  return [
+    ...new Set(
+      rfqResponse
+        .filter((quote) => quote.origin_chain_id === Number(chainId))
+        .map((quote) => ethers.utils.getAddress(quote.origin_token_addr))
+    ),
+  ]
 }
 
 // Function to get a list of tokens in a pool
@@ -309,17 +367,11 @@ const printMaps = async () => {
       Object.keys(cctpOriginMap).forEach((token) => {
         addSetToMap(originMap, token, cctpOriginMap[token])
       })
-      // Add RFQ.ETH and RFQ.USDC to origin map of tokens bridgeable into nETH or CCTP.USDC respectively
-      if (allowedChainIdsForRfq.includes(Number(chainId))) {
-        Object.keys(originMap).forEach((token) => {
-          if (originMap[token].has('nETH')) {
-            originMap[token].add('RFQ.ETH')
-          }
-          if (originMap[token].has('CCTP.USDC')) {
-            originMap[token].add('RFQ.USDC')
-          }
-        })
-      }
+      // Add tokens from RFQ originMap to global originMap
+      const rfqOriginMap = await getFastBridgeOriginMap(chainId, rfqResponse)
+      Object.keys(rfqOriginMap).forEach((token) => {
+        addSetToMap(originMap, token, rfqOriginMap[token])
+      })
       const tokens = {}
       await Promise.all(
         Object.keys(originMap).map(async (token) => {
@@ -330,68 +382,18 @@ const printMaps = async () => {
             destination: await getDestinationBridgeSymbols(chainId, token),
             swappable: extractSwappable(poolSets, token),
           }
+          // Check if token is supported as destination asset in RFQ
+          if (
+            rfqResponse.some(
+              (quote) =>
+                ethers.utils.getAddress(quote.dest_token_addr) === token &&
+                quote.dest_chain_id === Number(chainId)
+            )
+          ) {
+            tokens[token].destination.push(getRFQSymbol(tokens[token].symbol))
+          }
         })
       )
-
-      if (allowedChainIdsForRfq.includes(Number(chainId))) {
-        await Promise.all(
-          rfqResponse.map(async (quote) => {
-            const {
-              origin_chain_id,
-              origin_token_addr,
-              dest_chain_id,
-              dest_token_addr,
-            } = quote
-
-            const normalizedOriginAddress =
-              ethers.utils.getAddress(origin_token_addr)
-
-            const normalizedDestAddress =
-              ethers.utils.getAddress(dest_token_addr)
-
-            if (origin_chain_id === Number(chainId)) {
-              const originTokenSymbol = await getTokenSymbol(
-                origin_chain_id,
-                normalizedOriginAddress
-              )
-
-              const rfqOriginSymbol = getRFQSymbol(originTokenSymbol)
-
-              if (!tokens[normalizedOriginAddress]) {
-                tokens[normalizedOriginAddress] = {
-                  origin: [],
-                  destination: [],
-                  swappable: [], // poolSets are handled during SynapseBridge portion
-                  symbol: originTokenSymbol,
-                  decimals: await getTokenDecimals(
-                    origin_chain_id,
-                    normalizedOriginAddress
-                  ),
-                }
-              }
-              // Add RFQ symbol to origin list if not already present
-              if (
-                !tokens[normalizedOriginAddress].origin.includes(
-                  rfqOriginSymbol
-                )
-              ) {
-                tokens[normalizedOriginAddress].origin.push(rfqOriginSymbol)
-              }
-              // Add RFQ symbol to destination list if not already present
-              if (
-                !tokens[normalizedOriginAddress].destination.includes(
-                  rfqOriginSymbol
-                )
-              ) {
-                tokens[normalizedOriginAddress].destination.push(
-                  rfqOriginSymbol
-                )
-              }
-            }
-          })
-        )
-      }
-
       bridgeMap[chainId] = sortMapByKeys(tokens)
       bridgeSymbolsMap[chainId] = sortMapByKeys(extractBridgeSymbolsMap(tokens))
       console.log('Finished chain: ', chainId)
