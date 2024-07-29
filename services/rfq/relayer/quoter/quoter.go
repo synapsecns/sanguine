@@ -254,7 +254,6 @@ func (m *Manager) GetPrice(parentCtx context.Context, tokenName string) (_ float
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "GetPrice")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
-
 	}()
 
 	price, err := m.feePricer.GetTokenPrice(ctx, tokenName)
