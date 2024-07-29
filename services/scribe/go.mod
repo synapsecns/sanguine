@@ -291,7 +291,7 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.24.0 // indirect
-	golang.org/x/image v0.6.0 // indirect
+	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
