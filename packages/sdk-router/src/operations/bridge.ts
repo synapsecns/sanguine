@@ -69,6 +69,7 @@ export async function bridge(
  * @param amountIn - The amount of input token.
  * @param deadline - The transaction deadline, optional.
  * @param excludeCCTP - Flag to exclude CCTP quotes from the result, optional and defaults to False.
+ * @param originUserAddress - The address of the user on the origin chain.
  *
  * @returns - A promise that resolves to the best bridge quote.
  *
@@ -83,7 +84,8 @@ export async function bridgeQuote(
   amountIn: BigintIsh,
   deadline?: BigNumber,
   excludeCCTP: boolean = false,
-  excludeRFQ: boolean = false
+  excludeRFQ: boolean = false,
+  originUserAddress?: string
 ): Promise<BridgeQuote> {
   // Get the quotes sorted by maxAmountOut
   const allQuotes = await allBridgeQuotes.call(
@@ -93,7 +95,8 @@ export async function bridgeQuote(
     tokenIn,
     tokenOut,
     amountIn,
-    deadline
+    deadline,
+    originUserAddress
   )
   // Get the first quote that is not excluded
   const bestQuote = allQuotes.find(
@@ -119,6 +122,7 @@ export async function bridgeQuote(
  * @param tokenOut - The output token.
  * @param amountIn - The amount of input token.
  * @param deadline - The transaction deadline, optional.
+ * @param originUserAddress - The address of the user on the origin chain.
  * @returns - A promise that resolves to an array of bridge quotes.
  */
 export async function allBridgeQuotes(
@@ -128,7 +132,8 @@ export async function allBridgeQuotes(
   tokenIn: string,
   tokenOut: string,
   amountIn: BigintIsh,
-  deadline?: BigNumber
+  deadline?: BigNumber,
+  originUserAddress?: string
 ): Promise<BridgeQuote[]> {
   invariant(
     originChainId !== destChainId,
@@ -143,7 +148,8 @@ export async function allBridgeQuotes(
         destChainId,
         tokenIn,
         tokenOut,
-        amountIn
+        amountIn,
+        originUserAddress
       )
       // Filter out routes with zero minAmountOut and finalize the rest
       return Promise.all(
