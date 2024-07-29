@@ -285,7 +285,7 @@ func (q *QuoteRequestHandler) addRelayToCache(ctx context.Context, request reldb
 	}
 
 	// If we have some room, add the RFQ to the cache.
-	cacheLength := q.getBlockCacheLength()
+	cacheLength := q.rfqCache.Len()
 	if cacheLength < q.blockWindowSize {
 		prev := q.rfqCache.GetOrDefault(request.BlockNumber, 0)
 		q.rfqCache.Set(request.BlockNumber, prev+priceOfOriginToken)
@@ -305,14 +305,6 @@ func (q *QuoteRequestHandler) clearCache() {
 	for el := q.rfqCache.Front(); el != nil; el = el.Next() {
 		q.rfqCache.Delete(el.Key)
 	}
-}
-
-func (q *QuoteRequestHandler) getBlockCacheLength() int {
-	cacheLength := 0
-	for el := q.rfqCache.Front(); el != nil; el = el.Next() {
-		cacheLength++
-	}
-	return cacheLength
 }
 
 func (q *QuoteRequestHandler) getBlockWindowRelayedAmount() float64 {
