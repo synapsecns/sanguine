@@ -56,6 +56,20 @@ export async function bridge(
 }
 
 /**
+ * Options for the bridgeQuote and allBridgeQuotes functions.
+ *
+ * @param deadline - The transaction deadline, optional.
+ * @param excludedModules - An array of module names to exclude from the quote, optional.
+ * @param originUserAddress - The address of the user on the origin chain, optional. This parameter has
+ * to be specified for a correct integration via a smart-contract into SynapseRFQ module.
+ */
+interface BridgeQuoteOptions {
+  deadline?: BigNumber
+  excludedModules?: string[]
+  originUserAddress?: string
+}
+
+/**
  * This method tries to fetch the best quote from either the Synapse Router or SynapseCCTP Router.
  * It first handles the native token, then fetches the best quote for both types of routers.
  * If the router addresses are valid for CCTP, it will fetch the quote from the CCTP routers, otherwise it will resolve to undefined.
@@ -82,10 +96,7 @@ export async function bridgeQuote(
   tokenIn: string,
   tokenOut: string,
   amountIn: BigintIsh,
-  deadline?: BigNumber,
-  excludeCCTP: boolean = false,
-  excludeRFQ: boolean = false,
-  originUserAddress?: string
+  options: BridgeQuoteOptions = {}
 ): Promise<BridgeQuote> {
   // Get the quotes sorted by maxAmountOut
   const allQuotes = await allBridgeQuotes.call(
@@ -95,18 +106,9 @@ export async function bridgeQuote(
     tokenIn,
     tokenOut,
     amountIn,
-    deadline,
-    originUserAddress
+    options
   )
-  // Get the first quote that is not excluded
-  const bestQuote = allQuotes.find(
-    (quote) =>
-      (!excludeCCTP ||
-        quote.bridgeModuleName !==
-          this.synapseCCTPRouterSet.bridgeModuleName) &&
-      (!excludeRFQ ||
-        quote.bridgeModuleName !== this.fastBridgeRouterSet.bridgeModuleName)
-  )
+  const bestQuote = allQuotes[0]
   if (!bestQuote) {
     throw new Error('No route found')
   }
@@ -132,8 +134,7 @@ export async function allBridgeQuotes(
   tokenIn: string,
   tokenOut: string,
   amountIn: BigintIsh,
-  deadline?: BigNumber,
-  originUserAddress?: string
+  options: BridgeQuoteOptions = {}
 ): Promise<BridgeQuote[]> {
   invariant(
     originChainId !== destChainId,
@@ -143,19 +144,25 @@ export async function allBridgeQuotes(
   tokenIn = handleNativeToken(tokenIn)
   const allQuotes: BridgeQuote[][] = await Promise.all(
     this.allModuleSets.map(async (moduleSet) => {
+      // No-op if the module is explicitly excluded
+      if (options.excludedModules?.includes(moduleSet.bridgeModuleName)) {
+        return []
+      }
       const routes = await moduleSet.getBridgeRoutes(
         originChainId,
         destChainId,
         tokenIn,
         tokenOut,
         amountIn,
-        originUserAddress
+        options.originUserAddress
       )
       // Filter out routes with zero minAmountOut and finalize the rest
       return Promise.all(
         routes
           .filter((route) => route.destQuery.minAmountOut.gt(0))
-          .map((route) => moduleSet.finalizeBridgeRoute(route, deadline))
+          .map((route) =>
+            moduleSet.finalizeBridgeRoute(route, options.deadline)
+          )
       )
     })
   )
