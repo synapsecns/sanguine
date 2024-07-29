@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.3...@synapsecns/solidity-devops@0.4.4) (2024-07-17)
+
+
+### Bug Fixes
+
+* **solidity-devops:** correctly save new deployments when script entry function is not `run()` ([#2883](https://github.com/synapsecns/sanguine/issues/2883)) ([fd337e9](https://github.com/synapsecns/sanguine/commit/fd337e9f90e4bb721679361d076548d292f1f162))
+
+
+
+
+
 ## [0.4.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.2...@synapsecns/solidity-devops@0.4.3) (2024-07-03)
 
 **Note:** Version bump only for package @synapsecns/solidity-devops

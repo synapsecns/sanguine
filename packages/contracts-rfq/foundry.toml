@@ -19,6 +19,7 @@ number_underscore = 'thousands'
 [rpc_endpoints]
 arbitrum = "${ARBITRUM_RPC}"
 base = "${BASE_RPC}"
+bnb = "${BNB_RPC}"
 mainnet = "${MAINNET_RPC}"
 optimism = "${OPTIMISM_RPC}"
 scroll = "${SCROLL_RPC}"
@@ -26,14 +27,32 @@ bnb = "${BNB_RPC}"
 blast = "${BLAST_RPC}"
 linea = "${LINEA_RPC}"
 
+# Testnets
+arb_sepolia = "${ARB_SEPOLIA_RPC}"
+base_sepolia = "${BASE_SEPOLIA_RPC}"
+bnb_testnet = "${BNB_TESTNET_RPC}"
+eth_sepolia = "${ETH_SEPOLIA_RPC}"
+op_sepolia = "${OP_SEPOLIA_RPC}"
+scroll_sepolia = "${SCROLL_SEPOLIA_RPC}"
+
+
 [etherscan]
 arbitrum = { key = "${ARBITRUM_VERIFIER_KEY}", url = "${ARBITRUM_VERIFIER_URL}" }
 base = { key = "${BASE_VERIFIER_KEY}", url = "${BASE_VERIFIER_URL}" }
+bnb = { key = "${BNB_VERIFIER_KEY}", url = "${BNB_VERIFIER_URL}" }
 mainnet = { key = "${MAINNET_VERIFIER_KEY}", url = "${MAINNET_VERIFIER_URL}" }
 optimism = { key = "${OPTIMISM_VERIFIER_KEY}", url = "${OPTIMISM_VERIFIER_URL}" }
 scroll = { key = "${SCROLL_VERIFIER_KEY}", url = "${SCROLL_VERIFIER_URL}" }
 bnb = { key = "${BNB_VERIFIER_KEY}", url = "${BNB_VERIFIER_URL}" }
 blast = { key = "${BLAST_VERIFIER_KEY}", url = "${BLAST_VERIFIER_URL}" }
 linea = { key = "${LINEA_VERIFIER_KEY}", url = "${LINEA_VERIFIER_URL}" }
+
+# Testnets
+arb_sepolia = { key = "${ARB_SEPOLIA_VERIFIER_KEY}", url = "${ARB_SEPOLIA_VERIFIER_URL}" }
+base_sepolia = { key = "${BASE_SEPOLIA_VERIFIER_KEY}", url = "${BASE_SEPOLIA_VERIFIER_URL}" }
+bnb_testnet = { key = "${BNB_TESTNET_VERIFIER_KEY}", url = "${BNB_TESTNET_VERIFIER_URL}" }
+eth_sepolia = { key = "${ETH_SEPOLIA_VERIFIER_KEY}", url = "${ETH_SEPOLIA_VERIFIER_URL}" }
+op_sepolia = { key = "${OP_SEPOLIA_VERIFIER_KEY}", url = "${OP_SEPOLIA_VERIFIER_URL}" }
+scroll_sepolia = { key = "${SCROLL_SEPOLIA_VERIFIER_KEY}", url = "${SCROLL_SEPOLIA_VERIFIER_URL}" }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
