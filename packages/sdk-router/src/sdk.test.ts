@@ -828,6 +828,17 @@ describe('SynapseSDK', () => {
       expect(allQuotes[1].destChainId).toEqual(SupportedChainId.ARBITRUM)
     })
 
+    it('Generates unique IDs for SynapseBridge and SynapseCCTP quotes for USDC', async () => {
+      const allQuotes = await synapse.allBridgeQuotes(
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        ARB_USDT,
+        BigNumber.from(10).pow(9)
+      )
+      expect(allQuotes[0].id).not.toEqual(allQuotes[1].id)
+    })
+
     it('Fetches only SynapseBridge quotes for ETH', async () => {
       const allQuotes = await synapse.allBridgeQuotes(
         SupportedChainId.ETH,
