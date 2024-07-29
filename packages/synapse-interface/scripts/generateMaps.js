@@ -13,6 +13,7 @@ const SynapseRouterABI = require('./abi/SynapseRouter.json')
 const SynapseCCTPABI = require('./abi/SynapseCCTP.json')
 const SynapseCCTPRouterABI = require('./abi/SynapseCCTPRouter.json')
 const SwapQuoterABI = require('./abi/SwapQuoter.json')
+const FastBridgeRouterABI = require('./abi/FastBridgeRouter.json')
 const ERC20ABI = require('./abi/IERC20Metadata.json')
 const DefaultPoolABI = require('./abi/IDefaultPool.json')
 // const rfqResponse = require('./data/rfqResponse.json')
@@ -29,6 +30,7 @@ Object.keys(providers).forEach((chainId) => {
 const SynapseRouterAddress = '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a'
 const SynapseCCTPRouterAddress = '0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48'
 const SynapseCCTPAddress = '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
+const FastBridgeRouterAddress = '0x0000000000489d89D2B233D3375C045dfD05745F'
 
 // Chain IDs where SynapseBridge is allowed
 const allowedChainIdsForSynapseBridge = [
@@ -51,11 +53,6 @@ allowedChainIdsForSynapseBridge.forEach((chainId) => {
     SynapseRouterABI,
     providers[chainId]
   )
-  SwapQuoters[chainId] = new ethers.Contract(
-    SynapseRouters[chainId].swapQuoter(),
-    SwapQuoterABI,
-    providers[chainId]
-  )
 })
 
 // Get SynapseCCTPRouter contract instances for each chain
@@ -75,10 +72,37 @@ allowedChainIdsForSynapseCCTPRouter.forEach((chainId) => {
   )
 })
 
+const FastBridgeRouters = {}
+allowedChainIdsForRfq.forEach((chainId) => {
+  FastBridgeRouters[chainId] = new ethers.Contract(
+    FastBridgeRouterAddress,
+    FastBridgeRouterABI,
+    providers[chainId]
+  )
+})
+
+const getSwapQuoter = async (chainId) => {
+  if (SwapQuoters[chainId]) {
+    return SwapQuoters[chainId]
+  }
+  const router = SynapseRouters[chainId] || FastBridgeRouters[chainId]
+  const swapQuoterAddr = router ? await router.swapQuoter() : null
+  if (!swapQuoterAddr) {
+    return null
+  }
+  SwapQuoters[chainId] = new ethers.Contract(
+    swapQuoterAddr,
+    SwapQuoterABI,
+    providers[chainId]
+  )
+  return SwapQuoters[chainId]
+}
+
 // Function to get list of tokens that could be swapped
 // into SynapseBridge tokens for a given chain.
 const getBridgeOriginMap = async (chainId) => {
-  if (!SwapQuoters[chainId]) {
+  const swapQuoter = await getSwapQuoter(chainId)
+  if (!SynapseRouters[chainId] || !swapQuoter) {
     return {
       originMap: {},
       poolSets: [],
@@ -86,7 +110,7 @@ const getBridgeOriginMap = async (chainId) => {
   }
 
   // Get WETH address
-  const weth = await SwapQuoters[chainId].weth()
+  const weth = await swapQuoter.weth()
   // Get list of supported tokens
   let bridgeTokens = await SynapseRouters[chainId].bridgeTokens()
   const pools = await SynapseRouters[chainId].allPools()
@@ -424,11 +448,12 @@ const extractBridgeSymbolsMap = (tokens) => {
 const getTokenSymbol = async (chainId, token) => {
   // Check if token is ETH
   if (token === ETH) {
-    if (!SwapQuoters[chainId]) {
+    const swapQuoter = await getSwapQuoter(chainId)
+    if (!swapQuoter) {
       return 'ETH'
     }
     // Get WETH address from SwapQuoter
-    const weth = await SwapQuoters[chainId].weth()
+    const weth = await swapQuoter.weth()
     // Return "WETH" symbol without first character
     return getTokenSymbol(chainId, weth).then((symbol) => symbol.slice(1))
   }
