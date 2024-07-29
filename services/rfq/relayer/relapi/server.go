@@ -112,7 +112,7 @@ func (r *RelayerAPIServer) Run(ctx context.Context) error {
 	engine := ginhelper.New(logger)
 	// default tracing middleware
 	engine.Use(r.handler.Gin()...)
-	h := NewHandler(r.db, r.chains, r.cfg, r.submitter)
+	h := NewHandler(r.handler, r.db, r.chains, r.cfg, r.submitter)
 
 	// Assign GET routes
 	engine.GET(getHealthRoute, h.GetHealth)

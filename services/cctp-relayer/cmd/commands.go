@@ -35,22 +35,11 @@ var pathFlag = &cli.StringFlag{
 	Required: true,
 }
 
-var scribePortFlag = &cli.UintFlag{
-	Name:  "scribe-port",
-	Usage: "--scribe-port <port>",
-	Value: 0,
-}
-
-var scribeURL = &cli.StringFlag{
-	Name:  "scribe-url",
-	Usage: "--scribe-url <url>",
-}
-
 // runCommand runs the cctp relayer.
 var runCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the cctp relayer",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, &commandline.LogLevel},
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
 		cfg, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
