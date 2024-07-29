@@ -93,8 +93,8 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh
-    // TODO: originUserAddress
+    amountIn: BigintIsh,
+    originUserAddress?: string
   ): Promise<BridgeRoute[]> {
     // Check that Routers exist on both chains
     if (!this.getModule(originChainId) || !this.getModule(destChainId)) {
@@ -136,9 +136,11 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
           token: quote.ticker.destToken.token,
         },
         originQuery,
-        // On-chain swaps are not supported for RFQ tokens
-        // TODO: signal optional gas airdrop
-        destQuery: createNoSwapQuery(tokenOut, destAmountOut),
+        destQuery: this.createRFQDestQuery(
+          tokenOut,
+          destAmountOut,
+          originUserAddress
+        ),
         bridgeModuleName: this.bridgeModuleName,
       }))
   }
@@ -309,5 +311,23 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
         const age = Date.now() - quote.updatedAt
         return 0 <= age && age < FastBridgeRouterSet.MAX_QUOTE_AGE_MILLISECONDS
       })
+  }
+
+  private createRFQDestQuery(
+    tokenOut: string,
+    amountOut: BigNumber,
+    originUserAddress?: string
+  ): Query {
+    // On-chain swaps are not supported for RFQ on the destination chain
+    const destQuery = createNoSwapQuery(tokenOut, amountOut)
+    // Don't modify the Query if user address is undefined
+    if (!originUserAddress) {
+      return destQuery
+    }
+    // Make sure the rebate flag is always included if user address is defined.
+    // 0x00 is a single byte that indicates the rebate flag is turned off.
+    // Concatenate the originUserAddress (without 0x prefix) to the end of the rawParams.
+    destQuery.rawParams = '0x00' + originUserAddress.slice(2)
+    return destQuery
   }
 }
