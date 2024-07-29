@@ -354,7 +354,6 @@ const sortMapByKeys = (map) => {
 }
 const printMaps = async () => {
   const bridgeMap = {}
-  const bridgeSymbolsMap = {}
   console.log('Starting on chains: ', Object.keys(providers))
 
   const rfqResponse = await fetchRfqData()
@@ -395,7 +394,6 @@ const printMaps = async () => {
         })
       )
       bridgeMap[chainId] = sortMapByKeys(tokens)
-      bridgeSymbolsMap[chainId] = sortMapByKeys(extractBridgeSymbolsMap(tokens))
       console.log('Finished chain: ', chainId)
     })
   )
@@ -417,34 +415,6 @@ const extractSwappable = (poolSets, token) => {
     }
   })
   return Array.from(tokenSet).sort()
-}
-
-const extractBridgeSymbolsMap = (tokens) => {
-  const bridgeSymbolsOriginSets = {}
-  const bridgeSymbolsDestinationSets = {}
-  // Add all bridge symbols that be swapped to/from each token
-  Object.keys(tokens).forEach((token) => {
-    tokens[token].origin.forEach((symbol) => {
-      addSetToMap(bridgeSymbolsOriginSets, symbol, new Set([token]))
-    })
-    tokens[token].destination.forEach((symbol) => {
-      addSetToMap(bridgeSymbolsDestinationSets, symbol, new Set([token]))
-    })
-  })
-  // Bridge symbols are keys that are present in either map
-  const bridgeSymbols = new Set([
-    ...Object.keys(bridgeSymbolsOriginSets),
-    ...Object.keys(bridgeSymbolsDestinationSets),
-  ])
-  const bridgeSymbolsMap = {}
-
-  bridgeSymbols.forEach((symbol) => {
-    bridgeSymbolsMap[symbol] = {
-      origin: Array.from(bridgeSymbolsOriginSets[symbol]).sort(),
-      destination: Array.from(bridgeSymbolsDestinationSets[symbol]).sort(),
-    }
-  })
-  return bridgeSymbolsMap
 }
 
 const getTokenSymbol = async (chainId, token) => {
