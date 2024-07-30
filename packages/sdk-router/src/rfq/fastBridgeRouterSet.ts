@@ -136,7 +136,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
           token: quote.ticker.destToken.token,
         },
         originQuery,
-        destQuery: this.createRFQDestQuery(
+        destQuery: FastBridgeRouterSet.createRFQDestQuery(
           tokenOut,
           destAmountOut,
           originUserAddress
@@ -313,7 +313,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
       })
   }
 
-  private createRFQDestQuery(
+  public static createRFQDestQuery(
     tokenOut: string,
     amountOut: BigNumber,
     originUserAddress?: string
