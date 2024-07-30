@@ -258,14 +258,25 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	var allQuotes []model.PutQuoteRequest
 
 	// First, generate all quotes
+	g, gctx := errgroup.WithContext(ctx)
+	mtx := sync.Mutex{}
 	for chainID, balances := range inv {
 		for address, balance := range balances {
-			quotes, err := m.generateQuotes(ctx, chainID, address, balance)
-			if err != nil {
-				return err
-			}
-			allQuotes = append(allQuotes, quotes...)
+			g.Go(func() error {
+				quotes, err := m.generateQuotes(gctx, chainID, address, balance)
+				if err != nil {
+					return fmt.Errorf("error generating quotes: %w", err)
+				}
+				mtx.Lock()
+				allQuotes = append(allQuotes, quotes...)
+				mtx.Unlock()
+				return nil
+			})
 		}
+	}
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("error generating quotes: %w", err)
 	}
 
 	span.SetAttributes(attribute.Int("num_quotes", len(allQuotes)))
