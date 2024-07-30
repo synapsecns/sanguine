@@ -2,30 +2,33 @@ import { Tooltip as ReactTooltip } from 'react-tooltip'
 import { AssetImage } from '@components/misc/AssetImage'
 import { formatAmount } from '@utils/formatAmount'
 import { addressToDecimals } from '@utils/addressToDecimals'
+import { formatBigIntToString } from '@utils/formatBigIntToString'
 
 export const IconAndAmount = ({
-  formattedValue,
+  value,
   tokenAddress,
   chainId,
   tokenSymbol,
   iconSize = 'w-4 h-4 rounded-full',
   className = '',
 }) => {
-  2
   let amount
+  const decimals = addressToDecimals({ tokenAddress, chainId })
+  const formattedValue = formatBigIntToString(value, decimals)
+  // const displayValue = amount ? formatAmount(amount) : '< 0.001'
+  const displayAmount = formatAmount(formattedValue)
+
   if (tokenSymbol) {
     const dec = 10 ** addressToDecimals({ tokenAddress, chainId })
-    if (formattedValue > 10000000) {
-      amount = formattedValue / (dec / 10 ** 6)
+    if (value > 10000000) {
+      amount = value / (dec / 10 ** 6)
     } else {
-      amount = formattedValue
+      amount = value
     }
   } else {
     const dec = 10 ** addressToDecimals({ tokenAddress, chainId })
-    amount = formattedValue / (dec / 10 ** 6)
+    amount = value / (dec / 10 ** 6)
   }
-
-  const displayAmount = amount ? formatAmount(amount) : '< 0.001'
 
   return (
     <div className={`flex items-center ${className}`}>
