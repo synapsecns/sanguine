@@ -626,8 +626,6 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	var wg sync.WaitGroup
 	wg.Add(len(i.tokens))
 
-	gasBalances := make(map[int]*big.Int)
-
 	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
 	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
 	for cid, tokenMap := range i.tokens {
@@ -639,7 +637,7 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 
 		// queue gas token balance fetch
 		deferredCalls := []w3types.Caller{
-			eth.Balance(i.relayerAddress, nil).Returns(gasBalances[chainID]),
+			eth.Balance(i.relayerAddress, nil).Returns(i.gasBalances[chainID]),
 		}
 
 		// queue token balance fetches
