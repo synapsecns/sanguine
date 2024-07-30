@@ -484,7 +484,7 @@ func (c *rebalanceManagerScroll) initiateL2ToL1(parentCtx context.Context, rebal
 		}
 		if chain.IsGasToken(rebalance.OriginMetadata.Addr) {
 			transactor.Value = rebalance.Amount
-			tx, err = c.boundL2Gateway.WithdrawETH(transactor, c.relayerAddress, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
+			tx, err = c.boundL2Gateway.WithdrawETH0(transactor, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
 			if err != nil {
 				return nil, fmt.Errorf("could not withdraw gas token: %w", err)
 			}
