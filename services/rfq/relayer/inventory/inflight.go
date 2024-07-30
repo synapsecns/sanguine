@@ -36,10 +36,11 @@ func WithTTL(ttl time.Duration) QuoterOption {
 const defaultTTL = 250 * time.Millisecond
 
 // newInflightManager creates a new inFlightManager with the given options.
-func newInflightManager(options ...QuoterOption) *inFlightManager {
+func newInflightManager(db reldb.Service, options ...QuoterOption) *inFlightManager {
 	// Default TTL to 250ms
 	quoter := &inFlightManager{
 		ttl: defaultTTL,
+		db:  db,
 	}
 
 	// Apply options

@@ -206,7 +206,7 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 		rebalanceManagers:    rebalanceManagers,
 		db:                   db,
 		meter:                handler.Meter(meterName),
-		inFlightQuoteManager: newInflightManager(),
+		inFlightQuoteManager: newInflightManager(db),
 	}
 
 	i.balanceGauge, err = i.meter.Float64ObservableGauge("inventory_balance")
