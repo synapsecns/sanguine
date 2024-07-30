@@ -61,7 +61,7 @@ export async function bridge(
  * @param deadline - The transaction deadline, optional.
  * @param excludedModules - An array of module names to exclude from the quote, optional.
  * @param originUserAddress - The address of the user on the origin chain, optional. This parameter has
- * to be specified for a correct integration via a smart-contract into SynapseRFQ module.
+ * to be specified if a smart contract is going to initiate the bridge operation on behalf of the user.
  */
 interface BridgeQuoteOptions {
   deadline?: BigNumber
@@ -72,10 +72,10 @@ interface BridgeQuoteOptions {
 /**
  * This method fetches the best quote from all available bridge modules. Their names are SynapseBridge, SynapseCCTP and SynapseRFQ.
  * It is possible to use a custom deadline, exclude a set of modules by providing the list of excluded module names
- * and specify the originUserAddress.
+ * and specify the user address on the origin chain.
  *
- * Note: originUserAddress MUST BE provided, if a smart contract is going to initiate the bridge operation. That includes
- * smart wallets (like Safe), or a third party integration (like a bridge aggregator smart contract).
+ * Note: originUserAddress MUST BE provided, if a smart contract is going to initiate the bridge operation on behalf of the user.
+ * That includes smart wallets (like Safe), or a third party integration (like a bridge aggregator smart contract).
  *
  * @param originChainId - The ID of the original chain.
  * @param destChainId - The ID of the destination chain.
@@ -117,10 +117,10 @@ export async function bridgeQuote(
 /**
  * This method tries to fetch all available quotes from all available bridge modules. Their names are SynapseBridge, SynapseCCTP and SynapseRFQ.
  * It is possible to use a custom deadline, exclude a set of modules by providing the list of excluded module names
- * and specify the originUserAddress.
+ * and specify the user address on the origin chain.
  *
- * Note: originUserAddress MUST BE provided, if a smart contract is going to initiate the bridge operation. That includes
- * smart wallets (like Safe), or a third party integration (like a bridge aggregator smart contract).
+ * Note: originUserAddress MUST BE provided, if a smart contract is going to initiate the bridge operation on behalf of the user.
+ * That includes smart wallets (like Safe), or a third party integration (like a bridge aggregator smart contract).
  *
  * @param originChainId - The ID of the original chain.
  * @param destChainId - The ID of the destination chain.

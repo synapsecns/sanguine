@@ -84,13 +84,13 @@ const bridgeQuotes: BridgeQuote[] = await synapseSDK.allBridgeQuotes(
     // Empty list means that all modules are included.
     excludedModules: ['SynapseBridge', 'SynapseCCTP', 'SynapseRFQ'],
     // Address of the user on the origin chain, optional.
-    // MANDATORY if the smart contract is going to initiate the bridge operation.
+    // MANDATORY if a smart contract is going to initiate the bridge operation on behalf of the user.
     originUserAddress: '0x1234567890abcdef1234567890abcdef12345678',
   }
 )
 ```
 
-> **Note:** The `originUserAddress` MUST BE provided, if a smart contract is going to initiate the bridge operation. That includes smart wallets (like Safe), or a third party integration (like a bridge aggregator smart contract).
+> **Note:** The `originUserAddress` MUST BE provided, if a smart contract is going to initiate the bridge operation on behalf of the user. That includes smart wallets (like Safe), or a third party integration (like a bridge aggregator smart contract).
 
 The returned list is sorted by the `maxAmountOut` field, so the first quote is the one yielding the highest amount of tokens on the destination chain.
 
