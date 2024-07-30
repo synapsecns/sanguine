@@ -1,4 +1,4 @@
-export default function StackIcon({ className }) {
+export const StackIcon = ({ className }) => {
   return (
     <svg
       className={`h-6 w-6 ${className}`}

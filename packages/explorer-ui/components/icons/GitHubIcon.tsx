@@ -1,4 +1,4 @@
-export default function GitHubIcon(props) {
+export const GitHubIcon = (props) => {
   return (
     <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
       <path

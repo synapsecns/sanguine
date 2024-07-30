@@ -1,4 +1,4 @@
-export default function ForumIcon({ className }) {
+export const ForumIcon = ({ className }) => {
   return (
     <svg
       className={`w-4 ${className}`}

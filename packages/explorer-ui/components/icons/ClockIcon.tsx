@@ -1,4 +1,4 @@
-export function ClockIcon({ className }) {
+export const ClockIcon = ({ className }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

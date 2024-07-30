@@ -1,4 +1,4 @@
-export default function NarrowArrowIcon({ className }) {
+export const NarrowArrowIcon = ({ className }) => {
   return (
     <svg
       className={`w-6 ${className}`}
