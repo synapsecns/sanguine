@@ -1,4 +1,4 @@
-export function InfoBlock({ title, logo, content, className = 'mt-0' }) {
+export const InfoBlock = ({ title, logo, content, className = 'mt-0' }) => {
   return (
     <div className={`flex flex-col text-center ${className}`}>
       <dd className="self-center text-2xl font-bold text-left text-slate-300">

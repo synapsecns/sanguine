@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from 'date-fns'
 
-export function timeAgo({ timestamp }) {
+export const timeAgo = ({ timestamp }) => {
   let timeAgo = '--'
   if (timestamp) {
     const unixTimestamp = timestamp
