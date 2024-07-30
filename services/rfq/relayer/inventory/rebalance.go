@@ -103,7 +103,9 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 //
 //nolint:nestif,cyclop
 func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, methods []relconfig.RebalanceMethod) (originTokenData, destTokenData *TokenMetadata, method relconfig.RebalanceMethod) {
+	candidates := map[relconfig.RebalanceMethod][2]TokenMetadata{}
 	for _, method := range methods {
+		var originCandidate, destCandidate *TokenMetadata
 		for _, tokenMap := range tokens {
 			for _, tokenData := range tokenMap {
 				if tokenData.Name == tokenName {
@@ -112,20 +114,35 @@ func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Addre
 					}
 
 					// assign origin / dest metadata based on min / max balances
-					if originTokenData == nil || tokenData.Balance.Cmp(originTokenData.Balance) > 0 {
-						originTokenData = tokenData
+					if originCandidate == nil || tokenData.Balance.Cmp(originCandidate.Balance) > 0 {
+						originCandidate = tokenData
 					}
-					if destTokenData == nil || tokenData.Balance.Cmp(destTokenData.Balance) < 0 {
-						destTokenData = tokenData
+					if destCandidate == nil || tokenData.Balance.Cmp(destCandidate.Balance) < 0 {
+						destCandidate = tokenData
 					}
 				}
 			}
 		}
-		if originTokenData != nil && destTokenData != nil {
-			return originTokenData, destTokenData, method
+		if originCandidate != nil && destCandidate != nil {
+			candidates[method] = [2]TokenMetadata{*originCandidate, *destCandidate}
 		}
 	}
-	return nil, nil, relconfig.RebalanceMethodNone
+	if len(candidates) == 0 {
+		return nil, nil, relconfig.RebalanceMethodNone
+	}
+
+	// select candidates with largest delta between origin and dest balance
+	maxDelta := big.NewInt(0)
+	for m, c := range candidates {
+		delta := new(big.Int).Sub(c[0].Balance, c[1].Balance)
+		if delta.Cmp(maxDelta) > 0 {
+			maxDelta = delta
+			originTokenData = &c[0]
+			destTokenData = &c[1]
+			method = m
+		}
+	}
+	return originTokenData, destTokenData, method
 }
 
 func isTokenCompatible(tokenData *TokenMetadata, method relconfig.RebalanceMethod, cfg relconfig.Config) bool {
