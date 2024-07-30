@@ -25,6 +25,8 @@ export const IconAndAmount = ({
     amount = formattedValue / (dec / 10 ** 6)
   }
 
+  const displayAmount = amount ? formatAmount(amount) : '< 0.001'
+
   return (
     <div className={`flex items-center ${className}`}>
       <div className="flex flex-row items-center text-white">
@@ -35,11 +37,11 @@ export const IconAndAmount = ({
           className={`${iconSize} min-w-[1rem] min-h-[1rem] inline rounded-full`}
         />
         <div
-          data-tooltip-content={amount}
+          data-tooltip-content={displayAmount}
           data-tooltip-id="amount"
           className="flex-1 pl-1 mr-1 text-white"
         >
-          {formatAmount(amount)}
+          {displayAmount}
         </div>
       </div>
       <span className="text-white">{tokenSymbol}</span>
