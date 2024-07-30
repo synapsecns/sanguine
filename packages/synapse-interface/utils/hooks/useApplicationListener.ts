@@ -10,7 +10,7 @@ import {
 } from '@/slices/application/actions'
 import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress, getValidAddress } from '@/utils/isValidAddress'
-import { getTimeMinutesBeforeNow } from '@/utils/time'
+import { getUnixTimeMinutesBeforeNow } from '@/utils/time'
 import { resetTransactionsState } from '@/slices/transactions/actions'
 
 export const useApplicationListener = () => {
@@ -27,7 +27,7 @@ export const useApplicationListener = () => {
   useEffect(() => {
     if (lastConnectedTimestamp) {
       const sevenDaysInSeconds = 7 * 24 * 60 * 60
-      const sevenDaysAgo: number = getTimeMinutesBeforeNow(10080)
+      const sevenDaysAgo: number = getUnixTimeMinutesBeforeNow(10080)
 
       if (sevenDaysAgo - lastConnectedTimestamp > sevenDaysInSeconds) {
         console.log('reset cache from < 7 days stale')
@@ -42,9 +42,9 @@ export const useApplicationListener = () => {
       }
 
       dispatch(updateLastConnectedAddress(address))
-      dispatch(updateLastConnectedTime(getTimeMinutesBeforeNow(0)))
+      dispatch(updateLastConnectedTime(getUnixTimeMinutesBeforeNow(0)))
     } else {
-      dispatch(updateLastConnectedTime(getTimeMinutesBeforeNow(0)))
+      dispatch(updateLastConnectedTime(getUnixTimeMinutesBeforeNow(0)))
     }
   }, [address, lastConnectedAddress, lastConnectedTimestamp])
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { getTimeMinutesFromNow } from '@/utils/time'
+import { getUnixTimeMinutesFromNow } from '@/utils/time'
 
 /**
  * Hook for setting an interval based timer
@@ -14,14 +14,14 @@ export const useIntervalTimer = (
   isDisabled?: boolean
 ) => {
   const [currentTime, setCurrentTime] = useState<number>(
-    getTimeMinutesFromNow(0)
+    getUnixTimeMinutesFromNow(0)
   )
 
   /** Update time at set intervals if not disabled */
   useEffect(() => {
     if (!isDisabled) {
       const interval = setInterval(() => {
-        const newCurrentTime = getTimeMinutesFromNow(0)
+        const newCurrentTime = getUnixTimeMinutesFromNow(0)
         setCurrentTime(newCurrentTime)
       }, intervalInMs)
 

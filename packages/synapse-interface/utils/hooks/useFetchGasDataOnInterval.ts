@@ -10,7 +10,6 @@ export const useFetchGasDataOnInterval = () => {
 
   const fetchGas = () => {
     if (fromChainId) {
-      console.log(`fetching gas for ${fromChainId}`)
       dispatch(fetchGasData(fromChainId))
     }
   }
