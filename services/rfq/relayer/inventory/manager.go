@@ -79,6 +79,8 @@ type inventoryManagerImpl struct {
 	meter metric.Meter
 	// balanceGauge is the histogram for balance
 	balanceGauge metric.Float64ObservableGauge
+	// inFlightQuoteManager is the cache for in flight quotes
+	inFlightQuoteManager *inFlightManager
 }
 
 // ErrUnsupportedChain is the error for an unsupported chain.
@@ -106,14 +108,15 @@ func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainI
 func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, options ...BalanceFetchArgOption) (res map[int]map[common.Address]*big.Int, err error) {
 	reqOptions := makeOptions(options)
 	// TODO: hard fail if cache skip breaks
-	if reqOptions.skipCache {
+	if reqOptions.shouldRefreshBalances {
 		// TODO; no need for this if refresh already in flight
 		_ = i.refreshBalances(ctx)
 	}
+
 	// get db first
 	// Add other committed, but incomplete statuses here
 	// TODO: clean me up: you can do this by having a IsLiquidityCommitted() method on the type.
-	inFlightQuotes, err := i.db.GetQuoteResultsByStatus(ctx, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayStarted)
+	inFlightQuotes, err := i.inFlightQuoteManager.GetInFlightQuotes(ctx, reqOptions.skipDBCache)
 	if err != nil {
 		return nil, fmt.Errorf("could not get in flight quotes: %w", err)
 	}
@@ -195,14 +198,15 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 	}
 
 	i := inventoryManagerImpl{
-		relayerAddress:    relayer,
-		handler:           handler,
-		cfg:               cfg,
-		chainClient:       clientFetcher,
-		txSubmitter:       txSubmitter,
-		rebalanceManagers: rebalanceManagers,
-		db:                db,
-		meter:             handler.Meter(meterName),
+		relayerAddress:       relayer,
+		handler:              handler,
+		cfg:                  cfg,
+		chainClient:          clientFetcher,
+		txSubmitter:          txSubmitter,
+		rebalanceManagers:    rebalanceManagers,
+		db:                   db,
+		meter:                handler.Meter(meterName),
+		inFlightQuoteManager: newInflightManager(),
 	}
 
 	i.balanceGauge, err = i.meter.Float64ObservableGauge("inventory_balance")
@@ -619,10 +623,10 @@ var logger = log.Logger("inventory")
 
 // refreshBalances refreshes all the token balances.
 func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
-	i.mux.Lock()
-	defer i.mux.Unlock()
 	var wg sync.WaitGroup
 	wg.Add(len(i.tokens))
+
+	gasBalances := make(map[int]*big.Int)
 
 	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
 	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
@@ -635,7 +639,7 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 
 		// queue gas token balance fetch
 		deferredCalls := []w3types.Caller{
-			eth.Balance(i.relayerAddress, nil).Returns(i.gasBalances[chainID]),
+			eth.Balance(i.relayerAddress, nil).Returns(gasBalances[chainID]),
 		}
 
 		// queue token balance fetches
