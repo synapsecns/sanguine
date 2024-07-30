@@ -57,12 +57,17 @@ func (q *inFlightManager) GetInFlightQuotes(ctx context.Context, skipCache bool)
 			return nil, fmt.Errorf("could not get in flight quotes: %w", err)
 		}
 		q.mux.Lock()
+		defer q.mux.Unlock()
 		q.entry = &inFlightQuoteCacheEntry{
 			createdAt: time.Now(),
 			quotes:    inFlightQuotes,
 		}
-		q.mux.Unlock()
+
+		return inFlightQuotes, nil
 	}
+
+	q.mux.RLock()
+	defer q.mux.RUnlock()
 
 	return q.entry.quotes, nil
 }
