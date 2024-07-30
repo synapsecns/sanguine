@@ -80,7 +80,7 @@ func NewRelayerAPI(
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
-		chains[uint32(chainID)], err = chain.NewChain(ctx, chainClient, common.HexToAddress(chainCfg.RFQAddress), chainListener, submitter)
+		chains[uint32(chainID)], err = chain.NewChain(ctx, cfg, chainClient, chainListener, submitter)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain: %w", err)
 		}
