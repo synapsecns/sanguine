@@ -192,7 +192,7 @@ const testnetScrollAPIURL = "https://sepolia-api-bridge-v2.scroll.io/api/l2"
 const scrollClaimableAPISuffix = "&page=1&page_size=5"
 const erc20Name = "USDC"
 
-//nolint:nestif
+//nolint:nestif,cyclop
 func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initContracts-scroll")
 	defer func() {
@@ -502,7 +502,7 @@ func (c *rebalanceManagerScroll) initiateL2ToL1(parentCtx context.Context, rebal
 	return nil
 }
 
-//nolint:dupl
+//nolint:dupl,cyclop
 func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err error) {
 	addr, err := c.boundL1Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
@@ -582,7 +582,7 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 	return nil
 }
 
-//nolint:dupl
+//nolint:dupl,cyclop
 func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err error) {
 	addr, err := c.boundL1Gateway.GetERC20Gateway(&bind.CallOpts{Context: ctx}, c.l1ERC20Address)
 	if err != nil {
@@ -662,7 +662,7 @@ func (c *rebalanceManagerScroll) listenL1ERC20Gateway(ctx context.Context) (err 
 	return nil
 }
 
-//nolint:dupl
+//nolint:dupl,cyclop
 func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err error) {
 	addr, err := c.boundL2Gateway.EthGateway(&bind.CallOpts{Context: ctx})
 	if err != nil {
@@ -742,7 +742,7 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 	return nil
 }
 
-//nolint:dupl
+//nolint:dupl,cyclop
 func (c *rebalanceManagerScroll) listenL2ERC20Gateway(ctx context.Context) (err error) {
 	addr, err := c.boundL2Gateway.GetERC20Gateway(&bind.CallOpts{Context: ctx}, c.l2ERC20Address)
 	if err != nil {
@@ -877,13 +877,12 @@ func (c *rebalanceManagerScroll) claimL2ToL1(parentCtx context.Context) (err err
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
-		return nil
+		return fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil
+		return fmt.Errorf("could not read body: %w", err)
 	}
 
 	var claimableResp scrollAPIResponse
@@ -959,5 +958,8 @@ func (c *rebalanceManagerScroll) submitClaim(parentCtx context.Context, claimInf
 		c.claimCache.Set(uint64(nonce.Int64()), true, 0)
 		return tx, nil
 	})
+	if err != nil {
+		return fmt.Errorf("could not submit transaction: %w", err)
+	}
 	return nil
 }
