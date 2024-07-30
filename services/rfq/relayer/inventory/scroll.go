@@ -192,7 +192,7 @@ const testnetScrollAPIURL = "https://sepolia-api-bridge-v2.scroll.io/api/l2"
 const scrollClaimableAPISuffix = "&page=1&page_size=5"
 const erc20Name = "USDC"
 
-//nolint:gocognit,nestif
+//nolint:nestif
 func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "initContracts-scroll")
 	defer func() {
@@ -201,48 +201,15 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 
 	for chainID := range c.cfg.Chains {
 		if isEthereumChain(chainID) {
-			c.l1ChainID = chainID
-			chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
+			err = c.initL1Contracts(ctx, chainID)
 			if err != nil {
-				return fmt.Errorf("could not get chain client: %w", err)
+				return fmt.Errorf("could not initialize L1 contracts: %w", err)
 			}
-			addr, err := c.cfg.GetL1GatewayAddress(chainID)
-			if err != nil {
-				return fmt.Errorf("could not get l1 gateway address: %w", err)
-			}
-			c.boundL1Gateway, err = l1gateway.NewL1GatewayRouter(addr, chainClient)
-			if err != nil {
-				return fmt.Errorf("could not get l1 gateway contract: %w", err)
-			}
-			messengerAddr, err := c.cfg.GetL1ScrollMessengerAddress(chainID)
-			if err != nil {
-				return fmt.Errorf("could not get l1 scroll messenger address: %w", err)
-			}
-			c.boundL1ScrollMessenger, err = l1scrollmessenger.NewL1ScrollMessenger(messengerAddr, chainClient)
-			if err != nil {
-				return fmt.Errorf("could not get l1 scroll messenger contract: %w", err)
-			}
-			span.SetAttributes(
-				attribute.String(fmt.Sprintf("l1_gateway_%d", chainID), addr.Hex()),
-				attribute.String(fmt.Sprintf("scroll_messenger_%d", chainID), messengerAddr.Hex()),
-			)
 		} else if isScrollChain(chainID) {
-			c.l2ChainID = chainID
-			addr, err := c.cfg.GetL2GatewayAddress(chainID)
+			err = c.initL2Contracts(ctx, chainID)
 			if err != nil {
-				return fmt.Errorf("could not get l2 gateway address: %w", err)
+				return fmt.Errorf("could not initialize L2 contracts: %w", err)
 			}
-			chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
-			if err != nil {
-				return fmt.Errorf("could not get chain client: %w", err)
-			}
-			c.boundL2Gateway, err = l2gateway.NewL2GatewayRouter(addr, chainClient)
-			if err != nil {
-				return fmt.Errorf("could not get l2 gateway contract: %w", err)
-			}
-			span.SetAttributes(
-				attribute.String(fmt.Sprintf("l2_gateway_%d", chainID), addr.Hex()),
-			)
 		}
 	}
 	if c.boundL1Gateway == nil {
@@ -288,6 +255,65 @@ func (c *rebalanceManagerScroll) initContracts(parentCtx context.Context) (err e
 	url := fmt.Sprintf("%s/unclaimed/withdrawals?address=%s%s", baseURL, c.relayerAddress.Hex(), scrollClaimableAPISuffix)
 	c.apiURL = &url
 
+	return nil
+}
+
+func (c *rebalanceManagerScroll) initL1Contracts(parentCtx context.Context, chainID int) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "initL1Contracts")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	c.l1ChainID = chainID
+	chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
+	if err != nil {
+		return fmt.Errorf("could not get chain client: %w", err)
+	}
+	addr, err := c.cfg.GetL1GatewayAddress(chainID)
+	if err != nil {
+		return fmt.Errorf("could not get l1 gateway address: %w", err)
+	}
+	c.boundL1Gateway, err = l1gateway.NewL1GatewayRouter(addr, chainClient)
+	if err != nil {
+		return fmt.Errorf("could not get l1 gateway contract: %w", err)
+	}
+	messengerAddr, err := c.cfg.GetL1ScrollMessengerAddress(chainID)
+	if err != nil {
+		return fmt.Errorf("could not get l1 scroll messenger address: %w", err)
+	}
+	c.boundL1ScrollMessenger, err = l1scrollmessenger.NewL1ScrollMessenger(messengerAddr, chainClient)
+	if err != nil {
+		return fmt.Errorf("could not get l1 scroll messenger contract: %w", err)
+	}
+	span.SetAttributes(
+		attribute.String(fmt.Sprintf("l1_gateway_%d", chainID), addr.Hex()),
+		attribute.String(fmt.Sprintf("scroll_messenger_%d", chainID), messengerAddr.Hex()),
+	)
+	return nil
+}
+
+func (c *rebalanceManagerScroll) initL2Contracts(parentCtx context.Context, chainID int) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "initL2Contracts")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	c.l2ChainID = chainID
+	addr, err := c.cfg.GetL2GatewayAddress(chainID)
+	if err != nil {
+		return fmt.Errorf("could not get l2 gateway address: %w", err)
+	}
+	chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
+	if err != nil {
+		return fmt.Errorf("could not get chain client: %w", err)
+	}
+	c.boundL2Gateway, err = l2gateway.NewL2GatewayRouter(addr, chainClient)
+	if err != nil {
+		return fmt.Errorf("could not get l2 gateway contract: %w", err)
+	}
+	span.SetAttributes(
+		attribute.String(fmt.Sprintf("l2_gateway_%d", chainID), addr.Hex()),
+	)
 	return nil
 }
 
