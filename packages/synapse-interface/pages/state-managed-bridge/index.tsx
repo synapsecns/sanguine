@@ -60,7 +60,7 @@ import {
 } from '@/slices/transactions/actions'
 import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
-import { calculateTimeBetween, getTimeMinutesFromNow } from '@/utils/time'
+import { calculateTimeBetween, getUnixTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import {
   MaintenanceWarningMessages,
@@ -155,7 +155,7 @@ const StateManagedBridge = () => {
 
     try {
       dispatch(setIsLoading(true))
-      const currentTimestamp: number = getTimeMinutesFromNow(0)
+      const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
 
       const allQuotes = await synapseSDK.allBridgeQuotes(
         fromChainId,
@@ -354,14 +354,14 @@ const StateManagedBridge = () => {
   const executeBridge = async () => {
     let pendingPopup: any
 
-    const currentTimestamp: number = getTimeMinutesFromNow(0)
+    const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
     const bridgeQuoteTimestamp = convertUuidToUnix(bridgeQuote.id)
     const timeDifference = calculateTimeBetween(
       currentTimestamp,
       bridgeQuoteTimestamp
     )
 
-    if (timeDifference > quoteTimeout) {
+    if (timeDifference > quoteTimeout && !isQuoteLoading) {
       await getAndSetBridgeQuote()
     }
 

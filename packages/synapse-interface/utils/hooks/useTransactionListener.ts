@@ -15,9 +15,9 @@ import { useLazyGetUserHistoricalActivityQuery } from '@/slices/api/generated'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { useAppDispatch } from '@/store/hooks'
-import { getTimeMinutesBeforeNow, oneMonthInMinutes } from '@/utils/time'
+import { getUnixTimeMinutesBeforeNow, oneMonthInMinutes } from '@/utils/time'
 
-const queryHistoricalTime: number = getTimeMinutesBeforeNow(oneMonthInMinutes)
+const queryHistoricalTime: number = getUnixTimeMinutesBeforeNow(oneMonthInMinutes)
 // const queryPendingTime: number = getTimeMinutesBeforeNow(oneDayInMinutes)
 
 const POLLING_INTERVAL: number = 300000 // 5 minutes in ms
