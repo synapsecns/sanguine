@@ -1,6 +1,6 @@
 import { TOKEN_HASH_MAP } from 'synapse-constants'
 
-export function addressToSymbol({ tokenAddress, chainId }) {
+export const addressToSymbol = ({ tokenAddress, chainId }) => {
   if (
     tokenAddress === '0x53f7c5869a859F0AeC3D334ee8B4Cf01E3492f21' &&
     chainId === 43114

@@ -1,4 +1,4 @@
-export default function CommunityHappyIcon({ className }) {
+export const CommunityHappyIcon = ({ className }) => {
   return (
     <svg
       id="Capa_1"

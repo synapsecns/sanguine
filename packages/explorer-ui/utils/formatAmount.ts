@@ -1,6 +1,6 @@
 import numeral from 'numeral'
 
-export function formatAmount(value) {
+export const formatAmount = (value) => {
   numeral.nullFormat('--')
 
   // Round up if the value is less than 0.001

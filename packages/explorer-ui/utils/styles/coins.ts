@@ -72,7 +72,7 @@ const SHARED_OPACITY_OVERRIDE = `
 /**
  * @param {Token} coin
  */
-export function getButtonStyleForCoin(coin) {
+export const getButtonStyleForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'shadow-yellow-xl border-yellow-100 dark:border-opacity-50 dark:border-yellow-700'
@@ -101,7 +101,7 @@ export function getButtonStyleForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getMenuItemStyleForCoin(coin) {
+export const getMenuItemStyleForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'hover:bg-yellow-50 focus:bg-yellow-50 active:bg-yellow-50'
@@ -131,7 +131,7 @@ export function getMenuItemStyleForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getMenuItemStyleForCoinDark(coin) {
+export const getMenuItemStyleForCoinDark = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return `${SHARED_OPACITY_OVERRIDE} dark:hover:bg-yellow-500 dark:focus:bg-yellow-500 dark:active:bg-yellow-500`
@@ -158,14 +158,14 @@ export function getMenuItemStyleForCoinDark(coin) {
   }
 }
 
-export function getMenuItemStyleForCoinCombined(coin) {
+export const getMenuItemStyleForCoinCombined = (coin) => {
   return `${getMenuItemStyleForCoin(coin)} ${getMenuItemStyleForCoinDark(coin)}`
 }
 
 /**
  * @param {Token} coin
  */
-export function getSwapHoverStyleForCoin(coin) {
+export const getSwapHoverStyleForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'hover:shadow-yellow-xl border-yellow-100'
@@ -195,7 +195,7 @@ export function getSwapHoverStyleForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getMenuItemBgForCoin(coin) {
+export const getMenuItemBgForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'bg-yellow-50 dark:bg-opacity-20 dark:bg-yellow-700'
@@ -224,7 +224,7 @@ export function getMenuItemBgForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getMenuItemHoverBgForCoin(coin) {
+export const getMenuItemHoverBgForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'hover:bg-yellow-100 dark:hover:bg-opacity-20 dark:hover:bg-yellow-700'
@@ -253,7 +253,7 @@ export function getMenuItemHoverBgForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getCoinTextColor(coin) {
+export const getCoinTextColor = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'text-yellow-500 group-hover:text-yellow-400'
@@ -282,7 +282,7 @@ export function getCoinTextColor(coin) {
   }
 }
 
-export function getCoinTextColorDark(coin) {
+export const getCoinTextColorDark = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'dark:text-yellow-500 dark:group-hover:text-yellow-400'
@@ -311,7 +311,7 @@ export function getCoinTextColorDark(coin) {
   }
 }
 
-export function getCoinTextColorAlt(coin) {
+export const getCoinTextColorAlt = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'dark:text-yellow-500 dark:group-hover:text-yellow-400'
@@ -340,14 +340,14 @@ export function getCoinTextColorAlt(coin) {
   }
 }
 
-export function getCoinTextColorCombined(coin) {
+export const getCoinTextColorCombined = (coin) => {
   return `${getCoinTextColor(coin)} ${getCoinTextColorDark(coin)}`
 }
 
 /**
  * @param {Token} coin
  */
-export function getInputBorderFocusStyleForCoin(coin) {
+export const getInputBorderFocusStyleForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'focus-within:border-yellow-200 dark:focus-within:border-yellow-500'
@@ -376,7 +376,7 @@ export function getInputBorderFocusStyleForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getSwapBorderStyleForCoin(coin) {
+export const getSwapBorderStyleForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'border-yellow-50 dark:border-opacity-20 dark:border-yellow-700 '
@@ -405,7 +405,7 @@ export function getSwapBorderStyleForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getSwapBorderHoverStyleForCoin(coin) {
+export const getSwapBorderHoverStyleForCoin = (coin) => {
   switch (COIN_COLORS[coin?.symbol]) {
     case 'yellow':
       return 'hover:border-yellow-100 dark:hover:border-opacity-50 dark:hover:!border-yellow-700'
@@ -434,7 +434,7 @@ export function getSwapBorderHoverStyleForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getBorderStyleForCoin(coin) {
+export const getBorderStyleForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'border-yellow-300'
@@ -463,7 +463,7 @@ export function getBorderStyleForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getFromStyleForCoin(coin) {
+export const getFromStyleForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'from-yellow-100'
@@ -492,7 +492,7 @@ export function getFromStyleForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getToStyleForCoin(coin) {
+export const getToStyleForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'to-yellow-100'
@@ -521,7 +521,7 @@ export function getToStyleForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getSwapCardShadowStyleForCoin(coin) {
+export const getSwapCardShadowStyleForCoin = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'shadow-yellow-xl hover:shadow-yellow-2xl'
@@ -551,7 +551,7 @@ export function getSwapCardShadowStyleForCoin(coin) {
 /**
  * @param {Token} coin
  */
-export function getBorderStyleForCoinHover(coin) {
+export const getBorderStyleForCoinHover = (coin) => {
   switch (COIN_COLORS[coin.symbol]) {
     case 'yellow':
       return 'hover:border-yellow-300'

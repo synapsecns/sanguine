@@ -1,13 +1,12 @@
 import {
   ChevronDoubleLeftIcon,
-  ChevronDoubleRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/outline'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 
-export function Pagination({}) {
+export const Pagination = ({}) => {
   const router = useRouter()
   let { p } = router.query
   // @ts-ignore

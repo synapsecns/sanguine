@@ -1,34 +1,29 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@apollo/client'
 import { AMOUNT_STATISTIC } from '@graphql/queries'
-import Card from '@components/tailwind/Card'
-import Grid from '@components/tailwind/Grid'
-import numeral from 'numeral'
+import { Card } from '@components/tailwind/Card'
 import { formatUSD } from '@utils/formatUSD'
 
 interface HolisticStatsProps {
-  platform: string;
-  setPlatform: (platform: string) => void;
-  loading: boolean;
-  chainID?: string;
-  baseVariables?: any;
-  noMessaging?: boolean;
+  platform: string
+  setPlatform: (platform: string) => void
+  loading: boolean
+  chainID?: string
+  baseVariables?: any
+  noMessaging?: boolean
 }
 
-export default function HolisticStats({
-                                        platform: parentPlatform,
-                                        setPlatform: parentSetPlatform,
-                                        loading,
-                                        chainID,
-                                        baseVariables,
-                                        noMessaging,
-                                      }: HolisticStatsProps) {
+export const HolisticStats = ({
+  platform: parentPlatform,
+  setPlatform: parentSetPlatform,
+
+  baseVariables,
+  noMessaging,
+}: HolisticStatsProps) => {
   const [volume, setVolume] = useState<string>('--')
   const [fee, setFee] = useState<string>('--')
   const [addresses, setAddresses] = useState<string>('--')
   const [txs, setTxs] = useState<string>('--')
-  const [useCache, setUseCache] = useState<boolean>(true)
-  const [skip, setSkip] = useState<boolean>(false)
   const [variables, setVariables] = useState<any>({})
 
   const [platform, setPlatform] = useState<any>(true)
@@ -47,78 +42,62 @@ export default function HolisticStats({
     return queryVariables
   }
 
-  const {
-    loading: loadingVolume,
-    error: errorVolume,
-    data: dataVolume,
-  } = useQuery(AMOUNT_STATISTIC, {
+  const { loading: loadingVolume } = useQuery(AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
     variables: baseVariables
       ? handleVariable('TOTAL_VOLUME_USD')
       : {
-        platform,
-        duration: 'ALL_TIME',
-        type: 'TOTAL_VOLUME_USD',
-        useCache: true,
-        useMv: true,
-      },
+          platform,
+          duration: 'ALL_TIME',
+          type: 'TOTAL_VOLUME_USD',
+          useCache: true,
+          useMv: true,
+        },
     onCompleted: (data: any) => {
       setVolume(data.amountStatistic.value)
     },
   })
 
-  const {
-    loading: loadingFee,
-    error: errorFee,
-    data: dataFee,
-  } = useQuery(AMOUNT_STATISTIC, {
+  const { loading: loadingFee } = useQuery(AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
     variables: baseVariables
       ? handleVariable('TOTAL_FEE_USD')
       : {
-        platform,
-        duration: 'ALL_TIME',
-        type: 'TOTAL_FEE_USD',
-        useCache: true,
-      },
+          platform,
+          duration: 'ALL_TIME',
+          type: 'TOTAL_FEE_USD',
+          useCache: true,
+        },
     onCompleted: (data: any) => {
       setFee(data.amountStatistic.value)
     },
   })
 
-  const {
-    loading: loadingAddresses,
-    error: errorAddresses,
-    data: dataAddresses,
-  } = useQuery(AMOUNT_STATISTIC, {
+  const { loading: loadingAddresses } = useQuery(AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
     variables: baseVariables
       ? handleVariable('COUNT_ADDRESSES')
       : {
-        platform,
-        duration: 'ALL_TIME',
-        type: 'COUNT_ADDRESSES',
-        useCache,
-      },
+          platform,
+          duration: 'ALL_TIME',
+          type: 'COUNT_ADDRESSES',
+          useCache: true,
+        },
     onCompleted: (data: any) => {
       setAddresses(data.amountStatistic.value)
     },
   })
 
-  const {
-    loading: loadingTxs,
-    error: errorTxs,
-    data: dataTxs,
-  } = useQuery(AMOUNT_STATISTIC, {
+  const { loading: loadingTxs } = useQuery(AMOUNT_STATISTIC, {
     fetchPolicy: 'network-only',
     variables: baseVariables
       ? handleVariable('COUNT_TRANSACTIONS')
       : {
-        platform,
-        duration: 'ALL_TIME',
-        type: 'COUNT_TRANSACTIONS',
-        useCache,
-      },
+          platform,
+          duration: 'ALL_TIME',
+          type: 'COUNT_TRANSACTIONS',
+          useCache: true,
+        },
     onCompleted: (data: any) => {
       setTxs(data.amountStatistic.value)
     },
@@ -139,33 +118,33 @@ export default function HolisticStats({
     parentPlatform === 'MESSAGE_BUS'
       ? null
       : {
-        title: 'Volume',
-        usd: true,
-        loading: loadingVolume,
-        value: formatUSD(volume),
-      },
+          title: 'Volume',
+          usd: true,
+          loading: loadingVolume,
+          value: formatUSD(volume),
+        },
     {
       title: 'Transactions',
-      loading: false,
+      loading: loadingTxs,
       usd: false,
       value: formatUSD(txs),
     },
     parentPlatform === 'MESSAGE_BUS'
       ? null
       : {
-        title: 'Addresses',
-        loading: false,
-        usd: false,
-        value: formatUSD(addresses),
-      },
+          title: 'Addresses',
+          loading: loadingAddresses,
+          usd: false,
+          value: formatUSD(addresses),
+        },
     parentPlatform === 'MESSAGE_BUS'
       ? null
       : {
-        title: 'Fees',
-        loading: loadingFee,
-        usd: true,
-        value: formatUSD(fee),
-      },
+          title: 'Fees',
+          loading: loadingFee,
+          usd: true,
+          value: formatUSD(fee),
+        },
   ]
 
   return (
@@ -225,7 +204,7 @@ export default function HolisticStats({
               <div className="text-xl opacity-80">{stat.title}</div>
               <div className="text-4xl font-bold text-white">
                 {stat.loading ? (
-                  <div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>
+                  <div className="w-full mt-4 rounded h-9 bg-slate-700 animate-pulse"></div>
                 ) : stat.usd ? (
                   '$' + stat.value
                 ) : (
@@ -238,12 +217,12 @@ export default function HolisticStats({
               key={i}
               className={`px-0 pb-2 space-y-3 text-white bg-transparent mr-[10%] min-w-[10%]`}
             >
-              <div className="h-9 w-full mt-4 bg-slate-700 rounded animate-pulse"></div>
+              <div className="w-full mt-4 rounded h-9 bg-slate-700 animate-pulse"></div>
             </Card>
           ) : null
         })}
       </div>
-      <div className="flex space-x-2 text-sm pt-3 font-medium">
+      <div className="flex pt-3 space-x-2 text-sm font-medium">
         <div className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-400">
           All Time
         </div>

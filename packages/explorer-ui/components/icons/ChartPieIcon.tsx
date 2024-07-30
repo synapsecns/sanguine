@@ -1,4 +1,4 @@
-export default function ChartPieIcon({ className }) {
+export const ChartPieIcon = ({ className }) => {
   return (
     <svg
       className={`h-6 w-6 ${className}`}
