@@ -70,24 +70,23 @@ interface BridgeQuoteOptions {
 }
 
 /**
- * This method tries to fetch the best quote from either the Synapse Router or SynapseCCTP Router.
- * It first handles the native token, then fetches the best quote for both types of routers.
- * If the router addresses are valid for CCTP, it will fetch the quote from the CCTP routers, otherwise it will resolve to undefined.
- * It waits for both types of quotes, then determines the best one by comparing the maximum output amount.
- * If no best quote can be found, it will throw an error.
+ * This method fetches the best quote from all available bridge modules. Their names are SynapseBridge, SynapseCCTP and SynapseRFQ.
+ * It is possible to use a custom deadline, exclude a set of modules by providing the list of excluded module names
+ * and specify the originUserAddress.
+ *
+ * Note: originUserAddress MUST BE provided, if a smart contract is going to initiate the bridge operation. That includes
+ * smart wallets (like Safe), or a third party integration (like a bridge aggregator smart contract).
  *
  * @param originChainId - The ID of the original chain.
  * @param destChainId - The ID of the destination chain.
  * @param tokenIn - The input token.
  * @param tokenOut - The output token.
  * @param amountIn - The amount of input token.
- * @param deadline - The transaction deadline, optional.
- * @param excludeCCTP - Flag to exclude CCTP quotes from the result, optional and defaults to False.
- * @param originUserAddress - The address of the user on the origin chain.
+ * @param options - Optional parameters including deadline, excludedModules, and originUserAddress.
  *
- * @returns - A promise that resolves to the best bridge quote.
+ * @returns A promise that resolves to the best bridge quote.
  *
- * @throws - Will throw an error if no best quote could be determined.
+ * @throws Will throw an error if no route is found.
  */
 export async function bridgeQuote(
   this: SynapseSDK,
@@ -116,16 +115,22 @@ export async function bridgeQuote(
 }
 
 /**
- * This method tries to fetch all available quotes from all available bridge modules.
+ * This method tries to fetch all available quotes from all available bridge modules. Their names are SynapseBridge, SynapseCCTP and SynapseRFQ.
+ * It is possible to use a custom deadline, exclude a set of modules by providing the list of excluded module names
+ * and specify the originUserAddress.
+ *
+ * Note: originUserAddress MUST BE provided, if a smart contract is going to initiate the bridge operation. That includes
+ * smart wallets (like Safe), or a third party integration (like a bridge aggregator smart contract).
  *
  * @param originChainId - The ID of the original chain.
  * @param destChainId - The ID of the destination chain.
  * @param tokenIn - The input token.
  * @param tokenOut - The output token.
  * @param amountIn - The amount of input token.
- * @param deadline - The transaction deadline, optional.
- * @param originUserAddress - The address of the user on the origin chain.
+ * @param options - Optional parameters including deadline, excludedModules, and originUserAddress.
+ *
  * @returns - A promise that resolves to an array of bridge quotes.
+ * The returned array is sorted by maxAmountOut in descending order, all quotes have non-zero amountOut.
  */
 export async function allBridgeQuotes(
   this: SynapseSDK,
