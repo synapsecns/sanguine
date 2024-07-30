@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.2.0...@synapsecns/explorer-ui@0.3.0) (2024-07-30)
+
+
+### Features
+
+* **explorer:** format raw transaction value ([#2961](https://github.com/synapsecns/sanguine/issues/2961)) ([9029c41](https://github.com/synapsecns/sanguine/commit/9029c41992df12674e8670839908d99398b02c76))
+
+
+
+
+
 # [0.2.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.1.49...@synapsecns/explorer-ui@0.2.0) (2024-07-30)
 
 
