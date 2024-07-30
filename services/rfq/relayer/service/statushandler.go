@@ -249,6 +249,7 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 	volumeLimit float64,
 ) (bool, error) {
 	// Case 1: Singular RFQ over volumeLimit and inadequate confirmations
+
 	priceOfOriginToken, err := q.getTokenPrice(context.Background(), request)
 	if err != nil {
 		return false, fmt.Errorf("could not get price: %w", err)
@@ -260,12 +261,14 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 		return false, nil
 	}
 
-	// Case 2: Cumulative RFQs over volumeLimit and inadequate confirmations
-	blockWindowUSDAmount := q.getBlockWindowRelayedAmount()
-	numOfConfirmations = currentBlockNumber - q.rfqCache.Front().Key
+	if q.rfqCache.Len() > 0 {
+		// Case 2: Cumulative RFQs over volumeLimit and inadequate confirmations
+		blockWindowUSDAmount := q.getBlockWindowRelayedAmount()
+		numOfConfirmations = currentBlockNumber - q.rfqCache.Front().Key
 
-	if blockWindowUSDAmount > volumeLimit && numOfConfirmations < 1 {
-		return false, nil
+		if blockWindowUSDAmount > volumeLimit && numOfConfirmations < 1 {
+			return false, nil
+		}
 	}
 
 	return true, nil
