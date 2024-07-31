@@ -72,7 +72,7 @@ var logger = log.Logger("relayer")
 //
 // The relayer is the core of the application. It is responsible for starting the listener and quoter event loops.
 func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.Config) (*Relayer, error) {
-	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
+	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes(), omniClient.WithCachedClients())
 
 	// TODO: pull from config
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
