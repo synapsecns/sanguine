@@ -95,7 +95,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: 'recursive'
 
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go
@@ -140,8 +139,7 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          submodules: 'recursive'
+          fetch-depth: ${{ github.ref == 'refs/heads/master' && '0' || '1' }}
 
       - name: Set up cache
         if:  ${{ !contains(runner.name, 'nsc') }}
@@ -179,10 +177,12 @@ jobs:
 
       -
         name: Fetch all tags
+        if: steps.branch-name.outputs.is_default == 'true'
         run: git fetch --force --tags
 
       # get the tag we just created
       - name: Git Fetch Unshallow
+        if: steps.branch-name.outputs.is_default == 'true'
         run: git fetch
 
       - name: Import GPG key

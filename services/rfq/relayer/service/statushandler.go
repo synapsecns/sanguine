@@ -214,12 +214,7 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*chain.Ch
 		return nil, fmt.Errorf("could not get origin client: %w", err)
 	}
 
-	//nolint: wrapcheck
-	rfqAddr, err := r.cfg.GetRFQAddress(id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get rfq address: %w", err)
-	}
-	chain, err := chain.NewChain(ctx, chainClient, common.HexToAddress(rfqAddr), r.chainListeners[id], r.submitter)
+	chain, err := chain.NewChain(ctx, r.cfg, chainClient, r.chainListeners[id], r.submitter)
 	if err != nil {
 		return nil, fmt.Errorf("could not create chain: %w", err)
 	}

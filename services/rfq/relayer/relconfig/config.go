@@ -96,14 +96,14 @@ type ChainConfig struct {
 	// MinGasToken is minimum amount of gas that should be leftover after bridging a gas token.
 	MinGasToken string `yaml:"min_gas_token"`
 	// QuotePct is the percent of balance to quote.
-	QuotePct float64 `yaml:"quote_pct"`
+	QuotePct *float64 `yaml:"quote_pct"`
 	// QuoteWidthBps is the number of basis points to deduct from the dest amount.
 	// Note that this parameter is applied on a chain level and must be positive.
 	QuoteWidthBps float64 `yaml:"quote_width_bps"`
 	// QuoteFixedFeeMultiplier is the multiplier for the fixed fee, applied when generating quotes.
-	QuoteFixedFeeMultiplier float64 `yaml:"quote_fixed_fee_multiplier"`
+	QuoteFixedFeeMultiplier *float64 `yaml:"quote_fixed_fee_multiplier"`
 	// RelayFixedFeeMultiplier is the multiplier for the fixed fee, applied when relaying.
-	RelayFixedFeeMultiplier float64 `yaml:"relay_fixed_fee_multiplier"`
+	RelayFixedFeeMultiplier *float64 `yaml:"relay_fixed_fee_multiplier"`
 	// CCTP start block is the block at which the chain listener will listen for CCTP events.
 	CCTPStartBlock uint64 `yaml:"cctp_start_block"`
 }

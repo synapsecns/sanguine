@@ -52,6 +52,7 @@ export const ChainId = {
   ARBITRUM: 42161,
   BASE: 8453,
   BLAST: 81457,
+  LINEA: 59144,
   SCROLL: 534352,
   AVALANCHE: 43114,
   DFK: 53935,

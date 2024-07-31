@@ -5,7 +5,7 @@ export const Chart = ({ data }) => {
     const numbers = normalize(data)
     return (
       <div className="flex flex-col items-center w-full pb-6 rounded-lg shadow-xl sm:p-8">
-        <div className="flex items-end flex-grow w-full mt-2 content-between">
+        <div className="flex items-end content-between flex-grow w-full mt-2">
           {numbers.map(({ value, normalizedValue, date }, i) => (
             <BarMaker
               value={value}
@@ -41,7 +41,7 @@ const BarMaker = ({ value, height, date }) => {
 export const ChartLoading = () => {
   return (
     <div className="flex flex-col items-center w-full pb-6 rounded-lg shadow-xl sm:p-8">
-      <div className="flex items-end flex-grow w-full mt-2 content-between">
+      <div className="flex items-end content-between flex-grow w-full mt-2">
         {Array.from(Array(30).keys()).map((i) => (
           <BarMakerLoading key={i} />
         ))}
@@ -50,7 +50,7 @@ export const ChartLoading = () => {
   )
 }
 
-function BarMakerLoading() {
+const BarMakerLoading = () => {
   return (
     <div className="relative flex flex-col items-center flex-grow pb-5 ml-1 mr-1 group">
       <div
@@ -60,7 +60,7 @@ function BarMakerLoading() {
   )
 }
 
-function normalize(data) {
+const normalize = (data) => {
   const maxHeight = 300
 
   let max = 0

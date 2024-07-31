@@ -241,7 +241,7 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	inv, err := m.inventoryManager.GetCommittableBalances(ctx)
+	inv, err := m.inventoryManager.GetCommittableBalances(ctx, inventory.SkipDBCache())
 	if err != nil {
 		return fmt.Errorf("error getting committable balances: %w", err)
 	}

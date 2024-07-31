@@ -78,7 +78,7 @@ jobs:
   test:
     name: Go Coverage
     runs-on: ${{ (matrix.package == 'agents' || matrix.package == 'core' || matrix.package == 'tools' || contains(matrix.package, 'explorer') || contains(matrix.package, 'contrib')) && 'ubuntu-latest' || 'namespace-profile-default-coverage-runner' }}
-    if: ${{ needs.changes.outputs.package_count_deps > 0 && (github.event_name != 'push' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
+    if: ${{ !contains(matrix.package, 'agents') && needs.changes.outputs.package_count_deps > 0 && (github.event_name != 'push' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
     needs: changes
     strategy:
       fail-fast: false

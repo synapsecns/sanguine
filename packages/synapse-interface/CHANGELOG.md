@@ -3,6 +3,58 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.31.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.0...@synapsecns/synapse-interface@0.31.1) (2024-07-29)
+
+
+### Bug Fixes
+
+* **synapse-interface:** use rfq origin pools when generating bridge maps ([#2955](https://github.com/synapsecns/sanguine/issues/2955)) ([07f57dc](https://github.com/synapsecns/sanguine/commit/07f57dc8550280696437f373673454958fe63cfd))
+
+
+
+
+
+# [0.31.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.30.1...@synapsecns/synapse-interface@0.31.0) (2024-07-29)
+
+
+### Features
+
+* **synapse-interface:** alternate eth address ([#2923](https://github.com/synapsecns/sanguine/issues/2923)) ([e84f0f6](https://github.com/synapsecns/sanguine/commit/e84f0f6394094ca1dd3a557da40de12a77debe9d))
+
+
+
+
+
+## [0.30.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.30.0...@synapsecns/synapse-interface@0.30.1) (2024-07-29)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.30.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.29.0...@synapsecns/synapse-interface@0.30.0) (2024-07-29)
+
+
+### Features
+
+* **synapse-interface:** upgrade maintenance  ([#2844](https://github.com/synapsecns/sanguine/issues/2844)) ([78cf6ee](https://github.com/synapsecns/sanguine/commit/78cf6ee0b42c197394159624cb1cf3b57918fcdd)), closes [#2921](https://github.com/synapsecns/sanguine/issues/2921)
+
+
+
+
+
+# [0.29.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.9...@synapsecns/synapse-interface@0.29.0) (2024-07-29)
+
+
+### Features
+
+* **synapse-interface:** adds BSC, Blast, Linea to RFQ ([#2905](https://github.com/synapsecns/sanguine/issues/2905)) ([8fde07a](https://github.com/synapsecns/sanguine/commit/8fde07aaf790a33c114b246169355e8a6d467ae0))
+
+
+
+
+
 ## [0.28.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.8...@synapsecns/synapse-interface@0.28.9) (2024-07-24)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

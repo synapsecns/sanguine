@@ -1,4 +1,4 @@
-export default function TableHeaderCell({ children }) {
+export const TableHeaderCell = ({ children }) => {
   return (
     <th
       scope="col"

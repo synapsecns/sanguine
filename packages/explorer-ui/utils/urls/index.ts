@@ -43,15 +43,15 @@ export const TOKEN_ADDRESSES_PATH = '/token'
 export const LEADERBOARD_PATH = '/leaderboard'
 export const CHAINS_PATH = '/chain'
 
-export function getTokenAddressUrl({ tokenAddress, chainId }) {
+export const getTokenAddressUrl = ({ tokenAddress, chainId }) => {
   return `${TOKEN_ADDRESSES_PATH}/${tokenAddress}?chainId=${chainId}`
 }
 
-export function getChainUrl({ chainId }) {
+export const getChainUrl = ({ chainId }) => {
   return `${CHAINS_PATH}/${chainId}`
 }
 
-export function getBridgeTransactionUrl({ hash, chainIdFrom, chainIdTo }) {
+export const getBridgeTransactionUrl = ({ hash, chainIdFrom, chainIdTo }) => {
   let url = TRANSACTION_PATH
 
   if (hash) {
@@ -72,7 +72,7 @@ export function getBridgeTransactionUrl({ hash, chainIdFrom, chainIdTo }) {
 
   return url
 }
-export function getAddressesUrl({
+export const getAddressesUrl = ({
   address,
   chainIdFrom,
   chainIdTo,
@@ -80,7 +80,7 @@ export function getAddressesUrl({
   address?: string
   chainIdFrom?: string
   chainIdTo?: string
-}): string {
+}): string => {
   let url = ACCOUNTS_PATH
 
   if (address) {
@@ -102,7 +102,7 @@ export function getAddressesUrl({
   return url
 }
 
-export function getExplorerTxUrl({
+export const getExplorerTxUrl = ({
   hash,
   data,
   chainId,
@@ -112,18 +112,18 @@ export function getExplorerTxUrl({
   data?: string
   chainId: string
   type?: string
-}): string {
+}): string => {
   const baseUrl = CHAINS_BY_ID[chainId].explorerUrl
 
   return `${baseUrl}/${type}/${hash ?? data}`
 }
 
-export function getExplorerAddressUrl({
+export const getExplorerAddressUrl = ({
   address,
   data,
   chainId,
   type = 'address',
-}) {
+}) => {
   const baseUrl = CHAINS_BY_ID[chainId].explorerUrl
 
   return `${baseUrl}/${type}/${address ?? data}`

@@ -1,4 +1,4 @@
-export default function InfoIcon() {
+export const InfoIcon = () => {
   return (
     <svg
       className="w-4 text-default hover:text-gray-500"
