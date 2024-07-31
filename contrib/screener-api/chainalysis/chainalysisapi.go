@@ -75,6 +75,11 @@ func (c *clientImpl) ScreenAddress(parentCtx context.Context, address string) (b
 
 	address = strings.ToLower(address)
 
+	// check the cache before we make any network calls.
+	if _, ok := c.registrationCache.Get(address); ok {
+		return true, nil
+	}
+
 	// we don't even wait on pessimistic register since if the address is already registered, but not in the in-memory cache
 	// this will just get canceled.
 	go func() {
@@ -119,11 +124,15 @@ func (c *clientImpl) checkBlacklist(ctx context.Context, address string) (bool, 
 		return false, fmt.Errorf("could not get response: %w", err)
 	}
 
-	// address has been found, let's screen it.
-	c.registrationCache.Set(address, struct{}{})
-
+	// address has been registered and retrieved, let's screen it and cache whether it is risky or not.
 	risk := fastjson.GetString(resp.Body(), "risk")
-	return slices.Contains(c.riskLevels, risk), nil
+
+	if slices.Contains(c.riskLevels, risk) {
+		c.registrationCache.Set(address, struct{}{})
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // registerAddress registers an address in the case that we try and screen for a nonexistent address.
