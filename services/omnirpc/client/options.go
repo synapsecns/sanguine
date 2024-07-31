@@ -4,6 +4,7 @@ package client
 type rpcOptions struct {
 	confirmations int
 	captureReqRes bool
+	cachedClients bool
 }
 
 // OptionsArgsOption is an option passed into the client.
@@ -20,6 +21,13 @@ func WithDefaultConfirmations(confirmations int) OptionsArgsOption {
 func WithCaptureReqRes() OptionsArgsOption {
 	return func(options *rpcOptions) {
 		options.captureReqRes = true
+	}
+}
+
+// WithCachedClients allows chain clients to be cached after first dial.
+func WithCachedClients() OptionsArgsOption {
+	return func(options *rpcOptions) {
+		options.cachedClients = true
 	}
 }
 

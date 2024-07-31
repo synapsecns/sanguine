@@ -5,13 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"io"
 	"math/big"
 	"net/http"
 	"strings"
+
+	"github.com/cornelk/hashmap"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
 )
 
 // RPCClient is an interface for the omnirpc service.
@@ -35,6 +37,7 @@ type rpcClient struct {
 	endpoint string
 	handler  metrics.Handler
 	opts     []client.Options
+	clients  *hashmap.Map[int, client.EVM]
 }
 
 // NewOmnirpcClient creates a new RPCClient.
@@ -44,6 +47,9 @@ func NewOmnirpcClient(endpoint string, handler metrics.Handler, options ...Optio
 	c.endpoint = endpoint
 	c.handler = handler
 	c.opts = append(c.opts, client.Capture(c.config.captureReqRes))
+	if c.config.cachedClients {
+		c.clients = hashmap.New[int, client.EVM]()
+	}
 
 	return &c
 }
@@ -82,11 +88,24 @@ func (c *rpcClient) GetConfirmationsClient(ctx context.Context, chainID, confirm
 	return chainClient, nil
 }
 
-func (c *rpcClient) GetChainClient(ctx context.Context, chainID int) (client.EVM, error) {
+func (c *rpcClient) GetChainClient(ctx context.Context, chainID int) (chainClient client.EVM, err error) {
+	var ok bool
+	useCache := c.clients != nil
+	if useCache {
+		chainClient, ok = c.clients.Get(chainID)
+	}
+	if ok {
+		return chainClient, nil
+	}
+
 	endpoint := c.GetDefaultEndpoint(chainID)
-	chainClient, err := client.DialBackend(ctx, endpoint, c.handler, c.opts...)
+	chainClient, err = client.DialBackend(ctx, endpoint, c.handler, c.opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not dial backend: %w", err)
+	}
+
+	if useCache {
+		c.clients.Insert(chainID, chainClient)
 	}
 	return chainClient, nil
 }
