@@ -59,7 +59,6 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return nil
 	}
 
-	// TODO: these should be premade
 	originClient, err := r.client.GetChainClient(ctx, int(chainID))
 	if err != nil {
 		return fmt.Errorf("could not get correct omnirpc client: %w", err)
