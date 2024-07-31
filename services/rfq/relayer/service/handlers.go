@@ -194,7 +194,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return fmt.Errorf("could not determine if can relay: %w", err)
 	}
 	if !canRelay {
-		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending, &request.Status)
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.Seen, &request.Status)
 		span.AddEvent("cannot relay due to volume. waiting for one block confirmation before relaying.")
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
