@@ -249,7 +249,7 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 	volumeLimit float64,
 ) (bool, error) {
 	// Case 1: Singular RFQ over volumeLimit and inadequate confirmations
-	priceOfOriginToken, err := q.getTokenPrice(context.Background(), request)
+	priceOfOriginToken, err := q.getUSDAmountOfToken(context.Background(), request)
 	if err != nil {
 		return false, fmt.Errorf("could not get price: %w", err)
 	}
@@ -281,7 +281,7 @@ func (q *QuoteRequestHandler) addRelayToCache(ctx context.Context, request reldb
 	}
 
 	// Get the token price.
-	priceOfOriginToken, err := q.getTokenPrice(ctx, request)
+	priceOfOriginToken, err := q.getUSDAmountOfToken(ctx, request)
 	if err != nil {
 		return fmt.Errorf("could not get price: %w", err)
 	}
@@ -318,7 +318,7 @@ func (q *QuoteRequestHandler) getBlockWindowRelayedAmount() float64 {
 	return total
 }
 
-func (q *QuoteRequestHandler) getTokenPrice(ctx context.Context, request reldb.QuoteRequest) (float64, error) {
+func (q *QuoteRequestHandler) getUSDAmountOfToken(ctx context.Context, request reldb.QuoteRequest) (float64, error) {
 	var tokenName string
 	for tn, tokenConfig := range q.tokenNames {
 		if common.HexToAddress(tokenConfig.Address).Hex() == request.Transaction.OriginToken.Hex() {
