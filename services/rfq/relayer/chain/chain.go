@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
@@ -30,21 +31,28 @@ type Chain struct {
 }
 
 // NewChain creates a new chain.
-func NewChain(ctx context.Context, chainClient client.EVM, addr common.Address, chainListener listener.ContractListener, ts submitter.TransactionSubmitter) (*Chain, error) {
-	bridge, err := fastbridge.NewFastBridgeRef(addr, chainClient)
-	if err != nil {
-		return nil, fmt.Errorf("could not create bridge contract: %w", err)
-	}
+func NewChain(ctx context.Context, cfg relconfig.Config, chainClient client.EVM, chainListener listener.ContractListener, ts submitter.TransactionSubmitter) (*Chain, error) {
 	chainID, err := chainClient.ChainID(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get chain id: %w", err)
 	}
+	addr, err := cfg.GetRFQAddress(int(chainID.Int64()))
+	if err != nil {
+		return nil, fmt.Errorf("could not get rfq address: %w", err)
+	}
+	bridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(addr), chainClient)
+	if err != nil {
+		return nil, fmt.Errorf("could not create bridge contract: %w", err)
+	}
+	confirmations, err := cfg.GetConfirmations(int(chainID.Int64()))
+	if err != nil {
+		return nil, fmt.Errorf("could not get confirmations: %w", err)
+	}
 	return &Chain{
-		ChainID: uint32(chainID.Int64()),
-		Bridge:  bridge,
-		Client:  chainClient,
-		// TODO: configure
-		Confirmations: 1,
+		ChainID:       uint32(chainID.Int64()),
+		Bridge:        bridge,
+		Client:        chainClient,
+		Confirmations: confirmations,
 		listener:      chainListener,
 		submitter:     ts,
 	}, nil
