@@ -46,6 +46,26 @@ const synapseSDK = new SynapseSDK(chainIds, providers)
 
 ## Bridging
 
+### Router Deployments
+
+The Routers for the same module are deployed to the same address on all chains (except for the exceptions below).
+
+| Bridge Module | Chain     | Address                                      |
+| ------------- | --------- | -------------------------------------------- |
+| SynapseBridge | \*        | `0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a` |
+| SynapseBridge | **Blast** | `0x0000000000365b1d5B142732CF4d33BcddED21Fc` |
+| SynapseCCTP   | \*        | `0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48` |
+| SynapseRFQ    | \*        | `0xd50042193Db100FE0040005e00D5010000007e45` |
+
+### Router Deployments (deprecated)
+
+The following deployments are deprecated and should not be used. Use the newest deployments from the table above instead.
+
+| Bridge Module | Chain     | Address                                      |
+| ------------- | --------- | -------------------------------------------- |
+| SynapseBridge | **Blast** | `0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a` |
+| SynapseRFQ    | \*        | `0x0000000000489d89D2B233D3375C045dfD05745F` |
+
 ### Full bridging workflow
 
 ![Bridging Workflow](./puml/BridgingWorkflow.png)
