@@ -61,10 +61,10 @@ The Routers for the same module are deployed to the same address on all chains (
 
 The following deployments are deprecated and should not be used. Use the newest deployments from the table above instead.
 
-| Bridge Module | Chain     | Address                                      |
-| ------------- | --------- | -------------------------------------------- |
-| SynapseBridge | **Blast** | `0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a` |
-| SynapseRFQ    | \*        | `0x0000000000489d89D2B233D3375C045dfD05745F` |
+| Bridge Module | Chain     | Address                                          |
+| ------------- | --------- | ------------------------------------------------ |
+| SynapseBridge | **Blast** | ~~`0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a`~~ |
+| SynapseRFQ    | \*        | ~~`0x0000000000489d89D2B233D3375C045dfD05745F`~~ |
 
 ### Full bridging workflow
 
