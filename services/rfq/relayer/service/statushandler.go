@@ -249,7 +249,6 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 	volumeLimit float64,
 ) (bool, error) {
 	// Case 1: Singular RFQ over volumeLimit and inadequate confirmations
-
 	priceOfOriginToken, err := q.getTokenPrice(context.Background(), request)
 	if err != nil {
 		return false, fmt.Errorf("could not get price: %w", err)
@@ -332,7 +331,7 @@ func (q *QuoteRequestHandler) getTokenPrice(ctx context.Context, request reldb.Q
 		return 0, fmt.Errorf("could not get price: %w", err)
 	}
 
-	return price, nil
+	return price * float64(request.Transaction.OriginAmount.Int64()), nil
 }
 
 // Handle handles a quote request.
