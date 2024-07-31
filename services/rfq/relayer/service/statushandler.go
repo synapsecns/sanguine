@@ -239,12 +239,13 @@ func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool 
 // Case 2: We should also not relay the request if the cumulative relayed amount over the last blockWindowSize blocks
 // exceeds the volume limit AND we have not confirmed.
 func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
+	ctx context.Context,
 	request reldb.QuoteRequest,
 	currentBlockNumber uint64,
 	volumeLimit float64,
 ) (bool, error) {
 	// Case 1: Singular RFQ over volumeLimit and inadequate confirmations
-	priceOfOriginToken, err := q.getUSDAmountOfToken(context.Background(), request)
+	priceOfOriginToken, err := q.getUSDAmountOfToken(ctx, request)
 	if err != nil {
 		return false, fmt.Errorf("could not get price: %w", err)
 	}
