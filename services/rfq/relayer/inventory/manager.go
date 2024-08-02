@@ -307,16 +307,15 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 		for tokenAddr := range tokenMap {
 			// Note: in the case where submitter hasn't finished from last boot,
 			// this will double submit approvals unfortunately.
-			contractAddr, err := i.cfg.GetRFQAddress(chainID)
-			if err != nil {
-				return fmt.Errorf("could not get RFQ address: %w", err)
-			}
-			err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
-			if err != nil {
-				return fmt.Errorf("could not approve RFQ contract: %w", err)
+			contractAddr, addrErr := i.cfg.GetRFQAddress(chainID)
+			if addrErr == nil {
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve RFQ contract: %w", err)
+				}
 			}
 
-			contractAddr, addrErr := i.cfg.GetSynapseCCTPAddress(chainID)
+			contractAddr, addrErr = i.cfg.GetSynapseCCTPAddress(chainID)
 			if addrErr == nil {
 				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 				if err != nil {
