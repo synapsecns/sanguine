@@ -7,7 +7,6 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/client"
@@ -40,7 +39,7 @@ func NewChain(ctx context.Context, cfg relconfig.Config, chainClient client.EVM,
 	if err != nil {
 		return nil, fmt.Errorf("could not get rfq address: %w", err)
 	}
-	bridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(addr), chainClient)
+	bridge, err := fastbridge.NewFastBridgeRef(addr, chainClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not create bridge contract: %w", err)
 	}

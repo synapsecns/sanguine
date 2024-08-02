@@ -109,17 +109,21 @@ func isNilOrZero(value interface{}) bool {
 }
 
 // GetRFQAddress returns the RFQ address for the given chainID.
-func (c Config) GetRFQAddress(chainID int) (value string, err error) {
+func (c Config) GetRFQAddress(chainID int) (value common.Address, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "RFQAddress")
 	if err != nil {
 		return value, err
 	}
 
-	value, ok := rawValue.(string)
+	strValue, ok := rawValue.(string)
 	if !ok {
 		return value, fmt.Errorf("failed to cast RFQAddress to string")
 	}
-	return value, nil
+
+	if strValue == "" {
+		return value, fmt.Errorf("no RFQAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(strValue), nil
 }
 
 // GetSynapseCCTPAddress returns the SynapseCCTP address for the given chainID.
