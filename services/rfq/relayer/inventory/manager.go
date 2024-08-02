@@ -407,7 +407,7 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 	}
 
 	_, err = i.txSubmitter.SubmitTransaction(ctx, chainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		tx, err = erc20.Approve(transactor, contractAddr, abi.MaxInt256)
+		tx, err = erc20.Approve(transactor, contractAddr, abi.MaxUint256)
 		if err != nil {
 			return nil, fmt.Errorf("could not approve: %w", err)
 		}
