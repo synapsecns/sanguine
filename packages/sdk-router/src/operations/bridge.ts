@@ -12,22 +12,24 @@ import {
 } from '../module'
 
 /**
- * Executes a bridge operation between two different chains. Depending on the origin router address, the operation
- * will use either a SynapseRouter or a SynapseCCTPRouter. This function creates a populated transaction ready
- * to be signed and sent to the origin chain.
+ * Creates a populated bridge transaction ready for signing and submission to the origin chain.
+ * The method selects the appropriate router based on the origin router address:
+ * - `SynapseRouter` is used for SynapseBridge module
+ * - `SynapseCCTPRouter` is used for SynapseCCTP module
+ * - `FastBridgeRouter` is used for SynapseRFQ module
  *
- * @param to - The recipient address of the bridged tokens.
- * @param originRouterAddress - The address of the origin router.
- * @param originChainId - The ID of the origin chain.
- * @param destChainId - The ID of the destination chain.
- * @param token - The token to bridge.
- * @param amount - The amount of token to bridge.
- * @param originQuery - The query for the origin chain.
- * @param destQuery - The query for the destination chain.
+ * @param to - Recipient address for the bridged tokens on the destination chain.
+ * @param originRouterAddress - Address of the router on the origin chain.
+ * @param originChainId - ID of the origin chain.
+ * @param destChainId - ID of the destination chain.
+ * @param token - Address of the token to be bridged.
+ * @param amount - Amount of tokens to bridge.
+ * @param originQuery - Query for the origin chain, obtained from `allBridgeQuotes()` or `bridgeQuote()`.
+ * @param destQuery - Query for the destination chain, obtained from `allBridgeQuotes()` or `bridgeQuote()`.
  *
- * @returns A promise that resolves to a populated transaction object which can be used to send the transaction.
+ * @returns A Promise resolving to a populated transaction object, ready for sending.
  *
- * @throws Will throw an error if there's an issue with the bridge operation.
+ * @throws Error if any issues arise during the bridge operation.
  */
 export async function bridge(
   this: SynapseSDK,
@@ -58,10 +60,10 @@ export async function bridge(
 /**
  * Options for the bridgeQuote and allBridgeQuotes functions.
  *
- * @param deadline - The transaction deadline, optional.
- * @param excludedModules - An array of module names to exclude from the quote, optional.
- * @param originUserAddress - The address of the user on the origin chain, optional. This parameter has
- * to be specified if a smart contract is going to initiate the bridge operation on behalf of the user.
+ * @param deadline - Optional transaction deadline on the origin chain.
+ * @param excludedModules - Optional array of module names to exclude from the quote.
+ * @param originUserAddress - Optional address of the user on the origin chain. This parameter must be
+ * specified if a smart contract will initiate the bridge operation on behalf of the user.
  */
 interface BridgeQuoteOptions {
   deadline?: BigNumber
@@ -70,23 +72,22 @@ interface BridgeQuoteOptions {
 }
 
 /**
- * This method fetches the best quote from all available bridge modules. Their names are SynapseBridge, SynapseCCTP and SynapseRFQ.
- * It is possible to use a custom deadline, exclude a set of modules by providing the list of excluded module names
- * and specify the user address on the origin chain.
+ * Retrieves the best quote from all available bridge modules (SynapseBridge, SynapseCCTP, and SynapseRFQ).
+ * Users can customize the query by specifying a deadline, excluding certain modules, and providing the user's address on the origin chain.
  *
- * Note: originUserAddress MUST BE provided, if a smart contract is going to initiate the bridge operation on behalf of the user.
- * That includes smart wallets (like Safe), or a third party integration (like a bridge aggregator smart contract).
+ * Important: The originUserAddress MUST be provided if a smart contract will initiate the bridge operation on the user's behalf.
+ * This applies to smart wallets (e.g., Safe) and third-party integrations (such as bridge aggregator smart contracts).
  *
- * @param originChainId - The ID of the original chain.
- * @param destChainId - The ID of the destination chain.
- * @param tokenIn - The input token.
- * @param tokenOut - The output token.
- * @param amountIn - The amount of input token.
- * @param options - Optional parameters including deadline, excludedModules, and originUserAddress.
+ * @param originChainId - ID of the origin chain.
+ * @param destChainId - ID of the destination chain.
+ * @param tokenIn - Address of the token to be bridged from the origin chain.
+ * @param tokenOut - Address of the token to be received on the destination chain.
+ * @param amountIn - Amount of input tokens on the origin chain.
+ * @param options - Optional parameters including origin deadline, excludedModules, and originUserAddress.
  *
- * @returns A promise that resolves to the best bridge quote.
+ * @returns A promise resolving to the best available bridge quote.
  *
- * @throws Will throw an error if no route is found.
+ * @throws An error if no bridge route is found.
  */
 export async function bridgeQuote(
   this: SynapseSDK,
@@ -115,22 +116,21 @@ export async function bridgeQuote(
 }
 
 /**
- * This method tries to fetch all available quotes from all available bridge modules. Their names are SynapseBridge, SynapseCCTP and SynapseRFQ.
- * It is possible to use a custom deadline, exclude a set of modules by providing the list of excluded module names
- * and specify the user address on the origin chain.
+ * Fetches all available quotes from the supported bridge modules (SynapseBridge, SynapseCCTP, and SynapseRFQ).
+ * Users can customize the query by specifying a deadline, excluding certain modules, and providing the user's address on the origin chain.
  *
- * Note: originUserAddress MUST BE provided, if a smart contract is going to initiate the bridge operation on behalf of the user.
- * That includes smart wallets (like Safe), or a third party integration (like a bridge aggregator smart contract).
+ * Important: The originUserAddress MUST be provided if a smart contract will initiate the bridge operation on the user's behalf.
+ * This applies to smart wallets (e.g., Safe) and third-party integrations (such as bridge aggregator smart contracts).
  *
- * @param originChainId - The ID of the original chain.
- * @param destChainId - The ID of the destination chain.
- * @param tokenIn - The input token.
- * @param tokenOut - The output token.
- * @param amountIn - The amount of input token.
- * @param options - Optional parameters including deadline, excludedModules, and originUserAddress.
+ * @param originChainId - ID of the origin chain.
+ * @param destChainId - ID of the destination chain.
+ * @param tokenIn - Address of the token to be bridged from the origin chain.
+ * @param tokenOut - Address of the token to be received on the destination chain.
+ * @param amountIn - Amount of input tokens on the origin chain.
+ * @param options - Optional parameters including origin deadline, excludedModules, and originUserAddress.
  *
- * @returns - A promise that resolves to an array of bridge quotes.
- * The returned array is sorted by maxAmountOut in descending order, all quotes have non-zero amountOut.
+ * @returns A promise that resolves to an array of bridge quotes.
+ * The returned array is sorted by maxAmountOut in descending order, with all quotes having a non-zero amountOut.
  */
 export async function allBridgeQuotes(
   this: SynapseSDK,
