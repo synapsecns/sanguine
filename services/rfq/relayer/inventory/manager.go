@@ -155,27 +155,15 @@ type TokenMetadata struct {
 	ChainName  string
 	Balance    *big.Int
 	Decimals   uint8
-	Allowances map[spendableContract]*big.Int
 	IsGasToken bool
 	ChainID    int
 	Addr       common.Address
 }
 
-type spendableContract int
-
-const (
-	contractRFQ = iota + 1
-	contractSynapseCCTP
-	contractTokenMessenger
-	contractL1Gateway
-	contractL2Gateway
-)
-
 var (
 	funcBalanceOf = w3.MustNewFunc("balanceOf(address)", "uint256")
 	funcName      = w3.MustNewFunc("name()", "string")
 	funcDecimals  = w3.MustNewFunc("decimals()", "uint8")
-	funcAllowance = w3.MustNewFunc("allowance(address,address)", "uint256")
 )
 
 // TODO: replace w/ config.
@@ -316,99 +304,79 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		for address, token := range tokenMap {
-			// approve RFQ contract.
+		for tokenAddr := range tokenMap {
 			// Note: in the case where submitter hasn't finished from last boot,
 			// this will double submit approvals unfortunately.
-			if address != chain.EthAddress && token.Allowances[contractRFQ].Cmp(big.NewInt(0)) == 0 {
-				tokenAddr := address // capture func literal
-				contractAddr, err := i.cfg.GetRFQAddress(chainID)
+			contractAddr, err := i.cfg.GetRFQAddress(chainID)
+			if err != nil {
+				return fmt.Errorf("could not get RFQ address: %w", err)
+			}
+			err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
+			if err != nil {
+				return fmt.Errorf("could not approve RFQ contract: %w", err)
+			}
+
+			contractAddr, addrErr := i.cfg.GetSynapseCCTPAddress(chainID)
+			if addrErr == nil {
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 				if err != nil {
-					return fmt.Errorf("could not get RFQ address: %w", err)
+					return fmt.Errorf("could not approve SynapseCCTP contract: %w", err)
 				}
-				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+			}
+
+			contractAddr, addrErr = i.cfg.GetTokenMessengerAddress(chainID)
+			if addrErr == nil {
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 				if err != nil {
-					return fmt.Errorf("could not approve RFQ contract: %w", err)
+					return fmt.Errorf("could not approve TokenMessenger contract: %w", err)
 				}
 			}
 
-			// approve SynapseCCTP contract
-			if address != chain.EthAddress && token.Allowances[contractSynapseCCTP].Cmp(big.NewInt(0)) == 0 {
-				tokenAddr := address // capture func literal
-				contractAddr, addrErr := i.cfg.GetSynapseCCTPAddress(chainID)
-				if addrErr == nil {
-					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
-					if err != nil {
-						return fmt.Errorf("could not approve SynapseCCTP contract: %w", err)
-					}
+			parentAddr, addrErr := i.cfg.GetL1GatewayAddress(chainID)
+			if addrErr == nil {
+				contract, err := l1gateway.NewL1GatewayRouter(parentAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not get L1Gateway contract: %w", err)
+				}
+				contractAddr, err := contract.EthGateway(&bind.CallOpts{Context: ctx})
+				if err != nil {
+					return fmt.Errorf("could not get L1ETHGateway address: %w", err)
+				}
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve L1ETHGateway contract: %w", err)
+				}
+				contractAddr, err = contract.ERC20Gateway(&bind.CallOpts{Context: ctx}, tokenAddr)
+				if err != nil {
+					return fmt.Errorf("could not get L1ERC20Gateway address: %w", err)
+				}
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve L1ERC20Gateway contract: %w", err)
 				}
 			}
 
-			// approve TokenMessenger contract
-			if address != chain.EthAddress && token.Allowances[contractTokenMessenger].Cmp(big.NewInt(0)) == 0 {
-				tokenAddr := address // capture func literal
-				contractAddr, addrErr := i.cfg.GetTokenMessengerAddress(chainID)
-				if addrErr == nil {
-					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
-					if err != nil {
-						return fmt.Errorf("could not approve TokenMessenger contract: %w", err)
-					}
+			parentAddr, addrErr = i.cfg.GetL2GatewayAddress(chainID)
+			if addrErr == nil {
+				contract, err := l2gateway.NewL2GatewayRouter(parentAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not get L2Gateway contract: %w", err)
 				}
-			}
-
-			// approve L1GatewayRouter contract
-			if address != chain.EthAddress && token.Allowances[contractL1Gateway].Cmp(big.NewInt(0)) == 0 {
-				tokenAddr := address // capture func literal
-				parentAddr, addrErr := i.cfg.GetL1GatewayAddress(chainID)
-				if addrErr == nil {
-					contract, err := l1gateway.NewL1GatewayRouter(parentAddr, backendClient)
-					if err != nil {
-						return fmt.Errorf("could not get L1Gateway contract: %w", err)
-					}
-					contractAddr, err := contract.EthGateway(&bind.CallOpts{Context: ctx})
-					if err != nil {
-						return fmt.Errorf("could not get L1ETHGateway address: %w", err)
-					}
-					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
-					if err != nil {
-						return fmt.Errorf("could not approve L1ETHGateway contract: %w", err)
-					}
-					contractAddr, err = contract.ERC20Gateway(&bind.CallOpts{Context: ctx}, tokenAddr)
-					if err != nil {
-						return fmt.Errorf("could not get L1ERC20Gateway address: %w", err)
-					}
-					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
-					if err != nil {
-						return fmt.Errorf("could not approve L1ERC20Gateway contract: %w", err)
-					}
+				contractAddr, err := contract.EthGateway(&bind.CallOpts{Context: ctx})
+				if err != nil {
+					return fmt.Errorf("could not get L2ETHGateway address: %w", err)
 				}
-			}
-
-			// approve L2GatewayRouter contract
-			if address != chain.EthAddress && token.Allowances[contractL2Gateway].Cmp(big.NewInt(0)) == 0 {
-				tokenAddr := address // capture func literal
-				parentAddr, addrErr := i.cfg.GetL2GatewayAddress(chainID)
-				if addrErr == nil {
-					contract, err := l2gateway.NewL2GatewayRouter(parentAddr, backendClient)
-					if err != nil {
-						return fmt.Errorf("could not get L2Gateway contract: %w", err)
-					}
-					contractAddr, err := contract.EthGateway(&bind.CallOpts{Context: ctx})
-					if err != nil {
-						return fmt.Errorf("could not get L2ETHGateway address: %w", err)
-					}
-					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
-					if err != nil {
-						return fmt.Errorf("could not approve L2ETHGateway contract: %w", err)
-					}
-					contractAddr, err = contract.ERC20Gateway(&bind.CallOpts{Context: ctx}, tokenAddr)
-					if err != nil {
-						return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
-					}
-					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
-					if err != nil {
-						return fmt.Errorf("could not approve L2ERC20Gateway contract: %w", err)
-					}
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve L2ETHGateway contract: %w", err)
+				}
+				contractAddr, err = contract.ERC20Gateway(&bind.CallOpts{Context: ctx}, tokenAddr)
+				if err != nil {
+					return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
+				}
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve L2ERC20Gateway contract: %w", err)
 				}
 			}
 		}
@@ -426,6 +394,11 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	if contractAddr == chain.EthAddress {
+		span.AddEvent("not approving to eth address")
+		return nil
+	}
+
 	if contractAddr == (common.Address{}) {
 		span.AddEvent("not approving to zero address")
 		return nil
@@ -435,6 +408,16 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 	if err != nil {
 		return fmt.Errorf("could not get erc20: %w", err)
 	}
+
+	allowance, err := erc20.Allowance(&bind.CallOpts{Context: ctx}, i.relayerAddress, contractAddr)
+	if err != nil {
+		return fmt.Errorf("could not get allowance: %w", err)
+	}
+	if allowance.Cmp(big.NewInt(0)) > 0 {
+		span.AddEvent("already has positive allowance")
+		return nil
+	}
+
 	chainID, err := backendClient.ChainID(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get chain id: %w", err)
@@ -600,7 +583,6 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				Name:       tokenName,
 				IsGasToken: tokenName == nativeToken,
 				ChainID:    chainID,
-				Allowances: make(map[spendableContract]*big.Int),
 			}
 
 			var token common.Address
@@ -614,49 +596,17 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 			// requires non-nil pointer
 			rtoken.Balance = new(big.Int)
-			for _, contract := range []spendableContract{contractRFQ, contractSynapseCCTP, contractTokenMessenger, contractL1Gateway, contractL2Gateway} {
-				rtoken.Allowances[contract] = new(big.Int)
-			}
 
 			if rtoken.IsGasToken {
 				rtoken.Decimals = 18
 				rtoken.Balance = i.gasBalances[chainID]
 				rtoken.ChainName = tokenName
 			} else {
-				rfqAddr, err := cfg.GetRFQAddress(chainID)
-				if err != nil {
-					return fmt.Errorf("could not get rfq address: %w", err)
-				}
 				deferredCalls[chainID] = append(deferredCalls[chainID],
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.Balance),
 					eth.CallFunc(funcDecimals, token).Returns(&rtoken.Decimals),
 					eth.CallFunc(funcName, token).Returns(&rtoken.ChainName),
-					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.Allowances[contractRFQ]),
 				)
-				cctpAddr, addrErr := cfg.GetSynapseCCTPAddress(chainID)
-				if addrErr == nil {
-					deferredCalls[chainID] = append(deferredCalls[chainID],
-						eth.CallFunc(funcAllowance, token, i.relayerAddress, cctpAddr).Returns(rtoken.Allowances[contractSynapseCCTP]),
-					)
-				}
-				messengerAddr, addrErr := cfg.GetTokenMessengerAddress(chainID)
-				if addrErr == nil {
-					deferredCalls[chainID] = append(deferredCalls[chainID],
-						eth.CallFunc(funcAllowance, token, i.relayerAddress, messengerAddr).Returns(rtoken.Allowances[contractTokenMessenger]),
-					)
-				}
-				l1gatewayAddr, addrErr := cfg.GetL1GatewayAddress(chainID)
-				if addrErr == nil {
-					deferredCalls[chainID] = append(deferredCalls[chainID],
-						eth.CallFunc(funcAllowance, token, i.relayerAddress, l1gatewayAddr).Returns(rtoken.Allowances[contractL1Gateway]),
-					)
-				}
-				l2gatewayAddr, addrErr := cfg.GetL2GatewayAddress(chainID)
-				if addrErr == nil {
-					deferredCalls[chainID] = append(deferredCalls[chainID],
-						eth.CallFunc(funcAllowance, token, i.relayerAddress, l2gatewayAddr).Returns(rtoken.Allowances[contractL2Gateway]),
-					)
-				}
 			}
 		}
 	}
