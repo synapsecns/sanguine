@@ -22,6 +22,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/l1gateway"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/l2gateway"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -357,11 +359,27 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			// approve L1GatewayRouter contract
 			if address != chain.EthAddress && token.Allowances[contractL1Gateway].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
-				contractAddr, addrErr := i.cfg.GetL1GatewayAddress(chainID)
+				parentAddr, addrErr := i.cfg.GetL1GatewayAddress(chainID)
 				if addrErr == nil {
+					contract, err := l1gateway.NewL1GatewayRouter(parentAddr, backendClient)
+					if err != nil {
+						return fmt.Errorf("could not get L1Gateway contract: %w", err)
+					}
+					contractAddr, err := contract.EthGateway(&bind.CallOpts{Context: ctx})
+					if err != nil {
+						return fmt.Errorf("could not get L1ETHGateway address: %w", err)
+					}
 					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
-						return fmt.Errorf("could not approve L1Gateway contract: %w", err)
+						return fmt.Errorf("could not approve L1ETHGateway contract: %w", err)
+					}
+					contractAddr, err = contract.ERC20Gateway(&bind.CallOpts{Context: ctx}, tokenAddr)
+					if err != nil {
+						return fmt.Errorf("could not get L1ERC20Gateway address: %w", err)
+					}
+					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
+					if err != nil {
+						return fmt.Errorf("could not approve L1ERC20Gateway contract: %w", err)
 					}
 				}
 			}
@@ -369,11 +387,27 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			// approve L2GatewayRouter contract
 			if address != chain.EthAddress && token.Allowances[contractL2Gateway].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
-				contractAddr, addrErr := i.cfg.GetL2GatewayAddress(chainID)
+				parentAddr, addrErr := i.cfg.GetL2GatewayAddress(chainID)
 				if addrErr == nil {
+					contract, err := l2gateway.NewL2GatewayRouter(parentAddr, backendClient)
+					if err != nil {
+						return fmt.Errorf("could not get L2Gateway contract: %w", err)
+					}
+					contractAddr, err := contract.EthGateway(&bind.CallOpts{Context: ctx})
+					if err != nil {
+						return fmt.Errorf("could not get L2ETHGateway address: %w", err)
+					}
 					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 					if err != nil {
-						return fmt.Errorf("could not approve L2Gateway contract: %w", err)
+						return fmt.Errorf("could not approve L2ETHGateway contract: %w", err)
+					}
+					contractAddr, err = contract.ERC20Gateway(&bind.CallOpts{Context: ctx}, tokenAddr)
+					if err != nil {
+						return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
+					}
+					err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
+					if err != nil {
+						return fmt.Errorf("could not approve L2ERC20Gateway contract: %w", err)
 					}
 				}
 			}
