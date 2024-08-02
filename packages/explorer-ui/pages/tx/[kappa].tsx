@@ -153,7 +153,7 @@ export const BridgeTransaction = ({ queryResult }) => {
                   <p className="w-24 text-white text-opacity-60">Sent</p>
                   <div className="flex flex-col items-center sm:flex-row">
                     <IconAndAmount
-                      formattedValue={fromInfo.formattedValue}
+                      value={fromInfo.value}
                       tokenAddress={fromInfo.tokenAddress}
                       chainId={fromInfo.chainID}
                       tokenSymbol={fromInfo.tokenSymbol}
@@ -179,7 +179,7 @@ export const BridgeTransaction = ({ queryResult }) => {
                   {toInfo ? (
                     <div className="flex flex-col items-center sm:flex-row">
                       <IconAndAmount
-                        formattedValue={toInfo.formattedValue}
+                        value={toInfo.value}
                         tokenAddress={toInfo.tokenAddress}
                         chainId={toInfo.chainID}
                         tokenSymbol={toInfo.tokenSymbol}
