@@ -337,14 +337,6 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 				if err != nil {
 					return fmt.Errorf("could not get L1Gateway contract: %w", err)
 				}
-				contractAddr, err := contract.EthGateway(&bind.CallOpts{Context: ctx})
-				if err != nil {
-					return fmt.Errorf("could not get L1ETHGateway address: %w", err)
-				}
-				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
-				if err != nil {
-					return fmt.Errorf("could not approve L1ETHGateway contract: %w", err)
-				}
 				contractAddr, err = contract.ERC20Gateway(&bind.CallOpts{Context: ctx}, tokenAddr)
 				if err != nil {
 					return fmt.Errorf("could not get L1ERC20Gateway address: %w", err)
@@ -360,14 +352,6 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 				contract, err := l2gateway.NewL2GatewayRouter(parentAddr, backendClient)
 				if err != nil {
 					return fmt.Errorf("could not get L2Gateway contract: %w", err)
-				}
-				contractAddr, err := contract.EthGateway(&bind.CallOpts{Context: ctx})
-				if err != nil {
-					return fmt.Errorf("could not get L2ETHGateway address: %w", err)
-				}
-				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
-				if err != nil {
-					return fmt.Errorf("could not approve L2ETHGateway contract: %w", err)
 				}
 				contractAddr, err = contract.ERC20Gateway(&bind.CallOpts{Context: ctx}, tokenAddr)
 				if err != nil {
