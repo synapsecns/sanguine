@@ -55,7 +55,7 @@ The Routers for the same module are deployed to the same address on all chains (
 | SynapseBridge | \*        | `0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a` |
 | SynapseBridge | **Blast** | `0x0000000000365b1d5B142732CF4d33BcddED21Fc` |
 | SynapseCCTP   | \*        | `0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48` |
-| SynapseRFQ    | \*        | `0xd50042193Db100FE0040005e00D5010000007e45` |
+| SynapseRFQ    | \*        | `0x00cD000000003f7F682BE4813200893d4e690000` |
 
 ### Router Deployments (deprecated)
 
