@@ -393,8 +393,8 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	if contractAddr == chain.EthAddress {
-		span.AddEvent("not approving to eth address")
+	if tokenAddr == chain.EthAddress {
+		span.AddEvent("not approving with eth address")
 		return nil
 	}
 
