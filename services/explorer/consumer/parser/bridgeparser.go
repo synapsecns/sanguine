@@ -156,6 +156,12 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 	} else {
 		kappa.Valid = false
 	}
+	// For event type 2 (BridgeWithdraw), Amount is calculated as GetAmount() - GetFee()
+	// For all other event types, Amount is simply GetAmount()
+	amount := event.GetAmount()
+	if event.GetEventType().Int() == 2 { // Event Type 2 is WithdrawEvent
+		amount = new(big.Int).Sub(event.GetAmount(), event.GetFee())
+	}
 
 	return model.BridgeEvent{
 		InsertTime:         uint64(time.Now().UnixNano()),
@@ -164,7 +170,7 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 		EventType:          event.GetEventType().Int(),
 		BlockNumber:        event.GetBlockNumber(),
 		TxHash:             event.GetTxHash().String(),
-		Amount:             event.GetAmount(),
+		Amount:             amount,
 		EventIndex:         event.GetEventIndex(),
 		DestinationKappa:   destinationKappa,
 		Sender:             "",
