@@ -2,6 +2,7 @@
 package relconfig
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"os"
@@ -9,14 +10,20 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	cctpConfig "github.com/synapsecns/sanguine/services/cctp-relayer/config"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"gopkg.in/yaml.v2"
 
 	"path/filepath"
+
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 )
 
 // Config represents the configuration for the relayer.
@@ -199,15 +206,18 @@ func LoadConfig(path string) (config Config, err error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
 	}
-	err = config.Validate()
+	omniClient := omniClient.NewOmnirpcClient(config.OmniRPCURL, metrics.NewNullHandler(), omniClient.WithCaptureReqRes())
+	err = config.Validate(context.Background(), omniClient)
 	if err != nil {
-		return config, fmt.Errorf("error validating config: %w", err)
+		return Config{}, fmt.Errorf("config validation failed: %w", err)
 	}
+
 	return config, nil
 }
 
-// Validate validates the config.
-func (c Config) Validate() (err error) {
+// Validate validates the config. Omniclient may be nil, but if not then it will also check the chain to see if the decimals
+// match the actual token decimals.
+func (c Config) Validate(ctx context.Context, omniclient omniClient.RPCClient) (err error) {
 	maintenancePctSums := map[string]float64{}
 	initialPctSums := map[string]float64{}
 	for _, chainCfg := range c.Chains {
@@ -228,5 +238,49 @@ func (c Config) Validate() (err error) {
 			return fmt.Errorf("total initial percent does not total 100 for %s: %f", token, sum)
 		}
 	}
+
+	if omniclient != nil {
+		err = c.validateTokenDecimals(ctx, omniclient)
+		if err != nil {
+			return fmt.Errorf("error validating token decimals: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// ValidateTokenDecimals calls decimals() on the ERC20s to ensure that the decimals in the config match the actual token decimals.
+func (c Config) validateTokenDecimals(ctx context.Context, omniClient omniClient.RPCClient) (err error) {
+	for chainID, chainCfg := range c.Chains {
+		for tokenName, tokenCFG := range chainCfg.Tokens {
+			chainClient, err := omniClient.GetChainClient(ctx, chainID)
+			if err != nil {
+				return fmt.Errorf("could not get chain client for chain %d: %w", chainID, err)
+			}
+
+			// Check if the token is the gas token. SHOULD BE 18.
+			if tokenCFG.Address == chain.EthAddress.String() {
+				if tokenCFG.Decimals != 18 {
+					return fmt.Errorf("decimals mismatch for token %s on chain %d: expected 18, got %d", tokenName, chainID, tokenCFG.Decimals)
+				}
+				continue
+			}
+
+			ierc20, err := ierc20.NewIERC20(common.HexToAddress(tokenCFG.Address), chainClient)
+			if err != nil {
+				return fmt.Errorf("could not create caller for token %s at address %s on chain %d: %w", tokenName, tokenCFG.Address, chainID, err)
+			}
+
+			actualDecimals, err := ierc20.Decimals(&bind.CallOpts{Context: ctx})
+			if err != nil {
+				return fmt.Errorf("could not get decimals for token %s on chain %d: %w", tokenName, chainID, err)
+			}
+
+			if actualDecimals != tokenCFG.Decimals {
+				return fmt.Errorf("decimals mismatch for token %s on chain %d: expected %d, got %d", tokenName, chainID, tokenCFG.Decimals, actualDecimals)
+			}
+		}
+	}
+
 	return nil
 }

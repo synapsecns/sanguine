@@ -1,6 +1,7 @@
 package relconfig_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -372,7 +373,7 @@ func TestValidation(t *testing.T) {
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.Nil(t, err)
 	})
 
@@ -399,7 +400,7 @@ func TestValidation(t *testing.T) {
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.NotNil(t, err)
 		assert.Equal(t, "total initial percent does not total 100 for USDC: 101.000000", err.Error())
 	})
@@ -427,7 +428,7 @@ func TestValidation(t *testing.T) {
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.NotNil(t, err)
 		assert.Equal(t, "total maintenance percent exceeds 100 for USDC: 100.100000", err.Error())
 	})
@@ -453,7 +454,7 @@ func TestValidation(t *testing.T) {
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.Nil(t, err)
 	})
 }
@@ -503,4 +504,77 @@ func TestDecodeTokenID(t *testing.T) {
 			}
 		})
 	}
+}
+
+const usdcAddr = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+const arbAddr = "0x912CE59144191C1204E64559FE8253a0e49E6548"
+const opAddr = "0x4200000000000000000000000000000000000042"
+
+func (v *ValidateDecimalsSuite) TestValidateWrongDecimals() {
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			1: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:  usdcAddr,
+						Decimals: 18, // WRONG
+					},
+				},
+			},
+		},
+	}
+	err := cfg.Validate(v.GetTestContext(), v.omniClient)
+	// we should error because the decimals are wrong
+	v.Require().Error(err)
+}
+
+func (v *ValidateDecimalsSuite) TestValidateCorrectDecimals() {
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			1: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:  usdcAddr,
+						Decimals: 6,
+					},
+				},
+			},
+		},
+	}
+	err := cfg.Validate(v.GetTestContext(), v.omniClient)
+	v.Require().NoError(err)
+}
+
+func (v *ValidateDecimalsSuite) TestMixtureDecimals() {
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			1: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:  usdcAddr,
+						Decimals: 6,
+					},
+				},
+			},
+			42161: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"ARB": {
+						Address:  arbAddr,
+						Decimals: 18,
+					},
+				},
+			},
+			10: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"OP": {
+						Address:  opAddr,
+						Decimals: 69,
+					},
+				},
+			},
+		},
+	}
+
+	err := cfg.Validate(v.GetTestContext(), v.omniClient)
+	v.Require().Error(err)
 }

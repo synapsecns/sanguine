@@ -32,12 +32,13 @@ var runCommand = &cli.Command{
 	Flags:       []cli.Flag{configFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
+
+		metricsProvider := metrics.Get()
+
 		cfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not read config file: %w", err)
 		}
-
-		metricsProvider := metrics.Get()
 
 		relayer, err := service.NewRelayer(c.Context, metricsProvider, cfg)
 		if err != nil {
