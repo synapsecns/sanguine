@@ -188,6 +188,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 
 	latestBlock := q.Origin.LatestBlock()
 
+	// Check if the relay is rate limited or not.
 	canRelay, err := q.canRelayBasedOnVolumeAndConfirmations(ctx, request, latestBlock, q.volumeLimit)
 	if err != nil {
 		span.AddEvent("could not determine if can relay")

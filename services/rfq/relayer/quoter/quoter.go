@@ -37,6 +37,8 @@ import (
 var logger = log.Logger("quoter")
 
 // Quoter submits quotes to the RFQ API.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name Quoter --output ./mocks --case=underscore
 type Quoter interface {
 	// SubmitAllQuotes submits all quotes to the RFQ API.
 	SubmitAllQuotes(ctx context.Context) (err error)

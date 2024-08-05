@@ -17,6 +17,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
+	quoterMock "github.com/synapsecns/sanguine/services/rfq/relayer/quoter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
@@ -75,7 +76,9 @@ func (r *RelayerTestSuite) SetupTest() {
 				RFQAddress: destContract.Address().String(),
 			},
 		},
-		OmniRPCURL: serverURL,
+		OmniRPCURL:  serverURL,
+		BlockWindow: 5,      // 5 blocks cannot surpass $10k relay volume
+		VolumeLimit: 10_000, // $10k usd
 	}
 }
 
@@ -152,4 +155,43 @@ func (r *RelayerTestSuite) TestCommit() {
 	// TODO: check db
 	time.Sleep(time.Second * 100000)
 
+}
+
+func (r *RelayerTestSuite) TestRateLimit() {
+	rel, err := service.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
+	r.NoError(err)
+	quoter := new(quoterMock.Quoter)
+	rel.SetQuoter(quoter)
+
+	_, originToken := r.manager.GetMockERC20(r.GetTestContext(), r.originBackend)
+	r.NoError(err)
+
+	_, destToken := r.manager.GetMockERC20(r.GetTestContext(), r.destBackend)
+	r.NoError(err)
+	_, oc := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
+	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
+
+	// start listening for transactions
+	go func() {
+		r.NoError(rel.StartChainParser(r.GetTestContext()))
+	}()
+
+	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
+		DstChainId:   uint32(r.destBackend.GetChainID()),
+		To:           mocks.MockAddress(),
+		OriginToken:  originToken.Address(),
+		DestToken:    destToken.Address(),
+		OriginAmount: big.NewInt(1),
+		DestAmount:   big.NewInt(2),
+		Deadline:     big.NewInt(3),
+	})
+	r.NoError(err)
+	currentBlock, err := r.originBackend.BlockByNumber(r.GetTestContext(), nil)
+	r.NoError(err)
+	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
+	receipt, err := r.originBackend.TransactionReceipt(r.GetTestContext(), tx.Hash())
+	r.NoError(err)
+
+	// should hagve waited.
+	r.Greater(receipt.BlockNumber.Uint64(), currentBlock.Number)
 }
