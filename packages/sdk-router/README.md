@@ -4,7 +4,7 @@
 
 This package contains the Synapse Protocol Cross-Chain Swap and Bridging SDK
 
-[See the Docs](https://synapserouter.gitbook.io/bridge-sdk-2)
+[See the Docs](https://synapse-3.gitbook.io/synapse-protocol/developers/bridge-sdk)
 
 # Synapse SDK
 
@@ -115,7 +115,7 @@ const bridgeQuotes: BridgeQuote[] = await synapseSDK.allBridgeQuotes(
 - **Important:** It is crucial to provide the `originUserAddress` when a smart contract will initiate the bridge operation on behalf of the user. This requirement applies to smart wallets (e.g., Safe) and third-party integrations (such as bridge aggregator smart contracts).
 - For native gas tokens (e.g., ETH on Ethereum/Arbitrum, AVAX on Avalanche, etc.), use the specialized address `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE` instead of the token address for either input or output tokens.
 - The returned list is sorted by the `maxAmountOut` field in descending order, with the first quote offering the highest amount of tokens on the destination chain.
-- All quotes in the list are provided without any slippage applied. To add slippage to the quotes, use the `applyBridgeSlippage` function.
+- All quotes in the list are provided without any slippage settings applied. To add slippage to the quotes, use the `applyBridgeSlippage` function.
 - All quotes in the list include the provided origin deadline. If no deadline is specified, the default module's deadline is used. To modify the deadline for the quotes, use the `applyBridgeDeadline` function.
 - All quotes in the list include the default destination deadline.
 

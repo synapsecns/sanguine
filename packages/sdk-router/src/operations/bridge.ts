@@ -78,6 +78,10 @@ interface BridgeQuoteOptions {
  * Important: The originUserAddress MUST be provided if a smart contract will initiate the bridge operation on the user's behalf.
  * This applies to smart wallets (e.g., Safe) and third-party integrations (such as bridge aggregator smart contracts).
  *
+ * The returned quote will not have any slippage settings applied. To add slippage to the quote, use the `applyBridgeSlippage` function.
+ * The returned quote will use the origin chain deadline provided in the options. If no deadline is provided, the module's default origin deadline is used.
+ * The returned quote will use the module's default destination deadline.
+ *
  * @param originChainId - ID of the origin chain.
  * @param destChainId - ID of the destination chain.
  * @param tokenIn - Address of the token to be bridged from the origin chain.
@@ -121,6 +125,10 @@ export async function bridgeQuote(
  *
  * Important: The originUserAddress MUST be provided if a smart contract will initiate the bridge operation on the user's behalf.
  * This applies to smart wallets (e.g., Safe) and third-party integrations (such as bridge aggregator smart contracts).
+ *
+ * The returned quotes will not have any slippage settings applied. To add slippage to the quotes, use the `applyBridgeSlippage` function.
+ * The returned quotes will use the origin chain deadline provided in the options. If no deadline is provided, the module's default origin deadline is used.
+ * The returned quotes will use the module's default destination deadline.
  *
  * @param originChainId - ID of the origin chain.
  * @param destChainId - ID of the destination chain.
