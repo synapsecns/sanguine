@@ -166,6 +166,8 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
+      console.log('allQuotes: ', allQuotes)
+
       const pausedBridgeModules = new Set(
         pausedModulesList
           .filter((module) =>
@@ -187,9 +189,26 @@ const StateManagedBridge = () => {
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
+      const bridgeQuote = activeQuotes.find(
+        (quote) => quote.bridgeModuleName === 'SynapseBridge'
+      )
+
       let quote
 
-      if (rfqQuote) {
+      if (rfqQuote && bridgeQuote) {
+        const rfqMaxAmountOut = BigInt(rfqQuote.maxAmountOut.toString())
+        const bridgeMaxAmountOut = BigInt(bridgeQuote.maxAmountOut.toString())
+
+        const maxDifference = (bridgeMaxAmountOut * 30n) / 100n
+
+        if (rfqMaxAmountOut <= bridgeMaxAmountOut + maxDifference) {
+          quote = rfqQuote
+        } else {
+          quote = bridgeQuote
+        }
+      } else if (rfqQuote) {
+        quote = rfqQuote
+      } else if (rfqQuote) {
         quote = rfqQuote
       } else {
         /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
