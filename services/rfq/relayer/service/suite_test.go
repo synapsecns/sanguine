@@ -8,6 +8,7 @@ import (
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -15,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
+	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
 	quoterMock "github.com/synapsecns/sanguine/services/rfq/relayer/quoter/mocks"
@@ -160,14 +162,20 @@ func (r *RelayerTestSuite) TestCommit() {
 func (r *RelayerTestSuite) TestRateLimit() {
 	rel, err := service.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
 	r.NoError(err)
+
+	// set up quoter
 	quoter := new(quoterMock.Quoter)
 	rel.SetQuoter(quoter)
+	quoter.On("GetPrice", mock.Anything, mock.Anything).Return(10_001, nil)
 
+	// deploy some ERC20s
 	_, originToken := r.manager.GetMockERC20(r.GetTestContext(), r.originBackend)
 	r.NoError(err)
 
 	_, destToken := r.manager.GetMockERC20(r.GetTestContext(), r.destBackend)
 	r.NoError(err)
+
+	// set up the bridge and the auth signer
 	_, oc := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
 	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
 
@@ -176,16 +184,25 @@ func (r *RelayerTestSuite) TestRateLimit() {
 		r.NoError(rel.StartChainParser(r.GetTestContext()))
 	}()
 
-	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
-		DstChainId:   uint32(r.destBackend.GetChainID()),
-		To:           mocks.MockAddress(),
-		OriginToken:  originToken.Address(),
-		DestToken:    destToken.Address(),
-		OriginAmount: big.NewInt(1),
-		DestAmount:   big.NewInt(2),
-		Deadline:     big.NewInt(3),
-	})
+	addy := mocks.MockAddress()
+
+	// send the bridge request that should get rate limited
+	tx, err := oc.MockBridgeRequest(
+		auth.TransactOpts,
+		[32]byte(crypto.Keccak256([]byte("3"))),
+		addy,
+		fastbridgemock.IFastBridgeBridgeParams{
+			DstChainId:   uint32(r.destBackend.GetChainID()),
+			To:           mocks.MockAddress(),
+			OriginToken:  originToken.Address(),
+			DestToken:    destToken.Address(),
+			OriginAmount: big.NewInt(1),
+			DestAmount:   big.NewInt(2),
+			Deadline:     big.NewInt(3),
+		})
 	r.NoError(err)
+
+	// get the current block
 	currentBlock, err := r.originBackend.BlockByNumber(r.GetTestContext(), nil)
 	r.NoError(err)
 	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
@@ -194,4 +211,19 @@ func (r *RelayerTestSuite) TestRateLimit() {
 
 	// should hagve waited.
 	r.Greater(receipt.BlockNumber.Uint64(), currentBlock.Number)
+
+	r.Eventually(
+		func() bool {
+			txs, err := rel.DB().SubmitterDB().GetAllTXAttemptByStatus(
+				r.GetTestContext(),
+				auth.From,
+				r.originBackend.ChainConfig().ChainID,
+				db.WithStatuses(db.Confirmed),
+			)
+			if err != nil {
+				return false
+			}
+			return len(txs) == 1
+		},
+	)
 }
