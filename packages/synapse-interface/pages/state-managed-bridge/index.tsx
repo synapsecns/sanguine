@@ -201,17 +201,14 @@ const StateManagedBridge = () => {
 
         const maxDifference = (bridgeMaxAmountOut * 30n) / 100n
 
-        if (rfqMaxAmountOut <= bridgeMaxAmountOut + maxDifference) {
+        if (rfqMaxAmountOut > bridgeMaxAmountOut - maxDifference) {
           quote = rfqQuote
         } else {
           quote = bridgeQuote
         }
       } else if (rfqQuote) {
         quote = rfqQuote
-      } else if (rfqQuote) {
-        quote = rfqQuote
       } else {
-        /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
         quote = activeQuotes[0]
       }
 
