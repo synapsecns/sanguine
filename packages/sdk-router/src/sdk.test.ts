@@ -521,9 +521,7 @@ describe('SynapseSDK', () => {
           SupportedChainId.ETH,
           ARB_USDT,
           ETH_USDC,
-          amount,
-          undefined,
-          false
+          amount
         )
 
         createBridgeQuoteTests(
@@ -562,8 +560,9 @@ describe('SynapseSDK', () => {
           ARB_USDT,
           ETH_USDC,
           amount,
-          undefined,
-          true
+          {
+            excludedModules: ['SynapseCCTP'],
+          }
         )
 
         createBridgeQuoteTests(
