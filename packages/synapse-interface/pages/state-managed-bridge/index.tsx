@@ -187,22 +187,22 @@ const StateManagedBridge = () => {
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
-      const bridgeQuote = activeQuotes.find(
-        (quote) => quote.bridgeModuleName === 'SynapseBridge'
+      const nonRfqQuote = activeQuotes.find(
+        (quote) => quote.bridgeModuleName !== 'SynapseRFQ'
       )
 
       let quote
 
       if (rfqQuote && bridgeQuote) {
         const rfqMaxAmountOut = BigInt(rfqQuote.maxAmountOut.toString())
-        const bridgeMaxAmountOut = BigInt(bridgeQuote.maxAmountOut.toString())
+        const nonRfqMaxAmountOut = BigInt(nonRfqQuote.maxAmountOut.toString())
 
-        const maxDifference = (bridgeMaxAmountOut * 30n) / 100n
+        const maxDifference = (nonRfqMaxAmountOut * 30n) / 100n
 
-        if (rfqMaxAmountOut > bridgeMaxAmountOut - maxDifference) {
+        if (rfqMaxAmountOut > nonRfqMaxAmountOut - maxDifference) {
           quote = rfqQuote
         } else {
-          quote = bridgeQuote
+          quote = nonRfqQuote
         }
       } else if (rfqQuote) {
         quote = rfqQuote
