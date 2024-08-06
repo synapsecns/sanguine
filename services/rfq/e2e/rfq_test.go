@@ -21,10 +21,10 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 type IntegrationSuite struct {
@@ -286,7 +286,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 
 		// let's figure out the amount of ETH we need
 		for _, quote := range allQuotes {
-			if common.HexToAddress(quote.DestTokenAddr) == chain.EthAddress {
+			if common.HexToAddress(quote.DestTokenAddr) == util.EthAddress {
 				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
 				if destAmountBigInt.Cmp(realWantAmount) > 0 {
 					// we found our quote!
@@ -306,9 +306,9 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
 		DstChainId:   uint32(i.destBackend.GetChainID()),
 		To:           i.userWallet.Address(),
-		OriginToken:  chain.EthAddress,
+		OriginToken:  util.EthAddress,
 		SendChainGas: true,
-		DestToken:    chain.EthAddress,
+		DestToken:    util.EthAddress,
 		OriginAmount: realWantAmount,
 		DestAmount:   new(big.Int).Sub(realWantAmount, big.NewInt(1e17)),
 		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
@@ -351,7 +351,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 
 		// let's figure out the amount of ETH we need
 		for _, quote := range allQuotes {
-			if common.HexToAddress(quote.DestTokenAddr) == chain.EthAddress && quote.DestChainID == originBackendChainID {
+			if common.HexToAddress(quote.DestTokenAddr) == util.EthAddress && quote.DestChainID == originBackendChainID {
 				// we should now have some ETH on the origin chain since we claimed
 				// this should be offered up as inventory
 				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)

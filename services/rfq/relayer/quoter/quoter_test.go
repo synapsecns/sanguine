@@ -11,12 +11,12 @@ import (
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	inventoryMocks "github.com/synapsecns/sanguine/services/rfq/relayer/inventory/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 func (s *QuoterSuite) TestGenerateQuotes() {
@@ -43,7 +43,7 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	// Generate quotes for ETH on the destination chain.
 	balance, _ := new(big.Int).SetString("1000000000000000000", 10) // 1 ETH
-	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
+	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), util.EthAddress, balance)
 	s.Require().NoError(err)
 
 	minGasToken, err := s.config.GetMinGasToken(int(s.destination))
@@ -54,9 +54,9 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	expectedQuotes := []model.PutQuoteRequest{
 		{
 			OriginChainID:   int(s.origin),
-			OriginTokenAddr: chain.EthAddress.String(),
+			OriginTokenAddr: util.EthAddress.String(),
 			DestChainID:     int(s.destinationEth),
-			DestTokenAddr:   chain.EthAddress.String(),
+			DestTokenAddr:   util.EthAddress.String(),
 			DestAmount:      expectedQuoteAmount.String(),
 			MaxOriginAmount: expectedQuoteAmount.String(),
 			FixedFee:        "150000000000000000", // (500k gas + 1m gas) * 100 gwei
@@ -68,7 +68,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	s.config.BaseChainConfig.MinGasToken = "100000000000000000" // 0.1 ETH
 	s.manager.SetConfig(s.config)
 
-	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
+	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), util.EthAddress, balance)
 	s.Require().NoError(err)
 
 	minGasToken, err = s.config.GetMinGasToken(int(s.destination))
@@ -79,9 +79,9 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	expectedQuotes = []model.PutQuoteRequest{
 		{
 			OriginChainID:   int(s.origin),
-			OriginTokenAddr: chain.EthAddress.String(),
+			OriginTokenAddr: util.EthAddress.String(),
 			DestChainID:     int(s.destinationEth),
-			DestTokenAddr:   chain.EthAddress.String(),
+			DestTokenAddr:   util.EthAddress.String(),
 			DestAmount:      expectedQuoteAmount.String(),
 			MaxOriginAmount: expectedQuoteAmount.String(),
 			FixedFee:        "150000000000000000", // (500k gas + 1m gas) * 100 gwei
@@ -93,7 +93,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	s.config.BaseChainConfig.MinGasToken = "1000000000000000001" // 0.1 ETH
 	s.manager.SetConfig(s.config)
 
-	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
+	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), util.EthAddress, balance)
 	s.NoError(err)
 	s.Equal(quotes[0].DestAmount, "0")
 	s.Equal(quotes[0].MaxOriginAmount, "0")

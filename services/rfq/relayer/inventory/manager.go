@@ -24,9 +24,9 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/l1gateway"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/l2gateway"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -97,7 +97,7 @@ func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainI
 	balance := committableBalances[chainID][token]
 	// the gas token may not be registered in the inventory tokens map,
 	// but it is always tracked in gasBalances.
-	if balance == nil && token == chain.EthAddress {
+	if balance == nil && token == util.EthAddress {
 		gasBalance, ok := i.gasBalances[chainID]
 		if !ok || gasBalance == nil {
 			return nil, ErrUnsupportedChain
@@ -377,7 +377,7 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	if tokenAddr == chain.EthAddress {
+	if tokenAddr == util.EthAddress {
 		span.AddEvent("not approving with eth address")
 		return nil
 	}
@@ -438,7 +438,7 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 		span.SetAttributes(attribute.String("gas_value", gasValue.String()))
 	}
 
-	gasBalance, err := i.GetCommittableBalance(ctx, chainID, chain.EthAddress)
+	gasBalance, err := i.GetCommittableBalance(ctx, chainID, util.EthAddress)
 	if err != nil {
 		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
 	}
@@ -572,7 +572,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 			var token common.Address
 			if rtoken.IsGasToken {
-				token = chain.EthAddress
+				token = util.EthAddress
 			} else {
 				token = common.HexToAddress(tokenCfg.Address)
 			}

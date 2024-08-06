@@ -21,9 +21,9 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/l1gateway"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/l1scrollmessenger"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/l2gateway"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -447,7 +447,7 @@ func (c *rebalanceManagerScroll) initiateL1ToL2(parentCtx context.Context, rebal
 			return nil, fmt.Errorf("transactor is nil")
 		}
 		transactor.Value = scrollMsgFee
-		if chain.IsGasToken(rebalance.OriginMetadata.Addr) {
+		if util.IsGasToken(rebalance.OriginMetadata.Addr) {
 			transactor.Value = new(big.Int).Add(transactor.Value, rebalance.Amount)
 			tx, err = c.boundL1Gateway.DepositETH(transactor, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
 			if err != nil {
@@ -482,7 +482,7 @@ func (c *rebalanceManagerScroll) initiateL2ToL1(parentCtx context.Context, rebal
 		if transactor == nil {
 			return nil, fmt.Errorf("transactor is nil")
 		}
-		if chain.IsGasToken(rebalance.OriginMetadata.Addr) {
+		if util.IsGasToken(rebalance.OriginMetadata.Addr) {
 			transactor.Value = rebalance.Amount
 			tx, err = c.boundL2Gateway.WithdrawETH0(transactor, rebalance.Amount, big.NewInt(int64(scrollGasLimit)))
 			if err != nil {
@@ -538,7 +538,7 @@ func (c *rebalanceManagerScroll) listenL1ETHGateway(ctx context.Context) (err er
 				Origin:          uint64(c.l1ChainID),
 				Destination:     uint64(c.l2ChainID),
 				OriginTxHash:    log.TxHash,
-				OriginTokenAddr: chain.EthAddress,
+				OriginTokenAddr: util.EthAddress,
 				Status:          reldb.RebalancePending,
 			}
 			err = c.db.UpdateLatestRebalance(ctx, rebalanceModel)
@@ -698,7 +698,7 @@ func (c *rebalanceManagerScroll) listenL2ETHGateway(ctx context.Context) (err er
 				Origin:          uint64(c.l2ChainID),
 				Destination:     uint64(c.l1ChainID),
 				OriginTxHash:    log.TxHash,
-				OriginTokenAddr: chain.EthAddress,
+				OriginTokenAddr: util.EthAddress,
 				Status:          reldb.RebalancePending,
 			}
 			err = c.db.UpdateLatestRebalance(ctx, rebalanceModel)

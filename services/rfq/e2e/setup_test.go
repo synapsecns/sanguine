@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -38,11 +37,11 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
 	guardConnect "github.com/synapsecns/sanguine/services/rfq/guard/guarddb/connect"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 func (i *IntegrationSuite) setupQuoterAPI() {
@@ -212,28 +211,32 @@ func addressToBytes32(addr common.Address) [32]byte {
 
 // Approve checks if the token is approved and approves it if not.
 func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token contracts.DeployedContract, user wallet.Wallet) {
-	erc20, err := ierc20.NewIERC20(token.Address(), backend)
-	i.NoError(err)
+	err := retry.WithBackoff(i.GetTestContext(), func(_ context.Context) (err error) {
+		erc20, err := ierc20.NewIERC20(token.Address(), backend)
+		if err != nil {
+			return fmt.Errorf("could not get token at %s: %w", token.Address().String(), err)
+		}
 
-	_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
+		_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
 
-	allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
-	i.NoError(err)
+		allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
+		if err != nil {
+			return fmt.Errorf("could not get allowance: %w", err)
+		}
 
-	// TODO: can also use in mem cache
-	if allowance.Cmp(big.NewInt(0)) == 0 {
-		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
-		var tx *types.Transaction
-		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
-			tx, err = erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
+		// TODO: can also use in mem cache
+		if allowance.Cmp(big.NewInt(0)) == 0 {
+			txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
+			tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
 			if err != nil {
-				return fmt.Errorf("could not approve token: %w", err)
+				return fmt.Errorf("could not approve: %w", err)
 			}
-			return nil
-		}, retry.WithMaxAttemptTime(30*time.Second))
-		i.NoError(err)
-		backend.WaitForConfirmation(i.GetTestContext(), tx)
-	}
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
+		}
+
+		return nil
+	}, retry.WithMaxTotalTime(15*time.Second))
+	i.NoError(err)
 }
 
 func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
@@ -256,7 +259,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -273,7 +276,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -398,11 +401,11 @@ func (i *IntegrationSuite) setupRelayer() {
 	}
 
 	// Add ETH as quotable token from origin to destination
-	cfg.QuotableTokens[fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress)] = []string{
-		fmt.Sprintf("%d-%s", destBackendChainID, chain.EthAddress),
+	cfg.QuotableTokens[fmt.Sprintf("%d-%s", originBackendChainID, util.EthAddress)] = []string{
+		fmt.Sprintf("%d-%s", destBackendChainID, util.EthAddress),
 	}
-	cfg.QuotableTokens[fmt.Sprintf("%d-%s", destBackendChainID, chain.EthAddress)] = []string{
-		fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress),
+	cfg.QuotableTokens[fmt.Sprintf("%d-%s", destBackendChainID, util.EthAddress)] = []string{
+		fmt.Sprintf("%d-%s", originBackendChainID, util.EthAddress),
 	}
 
 	var err error

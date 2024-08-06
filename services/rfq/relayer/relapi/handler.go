@@ -3,10 +3,11 @@ package relapi
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"go.opentelemetry.io/otel/attribute"
 	"math/big"
 	"net/http"
+
+	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -14,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -215,7 +217,7 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	}
 
 	//nolint: nestif
-	if chain.IsGasToken(req.TokenAddress) {
+	if util.IsGasToken(req.TokenAddress) {
 		nonce, err = h.submitter.SubmitTransaction(ctx, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 			bc := bind.NewBoundContract(req.To, abi.ABI{}, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client)
 			if transactor.GasPrice != nil {
