@@ -262,8 +262,9 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	mtx := sync.Mutex{}
 	for cid, balances := range inv {
 		chainID := cid
-		for a, balance := range balances {
+		for a, b := range balances {
 			address := a
+			balance := b
 			g.Go(func() error {
 				quotes, err := m.generateQuotes(gctx, chainID, address, balance)
 				if err != nil {
