@@ -1,6 +1,6 @@
 # Maintenance Instructions
 
-This explains how to utilize the Maintenance feature on Synapse Protocol's Webapp in order to pause a chain or bridge module.
+This explains how to utilize the Maintenance feature the Synapse Interface Webapp in order to pause a chain or bridge module.
 
 ## How it works
 
@@ -19,9 +19,16 @@ To update if / when the Banner, Countdown Progress Bar, and Warning Message comp
 
 To update which bridge modules are paused (SynapseRFQ, SynapseBridge, or SynapseCCTP), update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json).
 
-## Chain Pause Object
+## Chain Pause
 
-### Props
+You are able to pause the Bridge + Swap functionality on specified chains, using their respective chainIds. You can choose to pause Bridge / Swap functionalities independently or simultaneously.
+
+For the bridge functionality, you are able to specify which origin and destination chainIds to pause. You are able to set a start and end time for a chain pause beforehand, or you can indefinitely pause if it is not clear when an event ends.
+
+Additionally, you are able to specify which components you wish to display given an event.
+
+### Chain Pause Props
+
 `id`
 Unique ID used to distinguish maintenance component instances. Use 'EVENT_NAME-pause' format. (e.g: arbitrum-chain-pause)
 
@@ -112,7 +119,12 @@ Boolean indicating whether to hide Countdown Progress Bar.
 
 ## Bridge Module Pause
 
-### Props
+You are able to pause a specific bridge module on a given chain. Currently, there are the following bridge modules:
+- SynapseRFQ
+- SynapseCCTP
+- SynapseBridge
+
+### Bridge Module Pause Props
 
 `chainId`
 Chain ID of Chain to pause specific bridge module.
