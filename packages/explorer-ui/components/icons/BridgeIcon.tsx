@@ -1,4 +1,4 @@
-export default function BridgeIcon({ className }) {
+export const BridgeIcon = ({ className }) => {
   return (
     <svg
       id="Capa_1"

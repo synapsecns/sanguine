@@ -151,7 +151,8 @@ const getBridgeQuote = async (
   toChainId: number,
   fromToken: Token,
   toToken: Token,
-  amount: string
+  amount: string,
+  userAddress: string
 ) => {
   try {
     return await synapseSDK.bridgeQuote(
@@ -159,7 +160,10 @@ const getBridgeQuote = async (
       toChainId,
       fromToken.addresses[fromChainId],
       toToken.addresses[toChainId],
-      stringToBigInt(amount, fromToken?.decimals[fromChainId])
+      stringToBigInt(amount, fromToken?.decimals[fromChainId]),
+      {
+        originUserAddress: userAddress,
+      }
     )
   } catch (error) {
     console.error('getBridgeQuote: ', error)
@@ -248,7 +252,8 @@ const queryEstimatedBridgeGasLimit = async (
     toChainId,
     fromToken,
     toToken,
-    amount
+    amount,
+    address // userAddress
   )
 
   const bridgePayload = await getBridgePayload(

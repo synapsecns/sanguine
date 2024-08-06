@@ -25,7 +25,10 @@ import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 import { joinClassNames } from '@/utils/joinClassNames'
-import { MaintenanceBanners } from '@/components/Maintenance/Maintenance'
+import {
+  MaintenanceBanners,
+  useMaintenance,
+} from '@/components/Maintenance/Maintenance'
 import { AnnouncementBanner } from '@/components/Maintenance/components/AnnouncementBanner'
 
 const wrapperClassName = joinClassNames({

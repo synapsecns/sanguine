@@ -3,6 +3,66 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.32.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.2...@synapsecns/synapse-interface@0.32.0) (2024-08-06)
+
+
+### Features
+
+* **synapse-interface:** use origin user address for getting bridge quotes ([#2969](https://github.com/synapsecns/sanguine/issues/2969)) ([5e61cf3](https://github.com/synapsecns/sanguine/commit/5e61cf3ab667c2c169fdc47d6be7aaae6cd0f71e))
+
+
+
+
+
+## [0.31.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.1...@synapsecns/synapse-interface@0.31.2) (2024-08-05)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.31.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.0...@synapsecns/synapse-interface@0.31.1) (2024-07-29)
+
+
+### Bug Fixes
+
+* **synapse-interface:** use rfq origin pools when generating bridge maps ([#2955](https://github.com/synapsecns/sanguine/issues/2955)) ([07f57dc](https://github.com/synapsecns/sanguine/commit/07f57dc8550280696437f373673454958fe63cfd))
+
+
+
+
+
+# [0.31.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.30.1...@synapsecns/synapse-interface@0.31.0) (2024-07-29)
+
+
+### Features
+
+* **synapse-interface:** alternate eth address ([#2923](https://github.com/synapsecns/sanguine/issues/2923)) ([e84f0f6](https://github.com/synapsecns/sanguine/commit/e84f0f6394094ca1dd3a557da40de12a77debe9d))
+
+
+
+
+
+## [0.30.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.30.0...@synapsecns/synapse-interface@0.30.1) (2024-07-29)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.30.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.29.0...@synapsecns/synapse-interface@0.30.0) (2024-07-29)
+
+
+### Features
+
+* **synapse-interface:** upgrade maintenance  ([#2844](https://github.com/synapsecns/sanguine/issues/2844)) ([78cf6ee](https://github.com/synapsecns/sanguine/commit/78cf6ee0b42c197394159624cb1cf3b57918fcdd)), closes [#2921](https://github.com/synapsecns/sanguine/issues/2921)
+
+
+
+
+
 # [0.29.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.28.9...@synapsecns/synapse-interface@0.29.0) (2024-07-29)
 
 

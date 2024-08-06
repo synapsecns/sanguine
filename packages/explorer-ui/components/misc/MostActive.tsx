@@ -1,16 +1,15 @@
-import _ from 'lodash'
 import { TOKEN_HASH_MAP, CHAINS } from 'synapse-constants'
 import { getCoinTextColor } from '@utils/styles/coins'
 import { getNetworkTextColor } from '@utils/styles/networks'
-import Grid from '@components/tailwind/Grid'
-import Tooltip from '@components/tailwind/Tooltip'
+import { Grid } from '@components/tailwind/Grid'
+import { Tooltip } from '@components/tailwind/Tooltip'
 
 import { AssetImage } from './AssetImage'
 import { ChainImage } from './ChainImage'
 
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
-export function MostActive({ data }) {
+export const MostActive = ({ data }) => {
   return (
     <div className="flex justify-center my-2 text-sm">
       {data.slice(0, 5).map((chainTokenProps, i) => (
@@ -20,7 +19,7 @@ export function MostActive({ data }) {
   )
 }
 
-function MostActiveTokenChainIcon({ tokenAddress, chainId }) {
+const MostActiveTokenChainIcon = ({ tokenAddress, chainId }) => {
   const chain = CHAINS_BY_ID[chainId]
   const token = TOKEN_HASH_MAP[chainId][tokenAddress]
 
