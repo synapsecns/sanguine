@@ -213,8 +213,8 @@ func (c *ServerSuite) TestFilterQuoteAge() {
 
 	// insert quote outside age range
 	quotes := []*db.Quote{
-		&db.Quote{OriginChainID: 1, UpdatedAt: now.Add(-time.Hour)},
-		&db.Quote{OriginChainID: 2, UpdatedAt: now.Add(-time.Minute)},
+		{OriginChainID: 1, UpdatedAt: now.Add(-time.Hour)},
+		{OriginChainID: 2, UpdatedAt: now.Add(-time.Minute)},
 	}
 
 	filteredQuotes := rest.FilterQuoteAge(c.cfg, quotes)
