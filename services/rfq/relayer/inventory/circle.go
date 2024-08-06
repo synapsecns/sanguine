@@ -143,7 +143,11 @@ func (c *rebalanceManagerCircleCCTP) initListeners(parentCtx context.Context) (e
 		metrics.EndSpanWithErr(span, err)
 	}(err)
 
-	for chainID := range c.cfg.GetChains() {
+	for chainID, chainCfg := range c.cfg.GetChains() {
+		if chainCfg.RebalanceConfigs.Circle == nil {
+			span.AddEvent(fmt.Sprintf("no circle config specified for chain: %d", chainID))
+			continue
+		}
 		// setup chain utils
 		chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
