@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.9.0...@synapsecns/sdk-router@0.10.0) (2024-08-05)
+
+
+* feat(sdk-router)!: add support for FastBridgeRouterV2 (#2957) ([175e0cd](https://github.com/synapsecns/sanguine/commit/175e0cd32a7e93e12af5bf458cbad49276f98518)), closes [#2957](https://github.com/synapsecns/sanguine/issues/2957)
+
+
+### BREAKING CHANGES
+
+* The `bridgeQuote` and `allBridgeQuotes` functions now accept an options object instead of individual optional parameters.
+
+* docs: new options
+
+* test: update
+
+* test: cleanup
+
+* fix: make `createRFQDestQuery` static, expose for tests
+
+* test: add unit tests for `createRFQDestQuery`
+
+* feat: use FastBridgeRouterV2 address
+
+* docs: be more explicit about smart contract integrations
+
+* docs: add address section
+
+* docs: strike through deprecated addresses
+
+* feat: use newest address
+
+* docs: more explicit language
+
+* docs: be more explicit in README as well
+
+* fix: update docs link, slippage wording
+
+
+
+
+
 # [0.9.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.8.0...@synapsecns/sdk-router@0.9.0) (2024-07-24)
 
 

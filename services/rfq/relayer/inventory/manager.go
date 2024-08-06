@@ -226,11 +226,11 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 
 //nolint:gocognit,cyclop
 func (i *inventoryManagerImpl) Start(ctx context.Context) error {
-	g, _ := errgroup.WithContext(ctx)
+	g, gctx := errgroup.WithContext(ctx)
 	for _, rebalanceManager := range i.rebalanceManagers {
 		rebalanceManager := rebalanceManager
 		g.Go(func() error {
-			err := rebalanceManager.Start(ctx)
+			err := rebalanceManager.Start(gctx)
 			if err != nil {
 				return fmt.Errorf("could not start rebalance manager: %w", err)
 			}
@@ -242,12 +242,12 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 	g.Go(func() error {
 		for {
 			select {
-			case <-ctx.Done():
-				return fmt.Errorf("context canceled: %w", ctx.Err())
+			case <-gctx.Done():
+				return fmt.Errorf("context canceled: %w", gctx.Err())
 			case <-time.After(250 * time.Millisecond):
 				// this returning an error isn't really possible unless a config error happens
 				// TODO: need better error handling.
-				err := i.refreshBalances(ctx)
+				err := i.refreshBalances(gctx)
 				if err != nil {
 					logger.Errorf("could not refresh balances")
 					//nolint:nilerr
@@ -263,16 +263,16 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 		g.Go(func() error {
 			for {
 				select {
-				case <-ctx.Done():
-					return fmt.Errorf("context canceled: %w", ctx.Err())
+				case <-gctx.Done():
+					return fmt.Errorf("context canceled: %w", gctx.Err())
 				case <-time.After(rebalanceInterval):
-					err := i.refreshBalances(ctx)
+					err := i.refreshBalances(gctx)
 					if err != nil {
 						return fmt.Errorf("could not refresh balances: %w", err)
 					}
 					for chainID, chainConfig := range i.cfg.Chains {
 						for tokenName, tokenConfig := range chainConfig.Tokens {
-							err = i.Rebalance(ctx, chainID, common.HexToAddress(tokenConfig.Address))
+							err = i.Rebalance(gctx, chainID, common.HexToAddress(tokenConfig.Address))
 							if err != nil {
 								logger.Errorf("could not rebalance %s on chain %d: %v", tokenName, chainID, err)
 							}
