@@ -117,20 +117,6 @@ func TestChainGetters(t *testing.T) {
 		},
 	}
 
-	t.Run("GetRFQAddress", func(t *testing.T) {
-		defaultVal, err := cfg.GetRFQAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.RFQAddress)
-
-		baseVal, err := cfgWithBase.GetRFQAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.RFQAddress)
-
-		chainVal, err := cfgWithBase.GetRFQAddress(chainID)
-		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].RFQAddress)
-	})
-
 	t.Run("GetConfirmations", func(t *testing.T) {
 		defaultVal, err := cfg.GetConfirmations(badChainID)
 		assert.NoError(t, err)
