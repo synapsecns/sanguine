@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/Flaque/filet"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -18,11 +16,10 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	ethConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
-	quoterMock "github.com/synapsecns/sanguine/services/rfq/relayer/quoter/mocks"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 )
@@ -50,6 +47,7 @@ func (r *RelayerTestSuite) SetupTest() {
 	r.TestSuite.SetupTest()
 	r.manager = testutil.NewDeployManager(r.T())
 	r.metrics = metrics.NewNullHandler()
+
 	testWallet, err := wallet.FromRandom()
 	r.NoError(err)
 
@@ -67,8 +65,9 @@ func (r *RelayerTestSuite) SetupTest() {
 
 	serverURL := omnirpcHelper.NewOmnirpcServer(r.GetTestContext(), r.T(), r.destBackend, r.originBackend)
 
-	originContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
-	destContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.destBackend)
+	originContract, _ := r.manager.GetFastBridge(r.GetTestContext(), r.originBackend)
+	destContract, _ := r.manager.GetFastBridge(r.GetTestContext(), r.destBackend)
+
 	r.cfg = relconfig.Config{
 		Database: relconfig.DatabaseConfig{
 			Type: dbcommon.Sqlite.String(),
@@ -92,89 +91,10 @@ func (r *RelayerTestSuite) SetupTest() {
 	}
 }
 
-func (r *RelayerTestSuite) TestStore() {
-	r.T().Skip("TODO, test storage")
-
-	rel, err := service.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
-	r.NoError(err)
-
-	go func() {
-		r.NoError(rel.StartChainParser(r.GetTestContext()))
-	}()
-
-	_, oc := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
-
-	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
-
-	_, originToken := r.manager.GetMockERC20(r.GetTestContext(), r.originBackend)
-	r.NoError(err)
-
-	_, destToken := r.manager.GetMockERC20(r.GetTestContext(), r.destBackend)
-	r.NoError(err)
-
-	//nolint: typecheck
-	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
-		DstChainId:   uint32(r.destBackend.GetChainID()),
-		To:           mocks.MockAddress(),
-		OriginToken:  originToken.Address(),
-		DestToken:    destToken.Address(),
-		OriginAmount: big.NewInt(1),
-		DestAmount:   big.NewInt(2),
-		Deadline:     big.NewInt(3),
-	})
-	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
-
-	r.T().Skip("TODO, test storage")
-	// TODO: check db
-	time.Sleep(time.Second * 1000)
-}
-
-func (r *RelayerTestSuite) TestCommit() {
-	r.T().Skip("TODO, test storage")
-
-	rel, err := service.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
-	r.NoError(err)
-
-	go func() {
-		r.NoError(rel.StartChainParser(r.GetTestContext()))
-	}()
-
-	_, oc := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
-
-	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
-
-	_, originToken := r.manager.GetMockERC20(r.GetTestContext(), r.originBackend)
-	r.NoError(err)
-
-	_, destToken := r.manager.GetMockERC20(r.GetTestContext(), r.destBackend)
-	r.NoError(err)
-
-	//nolint: typecheck
-	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
-		DstChainId:   uint32(r.destBackend.GetChainID()),
-		To:           mocks.MockAddress(),
-		OriginToken:  originToken.Address(),
-		DestToken:    destToken.Address(),
-		OriginAmount: big.NewInt(1),
-		DestAmount:   big.NewInt(2),
-		Deadline:     big.NewInt(3),
-	})
-	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
-
-	r.T().Skip("TODO, test storage")
-	// TODO: check db
-	time.Sleep(time.Second * 100000)
-
-}
-
+// For a singular transaction over $10k.
 func (r *RelayerTestSuite) TestRateLimit() {
 	rel, err := service.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
 	r.NoError(err)
-
-	// set up quoter
-	quoter := new(quoterMock.Quoter)
-	rel.SetQuoter(quoter)
-	quoter.On("GetPrice", mock.Anything, mock.Anything).Return(10_001, nil)
 
 	// deploy some ERC20s
 	_, originToken := r.manager.GetMockERC20(r.GetTestContext(), r.originBackend)
@@ -184,7 +104,7 @@ func (r *RelayerTestSuite) TestRateLimit() {
 	r.NoError(err)
 
 	// set up the bridge and the auth signer
-	_, oc := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
+	_, oc := r.manager.GetFastBridge(r.GetTestContext(), r.originBackend)
 	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
 
 	// start listening for transactions
@@ -192,36 +112,67 @@ func (r *RelayerTestSuite) TestRateLimit() {
 		r.NoError(rel.StartChainParser(r.GetTestContext()))
 	}()
 
-	addy := mocks.MockAddress()
-
-	// send the bridge request that should get rate limited
-	_, err = oc.MockBridgeRequest(
+	tx, err := oc.Bridge(
 		auth.TransactOpts,
-		[32]byte(crypto.Keccak256([]byte("3"))),
-		addy,
-		fastbridgemock.IFastBridgeBridgeParams{
+		fastbridge.IFastBridgeBridgeParams{
 			DstChainId:   uint32(r.destBackend.GetChainID()),
 			To:           mocks.MockAddress(),
 			OriginToken:  originToken.Address(),
 			DestToken:    destToken.Address(),
 			OriginAmount: big.NewInt(1),
 			DestAmount:   big.NewInt(2),
-			Deadline:     big.NewInt(3),
+			Deadline:     big.NewInt(time.Now().Unix()),
 		})
 	r.NoError(err)
 
-	r.Eventually(
-		func() bool {
-			txs, err := rel.DB().SubmitterDB().GetAllTXAttemptByStatus(
-				r.GetTestContext(),
-				auth.From,
-				r.originBackend.ChainConfig().ChainID,
-				db.WithStatuses(db.Confirmed),
-			)
-			if err != nil {
-				return false
-			}
-			return len(txs) >= 1
-		},
-	)
+	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
+	receipt, err := r.originBackend.TransactionReceipt(r.GetTestContext(), tx.Hash())
+	r.NoError(err)
+
+	var good bool
+	for {
+		tx, err := rel.DB().GetQuoteRequestByOriginTxHash(
+			r.GetTestContext(),
+			tx.Hash(),
+		)
+		if err != nil {
+			r.T().Error(err)
+		}
+		if tx == nil {
+			continue
+		}
+
+		currentBlock, err := r.originBackend.BlockByNumber(r.GetTestContext(), nil)
+		if err != nil {
+			r.T().Error(err)
+		}
+
+		if tx.Status == reldb.RelayCompleted && currentBlock.Number().Cmp(receipt.BlockNumber) == 1 {
+			good = true
+			break
+		}
+
+		time.Sleep(5 * time.Second)
+	}
+
+	r.True(good)
+
+	// r.Eventually(
+	// 	func() bool {
+	// 		txs, err := rel.DB().GetStatusCounts(
+	// 			r.GetTestContext(),
+	// 			reldb.RelayCompleted,
+	// 		)
+	// 		if err != nil {
+	// 			return false
+	// 		}
+
+	// 		currentBlock, err := r.originBackend.BlockByNumber(r.GetTestContext(), nil)
+	// 		if err != nil {
+	// 			return false
+	// 		}
+
+	// 		return txs[reldb.RelayCompleted] >= 1 && currentBlock.Number().Cmp(receipt.BlockNumber) == 1
+	// 	},
+	// )
 }

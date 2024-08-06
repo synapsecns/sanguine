@@ -256,15 +256,17 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 		return false, nil
 	}
 
-	if q.rfqCache.Len() > 0 {
-		// Case 2: Cumulative RFQs over volumeLimit and inadequate confirmations
-		blockWindowUSDAmount := q.getBlockWindowRelayedAmount()
-		numOfConfirmations = currentBlockNumber - q.rfqCache.Front().Key
+	// if q.rfqCache.Len() > 0 {
+	// 	// Case 2: Cumulative RFQs over volumeLimit and inadequate confirmations
+	// 	blockWindowUSDAmount := q.getBlockWindowRelayedAmount()
 
-		if blockWindowUSDAmount > volumeLimit && numOfConfirmations < 1 {
-			return false, nil
-		}
-	}
+	// 	// this will always be true except for the first time the cache gets populated
+	// 	numOfConfirmations = currentBlockNumber - q.rfqCache.Front().Key
+
+	// 	if blockWindowUSDAmount > volumeLimit && numOfConfirmations < 1 {
+	// 		return false, nil
+	// 	}
+	// }
 
 	return true, nil
 }
