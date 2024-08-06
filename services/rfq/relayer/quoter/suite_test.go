@@ -11,12 +11,12 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	inventoryMocks "github.com/synapsecns/sanguine/services/rfq/relayer/inventory/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 // Server suite is the main API server test suite.
@@ -53,7 +53,7 @@ func (s *QuoterSuite) SetupTest() {
 						Decimals: 6,
 					},
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -78,7 +78,7 @@ func (s *QuoterSuite) SetupTest() {
 			int(s.destinationEth): {
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},

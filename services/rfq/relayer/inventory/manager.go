@@ -22,9 +22,9 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -95,7 +95,7 @@ func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainI
 	balance := committableBalances[chainID][token]
 	// the gas token may not be registered in the inventory tokens map,
 	// but it is always tracked in gasBalances.
-	if balance == nil && token == chain.EthAddress {
+	if balance == nil && token == util.EthAddress {
 		gasBalance, ok := i.gasBalances[chainID]
 		if !ok || gasBalance == nil {
 			return nil, ErrUnsupportedChain
@@ -311,7 +311,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			// approve RFQ contract.
 			// Note: in the case where submitter hasn't finished from last boot,
 			// this will double submit approvals unfortunately.
-			if address != chain.EthAddress && token.Allowances[contractRFQ].Cmp(big.NewInt(0)) == 0 {
+			if address != util.EthAddress && token.Allowances[contractRFQ].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
 				contractAddr, err := i.cfg.GetRFQAddress(chainID)
 				if err != nil {
@@ -324,7 +324,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			}
 
 			// approve SynapseCCTP contract
-			if address != chain.EthAddress && token.Allowances[contractSynapseCCTP].Cmp(big.NewInt(0)) == 0 {
+			if address != util.EthAddress && token.Allowances[contractSynapseCCTP].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
 				contractAddr, err := i.cfg.GetSynapseCCTPAddress(chainID)
 				if err != nil {
@@ -337,7 +337,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			}
 
 			// approve TokenMessenger contract
-			if address != chain.EthAddress && token.Allowances[contractTokenMessenger].Cmp(big.NewInt(0)) == 0 {
+			if address != util.EthAddress && token.Allowances[contractTokenMessenger].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
 				contractAddr, err := i.cfg.GetTokenMessengerAddress(chainID)
 				if err != nil {
@@ -409,7 +409,7 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 		span.SetAttributes(attribute.String("gas_value", gasValue.String()))
 	}
 
-	gasBalance, err := i.GetCommittableBalance(ctx, chainID, chain.EthAddress)
+	gasBalance, err := i.GetCommittableBalance(ctx, chainID, util.EthAddress)
 	if err != nil {
 		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
 	}
@@ -541,7 +541,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 			var token common.Address
 			if rtoken.IsGasToken {
-				token = chain.EthAddress
+				token = util.EthAddress
 			} else {
 				token = common.HexToAddress(tokenCfg.Address)
 			}

@@ -18,7 +18,7 @@ import (
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	cctpConfig "github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"gopkg.in/yaml.v2"
 
 	"path/filepath"
@@ -259,7 +259,7 @@ func (c Config) validateTokenDecimals(ctx context.Context, omniClient omniClient
 			}
 
 			// Check if the token is the gas token. SHOULD BE 18.
-			if tokenCFG.Address == chain.EthAddress.String() {
+			if tokenCFG.Address == util.EthAddress.String() {
 				if tokenCFG.Decimals != 18 {
 					return fmt.Errorf("decimals mismatch for token %s on chain %d: expected 18, got %d", tokenName, chainID, tokenCFG.Decimals)
 				}

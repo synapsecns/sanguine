@@ -34,11 +34,11 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
 	guardConnect "github.com/synapsecns/sanguine/services/rfq/guard/guarddb/connect"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 func (i *IntegrationSuite) setupQuoterAPI() {
@@ -241,7 +241,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 				Confirmations:      0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -254,7 +254,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 				Confirmations:      0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -379,11 +379,11 @@ func (i *IntegrationSuite) setupRelayer() {
 	}
 
 	// Add ETH as quotable token from origin to destination
-	cfg.QuotableTokens[fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress)] = []string{
-		fmt.Sprintf("%d-%s", destBackendChainID, chain.EthAddress),
+	cfg.QuotableTokens[fmt.Sprintf("%d-%s", originBackendChainID, util.EthAddress)] = []string{
+		fmt.Sprintf("%d-%s", destBackendChainID, util.EthAddress),
 	}
-	cfg.QuotableTokens[fmt.Sprintf("%d-%s", destBackendChainID, chain.EthAddress)] = []string{
-		fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress),
+	cfg.QuotableTokens[fmt.Sprintf("%d-%s", destBackendChainID, util.EthAddress)] = []string{
+		fmt.Sprintf("%d-%s", originBackendChainID, util.EthAddress),
 	}
 
 	var err error
