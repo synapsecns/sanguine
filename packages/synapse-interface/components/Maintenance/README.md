@@ -4,7 +4,7 @@ This explains how to utilize the Maintenance feature on Synapse Protocol's Webap
 
 ## How it works
 
-There are a few maintenance components we utilized around the app:
+There are a few maintenance components implemented around the app:
 1. Banner - located at the top of the page.
 2. Countdown Progress Bar - located at the top of Bridge / Swap cards.
 3. Warning Message - located below the input UI in Bridge / Swap cards.
@@ -15,12 +15,13 @@ Pause Chains - [JSON](https://github.com/synapsecns/sanguine/blob/master/package
 
 Pause Bridge Modules - [JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json)
 
-In order to update when / if the Banner, Countdown Progress Bar, and Warning Message components are shown, you will need to update the [Pause Chains JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json).
+To update if / when the Banner, Countdown Progress Bar, and Warning Message components are shown, update the [Pause Chains JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json).
 
-In order to update which bridge modules are paused (SynapseRFQ, SynapseBridge, or SynapseCCTP), you will need to update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json)
+To update which bridge modules are paused (SynapseRFQ, SynapseBridge, or SynapseCCTP), update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json)
 
+## Chain Pause
 
-## Chain Pause Props
+### Chain Pause Props
 `id`
 Unique ID used to distinguish maintenance component instances. Use 'EVENT_NAME-pause' format. (e.g arbitrum-chain-pause)
 
@@ -66,7 +67,51 @@ Boolean indicating whhether to hide Warning Message in Bridge or Swap card.
 `disableCountdown`
 Boolean indicating whether to hide Countdown Progress Bar.
 
-## Bridge Module Pause Props
+### Example
+
+```tsx
+`paused-chains.json`
+  [
+    {
+      "id": "base-chain-pause",
+      "pausedFromChains": [8453],
+      "pausedToChains": [8453],
+      "pauseBridge": true,
+      "pauseSwap": false,
+      "startTimePauseChain": "2024-04-12T17:41:00Z",
+      "endTimePauseChain": null,
+      "startTimeBanner": "2024-04-12T04:40:00Z",
+      "endTimeBanner": null,
+      "inputWarningMessage": "Base bridging is paused until maintenance is complete.",
+      "bannerMessage": "Base bridging is paused until maintenance is complete.",
+      "progressBarMessage": "Base maintenance in progress",
+      "disableBanner": false,
+      "disableWarning": false,
+      "disableCountdown": false
+    },
+    {
+      "id": "ecotone-fork-pause",
+      "pausedFromChains": [10, 8453],
+      "pausedToChains": [10, 8453],
+      "pauseBridge": true,
+      "pauseSwap": false,
+      "startTimePauseChain": "2024-03-13T23:35:00Z",
+      "endTimePauseChain": "2024-03-14T00:25:00Z",
+      "startTimeBanner": "2024-03-13T23:20:00Z",
+      "endTimeBanner": "2024-03-14T00:25:00Z",
+      "inputWarningMessage": "Base bridging is paused until maintenance is complete.",
+      "bannerMessage": "Optimism + Base Bridging will be paused 10 minutes ahead of Ecotone (March 14 00:00 UTC, 20:00 EST). Will be back online shortly following the network upgrade.",
+      "progressBarMessage": "Base maintenance in progress",
+      "disableBanner": false,
+      "disableWarning": false,
+      "disableCountdown": false
+    }
+  ]
+```
+
+## Bridge Module Pause
+
+### Bridge Module Pause Props
 
 `chainId`
 Chain ID of Chain to pause specific bridge module.
@@ -74,3 +119,24 @@ Chain ID of Chain to pause specific bridge module.
 `bridgeModuleName`
 Accepts 'SynapseRFQ', 'SynapseBridge', 'SynapseCCTP', or 'ALL'. If selecting 'ALL', all bridge modules will be paused for respective chainId.
 
+### Example
+```tsx
+[
+  {
+    "chainId": 42161,
+    "bridgeModuleName": "ALL"
+  },
+  {
+    "chainId": 10,
+    "bridgeModuleName": "SynapseRFQ"
+  },
+  {
+    "chainId": 10,
+    "bridgeModuleName": "SynapseCCTP"
+  },
+  {
+    "chainId": 8453,
+    "bridgeModuleName": "SynapseBridge"
+  },
+]
+```
