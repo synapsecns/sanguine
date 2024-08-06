@@ -11,21 +11,20 @@ There are a few maintenance components implemented around the app:
 
 These components ingest data fetched from the following JSON files:
 
-Pause Chains - [JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json)
+- [Pause Chains JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json)
+- [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json)
 
-Pause Bridge Modules - [JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json)
+To control when the Banner, Countdown Progress Bar, and Warning Message components are displayed, update the [Pause Chains JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json).
 
-To update if / when the Banner, Countdown Progress Bar, and Warning Message components are shown, update the [Pause Chains JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json).
-
-To update which bridge modules are paused (SynapseRFQ, SynapseBridge, or SynapseCCTP), update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json).
+To specify which bridge modules (SynapseRFQ, SynapseBridge, or SynapseCCTP) are paused, update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json).
 
 ## Chain Pause
 
-You are able to pause the Bridge + Swap functionality on specified chains, using their respective chainIds. You can choose to pause Bridge / Swap functionalities independently or simultaneously.
+You can pause the Bridge and Swap functionalities on specific chains using their chainIds. Pauses can be applied independently to Bridge or Swap functions, or to both simultaneously.
 
-For the bridge functionality, you are able to specify which origin and destination chainIds to pause. You are able to set a start and end time for a chain pause beforehand, or you can indefinitely pause if it is not clear when an event ends.
+For Bridge functionality, you can specify the origin and destination chainIds to pause. You can set a start and end time for the pause, or leave it indefinite if the duration is uncertain.
 
-Additionally, you are able to specify which components you wish to display given an event.
+Additionally, you can control which components are displayed during the pause event.
 
 ### Chain Pause Props
 
