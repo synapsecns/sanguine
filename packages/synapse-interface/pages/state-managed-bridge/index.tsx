@@ -193,10 +193,6 @@ const StateManagedBridge = () => {
 
       let quote
 
-      console.log('allQuotes: ', allQuotes)
-
-      rfqQuote.maxAmountOut = '0x2dc6c0'
-
       if (rfqQuote && nonRfqQuote) {
         const rfqMaxAmountOut = BigInt(rfqQuote.maxAmountOut.toString())
         const nonRfqMaxAmountOut = BigInt(nonRfqQuote.maxAmountOut.toString())
