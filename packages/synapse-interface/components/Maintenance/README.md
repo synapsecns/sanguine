@@ -17,13 +17,13 @@ Pause Bridge Modules - [JSON](https://github.com/synapsecns/sanguine/blob/master
 
 To update if / when the Banner, Countdown Progress Bar, and Warning Message components are shown, update the [Pause Chains JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json).
 
-To update which bridge modules are paused (SynapseRFQ, SynapseBridge, or SynapseCCTP), update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json)
+To update which bridge modules are paused (SynapseRFQ, SynapseBridge, or SynapseCCTP), update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json).
 
-## Chain Pause
+## Chain Pause Object
 
-### Chain Pause Props
+### Props
 `id`
-Unique ID used to distinguish maintenance component instances. Use 'EVENT_NAME-pause' format. (e.g arbitrum-chain-pause)
+Unique ID used to distinguish maintenance component instances. Use 'EVENT_NAME-pause' format. (e.g: arbitrum-chain-pause)
 
 `pausedFromChains`
 An array containing origin chainIds to pause.
@@ -69,8 +69,8 @@ Boolean indicating whether to hide Countdown Progress Bar.
 
 ### Example
 
-```tsx
 `paused-chains.json`
+```tsx
   [
     {
       "id": "base-chain-pause",
@@ -109,9 +109,10 @@ Boolean indicating whether to hide Countdown Progress Bar.
   ]
 ```
 
+
 ## Bridge Module Pause
 
-### Bridge Module Pause Props
+### Props
 
 `chainId`
 Chain ID of Chain to pause specific bridge module.
@@ -120,6 +121,8 @@ Chain ID of Chain to pause specific bridge module.
 Accepts 'SynapseRFQ', 'SynapseBridge', 'SynapseCCTP', or 'ALL'. If selecting 'ALL', all bridge modules will be paused for respective chainId.
 
 ### Example
+
+`paused-bridge-modules.json`
 ```tsx
 [
   {
