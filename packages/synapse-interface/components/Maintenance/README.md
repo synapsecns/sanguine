@@ -1,6 +1,6 @@
 # Maintenance Instructions
 
-This explains how to utilize the Maintenance feature the Synapse Interface Webapp in order to pause a chain or bridge module.
+This guide explains how to use the Maintenance feature of the Synapse Interface Webapp to pause a chain or bridge module.
 
 ## How it works
 
@@ -74,7 +74,7 @@ String to display in Countdown Progress Bar.
 Boolean indicating whether to hide Banner.
 
 `disableWarning`
-Boolean indicating whhether to hide Warning Message in Bridge or Swap card.
+Boolean indicating whether to hide Warning Message in Bridge or Swap card.
 
 `disableCountdown`
 Boolean indicating whether to hide Countdown Progress Bar.
@@ -124,7 +124,7 @@ Boolean indicating whether to hide Countdown Progress Bar.
 
 ## Bridge Module Pause
 
-You are able to pause a specific bridge module on a given chain. Currently, there are the following bridge modules:
+You can pause a specific bridge module on a given chain.. Currently, there are the following bridge modules:
 - SynapseRFQ
 - SynapseCCTP
 - SynapseBridge
@@ -157,6 +157,6 @@ Accepts 'SynapseRFQ', 'SynapseBridge', 'SynapseCCTP', or 'ALL'. If selecting 'AL
   {
     "chainId": 8453,
     "bridgeModuleName": "SynapseBridge"
-  },
+  }
 ]
 ```
