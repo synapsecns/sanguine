@@ -148,7 +148,7 @@ func (c Config) GetTokenMessengerAddress(chainID int) (value common.Address, err
 		return value, fmt.Errorf("no chain config for chain %d", chainID)
 	}
 	if chainCfg.RebalanceConfigs.Circle == nil {
-		return value, fmt.Errorf("no synapse config for chain %d", chainID)
+		return value, fmt.Errorf("no token messenger address config for chain %d", chainID)
 	}
 	if chainCfg.RebalanceConfigs.Circle.TokenMessengerAddress == "" {
 		return value, fmt.Errorf("no TokenMessengerAddress for chain %d", chainID)

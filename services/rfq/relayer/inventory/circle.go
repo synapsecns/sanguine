@@ -101,7 +101,11 @@ func (c *rebalanceManagerCircleCCTP) initContracts(parentCtx context.Context) (e
 		metrics.EndSpanWithErr(span, err)
 	}(err)
 
-	for chainID := range c.cfg.Chains {
+	for chainID, chainCfg := range c.cfg.Chains {
+		if chainCfg.RebalanceConfigs.Circle == nil {
+			span.AddEvent(fmt.Sprintf("no circle config specified for chain: %d", chainID))
+			continue
+		}
 		messengerAddr, err := c.cfg.GetTokenMessengerAddress(chainID)
 		if err != nil {
 			return fmt.Errorf("could not get token messenger address: %w", err)
