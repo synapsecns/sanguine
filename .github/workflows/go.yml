@@ -4,8 +4,8 @@ name: Go Workflows
 on:
   pull_request:
     branches-ignore:
-        - 'gh-pages'
-        - 'fe-release'
+      - 'gh-pages'
+      - 'fe-release'
   push:
     branches-ignore:
       - 'gh-pages'
@@ -77,8 +77,8 @@ jobs:
 
   test:
     name: Go Coverage
-    runs-on: ${{ (matrix.package == 'agents' || matrix.package == 'core' || matrix.package == 'tools' || contains(matrix.package, 'explorer') || contains(matrix.package, 'contrib')) && 'ubuntu-latest' || 'namespace-profile-default-coverage-runner' }}
-    if: ${{ !contains(matrix.package, 'agents') && needs.changes.outputs.package_count_deps > 0 && (github.event_name != 'push' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
+    runs-on: ${{ (matrix.package == 'core' || matrix.package == 'tools' || contains(matrix.package, 'explorer') || contains(matrix.package, 'contrib')) && 'ubuntu-latest' || 'namespace-profile-default-coverage-runner' }}
+    if: ${{ needs.changes.outputs.package_count_deps > 0 && (github.event_name != 'push' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
     needs: changes
     strategy:
       fail-fast: false
@@ -109,7 +109,7 @@ jobs:
 
       - name: Go modules cache
         uses: actions/cache@v4
-        if:  ${{ !contains(runner.name, 'nsc') }}
+        if: ${{ !contains(runner.name, 'nsc') }}
         with:
           # see https://github.com/mvdan/github-actions-golang
           # also: https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/ w/ go build (workaround now is having a cache that just gets expired at night)
@@ -143,7 +143,6 @@ jobs:
           sleep 1
           done
 
-
       - name: Install gotestsum
         uses: jaxxstorm/action-install-gh-release@v1.10.0
         with: # Grab the latest version
@@ -155,7 +154,6 @@ jobs:
         id: coverage
         run: |
           echo "::set-output name=flag::$(echo "${{ matrix.package }}" | rev | cut -d/ -f1 | rev)"
-
 
       - name: Precompile Tests
         working-directory: ${{ matrix.package }}
@@ -232,9 +230,8 @@ jobs:
         run: echo "::set-output name=package_name::$(echo ${{ matrix.package }} | sed 's/\//-/g')"
         shell: bash
 
-
       - name: Upload logs to GitHub
-#        if: failure()
+        #        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.replace.outputs.package_name }}
