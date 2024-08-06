@@ -14,8 +14,6 @@ import (
 	"go.uber.org/ratelimit"
 )
 
-type Conditional func() bool
-
 // Limiter is the interface for rate limiting RFQs.
 type Limiter interface {
 	// IsAllowed returns true if the request is allowed, false otherwise.
