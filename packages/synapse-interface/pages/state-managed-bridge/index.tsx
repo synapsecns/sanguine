@@ -202,16 +202,11 @@ const StateManagedBridge = () => {
         if (rfqMaxAmountOut > nonRfqMaxAmountOut - maxDifference) {
           quote = rfqQuote
         } else {
-          segmentAnalyticsEvent(
-            `[Bridge] use non-RFQ quote over RFQ`,
-            {
-              address,
-              rfqQuote,
-              nonRfqQuote,
-              timestamp: currentTimestamp,
-            },
-            true
-          )
+          segmentAnalyticsEvent(`[Bridge] use non-RFQ quote over RFQ`, {
+            address,
+            rfqQuote,
+            nonRfqQuote,
+          })
           quote = nonRfqQuote
         }
       } else if (rfqQuote) {
