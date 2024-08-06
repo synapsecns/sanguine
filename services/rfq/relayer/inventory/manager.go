@@ -232,6 +232,7 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 		g.Go(func() error {
 			err := rebalanceManager.Start(ctx)
 			if err != nil {
+				fmt.Printf("rebalance start error: %v\n", err)
 				return fmt.Errorf("could not start rebalance manager: %w", err)
 			}
 			return nil
