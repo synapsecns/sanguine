@@ -10,7 +10,6 @@ require (
 	github.com/charmbracelet/huh/spinner v0.0.0-20240618200428-90406d79077d
 	github.com/cornelk/hashmap v1.0.8
 	github.com/dubonzi/otelresty v1.3.0
-	github.com/elliotchance/orderedmap/v2 v2.2.0
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
@@ -38,6 +37,7 @@ require (
 	go.opentelemetry.io/otel v1.28.0
 	go.opentelemetry.io/otel/metric v1.28.0
 	go.opentelemetry.io/otel/trace v1.28.0
+	go.uber.org/ratelimit v0.3.1
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
 	golang.org/x/sync v0.7.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -81,6 +81,7 @@ require (
 	github.com/aws/smithy-go v1.15.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bcicen/jstream v1.0.1 // indirect
+	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/benbjohnson/immutable v0.4.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.10.0 // indirect

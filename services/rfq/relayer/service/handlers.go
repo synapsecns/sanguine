@@ -186,17 +186,11 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
-	latestBlock := q.Origin.LatestBlock()
-
-	// Check if the relay is rate limited or not.
-	canRelay, err := q.canRelayBasedOnVolumeAndConfirmations(ctx, request, latestBlock, q.volumeLimit)
-	if err != nil {
-		span.AddEvent("could not determine if can relay")
-		return fmt.Errorf("could not determine if can relay: %w", err)
-	}
-	if !canRelay {
+	q.limiter.Take()
+	allowed := q.limiter.IsAllowed(ctx, request)
+	if !allowed {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending, &request.Status)
-		span.AddEvent("cannot relay due to volume. waiting for one block confirmation before relaying.")
+		span.AddEvent("cannot relay due to rate limit. waiting for one block confirmation before relaying.")
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
@@ -317,9 +311,9 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 	span.AddEvent("relay successfully submitted")
 	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
 
-	if err = q.addRelayToCache(ctx, request); err != nil {
-		return fmt.Errorf("could not add relay to cache: %w", err)
-	}
+	// if err = q.addRelayToCache(ctx, request); err != nil {
+	// 	return fmt.Errorf("could not add relay to cache: %w", err)
+	// }
 
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted, &request.Status)
 	if err != nil {

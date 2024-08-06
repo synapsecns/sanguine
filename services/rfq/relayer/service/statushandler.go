@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/elliotchance/orderedmap/v2"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jellydator/ttlcache/v3"
@@ -15,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/limiter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -53,8 +53,8 @@ type QuoteRequestHandler struct {
 	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
 	// handlerMtx is the mutex for relaying.
 	handlerMtx mapmutex.StringMapMutex
-	// rfqCache is a cache mapping the last blockWindowSize blocks to the total relayed amount in USD.
-	rfqCache orderedmap.OrderedMap[uint64, float64]
+	// limiter is the rate limiter.
+	limiter limiter.Limiter
 	//  blockWindowSize is the number of blocks to keep in the rfqCache
 	blockWindowSize int
 	// volumeLimit is the volume limit for the relayed amounts
@@ -92,8 +92,9 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		handlerMtx:          r.handlerMtx,
 		volumeLimit:         r.cfg.GetVolumeLimit(),
 		blockWindowSize:     r.cfg.GetBlockWindow(),
-		rfqCache:            *orderedmap.NewOrderedMap[uint64, float64](),
-		tokenNames:          r.cfg.Chains[int(req.Transaction.OriginChainId)].Tokens,
+		// TODO: this should be configurable
+		limiter:    limiter.NewRateLimiter(r.cfg, r.quoter, r.metrics, req),
+		tokenNames: r.cfg.Chains[int(req.Transaction.OriginChainId)].Tokens,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened
@@ -236,6 +237,7 @@ func (q *QuoteRequestHandler) shouldCheckClaim(request reldb.QuoteRequest) bool 
 // Cache based rate limiter.
 // We don't want to commit a very large balance of the relayer in one block straight away without confirmations.
 // Case 1: If the RFQ demands over $10k in one block, we should not relay the request unless we have a confirmation.
+// TODO: reimplement 2.
 // Case 2: We should also not relay the request if the cumulative relayed amount over the last blockWindowSize blocks
 // exceeds the volume limit AND we have not confirmed.
 func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
@@ -272,49 +274,49 @@ func (q *QuoteRequestHandler) canRelayBasedOnVolumeAndConfirmations(
 }
 
 // addRelayToCache adds the relayed amount to the cache.
-func (q *QuoteRequestHandler) addRelayToCache(ctx context.Context, request reldb.QuoteRequest) error {
-	// If the block number is less than the first block in the window, then we don't need to add it.
-	if q.rfqCache.Front() != nil && request.BlockNumber < q.rfqCache.Front().Key {
-		return nil
-	}
-
-	// Get the token price.
-	priceOfOriginToken, err := q.getUSDAmountOfToken(ctx, request)
-	if err != nil {
-		return fmt.Errorf("could not get price: %w", err)
-	}
-
-	// If we have some room, add the RFQ to the cache.
-	cacheLength := q.rfqCache.Len()
-	if cacheLength < q.blockWindowSize {
-		prev := q.rfqCache.GetOrDefault(request.BlockNumber, 0)
-		q.rfqCache.Set(request.BlockNumber, prev+priceOfOriginToken)
-		return nil
-	}
-
-	// Otherwise, we have reached capacity. Flush the entire cache if we have reached the blockWindowSize.
-	q.clearCache()
-
-	// Add the most recent RFQ.
-	q.rfqCache.Set(request.BlockNumber, priceOfOriginToken)
-
-	return nil
-}
-
-func (q *QuoteRequestHandler) clearCache() {
-	for el := q.rfqCache.Front(); el != nil; el = el.Next() {
-		q.rfqCache.Delete(el.Key)
-	}
-}
-
-func (q *QuoteRequestHandler) getBlockWindowRelayedAmount() float64 {
-	var total float64
-
-	for it := q.rfqCache.Front(); it != nil; it = it.Next() {
-		total += it.Value
-	}
-	return total
-}
+// func (q *QuoteRequestHandler) addRelayToCache(ctx context.Context, request reldb.QuoteRequest) error {
+// 	// If the block number is less than the first block in the window, then we don't need to add it.
+// 	if q.rfqCache.Front() != nil && request.BlockNumber < q.rfqCache.Front().Key {
+// 		return nil
+// 	}
+//
+// 	// Get the token price.
+// 	priceOfOriginToken, err := q.getUSDAmountOfToken(ctx, request)
+// 	if err != nil {
+// 		return fmt.Errorf("could not get price: %w", err)
+// 	}
+//
+// 	// If we have some room, add the RFQ to the cache.
+// 	cacheLength := q.rfqCache.Len()
+// 	if cacheLength < q.blockWindowSize {
+// 		prev := q.rfqCache.GetOrDefault(request.BlockNumber, 0)
+// 		q.rfqCache.Set(request.BlockNumber, prev+priceOfOriginToken)
+// 		return nil
+// 	}
+//
+// 	// Otherwise, we have reached capacity. Flush the entire cache if we have reached the blockWindowSize.
+// 	q.clearCache()
+//
+// 	// Add the most recent RFQ.
+// 	q.rfqCache.Set(request.BlockNumber, priceOfOriginToken)
+//
+// 	return nil
+// }
+//
+// func (q *QuoteRequestHandler) clearCache() {
+// 	for el := q.rfqCache.Front(); el != nil; el = el.Next() {
+// 		q.rfqCache.Delete(el.Key)
+// 	}
+// }
+//
+// func (q *QuoteRequestHandler) getBlockWindowRelayedAmount() float64 {
+// 	var total float64
+//
+// 	for it := q.rfqCache.Front(); it != nil; it = it.Next() {
+// 		total += it.Value
+// 	}
+// 	return total
+// }
 
 func (q *QuoteRequestHandler) getUSDAmountOfToken(ctx context.Context, request reldb.QuoteRequest) (float64, error) {
 	var tokenName string

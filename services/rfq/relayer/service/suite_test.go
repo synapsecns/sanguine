@@ -108,6 +108,7 @@ func (r *RelayerTestSuite) TestRateLimit() {
 	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
 
 	// start listening for transactions
+	// this doesn't work???? idk
 	go func() {
 		r.NoError(rel.StartChainParser(r.GetTestContext()))
 	}()
@@ -156,23 +157,4 @@ func (r *RelayerTestSuite) TestRateLimit() {
 	}
 
 	r.True(good)
-
-	// r.Eventually(
-	// 	func() bool {
-	// 		txs, err := rel.DB().GetStatusCounts(
-	// 			r.GetTestContext(),
-	// 			reldb.RelayCompleted,
-	// 		)
-	// 		if err != nil {
-	// 			return false
-	// 		}
-
-	// 		currentBlock, err := r.originBackend.BlockByNumber(r.GetTestContext(), nil)
-	// 		if err != nil {
-	// 			return false
-	// 		}
-
-	// 		return txs[reldb.RelayCompleted] >= 1 && currentBlock.Number().Cmp(receipt.BlockNumber) == 1
-	// 	},
-	// )
 }

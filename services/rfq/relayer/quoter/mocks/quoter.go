@@ -19,6 +19,12 @@ type Quoter struct {
 func (_m *Quoter) GetPrice(ctx context.Context, tokenName string) (float64, error) {
 	ret := _m.Called(ctx, tokenName)
 
+	var r0 float64
+	if rf, ok := ret.Get(0).(func(context.Context, string) float64); ok {
+		r0 = rf(ctx, tokenName)
+	} else {
+		r0 = ret.Get(0).(float64)
+	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -27,8 +33,7 @@ func (_m *Quoter) GetPrice(ctx context.Context, tokenName string) (float64, erro
 		r1 = ret.Error(1)
 	}
 
-	// EDITED FOR TEST.
-	return 10_000, r1
+	return r0, r1
 }
 
 // IsProfitable provides a mock function with given fields: ctx, quote
