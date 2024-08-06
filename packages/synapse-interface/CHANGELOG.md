@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.32.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.2...@synapsecns/synapse-interface@0.32.0) (2024-08-06)
+
+
+### Features
+
+* **synapse-interface:** use origin user address for getting bridge quotes ([#2969](https://github.com/synapsecns/sanguine/issues/2969)) ([5e61cf3](https://github.com/synapsecns/sanguine/commit/5e61cf3ab667c2c169fdc47d6be7aaae6cd0f71e))
+
+
+
+
+
 ## [0.31.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.1...@synapsecns/synapse-interface@0.31.2) (2024-08-05)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
