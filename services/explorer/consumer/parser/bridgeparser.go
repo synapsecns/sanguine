@@ -156,8 +156,8 @@ func eventToBridgeEvent(event bridgeTypes.EventLog, chainID uint32) model.Bridge
 	} else {
 		kappa.Valid = false
 	}
-	// For event type 2 (BridgeWithdraw), Amount is calculated as GetAmount() - GetFee()
-	// For all other event types, Amount is simply GetAmount()
+	// For event type 2 (TokenWithdraw), Amount is calculated as GetAmount() - GetFee()
+	// For all other event types, Amount is simply GetAmount(), which directly pulls the amount from the event
 	amount := event.GetAmount()
 	if event.GetEventType().Int() == 2 { // Event Type 2 is WithdrawEvent
 		amount = new(big.Int).Sub(event.GetAmount(), event.GetFee())
