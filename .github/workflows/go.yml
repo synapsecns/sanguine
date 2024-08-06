@@ -85,8 +85,9 @@ jobs:
       matrix:
         go-version:
           - 1.22.x
-        # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
+        exclude:
+          - package: agents
     services:
       mariadb:
         image: mariadb:10.11.3
