@@ -226,7 +226,7 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 
 //nolint:gocognit,cyclop
 func (i *inventoryManagerImpl) Start(ctx context.Context) error {
-	g, _ := errgroup.WithContext(ctx)
+	g, ctx := errgroup.WithContext(ctx)
 	for _, rebalanceManager := range i.rebalanceManagers {
 		rebalanceManager := rebalanceManager
 		g.Go(func() error {
