@@ -22,13 +22,15 @@ After updating the proper JSON files, the following steps must be taken to ensur
 1. Merge branch in `master`
 2. Merge `master` branch into `fe-release` branch
 
-Although Step 1 will already reflect changes in the webapp, Step 2 is required in the slim chance that the github API is down, so that the production webapp can use the local JSON files as a reliable backup data source.
+After Step 1 is completed, the [Github Pages](https://github.com/synapsecns/sanguine/deployments/github-pages) must finish building to take effect on the production webapp.
+
+Although completing Step 1 will already reflect changes in the webapp, Step 2 is required in the slim chance that the github API is down, so that the production webapp can use the local JSON files as a reliable backup data source.
 
 ## Chain Pause
 
 You can pause the Bridge and Swap functionalities on specific chains using their chainIds. Pauses can be applied independently to Bridge or Swap functions, or to both simultaneously.
 
-For Bridge functionality, you can specify the origin and destination chainIds to pause. You can set a start and end time for the pause, or leave it indefinite if the duration is uncertain.
+For Bridge functionality, you can specify the origin and destination chainIds to pause. For Swap functionality, you can pause a chain either by including the specific chainId in either the origin or destination. You can set a start and end time for the pause, or leave it indefinite if the duration is uncertain.
 
 Additionally, you can control which components are displayed during the pause event.
 
