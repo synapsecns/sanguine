@@ -232,7 +232,6 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 		g.Go(func() error {
 			err := rebalanceManager.Start(ctx)
 			if err != nil {
-				fmt.Printf("rebalance start error: %v\n", err)
 				return fmt.Errorf("could not start rebalance manager: %w", err)
 			}
 			return nil
@@ -260,17 +259,13 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 
 	// continuously check for rebalances
 	rebalanceInterval := i.cfg.GetRebalanceInterval()
-	fmt.Printf("rebalance interval: %v\n", rebalanceInterval)
 	if rebalanceInterval > 0 {
-		fmt.Println("starting rebalance loop")
 		g.Go(func() error {
 			for {
 				select {
 				case <-ctx.Done():
-					fmt.Println("rebalance context cancelled")
 					return fmt.Errorf("context canceled: %w", ctx.Err())
 				case <-time.After(rebalanceInterval):
-					fmt.Println("attempting rebalance")
 					rebalanceCtx, span := i.handler.Tracer().Start(ctx, "newRebalanceInterval")
 
 					err := i.refreshBalances(rebalanceCtx)
@@ -278,11 +273,8 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 						metrics.EndSpanWithErr(span, err)
 						return fmt.Errorf("could not refresh balances: %w", err)
 					}
-					fmt.Println("refreshed balances")
 					for chainID, chainConfig := range i.cfg.Chains {
-						fmt.Printf("attempting rebalance for chain cfg: %v\n", chainID)
 						for tokenName, tokenConfig := range chainConfig.Tokens {
-							fmt.Printf("attempting rebalance for token: %v\n", tokenName)
 							err = i.Rebalance(rebalanceCtx, chainID, common.HexToAddress(tokenConfig.Address))
 							if err != nil {
 								logger.Errorf("could not rebalance %s on chain %d: %v", tokenName, chainID, err)
