@@ -337,7 +337,7 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 			if tokenID == destTokenID {
 				keyTokenID := k
 				g.Go(func() error {
-					quote, quoteErr := m.generateQuote(gctx, keyTokenID, chainID, address, balance, destRFQAddr)
+					quote, quoteErr := m.generateQuote(gctx, keyTokenID, chainID, address, balance, destRFQAddr.Hex())
 					if quoteErr != nil {
 						// continue generating quotes even if one fails
 						span.AddEvent("error generating quote", trace.WithAttributes(
@@ -414,7 +414,7 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 		DestAmount:              destAmount.String(),
 		MaxOriginAmount:         originAmount.String(),
 		FixedFee:                fee.String(),
-		OriginFastBridgeAddress: originRFQAddr,
+		OriginFastBridgeAddress: originRFQAddr.Hex(),
 		DestFastBridgeAddress:   destRFQAddr,
 	}
 	return quote, nil

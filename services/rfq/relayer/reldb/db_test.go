@@ -75,20 +75,43 @@ func (d *DBSuite) TestStoreAndUpdateRebalance() {
 		d.Equal(rebalancePending.RebalanceID, dbRebalance.RebalanceID)
 		d.Equal(rebalancePending.OriginTxHash, dbRebalance.OriginTxHash)
 		d.Equal(rebalancePending.Status, dbRebalance.Status)
+	})
+}
 
-		// update rebalance to pending
-		rebalanceCompleted := reldb.Rebalance{
-			RebalanceID: &rebalanceID,
-			DestTxHash:  common.HexToHash("0x456"),
-			Status:      reldb.RebalanceCompleted,
+func (d *DBSuite) TestStoreAndUpdateLatestRebalance() {
+	d.RunOnAllDBs(func(testDB reldb.Service) {
+		// store rebalance
+		rebalance := reldb.Rebalance{
+			Origin:       1,
+			Destination:  10,
+			OriginAmount: big.NewInt(100),
+			Status:       reldb.RebalanceInitiated,
 		}
-		err = testDB.UpdateRebalance(d.GetTestContext(), rebalanceCompleted, false)
+
+		err := testDB.StoreRebalance(d.GetTestContext(), rebalance)
 		d.Nil(err)
-		dbRebalance, err = testDB.GetRebalanceByID(d.GetTestContext(), rebalanceID)
+		pending, err := testDB.GetPendingRebalances(d.GetTestContext(), rebalance.Origin)
 		d.Nil(err)
-		d.Equal(rebalanceCompleted.RebalanceID, dbRebalance.RebalanceID)
+		d.True(len(pending) > 0)
+		pending, err = testDB.GetPendingRebalances(d.GetTestContext(), rebalance.Destination)
+		d.Nil(err)
+		d.True(len(pending) > 0)
+
+		// update rebalance to pending without id
+		rebalancePending := reldb.Rebalance{
+			Origin:       rebalance.Origin,
+			Destination:  rebalance.Destination,
+			OriginTxHash: common.HexToHash("0x123"),
+			Status:       reldb.RebalancePending,
+		}
+		err = testDB.UpdateLatestRebalance(d.GetTestContext(), rebalancePending)
+		d.Nil(err)
+		dbRebalances, err := testDB.GetPendingRebalances(d.GetTestContext(), 1)
+		dbRebalance := dbRebalances[0]
+		d.Nil(err)
+		d.Equal(rebalancePending.Origin, dbRebalance.Origin)
+		d.Equal(rebalancePending.Destination, dbRebalance.Destination)
 		d.Equal(rebalancePending.OriginTxHash, dbRebalance.OriginTxHash)
-		d.Equal(rebalanceCompleted.DestTxHash, dbRebalance.DestTxHash)
-		d.Equal(rebalanceCompleted.Status, dbRebalance.Status)
+		d.Equal(rebalancePending.Status, dbRebalance.Status)
 	})
 }

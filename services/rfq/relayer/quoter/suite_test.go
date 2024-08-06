@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -46,6 +47,7 @@ func (s *QuoterSuite) SetupTest() {
 	s.config = relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			int(s.origin): {
+				RFQAddress: common.HexToAddress("0x123").Hex(),
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -61,6 +63,7 @@ func (s *QuoterSuite) SetupTest() {
 				NativeToken: "ETH",
 			},
 			int(s.destination): {
+				RFQAddress: common.HexToAddress("0x456").Hex(),
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:  "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
@@ -76,6 +79,7 @@ func (s *QuoterSuite) SetupTest() {
 				NativeToken: "MATIC",
 			},
 			int(s.destinationEth): {
+				RFQAddress: common.HexToAddress("0x789").Hex(),
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
 						Address:  util.EthAddress.String(),
