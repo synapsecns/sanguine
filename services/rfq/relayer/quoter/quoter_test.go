@@ -28,13 +28,15 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 	// Verify the quotes are generated as expected.
 	expectedQuotes := []model.PutQuoteRequest{
 		{
-			OriginChainID:   int(s.origin),
-			OriginTokenAddr: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-			DestChainID:     int(s.destination),
-			DestTokenAddr:   "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
-			DestAmount:      balance.String(),
-			MaxOriginAmount: balance.String(),
-			FixedFee:        "100050000",
+			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+			DestChainID:             int(s.destination),
+			DestTokenAddr:           "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
+			DestAmount:              balance.String(),
+			MaxOriginAmount:         balance.String(),
+			FixedFee:                "100050000",
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x456").Hex(),
 		},
 	}
 	s.Equal(expectedQuotes, quotes)
@@ -53,13 +55,15 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	// Verify the quotes are generated as expected.
 	expectedQuotes := []model.PutQuoteRequest{
 		{
-			OriginChainID:   int(s.origin),
-			OriginTokenAddr: util.EthAddress.String(),
-			DestChainID:     int(s.destinationEth),
-			DestTokenAddr:   util.EthAddress.String(),
-			DestAmount:      expectedQuoteAmount.String(),
-			MaxOriginAmount: expectedQuoteAmount.String(),
-			FixedFee:        "150000000000000000", // (500k gas + 1m gas) * 100 gwei
+			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         util.EthAddress.String(),
+			DestChainID:             int(s.destinationEth),
+			DestTokenAddr:           util.EthAddress.String(),
+			DestAmount:              expectedQuoteAmount.String(),
+			MaxOriginAmount:         expectedQuoteAmount.String(),
+			FixedFee:                "150000000000000000", // (500k gas + 1m gas) * 100 gwei
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x789").Hex(),
 		},
 	}
 	s.Equal(expectedQuotes, quotes)
@@ -78,13 +82,15 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	// Verify the quotes are generated as expected.
 	expectedQuotes = []model.PutQuoteRequest{
 		{
-			OriginChainID:   int(s.origin),
-			OriginTokenAddr: util.EthAddress.String(),
-			DestChainID:     int(s.destinationEth),
-			DestTokenAddr:   util.EthAddress.String(),
-			DestAmount:      expectedQuoteAmount.String(),
-			MaxOriginAmount: expectedQuoteAmount.String(),
-			FixedFee:        "150000000000000000", // (500k gas + 1m gas) * 100 gwei
+			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         util.EthAddress.String(),
+			DestChainID:             int(s.destinationEth),
+			DestTokenAddr:           util.EthAddress.String(),
+			DestAmount:              expectedQuoteAmount.String(),
+			MaxOriginAmount:         expectedQuoteAmount.String(),
+			FixedFee:                "150000000000000000", // (500k gas + 1m gas) * 100 gwei
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x789").Hex(),
 		},
 	}
 	s.Equal(expectedQuotes, quotes)
