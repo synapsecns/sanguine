@@ -11,6 +11,8 @@ import (
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -82,6 +84,9 @@ func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, reqSigner si
 
 			res := fmt.Sprintf("%s:%s", now, hexutil.Encode(signer.Encode(sig)))
 			request.SetHeader("Authorization", res)
+
+			span := trace.SpanFromContext(request.Context())
+			span.SetAttributes(attribute.String("http.request.header.Authorization", res))
 
 			return nil
 		})
