@@ -16,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 // Chain is a chain helper for relayer.
@@ -75,7 +76,7 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 	var err error
 
 	// Check to see if ETH should be sent to destination
-	if IsGasToken(request.Transaction.DestToken) {
+	if util.IsGasToken(request.Transaction.DestToken) {
 		gasAmount = request.Transaction.DestAmount
 	} else if request.Transaction.SendChainGas {
 		gasAmount, err = c.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})
