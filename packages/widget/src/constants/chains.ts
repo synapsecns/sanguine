@@ -443,6 +443,27 @@ export const SCROLL: Chain = {
   },
 }
 
+export const LINEA: Chain = {
+  id: 59144,
+  name: 'Linea',
+  rpcUrls: {
+    primary: 'https://rpc.linea.build',
+    fallback: 'https://linea.blockpi.network/v1/rpc/public',
+  },
+  explorerUrl: 'https://lineascan.build',
+  explorerName: 'LineaScan',
+  blockTime: 3000,
+  imgUrl:
+    'https://master.sanguine-fe.pages.dev/_next/static/media/linea.e476f2ad.svg',
+  networkName: 'Linea',
+  networkUrl: 'https://rpc.linea.build',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+}
+
 export const CHAINS = {
   ETHEREUM,
   ARBITRUM,
@@ -465,6 +486,7 @@ export const CHAINS = {
   BASE,
   BLAST,
   SCROLL,
+  LINEA,
 }
 
 export const CHAINS_ARRAY = Object.values(CHAINS)
