@@ -179,10 +179,6 @@ func (c *rebalanceManagerCircleCCTP) initListeners(parentCtx context.Context) (e
 }
 
 func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalance *RebalanceData) (err error) {
-	contract, ok := c.boundTokenMessengers[rebalance.OriginMetadata.ChainID]
-	if !ok {
-		return fmt.Errorf("could not find token messenger contract for chain %d", rebalance.OriginMetadata.ChainID)
-	}
 	ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.Execute", trace.WithAttributes(
 		attribute.Int("rebalance_origin", rebalance.OriginMetadata.ChainID),
 		attribute.Int("rebalance_dest", rebalance.DestMetadata.ChainID),
@@ -194,6 +190,11 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
 	}(err)
+
+	contract, ok := c.boundTokenMessengers[rebalance.OriginMetadata.ChainID]
+	if !ok {
+		return fmt.Errorf("could not find token messenger contract for chain %d", rebalance.OriginMetadata.ChainID)
+	}
 
 	destChainID := rebalance.DestMetadata.ChainID
 	destDomain, err := cctpRelay.ChainIDToCircleDomain(uint32(destChainID), cctpRelay.IsTestnetChainID(uint32(destChainID)))

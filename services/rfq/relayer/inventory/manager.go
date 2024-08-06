@@ -488,6 +488,7 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 		attribute.String("rebalance_origin", strconv.Itoa(rebalance.OriginMetadata.ChainID)),
 		attribute.String("rebalance_dest", strconv.Itoa(rebalance.DestMetadata.ChainID)),
 		attribute.String("rebalance_amount", rebalance.Amount.String()),
+		attribute.String("rebalance_method", rebalance.Method.String()),
 	)
 
 	// make sure there are no pending rebalances that touch the given path
@@ -506,6 +507,7 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	if !ok {
 		return fmt.Errorf("no rebalance manager for method: %s", rebalance.Method)
 	}
+	span.AddEvent("executing")
 	err = manager.Execute(ctx, rebalance)
 	if err != nil {
 		return fmt.Errorf("could not execute rebalance: %w", err)
