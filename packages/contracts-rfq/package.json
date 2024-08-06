@@ -1,14 +1,14 @@
 {
   "name": "FastBridge",
   "license": "UNLICENSED",
-  "version": "0.2.14",
+  "version": "0.3.0",
   "description": "FastBridge contracts.",
   "private": true,
   "files": [
     "src/*.sol"
   ],
   "dependencies": {
-    "@openzeppelin/contracts": "5.0.1"
+    "@openzeppelin/contracts": "5.0.2"
   },
   "devDependencies": {
     "@synapsecns/solidity-devops": "^0.4.4",
