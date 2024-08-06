@@ -163,7 +163,10 @@ const StateManagedBridge = () => {
         toChainId,
         fromToken.addresses[fromChainId],
         toToken.addresses[toChainId],
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
+        {
+          originUserAddress: address,
+        }
       )
 
       const pausedBridgeModules = new Set(

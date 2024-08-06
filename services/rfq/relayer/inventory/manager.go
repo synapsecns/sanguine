@@ -22,9 +22,11 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/l1gateway"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/l2gateway"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -79,6 +81,8 @@ type inventoryManagerImpl struct {
 	meter metric.Meter
 	// balanceGauge is the histogram for balance
 	balanceGauge metric.Float64ObservableGauge
+	// inFlightQuoteManager is the cache for in flight quotes
+	inFlightQuoteManager *inFlightManager
 }
 
 // ErrUnsupportedChain is the error for an unsupported chain.
@@ -93,7 +97,7 @@ func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainI
 	balance := committableBalances[chainID][token]
 	// the gas token may not be registered in the inventory tokens map,
 	// but it is always tracked in gasBalances.
-	if balance == nil && token == chain.EthAddress {
+	if balance == nil && token == util.EthAddress {
 		gasBalance, ok := i.gasBalances[chainID]
 		if !ok || gasBalance == nil {
 			return nil, ErrUnsupportedChain
@@ -106,14 +110,15 @@ func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainI
 func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, options ...BalanceFetchArgOption) (res map[int]map[common.Address]*big.Int, err error) {
 	reqOptions := makeOptions(options)
 	// TODO: hard fail if cache skip breaks
-	if reqOptions.skipCache {
+	if reqOptions.shouldRefreshBalances {
 		// TODO; no need for this if refresh already in flight
 		_ = i.refreshBalances(ctx)
 	}
+
 	// get db first
 	// Add other committed, but incomplete statuses here
 	// TODO: clean me up: you can do this by having a IsLiquidityCommitted() method on the type.
-	inFlightQuotes, err := i.db.GetQuoteResultsByStatus(ctx, reldb.CommittedPending, reldb.CommittedConfirmed, reldb.RelayStarted)
+	inFlightQuotes, err := i.inFlightQuoteManager.GetInFlightQuotes(ctx, reqOptions.skipDBCache)
 	if err != nil {
 		return nil, fmt.Errorf("could not get in flight quotes: %w", err)
 	}
@@ -144,28 +149,21 @@ func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, optio
 
 // TokenMetadata contains metadata for a token.
 type TokenMetadata struct {
-	Name       string
+	// Name is the name of the token in the config
+	Name string
+	// ChainName is the name of the token onchain
+	ChainName  string
 	Balance    *big.Int
 	Decimals   uint8
-	Allowances map[spendableContract]*big.Int
 	IsGasToken bool
 	ChainID    int
 	Addr       common.Address
 }
 
-type spendableContract int
-
-const (
-	contractRFQ = iota + 1
-	contractSynapseCCTP
-	contractTokenMessenger
-)
-
 var (
 	funcBalanceOf = w3.MustNewFunc("balanceOf(address)", "uint256")
 	funcName      = w3.MustNewFunc("name()", "string")
 	funcDecimals  = w3.MustNewFunc("decimals()", "uint8")
-	funcAllowance = w3.MustNewFunc("allowance(address,address)", "uint256")
 )
 
 // TODO: replace w/ config.
@@ -177,7 +175,7 @@ const meterName = "github.com/synapsecns/sanguine/services/rfq/relayer/inventory
 //
 //nolint:gocognit
 func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetcher, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, txSubmitter submitter.TransactionSubmitter, db reldb.Service) (Manager, error) {
-	rebalanceMethods, err := cfg.GetRebalanceMethods()
+	rebalanceMethods, err := cfg.GetAllRebalanceMethods()
 	if err != nil {
 		return nil, fmt.Errorf("could not get rebalance methods: %w", err)
 	}
@@ -189,20 +187,23 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 			rebalanceManagers[method] = newRebalanceManagerSynapseCCTP(cfg, handler, clientFetcher, txSubmitter, relayer, db)
 		case relconfig.RebalanceMethodCircleCCTP:
 			rebalanceManagers[method] = newRebalanceManagerCircleCCTP(cfg, handler, clientFetcher, txSubmitter, relayer, db)
+		case relconfig.RebalanceMethodScroll:
+			rebalanceManagers[method] = newRebalanceManagerScroll(cfg, handler, clientFetcher, txSubmitter, relayer, db)
 		default:
 			return nil, fmt.Errorf("unsupported rebalance method: %s", method)
 		}
 	}
 
 	i := inventoryManagerImpl{
-		relayerAddress:    relayer,
-		handler:           handler,
-		cfg:               cfg,
-		chainClient:       clientFetcher,
-		txSubmitter:       txSubmitter,
-		rebalanceManagers: rebalanceManagers,
-		db:                db,
-		meter:             handler.Meter(meterName),
+		relayerAddress:       relayer,
+		handler:              handler,
+		cfg:                  cfg,
+		chainClient:          clientFetcher,
+		txSubmitter:          txSubmitter,
+		rebalanceManagers:    rebalanceManagers,
+		db:                   db,
+		meter:                handler.Meter(meterName),
+		inFlightQuoteManager: newInflightManager(db),
 	}
 
 	i.balanceGauge, err = i.meter.Float64ObservableGauge("inventory_balance")
@@ -265,18 +266,23 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 				case <-ctx.Done():
 					return fmt.Errorf("context canceled: %w", ctx.Err())
 				case <-time.After(rebalanceInterval):
-					err := i.refreshBalances(ctx)
+					rebalanceCtx, span := i.handler.Tracer().Start(ctx, "newRebalanceInterval")
+
+					err := i.refreshBalances(rebalanceCtx)
 					if err != nil {
+						metrics.EndSpanWithErr(span, err)
 						return fmt.Errorf("could not refresh balances: %w", err)
 					}
 					for chainID, chainConfig := range i.cfg.Chains {
 						for tokenName, tokenConfig := range chainConfig.Tokens {
-							err = i.Rebalance(ctx, chainID, common.HexToAddress(tokenConfig.Address))
+							err = i.Rebalance(rebalanceCtx, chainID, common.HexToAddress(tokenConfig.Address))
 							if err != nil {
 								logger.Errorf("could not rebalance %s on chain %d: %v", tokenName, chainID, err)
 							}
 						}
 					}
+
+					metrics.EndSpanWithErr(span, err)
 				}
 			}
 		})
@@ -303,45 +309,62 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		for address, token := range tokenMap {
-			// approve RFQ contract.
+		for tokenAddr := range tokenMap {
 			// Note: in the case where submitter hasn't finished from last boot,
 			// this will double submit approvals unfortunately.
-			if address != chain.EthAddress && token.Allowances[contractRFQ].Cmp(big.NewInt(0)) == 0 {
-				tokenAddr := address // capture func literal
-				contractAddr, err := i.cfg.GetRFQAddress(chainID)
-				if err != nil {
-					return fmt.Errorf("could not get RFQ address: %w", err)
-				}
-				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+			contractAddr, addrErr := i.cfg.GetRFQAddress(chainID)
+			if addrErr == nil {
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 				if err != nil {
 					return fmt.Errorf("could not approve RFQ contract: %w", err)
 				}
 			}
 
-			// approve SynapseCCTP contract
-			if address != chain.EthAddress && token.Allowances[contractSynapseCCTP].Cmp(big.NewInt(0)) == 0 {
-				tokenAddr := address // capture func literal
-				contractAddr, err := i.cfg.GetSynapseCCTPAddress(chainID)
-				if err != nil {
-					return fmt.Errorf("could not get CCTP address: %w", err)
-				}
-				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+			contractAddr, addrErr = i.cfg.GetSynapseCCTPAddress(chainID)
+			if addrErr == nil {
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 				if err != nil {
 					return fmt.Errorf("could not approve SynapseCCTP contract: %w", err)
 				}
 			}
 
-			// approve TokenMessenger contract
-			if address != chain.EthAddress && token.Allowances[contractTokenMessenger].Cmp(big.NewInt(0)) == 0 {
-				tokenAddr := address // capture func literal
-				contractAddr, err := i.cfg.GetTokenMessengerAddress(chainID)
-				if err != nil {
-					return fmt.Errorf("could not get CCTP address: %w", err)
-				}
-				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+			contractAddr, addrErr = i.cfg.GetTokenMessengerAddress(chainID)
+			if addrErr == nil {
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
 				if err != nil {
 					return fmt.Errorf("could not approve TokenMessenger contract: %w", err)
+				}
+			}
+
+			parentAddr, addrErr := i.cfg.GetL1GatewayAddress(chainID)
+			if addrErr == nil {
+				contract, err := l1gateway.NewL1GatewayRouter(parentAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not get L1Gateway contract: %w", err)
+				}
+				contractAddr, err = contract.ERC20Gateway(&bind.CallOpts{Context: ctx}, tokenAddr)
+				if err != nil {
+					return fmt.Errorf("could not get L1ERC20Gateway address: %w", err)
+				}
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve L1ERC20Gateway contract: %w", err)
+				}
+			}
+
+			parentAddr, addrErr = i.cfg.GetL2GatewayAddress(chainID)
+			if addrErr == nil {
+				contract, err := l2gateway.NewL2GatewayRouter(parentAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not get L2Gateway contract: %w", err)
+				}
+				contractAddr, err = contract.ERC20Gateway(&bind.CallOpts{Context: ctx}, tokenAddr)
+				if err != nil {
+					return fmt.Errorf("could not get L2ERC20Gateway address: %w", err)
+				}
+				err = i.approve(ctx, tokenAddr, contractAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve L2ERC20Gateway contract: %w", err)
 				}
 			}
 		}
@@ -359,6 +382,11 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	if tokenAddr == util.EthAddress {
+		span.AddEvent("not approving with eth address")
+		return nil
+	}
+
 	if contractAddr == (common.Address{}) {
 		span.AddEvent("not approving to zero address")
 		return nil
@@ -368,13 +396,23 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 	if err != nil {
 		return fmt.Errorf("could not get erc20: %w", err)
 	}
+
+	allowance, err := erc20.Allowance(&bind.CallOpts{Context: ctx}, i.relayerAddress, contractAddr)
+	if err != nil {
+		return fmt.Errorf("could not get allowance: %w", err)
+	}
+	if allowance.Cmp(big.NewInt(0)) > 0 {
+		span.AddEvent("already has positive allowance")
+		return nil
+	}
+
 	chainID, err := backendClient.ChainID(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get chain id: %w", err)
 	}
 
 	_, err = i.txSubmitter.SubmitTransaction(ctx, chainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		tx, err = erc20.Approve(transactor, contractAddr, abi.MaxInt256)
+		tx, err = erc20.Approve(transactor, contractAddr, abi.MaxUint256)
 		if err != nil {
 			return nil, fmt.Errorf("could not approve: %w", err)
 		}
@@ -405,7 +443,7 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 		span.SetAttributes(attribute.String("gas_value", gasValue.String()))
 	}
 
-	gasBalance, err := i.GetCommittableBalance(ctx, chainID, chain.EthAddress)
+	gasBalance, err := i.GetCommittableBalance(ctx, chainID, util.EthAddress)
 	if err != nil {
 		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
 	}
@@ -427,11 +465,11 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 //nolint:cyclop
 func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) (err error) {
 	// short circuit if origin does not specify a rebalance method
-	methodOrigin, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
+	methodsOrigin, err := i.cfg.GetRebalanceMethods(chainID, token.Hex())
 	if err != nil {
 		return fmt.Errorf("could not get origin rebalance method: %w", err)
 	}
-	if methodOrigin == relconfig.RebalanceMethodNone {
+	if len(methodsOrigin) == 0 {
 		return nil
 	}
 
@@ -455,6 +493,7 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 		attribute.String("rebalance_origin", strconv.Itoa(rebalance.OriginMetadata.ChainID)),
 		attribute.String("rebalance_dest", strconv.Itoa(rebalance.DestMetadata.ChainID)),
 		attribute.String("rebalance_amount", rebalance.Amount.String()),
+		attribute.String("rebalance_method", rebalance.Method.String()),
 	)
 
 	// make sure there are no pending rebalances that touch the given path
@@ -471,8 +510,9 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	// execute the rebalance
 	manager, ok := i.rebalanceManagers[rebalance.Method]
 	if !ok {
-		return fmt.Errorf("no rebalance manager for method: %s", methodOrigin)
+		return fmt.Errorf("no rebalance manager for method: %s", rebalance.Method)
 	}
+	span.AddEvent("executing")
 	err = manager.Execute(ctx, rebalance)
 	if err != nil {
 		return fmt.Errorf("could not execute rebalance: %w", err)
@@ -530,14 +570,14 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				return fmt.Errorf("could not get native token: %w", err)
 			}
 			rtoken := &TokenMetadata{
+				Name:       tokenName,
 				IsGasToken: tokenName == nativeToken,
 				ChainID:    chainID,
-				Allowances: make(map[spendableContract]*big.Int),
 			}
 
 			var token common.Address
 			if rtoken.IsGasToken {
-				token = chain.EthAddress
+				token = util.EthAddress
 			} else {
 				token = common.HexToAddress(tokenCfg.Address)
 			}
@@ -546,38 +586,17 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 			// requires non-nil pointer
 			rtoken.Balance = new(big.Int)
-			for _, contract := range []spendableContract{contractRFQ, contractSynapseCCTP, contractTokenMessenger} {
-				rtoken.Allowances[contract] = new(big.Int)
-			}
 
 			if rtoken.IsGasToken {
 				rtoken.Decimals = 18
-				rtoken.Name = tokenName
 				rtoken.Balance = i.gasBalances[chainID]
-				// TODO: start allowance?
+				rtoken.ChainName = tokenName
 			} else {
-				rfqAddr, err := cfg.GetRFQAddress(chainID)
-				if err != nil {
-					return fmt.Errorf("could not get rfq address: %w", err)
-				}
 				deferredCalls[chainID] = append(deferredCalls[chainID],
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.Balance),
 					eth.CallFunc(funcDecimals, token).Returns(&rtoken.Decimals),
-					eth.CallFunc(funcName, token).Returns(&rtoken.Name),
-					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.Allowances[contractRFQ]),
+					eth.CallFunc(funcName, token).Returns(&rtoken.ChainName),
 				)
-				cctpAddr, _ := cfg.GetSynapseCCTPAddress(chainID)
-				if len(cctpAddr) > 0 {
-					deferredCalls[chainID] = append(deferredCalls[chainID],
-						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(cctpAddr)).Returns(rtoken.Allowances[contractSynapseCCTP]),
-					)
-				}
-				messengerAddr, _ := cfg.GetTokenMessengerAddress(chainID)
-				if len(messengerAddr) > 0 {
-					deferredCalls[chainID] = append(deferredCalls[chainID],
-						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(messengerAddr)).Returns(rtoken.Allowances[contractTokenMessenger]),
-					)
-				}
 			}
 		}
 	}
@@ -618,9 +637,12 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 var logger = log.Logger("inventory")
 
 // refreshBalances refreshes all the token balances.
-func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
-	i.mux.Lock()
-	defer i.mux.Unlock()
+func (i *inventoryManagerImpl) refreshBalances(parentCtx context.Context) (err error) {
+	ctx, span := i.handler.Tracer().Start(parentCtx, "refreshBalances")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	var wg sync.WaitGroup
 	wg.Add(len(i.tokens))
 

@@ -117,4 +117,42 @@ describe('FastBridgeRouterSet', () => {
       expect(result).toEqual(BigNumber.from(999_001))
     })
   })
+
+  describe('createRFQDestQuery', () => {
+    const tokenOut = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+    const amountOut = parseFixed('1000', 18)
+
+    const expectedDestQuery: CCTPRouterQuery = {
+      routerAdapter: '0x0000000000000000000000000000000000000000',
+      tokenOut,
+      minAmountOut: amountOut,
+      deadline: BigNumber.from(0),
+      rawParams: '0x',
+    }
+
+    const originUserAddress = '0x1234567890abcdef1234567890abcdef12345678'
+    // "No gas rebate" flag, followed by the user address
+    const expectedRawParamsWithUserAddress =
+      '0x001234567890abcdef1234567890abcdef12345678'
+
+    it('Origin user address is not provided', () => {
+      const destQuery = FastBridgeRouterSet.createRFQDestQuery(
+        tokenOut,
+        amountOut
+      )
+      expect(destQuery).toEqual(expectedDestQuery)
+    })
+
+    it('Origin user address is provided', () => {
+      const destQuery = FastBridgeRouterSet.createRFQDestQuery(
+        tokenOut,
+        amountOut,
+        originUserAddress
+      )
+      expect(destQuery).toEqual({
+        ...expectedDestQuery,
+        rawParams: expectedRawParamsWithUserAddress,
+      })
+    })
+  })
 })

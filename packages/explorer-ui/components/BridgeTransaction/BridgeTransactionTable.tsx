@@ -58,7 +58,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               useExplorerLink={false}
             />
             <IconAndAmount
-              formattedValue={fromInfo.formattedValue}
+              value={fromInfo.value}
               tokenAddress={fromInfo.tokenAddress}
               chainId={fromInfo.chainID}
               tokenSymbol={
@@ -83,9 +83,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               useExplorerLink={false}
             />
             <IconAndAmount
-              formattedValue={
-                pending ? fromInfo.formattedValue : toInfo?.formattedValue
-              }
+              value={pending ? fromInfo.value : toInfo?.value}
               tokenAddress={
                 pending ? fromInfo.tokenAddress : toInfo?.tokenAddress
               }

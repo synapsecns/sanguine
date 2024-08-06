@@ -20,10 +20,10 @@ import (
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 
@@ -239,7 +239,7 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	inv, err := m.inventoryManager.GetCommittableBalances(ctx)
+	inv, err := m.inventoryManager.GetCommittableBalances(ctx, inventory.SkipDBCache())
 	if err != nil {
 		return fmt.Errorf("error getting committable balances: %w", err)
 	}
@@ -337,7 +337,7 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 			if tokenID == destTokenID {
 				keyTokenID := k
 				g.Go(func() error {
-					quote, quoteErr := m.generateQuote(gctx, keyTokenID, chainID, address, balance, destRFQAddr)
+					quote, quoteErr := m.generateQuote(gctx, keyTokenID, chainID, address, balance, destRFQAddr.Hex())
 					if quoteErr != nil {
 						// continue generating quotes even if one fails
 						span.AddEvent("error generating quote", trace.WithAttributes(
@@ -414,7 +414,7 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 		DestAmount:              destAmount.String(),
 		MaxOriginAmount:         originAmount.String(),
 		FixedFee:                fee.String(),
-		OriginFastBridgeAddress: originRFQAddr,
+		OriginFastBridgeAddress: originRFQAddr.Hex(),
 		DestFastBridgeAddress:   destRFQAddr,
 	}
 	return quote, nil
@@ -539,7 +539,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 
 // deductGasCost deducts the gas cost from the quote amount, if necessary.
 func (m *Manager) deductGasCost(parentCtx context.Context, quoteAmount *big.Int, address common.Address, dest int) (quoteAmountAdj *big.Int, err error) {
-	if !chain.IsGasToken(address) {
+	if !util.IsGasToken(address) {
 		return quoteAmount, nil
 	}
 

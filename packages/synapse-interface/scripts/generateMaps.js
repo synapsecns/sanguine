@@ -30,7 +30,7 @@ Object.keys(providers).forEach((chainId) => {
 const SynapseRouterAddress = '0x7e7a0e201fd38d3adaa9523da6c109a07118c96a'
 const SynapseCCTPRouterAddress = '0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48'
 const SynapseCCTPAddress = '0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E'
-const FastBridgeRouterAddress = '0x0000000000489d89D2B233D3375C045dfD05745F'
+const FastBridgeRouterAddress = '0x00cD000000003f7F682BE4813200893d4e690000'
 
 // Chain IDs where SynapseBridge is allowed
 const allowedChainIdsForSynapseBridge = [

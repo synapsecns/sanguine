@@ -10,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
@@ -59,7 +58,7 @@ func NewRelayerAPI(
 	}
 
 	chains := make(map[uint32]*chain.Chain)
-	for chainID, chainCfg := range cfg.Chains {
+	for chainID := range cfg.Chains {
 		chainClient, err := omniRPCClient.GetChainClient(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
@@ -68,7 +67,7 @@ func NewRelayerAPI(
 		if err != nil {
 			return nil, fmt.Errorf("could not get rfq address: %w", err)
 		}
-		contract, err := fastbridge.NewFastBridgeRef(common.HexToAddress(rfqAddr), chainClient)
+		contract, err := fastbridge.NewFastBridgeRef(rfqAddr, chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
 		}
@@ -76,11 +75,11 @@ func NewRelayerAPI(
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), handler)
+		chainListener, err := listener.NewChainListener(chainClient, store, rfqAddr, uint64(startBlock.Int64()), handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
-		chains[uint32(chainID)], err = chain.NewChain(ctx, chainClient, common.HexToAddress(chainCfg.RFQAddress), chainListener, submitter)
+		chains[uint32(chainID)], err = chain.NewChain(ctx, cfg, chainClient, chainListener, submitter)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain: %w", err)
 		}
