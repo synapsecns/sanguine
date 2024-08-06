@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	apiClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
+
+	apiClient "github.com/synapsecns/sanguine/services/rfq/api/client"
+	"github.com/synapsecns/sanguine/services/rfq/api/db"
+	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -203,6 +206,22 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 		}
 	}
 	c.Assert().True(found, "Newly added quote not found")
+}
+
+func (c *ServerSuite) TestFilterQuoteAge() {
+	now := time.Now()
+
+	// insert quote outside age range
+	quotes := []*db.Quote{
+		{OriginChainID: 1, UpdatedAt: now.Add(-time.Hour)},
+		{OriginChainID: 2, UpdatedAt: now.Add(-time.Minute)},
+	}
+
+	filteredQuotes := rest.FilterQuoteAge(c.cfg, quotes)
+
+	// verify old quote is filtered out
+	c.Equal(1, len(filteredQuotes))
+	c.Equal(quotes[1], filteredQuotes[0])
 }
 
 func (c *ServerSuite) TestPutAck() {

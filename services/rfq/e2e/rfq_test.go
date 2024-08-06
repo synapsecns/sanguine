@@ -1,7 +1,6 @@
 package e2e_test
 
 import (
-	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -22,10 +21,10 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 type IntegrationSuite struct {
@@ -163,7 +162,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	// now we can send the money
 	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
-	// we want 499 usdc for 500 requested within a day
 	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
 		DstChainId:   uint32(i.destBackend.GetChainID()),
 		To:           i.userWallet.Address(),
@@ -288,7 +286,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 
 		// let's figure out the amount of ETH we need
 		for _, quote := range allQuotes {
-			if common.HexToAddress(quote.DestTokenAddr) == chain.EthAddress {
+			if common.HexToAddress(quote.DestTokenAddr) == util.EthAddress {
 				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
 				if destAmountBigInt.Cmp(realWantAmount) > 0 {
 					// we found our quote!
@@ -308,9 +306,9 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
 		DstChainId:   uint32(i.destBackend.GetChainID()),
 		To:           i.userWallet.Address(),
-		OriginToken:  chain.EthAddress,
+		OriginToken:  util.EthAddress,
 		SendChainGas: true,
-		DestToken:    chain.EthAddress,
+		DestToken:    util.EthAddress,
 		OriginAmount: realWantAmount,
 		DestAmount:   new(big.Int).Sub(realWantAmount, big.NewInt(1e17)),
 		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
@@ -353,7 +351,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 
 		// let's figure out the amount of ETH we need
 		for _, quote := range allQuotes {
-			if common.HexToAddress(quote.DestTokenAddr) == chain.EthAddress && quote.DestChainID == originBackendChainID {
+			if common.HexToAddress(quote.DestTokenAddr) == util.EthAddress && quote.DestChainID == originBackendChainID {
 				// we should now have some ETH on the origin chain since we claimed
 				// this should be offered up as inventory
 				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
@@ -465,7 +463,6 @@ func (i *IntegrationSuite) TestDispute() {
 		if len(results) != 1 {
 			return false
 		}
-		fmt.Printf("GOT RESULTS: %v\n", results)
 		result, err := i.guardStore.GetPendingProvenByID(i.GetTestContext(), txID)
 		i.NoError(err)
 		return result.TxHash == fakeHash && result.Status == guarddb.Disputed && result.TransactionID == txID

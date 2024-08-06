@@ -1,6 +1,7 @@
 package relconfig_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -20,8 +21,6 @@ func TestChainGetters(t *testing.T) {
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
 				RFQAddress:              "0x123",
-				SynapseCCTPAddress:      "0x456",
-				TokenMessengerAddress:   "0x789",
 				Confirmations:           1,
 				NativeToken:             "MATIC",
 				DeadlineBufferSeconds:   10,
@@ -34,12 +33,23 @@ func TestChainGetters(t *testing.T) {
 				QuotePct:                relconfig.NewFloatPtr(0),
 				QuoteWidthBps:           10,
 				QuoteFixedFeeMultiplier: relconfig.NewFloatPtr(1.1),
+				RebalanceConfigs: relconfig.RebalanceConfigs{
+					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+						SynapseCCTPAddress: "0x456",
+					},
+					Circle: &relconfig.CircleCCTPRebalanceConfig{
+						TokenMessengerAddress: "0x789",
+					},
+					Scroll: &relconfig.ScrollRebalanceConfig{
+						L1GatewayAddress:         "0xabc",
+						L1ScrollMessengerAddress: "0xdef",
+						L2GatewayAddress:         "0xghi",
+					},
+				},
 			},
 		},
 		BaseChainConfig: relconfig.ChainConfig{
 			RFQAddress:              "0x1234",
-			SynapseCCTPAddress:      "0x456",
-			TokenMessengerAddress:   "0x789",
 			Confirmations:           2,
 			NativeToken:             "ARB",
 			DeadlineBufferSeconds:   11,
@@ -52,14 +62,25 @@ func TestChainGetters(t *testing.T) {
 			QuotePct:                relconfig.NewFloatPtr(51),
 			QuoteWidthBps:           11,
 			QuoteFixedFeeMultiplier: relconfig.NewFloatPtr(1.2),
+			RebalanceConfigs: relconfig.RebalanceConfigs{
+				Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+					SynapseCCTPAddress: "0x456",
+				},
+				Circle: &relconfig.CircleCCTPRebalanceConfig{
+					TokenMessengerAddress: "0x789",
+				},
+				Scroll: &relconfig.ScrollRebalanceConfig{
+					L1GatewayAddress:         "0xabc",
+					L1ScrollMessengerAddress: "0xdef",
+					L2GatewayAddress:         "0xghi",
+				},
+			},
 		},
 	}
 	cfg := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
 				RFQAddress:              "0x123",
-				SynapseCCTPAddress:      "0x456",
-				TokenMessengerAddress:   "0x789",
 				Confirmations:           1,
 				NativeToken:             "MATIC",
 				DeadlineBufferSeconds:   10,
@@ -79,51 +100,22 @@ func TestChainGetters(t *testing.T) {
 						MaxRebalanceAmount: "1000",
 					},
 				},
+				RebalanceConfigs: relconfig.RebalanceConfigs{
+					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+						SynapseCCTPAddress: "0x456",
+					},
+					Circle: &relconfig.CircleCCTPRebalanceConfig{
+						TokenMessengerAddress: "0x789",
+					},
+					Scroll: &relconfig.ScrollRebalanceConfig{
+						L1GatewayAddress:         "0xabc",
+						L1ScrollMessengerAddress: "0xdef",
+						L2GatewayAddress:         "0xghi",
+					},
+				},
 			},
 		},
 	}
-
-	t.Run("GetRFQAddress", func(t *testing.T) {
-		defaultVal, err := cfg.GetRFQAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.RFQAddress)
-
-		baseVal, err := cfgWithBase.GetRFQAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.RFQAddress)
-
-		chainVal, err := cfgWithBase.GetRFQAddress(chainID)
-		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].RFQAddress)
-	})
-
-	t.Run("GetSynapseCCTPAddress", func(t *testing.T) {
-		defaultVal, err := cfg.GetSynapseCCTPAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.SynapseCCTPAddress)
-
-		baseVal, err := cfgWithBase.GetSynapseCCTPAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.SynapseCCTPAddress)
-
-		chainVal, err := cfgWithBase.GetSynapseCCTPAddress(chainID)
-		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].SynapseCCTPAddress)
-	})
-
-	t.Run("GetTokenMessengerAddress", func(t *testing.T) {
-		defaultVal, err := cfg.GetTokenMessengerAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.TokenMessengerAddress)
-
-		baseVal, err := cfgWithBase.GetTokenMessengerAddress(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.TokenMessengerAddress)
-
-		chainVal, err := cfgWithBase.GetTokenMessengerAddress(chainID)
-		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].TokenMessengerAddress)
-	})
 
 	t.Run("GetConfirmations", func(t *testing.T) {
 		defaultVal, err := cfg.GetConfirmations(badChainID)
@@ -309,8 +301,6 @@ func TestGetQuoteOffset(t *testing.T) {
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
 				RFQAddress:              "0x123",
-				SynapseCCTPAddress:      "0x456",
-				TokenMessengerAddress:   "0x789",
 				Confirmations:           1,
 				NativeToken:             "MATIC",
 				DeadlineBufferSeconds:   10,
@@ -357,7 +347,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 25,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
@@ -366,13 +356,13 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 25,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.Nil(t, err)
 	})
 
@@ -384,7 +374,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     51,
 							MaintenanceBalancePct: 50,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
@@ -393,13 +383,13 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 50,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.NotNil(t, err)
 		assert.Equal(t, "total initial percent does not total 100 for USDC: 101.000000", err.Error())
 	})
@@ -412,7 +402,7 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 50,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
@@ -421,13 +411,13 @@ func TestValidation(t *testing.T) {
 						"USDC": {
 							InitialBalancePct:     50,
 							MaintenanceBalancePct: 50.1,
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.NotNil(t, err)
 		assert.Equal(t, "total maintenance percent exceeds 100 for USDC: 100.100000", err.Error())
 	})
@@ -453,7 +443,7 @@ func TestValidation(t *testing.T) {
 				},
 			},
 		}
-		err := cfg.Validate()
+		err := cfg.Validate(context.Background(), nil)
 		assert.Nil(t, err)
 	})
 }
@@ -503,4 +493,77 @@ func TestDecodeTokenID(t *testing.T) {
 			}
 		})
 	}
+}
+
+const usdcAddr = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+const arbAddr = "0x912CE59144191C1204E64559FE8253a0e49E6548"
+const opAddr = "0x4200000000000000000000000000000000000042"
+
+func (v *ValidateDecimalsSuite) TestValidateWrongDecimals() {
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			1: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:  usdcAddr,
+						Decimals: 18, // WRONG
+					},
+				},
+			},
+		},
+	}
+	err := cfg.Validate(v.GetTestContext(), v.omniClient)
+	// we should error because the decimals are wrong
+	v.Require().Error(err)
+}
+
+func (v *ValidateDecimalsSuite) TestValidateCorrectDecimals() {
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			1: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:  usdcAddr,
+						Decimals: 6,
+					},
+				},
+			},
+		},
+	}
+	err := cfg.Validate(v.GetTestContext(), v.omniClient)
+	v.Require().NoError(err)
+}
+
+func (v *ValidateDecimalsSuite) TestMixtureDecimals() {
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			1: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:  usdcAddr,
+						Decimals: 6,
+					},
+				},
+			},
+			42161: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"ARB": {
+						Address:  arbAddr,
+						Decimals: 18,
+					},
+				},
+			},
+			10: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"OP": {
+						Address:  opAddr,
+						Decimals: 69,
+					},
+				},
+			},
+		},
+	}
+
+	err := cfg.Validate(v.GetTestContext(), v.omniClient)
+	v.Require().Error(err)
 }

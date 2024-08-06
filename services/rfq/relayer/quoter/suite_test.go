@@ -5,18 +5,19 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	inventoryMocks "github.com/synapsecns/sanguine/services/rfq/relayer/inventory/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 // Server suite is the main API server test suite.
@@ -46,6 +47,7 @@ func (s *QuoterSuite) SetupTest() {
 	s.config = relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			int(s.origin): {
+				RFQAddress: common.HexToAddress("0x123").Hex(),
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -53,7 +55,7 @@ func (s *QuoterSuite) SetupTest() {
 						Decimals: 6,
 					},
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -61,6 +63,7 @@ func (s *QuoterSuite) SetupTest() {
 				NativeToken: "ETH",
 			},
 			int(s.destination): {
+				RFQAddress: common.HexToAddress("0x456").Hex(),
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:  "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
@@ -76,9 +79,10 @@ func (s *QuoterSuite) SetupTest() {
 				NativeToken: "MATIC",
 			},
 			int(s.destinationEth): {
+				RFQAddress: common.HexToAddress("0x789").Hex(),
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
