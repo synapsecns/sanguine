@@ -34,6 +34,7 @@ type limiterImpl struct {
 	tokenNames map[string]relconfig.TokenConfig
 }
 
+// NewRateLimiter creates a new Limiter.
 func NewRateLimiter(cfg relconfig.Config, q quoter.Quoter, metricHandler metrics.Handler, req reldb.QuoteRequest) Limiter {
 	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
 
@@ -47,6 +48,7 @@ func NewRateLimiter(cfg relconfig.Config, q quoter.Quoter, metricHandler metrics
 	}
 }
 
+// IsAllowed returns true if the request is allowed, false otherwise.
 func (l *limiterImpl) IsAllowed(ctx context.Context, request reldb.QuoteRequest) bool {
 	return l.withinVolumeLimit(ctx, request) && l.hasEnoughConfirmations(ctx, request)
 }
