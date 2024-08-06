@@ -166,8 +166,6 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
-      console.log('allQuotes: ', allQuotes)
-
       const pausedBridgeModules = new Set(
         pausedModulesList
           .filter((module) =>
