@@ -18,6 +18,12 @@ To control when the Banner, Countdown Progress Bar, and Warning Message componen
 
 To specify which bridge modules (SynapseRFQ, SynapseBridge, or SynapseCCTP) are paused, update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json).
 
+After updating the proper JSON files, the following steps must be taken to ensure the production webapp reflects the changes made:
+1. Merge branch in `master`
+2. Merge `master` branch into `fe-release` branch
+
+Although Step 1 will already reflect changes in the webapp, Step 2 is required in the slim chance that the github API is down, so that the production webapp can use the local JSON files as a reliable backup data source.
+
 ## Chain Pause
 
 You can pause the Bridge and Swap functionalities on specific chains using their chainIds. Pauses can be applied independently to Bridge or Swap functions, or to both simultaneously.
