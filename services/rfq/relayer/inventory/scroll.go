@@ -122,6 +122,12 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 		return fmt.Errorf("could not initialize listeners: %w", err)
 	}
 
+	go c.claimCache.Start()
+	go func() {
+		<-ctx.Done()
+		c.claimCache.Stop()
+	}()
+
 	g, _ := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		if !c.txSubmitter.Started() {
@@ -159,10 +165,6 @@ func (c *rebalanceManagerScroll) Start(ctx context.Context) (err error) {
 		if err != nil {
 			return fmt.Errorf("could not listen on L2ERC20Gateway: %w", err)
 		}
-		return nil
-	})
-	g.Go(func() error {
-		c.claimCache.Start()
 		return nil
 	})
 	g.Go(func() error {
