@@ -18,5 +18,5 @@
 	path = services/cctp-relayer/external/evm-cctp-contracts
 	url = https://github.com/circlefin/evm-cctp-contracts.git
 [submodule "services/cctp-relayer/external/scroll-contracts"]
-	path = services/cctp-relayer/external/scroll-contracts
+	path = services/rfq/external/scroll-contracts
 	url = https://github.com/scroll-tech/scroll-contracts
