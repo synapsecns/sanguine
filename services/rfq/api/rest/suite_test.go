@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -77,7 +78,8 @@ func (c *ServerSuite) SetupTest() {
 			1:     ethFastBridgeAddress.Hex(),
 			42161: arbFastBridgeAddress.Hex(),
 		},
-		Port: fmt.Sprintf("%d", port),
+		Port:        fmt.Sprintf("%d", port),
+		MaxQuoteAge: 15 * time.Minute,
 	}
 	c.cfg = testConfig
 
