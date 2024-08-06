@@ -226,11 +226,11 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 
 //nolint:gocognit,cyclop
 func (i *inventoryManagerImpl) Start(ctx context.Context) error {
-	g, gctx := errgroup.WithContext(ctx)
+	g, _ := errgroup.WithContext(ctx)
 	for _, rebalanceManager := range i.rebalanceManagers {
 		rebalanceManager := rebalanceManager
 		g.Go(func() error {
-			err := rebalanceManager.Start(gctx)
+			err := rebalanceManager.Start(ctx)
 			if err != nil {
 				return fmt.Errorf("could not start rebalance manager: %w", err)
 			}
@@ -242,12 +242,12 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 	g.Go(func() error {
 		for {
 			select {
-			case <-gctx.Done():
-				return fmt.Errorf("context canceled: %w", gctx.Err())
+			case <-ctx.Done():
+				return fmt.Errorf("context canceled: %w", ctx.Err())
 			case <-time.After(250 * time.Millisecond):
 				// this returning an error isn't really possible unless a config error happens
 				// TODO: need better error handling.
-				err := i.refreshBalances(gctx)
+				err := i.refreshBalances(ctx)
 				if err != nil {
 					logger.Errorf("could not refresh balances")
 					//nolint:nilerr
@@ -265,12 +265,12 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 		g.Go(func() error {
 			for {
 				select {
-				case <-gctx.Done():
+				case <-ctx.Done():
 					fmt.Println("rebalance context cancelled")
-					return fmt.Errorf("context canceled: %w", gctx.Err())
+					return fmt.Errorf("context canceled: %w", ctx.Err())
 				case <-time.After(rebalanceInterval):
 					fmt.Println("attempting rebalance")
-					rebalanceCtx, span := i.handler.Tracer().Start(gctx, "newRebalanceInterval")
+					rebalanceCtx, span := i.handler.Tracer().Start(ctx, "newRebalanceInterval")
 
 					err := i.refreshBalances(rebalanceCtx)
 					if err != nil {
