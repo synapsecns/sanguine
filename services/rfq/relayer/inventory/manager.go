@@ -266,18 +266,23 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 				case <-gctx.Done():
 					return fmt.Errorf("context canceled: %w", gctx.Err())
 				case <-time.After(rebalanceInterval):
-					err := i.refreshBalances(gctx)
+					rebalanceCtx, span := i.handler.Tracer().Start(gctx, "newRebalanceInterval")
+
+					err := i.refreshBalances(rebalanceCtx)
 					if err != nil {
+						metrics.EndSpanWithErr(span, err)
 						return fmt.Errorf("could not refresh balances: %w", err)
 					}
 					for chainID, chainConfig := range i.cfg.Chains {
 						for tokenName, tokenConfig := range chainConfig.Tokens {
-							err = i.Rebalance(gctx, chainID, common.HexToAddress(tokenConfig.Address))
+							err = i.Rebalance(rebalanceCtx, chainID, common.HexToAddress(tokenConfig.Address))
 							if err != nil {
 								logger.Errorf("could not rebalance %s on chain %d: %v", tokenName, chainID, err)
 							}
 						}
 					}
+
+					metrics.EndSpanWithErr(span, err)
 				}
 			}
 		})
@@ -632,7 +637,12 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 var logger = log.Logger("inventory")
 
 // refreshBalances refreshes all the token balances.
-func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
+func (i *inventoryManagerImpl) refreshBalances(parentCtx context.Context) (err error) {
+	ctx, span := i.handler.Tracer().Start(parentCtx, "refreshBalances")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	var wg sync.WaitGroup
 	wg.Add(len(i.tokens))
 
