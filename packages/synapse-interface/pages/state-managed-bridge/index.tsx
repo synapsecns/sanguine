@@ -193,7 +193,11 @@ const StateManagedBridge = () => {
 
       let quote
 
-      if (rfqQuote && bridgeQuote) {
+      console.log('allQuotes: ', allQuotes)
+
+      rfqQuote.maxAmountOut = '0x2dc6c0'
+
+      if (rfqQuote && nonRfqQuote) {
         const rfqMaxAmountOut = BigInt(rfqQuote.maxAmountOut.toString())
         const nonRfqMaxAmountOut = BigInt(nonRfqQuote.maxAmountOut.toString())
 
@@ -202,6 +206,16 @@ const StateManagedBridge = () => {
         if (rfqMaxAmountOut > nonRfqMaxAmountOut - maxDifference) {
           quote = rfqQuote
         } else {
+          segmentAnalyticsEvent(
+            `[Bridge] use non-RFQ quote over RFQ`,
+            {
+              address,
+              rfqQuote,
+              nonRfqQuote,
+              timestamp: currentTimestamp,
+            },
+            true
+          )
           quote = nonRfqQuote
         }
       } else if (rfqQuote) {
