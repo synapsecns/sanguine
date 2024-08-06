@@ -86,7 +86,7 @@ func (r *RelayerTestSuite) SetupTest() {
 			File: filet.TmpFile(r.T(), "", testWallet.PrivateKeyHex()).Name(),
 		},
 		OmniRPCURL:  serverURL,
-		BlockWindow: 5,      // 5 blocks cannot surpass $10k relay volume
+		MaxRFQSize:  5,      // 5 blocks cannot surpass $10k relay volume
 		VolumeLimit: 10_000, // $10k usd
 	}
 }

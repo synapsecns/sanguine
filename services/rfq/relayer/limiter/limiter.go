@@ -37,7 +37,7 @@ func NewRateLimiter(cfg relconfig.Config, q quoter.Quoter, metricHandler metrics
 	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
 
 	return &limiterImpl{
-		Limiter: ratelimit.New(cfg.BlockWindow),
+		Limiter: ratelimit.New(cfg.MaxRFQSize),
 
 		client:     omniClient,
 		quoter:     q,

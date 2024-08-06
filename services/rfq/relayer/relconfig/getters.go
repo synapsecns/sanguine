@@ -2,10 +2,11 @@ package relconfig
 
 import (
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"reflect"
 	"time"
+
+	"github.com/synapsecns/sanguine/core"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -694,9 +695,9 @@ func (c Config) GetQuoteSubmissionTimeout() time.Duration {
 
 const defaultBlockWindow = 5
 
-// GetBlockWindow returns the block window for the relayer.
-func (c Config) GetBlockWindow() int {
-	blockWindow := c.BlockWindow
+// GetRFQSize returns the block window for the relayer.
+func (c Config) GetRFQSize() int {
+	blockWindow := c.MaxRFQSize
 	if blockWindow == 0 {
 		blockWindow = defaultBlockWindow
 	}
