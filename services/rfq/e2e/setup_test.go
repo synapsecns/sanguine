@@ -1,12 +1,14 @@
 package e2e_test
 
 import (
+	"context"
 	"fmt"
 	"math/big"
 	"net/http"
 	"slices"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -17,6 +19,7 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
@@ -208,21 +211,32 @@ func addressToBytes32(addr common.Address) [32]byte {
 
 // Approve checks if the token is approved and approves it if not.
 func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token contracts.DeployedContract, user wallet.Wallet) {
-	erc20, err := ierc20.NewIERC20(token.Address(), backend)
+	err := retry.WithBackoff(i.GetTestContext(), func(_ context.Context) (err error) {
+		erc20, err := ierc20.NewIERC20(token.Address(), backend)
+		if err != nil {
+			return fmt.Errorf("could not get token at %s: %w", token.Address().String(), err)
+		}
+
+		_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
+
+		allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
+		if err != nil {
+			return fmt.Errorf("could not get allowance: %w", err)
+		}
+
+		// TODO: can also use in mem cache
+		if allowance.Cmp(big.NewInt(0)) == 0 {
+			txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
+			tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
+			if err != nil {
+				return fmt.Errorf("could not approve: %w", err)
+			}
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
+		}
+
+		return nil
+	}, retry.WithMaxTotalTime(15*time.Second))
 	i.NoError(err)
-
-	_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
-
-	allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
-	i.NoError(err)
-
-	// TODO: can also use in mem cache
-	if allowance.Cmp(big.NewInt(0)) == 0 {
-		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
-		tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
-		i.NoError(err)
-		backend.WaitForConfirmation(i.GetTestContext(), tx)
-	}
 }
 
 func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
