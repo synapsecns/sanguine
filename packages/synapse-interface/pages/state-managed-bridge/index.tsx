@@ -203,7 +203,6 @@ const StateManagedBridge = () => {
           quote = rfqQuote
         } else {
           segmentAnalyticsEvent(`[Bridge] use non-RFQ quote over RFQ`, {
-            address,
             rfqQuote,
             nonRfqQuote,
           })
@@ -383,7 +382,6 @@ const StateManagedBridge = () => {
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
-        address,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -477,7 +475,6 @@ const StateManagedBridge = () => {
         { id: 'bridge-in-progress-popup', duration: Infinity }
       )
       segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
-        address,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -540,7 +537,6 @@ const StateManagedBridge = () => {
       return tx
     } catch (error) {
       segmentAnalyticsEvent(`[Bridge]  error bridging`, {
-        address,
         errorCode: error.code,
       })
       dispatch(removePendingBridgeTransaction(currentTimestamp))
