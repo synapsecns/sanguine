@@ -12,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
-	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
@@ -41,9 +40,6 @@ func (r *RelayerTestSuite) SetupTest() {
 	r.TestSuite.SetupTest()
 	r.manager = testutil.NewDeployManager(r.T())
 	r.metrics = metrics.NewNullHandler()
-
-	testWallet, err := wallet.FromRandom()
-	r.NoError(err)
 
 	var wg sync.WaitGroup
 	wg.Add(2)
