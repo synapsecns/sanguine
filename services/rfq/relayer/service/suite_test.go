@@ -79,6 +79,7 @@ func (r *RelayerTestSuite) SetupTest() {
 		OmniRPCURL: serverURL,
 	}
 }
+
 func (r *RelayerTestSuite) TestStore() {
 	r.T().Skip("TODO, test storage")
 
