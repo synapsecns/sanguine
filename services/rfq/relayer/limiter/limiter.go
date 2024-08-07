@@ -7,7 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
-	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -17,63 +17,74 @@ import (
 // Limiter is the interface for rate limiting RFQs.
 type Limiter interface {
 	// IsAllowed returns true if the request is allowed, false otherwise.
-	IsAllowed(ctx context.Context, request reldb.QuoteRequest) bool
+	IsAllowed(ctx context.Context, request reldb.QuoteRequest) (bool, error)
 	// Take blocks until a token is available.
 	Take() time.Time
 }
 
-// essentially a wrapper around golang.org/x/time/rate.Limiter but we keep interfacability
 type limiterImpl struct {
+	// TODO: Possibly unneeded?
 	ratelimit.Limiter
 
-	client     omniClient.RPCClient
+	client     client.EVM
 	quoter     quoter.Quoter
 	cfg        relconfig.Config
 	tokenNames map[string]relconfig.TokenConfig
 }
 
 // NewRateLimiter creates a new Limiter.
-func NewRateLimiter(cfg relconfig.Config, q quoter.Quoter, metricHandler metrics.Handler, req reldb.QuoteRequest) Limiter {
-	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
-
+// TODO: implement the sliding window: queue up requests and process them in order if cumulative volume is above limit
+func NewRateLimiter(
+	cfg relconfig.Config,
+	q quoter.Quoter,
+	client client.EVM,
+	metricHandler metrics.Handler,
+	tokens map[string]relconfig.TokenConfig,
+) Limiter {
 	return &limiterImpl{
-		Limiter: ratelimit.New(cfg.MaxRFQSize),
-
-		client:     omniClient,
+		Limiter:    ratelimit.New(cfg.MaxRFQSize),
+		client:     client,
 		quoter:     q,
 		cfg:        cfg,
-		tokenNames: cfg.Chains[int(req.Transaction.OriginChainId)].Tokens,
+		tokenNames: tokens,
 	}
 }
 
 // IsAllowed returns true if the request is allowed, false otherwise.
-func (l *limiterImpl) IsAllowed(ctx context.Context, request reldb.QuoteRequest) bool {
-	return l.withinVolumeLimit(ctx, request) && l.hasEnoughConfirmations(ctx, request)
+func (l *limiterImpl) IsAllowed(ctx context.Context, request reldb.QuoteRequest) (bool, error) {
+	withinVolume, err := l.withinVolumeLimit(ctx, request)
+	if err != nil {
+		return false, fmt.Errorf("could not check volume limit: %w", err)
+	}
+	hasEnoughConfirmations, err := l.hasEnoughConfirmations(ctx, request)
+	if err != nil {
+		return false, fmt.Errorf("could not check confirmations: %w", err)
+	}
+	return withinVolume && hasEnoughConfirmations, nil
 }
 
-func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request reldb.QuoteRequest) bool {
-	cc, err := l.client.GetChainClient(ctx, int(request.Transaction.OriginChainId))
+func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request reldb.QuoteRequest) (bool, error) {
+	currentBlockNumber, err := l.client.BlockNumber(ctx)
 	if err != nil {
-		return false
+		return false, err
 	}
 
-	currentBlockNumber, err := cc.BlockNumber(ctx)
-	if err != nil {
-		return false
-	}
-
-	return currentBlockNumber-request.BlockNumber >= l.cfg.BaseChainConfig.Confirmations
+	return currentBlockNumber-request.BlockNumber >= l.cfg.BaseChainConfig.Confirmations, nil
 }
 
-func (l *limiterImpl) withinVolumeLimit(ctx context.Context, request reldb.QuoteRequest) bool {
+func (l *limiterImpl) withinVolumeLimit(ctx context.Context, request reldb.QuoteRequest) (bool, error) {
 	tokenPrice, err := l.getUSDAmountOfToken(ctx, l.quoter, request)
 	if err != nil {
-		return false
+		return false, err
 	}
-	return tokenPrice <= l.cfg.VolumeLimit
+	return tokenPrice <= l.cfg.VolumeLimit, nil
 }
 
-func (l *limiterImpl) getUSDAmountOfToken(ctx context.Context, q quoter.Quoter, request reldb.QuoteRequest) (float64, error) {
+func (l *limiterImpl) getUSDAmountOfToken(
+	ctx context.Context,
+	q quoter.Quoter,
+	request reldb.QuoteRequest,
+) (float64, error) {
 	var tokenName string
 	for tn, tokenConfig := range l.tokenNames {
 		if common.HexToAddress(tokenConfig.Address).Hex() == request.Transaction.OriginToken.Hex() {
