@@ -10,7 +10,7 @@ import pausedChains from '@/public/pauses/v1/paused-chains.json'
 import pausedBridgeModules from '@/public/pauses/v1/paused-bridge-modules.json'
 
 const PAUSED_CHAINS_URL =
-  'https://synapsecns.github.io/sanguine/packages/synapse-interface/public/pauses/v1/paused-chains.json'
+  'https://bigboydiamonds.github.io/sanguine/packages/synapse-interface/public/pauses/v1/paused-chains.json'
 const PAUSED_MODULES_URL =
   'https://synapsecns.github.io/sanguine/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json'
 
