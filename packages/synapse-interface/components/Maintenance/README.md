@@ -19,10 +19,10 @@ To control when the Banner, Countdown Progress Bar, and Warning Message componen
 To specify which bridge modules (SynapseRFQ, SynapseBridge, or SynapseCCTP) are paused, update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json).
 
 After updating the proper JSON files, the following steps must be taken to ensure the production webapp reflects the changes made:
-1. Merge branch in `master`
+1. Merge new branch branch in `master`
 2. Merge `master` branch into `fe-release` branch
 
-After Step 1 is completed, the [Github Pages](https://github.com/synapsecns/sanguine/deployments/github-pages) must finish building to take effect on the production webapp.
+After Step 1 is completed, the [Github Pages](https://github.com/synapsecns/sanguine/deployments/github-pages) for the respective branch must finish building to take effect on the production webapp.
 
 Although completing Step 1 will already reflect changes in the webapp, Step 2 is required in the slim chance that the github API is down, so that the production webapp can use the local JSON files as a reliable backup data source.
 
@@ -86,6 +86,7 @@ Boolean indicating whether to hide Countdown Progress Bar.
 `paused-chains.json`
 ```tsx
   [
+    // Bridge Pause
     {
       "id": "base-chain-pause",
       "pausedFromChains": [8453],
@@ -113,9 +114,27 @@ Boolean indicating whether to hide Countdown Progress Bar.
       "endTimePauseChain": "2024-03-14T00:25:00Z",
       "startTimeBanner": "2024-03-13T23:20:00Z",
       "endTimeBanner": "2024-03-14T00:25:00Z",
-      "inputWarningMessage": "Base bridging is paused until maintenance is complete.",
+      "inputWarningMessage": "",
       "bannerMessage": "Optimism + Base Bridging will be paused 10 minutes ahead of Ecotone (March 14 00:00 UTC, 20:00 EST). Will be back online shortly following the network upgrade.",
-      "progressBarMessage": "Base maintenance in progress",
+      "progressBarMessage": "Ecotone Fork maintenance in progress",
+      "disableBanner": false,
+      "disableWarning": true,
+      "disableCountdown": false
+    },
+    // Swap Pause
+    {
+      "id": "arbitrum-swap-pause",
+      "pausedFromChains": [42161],
+      "pausedToChains": [42161],
+      "pauseBridge": false,
+      "pauseSwap": true,
+      "startTimePauseChain": "2024-03-13T23:35:00Z",
+      "endTimePauseChain": "2024-03-14T00:25:00Z",
+      "startTimeBanner": "2024-03-13T23:20:00Z",
+      "endTimeBanner": "2024-03-14T00:25:00Z",
+      "inputWarningMessage": "Swapping on Arbitrum is paused until maintenance is complete.",
+      "bannerMessage": "Swapping on Arbitrum is paused until maintenance is complete.",
+      "progressBarMessage": "Arbitrum maintenance in progress",
       "disableBanner": false,
       "disableWarning": false,
       "disableCountdown": false
