@@ -202,11 +202,19 @@ const StateManagedBridge = () => {
         if (rfqMaxAmountOut > nonRfqMaxAmountOut - maxDifference) {
           quote = rfqQuote
         } else {
-          segmentAnalyticsEvent(`[Bridge] use non-RFQ quote over RFQ`, {
-            rfqQuote,
-            nonRfqQuote,
-          })
           quote = nonRfqQuote
+
+          segmentAnalyticsEvent(`[Bridge] use non-RFQ quote over RFQ`, {
+            bridgeModuleName: nonRfqQuote.bridgeModuleName,
+            originChainId: fromChainId,
+            originToken: fromToken.symbol,
+            originTokenAddress: fromToken.addresses[fromChainId],
+            destinationChainId: toChainId,
+            destinationToken: toToken.symbol,
+            destinationTokenAddress: toToken.addresses[toChainId],
+            rfqQuoteAmountOut: rfqQuote.maxAmountOut.toString(),
+            nonRfqMaxAmountOut: nonRfqQuote.maxAmountOut.toString(),
+          })
         }
       } else if (rfqQuote) {
         quote = rfqQuote
