@@ -13,14 +13,16 @@ There are a few maintenance components implemented around the app:
 
 <img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/components/Maintenance/images/maintenance-bridge-card.png" alt="Maintenance Bridge Card" width="400"/>
 
-These components ingest data fetched from the following JSON files:
 
+These components ingest data fetched from the following JSON files:
 - [Pause Chains JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json)
 - [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json)
+
 
 To control when the Banner, Countdown Progress Bar, and Warning Message components are displayed, update the [Pause Chains JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json).
 
 To specify which bridge modules (SynapseRFQ, SynapseBridge, or SynapseCCTP) are paused, update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json).
+
 
 After updating the proper JSON files, the following steps must be taken to ensure the production webapp reflects the changes made:
 1. Merge the new branch into `master`
@@ -30,6 +32,7 @@ After Step 1 is completed, the [Github Pages](https://github.com/synapsecns/sang
 
 Although completing Step 1 will already reflect changes in the webapp, Step 2 is required in the slim chance that the github API is down, so that the production webapp can use the local JSON files as a reliable backup data source.
 
+
 ## Chain Pause
 
 You can pause the Bridge and Swap functionalities on specific chains using their chainIds. Pauses can be applied independently to Bridge or Swap functions, or to both simultaneously.
@@ -37,6 +40,7 @@ You can pause the Bridge and Swap functionalities on specific chains using their
 For Bridge functionality, you can specify the origin and destination chainIds to pause. For Swap functionality, you can pause a chain either by including the specific chainId in either the origin or destination. You can set a start and end time for the pause, or leave it indefinite if the duration is uncertain.
 
 Additionally, you can control which components are displayed during the pause event.
+
 
 ### Chain Pause Props
 
@@ -84,6 +88,7 @@ Boolean indicating whether to hide Warning Message in Bridge or Swap card.
 
 `disableCountdown`
 Boolean indicating whether to hide Countdown Progress Bar.
+
 
 ### Example
 
@@ -154,6 +159,7 @@ You can pause a specific bridge module on a given chain. Currently, there are th
 - SynapseCCTP
 - SynapseBridge
 
+
 ### Bridge Module Pause Props
 
 `chainId`
@@ -162,26 +168,27 @@ Chain ID of Chain to pause specific bridge module.
 `bridgeModuleName`
 Accepts 'SynapseRFQ', 'SynapseBridge', 'SynapseCCTP', or 'ALL'. If selecting 'ALL', all bridge modules will be paused for respective chainId.
 
+
 ### Example
 
 `paused-bridge-modules.json`
 ```tsx
-[
-  {
-    "chainId": 42161,
-    "bridgeModuleName": "ALL"
-  },
-  {
-    "chainId": 10,
-    "bridgeModuleName": "SynapseRFQ"
-  },
-  {
-    "chainId": 10,
-    "bridgeModuleName": "SynapseCCTP"
-  },
-  {
-    "chainId": 8453,
-    "bridgeModuleName": "SynapseBridge"
-  }
-]
+  [
+    {
+      "chainId": 42161,
+      "bridgeModuleName": "ALL"
+    },
+    {
+      "chainId": 10,
+      "bridgeModuleName": "SynapseRFQ"
+    },
+    {
+      "chainId": 10,
+      "bridgeModuleName": "SynapseCCTP"
+    },
+    {
+      "chainId": 8453,
+      "bridgeModuleName": "SynapseBridge"
+    }
+  ]
 ```
