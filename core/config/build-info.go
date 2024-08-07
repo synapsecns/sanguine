@@ -13,11 +13,11 @@ import (
 const AppName = "Sanguine"
 
 // DefaultVersion is the application version.
-const DefaultVersion = "0.1.0"
+var DefaultVersion = "0.1.0"
 
 // DefaultCommit is the default commit. Build info will attempt to replace
 // with the current commit if not present.
-const DefaultCommit = "none"
+var DefaultCommit = "none"
 
 // DefaultDate when not passed in by the compiler.
 var DefaultDate = time.Now().Format(time.RFC3339)
