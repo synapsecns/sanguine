@@ -23,6 +23,10 @@ Pass in the `JAEGER_ENDPOINT` enviornment variable
 
 Pass in the `PYROSCOPE_ENDPOINT` environment variable
 
+## Rookout
+
+Pass in `ROOKOUT_TOKEN`
+
 ## Metrics Endpoint
 
 The metrics endpoint is exposed on `/metrics` on port `8080` by default and is compatible with prometheus. The following options control the metrics endpoint:

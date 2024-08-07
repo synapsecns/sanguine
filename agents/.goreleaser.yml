@@ -8,6 +8,8 @@ builds:
   # Linux AMD64
   - id: agents
     binary: agents
+    gcflags:
+      - all=-dwarflocationlists=true
     ldflags:
       # We need to build a static binary because we are building in a glibc based system and running in a musl container
       - -s -w -extldflags '-static'

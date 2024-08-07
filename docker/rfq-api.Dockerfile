@@ -12,4 +12,6 @@ USER nonroot:nonroot
 WORKDIR /app
 COPY --chown=nonroot:nonroot api /app/api
 
+COPY .git /.git
+
 ENTRYPOINT ["/app/api"]

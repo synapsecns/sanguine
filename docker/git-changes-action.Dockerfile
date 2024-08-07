@@ -26,4 +26,6 @@ COPY --from=builder /etc/passwd /etc/passwd
 WORKDIR /git-changes-action
 COPY git-changes-action /app/git-changes-action
 
+COPY .git /.git
+
 ENTRYPOINT ["/app/git-changes-action"]

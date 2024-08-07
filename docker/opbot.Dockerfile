@@ -12,4 +12,6 @@ USER nonroot:nonroot
 WORKDIR /app
 COPY --chown=nonroot:nonroot opbot /app/opbot
 
+COPY .git /.git
+
 ENTRYPOINT ["/app/opbot"]

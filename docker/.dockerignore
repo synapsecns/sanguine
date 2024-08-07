@@ -1,0 +1,6 @@
+# Keep ignoring .git
+.git
+# Allow specific files with !
+!.git/HEAD
+!.git/config
+!.git/refs
