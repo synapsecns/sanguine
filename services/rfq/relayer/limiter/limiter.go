@@ -1,3 +1,4 @@
+// Package limiter provides a rate limiting mechanism for RFQs to protect against reorgs.
 package limiter
 
 import (
@@ -33,7 +34,7 @@ type limiterImpl struct {
 }
 
 // NewRateLimiter creates a new Limiter.
-// TODO: implement the sliding window: queue up requests and process them in order if cumulative volume is above limit
+// TODO: implement the sliding window: queue up requests and process them in order if cumulative volume is above limit.
 func NewRateLimiter(
 	cfg relconfig.Config,
 	q quoter.Quoter,
@@ -102,6 +103,7 @@ func (l *limiterImpl) getUSDAmountOfToken(
 	for tn, tokenConfig := range l.tokenNames {
 		if common.HexToAddress(tokenConfig.Address).Hex() == request.Transaction.OriginToken.Hex() {
 			tokenName = tn
+			break
 		}
 	}
 

@@ -186,7 +186,8 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
-	q.limiter.Take()
+	// TODO: implemenet slidiing window rate limiter
+	// q.limiter.Take()
 	allowed, err := q.limiter.IsAllowed(ctx, request)
 	if err != nil {
 		return fmt.Errorf("could not check if allowed: %w", err)
@@ -313,10 +314,6 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 	}
 	span.AddEvent("relay successfully submitted")
 	span.SetAttributes(attribute.Int("relay_nonce", int(nonce)))
-
-	// if err = q.addRelayToCache(ctx, request); err != nil {
-	// 	return fmt.Errorf("could not add relay to cache: %w", err)
-	// }
 
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayStarted, &request.Status)
 	if err != nil {

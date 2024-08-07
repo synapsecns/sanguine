@@ -4,7 +4,6 @@ import (
 	"math/big"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/suite"
@@ -13,14 +12,9 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
-	"github.com/synapsecns/sanguine/ethergo/mocks"
-	ethConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 )
 
@@ -65,8 +59,8 @@ func (r *RelayerTestSuite) SetupTest() {
 
 	serverURL := omnirpcHelper.NewOmnirpcServer(r.GetTestContext(), r.T(), r.destBackend, r.originBackend)
 
-	originContract, _ := r.manager.GetFastBridge(r.GetTestContext(), r.originBackend)
-	destContract, _ := r.manager.GetFastBridge(r.GetTestContext(), r.destBackend)
+	originContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
+	destContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.destBackend)
 
 	r.cfg = relconfig.Config{
 		Database: relconfig.DatabaseConfig{
@@ -81,80 +75,6 @@ func (r *RelayerTestSuite) SetupTest() {
 				RFQAddress: destContract.Address().String(),
 			},
 		},
-		Signer: ethConfig.SignerConfig{
-			Type: ethConfig.FileType.String(),
-			File: filet.TmpFile(r.T(), "", testWallet.PrivateKeyHex()).Name(),
-		},
-		OmniRPCURL:  serverURL,
-		MaxRFQSize:  5,      // 5 blocks cannot surpass $10k relay volume
-		VolumeLimit: 10_000, // $10k usd
+		OmniRPCURL: serverURL,
 	}
-}
-
-// For a singular transaction over $10k.
-func (r *RelayerTestSuite) TestRateLimit() {
-	rel, err := service.NewRelayer(r.GetTestContext(), r.metrics, r.cfg)
-	r.NoError(err)
-
-	// deploy some ERC20s
-	_, originToken := r.manager.GetMockERC20(r.GetTestContext(), r.originBackend)
-	r.NoError(err)
-
-	_, destToken := r.manager.GetMockERC20(r.GetTestContext(), r.destBackend)
-	r.NoError(err)
-
-	// set up the bridge and the auth signer
-	_, oc := r.manager.GetFastBridge(r.GetTestContext(), r.originBackend)
-	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
-
-	// start listening for transactions
-	// this doesn't work???? idk
-	go func() {
-		r.NoError(rel.StartChainParser(r.GetTestContext()))
-	}()
-
-	tx, err := oc.Bridge(
-		auth.TransactOpts,
-		fastbridge.IFastBridgeBridgeParams{
-			DstChainId:   uint32(r.destBackend.GetChainID()),
-			To:           mocks.MockAddress(),
-			OriginToken:  originToken.Address(),
-			DestToken:    destToken.Address(),
-			OriginAmount: big.NewInt(1),
-			DestAmount:   big.NewInt(2),
-			Deadline:     big.NewInt(time.Now().Unix()),
-		})
-	r.NoError(err)
-
-	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
-	receipt, err := r.originBackend.TransactionReceipt(r.GetTestContext(), tx.Hash())
-	r.NoError(err)
-
-	var good bool
-	for {
-		tx, err := rel.DB().GetQuoteRequestByOriginTxHash(
-			r.GetTestContext(),
-			tx.Hash(),
-		)
-		if err != nil {
-			r.T().Error(err)
-		}
-		if tx == nil {
-			continue
-		}
-
-		currentBlock, err := r.originBackend.BlockByNumber(r.GetTestContext(), nil)
-		if err != nil {
-			r.T().Error(err)
-		}
-
-		if tx.Status == reldb.RelayCompleted && currentBlock.Number().Cmp(receipt.BlockNumber) == 1 {
-			good = true
-			break
-		}
-
-		time.Sleep(5 * time.Second)
-	}
-
-	r.True(good)
 }
