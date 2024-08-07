@@ -12,6 +12,6 @@ USER nonroot:nonroot
 WORKDIR /app
 COPY --chown=nonroot:nonroot relayer /app/relayer
 
-COPY .git /.git
+
 
 ENTRYPOINT ["/app/relayer"]

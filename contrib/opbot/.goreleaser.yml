@@ -10,7 +10,7 @@ builds:
     binary: opbot
     ldflags:
       # We need to build a static binary because we are building in a glibc based system and running in a musl container
-       - -s -w -extldflags '-static' -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }}
+       - -s -w -extldflags '-static' -X github.com/synapsecns/sanguine/core/config.DefaultVersion={{.Version}} -X github.com/synapsecns/sanguine/core/config.DefaultCommit={{.Commit}} -X github.com/synapsecns/sanguine/core/config.DefaultDate={{ .CommitDate }}
     gcflags:
       - all=-dwarflocationlists=true
     # required workaround for https://github.com/Shopify/sarama/issues/2206
@@ -33,7 +33,7 @@ builds:
     binary: signozexample
     ldflags:
       # We need to build a static binary because we are building in a glibc based system and running in a musl container
-       - -s -w -extldflags '-static' -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }}
+       - -s -w -extldflags '-static' -X github.com/synapsecns/sanguine/core/config.DefaultVersion={{.Version}} -X github.com/synapsecns/sanguine/core/config.DefaultCommit={{.Commit}} -X github.com/synapsecns/sanguine/core/config.DefaultDate={{ .CommitDate }}
     # see above about workaround
     tags:
       - netgo

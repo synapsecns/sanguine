@@ -12,6 +12,4 @@ USER nonroot:nonroot
 WORKDIR /app
 COPY --chown=nonroot:nonroot cctp-relayer /app/cctp-relayer
 
-COPY .git /.git
-
 ENTRYPOINT ["/app/cctp-relayer"]

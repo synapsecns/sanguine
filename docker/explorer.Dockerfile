@@ -12,6 +12,6 @@ USER nonroot:nonroot
 WORKDIR /app
 COPY --chown=nonroot:nonroot explorer /app/explorer
 
-COPY .git /.git
+
 
 ENTRYPOINT ["/app/explorer"]

@@ -12,6 +12,6 @@ USER nonroot:nonroot
 WORKDIR /app
 COPY --chown=nonroot:nonroot omnirpc /app/omnirpc
 
-COPY .git /.git
+
 
 ENTRYPOINT ["/app/omnirpc"]
