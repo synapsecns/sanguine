@@ -63,11 +63,12 @@ This guide explains how to use the Maintenance feature to pause a chain or bridg
 
 ## How it works
 
-There are a few maintenance components implemented around the app:
+There are a few maintenance components implemented around the Synapse Interface Webapp:
 1. Banner - located at the top of the page.
 2. Countdown Progress Bar - located at the top of Bridge / Swap cards.
 3. Warning Message - located below the input UI in Bridge / Swap cards.
 
+NOTE: Currently, the Synapse Widget implements the Countdown Progress Bar and Warning Message displayed in the Bridge Widget, but not the Banner.
 
 These components ingest data fetched from the following JSON files:
 - [Pause Chains JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-chains.json)
