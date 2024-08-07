@@ -9,9 +9,9 @@ There are a few maintenance components implemented around the app:
 2. Countdown Progress Bar - located at the top of Bridge / Swap cards.
 3. Warning Message - located below the input UI in Bridge / Swap cards.
 
-<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/components/Maintenance/images/maintenance-banner.png" alt="Dark Theme" width="400"/>
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/components/Maintenance/images/maintenance-banner.png" alt="Maintenance Banner" width="400"/>
 
-<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/components/Maintenance/images/maintenance-bridge-card.png" alt="Dark Theme" width="400"/>
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/synapse-interface/components/Maintenance/images/maintenance-bridge-card.png" alt="Maintenance Bridge Card" width="400"/>
 
 These components ingest data fetched from the following JSON files:
 
