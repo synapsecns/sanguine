@@ -77,6 +77,11 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		return nil, fmt.Errorf("could not get dest chain: %w", err)
 	}
 
+	chainClient, err := r.client.GetChainClient(ctx, int(req.Transaction.OriginChainId))
+	if err != nil {
+		return nil, fmt.Errorf("could not get origin client: %w", err)
+	}
+
 	qr := &QuoteRequestHandler{
 		Origin:              *origin,
 		Dest:                *dest,
@@ -93,7 +98,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		volumeLimit:         r.cfg.GetVolumeLimit(),
 		blockWindowSize:     r.cfg.GetRFQSize(),
 		// TODO: this should be configurable
-		limiter:    limiter.NewRateLimiter(r.cfg, r.quoter, r.metrics, req),
+		limiter:    limiter.NewRateLimiter(r.cfg, r.quoter, chainClient, r.metrics, r.cfg.BaseChainConfig.Tokens),
 		tokenNames: r.cfg.Chains[int(req.Transaction.OriginChainId)].Tokens,
 	}
 

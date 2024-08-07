@@ -187,7 +187,10 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 	}
 
 	q.limiter.Take()
-	allowed := q.limiter.IsAllowed(ctx, request)
+	allowed, err := q.limiter.IsAllowed(ctx, request)
+	if err != nil {
+		return fmt.Errorf("could not check if allowed: %w", err)
+	}
 	if !allowed {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedConfirmed, &request.Status)
 		span.AddEvent("cannot relay due to rate limit. waiting for one block confirmation before relaying.")
