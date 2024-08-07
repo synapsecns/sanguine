@@ -45,6 +45,7 @@ func (s *LimiterSuite) SetupTest() {
 						Decimals: 18,
 					},
 				},
+				Confirmations: 1,
 			},
 		},
 		MaxRFQSize:  10,

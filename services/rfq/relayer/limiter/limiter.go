@@ -52,30 +52,43 @@ func NewRateLimiter(
 
 // IsAllowed returns true if the request is allowed, false otherwise.
 func (l *limiterImpl) IsAllowed(ctx context.Context, request reldb.QuoteRequest) (bool, error) {
-	withinVolume, err := l.withinVolumeLimit(ctx, request)
-	if err != nil {
-		return false, fmt.Errorf("could not check volume limit: %w", err)
-	}
+	// if enough confirmations, allow because reorgs are rare at this point
 	hasEnoughConfirmations, err := l.hasEnoughConfirmations(ctx, request)
 	if err != nil {
 		return false, fmt.Errorf("could not check confirmations: %w", err)
 	}
-	return withinVolume && hasEnoughConfirmations, nil
+	if hasEnoughConfirmations {
+		return true, nil
+	}
+
+	// if not enough confirmations, check volume
+	withinSize, err := l.withinSizeLimit(ctx, request)
+	if err != nil {
+		return false, fmt.Errorf("could not check volume limit: %w", err)
+	}
+
+	return withinSize, nil
 }
 
 func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request reldb.QuoteRequest) (bool, error) {
 	currentBlockNumber, err := l.client.BlockNumber(ctx)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("could not get block number: %w", err)
+	}
+	requiredConfirmations, err := l.cfg.GetConfirmations(int(request.Transaction.OriginChainId))
+	if err != nil {
+		return false, fmt.Errorf("could not get required confirmations from config: %w", err)
 	}
 
-	return currentBlockNumber-request.BlockNumber >= l.cfg.BaseChainConfig.Confirmations, nil
+	actualConfirmations := currentBlockNumber - request.BlockNumber
+
+	return actualConfirmations >= requiredConfirmations, nil
 }
 
-func (l *limiterImpl) withinVolumeLimit(ctx context.Context, request reldb.QuoteRequest) (bool, error) {
+func (l *limiterImpl) withinSizeLimit(ctx context.Context, request reldb.QuoteRequest) (bool, error) {
 	tokenPrice, err := l.getUSDAmountOfToken(ctx, l.quoter, request)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("could not get USD amount of token: %w", err)
 	}
 	return tokenPrice <= l.cfg.VolumeLimit, nil
 }
