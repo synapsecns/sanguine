@@ -23,10 +23,10 @@ To control when the Banner, Countdown Progress Bar, and Warning Message componen
 To specify which bridge modules (SynapseRFQ, SynapseBridge, or SynapseCCTP) are paused, update the [Pause Bridge Modules JSON](https://github.com/synapsecns/sanguine/blob/master/packages/synapse-interface/public/pauses/v1/paused-bridge-modules.json).
 
 After updating the proper JSON files, the following steps must be taken to ensure the production webapp reflects the changes made:
-1. Merge new branch branch in `master`
+1. Merge the new branch into `master`
 2. Merge `master` branch into `fe-release` branch
 
-After Step 1 is completed, the [Github Pages](https://github.com/synapsecns/sanguine/deployments/github-pages) for the respective branch must finish building to take effect on the production webapp.
+After Step 1 is completed, the [Github Pages](https://github.com/synapsecns/sanguine/deployments/github-pages) must finish building for the respective branch to take effect on the production webapp.
 
 Although completing Step 1 will already reflect changes in the webapp, Step 2 is required in the slim chance that the github API is down, so that the production webapp can use the local JSON files as a reliable backup data source.
 
