@@ -149,7 +149,7 @@ Boolean indicating whether to hide Countdown Progress Bar.
 
 ## Bridge Module Pause
 
-You can pause a specific bridge module on a given chain.. Currently, there are the following bridge modules:
+You can pause a specific bridge module on a given chain. Currently, there are the following bridge modules:
 - SynapseRFQ
 - SynapseCCTP
 - SynapseBridge
