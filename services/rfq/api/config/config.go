@@ -25,6 +25,7 @@ type Config struct {
 	Bridges         map[uint32]string `yaml:"bridges"`
 	Port            string            `yaml:"port"`
 	RelayAckTimeout time.Duration     `yaml:"relay_ack_timeout"`
+	MaxQuoteAge     time.Duration     `yaml:"max_quote_age"`
 }
 
 const defaultRelayAckTimeout = 30 * time.Second
@@ -35,6 +36,16 @@ func (c Config) GetRelayAckTimeout() time.Duration {
 		return defaultRelayAckTimeout
 	}
 	return c.RelayAckTimeout
+}
+
+const defaultMaxQuoteAge = 1 * time.Hour
+
+// GetMaxQuoteAge returns the max quote age.
+func (c Config) GetMaxQuoteAge() time.Duration {
+	if c.MaxQuoteAge == 0 {
+		return defaultMaxQuoteAge
+	}
+	return c.MaxQuoteAge
 }
 
 // LoadConfig loads the config from the given path.

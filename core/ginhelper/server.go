@@ -3,21 +3,23 @@ package ginhelper
 import (
 	"bytes"
 	"context"
+
+	"github.com/samborkent/uuid"
 	"github.com/synapsecns/sanguine/core/metrics/logger"
 
 	// embed is used for importing the robots.txt file.
 	_ "embed"
+	"net/http"
+	"time"
+
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/requestid"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/go-http-utils/headers"
-	"github.com/google/uuid"
 	"github.com/ipfs/go-log"
 	"go.uber.org/zap/zapcore"
-	"net/http"
-	"time"
 )
 
 //go:embed robots.txt
@@ -100,7 +102,7 @@ func newBase() *gin.Engine {
 	server.Use(requestid.New(
 		requestid.WithCustomHeaderStrKey(RequestIDHeader),
 		requestid.WithGenerator(func() string {
-			return uuid.New().String()
+			return uuid.NewV8().String()
 		})))
 
 	// set the request id header if the client didn't

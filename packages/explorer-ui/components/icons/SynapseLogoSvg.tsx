@@ -1,4 +1,4 @@
-export default function SynapseLogoSvg({ className = '' }) {
+export const SynapseLogoSvg = ({ className = '' }) => {
   return (
     <svg
       className={`w-8 ${className}`}

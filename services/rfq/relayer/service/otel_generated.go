@@ -8,6 +8,6 @@ import (
 
 // iOtelRecorder ...
 type iOtelRecorder interface {
-	// RecordStatusCounts records the request status count.
+	// RecordStatusCount records the request status count.
 	RecordStatusCount(status reldb.QuoteRequestStatus, count int)
 }

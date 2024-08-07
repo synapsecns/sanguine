@@ -1,4 +1,4 @@
-export default function PlusIcon({ className }) {
+export const PlusIcon = ({ className }) => {
   return (
     <svg
       className={`w-4 mr-1 ${className}`}

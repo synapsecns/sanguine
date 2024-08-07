@@ -5,7 +5,7 @@ import _ from 'lodash'
  *
  * @param {string} hash
  * */
-export function validateAndParseHash(hash) {
+export const validateAndParseHash = (hash) => {
   try {
     if (/^0x([A-Fa-f0-9]{64})$/.test(hash)) {
       return _.toLower(hash)

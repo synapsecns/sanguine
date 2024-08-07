@@ -1,4 +1,4 @@
-export function PageLink({ text, url, external = false }) {
+export const PageLink = ({ text, url, external = false }) => {
   if (external) {
     return (
       <div className="mt-2 mb-14">

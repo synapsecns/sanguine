@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { useLazyQuery } from '@apollo/client'
 import { SaveIcon } from '@heroicons/react/outline'
 import { GET_CSV } from '@graphql/queries'
-import Tooltip from '@components/tailwind/Tooltip'
+import { Tooltip } from '@components/tailwind/Tooltip'
 
-export function GetCsvButton({ address }) {
+export const GetCsvButton = ({ address }) => {
   const [getCsv, { data }] = useLazyQuery(GET_CSV, {
     fetchPolicy: 'no-cache',
   })
@@ -14,8 +14,7 @@ export function GetCsvButton({ address }) {
   useEffect(() => {
     if (data) {
       setUrl(data.getCsv.ipfsGatewayUrl)
-      const { getCsv } = data
-      window.open(getCsv.ipfsGatewayUrl)
+      window.open(data.getCsv.ipfsGatewayUrl)
     }
   }, [data, ipfsGatewayUrl, click])
 

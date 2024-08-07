@@ -11,30 +11,33 @@ import (
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	inventoryMocks "github.com/synapsecns/sanguine/services/rfq/relayer/inventory/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 func (s *QuoterSuite) TestGenerateQuotes() {
 	// Generate quotes for USDC on the destination chain.
 	balance := big.NewInt(1000_000_000) // 1000 USDC
-	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destination), common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85"), balance)
+	inv := map[int]map[common.Address]*big.Int{}
+	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destination), common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85"), balance, inv)
 	s.Require().NoError(err)
 
 	// Verify the quotes are generated as expected.
 	expectedQuotes := []model.PutQuoteRequest{
 		{
-			OriginChainID:   int(s.origin),
-			OriginTokenAddr: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-			DestChainID:     int(s.destination),
-			DestTokenAddr:   "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
-			DestAmount:      balance.String(),
-			MaxOriginAmount: balance.String(),
-			FixedFee:        "100050000",
+			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+			DestChainID:             int(s.destination),
+			DestTokenAddr:           "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
+			DestAmount:              balance.String(),
+			MaxOriginAmount:         balance.String(),
+			FixedFee:                "100050000",
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x456").Hex(),
 		},
 	}
 	s.Equal(expectedQuotes, quotes)
@@ -43,7 +46,8 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	// Generate quotes for ETH on the destination chain.
 	balance, _ := new(big.Int).SetString("1000000000000000000", 10) // 1 ETH
-	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
+	inv := map[int]map[common.Address]*big.Int{}
+	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), util.EthAddress, balance, inv)
 	s.Require().NoError(err)
 
 	minGasToken, err := s.config.GetMinGasToken(int(s.destination))
@@ -53,13 +57,15 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	// Verify the quotes are generated as expected.
 	expectedQuotes := []model.PutQuoteRequest{
 		{
-			OriginChainID:   int(s.origin),
-			OriginTokenAddr: chain.EthAddress.String(),
-			DestChainID:     int(s.destinationEth),
-			DestTokenAddr:   chain.EthAddress.String(),
-			DestAmount:      expectedQuoteAmount.String(),
-			MaxOriginAmount: expectedQuoteAmount.String(),
-			FixedFee:        "150000000000000000", // (500k gas + 1m gas) * 100 gwei
+			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         util.EthAddress.String(),
+			DestChainID:             int(s.destinationEth),
+			DestTokenAddr:           util.EthAddress.String(),
+			DestAmount:              expectedQuoteAmount.String(),
+			MaxOriginAmount:         expectedQuoteAmount.String(),
+			FixedFee:                "150000000000000000", // (500k gas + 1m gas) * 100 gwei
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x789").Hex(),
 		},
 	}
 	s.Equal(expectedQuotes, quotes)
@@ -68,7 +74,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	s.config.BaseChainConfig.MinGasToken = "100000000000000000" // 0.1 ETH
 	s.manager.SetConfig(s.config)
 
-	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
+	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), util.EthAddress, balance, inv)
 	s.Require().NoError(err)
 
 	minGasToken, err = s.config.GetMinGasToken(int(s.destination))
@@ -78,13 +84,15 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	// Verify the quotes are generated as expected.
 	expectedQuotes = []model.PutQuoteRequest{
 		{
-			OriginChainID:   int(s.origin),
-			OriginTokenAddr: chain.EthAddress.String(),
-			DestChainID:     int(s.destinationEth),
-			DestTokenAddr:   chain.EthAddress.String(),
-			DestAmount:      expectedQuoteAmount.String(),
-			MaxOriginAmount: expectedQuoteAmount.String(),
-			FixedFee:        "150000000000000000", // (500k gas + 1m gas) * 100 gwei
+			OriginChainID:           int(s.origin),
+			OriginTokenAddr:         util.EthAddress.String(),
+			DestChainID:             int(s.destinationEth),
+			DestTokenAddr:           util.EthAddress.String(),
+			DestAmount:              expectedQuoteAmount.String(),
+			MaxOriginAmount:         expectedQuoteAmount.String(),
+			FixedFee:                "150000000000000000", // (500k gas + 1m gas) * 100 gwei
+			OriginFastBridgeAddress: common.HexToAddress("0x123").Hex(),
+			DestFastBridgeAddress:   common.HexToAddress("0x789").Hex(),
 		},
 	}
 	s.Equal(expectedQuotes, quotes)
@@ -93,7 +101,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	s.config.BaseChainConfig.MinGasToken = "1000000000000000001" // 0.1 ETH
 	s.manager.SetConfig(s.config)
 
-	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
+	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), util.EthAddress, balance, inv)
 	s.NoError(err)
 	s.Equal(quotes[0].DestAmount, "0")
 	s.Equal(quotes[0].MaxOriginAmount, "0")
@@ -162,63 +170,81 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 	origin := int(s.origin)
 	dest := int(s.destination)
 	address := common.HexToAddress("0x0b2c639c533813f4aa9d7837caf62653d097ff85")
+	originAddr := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
-	setQuoteParams := func(quotePct, quoteOffset float64, minQuoteAmount string) {
-		s.config.BaseChainConfig.QuotePct = quotePct
+	setQuoteParams := func(quotePct, quoteOffset float64, minQuoteAmount, maxBalance string) {
+		s.config.BaseChainConfig.QuotePct = &quotePct
 		destTokenCfg := s.config.Chains[dest].Tokens["USDC"]
 		destTokenCfg.MinQuoteAmount = minQuoteAmount
 		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
 		originTokenCfg.QuoteOffsetBps = quoteOffset
+		originTokenCfg.MaxBalance = &maxBalance
 		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
 		s.config.Chains[origin].Tokens["USDC"] = originTokenCfg
 		s.manager.SetConfig(s.config)
 	}
 
+	input := quoter.QuoteInput{
+		OriginChainID:   origin,
+		DestChainID:     dest,
+		OriginTokenAddr: originAddr,
+		DestTokenAddr:   address,
+		OriginBalance:   balance,
+		DestBalance:     balance,
+	}
+
 	// Set default quote params; should return the balance.
-	quoteAmount, err := s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
+	quoteAmount, err := s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount := balance
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with MinQuoteAmount of 0; should be 50% of balance.
-	setQuoteParams(50, 0, "0")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
+	setQuoteParams(50, 0, "0", "0")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with QuoteOffset of -1%. Should be 1% less than 50% of balance.
-	setQuoteParams(50, -100, "0")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
+	setQuoteParams(50, -100, "0", "0")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(495_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
-	setQuoteParams(25, 0, "500")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
+	setQuoteParams(25, 0, "500", "0")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
-	setQuoteParams(25, 0, "500")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
+	setQuoteParams(25, 0, "500", "0")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 1500; should be total balance.
-	setQuoteParams(25, 0, "1500")
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
+	setQuoteParams(25, 0, "1500", "0")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(1000_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
+	// Set QuotePct to 25 with MinQuoteAmount of 1500 and MaxBalance of 1200; should be 200.
+	setQuoteParams(25, 0, "1500", "1200")
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(200_000_000)
+	s.Equal(expectedAmount, quoteAmount)
+
 	// Toggle insufficient gas; should be 0.
 	s.setGasSufficiency(false)
-	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(0)
 	s.Equal(expectedAmount, quoteAmount)

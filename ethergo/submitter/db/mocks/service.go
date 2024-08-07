@@ -55,11 +55,11 @@ func (_m *Service) DeleteTXS(ctx context.Context, maxAge time.Duration, matchSta
 	return r0
 }
 
-// GetAllTXAttemptByStatus provides a mock function with given fields: ctx, fromAddress, chainID, matchStatuses
-func (_m *Service) GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, matchStatuses ...db.Status) ([]db.TX, error) {
-	_va := make([]interface{}, len(matchStatuses))
-	for _i := range matchStatuses {
-		_va[_i] = matchStatuses[_i]
+// GetAllTXAttemptByStatus provides a mock function with given fields: ctx, fromAddress, chainID, options
+func (_m *Service) GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, options ...db.Option) ([]db.TX, error) {
+	_va := make([]interface{}, len(options))
+	for _i := range options {
+		_va[_i] = options[_i]
 	}
 	var _ca []interface{}
 	_ca = append(_ca, ctx, fromAddress, chainID)
@@ -67,8 +67,8 @@ func (_m *Service) GetAllTXAttemptByStatus(ctx context.Context, fromAddress comm
 	ret := _m.Called(_ca...)
 
 	var r0 []db.TX
-	if rf, ok := ret.Get(0).(func(context.Context, common.Address, *big.Int, ...db.Status) []db.TX); ok {
-		r0 = rf(ctx, fromAddress, chainID, matchStatuses...)
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, *big.Int, ...db.Option) []db.TX); ok {
+		r0 = rf(ctx, fromAddress, chainID, options...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]db.TX)
@@ -76,8 +76,8 @@ func (_m *Service) GetAllTXAttemptByStatus(ctx context.Context, fromAddress comm
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, common.Address, *big.Int, ...db.Status) error); ok {
-		r1 = rf(ctx, fromAddress, chainID, matchStatuses...)
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, *big.Int, ...db.Option) error); ok {
+		r1 = rf(ctx, fromAddress, chainID, options...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -210,11 +210,11 @@ func (_m *Service) GetNonceStatus(ctx context.Context, fromAddress common.Addres
 	return r0, r1
 }
 
-// GetTXS provides a mock function with given fields: ctx, fromAddress, chainID, statuses
-func (_m *Service) GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, statuses ...db.Status) ([]db.TX, error) {
-	_va := make([]interface{}, len(statuses))
-	for _i := range statuses {
-		_va[_i] = statuses[_i]
+// GetTXS provides a mock function with given fields: ctx, fromAddress, chainID, options
+func (_m *Service) GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, options ...db.Option) ([]db.TX, error) {
+	_va := make([]interface{}, len(options))
+	for _i := range options {
+		_va[_i] = options[_i]
 	}
 	var _ca []interface{}
 	_ca = append(_ca, ctx, fromAddress, chainID)
@@ -222,8 +222,8 @@ func (_m *Service) GetTXS(ctx context.Context, fromAddress common.Address, chain
 	ret := _m.Called(_ca...)
 
 	var r0 []db.TX
-	if rf, ok := ret.Get(0).(func(context.Context, common.Address, *big.Int, ...db.Status) []db.TX); ok {
-		r0 = rf(ctx, fromAddress, chainID, statuses...)
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, *big.Int, ...db.Option) []db.TX); ok {
+		r0 = rf(ctx, fromAddress, chainID, options...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]db.TX)
@@ -231,8 +231,8 @@ func (_m *Service) GetTXS(ctx context.Context, fromAddress common.Address, chain
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, common.Address, *big.Int, ...db.Status) error); ok {
-		r1 = rf(ctx, fromAddress, chainID, statuses...)
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, *big.Int, ...db.Option) error); ok {
+		r1 = rf(ctx, fromAddress, chainID, options...)
 	} else {
 		r1 = ret.Error(1)
 	}

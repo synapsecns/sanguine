@@ -16,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -175,7 +176,7 @@ func (r *Relayer) gasMiddleware(next func(ctx context.Context, span trace.Span, 
 		// Therefore, we only need to check the gas value for requests with all the other statuses.
 		isInFlight := req.Status == reldb.CommittedPending || req.Status == reldb.CommittedConfirmed || req.Status == reldb.RelayStarted
 		var destGasValue *big.Int
-		if req.Transaction.DestToken == chain.EthAddress && !isInFlight {
+		if req.Transaction.DestToken == util.EthAddress && !isInFlight {
 			destGasValue = req.Transaction.DestAmount
 			span.SetAttributes(attribute.String("dest_gas_value", destGasValue.String()))
 		}
@@ -200,12 +201,7 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*chain.Ch
 		return nil, fmt.Errorf("could not get origin client: %w", err)
 	}
 
-	//nolint: wrapcheck
-	rfqAddr, err := r.cfg.GetRFQAddress(id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get rfq address: %w", err)
-	}
-	chain, err := chain.NewChain(ctx, chainClient, common.HexToAddress(rfqAddr), r.chainListeners[id], r.submitter)
+	chain, err := chain.NewChain(ctx, r.cfg, chainClient, r.chainListeners[id], r.submitter)
 	if err != nil {
 		return nil, fmt.Errorf("could not create chain: %w", err)
 	}

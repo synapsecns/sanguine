@@ -1,4 +1,4 @@
-export default function PoolsIcon({ className }) {
+export const PoolsIcon = ({ className }) => {
   return (
     <svg
       className={`h-6 w-6 ${className}`}

@@ -1,4 +1,4 @@
-export function ellipsizeString({ string, limiter = 4, isZeroX = false }) {
+export const ellipsizeString = ({ string, limiter = 4, isZeroX = false }) => {
   if (limiter === 0) {
     return string
   } else {

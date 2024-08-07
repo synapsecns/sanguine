@@ -2,6 +2,7 @@
 package relconfig
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"os"
@@ -9,14 +10,20 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	cctpConfig "github.com/synapsecns/sanguine/services/cctp-relayer/config"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"gopkg.in/yaml.v2"
 
 	"path/filepath"
+
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 )
 
 // Config represents the configuration for the relayer.
@@ -65,10 +72,6 @@ type Config struct {
 type ChainConfig struct {
 	// Bridge is the rfq bridge contract address.
 	RFQAddress string `yaml:"rfq_address"`
-	// SynapseCCTPAddress is the SynapseCCTP address.
-	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
-	// TokenMessengerAddress is the TokenMessenger address.
-	TokenMessengerAddress string `yaml:"token_messenger_address"`
 	// Confirmations is the number of required confirmations.
 	Confirmations uint64 `yaml:"confirmations"`
 	// Tokens is a map of token name -> token config.
@@ -90,16 +93,18 @@ type ChainConfig struct {
 	// MinGasToken is minimum amount of gas that should be leftover after bridging a gas token.
 	MinGasToken string `yaml:"min_gas_token"`
 	// QuotePct is the percent of balance to quote.
-	QuotePct float64 `yaml:"quote_pct"`
+	QuotePct *float64 `yaml:"quote_pct"`
 	// QuoteWidthBps is the number of basis points to deduct from the dest amount.
 	// Note that this parameter is applied on a chain level and must be positive.
 	QuoteWidthBps float64 `yaml:"quote_width_bps"`
 	// QuoteFixedFeeMultiplier is the multiplier for the fixed fee, applied when generating quotes.
-	QuoteFixedFeeMultiplier float64 `yaml:"quote_fixed_fee_multiplier"`
+	QuoteFixedFeeMultiplier *float64 `yaml:"quote_fixed_fee_multiplier"`
 	// RelayFixedFeeMultiplier is the multiplier for the fixed fee, applied when relaying.
-	RelayFixedFeeMultiplier float64 `yaml:"relay_fixed_fee_multiplier"`
-	// CCTP start block is the block at which the chain listener will listen for CCTP events.
-	CCTPStartBlock uint64 `yaml:"cctp_start_block"`
+	RelayFixedFeeMultiplier *float64 `yaml:"relay_fixed_fee_multiplier"`
+	// RebalanceStartBlock is the block at which the chain listener will listen for rebalance events.
+	RebalanceStartBlock uint64 `yaml:"cctp_start_block"`
+	// RebalanceConfigs is the rebalance configurations.
+	RebalanceConfigs RebalanceConfigs `yaml:"rebalance_configs"`
 }
 
 // TokenConfig represents the configuration for a token.
@@ -112,8 +117,8 @@ type TokenConfig struct {
 	PriceUSD float64 `yaml:"price_usd"`
 	// MinQuoteAmount is the minimum amount to quote for this token in human-readable units.
 	MinQuoteAmount string `yaml:"min_quote_amount"`
-	// RebalanceMethod is the method to use for rebalancing.
-	RebalanceMethod string `yaml:"rebalance_method"`
+	// RebalanceMethods are the supported methods for rebalancing.
+	RebalanceMethods []string `yaml:"rebalance_methods"`
 	// MaintenanceBalancePct is the percentage of the total balance under which a rebalance will be triggered.
 	MaintenanceBalancePct float64 `yaml:"maintenance_balance_pct"`
 	// InitialBalancePct is the percentage of the total balance to retain when triggering a rebalance.
@@ -128,6 +133,8 @@ type TokenConfig struct {
 	// Note that this value can be positive or negative; if positive it effectively increases the quoted price
 	// of the given token, and vice versa.
 	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
+	// MaxBalance is the maximum balance that should be accumulated for this token on this chain (human-readable units)
+	MaxBalance *string `yaml:"max_balance"`
 }
 
 // DatabaseConfig represents the configuration for the database.
@@ -144,6 +151,37 @@ type FeePricerConfig struct {
 	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
 	// HTTPTimeoutMs is the number of milliseconds to timeout on a HTTP request.
 	HTTPTimeoutMs int `yaml:"http_timeout_ms"`
+}
+
+// RebalanceConfigs represents the rebalance configurations.
+type RebalanceConfigs struct {
+	Synapse *SynapseCCTPRebalanceConfig `yaml:"synapse"`
+	Circle  *CircleCCTPRebalanceConfig  `yaml:"circle"`
+	Scroll  *ScrollRebalanceConfig      `yaml:"scroll"`
+}
+
+// SynapseCCTPRebalanceConfig represents the configuration for the SynapseCCTP rebalance.
+type SynapseCCTPRebalanceConfig struct {
+	// SynapseCCTPAddress is the SynapseCCTP address.
+	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
+}
+
+// CircleCCTPRebalanceConfig represents the configuration for the CircleCCTP rebalance.
+type CircleCCTPRebalanceConfig struct {
+	// TokenMessengerAddress is the TokenMessenger address.
+	TokenMessengerAddress string `yaml:"token_messenger_address"`
+}
+
+// ScrollRebalanceConfig represents the configuration for the Scroll rebalance.
+type ScrollRebalanceConfig struct {
+	// L1GatewayAddress is the L1Gateway address [scroll].
+	L1GatewayAddress string `yaml:"l1_gateway_address"`
+	// L1ScrollMessengerAddress is the L1ScrollMessenger address [scroll].
+	L1ScrollMessengerAddress string `yaml:"l1_scroll_messenger_address"`
+	// L2GatewayAddress is the L2Gateway address [scroll].
+	L2GatewayAddress string `yaml:"l2_gateway_address"`
+	// ScrollMessageFee is the scroll message fee.
+	ScrollMessageFee *string `yaml:"scroll_message_fee"`
 }
 
 // TokenIDDelimiter is the delimiter for token IDs.
@@ -199,20 +237,23 @@ func LoadConfig(path string) (config Config, err error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
 	}
-	err = config.Validate()
+	omniClient := omniClient.NewOmnirpcClient(config.OmniRPCURL, metrics.NewNullHandler(), omniClient.WithCaptureReqRes())
+	err = config.Validate(context.Background(), omniClient)
 	if err != nil {
-		return config, fmt.Errorf("error validating config: %w", err)
+		return Config{}, fmt.Errorf("config validation failed: %w", err)
 	}
+
 	return config, nil
 }
 
-// Validate validates the config.
-func (c Config) Validate() (err error) {
+// Validate validates the config. Omniclient may be nil, but if not then it will also check the chain to see if the decimals
+// match the actual token decimals.
+func (c Config) Validate(ctx context.Context, omniclient omniClient.RPCClient) (err error) {
 	maintenancePctSums := map[string]float64{}
 	initialPctSums := map[string]float64{}
 	for _, chainCfg := range c.Chains {
 		for tokenName, tokenCfg := range chainCfg.Tokens {
-			if tokenCfg.RebalanceMethod != "" {
+			if len(tokenCfg.RebalanceMethods) != 0 {
 				maintenancePctSums[tokenName] += tokenCfg.MaintenanceBalancePct
 				initialPctSums[tokenName] += tokenCfg.InitialBalancePct
 			}
@@ -228,5 +269,49 @@ func (c Config) Validate() (err error) {
 			return fmt.Errorf("total initial percent does not total 100 for %s: %f", token, sum)
 		}
 	}
+
+	if omniclient != nil {
+		err = c.validateTokenDecimals(ctx, omniclient)
+		if err != nil {
+			return fmt.Errorf("error validating token decimals: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// ValidateTokenDecimals calls decimals() on the ERC20s to ensure that the decimals in the config match the actual token decimals.
+func (c Config) validateTokenDecimals(ctx context.Context, omniClient omniClient.RPCClient) (err error) {
+	for chainID, chainCfg := range c.Chains {
+		for tokenName, tokenCFG := range chainCfg.Tokens {
+			chainClient, err := omniClient.GetChainClient(ctx, chainID)
+			if err != nil {
+				return fmt.Errorf("could not get chain client for chain %d: %w", chainID, err)
+			}
+
+			// Check if the token is the gas token. SHOULD BE 18.
+			if tokenCFG.Address == util.EthAddress.String() {
+				if tokenCFG.Decimals != 18 {
+					return fmt.Errorf("decimals mismatch for token %s on chain %d: expected 18, got %d", tokenName, chainID, tokenCFG.Decimals)
+				}
+				continue
+			}
+
+			ierc20, err := ierc20.NewIERC20(common.HexToAddress(tokenCFG.Address), chainClient)
+			if err != nil {
+				return fmt.Errorf("could not create caller for token %s at address %s on chain %d: %w", tokenName, tokenCFG.Address, chainID, err)
+			}
+
+			actualDecimals, err := ierc20.Decimals(&bind.CallOpts{Context: ctx})
+			if err != nil {
+				return fmt.Errorf("could not get decimals for token %s on chain %d: %w", tokenName, chainID, err)
+			}
+
+			if actualDecimals != tokenCFG.Decimals {
+				return fmt.Errorf("decimals mismatch for token %s on chain %d: expected %d, got %d", tokenName, chainID, tokenCFG.Decimals, actualDecimals)
+			}
+		}
+	}
+
 	return nil
 }
