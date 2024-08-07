@@ -20,10 +20,10 @@ import (
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 
@@ -239,7 +239,7 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	inv, err := m.inventoryManager.GetCommittableBalances(ctx)
+	inv, err := m.inventoryManager.GetCommittableBalances(ctx, inventory.SkipDBCache())
 	if err != nil {
 		return fmt.Errorf("error getting committable balances: %w", err)
 	}
@@ -258,14 +258,28 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	var allQuotes []model.PutQuoteRequest
 
 	// First, generate all quotes
-	for chainID, balances := range inv {
-		for address, balance := range balances {
-			quotes, err := m.generateQuotes(ctx, chainID, address, balance, inv)
-			if err != nil {
-				return err
-			}
-			allQuotes = append(allQuotes, quotes...)
+	g, gctx := errgroup.WithContext(ctx)
+	mtx := sync.Mutex{}
+	for cid, balances := range inv {
+		chainID := cid
+		for a, b := range balances {
+			address := a
+			balance := b
+			g.Go(func() error {
+				quotes, err := m.generateQuotes(gctx, chainID, address, balance, inv)
+				if err != nil {
+					return fmt.Errorf("error generating quotes: %w", err)
+				}
+				mtx.Lock()
+				allQuotes = append(allQuotes, quotes...)
+				mtx.Unlock()
+				return nil
+			})
 		}
+	}
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("error generating quotes: %w", err)
 	}
 
 	span.SetAttributes(attribute.Int("num_quotes", len(allQuotes)))
@@ -307,7 +321,6 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 
 const meterName = "github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 
-// generateQuotes TODO: THIS LOOP IS BROKEN
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
@@ -361,7 +374,7 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 						DestTokenAddr:   address,
 						OriginBalance:   originBalance,
 						DestBalance:     balance,
-						DestRFQAddr:     destRFQAddr,
+						DestRFQAddr:     destRFQAddr.Hex(),
 					}
 
 					quote, quoteErr := m.generateQuote(gctx, input)
@@ -443,7 +456,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 		DestAmount:              destAmount.String(),
 		MaxOriginAmount:         originAmount.String(),
 		FixedFee:                fee.String(),
-		OriginFastBridgeAddress: originRFQAddr,
+		OriginFastBridgeAddress: originRFQAddr.Hex(),
 		DestFastBridgeAddress:   input.DestRFQAddr,
 	}
 	return quote, nil
@@ -592,7 +605,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 
 // deductGasCost deducts the gas cost from the quote amount, if necessary.
 func (m *Manager) deductGasCost(parentCtx context.Context, quoteAmount *big.Int, address common.Address, dest int) (quoteAmountAdj *big.Int, err error) {
-	if !chain.IsGasToken(address) {
+	if !util.IsGasToken(address) {
 		return quoteAmount, nil
 	}
 

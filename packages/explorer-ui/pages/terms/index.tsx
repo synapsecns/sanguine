@@ -1,12 +1,12 @@
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 
-export default function Terms() {
+export const Terms = () => {
   return (
     <StandardPageContainer title="Terms of Service">
       <p className="text-lg font-medium text-white ">
         Last updated: February, 2023
       </p>
-      <div className="text-md  font-medium text-white pt-2">
+      <div className="pt-2 font-medium text-white text-md">
         <p>
           This website-hosted interface (the "Site") is provided by
           Interoperability Inc. ("Interoperability", "we", "our", or "us"). The
@@ -442,3 +442,9 @@ export default function Terms() {
     </StandardPageContainer>
   )
 }
+
+const TermsPage = () => {
+  return <Terms />
+}
+
+export default TermsPage

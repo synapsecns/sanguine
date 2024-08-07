@@ -1,4 +1,4 @@
-export default function SavingIcon({ className }) {
+export const SavingIcon = ({ className }) => {
   return (
     <svg
       id="Capa_1"

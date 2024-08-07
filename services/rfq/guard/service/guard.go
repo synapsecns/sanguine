@@ -36,6 +36,7 @@ type Guard struct {
 	chainListeners map[int]listener.ContractListener
 	contracts      map[int]*fastbridge.FastBridgeRef
 	txSubmitter    submitter.TransactionSubmitter
+	otelRecorder   iOtelRecorder
 }
 
 // NewGuard creates a new Guard.
@@ -96,6 +97,11 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		txSubmitter = submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 	}
 
+	otelRecorder, err := newOtelRecorder(metricHandler, txSubmitter.Address(), store)
+	if err != nil {
+		return nil, fmt.Errorf("could not get otel recorder: %w", err)
+	}
+
 	return &Guard{
 		cfg:            cfg,
 		metrics:        metricHandler,
@@ -104,6 +110,7 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		chainListeners: chainListeners,
 		contracts:      contracts,
 		txSubmitter:    txSubmitter,
+		otelRecorder:   otelRecorder,
 	}, nil
 }
 

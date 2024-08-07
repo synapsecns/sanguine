@@ -1,4 +1,4 @@
-export default function CopyIcon({ ...props }) {
+export const CopyIcon = ({ ...props }) => {
   return (
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
       <path

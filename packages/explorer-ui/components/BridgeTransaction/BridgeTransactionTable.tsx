@@ -1,13 +1,13 @@
+import Link from 'next/link'
 import { Table } from '@components/TransactionTable/Table'
 import { StyleAddress } from '@components/misc/StyleAddress'
 import { IconAndAmount } from '@components/misc/IconAndAmount'
 import { ChainInfo } from '@components/misc/ChainInfo'
-import { timeAgo } from '@utils/timeAgo'
 import { addressToSymbol } from '@utils/addressToSymbol'
-import { formatDate } from '@utils/formatDate'
 import Arrow from '@components/icons/Arrow'
+import { timeAgo } from '@utils/timeAgo'
+import { formatDate } from '@utils/formatDate'
 import { getBridgeTransactionUrl } from '@urls'
-import Link from 'next/link'
 
 export const BridgeTransactionTable = ({ queryResult }) => {
   const tableRows = []
@@ -58,7 +58,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               useExplorerLink={false}
             />
             <IconAndAmount
-              formattedValue={fromInfo.formattedValue}
+              value={fromInfo.value}
               tokenAddress={fromInfo.tokenAddress}
               chainId={fromInfo.chainID}
               tokenSymbol={
@@ -68,8 +68,8 @@ export const BridgeTransactionTable = ({ queryResult }) => {
                 }) || fromInfo.tokenSymbol
               }
               iconSize="w-4 h-4 rounded-full"
-              textSize="text-sm"
-              styledCoin={true}
+              // textSize="text-sm"
+              // styledCoin={true}
             />
           </div>
           <div className="relative">
@@ -83,9 +83,7 @@ export const BridgeTransactionTable = ({ queryResult }) => {
               useExplorerLink={false}
             />
             <IconAndAmount
-              formattedValue={
-                pending ? fromInfo.formattedValue : toInfo?.formattedValue
-              }
+              value={pending ? fromInfo.value : toInfo?.value}
               tokenAddress={
                 pending ? fromInfo.tokenAddress : toInfo?.tokenAddress
               }
@@ -99,8 +97,8 @@ export const BridgeTransactionTable = ({ queryResult }) => {
                 }) || (pending ? fromInfo.tokenSymbol : toInfo?.tokenSymbol)
               }
               iconSize="w-4 h-4 rounded-full"
-              textSize="text-sm"
-              styledCoin={true}
+              // textSize="text-sm"
+              // styledCoin={true}
             />
           </div>
           <div className="text-gray-400">

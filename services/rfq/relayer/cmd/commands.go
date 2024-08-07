@@ -32,12 +32,13 @@ var runCommand = &cli.Command{
 	Flags:       []cli.Flag{configFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
+
+		metricsProvider := metrics.Get()
+
 		cfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not read config file: %w", err)
 		}
-
-		metricsProvider := metrics.Get()
 
 		relayer, err := service.NewRelayer(c.Context, metricsProvider, cfg)
 		if err != nil {
@@ -142,7 +143,7 @@ var withdrawCommand = &cli.Command{
 					return fmt.Errorf("could not get withdrawal tx hash: %w", err)
 				}
 				return nil
-			})
+			}, retry.WithMaxTotalTime(1*time.Minute))
 
 			if err != nil {
 				return
@@ -157,7 +158,7 @@ var withdrawCommand = &cli.Command{
 			return fmt.Errorf("could not get withdrawal tx hash: %w", err)
 		}
 		if errClient != nil {
-			return fmt.Errorf("client error: could not get withdrawal tx hash: %w", err)
+			return fmt.Errorf("client error: could not get withdrawal tx hash: %w", errClient)
 		}
 
 		fmt.Printf("Withdraw Tx Hash: %s\n", status.Hash)

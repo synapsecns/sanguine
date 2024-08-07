@@ -63,14 +63,8 @@ import { RootState } from '@/store/store'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
-import {
-  MaintenanceWarningMessages,
-  useMaintenanceCountdownProgresses,
-} from '@/components/Maintenance/Maintenance'
-import {
-  PAUSED_MODULES,
-  getBridgeModuleNames,
-} from '@/components/Maintenance/Maintenance'
+import { useMaintenance } from '@/components/Maintenance/Maintenance'
+import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { screenAddress } from '@/utils/screenAddress'
@@ -99,6 +93,13 @@ const StateManagedBridge = () => {
   const { showSettingsSlideOver, showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
+
+  const {
+    isBridgePaused,
+    pausedModulesList,
+    BridgeMaintenanceProgressBar,
+    BridgeMaintenanceWarningMessage,
+  } = useMaintenance()
 
   const [isApproved, setIsApproved] = useState<boolean>(false)
 
@@ -162,13 +163,18 @@ const StateManagedBridge = () => {
         toChainId,
         fromToken.addresses[fromChainId],
         toToken.addresses[toChainId],
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
+        {
+          originUserAddress: address,
+        }
       )
 
       const pausedBridgeModules = new Set(
-        PAUSED_MODULES.filter((module) =>
-          module.chainId ? module.chainId === fromChainId : true
-        ).flatMap(getBridgeModuleNames)
+        pausedModulesList
+          .filter((module) =>
+            module.chainId ? module.chainId === fromChainId : true
+          )
+          .flatMap(getBridgeModuleNames)
       )
 
       const activeQuotes = allQuotes.filter(
@@ -545,13 +551,6 @@ const StateManagedBridge = () => {
     }
   }
 
-  const maintenanceCountdownProgressInstances =
-    useMaintenanceCountdownProgresses({ type: 'Bridge' })
-
-  const isBridgePaused = maintenanceCountdownProgressInstances.some(
-    (instance) => instance.isCurrentChainDisabled
-  )
-
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
@@ -570,9 +569,7 @@ const StateManagedBridge = () => {
           </Button>
         </div>
         <BridgeCard bridgeRef={bridgeDisplayRef}>
-          {maintenanceCountdownProgressInstances.map((instance) => (
-            <>{instance.MaintenanceCountdownProgressBar}</>
-          ))}
+          <BridgeMaintenanceProgressBar />
 
           {showSettingsSlideOver ? (
             <div className="min-h-[472px]">
@@ -591,7 +588,7 @@ const StateManagedBridge = () => {
               />
               <OutputContainer />
               <Warning />
-              <MaintenanceWarningMessages type="Bridge" />
+              <BridgeMaintenanceWarningMessage />
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />
               <BridgeTransactionButton

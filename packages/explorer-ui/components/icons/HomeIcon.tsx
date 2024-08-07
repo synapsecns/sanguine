@@ -1,4 +1,4 @@
-export default function HomeIcon({ className }) {
+export const HomeIcon = ({ className }) => {
   return (
     <svg
       className={`flex-shrink-0 ${className}`}

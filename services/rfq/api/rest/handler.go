@@ -2,9 +2,11 @@ package rest
 
 import (
 	"fmt"
-	"github.com/synapsecns/sanguine/services/rfq/api/config"
 	"net/http"
 	"strconv"
+	"time"
+
+	"github.com/synapsecns/sanguine/services/rfq/api/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
@@ -210,6 +212,9 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 		}
 	}
 
+	// Filter quotes
+	dbQuotes = filterQuoteAge(h.cfg, dbQuotes)
+
 	// Convert quotes from db model to api model
 	quotes := make([]*model.GetQuoteResponse, len(dbQuotes))
 	for i, dbQuote := range dbQuotes {
@@ -235,4 +240,18 @@ func (h *Handler) GetContracts(c *gin.Context) {
 		contracts[chainID] = address
 	}
 	c.JSON(http.StatusOK, model.GetContractsResponse{Contracts: contracts})
+}
+
+func filterQuoteAge(cfg config.Config, dbQuotes []*db.Quote) []*db.Quote {
+	maxAge := cfg.GetMaxQuoteAge()
+
+	thresh := time.Now().Add(-maxAge)
+	var filteredQuotes []*db.Quote
+	for _, quote := range dbQuotes {
+		if quote.UpdatedAt.After(thresh) {
+			filteredQuotes = append(filteredQuotes, quote)
+		}
+	}
+
+	return filteredQuotes
 }

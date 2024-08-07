@@ -21,9 +21,11 @@ require (
 	github.com/99designs/gqlgen v0.17.36
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/Yamashou/gqlgenc v0.10.0
+	github.com/cornelk/hashmap v1.0.8
 	github.com/creasty/defaults v1.7.0
 	github.com/ethereum/go-ethereum v1.13.8
 	github.com/gin-gonic/gin v1.10.0
+	github.com/hedzr/log v1.6.3
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
@@ -81,7 +83,6 @@ require (
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/consensys/gnark-crypto v0.12.1 // indirect
-	github.com/cornelk/hashmap v1.0.8 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/crate-crypto/go-ipa v0.0.0-20231025140028-3c0104f4b233 // indirect
 	github.com/crate-crypto/go-kzg-4844 v0.7.0 // indirect

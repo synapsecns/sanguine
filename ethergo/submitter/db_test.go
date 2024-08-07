@@ -12,8 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
-	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
-
 	"math/big"
 
 	"github.com/synapsecns/sanguine/ethergo/util"
@@ -95,11 +93,11 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 				}
 
 				// get the transactions with limit per ChainID
-				result, err := testDB.GetTXS(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), db.Pending)
+				result, err := testDB.GetTXS(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), db.WithStatuses(db.Pending))
 				t.Require().NoError(err)
 
 				// check that the result has the correct length
-				t.Require().Equal(txdb.MaxResultsPerChain, len(result))
+				t.Require().Equal(db.DefaultMaxResultsPerChain, len(result))
 
 				// check that the result is limited per ChainID and address
 				for _, tx := range result {
@@ -119,9 +117,9 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 
 				// make sure this returns double the number of results, 2 per tx
 				// TODO: check nonces
-				result, err = testDB.GetAllTXAttemptByStatus(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), db.Pending)
+				result, err = testDB.GetAllTXAttemptByStatus(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), db.WithStatuses(db.Pending))
 				t.Require().NoError(err)
-				t.Require().Equal(txdb.MaxResultsPerChain*2, len(result))
+				t.Require().Equal(db.DefaultMaxResultsPerChain*2, len(result))
 			}
 		}
 	})
@@ -239,7 +237,7 @@ func (t *TXSubmitterDBSuite) TestDeleteTXS() {
 
 		// ensure txs were stored
 		allStatuses := []db.Status{db.Pending, db.Stored, db.Replaced, db.ReplacedOrConfirmed, db.Confirmed}
-		txs, err := testDB.GetTXS(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), allStatuses...)
+		txs, err := testDB.GetTXS(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), db.WithStatuses(allStatuses...))
 		t.Require().NoError(err)
 		t.Equal(5, len(txs))
 
@@ -248,7 +246,7 @@ func (t *TXSubmitterDBSuite) TestDeleteTXS() {
 		t.Require().NoError(err)
 
 		// ensure txs were deleted
-		txs, err = testDB.GetTXS(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), allStatuses...)
+		txs, err = testDB.GetTXS(t.GetTestContext(), mockAccount.Address, backend.GetBigChainID(), db.WithStatuses(allStatuses...))
 		t.Require().NoError(err)
 		t.Equal(2, len(txs))
 	})

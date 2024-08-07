@@ -1,7 +1,7 @@
 import _ from 'lodash'
 
-export function formatUSD(totalUsdVolumes) {
-  if (totalUsdVolumes == '--') {
+export const formatUSD = (totalUsdVolumes) => {
+  if (totalUsdVolumes === '--') {
     return '--'
   }
   if (totalUsdVolumes > 1000000000) {
