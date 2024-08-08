@@ -13,6 +13,6 @@ const (
 	PyroscopeJaegerUIEnabled = "PYROSCOPE_JAEGER_UI_ENABLED"
 	// RookoutToken is used for https://app.rookout.com/
 	RookoutToken = "ROOKOUT_TOKEN"
-	// RookoutDebug can be used to enable rookout debug
+	// RookoutDebug can be used to enable rookout debug.
 	RookoutDebug = "ROOKOUT_DEBUG"
 )

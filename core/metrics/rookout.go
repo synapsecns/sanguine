@@ -10,7 +10,7 @@ import (
 )
 
 // rookout is sideloaded.
-// TODO: consider moving this to metrics
+// TODO: consider moving this to metrics.
 func init() {
 	if core.HasEnv(internal.RookoutToken) {
 		// TODO: Consider doing git stuff here.
