@@ -469,6 +469,7 @@ export const USDT = new Token({
     [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
     [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
     [CHAINS.SCROLL.id]: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
+    [CHAINS.LINEA.id]: '0xA219439258ca9da29E9Cc4cE5596924745e12B93',
   },
   decimals: {
     [CHAINS.ETH.id]: 6,
@@ -482,6 +483,7 @@ export const USDT = new Token({
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.SCROLL.id]: 6,
+    [CHAINS.LINEA.id]: 6,
   },
   symbol: 'USDT',
   name: 'USD Tether',
