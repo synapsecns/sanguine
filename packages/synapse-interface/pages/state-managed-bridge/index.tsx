@@ -197,9 +197,9 @@ const StateManagedBridge = () => {
         const rfqMaxAmountOut = BigInt(rfqQuote.maxAmountOut.toString())
         const nonRfqMaxAmountOut = BigInt(nonRfqQuote.maxAmountOut.toString())
 
-        const allowedPercentileDifference = 30
+        const allowedPercentileDifference = 30n
         const maxDifference =
-          (nonRfqMaxAmountOut * BigInt(allowedPercentileDifference)) / 100n
+          (nonRfqMaxAmountOut * allowedPercentileDifference) / 100n
 
         if (rfqMaxAmountOut > nonRfqMaxAmountOut - maxDifference) {
           quote = rfqQuote
