@@ -69,6 +69,7 @@ import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 import { useBridgeQuoteUpdater } from '@/hooks/useBridgeQuoteUpdater'
+import { SwitchButton } from '@/components/ui/SwitchButton'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -451,6 +452,14 @@ export const Widget = ({
             />
           </div>
         </section>
+        <SwitchButton
+          onClick={() => {
+            dispatch(setOriginChainId(destinationChainId))
+            dispatch(setOriginToken(destinationToken))
+            dispatch(setDestinationChainId(originChainId))
+            dispatch(setDestinationToken(originToken))
+          }}
+        />
         <section
           className={`${cardStyle} gap-3 pb-2.5`}
           style={{ background: 'var(--synapse-surface)' }}

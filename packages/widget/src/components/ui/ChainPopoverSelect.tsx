@@ -87,10 +87,7 @@ export const ChainPopoverSelect = ({
             className="inline w-5 h-5"
           />
         )}
-        <span>
-          <div className="text-sm text-[--synapse-secondary]">{label}</div>
-          {selected?.name || 'Network'}
-        </span>
+        {selected?.name || 'Network'}
         <DownArrow />
       </div>
       {isOpen && (
