@@ -255,7 +255,6 @@ const StateManagedSwap = () => {
     segmentAnalyticsEvent(
       `[Swap] initiates swap`,
       {
-        address,
         chainId: swapChainId,
         swapFromToken: swapFromToken.symbol,
         swapToToken: swapToToken.symbol,
@@ -309,7 +308,6 @@ const StateManagedSwap = () => {
       onSuccessSwap()
 
       segmentAnalyticsEvent(`[Swap] swaps successfully`, {
-        address,
         originChainId: swapChainId,
         inputAmount: swapFromValue,
         expectedReceivedAmount: swapQuote.outputAmountString,

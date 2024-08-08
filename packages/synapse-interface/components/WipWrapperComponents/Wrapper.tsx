@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { useAccount } from 'wagmi'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
@@ -10,12 +9,10 @@ import NavMenu from './NavMenu'
 import Ticker from './Ticker'
 
 const Wrapper = ({ children }) => {
-  const { address: currentAddress } = useAccount()
   const router = useRouter()
 
   useEffect(() => {
     segmentAnalyticsEvent(`[Teaser] arrives`, {
-      address: currentAddress,
       query: router.query,
       pathname: router.pathname,
     })
