@@ -162,6 +162,17 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
+	// lock the consumed balance
+	key := getBalanceMtxKey(q.Dest.ChainID, request.Transaction.DestToken)
+	span.SetAttributes(attribute.String("balance_lock_key", key))
+	unlocker, ok := q.balanceMtx.TryLock(key)
+	if !ok {
+		// balance is locked due to concurrent request, try again later
+		span.SetAttributes(attribute.Bool("locked", true))
+		return nil
+	}
+	defer unlocker.Unlock()
+
 	// get destination committable balance
 	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
 	if errors.Is(err, inventory.ErrUnsupportedChain) {
