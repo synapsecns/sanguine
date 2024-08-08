@@ -494,6 +494,7 @@ export const USDT: BridgeableToken = {
     [CHAINS.KLAYTN.id]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
     [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
     [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
+    [CHAINS.LINEA.id]: '0xA219439258ca9da29E9Cc4cE5596924745e12B93',
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 6,
@@ -506,6 +507,7 @@ export const USDT: BridgeableToken = {
     [CHAINS.KLAYTN.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
+    [CHAINS.LINEA.id]: 6,
   },
   symbol: 'USDT',
   name: 'USD Tether',
