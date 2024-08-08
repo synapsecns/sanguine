@@ -498,12 +498,23 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.
 // Error Handlers Only from this point below.
 //
 // handleNotEnoughInventory handles the not enough inventory status.
-func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
+	// acquire balance lock
+	key := getBalanceMtxKey(q.Dest.ChainID, request.Transaction.DestToken)
+	span.SetAttributes(attribute.String("balance_lock_key", key))
+	unlocker, ok := q.balanceMtx.TryLock(key)
+	if !ok {
+		// balance is locked due to concurrent request, try again later
+		span.SetAttributes(attribute.Bool("locked", true))
+		return nil
+	}
+	defer unlocker.Unlock()
+
+	// commit destination balance
 	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
 	if err != nil {
 		return fmt.Errorf("could not get committable balance: %w", err)
 	}
-	// if committableBalance > destAmount
 	if committableBalance.Cmp(request.Transaction.DestAmount) > 0 {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending, &request.Status)
 		if err != nil {
