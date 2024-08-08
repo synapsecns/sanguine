@@ -27,7 +27,7 @@
     "startTimeBanner": "2024-08-09T13:00:00Z",
     "endTimeBanner": "2024-08-09T14:45:00Z",
     "inputWarningMessage": "Canto chain paused until network upgrade completes.",
-    "bannerMessage": "Canto will be paused 15 minutes ahead of the upgrade (August 8th, 14:30 UTC). Will be back online shortly following the network upgrade.",
+    "bannerMessage": "Canto will be paused 15 minutes ahead of the upgrade (August 9th, 14:30 UTC). Will be back online shortly following the network upgrade.",
     "progressBarMessage": "Canto upgrade in progress",
     "disableBanner": false,
     "disableWarning": false,
