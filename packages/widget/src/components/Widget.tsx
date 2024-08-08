@@ -479,6 +479,7 @@ export const Widget = ({
         <BridgeMaintenanceWarningMessage />
         <Receipt
           quote={bridgeQuote ?? null}
+          loading={isLoading}
           send={formatBigIntToString(
             stringToBigInt(
               debouncedInputAmount,
