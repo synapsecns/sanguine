@@ -1,4 +1,4 @@
-export default function TabItem({ onClick, children, isActive }) {
+export const TabItem = ({ onClick, children, isActive }) => {
   let statusClassname
   if (isActive) {
     statusClassname = `

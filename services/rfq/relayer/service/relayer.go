@@ -97,7 +97,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		contract, err := fastbridge.NewFastBridgeRef(common.HexToAddress(rfqAddr), chainClient)
+		contract, err := fastbridge.NewFastBridgeRef(rfqAddr, chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
 		}
@@ -105,7 +105,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), metricHandler)
+		chainListener, err := listener.NewChainListener(chainClient, store, rfqAddr, uint64(startBlock.Int64()), metricHandler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}

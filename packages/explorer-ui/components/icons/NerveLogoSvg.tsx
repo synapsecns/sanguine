@@ -1,4 +1,4 @@
-export default function NerveLogoSvg({ className = '' }) {
+export const NerveLogoSvg = ({ className = '' }) => {
   return (
     <svg
       className={`w-8 ${className}`}

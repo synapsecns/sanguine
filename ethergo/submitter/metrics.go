@@ -41,7 +41,7 @@ type otelRecorder struct {
 	// gasBalanceGauge is the gauge for the gas balance.
 	gasBalanceGauge metric.Float64ObservableGauge
 	// numPendingTxes is used for metrics.
-	// note: numPendingTxes will stop counting at MaxResultsPerChain.
+	// note: numPendingTxes will stop counting at DefaultMaxResultsPerChain.
 	numPendingTxes *hashmap.Map[uint32, int]
 	// currentNonces is used for metrics.
 	// chainID -> nonce

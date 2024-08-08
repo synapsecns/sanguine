@@ -1,4 +1,4 @@
-export default function MinusIcon({ className }) {
+export const MinusIcon = ({ className }) => {
   return (
     <svg
       className={`w-4 mr-1 ${className}`}

@@ -7,14 +7,15 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 // Chain is a chain helper for relayer.
@@ -30,21 +31,28 @@ type Chain struct {
 }
 
 // NewChain creates a new chain.
-func NewChain(ctx context.Context, chainClient client.EVM, addr common.Address, chainListener listener.ContractListener, ts submitter.TransactionSubmitter) (*Chain, error) {
-	bridge, err := fastbridge.NewFastBridgeRef(addr, chainClient)
-	if err != nil {
-		return nil, fmt.Errorf("could not create bridge contract: %w", err)
-	}
+func NewChain(ctx context.Context, cfg relconfig.Config, chainClient client.EVM, chainListener listener.ContractListener, ts submitter.TransactionSubmitter) (*Chain, error) {
 	chainID, err := chainClient.ChainID(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get chain id: %w", err)
 	}
+	addr, err := cfg.GetRFQAddress(int(chainID.Int64()))
+	if err != nil {
+		return nil, fmt.Errorf("could not get rfq address: %w", err)
+	}
+	bridge, err := fastbridge.NewFastBridgeRef(addr, chainClient)
+	if err != nil {
+		return nil, fmt.Errorf("could not create bridge contract: %w", err)
+	}
+	confirmations, err := cfg.GetConfirmations(int(chainID.Int64()))
+	if err != nil {
+		return nil, fmt.Errorf("could not get confirmations: %w", err)
+	}
 	return &Chain{
-		ChainID: uint32(chainID.Int64()),
-		Bridge:  bridge,
-		Client:  chainClient,
-		// TODO: configure
-		Confirmations: 1,
+		ChainID:       uint32(chainID.Int64()),
+		Bridge:        bridge,
+		Client:        chainClient,
+		Confirmations: confirmations,
 		listener:      chainListener,
 		submitter:     ts,
 	}, nil
@@ -67,7 +75,7 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 	var err error
 
 	// Check to see if ETH should be sent to destination
-	if IsGasToken(request.Transaction.DestToken) {
+	if util.IsGasToken(request.Transaction.DestToken) {
 		gasAmount = request.Transaction.DestAmount
 	} else if request.Transaction.SendChainGas {
 		gasAmount, err = c.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})

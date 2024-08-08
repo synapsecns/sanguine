@@ -1,4 +1,4 @@
-export default function LoadingSpinner({ className }) {
+export const LoadingSpinner = ({ className }) => {
   return (
     <svg
       className={`inline-flex animate-spin h-5 w-5 text-indigo-600 ${className}`}

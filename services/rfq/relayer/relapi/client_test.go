@@ -10,9 +10,9 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/core/retry"
 	submitterdb "github.com/synapsecns/sanguine/ethergo/submitter/db"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 func (c *RelayerClientSuite) TestHealth() {
@@ -72,7 +72,7 @@ func (c *RelayerClientSuite) TestEthWithdraw() {
 		ChainID:      uint32(backend.GetChainID()),
 		To:           testWithdrawalAddress,
 		Amount:       withdrawalAmount.String(),
-		TokenAddress: chain.EthAddress,
+		TokenAddress: util.EthAddress,
 	})
 	c.Require().NoError(err)
 
@@ -171,7 +171,7 @@ func (c *RelayerClientSuite) TestEthWithdrawCLI() {
 		ChainID:      c.underlying.originChainID,
 		To:           common.HexToAddress(testWithdrawalAddress.String()),
 		Amount:       "1000000000000000000",
-		TokenAddress: chain.EthAddress,
+		TokenAddress: util.EthAddress,
 	})
 	c.Require().NoError(err)
 

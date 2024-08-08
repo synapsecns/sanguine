@@ -1,35 +1,35 @@
-import { createRef, useState, ReactNode } from 'react';
-import { createPopper, Placement } from '@popperjs/core';
+import { createRef, useState, ReactNode } from 'react'
+import { createPopper, Placement } from '@popperjs/core'
 
 interface TooltipProps {
-  children: ReactNode;
-  title?: string;
-  content: any;
-  className?: string;
-  tooltipClassName?: string;
+  children: ReactNode
+  title?: string
+  content: any
+  className?: string
+  tooltipClassName?: string
 }
 
-export default function Tooltip({
-                                  children,
-                                  title,
-                                  content,
-                                  className,
-                                  tooltipClassName,
-                                }: TooltipProps) {
-  const [tooltipShow, setTooltipShow] = useState(false);
-  const btnRef = createRef<HTMLDivElement>();
-  const tooltipRef = createRef<HTMLDivElement>();
+export const Tooltip = ({
+  children,
+  title,
+  content,
+  className,
+  tooltipClassName,
+}: TooltipProps) => {
+  const [tooltipShow, setTooltipShow] = useState(false)
+  const btnRef = createRef<HTMLDivElement>()
+  const tooltipRef = createRef<HTMLDivElement>()
 
   const openLeftTooltip = () => {
     createPopper(btnRef.current, tooltipRef.current, {
       placement: 'bottom' as Placement,
-    });
-    setTooltipShow(true);
-  };
+    })
+    setTooltipShow(true)
+  }
 
   const closeLeftTooltip = () => {
-    setTooltipShow(false);
-  };
+    setTooltipShow(false)
+  }
 
   return (
     <>
@@ -70,5 +70,5 @@ export default function Tooltip({
         </div>
       </div>
     </>
-  );
+  )
 }

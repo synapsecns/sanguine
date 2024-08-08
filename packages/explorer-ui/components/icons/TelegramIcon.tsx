@@ -1,4 +1,4 @@
-export default function TelegramIcon(props) {
+export const TelegramIcon = (props) => {
   return (
     <svg
       fill="currentColor"

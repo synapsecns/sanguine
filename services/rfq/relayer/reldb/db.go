@@ -28,6 +28,9 @@ type Writer interface {
 	// UpdateRebalance updates the status of a rebalance action.
 	// If the origin is supplied, it will be used to update the ID for the corresponding rebalance model.
 	UpdateRebalance(ctx context.Context, rebalance Rebalance, updateID bool) error
+	// UpdateLatestRebalance updates a rebalance action.
+	// This is meant to be used in cases where a consistent rebalance ID cannot be determined across chains.
+	UpdateLatestRebalance(ctx context.Context, rebalance Rebalance) error
 	// UpdateDestTxHash updates the dest tx hash of a quote request
 	UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash common.Hash) error
 	// UpdateRelayNonce updates the relay nonce of a quote request

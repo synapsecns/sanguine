@@ -400,6 +400,7 @@ const dailyVolumeBridgeMvPt1 = `
        results[8453]                AS base,
        results[81457]               AS blast,
        results[534352]              AS scroll,
+	   results[59144]               AS linea,
        arraySum(mapValues(results)) AS total
          FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
@@ -443,6 +444,7 @@ const dailyVolumeBridge = `
        results[8453]                AS base,
        results[81457]               AS blast,
        results[534352]              AS scroll,
+	   results[59144]               AS linea,
        arraySum(mapValues(results)) AS total
          FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
@@ -538,6 +540,7 @@ SELECT date,
        results[8453]                AS base,
        results[81457]               AS blast,
        results[534352]              AS scroll,
+	   results[59144]               AS linea,
        arraySum(mapValues(results)) AS total
 FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date), toString(m.date)) AS date,
@@ -639,6 +642,7 @@ SELECT date,
        results[8453]                AS base,
        results[81457]               AS blast,
        results[534352]              AS scroll,
+	   results[59144]               AS linea,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
@@ -669,6 +673,7 @@ SELECT date,
        results[8453]                AS base,
        results[81457]               AS blast,
        results[534352]              AS scroll,
+	   results[59144]               AS linea,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
@@ -700,6 +705,7 @@ SELECT date,
        results[8453]                AS base,
        results[81457]               AS blast,
        results[534352]              AS scroll,
+	   results[59144]               AS linea,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,

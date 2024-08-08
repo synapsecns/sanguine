@@ -1,7 +1,7 @@
-import _ from 'lodash';
-import { useRef, useState, useEffect } from 'react';
-import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg';
-import { formatUSD } from '@utils/formatUSD';
+import _ from 'lodash'
+import { useRef, useState, useEffect } from 'react'
+import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
+import { formatUSD } from '@utils/formatUSD'
 import {
   Bar,
   BarChart,
@@ -9,23 +9,23 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts';
-import { CurrencyTooltip } from '@components/misc/ToolTip';
+} from 'recharts'
+import { CurrencyTooltip } from '@components/misc/ToolTip'
 
 export const addOrSetObject = (obj: any, key: string, value: any) => {
-  obj[key] ? (obj[key] += value) : (obj[key] = value);
-};
+  obj[key] ? (obj[key] += value) : (obj[key] = value)
+}
 
 interface OverviewChartProps {
-  chartData: any[];
-  isUSD: boolean;
-  loading?: boolean;
-  showAggregated: boolean;
-  height?: number;
-  dailyStatisticType: any;
-  platform: any;
-  singleChain?: boolean;
-  noTooltipLink?: boolean;
+  chartData: any[]
+  isUSD: boolean
+  loading?: boolean
+  showAggregated: boolean
+  height?: number
+  dailyStatisticType: any
+  platform: any
+  singleChain?: boolean
+  noTooltipLink?: boolean
 }
 
 export const OverviewChart: React.FC<OverviewChartProps> = ({
@@ -46,106 +46,106 @@ export const OverviewChart: React.FC<OverviewChartProps> = ({
           <SynapseLogoSvg />
         </div>
       </div>
-    );
+    )
   }
 
   const initialData = (getNames: boolean, payload) => {
     if (chartData.length === 0) {
-      return [];
+      return []
     }
 
     const items = Object.keys(payload).map((key) => {
       if (payload[key] > 0 && key !== 'total') {
-        return [key, payload[key]];
+        return [key, payload[key]]
       } else {
-        return [key, 0];
+        return [key, 0]
       }
-    });
+    })
 
     if (items.length === 0) {
-      return [];
+      return []
     }
 
     // Sort the array based on the second element
-    items.sort(function (first, second) {
-      return second[1] - first[1];
-    });
+    items.sort((first, second) => {
+      return second[1] - first[1]
+    })
 
     if (getNames) {
-      const names = items.map((item) => item[0]);
-      return names;
+      const names = items.map((item) => item[0])
+      return names
     }
 
-    const values = items.map((item) => item[1]);
-    return values;
-  };
+    const values = items.map((item) => item[1])
+    return values
+  }
 
-  const toolTipNamesRef = useRef<any>();
-  const toolTipValuesRef = useRef<any>();
-  const toolTipLabelRef = useRef<any>();
-  const [rerenderToken, setRerenderToken] = useState(0);
+  const toolTipNamesRef = useRef<any>()
+  const toolTipValuesRef = useRef<any>()
+  const toolTipLabelRef = useRef<any>()
+  const [rerenderToken, setRerenderToken] = useState(0)
 
   useEffect(() => {
     const payload = chartData[chartData.length - 1]
-    toolTipNamesRef.current = initialData(true, payload);
-    toolTipValuesRef.current = initialData(false, payload);
-    toolTipLabelRef.current = chartData[chartData.length - 1]?.date;
+    toolTipNamesRef.current = initialData(true, payload)
+    toolTipValuesRef.current = initialData(false, payload)
+    toolTipLabelRef.current = chartData[chartData.length - 1]?.date
     setRerenderToken(rerenderToken + 1)
-  }, [chartData]);
+  }, [chartData])
 
   const getToolTip = ({
     active,
     payload,
     label,
-    isUSD,
+    isUSD: isUSDTooltip,
   }: {
-    active: boolean;
-    payload: any[];
-    label: string;
-    isUSD: boolean;
+    active: boolean
+    payload: any[]
+    label: string
+    isUSD: boolean
   }) => {
-    payload.sort((a, b) => b.value - a.value);
-    const names = _.map(payload, 'name');
-    const values = _.map(payload, 'value');
+    payload.sort((a, b) => b.value - a.value)
+    const names = _.map(payload, 'name')
+    const values = _.map(payload, 'value')
 
     if (active) {
       if (toolTipNamesRef.current !== names && names.length > 0) {
-        toolTipNamesRef.current = names;
+        toolTipNamesRef.current = names
       }
       if (toolTipValuesRef.current !== values && values.length > 0) {
-        toolTipValuesRef.current = values;
+        toolTipValuesRef.current = values
       }
       if (toolTipLabelRef.current !== label && label != null) {
-        toolTipLabelRef.current = label;
+        toolTipLabelRef.current = label
       }
       return (
         <CurrencyTooltip
           label={toolTipLabelRef.current}
           names={toolTipNamesRef.current}
           values={toolTipValuesRef.current}
-          isUSD={isUSD}
+          isUSD={isUSDTooltip}
           dailyStatisticType={dailyStatisticType}
           platform={platform}
           singleChain={singleChain}
           noTooltipLink={noTooltipLink}
           key={rerenderToken}
         />
-      );
+      )
     }
     return (
       <CurrencyTooltip
         label={toolTipLabelRef.current}
         names={toolTipNamesRef.current}
         values={toolTipValuesRef.current}
-        isUSD={isUSD}
+        isUSD={isUSDTooltip}
         dailyStatisticType={dailyStatisticType}
         platform={platform}
         singleChain={singleChain}
         noTooltipLink={noTooltipLink}
         key={rerenderToken}
       />
-    );
-  };
+    )
+  }
 
   return (
     <>
@@ -314,10 +314,16 @@ export const OverviewChart: React.FC<OverviewChartProps> = ({
                 stackId="a"
                 fill={loading ? 'rgba(255, 255, 255, 0.1)' : '#FFEEDA'}
               />
+              <Bar
+                isAnimationActive={false}
+                dataKey="linea"
+                stackId="a"
+                fill={loading ? 'rgba(255, 255, 255, 0.1)' : '#000000'}
+              />
             </>
           )}
         </BarChart>
       </ResponsiveContainer>
     </>
-  );
-};
+  )
+}

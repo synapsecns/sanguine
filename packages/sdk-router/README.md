@@ -4,7 +4,7 @@
 
 This package contains the Synapse Protocol Cross-Chain Swap and Bridging SDK
 
-[See the Docs](https://synapserouter.gitbook.io/bridge-sdk-2)
+[See the Docs](https://synapse-3.gitbook.io/synapse-protocol/developers/bridge-sdk)
 
 # Synapse SDK
 
@@ -46,6 +46,28 @@ const synapseSDK = new SynapseSDK(chainIds, providers)
 
 ## Bridging
 
+### Router Deployments
+
+The Routers for each module are deployed to consistent addresses across all chains, with a few exceptions noted below.
+
+| Bridge Module | Chain   | Address                                      |
+| ------------- | ------- | -------------------------------------------- |
+| SynapseBridge | All[^1] | `0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a` |
+| SynapseBridge | Blast   | `0x0000000000365b1d5B142732CF4d33BcddED21Fc` |
+| SynapseCCTP   | All     | `0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48` |
+| SynapseRFQ    | All     | `0x00cD000000003f7F682BE4813200893d4e690000` |
+
+[^1]: Except Blast
+
+### Deprecated Router Deployments
+
+The following deployments are no longer in use and should be avoided. Please refer to the latest deployments in the table above.
+
+| Bridge Module | Chain | Address                                          |
+| ------------- | ----- | ------------------------------------------------ |
+| SynapseBridge | Blast | ~~`0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a`~~ |
+| SynapseRFQ    | All   | ~~`0x0000000000489d89D2B233D3375C045dfD05745F`~~ |
+
 ### Full bridging workflow
 
 ![Bridging Workflow](./puml/BridgingWorkflow.png)
@@ -77,17 +99,28 @@ const bridgeQuotes: BridgeQuote[] = await synapseSDK.allBridgeQuotes(
   tokenOut,
   // Amount of tokens to bridge, in origin token decimals: 1_000_000_000
   amountIn,
-  // Deadline for the transaction to be initiated on the origin chain, in seconds (optional)
-  deadline
+  {
+    // Deadline for the transaction to be initiated on the origin chain, in seconds (optional)
+    deadline: 1234567890,
+    // List of bridge modules to exclude from the result, optional.
+    // Empty list means that all modules are included.
+    excludedModules: ['SynapseBridge', 'SynapseCCTP', 'SynapseRFQ'],
+    // Address of the user on the origin chain, optional.
+    // MANDATORY if a smart contract is going to initiate the bridge operation on behalf of the user.
+    originUserAddress: '0x1234567890abcdef1234567890abcdef12345678',
+  }
 )
 ```
 
-The returned list is sorted by the `maxAmountOut` field, so the first quote is the one yielding the highest amount of tokens on the destination chain.
+- **Important:** It is crucial to provide the `originUserAddress` when a smart contract will initiate the bridge operation on behalf of the user. This requirement applies to smart wallets (e.g., Safe) and third-party integrations (such as bridge aggregator smart contracts).
+- For native gas tokens (e.g., ETH on Ethereum/Arbitrum, AVAX on Avalanche, etc.), use the specialized address `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE` instead of the token address for either input or output tokens.
+- The returned list is sorted by the `maxAmountOut` field in descending order, with the first quote offering the highest amount of tokens on the destination chain.
+- All quotes in the list are provided without any slippage settings applied. To add slippage to the quotes, use the `applyBridgeSlippage` function.
+- All quotes in the list include the provided origin deadline. If no deadline is specified, the default module's deadline is used. To modify the deadline for the quotes, use the `applyBridgeDeadline` function.
+- All quotes in the list include the default destination deadline.
 
-If either of the input/output tokens is a native gas token (e.g. ETH on Ethereum/Arbitrum, AVAX on Avalanche, etc.), the specialized address `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE` should be used instead of the token address.
-
-> **Note:** The `bridgeQuote` method is a wrapper around the `allBridgeQuotes` method.
-> `bridgeQuote` returns only the first quote from the list, while `allBridgeQuotes` returns the entire list.
+> **Note:** The `bridgeQuote` method serves as a wrapper for the `allBridgeQuotes` method.
+> While `bridgeQuote` returns only the first (best) quote from the list, `allBridgeQuotes` provides the complete list of quotes.
 
 ### `BridgeQuote` object
 

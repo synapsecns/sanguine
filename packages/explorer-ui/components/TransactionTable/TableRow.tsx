@@ -1,8 +1,11 @@
-export function TableRow({ items, className }) {
+export const TableRow = ({ items, className }) => {
   return (
     <tr className={`transition ease-out ${className}`}>
       {items.map((item, index) => (
-        <td key={index} className="whitespace-nowrap px-2 py-2 text-sm text-white">
+        <td
+          key={index}
+          className="px-2 py-2 text-sm text-white whitespace-nowrap"
+        >
           {item}
         </td>
       ))}
@@ -25,7 +28,7 @@ export function TableRow({ items, className }) {
 //     exited: { opacity: 0 },
 //   };
 //   let rowItems = (<>{items.map((item) => {
-//     <td className="whitespace-nowrap px-2 py-2 text-sm  text-white" >
+//     <td className="px-2 py-2 text-sm text-white whitespace-nowrap" >
 //       {item}
 //     </td>
 //   })}</>)
