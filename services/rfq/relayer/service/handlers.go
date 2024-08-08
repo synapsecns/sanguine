@@ -162,6 +162,25 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
+	// check balance and mark it as CommitPending
+	err = q.commitPendingBalance(ctx, span, request)
+	if err != nil {
+		return fmt.Errorf("could not commit pending balance: %w", err)
+	}
+
+	// immediately forward the request to handleCommitPending
+	span.AddEvent("forwarding to handleCommitPending")
+	fwdErr := q.Forward(ctx, request)
+	if fwdErr != nil {
+		logger.Errorf("could not forward to handle commit pending: %w", fwdErr)
+		span.AddEvent("could not forward to handle commit pending")
+	}
+
+	return nil
+}
+
+// commitPendingBalance locks the balance and marks the request as CommitPending.
+func (q *QuoteRequestHandler) commitPendingBalance(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	// lock the consumed balance
 	key := getBalanceMtxKey(q.Dest.ChainID, request.Transaction.DestToken)
 	span.SetAttributes(attribute.String("balance_lock_key", key))
@@ -220,14 +239,6 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending, &request.Status)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
-	}
-
-	// immediately forward the request to handleCommitPending
-	span.AddEvent("forwarding to handleCommitPending")
-	fwdErr := q.Forward(ctx, request)
-	if fwdErr != nil {
-		logger.Errorf("could not forward to handle commit pending: %w", fwdErr)
-		span.AddEvent("could not forward to handle commit pending")
 	}
 
 	return nil
