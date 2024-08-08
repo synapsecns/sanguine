@@ -318,7 +318,14 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 //
 // This is the fifth step in the bridge process. Here we check if the relay has been completed on the destination chain.
 // Notably, this is polled from the chain listener rather than the database since we wait for the log to show up.
-func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridgeBridgeRelayed) (err error) {
+func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRelayed) (err error) {
+	ctx, span := r.metrics.Tracer().Start(parentCtx, "handleRelayLog",
+		trace.WithAttributes(attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:]))),
+	)
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	reqID, err := r.db.GetQuoteRequestByID(ctx, req.TransactionId)
 	if err != nil {
 		return fmt.Errorf("could not get quote request: %w", err)
@@ -336,6 +343,7 @@ func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridge
 	if err != nil {
 		return fmt.Errorf("could not update dest tx hash: %w", err)
 	}
+	span.SetAttributes(attribute.String("dest_tx_hash", hexutil.Encode(req.Raw.TxHash[:])))
 
 	err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.RelayCompleted, nil)
 	if err != nil {
@@ -391,7 +399,9 @@ func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastB
 // Step 8: ClaimPending
 //
 // we'll wait until optimistic period is over to check if we can claim.
-func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
+//
+//nolint:cyclop
+func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	// we shouldnt' check the claim yet
 	if !q.shouldCheckClaim(request) {
 		return nil
@@ -411,13 +421,32 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 	if err != nil {
 		return fmt.Errorf("could not make contract call: %w", err)
 	}
-
-	if bs == fastbridge.RelayerClaimed.Int() {
+	switch bs {
+	case fastbridge.RelayerProved.Int():
+		// no op
+	case fastbridge.RelayerClaimed.Int():
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimCompleted, &request.Status)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
+	default:
+		if span != nil {
+			span.SetAttributes(attribute.Int("claim_bridge_status", int(bs)))
+			span.AddEvent("unexpected bridge status for claim")
+		}
 		return nil
+	}
+
+	proofs, err := q.Origin.Bridge.BridgeProofs(&bind.CallOpts{Context: ctx}, request.TransactionID)
+	if err != nil {
+		return fmt.Errorf("could not get bridge proofs: %w", err)
+	}
+	if proofs.Relayer != q.RelayerAddress {
+		if span != nil {
+			span.SetAttributes(attribute.String("proof_relayer", proofs.Relayer.String()))
+			span.AddEvent("unexpected relayer in proof")
+		}
+		return fmt.Errorf("onchain proof does not match our relayer")
 	}
 
 	var canClaim bool
