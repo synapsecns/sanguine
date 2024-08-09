@@ -199,9 +199,15 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 		}
 
 		event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRelayed)
-		if ok {
-			return relayMatchesBridgeRequest(event, bridgeRequest), nil
+		if !ok {
+			continue
 		}
+
+		if event.Relayer != proven.RelayerAddress {
+			continue
+		}
+
+		return relayMatchesBridgeRequest(event, bridgeRequest), nil
 	}
 
 	return false, nil
