@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -40,7 +41,6 @@ func NewRateLimiter(
 	tokens map[string]relconfig.TokenConfig,
 ) Limiter {
 	return &limiterImpl{
-		// Limiter:    ratelimit.New(cfg.MaxRFQSize),
 		client:     client,
 		metrics:    metricHandler,
 		quoter:     q,
@@ -51,19 +51,9 @@ func NewRateLimiter(
 
 // IsAllowed returns true if the request is allowed, false otherwise.
 func (l *limiterImpl) IsAllowed(ctx context.Context, request reldb.QuoteRequest) (_ bool, err error) {
-	ctx, span := l.metrics.Tracer().Start(ctx, "limiter.IsAllowed", trace.WithAttributes(
-		attribute.Int64("block_number", int64(request.BlockNumber)),
-		attribute.Int64("origin_token_decimals", int64(request.OriginTokenDecimals)),
-		attribute.Int64("dest_token_decimals", int64(request.DestTokenDecimals)),
-		attribute.String("transaction_id", fmt.Sprintf("%x", request.TransactionID)),
-		attribute.String("sender", request.Sender.Hex()),
-		attribute.String("origin_chain_id", fmt.Sprint(request.Transaction.OriginChainId)),
-		attribute.String("origin_token", request.Transaction.OriginToken.Hex()),
-		attribute.String("origin_amount", request.Transaction.OriginAmount.String()),
-		attribute.String("status", request.Status.String()),
-		attribute.String("origin_tx_hash", request.OriginTxHash.Hex()),
-		attribute.Int64("relay_nonce", int64(request.RelayNonce)),
-	))
+	ctx, span := l.metrics.Tracer().Start(
+		ctx, "limiter.IsAllowed", trace.WithAttributes(util.QuoteRequestToAttributes(request)...),
+	)
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -117,12 +107,16 @@ func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request reldb.
 }
 
 func (l *limiterImpl) withinSizeLimit(ctx context.Context, request reldb.QuoteRequest) (bool, error) {
+	volumeLimit := l.cfg.GetVolumeLimit(int(request.Transaction.OriginChainId), request.Transaction.OriginToken)
+	// There is no limit.
+	if volumeLimit.Cmp(common.Big0) == 0 {
+		return true, nil
+	}
+
 	tokenPrice, err := l.getUSDAmountOfToken(ctx, request)
 	if err != nil {
 		return false, fmt.Errorf("could not get USD amount of token: %w", err)
 	}
-
-	volumeLimit := l.cfg.GetVolumeLimit(int(request.Transaction.OriginChainId), request.Transaction.OriginToken)
 
 	return tokenPrice.Cmp(volumeLimit) < 0, nil
 }

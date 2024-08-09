@@ -56,8 +56,6 @@ type QuoteRequestHandler struct {
 	handlerMtx mapmutex.StringMapMutex
 	// limiter is the rate limiter.
 	limiter limiter.Limiter
-	// volumeLimit is the volume limit for the relayed amounts
-	volumeLimit *big.Int
 	// tokenNames is the map of addresses to token names
 	tokenNames map[string]relconfig.TokenConfig
 }
@@ -98,7 +96,6 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		apiClient:           r.apiClient,
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
-		volumeLimit:         r.cfg.GetVolumeLimit(int(origin.ChainID), req.Transaction.OriginToken),
 		// TODO: this should be configurable
 		limiter:    limiter.NewRateLimiter(r.cfg, r.quoter, chainClient, r.metrics, originTokens),
 		tokenNames: originTokens,
