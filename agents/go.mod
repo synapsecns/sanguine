@@ -51,6 +51,7 @@ require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/DenrianWeiss/tracely v0.0.0-20220624070317-49cf8afaaf18 // indirect
+	github.com/Rookout/GoSDK v0.1.49 // indirect
 	github.com/alecthomas/colour v0.1.0 // indirect
 	github.com/alecthomas/repr v0.0.0-20210801044451-80ca428c5142 // indirect
 	github.com/bcicen/jstream v1.0.1 // indirect
@@ -72,11 +73,13 @@ require (
 	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
 	github.com/ethereum/c-kzg-4844 v0.4.0 // indirect
+	github.com/fallais/logrus-lumberjack-hook v0.0.0-20210917073259-3227e1ab93b0 // indirect
 	github.com/flowchartsman/swaggerui v0.0.0-20221017034628-909ed4f3701b // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08 // indirect
 	github.com/gballet/go-verkle v0.1.1-0.20231031103413-a67434b50f46 // indirect
 	github.com/getsentry/sentry-go v0.18.0 // indirect
+	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/gofrs/flock v0.12.0 // indirect
 	github.com/grafana/otel-profiling-go v0.5.1 // indirect
 	github.com/grafana/pyroscope-go v1.1.1 // indirect
@@ -101,6 +104,7 @@ require (
 	github.com/uptrace/opentelemetry-go-extra/otelutil v0.3.1 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelzap v0.3.1 // indirect
 	github.com/valyala/fastjson v1.6.4 // indirect
+	github.com/yhirose/go-peg v0.0.0-20210804202551-de25d6753cf1 // indirect
 	go.opentelemetry.io/otel/log v0.3.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240701130421-f6361c86f094 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240701130421-f6361c86f094 // indirect

@@ -4,7 +4,7 @@ The metrics package contains standard drivers for opentracing, profiling and met
 
 | `METRICS_HANDLER` env | Description                                                                                                                                                                                                                                                                                                                                                                                                                          | Supports Traces | Supports Span Events | Supports Profiling                                                                            |
 |-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|----------------------|-----------------------------------------------------------------------------------------------|
-| OTLP                  | [OTLP Exporter](https://opentelemetry.io/docs/specs/otel/protocol/exporter/) protocol. Supported by various external providers including [New Relic](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/opentelemetry-introduction/), [Signoz](https://signoz.io/blog/opentelemetry-collector-complete-guide/), [Grafana](https://grafana.com/docs/opentelemetry/collector/) and more | ✅               | ✅                    | ❌ (but it can through pyroscope, by specifying the `PYROSCOPE_ENDPOINT` enviornment variable) |
+| OTLP                  | [OTLP Exporter](https://opentelemetry.io/docs/specs/otel/protocol/exporter/) protocol. Supported by various external providers including [New Relic](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/opentelemetry-introduction/), [Signoz](https://signoz.io/blog/opentelemetry-collector-complete-guide/), [Grafana](https://grafana.com/docs/opentelemetry/collector/) and more | ✅               | ✅                    | ❌ (but it can through pyroscope, by specifying the `PYROSCOPE_ENDPOINT` environment variable) |
 | Jaeger                | [Jaeger](https://www.jaegertracing.io/docs/1.46/) Client Clibrary, will soon be deprecated in favor of OTLP exports to jaeger as per [this deprecation notice](https://www.jaegertracing.io/docs/1.46/client-libraries/)                                                                                                                                                                                                             | ✅               | ✅                    | ❌ (but it can through pyroscope, by specifying the `PYROSCOPE_ENDPOINT` enviornment variable) |
 
 
@@ -22,6 +22,11 @@ Pass in the `JAEGER_ENDPOINT` enviornment variable
 ## Pyroscope
 
 Pass in the `PYROSCOPE_ENDPOINT` environment variable
+
+## Rookout
+
+Pass in `ROOKOUT_TOKEN`. Note: this will not work if ldflags -s and -w are used, as these disable the symbol table. Additionally the gcflag `all=-dwarflocationlists=true` must be enabled. You can override the git repo by setting an ldflag on `github.com/synapsecns/sanguine/core/metrics.DefaultGitRepo` to your repo or setting the enviornment variable `GIT_REPO`.
+Additionally, all [rookout enviornment](https://docs.rookout.com/docs/setup-guide/#configuration) variables are supported.
 
 ## Metrics Endpoint
 
@@ -48,9 +53,9 @@ The current logger is currently depended on by a large amount of modules:
 
 ### Limitations
 
-Currently, no enviornment variables are supported for the logger. This is a known limitation and will be fixed in a future release. Things like controlling the log level, sugarring, format, etc are [not currently supported](https://pkg.go.dev/go.uber.org/zap#NewProductionConfig). These will be added as the module beocmes more stable.
+Currently, no environment variables are supported for the logger. This is a known limitation and will be fixed in a future release. Things like controlling the log level, sugaring, format, etc are [not currently supported](https://pkg.go.dev/go.uber.org/zap#NewProductionConfig). These will be added as the module beocmes more stable.
 
-Note: because both  [ipfs go-log]("https://github.com/ipfs/go-log") and [otelzap logger](https://pkg.go.dev/github.com/uptrace/opentelemetry-go-extra/otelzap) depend on zap globals, in orderr to enable globals you can set `ENABLE_EXPERIMENTAL_ZAP_GLOBALS` to `true` in your environment. This will enable the zap globals, and you can use the `handler.Logger` to log to the global logger. This is not recommended, and will be removed in a future release.
+Note: because both  [ipfs go-log]("https://github.com/ipfs/go-log") and [otelzap logger](https://pkg.go.dev/github.com/uptrace/opentelemetry-go-extra/otelzap) depend on zap globals, in order to enable globals you can set `ENABLE_EXPERIMENTAL_ZAP_GLOBALS` to `true` in your environment. This will enable the zap globals, and you can use the `handler.Logger` to log to the global logger. This is not recommended, and will be removed in a future release.
 
 ### Using the logger
 
