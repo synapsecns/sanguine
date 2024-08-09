@@ -162,6 +162,7 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 	return nil
 }
 
+//nolint:cyclop
 func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest) (bool, error) {
 	span := trace.SpanFromContext(ctx)
 
