@@ -45,6 +45,14 @@ export const AvailableBalance = ({
     )
   }
 
+  if (!originChainId) {
+    return (
+      <div className="text-sm text-[--synapse-secondary] whitespace-nowrap">
+        Select source chain
+      </div>
+    )
+  }
+
   return (
     <div
       className={`
