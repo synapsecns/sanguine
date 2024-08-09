@@ -176,11 +176,11 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 	if err != nil {
 		return false, fmt.Errorf("could not get receipt: %w", err)
 	}
-	addr, err := g.cfg.GetRFQAddress(int(bridgeRequest.Transaction.DestChainId))
+	rfqAddr, err := g.cfg.GetRFQAddress(int(bridgeRequest.Transaction.DestChainId))
 	if err != nil {
 		return false, fmt.Errorf("could not get rfq address: %w", err)
 	}
-	parser, err := fastbridge.NewParser(common.HexToAddress(addr))
+	parser, err := fastbridge.NewParser(common.HexToAddress(rfqAddr))
 	if err != nil {
 		return false, fmt.Errorf("could not get parser: %w", err)
 	}
@@ -188,6 +188,10 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 	for _, log := range receipt.Logs {
 		_, parsedEvent, ok := parser.ParseEvent(*log)
 		if !ok {
+			continue
+		}
+
+		if log.Address != common.HexToAddress(rfqAddr) {
 			continue
 		}
 
