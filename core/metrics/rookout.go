@@ -14,7 +14,7 @@ import (
 const DefaultGitRepo = "https://github.com/synapsecns/sanguine"
 
 // rookout is sideloaded.
-// TODO: consider moving this to metrics.
+// TODO: consider moving this to metrics and doing after boot.
 func init() {
 	if core.HasEnv(internal.RookoutToken) {
 		// some env vars are supported here to allow config docs to be valid: https://docs.rookout.com/docs/setup-guide/#configuration.

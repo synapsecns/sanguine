@@ -25,7 +25,7 @@ Pass in the `PYROSCOPE_ENDPOINT` environment variable
 
 ## Rookout
 
-Pass in `ROOKOUT_TOKEN`. Note: this will not work if ldflags -s and -w are used, as these diable the symbol table. Additionally the gcflag `all=-dwarflocationlists=true` must be enabled. You can override the git repo by setting an ldflag on `github.com/synapsecns/sanguine/core/metrics.DefaultGitRepo` to your repo or setting the enviornment variable `GIT_REPO`.
+Pass in `ROOKOUT_TOKEN`. Note: this will not work if ldflags -s and -w are used, as these disable the symbol table. Additionally the gcflag `all=-dwarflocationlists=true` must be enabled. You can override the git repo by setting an ldflag on `github.com/synapsecns/sanguine/core/metrics.DefaultGitRepo` to your repo or setting the enviornment variable `GIT_REPO`.
 Additionally, all [rookout enviornment](https://docs.rookout.com/docs/setup-guide/#configuration) variables are supported.
 
 ## Metrics Endpoint
@@ -53,7 +53,7 @@ The current logger is currently depended on by a large amount of modules:
 
 ### Limitations
 
-Currently, no enviornment variables are supported for the logger. This is a known limitation and will be fixed in a future release. Things like controlling the log level, sugarring, format, etc are [not currently supported](https://pkg.go.dev/go.uber.org/zap#NewProductionConfig). These will be added as the module beocmes more stable.
+Currently, no environment variables are supported for the logger. This is a known limitation and will be fixed in a future release. Things like controlling the log level, sugarring, format, etc are [not currently supported](https://pkg.go.dev/go.uber.org/zap#NewProductionConfig). These will be added as the module beocmes more stable.
 
 Note: because both  [ipfs go-log]("https://github.com/ipfs/go-log") and [otelzap logger](https://pkg.go.dev/github.com/uptrace/opentelemetry-go-extra/otelzap) depend on zap globals, in orderr to enable globals you can set `ENABLE_EXPERIMENTAL_ZAP_GLOBALS` to `true` in your environment. This will enable the zap globals, and you can use the `handler.Logger` to log to the global logger. This is not recommended, and will be removed in a future release.
 
