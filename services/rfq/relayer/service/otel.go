@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 
 	"github.com/cornelk/hashmap"
@@ -29,8 +30,12 @@ type otelRecorder struct {
 	metrics metrics.Handler
 	// meter is the metrics meter.
 	meter metric.Meter
+	// db is the relayer database.
+	db reldb.Service
 	// statusCountGauge is the gauge for the status.
 	statusCountGauge metric.Int64ObservableGauge
+	// rebalanceCountGauge is the gauge for the rebalances.
+	rebalanceCountGauge metric.Int64ObservableGauge
 	// statusCounts is used for metrics.
 	// status -> count
 	statusCounts *hashmap.Map[reldb.QuoteRequestStatus, int]
@@ -38,9 +43,10 @@ type otelRecorder struct {
 	signer signer.Signer
 }
 
-func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOtelRecorder, err error) {
+func newOtelRecorder(meterHandler metrics.Handler, db reldb.Service, signer signer.Signer) (_ iOtelRecorder, err error) {
 	or := otelRecorder{
 		metrics:      meterHandler,
+		db:           db,
 		meter:        meterHandler.Meter(meterName),
 		statusCounts: hashmap.New[reldb.QuoteRequestStatus, int](),
 		signer:       signer,
@@ -51,9 +57,19 @@ func newOtelRecorder(meterHandler metrics.Handler, signer signer.Signer) (_ iOte
 		return nil, fmt.Errorf("could not create status count gauge: %w", err)
 	}
 
+	or.rebalanceCountGauge, err = or.meter.Int64ObservableGauge("rebalance_count")
+	if err != nil {
+		return nil, fmt.Errorf("could not create rebalance count gauge: %w", err)
+	}
+
 	_, err = or.meter.RegisterCallback(or.recordStatusCounts, or.statusCountGauge)
 	if err != nil {
 		return nil, fmt.Errorf("could not register callback for status count gauge: %w", err)
+	}
+
+	_, err = or.meter.RegisterCallback(or.recordRebalanceCounts, or.rebalanceCountGauge)
+	if err != nil {
+		return nil, fmt.Errorf("could not register callback for rebalance count gauge: %w", err)
 	}
 
 	return &or, nil
@@ -74,6 +90,32 @@ func (o *otelRecorder) recordStatusCounts(_ context.Context, observer metric.Obs
 
 		return true
 	})
+
+	return nil
+}
+
+func (o *otelRecorder) recordRebalanceCounts(ctx context.Context, observer metric.Observer) (err error) {
+	if o.metrics == nil || o.rebalanceCountGauge == nil || o.db == nil {
+		return nil
+	}
+
+	pendingRebalances, err := o.db.GetPendingRebalances(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get pending rebalances: %w", err)
+	}
+
+	rebalanceIDs := []string{}
+	for _, r := range pendingRebalances {
+		if r.RebalanceID != nil {
+			rebalanceIDs = append(rebalanceIDs, *r.RebalanceID)
+		}
+	}
+
+	opts := metric.WithAttributes(
+		attribute.String("wallet", o.signer.Address().Hex()),
+		attribute.StringSlice("rebalance_ids", rebalanceIDs),
+	)
+	observer.ObserveInt64(o.statusCountGauge, int64(len(pendingRebalances)), opts)
 
 	return nil
 }
