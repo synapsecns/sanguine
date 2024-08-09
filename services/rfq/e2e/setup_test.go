@@ -318,6 +318,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 	}
 }
 
+//nolint:gocognit
 func (i *IntegrationSuite) setupRelayer() {
 	// add myself as a filler
 	var wg sync.WaitGroup
