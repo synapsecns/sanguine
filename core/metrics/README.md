@@ -25,7 +25,8 @@ Pass in the `PYROSCOPE_ENDPOINT` environment variable
 
 ## Rookout
 
-Pass in `ROOKOUT_TOKEN`. Note: this will not work if ldflags -s and -w are used, as these diable the symbol table. Additionally the gcflag `all=-dwarflocationlists=true` must be enabled.
+Pass in `ROOKOUT_TOKEN`. Note: this will not work if ldflags -s and -w are used, as these diable the symbol table. Additionally the gcflag `all=-dwarflocationlists=true` must be enabled. You can override the git repo by setting an ldflag on `github.com/synapsecns/sanguine/core/metrics.DefaultGitRepo` to your repo or setting the enviornment variable `GIT_REPO`.
+Additionally, all [rookout enviornment](https://docs.rookout.com/docs/setup-guide/#configuration) variables are supported.
 
 ## Metrics Endpoint
 
