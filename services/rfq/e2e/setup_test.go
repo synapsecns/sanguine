@@ -282,7 +282,6 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 			TokenPriceCacheTTLSeconds: 60,
 		},
 		RebalanceInterval: 0,
-		MaxRFQSize:        10,
 		VolumeLimit:       10_000,
 	}
 }
