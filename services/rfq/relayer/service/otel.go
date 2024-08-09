@@ -99,13 +99,13 @@ func (o *otelRecorder) recordRebalanceCounts(ctx context.Context, observer metri
 		return nil
 	}
 
-	pendingRebalances, err := o.db.GetPendingRebalances(ctx)
+	rebalances, err := o.db.GetPendingRebalances(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get pending rebalances: %w", err)
 	}
 
 	rebalanceIDs := []string{}
-	for _, r := range pendingRebalances {
+	for _, r := range rebalances {
 		if r.RebalanceID != nil {
 			rebalanceIDs = append(rebalanceIDs, *r.RebalanceID)
 		}
@@ -115,7 +115,7 @@ func (o *otelRecorder) recordRebalanceCounts(ctx context.Context, observer metri
 		attribute.String("wallet", o.signer.Address().Hex()),
 		attribute.StringSlice("rebalance_ids", rebalanceIDs),
 	)
-	observer.ObserveInt64(o.statusCountGauge, int64(len(pendingRebalances)), opts)
+	observer.ObserveInt64(o.statusCountGauge, int64(len(rebalances)), opts)
 
 	return nil
 }
