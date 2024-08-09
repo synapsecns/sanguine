@@ -179,7 +179,7 @@ The relayer is configured with a yaml file. The following is an example configur
       - chain_id: 10
         synapse_cctp_address: "0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E"
         token_messenger_address: "0x2B4069517957735bE00ceE0fadAE88a26365528f"
-    base_omnirpc_url: "http://omnirpc"
+    base_omnirpc_url: "http://omnirpc" # Make sure this is configured properly
     unbonded_signer:
       type: GCP
       file: /config/signer.txt
