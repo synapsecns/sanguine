@@ -27,6 +27,32 @@ type RebalanceManager interface {
 	Execute(ctx context.Context, rebalance *RebalanceData) error
 }
 
+// getRebalances gets the best rebalance action for each token.
+func getRebalances(ctx context.Context, cfg relconfig.Config, inv map[int]map[common.Address]*TokenMetadata) (rebalances map[string]*RebalanceData, err error) {
+	rebalances = map[string]*RebalanceData{}
+
+	rebalanceCandidates, err := getRebalanceCandidates(ctx, cfg, inv)
+	if err != nil {
+		return nil, fmt.Errorf("could not get rebalance candidates: %w", err)
+	}
+
+	for tokenName, methodCandidates := range rebalanceCandidates {
+		methodCandidatesSlice := []RebalanceData{}
+		for _, candidate := range methodCandidates {
+			if candidate == nil {
+				continue
+			}
+			methodCandidatesSlice = append(methodCandidatesSlice, *candidate)
+		}
+		rebalances[tokenName], err = getBestRebalance(ctx, methodCandidatesSlice)
+		if err != nil {
+			return nil, fmt.Errorf("could not get best rebalance: %w", err)
+		}
+	}
+
+	return rebalances, nil
+}
+
 // getRebalanceCandidates gets the best rebalance for each token and rebalance method supported by the config.
 func getRebalanceCandidates(ctx context.Context, cfg relconfig.Config, inv map[int]map[common.Address]*TokenMetadata) (rebalances map[string]map[relconfig.RebalanceMethod]*RebalanceData, err error) {
 	rebalances = map[string]map[relconfig.RebalanceMethod]*RebalanceData{}
@@ -110,156 +136,47 @@ func getRebalanceForMethod(ctx context.Context, cfg relconfig.Config, inv map[in
 		}
 	}
 
-	rebalance, err = getBestRebalance(ctx, cfg, inv, rebalanceCandidates)
+	rebalance, err = getBestRebalance(ctx, rebalanceCandidates)
 	if err != nil {
 		return nil, fmt.Errorf("could not get best rebalance: %w", err)
 	}
 
+	if rebalance != nil {
+		rebalance.Amount, err = getRebalanceAmount(ctx, cfg, inv, rebalance.OriginMetadata, rebalance.DestMetadata)
+		if err != nil {
+			return nil, fmt.Errorf("could not get rebalance amount: %w", err)
+		}
+	}
+
 	return rebalance, nil
 }
 
-func getBestRebalance(ctx context.Context, cfg relconfig.Config, inv map[int]map[common.Address]*TokenMetadata, candidates []RebalanceData) (best *RebalanceData, err error) {
-}
+func getBestRebalance(ctx context.Context, candidates []RebalanceData) (best *RebalanceData, err error) {
+	var maxDelta *big.Int
+	best = nil
 
-// getRebalance builds a rebalance action based on current token balances and configured thresholds.
-// Note that only the given chain/token pair is considered for rebalance (as the destination chain).
-//
-//nolint:cyclop,nilnil
-func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
-	// get rebalance method
-	methods, err := cfg.GetRebalanceMethods(chainID, token.Hex())
-	if err != nil {
-		return nil, fmt.Errorf("could not get rebalance method: %w", err)
-	}
-	if len(methods) == 0 {
-		return nil, nil
-	}
+	for _, candidate := range candidates {
+		originBalance := candidate.OriginMetadata.Balance
+		destBalance := candidate.DestMetadata.Balance
 
-	// get token metadata
-	var rebalanceTokenData *TokenMetadata
-	for address, tokenData := range tokens[chainID] {
-		if address == token {
-			rebalanceTokenData = tokenData
-			break
-		}
-	}
+		delta := new(big.Int).Sub(originBalance, destBalance)
 
-	// evaluate the origin and dest of the rebalance based on min/max token balances
-	originTokenData, destTokenData, method := getRebalanceMetadatas(cfg, tokens, rebalanceTokenData.Name, methods)
-	if originTokenData == nil {
-		if span != nil {
-			span.SetAttributes(attribute.Bool("no_rebalance_origin", true))
-		}
-		return nil, nil
-	}
-	if destTokenData == nil {
-		if span != nil {
-			span.SetAttributes(attribute.Bool("no_rebalance_dest", true))
-		}
-		return nil, nil
-	}
-	if method == relconfig.RebalanceMethodNone {
-		if span != nil {
-			span.SetAttributes(attribute.Bool("no_rebalance_method", true))
-		}
-		return nil, nil
-	}
-
-	// if the given chain is not the destination of the rebalance, no need to do anything
-	if destTokenData.ChainID != chainID {
-		if span != nil {
-			span.SetAttributes(attribute.Int("rebalance_dest", destTokenData.ChainID))
-		}
-		return nil, nil
-	}
-
-	amount, err := getRebalanceAmount(span, cfg, tokens, originTokenData, destTokenData)
-	if err != nil {
-		return nil, fmt.Errorf("could not get rebalance amount: %w", err)
-	}
-	if amount == nil {
-		if span != nil {
-			span.SetAttributes(attribute.Bool("no_rebalance_amount", true))
-		}
-		return nil, nil
-	}
-
-	rebalance = &RebalanceData{
-		OriginMetadata: originTokenData,
-		DestMetadata:   destTokenData,
-		Amount:         amount,
-		Method:         method,
-	}
-	return rebalance, nil
-}
-
-// getRebalanceMetadatas finds the origin and dest token metadata based on the configured rebalance method.
-//
-//nolint:nestif,cyclop,gocognit
-func getRebalanceMetadatas(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, methods []relconfig.RebalanceMethod) (originTokenData, destTokenData *TokenMetadata, method relconfig.RebalanceMethod) {
-	candidates := map[relconfig.RebalanceMethod][2]TokenMetadata{}
-	for _, method := range methods {
-		var originCandidate, destCandidate *TokenMetadata
-		for _, tokenMap := range tokens {
-			for _, tokenData := range tokenMap {
-				if tokenData.Name == tokenName {
-					if !isTokenCompatible(tokenData, method, cfg) {
-						continue
-					}
-
-					// assign origin / dest metadata based on min / max balances
-					if originCandidate == nil || tokenData.Balance.Cmp(originCandidate.Balance) > 0 {
-						originCandidate = tokenData
-					}
-					if destCandidate == nil || tokenData.Balance.Cmp(destCandidate.Balance) < 0 {
-						destCandidate = tokenData
-					}
-				}
-			}
-		}
-		if originCandidate != nil && destCandidate != nil {
-			candidates[method] = [2]TokenMetadata{*originCandidate, *destCandidate}
-		}
-	}
-	if len(candidates) == 0 {
-		return nil, nil, relconfig.RebalanceMethodNone
-	}
-
-	// select candidates with largest delta between origin and dest balance
-	maxDelta := big.NewInt(0)
-	for m, c := range candidates {
-		delta := new(big.Int).Sub(c[0].Balance, c[1].Balance)
-		if delta.Cmp(maxDelta) > 0 {
+		if maxDelta == nil || delta.Cmp(maxDelta) > 0 {
 			maxDelta = delta
-			originTokenData = &c[0]
-			destTokenData = &c[1]
-			method = m
+			candidateCopy := candidate
+			best = &candidateCopy
 		}
 	}
-	return originTokenData, destTokenData, method
-}
 
-func isTokenCompatible(tokenData *TokenMetadata, method relconfig.RebalanceMethod, cfg relconfig.Config) bool {
-	// make sure that the token is compatible with our rebalance method
-	tokenMethods, tokenErr := cfg.GetRebalanceMethods(tokenData.ChainID, tokenData.Addr.Hex())
-	if tokenErr != nil {
-		logger.Errorf("could not get token rebalance method: %v", tokenErr)
-		return false
-	}
-
-	isCompatible := false
-	for _, tm := range tokenMethods {
-		if tm == method {
-			isCompatible = true
-		}
-	}
-	return isCompatible
+	return best, nil
 }
 
 // getRebalanceAmount calculates the amount to rebalance based on the configured thresholds.
 //
 //nolint:cyclop,nilnil
-func getRebalanceAmount(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, originTokenData, destTokenData *TokenMetadata) (amount *big.Int, err error) {
+func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, originTokenData, destTokenData *TokenMetadata) (amount *big.Int, err error) {
+	span := trace.SpanFromContext(ctx)
+
 	// get the maintenance and initial values for the destination chain
 	maintenancePct, err := cfg.GetMaintenanceBalancePct(destTokenData.ChainID, destTokenData.Addr.Hex())
 	if err != nil {
