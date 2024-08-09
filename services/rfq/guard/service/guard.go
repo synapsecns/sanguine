@@ -171,8 +171,6 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for chainID := range g.cfg.GetChains() {
-		chainID := chainID // capture func literal
-
 		group.Go(func() error {
 			err := g.runChainIndexer(ctx, chainID)
 			if err != nil {

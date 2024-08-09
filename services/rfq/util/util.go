@@ -11,6 +11,7 @@ import (
 // EthAddress is the address of a chain's native gas token.
 var EthAddress = common.HexToAddress("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE")
 
+// QuoteRequestToAttributes converts a quote request to attributes.
 func QuoteRequestToAttributes(request reldb.QuoteRequest) []attribute.KeyValue {
 	return []attribute.KeyValue{
 		attribute.Int64("block_number", int64(request.BlockNumber)),

@@ -51,7 +51,6 @@ func (s *LimiterSuite) SetupTest() {
 		VolumeLimit: 10_000, // 10k usd
 	}
 	s.metrics = metrics.NewNullHandler()
-
 }
 
 func (s *LimiterSuite) SetupSuite() {

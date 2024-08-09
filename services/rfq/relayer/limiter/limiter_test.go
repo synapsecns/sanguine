@@ -9,17 +9,13 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/limiter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter/mocks"
-		"github.com/synapsecns/sanguine/services/rfq/util"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 func (l *LimiterSuite) TestOverLimitEnoughConfirmations() {
-	mockQuoter := new(mocks.Quoter)
-	mockQuoter.On("GetPrice", mock.Anything, mock.Anything).Once().Return(float64(10001), nil)
-
-	mockClient := new(clientMocks.EVM)
-	// confirmations are enough here
-	mockClient.On("BlockNumber", mock.Anything, mock.Anything).Once().Return(uint64(6), nil)
+	mockQuoter := buildMockQuoter(10001)
+	mockClient := buildMockClient(6)
 
 	l.limiter = limiter.NewRateLimiter(l.cfg, mockQuoter, mockClient, l.metrics, l.cfg.Chains[1].Tokens)
 
@@ -42,12 +38,9 @@ func (l *LimiterSuite) TestOverLimitEnoughConfirmations() {
 }
 
 func (l *LimiterSuite) TestUnderLimitEnoughConfirmations() {
-	mockQuoter := new(mocks.Quoter)
-	mockQuoter.On("GetPrice", mock.Anything, mock.Anything).Once().Return(float64(100), nil)
+	mockQuoter := buildMockQuoter(100)
+	mockClient := buildMockClient(10)
 
-	mockClient := new(clientMocks.EVM)
-	// confirmations are enough here
-	mockClient.On("BlockNumber", mock.Anything, mock.Anything).Once().Return(uint64(10), nil)
 	l.limiter = limiter.NewRateLimiter(l.cfg, mockQuoter, mockClient, l.metrics, l.cfg.Chains[1].Tokens)
 
 	quote := reldb.QuoteRequest{
@@ -66,12 +59,9 @@ func (l *LimiterSuite) TestUnderLimitEnoughConfirmations() {
 }
 
 func (l *LimiterSuite) TestUnderLimitNotEnoughConfirmations() {
-	mockQuoter := new(mocks.Quoter)
-	mockQuoter.On("GetPrice", mock.Anything, mock.Anything).Once().Return(float64(100), nil)
+	mockQuoter := buildMockQuoter(100)
+	mockClient := buildMockClient(1)
 
-	mockClient := new(clientMocks.EVM)
-
-	mockClient.On("BlockNumber", mock.Anything, mock.Anything).Once().Return(uint64(1), nil)
 	l.limiter = limiter.NewRateLimiter(l.cfg, mockQuoter, mockClient, l.metrics, l.cfg.Chains[1].Tokens)
 
 	quote := reldb.QuoteRequest{
@@ -91,12 +81,9 @@ func (l *LimiterSuite) TestUnderLimitNotEnoughConfirmations() {
 }
 
 func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
-	mockQuoter := new(mocks.Quoter)
-	mockQuoter.On("GetPrice", mock.Anything, mock.Anything).Once().Return(float64(69420), nil)
+	mockQuoter := buildMockQuoter(69420)
+	mockClient := buildMockClient(4)
 
-	mockClient := new(clientMocks.EVM)
-
-	mockClient.On("BlockNumber", mock.Anything, mock.Anything).Once().Return(uint64(4), nil)
 	l.limiter = limiter.NewRateLimiter(l.cfg, mockQuoter, mockClient, l.metrics, l.cfg.Chains[1].Tokens)
 
 	quote := reldb.QuoteRequest{
@@ -117,4 +104,16 @@ func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
 
 func (l *LimiterSuite) TestRateLimitOverWindow() {
 	l.T().Skip("TODO: implement the sliding window: queue up requests and process them in order if cumulative volume is above limit")
+}
+
+func buildMockQuoter(price float64) *mocks.Quoter {
+	mockQuoter := new(mocks.Quoter)
+	mockQuoter.On("GetPrice", mock.Anything, mock.Anything).Once().Return(price, nil)
+	return mockQuoter
+}
+
+func buildMockClient(blockNumber uint64) *clientMocks.EVM {
+	mockClient := new(clientMocks.EVM)
+	mockClient.On("BlockNumber", mock.Anything, mock.Anything).Once().Return(blockNumber, nil)
+	return mockClient
 }
