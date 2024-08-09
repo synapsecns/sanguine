@@ -27,6 +27,100 @@ type RebalanceManager interface {
 	Execute(ctx context.Context, rebalance *RebalanceData) error
 }
 
+// getRebalanceCandidates gets the best rebalance for each token and rebalance method supported by the config.
+func getRebalanceCandidates(ctx context.Context, cfg relconfig.Config, inv map[int]map[common.Address]*TokenMetadata) (rebalances map[string]map[relconfig.RebalanceMethod]*RebalanceData, err error) {
+	rebalances = map[string]map[relconfig.RebalanceMethod]*RebalanceData{}
+	for chainID, chainCfg := range cfg.Chains {
+		for tokenName, tokenCfg := range chainCfg.Tokens {
+			if len(tokenCfg.RebalanceMethods) == 0 {
+				continue
+			}
+
+			_, ok := rebalances[tokenName]
+			if !ok {
+				rebalances[tokenName] = map[relconfig.RebalanceMethod]*RebalanceData{}
+			}
+
+			methods, err := cfg.GetRebalanceMethods(chainID, tokenCfg.Address)
+			if err != nil {
+				return nil, fmt.Errorf("could not get rebalance methods: %w", err)
+			}
+			for _, method := range methods {
+				rebalances[tokenName][method], err = getRebalanceForMethod(ctx, cfg, inv, method, tokenName)
+				if err != nil {
+					return nil, fmt.Errorf("could not get rebalance for method %s: %w", method.String(), err)
+				}
+			}
+		}
+	}
+
+	return rebalances, nil
+}
+
+func getRebalanceForMethod(ctx context.Context, cfg relconfig.Config, inv map[int]map[common.Address]*TokenMetadata, method relconfig.RebalanceMethod, tokenName string) (rebalance *RebalanceData, err error) {
+	candidateChains := map[int]*TokenMetadata{}
+	for chainID, chainCfg := range cfg.Chains {
+		var validCandidate bool
+		var candidateMetadata *TokenMetadata
+		for name, tokenCfg := range chainCfg.Tokens {
+			if name != tokenName {
+				continue
+			}
+
+			// check that the token supports given rebalance method
+			supportedMethods, err := cfg.GetRebalanceMethods(chainID, tokenCfg.Address)
+			if err != nil {
+				return nil, fmt.Errorf("could not get rebalance methods: %w", err)
+			}
+			var supported bool
+			for _, m := range supportedMethods {
+				if m == method {
+					supported = true
+					break
+				}
+			}
+			if supported {
+				validCandidate = true
+				candidateMetadata = inv[chainID][common.HexToAddress(tokenCfg.Address)]
+				if candidateMetadata == nil {
+					return nil, fmt.Errorf("could not get token metadata for chain %d and addr %s", chainID, tokenCfg.Address)
+				}
+				break
+			}
+		}
+		if validCandidate {
+			candidateChains[chainID] = candidateMetadata
+		}
+	}
+
+	// now we have candidate chains, produce the rebalance data for each permutation of the chains
+	rebalanceCandidates := []RebalanceData{}
+	for i := range candidateChains {
+		for j := range candidateChains {
+			if i == j {
+				continue
+			}
+
+			candidate := RebalanceData{
+				OriginMetadata: candidateChains[i],
+				DestMetadata:   candidateChains[j],
+				Method:         method,
+			}
+			rebalanceCandidates = append(rebalanceCandidates, candidate)
+		}
+	}
+
+	rebalance, err = getBestRebalance(ctx, cfg, inv, rebalanceCandidates)
+	if err != nil {
+		return nil, fmt.Errorf("could not get best rebalance: %w", err)
+	}
+
+	return rebalance, nil
+}
+
+func getBestRebalance(ctx context.Context, cfg relconfig.Config, inv map[int]map[common.Address]*TokenMetadata, candidates []RebalanceData) (best *RebalanceData, err error) {
+}
+
 // getRebalance builds a rebalance action based on current token balances and configured thresholds.
 // Note that only the given chain/token pair is considered for rebalance (as the destination chain).
 //
