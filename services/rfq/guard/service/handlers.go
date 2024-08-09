@@ -163,6 +163,8 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 }
 
 func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest) (bool, error) {
+	span := trace.SpanFromContext(ctx)
+
 	// get the receipt for this tx on dest chain
 	chainClient, err := g.client.GetChainClient(ctx, int(bridgeRequest.Transaction.DestChainId))
 	if err != nil {
@@ -176,11 +178,11 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 	if err != nil {
 		return false, fmt.Errorf("could not get receipt: %w", err)
 	}
-	addr, err := g.cfg.GetRFQAddress(int(bridgeRequest.Transaction.DestChainId))
+	rfqAddr, err := g.cfg.GetRFQAddress(int(bridgeRequest.Transaction.DestChainId))
 	if err != nil {
 		return false, fmt.Errorf("could not get rfq address: %w", err)
 	}
-	parser, err := fastbridge.NewParser(common.HexToAddress(addr))
+	parser, err := fastbridge.NewParser(common.HexToAddress(rfqAddr))
 	if err != nil {
 		return false, fmt.Errorf("could not get parser: %w", err)
 	}
@@ -191,10 +193,23 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 			continue
 		}
 
-		event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRelayed)
-		if ok {
-			return relayMatchesBridgeRequest(event, bridgeRequest), nil
+		if log.Address != common.HexToAddress(rfqAddr) {
+			span.AddEvent(fmt.Sprintf("log address %s does not match rfq address %s", log.Address.Hex(), rfqAddr))
+			continue
 		}
+
+		event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRelayed)
+		if !ok {
+			span.AddEvent("event is not a BridgeRelayed event")
+			continue
+		}
+
+		if event.Relayer != proven.RelayerAddress {
+			span.AddEvent(fmt.Sprintf("relayer address %s does not match prover address %s", event.Relayer.Hex(), proven.RelayerAddress.Hex()))
+			continue
+		}
+
+		return relayMatchesBridgeRequest(event, bridgeRequest), nil
 	}
 
 	return false, nil
