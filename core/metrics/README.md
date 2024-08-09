@@ -25,7 +25,7 @@ Pass in the `PYROSCOPE_ENDPOINT` environment variable
 
 ## Rookout
 
-Pass in `ROOKOUT_TOKEN`
+Pass in `ROOKOUT_TOKEN`. Note: this will not work if ldflags -s and -w are used, as these diable the symbol table. Additionally the gcflag `all=-dwarflocationlists=true` must be enabled.
 
 ## Metrics Endpoint
 
