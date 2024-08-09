@@ -84,13 +84,10 @@ export const ChainPopoverSelect = ({
           <img
             src={selected?.imgUrl}
             alt={`${selected?.name} chain icon`}
-            className="inline w-5 h-5"
+            className="inline w-4 h-4"
           />
         )}
-        <span>
-          <div className="text-sm text-[--synapse-secondary]">{label}</div>
-          {selected?.name || 'Network'}
-        </span>
+        {selected?.name || 'Network'}
         <DownArrow />
       </div>
       {isOpen && (
