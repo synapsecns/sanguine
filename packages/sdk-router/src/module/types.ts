@@ -55,6 +55,7 @@ export type SwapQuote = {
  * Returned by SDK to the consumer.
  */
 export type BridgeQuote = {
+  id: string
   feeAmount: BigNumber
   feeConfig: FeeConfig
   routerAddress: string
