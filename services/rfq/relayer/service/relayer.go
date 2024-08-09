@@ -143,7 +143,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get api server: %w", err)
 	}
 
-	otelRecorder, err := newOtelRecorder(metricHandler, sg)
+	otelRecorder, err := newOtelRecorder(metricHandler, store, sg)
 	if err != nil {
 		return nil, fmt.Errorf("could not get otel recorder: %w", err)
 	}
