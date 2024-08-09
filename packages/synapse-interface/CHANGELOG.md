@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.34.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.33.0...@synapsecns/synapse-interface@0.34.0) (2024-08-09)
+
+
+### Features
+
+* **synapse-interface:** canto upgrade maintenance ([#2998](https://github.com/synapsecns/sanguine/issues/2998)) ([50fdd61](https://github.com/synapsecns/sanguine/commit/50fdd6140af7517b0e486cbe84e65d63e71fbea3))
+
+
+
+
+
 # [0.33.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.32.2...@synapsecns/synapse-interface@0.33.0) (2024-08-08)
 
 
