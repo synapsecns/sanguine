@@ -13,7 +13,7 @@ ENV HOST=0.0.0.0
 RUN sed -i s/localhost/jaeger/ ./packages/jaeger-ui/src/setupProxy.js
 RUN yarn build
 
-FROM nginx:stable-alpine
+FROM nginx:1.26.1-alpine3.19
 
 LABEL org.label-schema.description="Jaeger UI Pyroscope Docker Image"
 LABEL org.label-schema.name="ghcr.io/synapsecns/sanguine/docker"
