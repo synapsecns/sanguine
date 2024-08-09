@@ -77,10 +77,11 @@ func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbri
 	}()
 
 	proven := guarddb.PendingProven{
-		Origin:        uint32(chainID),
-		TransactionID: event.TransactionId,
-		TxHash:        event.TransactionHash,
-		Status:        guarddb.ProveCalled,
+		Origin:         uint32(chainID),
+		RelayerAddress: event.Relayer,
+		TransactionID:  event.TransactionId,
+		TxHash:         event.TransactionHash,
+		Status:         guarddb.ProveCalled,
 	}
 	err = g.db.StorePendingProven(ctx, proven)
 	if err != nil {
