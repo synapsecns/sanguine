@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"strconv"
 	"sync"
 	"time"
 
@@ -51,7 +50,7 @@ type Manager interface {
 	HasSufficientGas(ctx context.Context, chainID int, gasValue *big.Int) (bool, error)
 	// Rebalance checks whether a given token should be rebalanced, and
 	// executes the rebalance if necessary.
-	Rebalance(ctx context.Context, chainID int, token common.Address) error
+	Rebalance(ctx context.Context) error
 	// GetTokenMetadata gets the metadata for a token.
 	GetTokenMetadata(chainID int, token common.Address) (*TokenMetadata, error)
 }
@@ -273,13 +272,10 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 						metrics.EndSpanWithErr(span, err)
 						return fmt.Errorf("could not refresh balances: %w", err)
 					}
-					for chainID, chainConfig := range i.cfg.Chains {
-						for tokenName, tokenConfig := range chainConfig.Tokens {
-							err = i.Rebalance(rebalanceCtx, chainID, common.HexToAddress(tokenConfig.Address))
-							if err != nil {
-								logger.Errorf("could not rebalance %s on chain %d: %v", tokenName, chainID, err)
-							}
-						}
+
+					err = i.Rebalance(rebalanceCtx)
+					if err != nil {
+						logger.Errorf("could not rebalance: %v", err)
 					}
 
 					metrics.EndSpanWithErr(span, err)
@@ -458,43 +454,39 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 	return sufficient, nil
 }
 
-// Rebalance checks whether a given token should be rebalanced, and executes the rebalance if necessary.
-// Note that if there are multiple tokens whose balance is below the maintenance balance, only the lowest balance
-// will be rebalanced.
-//
-//nolint:cyclop
-func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) (err error) {
-	// short circuit if origin does not specify a rebalance method
-	methodsOrigin, err := i.cfg.GetRebalanceMethods(chainID, token.Hex())
+func (i *inventoryManagerImpl) Rebalance(ctx context.Context) (err error) {
+	rebalances, err := getRebalances(ctx, i.cfg, i.tokens)
 	if err != nil {
-		return fmt.Errorf("could not get origin rebalance method: %w", err)
-	}
-	if len(methodsOrigin) == 0 {
-		return nil
+		return fmt.Errorf("could not get rebalances: %w", err)
 	}
 
-	ctx, span := i.handler.Tracer().Start(parentCtx, "Rebalance", trace.WithAttributes(
-		attribute.Int(metrics.ChainID, chainID),
-		attribute.String("token", token.Hex()),
+	for tokenName, rebalance := range rebalances {
+		if rebalance == nil || rebalance.Amount == nil {
+			continue
+		}
+
+		err = i.tryExecuteRebalance(ctx, rebalance)
+		if err != nil {
+			return fmt.Errorf("could not execute rebalance for token %s: %w", tokenName, err)
+		}
+	}
+
+	return nil
+}
+
+func (i *inventoryManagerImpl) tryExecuteRebalance(ctx context.Context, rebalance *RebalanceData) (err error) {
+	ctx, span := i.handler.Tracer().Start(ctx, "tryExecuteRebalance", trace.WithAttributes(
+		attribute.Int("origin", rebalance.OriginMetadata.ChainID),
+		attribute.Int("dest", rebalance.OriginMetadata.ChainID),
+		attribute.String("origin_token", rebalance.OriginMetadata.Addr.Hex()),
+		attribute.String("dest_token", rebalance.DestMetadata.Addr.Hex()),
+		attribute.String("origin_balance", rebalance.OriginMetadata.Balance.String()),
+		attribute.String("dest_balance", rebalance.DestMetadata.Balance.String()),
+		attribute.String("rebalance_amount", rebalance.Amount.String()),
 	))
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
 	}(err)
-
-	// build the rebalance action
-	rebalance, err := getRebalance(span, i.cfg, i.tokens, chainID, token)
-	if err != nil {
-		return fmt.Errorf("could not get rebalance: %w", err)
-	}
-	if rebalance == nil || rebalance.Amount.Cmp(big.NewInt(0)) <= 0 {
-		return nil
-	}
-	span.SetAttributes(
-		attribute.String("rebalance_origin", strconv.Itoa(rebalance.OriginMetadata.ChainID)),
-		attribute.String("rebalance_dest", strconv.Itoa(rebalance.DestMetadata.ChainID)),
-		attribute.String("rebalance_amount", rebalance.Amount.String()),
-		attribute.String("rebalance_method", rebalance.Method.String()),
-	)
 
 	// make sure there are no pending rebalances that touch the given path
 	pendingRebalances, err := i.db.GetPendingRebalances(ctx, uint64(rebalance.OriginMetadata.ChainID), uint64(rebalance.DestMetadata.ChainID))
@@ -517,6 +509,7 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	if err != nil {
 		return fmt.Errorf("could not execute rebalance: %w", err)
 	}
+
 	return nil
 }
 
