@@ -121,7 +121,10 @@ func (l *limiterImpl) withinSizeLimit(ctx context.Context, request reldb.QuoteRe
 	if err != nil {
 		return false, fmt.Errorf("could not get USD amount of token: %w", err)
 	}
-	return tokenPrice.Cmp(l.cfg.GetVolumeLimit()) < 0, nil
+
+	volumeLimit := l.cfg.GetVolumeLimit(int(request.Transaction.OriginChainId), request.Transaction.OriginToken)
+
+	return tokenPrice.Cmp(volumeLimit) < 0, nil
 }
 
 func (l *limiterImpl) getUSDAmountOfToken(

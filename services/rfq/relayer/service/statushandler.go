@@ -98,7 +98,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		apiClient:           r.apiClient,
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
-		volumeLimit:         r.cfg.GetVolumeLimit(),
+		volumeLimit:         r.cfg.GetVolumeLimit(int(origin.ChainID), req.Transaction.OriginToken),
 		// TODO: this should be configurable
 		limiter:    limiter.NewRateLimiter(r.cfg, r.quoter, chainClient, r.metrics, originTokens),
 		tokenNames: originTokens,

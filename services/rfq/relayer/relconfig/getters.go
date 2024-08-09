@@ -809,14 +809,27 @@ func (c Config) GetQuoteSubmissionTimeout() time.Duration {
 	return timeout
 }
 
-const defaultVolumeLimit = 10_000
+var defaultVolumeLimit *big.Int
 
 // GetVolumeLimit returns the volume limit for the relayer.
-func (c Config) GetVolumeLimit() *big.Int {
-	volumeLimit := c.VolumeLimit
-	if volumeLimit == 0 {
-		volumeLimit = defaultVolumeLimit
+func (c Config) GetVolumeLimit(chainID int, addr common.Address) *big.Int {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return defaultVolumeLimit
 	}
 
-	return new(big.Int).SetInt64(int64(volumeLimit))
+	var tokenCfg TokenConfig
+	for _, token := range chainCfg.Tokens {
+		if common.HexToAddress(token.Address).Hex() == addr.Hex() {
+			tokenCfg = token
+			break
+		}
+	}
+
+	volumeLimitFlt := new(big.Float).SetFloat64(c.VolumeLimit)
+
+	// Scale the minBalance by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	volumeLimitScaled, _ := new(big.Float).Mul(volumeLimitFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return volumeLimitScaled
 }
