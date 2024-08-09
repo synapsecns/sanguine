@@ -1,12 +1,14 @@
 package e2e_test
 
 import (
+	"context"
 	"fmt"
 	"math/big"
 	"net/http"
 	"slices"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -17,6 +19,7 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
@@ -34,11 +37,11 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
 	guardConnect "github.com/synapsecns/sanguine/services/rfq/guard/guarddb/connect"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 func (i *IntegrationSuite) setupQuoterAPI() {
@@ -205,21 +208,32 @@ func addressToBytes32(addr common.Address) [32]byte {
 
 // Approve checks if the token is approved and approves it if not.
 func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token contracts.DeployedContract, user wallet.Wallet) {
-	erc20, err := ierc20.NewIERC20(token.Address(), backend)
+	err := retry.WithBackoff(i.GetTestContext(), func(_ context.Context) (err error) {
+		erc20, err := ierc20.NewIERC20(token.Address(), backend)
+		if err != nil {
+			return fmt.Errorf("could not get token at %s: %w", token.Address().String(), err)
+		}
+
+		_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
+
+		allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
+		if err != nil {
+			return fmt.Errorf("could not get allowance: %w", err)
+		}
+
+		// TODO: can also use in mem cache
+		if allowance.Cmp(big.NewInt(0)) == 0 {
+			txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
+			tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
+			if err != nil {
+				return fmt.Errorf("could not approve: %w", err)
+			}
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
+		}
+
+		return nil
+	}, retry.WithMaxTotalTime(15*time.Second))
 	i.NoError(err)
-
-	_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
-
-	allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
-	i.NoError(err)
-
-	// TODO: can also use in mem cache
-	if allowance.Cmp(big.NewInt(0)) == 0 {
-		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
-		tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
-		i.NoError(err)
-		backend.WaitForConfirmation(i.GetTestContext(), tx)
-	}
 }
 
 func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
@@ -233,12 +247,16 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
-				RFQAddress:         i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
-				SynapseCCTPAddress: cctpContractOrigin.Address().Hex(),
-				Confirmations:      0,
+				RFQAddress: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+				RebalanceConfigs: relconfig.RebalanceConfigs{
+					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+						SynapseCCTPAddress: cctpContractOrigin.Address().Hex(),
+					},
+				},
+				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -246,12 +264,16 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 				NativeToken: "ETH",
 			},
 			destBackendChainID: {
-				RFQAddress:         i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
-				SynapseCCTPAddress: cctpContractDest.Address().Hex(),
-				Confirmations:      0,
+				RFQAddress: i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+				RebalanceConfigs: relconfig.RebalanceConfigs{
+					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+						SynapseCCTPAddress: cctpContractDest.Address().Hex(),
+					},
+				},
+				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -342,7 +364,7 @@ func (i *IntegrationSuite) setupRelayer() {
 				Address:               tokenAddress,
 				Decimals:              decimals,
 				PriceUSD:              1, // TODO: this will break on non-stables
-				RebalanceMethod:       rebalanceMethod,
+				RebalanceMethods:      []string{rebalanceMethod},
 				MaintenanceBalancePct: 20,
 				InitialBalancePct:     50,
 			}
@@ -377,11 +399,11 @@ func (i *IntegrationSuite) setupRelayer() {
 	}
 
 	// Add ETH as quotable token from origin to destination
-	cfg.QuotableTokens[fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress)] = []string{
-		fmt.Sprintf("%d-%s", destBackendChainID, chain.EthAddress),
+	cfg.QuotableTokens[fmt.Sprintf("%d-%s", originBackendChainID, util.EthAddress)] = []string{
+		fmt.Sprintf("%d-%s", destBackendChainID, util.EthAddress),
 	}
-	cfg.QuotableTokens[fmt.Sprintf("%d-%s", destBackendChainID, chain.EthAddress)] = []string{
-		fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress),
+	cfg.QuotableTokens[fmt.Sprintf("%d-%s", destBackendChainID, util.EthAddress)] = []string{
+		fmt.Sprintf("%d-%s", originBackendChainID, util.EthAddress),
 	}
 
 	var err error

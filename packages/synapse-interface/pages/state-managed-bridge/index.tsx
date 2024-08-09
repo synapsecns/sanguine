@@ -163,7 +163,10 @@ const StateManagedBridge = () => {
         toChainId,
         fromToken.addresses[fromChainId],
         toToken.addresses[toChainId],
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
+        {
+          originUserAddress: address,
+        }
       )
 
       const pausedBridgeModules = new Set(
@@ -187,13 +190,39 @@ const StateManagedBridge = () => {
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
+      const nonRfqQuote = activeQuotes.find(
+        (quote) => quote.bridgeModuleName !== 'SynapseRFQ'
+      )
+
       let quote
 
-      if (rfqQuote) {
-        quote = rfqQuote
+      if (rfqQuote && nonRfqQuote) {
+        const rfqMaxAmountOut = BigInt(rfqQuote.maxAmountOut.toString())
+        const nonRfqMaxAmountOut = BigInt(nonRfqQuote.maxAmountOut.toString())
+
+        const allowedPercentileDifference = 30n
+        const maxDifference =
+          (nonRfqMaxAmountOut * allowedPercentileDifference) / 100n
+
+        if (rfqMaxAmountOut > nonRfqMaxAmountOut - maxDifference) {
+          quote = rfqQuote
+        } else {
+          quote = nonRfqQuote
+
+          segmentAnalyticsEvent(`[Bridge] use non-RFQ quote over RFQ`, {
+            bridgeModuleName: nonRfqQuote.bridgeModuleName,
+            originChainId: fromChainId,
+            originToken: fromToken.symbol,
+            originTokenAddress: fromToken.addresses[fromChainId],
+            destinationChainId: toChainId,
+            destinationToken: toToken.symbol,
+            destinationTokenAddress: toToken.addresses[toChainId],
+            rfqQuoteAmountOut: rfqQuote.maxAmountOut.toString(),
+            nonRfqMaxAmountOut: nonRfqQuote.maxAmountOut.toString(),
+          })
+        }
       } else {
-        /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-        quote = activeQuotes[0]
+        quote = rfqQuote ?? nonRfqQuote
       }
 
       const {
@@ -364,7 +393,6 @@ const StateManagedBridge = () => {
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
-        address,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -458,7 +486,6 @@ const StateManagedBridge = () => {
         { id: 'bridge-in-progress-popup', duration: Infinity }
       )
       segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
-        address,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -521,7 +548,6 @@ const StateManagedBridge = () => {
       return tx
     } catch (error) {
       segmentAnalyticsEvent(`[Bridge]  error bridging`, {
-        address,
         errorCode: error.code,
       })
       dispatch(removePendingBridgeTransaction(currentTimestamp))

@@ -18,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -198,7 +199,7 @@ func (r *Relayer) gasMiddleware(next func(ctx context.Context, span trace.Span, 
 		// Therefore, we only need to check the gas value for requests with all the other statuses.
 		isInFlight := req.Status == reldb.CommittedPending || req.Status == reldb.CommittedConfirmed || req.Status == reldb.RelayStarted
 		var destGasValue *big.Int
-		if req.Transaction.DestToken == chain.EthAddress && !isInFlight {
+		if req.Transaction.DestToken == util.EthAddress && !isInFlight {
 			destGasValue = req.Transaction.DestAmount
 			span.SetAttributes(attribute.String("dest_gas_value", destGasValue.String()))
 		}

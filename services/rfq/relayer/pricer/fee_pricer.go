@@ -13,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"golang.org/x/sync/errgroup"
 )
 
 // FeePricer is the interface for the fee pricer.
@@ -68,17 +67,15 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 }
 
 func (f *feePricer) Start(ctx context.Context) {
-	g, _ := errgroup.WithContext(ctx)
-
 	// Start the TTL caches.
-	g.Go(func() error {
-		f.gasPriceCache.Start()
-		return nil
-	})
-	g.Go(func() error {
-		f.tokenPriceCache.Start()
-		return nil
-	})
+	go f.gasPriceCache.Start()
+	go f.tokenPriceCache.Start()
+
+	go func() {
+		<-ctx.Done()
+		f.gasPriceCache.Stop()
+		f.tokenPriceCache.Stop()
+	}()
 }
 
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)

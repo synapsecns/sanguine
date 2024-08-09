@@ -3,6 +3,63 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.34.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.33.0...@synapsecns/synapse-interface@0.34.0) (2024-08-09)
+
+
+### Features
+
+* **synapse-interface:** canto upgrade maintenance ([#2998](https://github.com/synapsecns/sanguine/issues/2998)) ([50fdd61](https://github.com/synapsecns/sanguine/commit/50fdd6140af7517b0e486cbe84e65d63e71fbea3))
+
+
+
+
+
+# [0.33.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.32.2...@synapsecns/synapse-interface@0.33.0) (2024-08-08)
+
+
+### Features
+
+* **synapse-interface:** validate rfq quotes ([#2971](https://github.com/synapsecns/sanguine/issues/2971)) ([f8a0e13](https://github.com/synapsecns/sanguine/commit/f8a0e130d7dd37b173a137829c529118a4c70602))
+
+
+
+
+
+## [0.32.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.32.1...@synapsecns/synapse-interface@0.32.2) (2024-08-07)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.32.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.32.0...@synapsecns/synapse-interface@0.32.1) (2024-08-06)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.32.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.2...@synapsecns/synapse-interface@0.32.0) (2024-08-06)
+
+
+### Features
+
+* **synapse-interface:** use origin user address for getting bridge quotes ([#2969](https://github.com/synapsecns/sanguine/issues/2969)) ([5e61cf3](https://github.com/synapsecns/sanguine/commit/5e61cf3ab667c2c169fdc47d6be7aaae6cd0f71e))
+
+
+
+
+
+## [0.31.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.1...@synapsecns/synapse-interface@0.31.2) (2024-08-05)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.31.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.0...@synapsecns/synapse-interface@0.31.1) (2024-07-29)
 
 
