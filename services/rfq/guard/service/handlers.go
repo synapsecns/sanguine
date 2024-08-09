@@ -163,6 +163,8 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 }
 
 func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest) (bool, error) {
+	span := trace.SpanFromContext(ctx)
+
 	// get the receipt for this tx on dest chain
 	chainClient, err := g.client.GetChainClient(ctx, int(bridgeRequest.Transaction.DestChainId))
 	if err != nil {
@@ -192,6 +194,7 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 		}
 
 		if log.Address != common.HexToAddress(rfqAddr) {
+			span.AddEvent(fmt.Sprintf("log address %s does not match rfq address %s", log.Address.Hex(), rfqAddr))
 			continue
 		}
 
