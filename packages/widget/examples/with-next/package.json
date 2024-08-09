@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@synapsecns/widget": "^0.1.0",
+    "@synapsecns/widget": "^0.6.3",
     "ethers": "^6.9.1",
     "next": "14.0.4",
     "react": "^18",

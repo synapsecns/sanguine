@@ -18,7 +18,7 @@ import (
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	cctpConfig "github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"gopkg.in/yaml.v2"
 
 	"path/filepath"
@@ -72,10 +72,6 @@ type Config struct {
 type ChainConfig struct {
 	// Bridge is the rfq bridge contract address.
 	RFQAddress string `yaml:"rfq_address"`
-	// SynapseCCTPAddress is the SynapseCCTP address.
-	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
-	// TokenMessengerAddress is the TokenMessenger address.
-	TokenMessengerAddress string `yaml:"token_messenger_address"`
 	// Confirmations is the number of required confirmations.
 	Confirmations uint64 `yaml:"confirmations"`
 	// Tokens is a map of token name -> token config.
@@ -105,8 +101,10 @@ type ChainConfig struct {
 	QuoteFixedFeeMultiplier *float64 `yaml:"quote_fixed_fee_multiplier"`
 	// RelayFixedFeeMultiplier is the multiplier for the fixed fee, applied when relaying.
 	RelayFixedFeeMultiplier *float64 `yaml:"relay_fixed_fee_multiplier"`
-	// CCTP start block is the block at which the chain listener will listen for CCTP events.
-	CCTPStartBlock uint64 `yaml:"cctp_start_block"`
+	// RebalanceStartBlock is the block at which the chain listener will listen for rebalance events.
+	RebalanceStartBlock uint64 `yaml:"cctp_start_block"`
+	// RebalanceConfigs is the rebalance configurations.
+	RebalanceConfigs RebalanceConfigs `yaml:"rebalance_configs"`
 }
 
 // TokenConfig represents the configuration for a token.
@@ -119,8 +117,8 @@ type TokenConfig struct {
 	PriceUSD float64 `yaml:"price_usd"`
 	// MinQuoteAmount is the minimum amount to quote for this token in human-readable units.
 	MinQuoteAmount string `yaml:"min_quote_amount"`
-	// RebalanceMethod is the method to use for rebalancing.
-	RebalanceMethod string `yaml:"rebalance_method"`
+	// RebalanceMethods are the supported methods for rebalancing.
+	RebalanceMethods []string `yaml:"rebalance_methods"`
 	// MaintenanceBalancePct is the percentage of the total balance under which a rebalance will be triggered.
 	MaintenanceBalancePct float64 `yaml:"maintenance_balance_pct"`
 	// InitialBalancePct is the percentage of the total balance to retain when triggering a rebalance.
@@ -135,6 +133,8 @@ type TokenConfig struct {
 	// Note that this value can be positive or negative; if positive it effectively increases the quoted price
 	// of the given token, and vice versa.
 	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
+	// MaxBalance is the maximum balance that should be accumulated for this token on this chain (human-readable units)
+	MaxBalance *string `yaml:"max_balance"`
 }
 
 // DatabaseConfig represents the configuration for the database.
@@ -151,6 +151,37 @@ type FeePricerConfig struct {
 	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
 	// HTTPTimeoutMs is the number of milliseconds to timeout on a HTTP request.
 	HTTPTimeoutMs int `yaml:"http_timeout_ms"`
+}
+
+// RebalanceConfigs represents the rebalance configurations.
+type RebalanceConfigs struct {
+	Synapse *SynapseCCTPRebalanceConfig `yaml:"synapse"`
+	Circle  *CircleCCTPRebalanceConfig  `yaml:"circle"`
+	Scroll  *ScrollRebalanceConfig      `yaml:"scroll"`
+}
+
+// SynapseCCTPRebalanceConfig represents the configuration for the SynapseCCTP rebalance.
+type SynapseCCTPRebalanceConfig struct {
+	// SynapseCCTPAddress is the SynapseCCTP address.
+	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
+}
+
+// CircleCCTPRebalanceConfig represents the configuration for the CircleCCTP rebalance.
+type CircleCCTPRebalanceConfig struct {
+	// TokenMessengerAddress is the TokenMessenger address.
+	TokenMessengerAddress string `yaml:"token_messenger_address"`
+}
+
+// ScrollRebalanceConfig represents the configuration for the Scroll rebalance.
+type ScrollRebalanceConfig struct {
+	// L1GatewayAddress is the L1Gateway address [scroll].
+	L1GatewayAddress string `yaml:"l1_gateway_address"`
+	// L1ScrollMessengerAddress is the L1ScrollMessenger address [scroll].
+	L1ScrollMessengerAddress string `yaml:"l1_scroll_messenger_address"`
+	// L2GatewayAddress is the L2Gateway address [scroll].
+	L2GatewayAddress string `yaml:"l2_gateway_address"`
+	// ScrollMessageFee is the scroll message fee.
+	ScrollMessageFee *string `yaml:"scroll_message_fee"`
 }
 
 // TokenIDDelimiter is the delimiter for token IDs.
@@ -222,7 +253,7 @@ func (c Config) Validate(ctx context.Context, omniclient omniClient.RPCClient) (
 	initialPctSums := map[string]float64{}
 	for _, chainCfg := range c.Chains {
 		for tokenName, tokenCfg := range chainCfg.Tokens {
-			if tokenCfg.RebalanceMethod != "" {
+			if len(tokenCfg.RebalanceMethods) != 0 {
 				maintenancePctSums[tokenName] += tokenCfg.MaintenanceBalancePct
 				initialPctSums[tokenName] += tokenCfg.InitialBalancePct
 			}
@@ -259,7 +290,7 @@ func (c Config) validateTokenDecimals(ctx context.Context, omniClient omniClient
 			}
 
 			// Check if the token is the gas token. SHOULD BE 18.
-			if tokenCFG.Address == chain.EthAddress.String() {
+			if tokenCFG.Address == util.EthAddress.String() {
 				if tokenCFG.Decimals != 18 {
 					return fmt.Errorf("decimals mismatch for token %s on chain %d: expected 18, got %d", tokenName, chainID, tokenCFG.Decimals)
 				}

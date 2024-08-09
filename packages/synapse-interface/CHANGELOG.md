@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.33.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.32.2...@synapsecns/synapse-interface@0.33.0) (2024-08-08)
+
+
+### Features
+
+* **synapse-interface:** validate rfq quotes ([#2971](https://github.com/synapsecns/sanguine/issues/2971)) ([f8a0e13](https://github.com/synapsecns/sanguine/commit/f8a0e130d7dd37b173a137829c529118a4c70602))
+
+
+
+
+
+## [0.32.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.32.1...@synapsecns/synapse-interface@0.32.2) (2024-08-07)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.32.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.32.0...@synapsecns/synapse-interface@0.32.1) (2024-08-06)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 # [0.32.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.31.2...@synapsecns/synapse-interface@0.32.0) (2024-08-06)
 
 

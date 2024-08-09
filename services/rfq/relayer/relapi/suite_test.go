@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -104,10 +104,10 @@ func (c *RelayerServerSuite) SetupTest() {
 		},
 		QuotableTokens: map[string][]string{
 			// gas tokens.
-			fmt.Sprintf("%d-%s", c.originChainID, chain.EthAddress): {
+			fmt.Sprintf("%d-%s", c.originChainID, util.EthAddress): {
 				// not used for this test
 			},
-			fmt.Sprintf("%d-%s", c.destChainID, chain.EthAddress): {
+			fmt.Sprintf("%d-%s", c.destChainID, util.EthAddress): {
 				// not used for this test
 			},
 			c.getMockTokenID(c.testBackends[uint64(c.originChainID)]): {

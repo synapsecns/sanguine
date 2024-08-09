@@ -114,7 +114,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							InitialBalancePct:     50,
 							MinRebalanceAmount:    minRebalanceAmount,
 							MaxRebalanceAmount:    maxRebalanceAmount,
-							RebalanceMethod:       originMethod.String(),
+							RebalanceMethods:      []string{originMethod.String()},
 						},
 					},
 				},
@@ -127,7 +127,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							InitialBalancePct:     50,
 							MinRebalanceAmount:    minRebalanceAmount,
 							MaxRebalanceAmount:    maxRebalanceAmount,
-							RebalanceMethod:       destMethod.String(),
+							RebalanceMethods:      []string{destMethod.String()},
 						},
 					},
 				},
@@ -140,7 +140,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							InitialBalancePct:     0,
 							MinRebalanceAmount:    minRebalanceAmount,
 							MaxRebalanceAmount:    maxRebalanceAmount,
-							RebalanceMethod:       destMethod.String(),
+							RebalanceMethods:      []string{destMethod.String()},
 						},
 					},
 				},
@@ -247,7 +247,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							InitialBalancePct:     40,
 							MinRebalanceAmount:    "",
 							MaxRebalanceAmount:    "",
-							RebalanceMethod:       "synapsecctp",
+							RebalanceMethods:      []string{"synapsecctp"},
 						},
 					},
 				},
@@ -260,7 +260,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							InitialBalancePct:     40,
 							MinRebalanceAmount:    "",
 							MaxRebalanceAmount:    "",
-							RebalanceMethod:       "circlecctp",
+							RebalanceMethods:      []string{"circlecctp"},
 						},
 					},
 				},
@@ -273,7 +273,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							InitialBalancePct:     40,
 							MinRebalanceAmount:    "",
 							MaxRebalanceAmount:    "",
-							RebalanceMethod:       "circlecctp",
+							RebalanceMethods:      []string{"circlecctp"},
 						},
 					},
 				},
@@ -287,6 +287,65 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 		expected := &inventory.RebalanceData{
 			OriginMetadata: &usdcDataExtra,
 			DestMetadata:   &usdcDataDest,
+			Amount:         big.NewInt(5e6),
+			Method:         relconfig.RebalanceMethodCircleCCTP,
+		}
+		i.Equal(expected, rebalance)
+	})
+
+	i.Run("AllowMultipleRebalanceMethods", func() {
+		// Origin has lowest balance and supports multiple rebalance methods, so it should be chosen
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				origin: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               usdcDataOrigin.Addr.Hex(),
+							Decimals:              6,
+							MaintenanceBalancePct: 20,
+							InitialBalancePct:     40,
+							MinRebalanceAmount:    "",
+							MaxRebalanceAmount:    "",
+							RebalanceMethods:      []string{"synapsecctp", "circlecctp"},
+						},
+					},
+				},
+				dest: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               usdcDataDest.Addr.Hex(),
+							Decimals:              6,
+							MaintenanceBalancePct: 20,
+							InitialBalancePct:     40,
+							MinRebalanceAmount:    "",
+							MaxRebalanceAmount:    "",
+							RebalanceMethods:      []string{"circlecctp"},
+						},
+					},
+				},
+				extra: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               usdcDataExtra.Addr.Hex(),
+							Decimals:              6,
+							MaintenanceBalancePct: 20,
+							InitialBalancePct:     40,
+							MinRebalanceAmount:    "",
+							MaxRebalanceAmount:    "",
+							RebalanceMethods:      []string{"circlecctp"},
+						},
+					},
+				},
+			},
+		}
+		usdcDataOrigin.Balance = big.NewInt(0)
+		usdcDataDest.Balance = big.NewInt(1e6)
+		usdcDataExtra.Balance = big.NewInt(9e6)
+		rebalance, err := inventory.GetRebalance(cfg, tokensWithExtra, origin, usdcDataOrigin.Addr)
+		i.NoError(err)
+		expected := &inventory.RebalanceData{
+			OriginMetadata: &usdcDataExtra,
+			DestMetadata:   &usdcDataOrigin,
 			Amount:         big.NewInt(5e6),
 			Method:         relconfig.RebalanceMethodCircleCCTP,
 		}

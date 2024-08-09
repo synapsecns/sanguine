@@ -13,8 +13,8 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -180,7 +180,7 @@ func (r *Relayer) getDecimals(ctx context.Context, addr common.Address, chainID 
 		return decimals, nil
 	}
 
-	if addr == chain.EthAddress {
+	if addr == util.EthAddress {
 		return &ethDecimals, nil
 	}
 

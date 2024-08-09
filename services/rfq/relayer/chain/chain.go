@@ -7,7 +7,6 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/client"
@@ -16,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 // Chain is a chain helper for relayer.
@@ -40,7 +40,7 @@ func NewChain(ctx context.Context, cfg relconfig.Config, chainClient client.EVM,
 	if err != nil {
 		return nil, fmt.Errorf("could not get rfq address: %w", err)
 	}
-	bridge, err := fastbridge.NewFastBridgeRef(common.HexToAddress(addr), chainClient)
+	bridge, err := fastbridge.NewFastBridgeRef(addr, chainClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not create bridge contract: %w", err)
 	}
@@ -75,7 +75,7 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 	var err error
 
 	// Check to see if ETH should be sent to destination
-	if IsGasToken(request.Transaction.DestToken) {
+	if util.IsGasToken(request.Transaction.DestToken) {
 		gasAmount = request.Transaction.DestAmount
 	} else if request.Transaction.SendChainGas {
 		gasAmount, err = c.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})

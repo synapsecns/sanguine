@@ -10,12 +10,10 @@ import ValueProps from './ValueProps'
 import Wrapper from '@/components/WipWrapperComponents/Wrapper'
 
 const LandingPage = () => {
-  const { address: currentAddress } = useAccount()
   const router = useRouter()
 
   useEffect(() => {
     segmentAnalyticsEvent(`[Teaser] arrives`, {
-      address: currentAddress,
       query: router.query,
       pathname: router.pathname,
     })
