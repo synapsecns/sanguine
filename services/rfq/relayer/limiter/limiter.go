@@ -121,7 +121,7 @@ func (l *limiterImpl) withinSizeLimit(ctx context.Context, request reldb.QuoteRe
 	if err != nil {
 		return false, fmt.Errorf("could not get USD amount of token: %w", err)
 	}
-	return tokenPrice.Cmp(big.NewInt(int64(l.cfg.VolumeLimit))) < 0, nil
+	return tokenPrice.Cmp(l.cfg.GetVolumeLimit()) < 0, nil
 }
 
 func (l *limiterImpl) getUSDAmountOfToken(
@@ -146,8 +146,7 @@ func (l *limiterImpl) getUSDAmountOfToken(
 		return big.NewInt(0), fmt.Errorf("could not get price: %w", err)
 	}
 
-	product := new(big.Int)
-	product = product.Mul(big.NewInt(int64(price)), request.Transaction.OriginAmount)
+	product := new(big.Int).Mul(big.NewInt(int64(price)), request.Transaction.OriginAmount)
 
 	span.SetAttributes(
 		attribute.String("token_name", tokenName),

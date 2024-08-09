@@ -56,10 +56,8 @@ type QuoteRequestHandler struct {
 	handlerMtx mapmutex.StringMapMutex
 	// limiter is the rate limiter.
 	limiter limiter.Limiter
-	//  blockWindowSize is the number of blocks to keep in the rfqCache
-	blockWindowSize int
 	// volumeLimit is the volume limit for the relayed amounts
-	volumeLimit float64
+	volumeLimit *big.Int
 	// tokenNames is the map of addresses to token names
 	tokenNames map[string]relconfig.TokenConfig
 }

@@ -809,16 +809,14 @@ func (c Config) GetQuoteSubmissionTimeout() time.Duration {
 	return timeout
 }
 
-const defaultBlockWindow = 5
-
 const defaultVolumeLimit = 10_000
 
 // GetVolumeLimit returns the volume limit for the relayer.
-func (c Config) GetVolumeLimit() float64 {
+func (c Config) GetVolumeLimit() *big.Int {
 	volumeLimit := c.VolumeLimit
 	if volumeLimit == 0 {
 		volumeLimit = defaultVolumeLimit
 	}
 
-	return volumeLimit
+	return new(big.Int).SetInt64(int64(volumeLimit))
 }
