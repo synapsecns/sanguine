@@ -200,10 +200,12 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 
 		event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRelayed)
 		if !ok {
+			span.AddEvent("event is not a BridgeRelayed event")
 			continue
 		}
 
 		if event.Relayer != proven.RelayerAddress {
+			span.AddEvent(fmt.Sprintf("relayer address %s does not match prover address %s", event.Relayer.Hex(), proven.RelayerAddress.Hex()))
 			continue
 		}
 
