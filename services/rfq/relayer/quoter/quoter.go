@@ -37,6 +37,8 @@ import (
 var logger = log.Logger("quoter")
 
 // Quoter submits quotes to the RFQ API.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name Quoter --output ./mocks --case=underscore
 type Quoter interface {
 	// SubmitAllQuotes submits all quotes to the RFQ API.
 	SubmitAllQuotes(ctx context.Context) (err error)
@@ -47,6 +49,8 @@ type Quoter interface {
 	ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
 	// IsProfitable determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
 	IsProfitable(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
+	// GetPrice gets the price of a token.
+	GetPrice(ctx context.Context, tokenName string) (float64, error)
 }
 
 // Manager submits quotes to the RFQ API.
@@ -245,6 +249,21 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	}
 
 	return m.prepareAndSubmitQuotes(ctx, inv)
+}
+
+// GetPrice gets the price of a token.
+func (m *Manager) GetPrice(parentCtx context.Context, tokenName string) (_ float64, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "GetPrice")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	price, err := m.feePricer.GetTokenPrice(ctx, tokenName)
+	if err != nil {
+		return 0, fmt.Errorf("error getting price: %w", err)
+	}
+
+	return price, nil
 }
 
 // Prepares and submits quotes based on inventory.

@@ -186,6 +186,21 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
+	// TODO: implemenet slidiing window rate limiter
+	// q.limiter.Take()
+	allowed, err := q.limiter.IsAllowed(ctx, request)
+	if err != nil {
+		return fmt.Errorf("could not check if allowed: %w", err)
+	}
+	if !allowed {
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedConfirmed, &request.Status)
+		span.AddEvent("cannot relay due to rate limit. waiting for one block confirmation before relaying.")
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+		return nil
+	}
+
 	// get ack from API to synchronize calls with other relayers and avoid reverts
 	req := model.PutAckRequest{
 		TxID:        hexutil.Encode(request.TransactionID[:]),

@@ -14,7 +14,9 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/limiter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
@@ -52,6 +54,14 @@ type QuoteRequestHandler struct {
 	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
 	// handlerMtx is the mutex for relaying.
 	handlerMtx mapmutex.StringMapMutex
+	// limiter is the rate limiter.
+	limiter limiter.Limiter
+	//  blockWindowSize is the number of blocks to keep in the rfqCache
+	blockWindowSize int
+	// volumeLimit is the volume limit for the relayed amounts
+	volumeLimit float64
+	// tokenNames is the map of addresses to token names
+	tokenNames map[string]relconfig.TokenConfig
 }
 
 // Handler is the handler for a quote request.
@@ -68,6 +78,15 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		return nil, fmt.Errorf("could not get dest chain: %w", err)
 	}
 
+	chainClient, err := r.client.GetChainClient(ctx, int(req.Transaction.OriginChainId))
+	if err != nil {
+		return nil, fmt.Errorf("could not get origin client: %w", err)
+	}
+	originTokens, err := r.cfg.GetTokens(req.Transaction.OriginChainId)
+	if err != nil {
+		return nil, fmt.Errorf("could not get tokens: %w", err)
+	}
+
 	qr := &QuoteRequestHandler{
 		Origin:              *origin,
 		Dest:                *dest,
@@ -81,6 +100,10 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		apiClient:           r.apiClient,
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
+		volumeLimit:         r.cfg.GetVolumeLimit(),
+		// TODO: this should be configurable
+		limiter:    limiter.NewRateLimiter(r.cfg, r.quoter, chainClient, r.metrics, originTokens),
+		tokenNames: originTokens,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened

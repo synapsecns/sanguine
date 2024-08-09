@@ -83,10 +83,7 @@ func (i *IntegrationSuite) setupQuoterAPI() {
 
 		//nolint: bodyclose
 		_, err = http.DefaultClient.Do(req)
-		if err == nil {
-			return true
-		}
-		return false
+		return err == nil
 	})
 }
 
@@ -307,6 +304,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 			TokenPriceCacheTTLSeconds: 60,
 		},
 		RebalanceInterval: 0,
+		VolumeLimit:       10_000,
 	}
 }
 
