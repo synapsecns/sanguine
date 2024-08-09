@@ -48,7 +48,6 @@ func (s *LimiterSuite) SetupTest() {
 				Confirmations: 1,
 			},
 		},
-		MaxRFQSize:  10,
 		VolumeLimit: 10_000, // 10k usd
 	}
 	s.metrics = metrics.NewNullHandler()

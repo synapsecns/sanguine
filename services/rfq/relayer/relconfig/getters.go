@@ -695,16 +695,6 @@ func (c Config) GetQuoteSubmissionTimeout() time.Duration {
 
 const defaultBlockWindow = 5
 
-// GetRFQSize returns the block window for the relayer.
-func (c Config) GetRFQSize() int {
-	blockWindow := c.MaxRFQSize
-	if blockWindow == 0 {
-		blockWindow = defaultBlockWindow
-	}
-
-	return blockWindow
-}
-
 const defaultVolumeLimit = 10_000
 
 // GetVolumeLimit returns the volume limit for the relayer.

@@ -100,7 +100,6 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
 		volumeLimit:         r.cfg.GetVolumeLimit(),
-		blockWindowSize:     r.cfg.GetRFQSize(),
 		// TODO: this should be configurable
 		limiter:    limiter.NewRateLimiter(r.cfg, r.quoter, chainClient, r.metrics, originTokens),
 		tokenNames: originTokens,

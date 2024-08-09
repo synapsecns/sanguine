@@ -59,8 +59,6 @@ type Config struct {
 	UseEmbeddedGuard bool `yaml:"enable_guard"`
 	// SubmitSingleQuotes enables submitting single quotes.
 	SubmitSingleQuotes bool `yaml:"submit_single_quotes"`
-	// MaxRFQSize is the amount of RFQs we are allowed to process
-	MaxRFQSize int `yaml:"rfq_size"`
 	// VolumeLimit is the maximum dollar value of relayed transactions in the BlockWindow.
 	VolumeLimit float64 `yaml:"volume_limit"`
 }
