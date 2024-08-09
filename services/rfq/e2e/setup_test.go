@@ -172,33 +172,41 @@ func (i *IntegrationSuite) setupCCTP() {
 
 	// register remote deployments and tokens
 	for _, backend := range testBackends {
-		cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
-		_, tokenMessengeHandle := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backend)
+		err := retry.WithBackoff(i.GetTestContext(), func(_ context.Context) (err error) {
+			cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
+			_, tokenMessengeHandle := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backend)
 
-		// on the above contract, set the remote for each backend
-		for _, backendToSetFrom := range core.ToSlice(i.originBackend, i.destBackend) {
-			// we don't need to set the backends own remote!
-			if backendToSetFrom.GetChainID() == backend.GetChainID() {
-				continue
+			// on the above contract, set the remote for each backend
+			for _, backendToSetFrom := range core.ToSlice(i.originBackend, i.destBackend) {
+				// we don't need to set the backends own remote!
+				if backendToSetFrom.GetChainID() == backend.GetChainID() {
+					continue
+				}
+
+				remoteCCTP, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backendToSetFrom)
+				remoteMessenger, _ := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backendToSetFrom)
+
+				txOpts := backend.GetTxContext(i.GetTestContext(), cctpContract.OwnerPtr())
+				// set the remote cctp contract on this cctp contract
+				// TODO: verify chainID / domain are correct
+				remoteDomain := cctpTest.ChainIDDomainMap[uint32(remoteCCTP.ChainID().Int64())]
+
+				tx, err := cctpHandle.SetRemoteDomainConfig(txOpts.TransactOpts,
+					big.NewInt(remoteCCTP.ChainID().Int64()), remoteDomain, remoteCCTP.Address())
+				if err != nil {
+					return fmt.Errorf("could not set remote domain config: %w", err)
+				}
+				backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+				// register the remote token messenger on the tokenMessenger contract
+				_, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
+				if err != nil {
+					return fmt.Errorf("could not set remote token messenger: %w", err)
+				}
 			}
-
-			remoteCCTP, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backendToSetFrom)
-			remoteMessenger, _ := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backendToSetFrom)
-
-			txOpts := backend.GetTxContext(i.GetTestContext(), cctpContract.OwnerPtr())
-			// set the remote cctp contract on this cctp contract
-			// TODO: verify chainID / domain are correct
-			remoteDomain := cctpTest.ChainIDDomainMap[uint32(remoteCCTP.ChainID().Int64())]
-
-			tx, err := cctpHandle.SetRemoteDomainConfig(txOpts.TransactOpts,
-				big.NewInt(remoteCCTP.ChainID().Int64()), remoteDomain, remoteCCTP.Address())
-			i.Require().NoError(err)
-			backend.WaitForConfirmation(i.GetTestContext(), tx)
-
-			// register the remote token messenger on the tokenMessenger contract
-			_, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
-			i.Nil(err)
-		}
+			return nil
+		}, retry.WithMaxTotalTime(15*time.Second))
+		i.NoError(err)
 	}
 }
 
