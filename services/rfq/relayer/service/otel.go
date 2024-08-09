@@ -115,7 +115,7 @@ func (o *otelRecorder) recordRebalanceCounts(ctx context.Context, observer metri
 		attribute.String("wallet", o.signer.Address().Hex()),
 		attribute.StringSlice("rebalance_ids", rebalanceIDs),
 	)
-	observer.ObserveInt64(o.statusCountGauge, int64(len(rebalances)), opts)
+	observer.ObserveInt64(o.rebalanceCountGauge, int64(len(rebalances)), opts)
 
 	return nil
 }
