@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/limiter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter/mocks"
+		"github.com/synapsecns/sanguine/services/rfq/util"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
@@ -28,7 +28,7 @@ func (l *LimiterSuite) TestOverLimitEnoughConfirmations() {
 		Transaction: fastbridge.IFastBridgeBridgeTransaction{
 			OriginChainId: 1,
 			DestChainId:   2,
-			OriginToken:   chain.EthAddress,
+			OriginToken:   util.EthAddress,
 			OriginAmount:  big.NewInt(100),
 			DestAmount:    big.NewInt(100),
 			Deadline:      big.NewInt(time.Now().Unix()),
@@ -55,7 +55,7 @@ func (l *LimiterSuite) TestUnderLimitEnoughConfirmations() {
 		Transaction: fastbridge.IFastBridgeBridgeTransaction{
 			OriginChainId: 1,
 			DestChainId:   2,
-			OriginToken:   chain.EthAddress,
+			OriginToken:   util.EthAddress,
 			OriginAmount:  big.NewInt(100),
 			DestAmount:    big.NewInt(100),
 		},
@@ -79,7 +79,7 @@ func (l *LimiterSuite) TestUnderLimitNotEnoughConfirmations() {
 		Transaction: fastbridge.IFastBridgeBridgeTransaction{
 			OriginChainId: 1,
 			DestChainId:   2,
-			OriginToken:   chain.EthAddress,
+			OriginToken:   util.EthAddress,
 			OriginAmount:  big.NewInt(100),
 			DestAmount:    big.NewInt(100),
 		},
@@ -104,7 +104,7 @@ func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
 		Transaction: fastbridge.IFastBridgeBridgeTransaction{
 			OriginChainId: 1,
 			DestChainId:   2,
-			OriginToken:   chain.EthAddress,
+			OriginToken:   util.EthAddress,
 			OriginAmount:  big.NewInt(100),
 			DestAmount:    big.NewInt(100),
 		},

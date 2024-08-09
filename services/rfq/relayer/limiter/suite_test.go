@@ -6,9 +6,9 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/limiter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 // Server suite is the main API server test suite.
@@ -40,7 +40,7 @@ func (s *LimiterSuite) SetupTest() {
 						Decimals: 6,
 					},
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
