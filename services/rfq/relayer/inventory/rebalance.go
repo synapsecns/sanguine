@@ -260,6 +260,9 @@ func getRebalanceAmount(span trace.Span, cfg relconfig.Config, tokens map[int]ma
 		}
 		if initialDelta.Cmp(big.NewInt(0)) > 0 && amount.Cmp(initialDelta) > 0 {
 			amount = initialDelta
+			if span != nil {
+				span.SetAttributes(attribute.String("rebalance_amount_adjusted", amount.String()))
+			}
 			return amount, nil
 		}
 		return nil, nil
