@@ -240,6 +240,8 @@ func getRebalanceAmount(span trace.Span, cfg relconfig.Config, tokens map[int]ma
 	maintenanceThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePctOrigin/100)).Int(nil)
 	newBalanceOrigin := new(big.Int).Sub(originTokenData.Balance, amount)
 	if newBalanceOrigin.Cmp(maintenanceThreshOrigin) < 0 {
+		// if maintenance threshold would be breached, try to set the rebalance amount
+		// such that origin would be taken to initial threshold
 		initialPctOrigin, err := cfg.GetInitialBalancePct(originTokenData.ChainID, originTokenData.Addr.Hex())
 		if err != nil {
 			return nil, fmt.Errorf("could not get initial pct: %w", err)
@@ -256,7 +258,7 @@ func getRebalanceAmount(span trace.Span, cfg relconfig.Config, tokens map[int]ma
 				attribute.String("initial_delta", initialDelta.String()),
 			)
 		}
-		if initialDelta.Cmp(big.NewInt(0)) > 0 {
+		if initialDelta.Cmp(big.NewInt(0)) > 0 && amount.Cmp(initialDelta) > 0 {
 			amount = initialDelta
 			return amount, nil
 		}
