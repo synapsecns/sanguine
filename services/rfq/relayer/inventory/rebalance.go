@@ -240,12 +240,25 @@ func getRebalanceAmount(span trace.Span, cfg relconfig.Config, tokens map[int]ma
 	maintenanceThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePctOrigin/100)).Int(nil)
 	newBalanceOrigin := new(big.Int).Sub(originTokenData.Balance, amount)
 	if newBalanceOrigin.Cmp(maintenanceThreshOrigin) < 0 {
+		initialPctOrigin, err := cfg.GetInitialBalancePct(originTokenData.ChainID, originTokenData.Addr.Hex())
+		if err != nil {
+			return nil, fmt.Errorf("could not get initial pct: %w", err)
+		}
+		initialThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPctOrigin/100)).Int(nil)
+		initialDelta := new(big.Int).Sub(originTokenData.Balance, initialThreshOrigin)
 		if span != nil {
 			span.SetAttributes(
 				attribute.Float64("maintenance_pct_origin", maintenancePctOrigin),
 				attribute.String("maintenance_thresh_origin", maintenanceThreshOrigin.String()),
+				attribute.Float64("initial_pct_origin", initialPctOrigin),
+				attribute.String("initial_thresh_origin", initialThreshOrigin.String()),
 				attribute.String("new_balance_origin", newBalanceOrigin.String()),
+				attribute.String("initial_delta", initialDelta.String()),
 			)
+		}
+		if initialDelta.Cmp(big.NewInt(0)) > 0 {
+			amount = initialDelta
+			return amount, nil
 		}
 		return nil, nil
 	}
