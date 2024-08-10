@@ -809,7 +809,7 @@ func (c Config) GetQuoteSubmissionTimeout() time.Duration {
 	return timeout
 }
 
-var defaultVolumeLimit *big.Int = common.Big0
+var defaultVolumeLimit = core.CopyBigInt(common.Big0)
 
 // GetVolumeLimit returns the volume limit for the relayer.
 func (c Config) GetVolumeLimit(chainID int, addr common.Address) *big.Int {
