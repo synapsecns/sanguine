@@ -431,7 +431,7 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 				defer wg.Done()
 				err = r.processRequest(ctx, request)
 				if err != nil {
-					logger.Errorf("could not process request: %w", err)
+					logger.Errorf("could not process request: %v", err)
 				}
 			}()
 		}
