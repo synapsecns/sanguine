@@ -171,7 +171,8 @@ func (i *IntegrationSuite) setupCCTP() {
 	testBackends := core.ToSlice(i.originBackend, i.destBackend)
 
 	// register remote deployments and tokens
-	for _, backend := range testBackends {
+	for _, b := range testBackends {
+		backend := b
 		err := retry.WithBackoff(i.GetTestContext(), func(_ context.Context) (err error) {
 			cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
 			_, tokenMessengeHandle := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backend)
@@ -318,7 +319,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 	}
 }
 
-//nolint:gocognit
+//nolint:gocognit,cyclop
 func (i *IntegrationSuite) setupRelayer() {
 	// add myself as a filler
 	var wg sync.WaitGroup
