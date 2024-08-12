@@ -16,7 +16,9 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// LatestBlockFetcher is the interface for fetching the latest block number.
 type LatestBlockFetcher interface {
+	// LatestBlock returns the latest block number.
 	LatestBlock() uint64
 }
 
