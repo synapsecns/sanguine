@@ -9,7 +9,7 @@ interface AmountInputTypes {
   isLoading?: boolean
   showValue: string
   handleFromValueChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
-  setIsTyping: (isTyping: boolean) => void
+  setIsTyping?: (isTyping: boolean) => void
 }
 
 export function AmountInput({
