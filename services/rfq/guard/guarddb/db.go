@@ -59,10 +59,11 @@ type BridgeRequest struct {
 
 // PendingProven is the pending proven object.
 type PendingProven struct {
-	Origin        uint32
-	TransactionID [32]byte
-	TxHash        common.Hash
-	Status        PendingProvenStatus
+	Origin         uint32
+	RelayerAddress common.Address
+	TransactionID  [32]byte
+	TxHash         common.Hash
+	Status         PendingProvenStatus
 }
 
 // PendingProvenStatus is the status of a quote request in the db.
