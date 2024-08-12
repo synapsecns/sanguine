@@ -4,8 +4,9 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/mock"
-	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
+	listenerMock "github.com/synapsecns/sanguine/ethergo/listener/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/limiter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter/mocks"
@@ -15,9 +16,9 @@ import (
 
 func (l *LimiterSuite) TestOverLimitEnoughConfirmations() {
 	mockQuoter := buildMockQuoter(10001)
-	mockClient := buildMockClient(6)
+	mockListener := buildMockListener(6)
 
-	l.limiter = limiter.NewRateLimiter(l.cfg, mockQuoter, mockClient, l.metrics, l.cfg.Chains[1].Tokens)
+	l.limiter = limiter.NewRateLimiter(l.cfg, mockListener, mockQuoter, l.metrics, l.cfg.Chains[1].Tokens)
 
 	quote := reldb.QuoteRequest{
 		BlockNumber: 5,
@@ -39,9 +40,9 @@ func (l *LimiterSuite) TestOverLimitEnoughConfirmations() {
 
 func (l *LimiterSuite) TestUnderLimitEnoughConfirmations() {
 	mockQuoter := buildMockQuoter(100)
-	mockClient := buildMockClient(10)
+	mockListener := buildMockListener(10)
 
-	l.limiter = limiter.NewRateLimiter(l.cfg, mockQuoter, mockClient, l.metrics, l.cfg.Chains[1].Tokens)
+	l.limiter = limiter.NewRateLimiter(l.cfg, mockListener, mockQuoter, l.metrics, l.cfg.Chains[1].Tokens)
 
 	quote := reldb.QuoteRequest{
 		BlockNumber: 5,
@@ -60,9 +61,9 @@ func (l *LimiterSuite) TestUnderLimitEnoughConfirmations() {
 
 func (l *LimiterSuite) TestUnderLimitNotEnoughConfirmations() {
 	mockQuoter := buildMockQuoter(100)
-	mockClient := buildMockClient(1)
+	mockListener := buildMockListener(1)
 
-	l.limiter = limiter.NewRateLimiter(l.cfg, mockQuoter, mockClient, l.metrics, l.cfg.Chains[1].Tokens)
+	l.limiter = limiter.NewRateLimiter(l.cfg, mockListener, mockQuoter, l.metrics, l.cfg.Chains[1].Tokens)
 
 	quote := reldb.QuoteRequest{
 		BlockNumber: 1, // same block number,but shouldnt matter
@@ -82,9 +83,11 @@ func (l *LimiterSuite) TestUnderLimitNotEnoughConfirmations() {
 
 func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
 	mockQuoter := buildMockQuoter(69420)
-	mockClient := buildMockClient(4)
+	mockListener := buildMockListener(4)
 
-	l.limiter = limiter.NewRateLimiter(l.cfg, mockQuoter, mockClient, l.metrics, l.cfg.Chains[1].Tokens)
+	l.limiter = limiter.NewRateLimiter(l.cfg, mockListener, mockQuoter, l.metrics, l.cfg.Chains[1].Tokens)
+
+	oneEth, _ := new(big.Float).SetFloat64(params.Ether).Int(nil)
 
 	quote := reldb.QuoteRequest{
 		BlockNumber: 4,
@@ -92,8 +95,8 @@ func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
 			OriginChainId: 1,
 			DestChainId:   2,
 			OriginToken:   util.EthAddress,
-			OriginAmount:  big.NewInt(100),
-			DestAmount:    big.NewInt(100),
+			OriginAmount:  oneEth,
+			DestAmount:    oneEth,
 		},
 	}
 
@@ -112,8 +115,8 @@ func buildMockQuoter(price float64) *mocks.Quoter {
 	return mockQuoter
 }
 
-func buildMockClient(blockNumber uint64) *clientMocks.EVM {
-	mockClient := new(clientMocks.EVM)
-	mockClient.On("BlockNumber", mock.Anything, mock.Anything).Once().Return(blockNumber, nil)
+func buildMockListener(blockNumber uint64) *listenerMock.ContractListener {
+	mockClient := new(listenerMock.ContractListener)
+	mockClient.On("LatestBlock").Once().Return(blockNumber, nil)
 	return mockClient
 }

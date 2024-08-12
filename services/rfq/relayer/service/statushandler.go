@@ -74,10 +74,6 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		return nil, fmt.Errorf("could not get dest chain: %w", err)
 	}
 
-	chainClient, err := r.client.GetChainClient(ctx, int(req.Transaction.OriginChainId))
-	if err != nil {
-		return nil, fmt.Errorf("could not get origin client: %w", err)
-	}
 	originTokens, err := r.cfg.GetTokens(req.Transaction.OriginChainId)
 	if err != nil {
 		return nil, fmt.Errorf("could not get tokens: %w", err)
@@ -97,7 +93,13 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
 		// TODO: this should be configurable
-		limiter:    limiter.NewRateLimiter(r.cfg, r.quoter, chainClient, r.metrics, originTokens),
+		limiter: limiter.NewRateLimiter(
+			r.cfg,
+			r.chainListeners[int(req.Transaction.OriginChainId)],
+			r.quoter,
+			r.metrics,
+			originTokens,
+		),
 		tokenNames: originTokens,
 	}
 

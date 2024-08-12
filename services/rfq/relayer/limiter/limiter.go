@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -24,7 +24,7 @@ type Limiter interface {
 }
 
 type limiterImpl struct {
-	client     client.EVM
+	listener   listener.ContractListener
 	metrics    metrics.Handler
 	quoter     quoter.Quoter
 	cfg        relconfig.Config
@@ -35,13 +35,13 @@ type limiterImpl struct {
 // TODO: implement the sliding window: queue up requests and process them in order if cumulative volume is above limit.
 func NewRateLimiter(
 	cfg relconfig.Config,
+	l listener.ContractListener,
 	q quoter.Quoter,
-	client client.EVM,
 	metricHandler metrics.Handler,
 	tokens map[string]relconfig.TokenConfig,
 ) Limiter {
 	return &limiterImpl{
-		client:     client,
+		listener:   l,
 		metrics:    metricHandler,
 		quoter:     q,
 		cfg:        cfg,
@@ -78,12 +78,12 @@ func (l *limiterImpl) IsAllowed(ctx context.Context, request reldb.QuoteRequest)
 }
 
 func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request reldb.QuoteRequest) (_ bool, err error) {
-	ctx, span := l.metrics.Tracer().Start(ctx, "limiter.hasEnoughConfirmations")
+	_, span := l.metrics.Tracer().Start(ctx, "limiter.hasEnoughConfirmations")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	currentBlockNumber, err := l.client.BlockNumber(ctx)
+	currentBlockNumber := l.listener.LatestBlock()
 	if err != nil {
 		return false, fmt.Errorf("could not get block number: %w", err)
 	}
@@ -109,7 +109,7 @@ func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request reldb.
 func (l *limiterImpl) withinSizeLimit(ctx context.Context, request reldb.QuoteRequest) (bool, error) {
 	volumeLimit := l.cfg.GetVolumeLimit(int(request.Transaction.OriginChainId), request.Transaction.OriginToken)
 	// There is no limit.
-	if volumeLimit.Cmp(common.Big0) == 0 {
+	if volumeLimit.Cmp(big.NewInt(-1)) == 0 {
 		return true, nil
 	}
 
@@ -140,10 +140,12 @@ func (l *limiterImpl) getUSDAmountOfToken(
 
 	price, err := l.quoter.GetPrice(ctx, tokenName)
 	if err != nil {
-		return big.NewInt(0), fmt.Errorf("could not get price: %w", err)
+		return nil, fmt.Errorf("could not get price: %w", err)
 	}
+	priceFlt := new(big.Float).SetFloat64(price)
+	originAmountFlt := new(big.Float).SetInt(request.Transaction.OriginAmount)
 
-	product := new(big.Int).Mul(big.NewInt(int64(price)), request.Transaction.OriginAmount)
+	product, _ := new(big.Float).Mul(priceFlt, originAmountFlt).Int(nil)
 
 	span.SetAttributes(
 		attribute.String("token_name", tokenName),
