@@ -20,20 +20,12 @@ export function AmountInput({
   handleFromValueChange,
   setIsTyping,
 }: AmountInputTypes) {
-  const [localValue, setLocalValue] = useState(showValue)
-
   const debouncedSetIsTyping = useCallback(
     debounce((value: boolean) => setIsTyping(value), 500),
     [setIsTyping]
   )
 
-  useEffect(() => {
-    setLocalValue(showValue)
-  }, [showValue])
-
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value
-    setLocalValue(newValue)
     setIsTyping(true)
     debouncedSetIsTyping(false)
     handleFromValueChange?.(event)
@@ -60,7 +52,7 @@ export function AmountInput({
           className={inputClassName}
           placeholder="0.0000"
           onChange={handleInputChange}
-          value={localValue}
+          value={showValue}
           name="inputRow"
           autoComplete="off"
           minLength={1}
