@@ -1,6 +1,6 @@
-import Tooltip from '@components/tailwind/Tooltip'
+import { Tooltip } from '@components/tailwind/Tooltip'
 
-export function Indicator({ indicatorType }) {
+export const Indicator = ({ indicatorType }) => {
   switch (indicatorType) {
     case 'pending':
       return (

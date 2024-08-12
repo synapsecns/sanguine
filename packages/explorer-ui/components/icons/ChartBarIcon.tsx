@@ -1,4 +1,4 @@
-export default function ChartBarIcon({ className }) {
+export const ChartBarIcon = ({ className }) => {
   return (
     <svg
       className={`h-6 w-6 ${className}`}

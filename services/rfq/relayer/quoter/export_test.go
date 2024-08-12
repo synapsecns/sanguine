@@ -9,13 +9,13 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
-func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
+func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int, inv map[int]map[common.Address]*big.Int) ([]model.PutQuoteRequest, error) {
 	// nolint: errcheck
-	return m.generateQuotes(ctx, chainID, address, balance)
+	return m.generateQuotes(ctx, chainID, address, balance, inv)
 }
 
-func (m *Manager) GetOriginAmount(ctx context.Context, origin, dest int, address common.Address, balance *big.Int) (*big.Int, error) {
-	return m.getOriginAmount(ctx, origin, dest, address, balance)
+func (m *Manager) GetOriginAmount(ctx context.Context, input QuoteInput) (*big.Int, error) {
+	return m.getOriginAmount(ctx, input)
 }
 
 func (m *Manager) GetDestAmount(ctx context.Context, quoteAmount *big.Int, chainID int, tokenName string) (*big.Int, error) {

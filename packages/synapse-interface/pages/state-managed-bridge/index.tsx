@@ -21,7 +21,7 @@ import { SwitchButton } from '@/components/buttons/SwitchButton'
 import { PageHeader } from '@/components/PageHeader'
 import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
 import Button from '@/components/ui/tailwind/Button'
-import { SettingsIcon } from '@/components/icons/SettingsIcon'
+import { SettingsToggle } from '@/components/StateManagedBridge/SettingsToggle'
 import { BridgeCard } from '@/components/ui/BridgeCard'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
 import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
@@ -63,14 +63,8 @@ import { RootState } from '@/store/store'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
-import {
-  MaintenanceWarningMessages,
-  useMaintenanceCountdownProgresses,
-} from '@/components/Maintenance/Maintenance'
-import {
-  PAUSED_MODULES,
-  getBridgeModuleNames,
-} from '@/components/Maintenance/Maintenance'
+import { useMaintenance } from '@/components/Maintenance/Maintenance'
+import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { screenAddress } from '@/utils/screenAddress'
@@ -99,6 +93,13 @@ const StateManagedBridge = () => {
   const { showSettingsSlideOver, showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
+
+  const {
+    isBridgePaused,
+    pausedModulesList,
+    BridgeMaintenanceProgressBar,
+    BridgeMaintenanceWarningMessage,
+  } = useMaintenance()
 
   const [isApproved, setIsApproved] = useState<boolean>(false)
 
@@ -162,13 +163,18 @@ const StateManagedBridge = () => {
         toChainId,
         fromToken.addresses[fromChainId],
         toToken.addresses[toChainId],
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
+        {
+          originUserAddress: address,
+        }
       )
 
       const pausedBridgeModules = new Set(
-        PAUSED_MODULES.filter((module) =>
-          module.chainId ? module.chainId === fromChainId : true
-        ).flatMap(getBridgeModuleNames)
+        pausedModulesList
+          .filter((module) =>
+            module.chainId ? module.chainId === fromChainId : true
+          )
+          .flatMap(getBridgeModuleNames)
       )
 
       const activeQuotes = allQuotes.filter(
@@ -184,13 +190,39 @@ const StateManagedBridge = () => {
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
+      const nonRfqQuote = activeQuotes.find(
+        (quote) => quote.bridgeModuleName !== 'SynapseRFQ'
+      )
+
       let quote
 
-      if (rfqQuote) {
-        quote = rfqQuote
+      if (rfqQuote && nonRfqQuote) {
+        const rfqMaxAmountOut = BigInt(rfqQuote.maxAmountOut.toString())
+        const nonRfqMaxAmountOut = BigInt(nonRfqQuote.maxAmountOut.toString())
+
+        const allowedPercentileDifference = 30n
+        const maxDifference =
+          (nonRfqMaxAmountOut * allowedPercentileDifference) / 100n
+
+        if (rfqMaxAmountOut > nonRfqMaxAmountOut - maxDifference) {
+          quote = rfqQuote
+        } else {
+          quote = nonRfqQuote
+
+          segmentAnalyticsEvent(`[Bridge] use non-RFQ quote over RFQ`, {
+            bridgeModuleName: nonRfqQuote.bridgeModuleName,
+            originChainId: fromChainId,
+            originToken: fromToken.symbol,
+            originTokenAddress: fromToken.addresses[fromChainId],
+            destinationChainId: toChainId,
+            destinationToken: toToken.symbol,
+            destinationTokenAddress: toToken.addresses[toChainId],
+            rfqQuoteAmountOut: rfqQuote.maxAmountOut.toString(),
+            nonRfqMaxAmountOut: nonRfqQuote.maxAmountOut.toString(),
+          })
+        }
       } else {
-        /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-        quote = activeQuotes[0]
+        quote = rfqQuote ?? nonRfqQuote
       }
 
       const {
@@ -361,7 +393,6 @@ const StateManagedBridge = () => {
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
-        address,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -371,6 +402,7 @@ const StateManagedBridge = () => {
         destinationToken: toToken?.routeSymbol,
         exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
         routerAddress: bridgeQuote.routerAddress,
+        bridgeQuote,
       },
       true
     )
@@ -454,7 +486,6 @@ const StateManagedBridge = () => {
         { id: 'bridge-in-progress-popup', duration: Infinity }
       )
       segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
-        address,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -464,6 +495,7 @@ const StateManagedBridge = () => {
         destinationToken: toToken?.routeSymbol,
         exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
         routerAddress: bridgeQuote.routerAddress,
+        bridgeQuote,
       })
       dispatch(
         updatePendingBridgeTransaction({
@@ -516,7 +548,6 @@ const StateManagedBridge = () => {
       return tx
     } catch (error) {
       segmentAnalyticsEvent(`[Bridge]  error bridging`, {
-        address,
         errorCode: error.code,
       })
       dispatch(removePendingBridgeTransaction(currentTimestamp))
@@ -543,13 +574,6 @@ const StateManagedBridge = () => {
     }
   }
 
-  const maintenanceCountdownProgressInstances =
-    useMaintenanceCountdownProgresses({ type: 'Bridge' })
-
-  const isBridgePaused = maintenanceCountdownProgressInstances.some(
-    (instance) => instance.isCurrentChainDisabled
-  )
-
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
@@ -558,39 +582,23 @@ const StateManagedBridge = () => {
             title="Bridge"
             subtitle="Send your assets across chains."
           />
-          <div>
-            <Button
-              className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
-              onClick={() => {
-                if (showSettingsSlideOver === true) {
-                  dispatch(setShowSettingsSlideOver(false))
-                } else {
-                  dispatch(setShowSettingsSlideOver(true))
-                }
-              }}
-            >
-              {!showSettingsSlideOver ? (
-                <>
-                  <SettingsIcon className="w-5 h-5 mr-2" />
-                  <span>Settings</span>
-                </>
-              ) : (
-                <span>Close</span>
-              )}
-            </Button>
-          </div>
+          <Button
+            className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
+            onClick={() =>
+              dispatch(setShowSettingsSlideOver(!showSettingsSlideOver))
+            }
+          >
+            <SettingsToggle showSettingsToggle={!showSettingsSlideOver} />
+          </Button>
         </div>
         <BridgeCard bridgeRef={bridgeDisplayRef}>
-          {maintenanceCountdownProgressInstances.map((instance) => (
-            <>{instance.MaintenanceCountdownProgressBar}</>
-          ))}
+          <BridgeMaintenanceProgressBar />
 
-          {showSettingsSlideOver && (
-            <div className="min-h-[472px] ">
+          {showSettingsSlideOver ? (
+            <div className="min-h-[472px]">
               <SettingsSlideOver key="settings" />
             </div>
-          )}
-          {!showSettingsSlideOver && (
+          ) : (
             <>
               <InputContainer />
               <SwitchButton
@@ -603,7 +611,7 @@ const StateManagedBridge = () => {
               />
               <OutputContainer />
               <Warning />
-              <MaintenanceWarningMessages type="Bridge" />
+              <BridgeMaintenanceWarningMessage />
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />
               <BridgeTransactionButton

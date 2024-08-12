@@ -58,7 +58,11 @@ if (newDeployments.length === 0) {
   logInfo('No new deployments found')
   process.exit(0)
 }
-const newReceipts = getNewDeploymentReceipts(chainName, scriptFN)
+const newReceipts = getNewDeploymentReceipts(
+  chainName,
+  scriptFN,
+  currentTimestamp
+)
 newDeployments.forEach((contractAlias) =>
   saveNewDeployment(chainName, contractAlias, newReceipts)
 )

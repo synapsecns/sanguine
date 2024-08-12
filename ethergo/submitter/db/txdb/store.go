@@ -53,6 +53,7 @@ func (s *Store) MarkAllBeforeNonceReplacedOrConfirmed(ctx context.Context, signe
 	dbTX := s.db.WithContext(ctx).Model(&ETHTX{}).
 		Where(fmt.Sprintf("%s = ?", chainIDFieldName), chainID.Uint64()).
 		Where(fmt.Sprintf("%s < ?", nonceFieldName), nonce).
+		Where(fmt.Sprintf("%s < ?", statusFieldName), db.ReplacedOrConfirmed).
 		Where(fmt.Sprintf("`%s` = ?", fromFieldName), signer.String()).
 		// just in case we're updating a tx already marked as confirmed
 		Updates(map[string]interface{}{statusFieldName: db.ReplacedOrConfirmed.Int()})
@@ -63,12 +64,6 @@ func (s *Store) MarkAllBeforeNonceReplacedOrConfirmed(ctx context.Context, signe
 
 	return nil
 }
-
-// MaxResultsPerChain is the maximum number of transactions to return per chain id.
-// it is exported for testing.
-// TODO: this should be an option passed to the GetTXs function.
-// TODO: temporarily reduced from 50 to 1 to increase resiliency.
-const MaxResultsPerChain = 10
 
 func statusToArgs(matchStatuses ...db.Status) []int {
 	inArgs := make([]int, len(matchStatuses))
@@ -123,10 +118,11 @@ func (s *Store) GetDistinctChainIDs(ctx context.Context) ([]*big.Int, error) {
 // GetTXS returns all transactions for a given address on a given (or any) chain id that match a given status.
 // there is a limit of 50 transactions per chain id. The limit does not make any guarantees about the number of nonces per chain.
 // the submitter will get only the most recent tx submitted for each chain so this can be used for gas pricing.
-func (s *Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, matchStatuses ...db.Status) (txs []db.TX, err error) {
+func (s *Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, options ...db.Option) (txs []db.TX, err error) {
 	var dbTXs []ETHTX
 
-	inArgs := statusToArgs(matchStatuses...)
+	madeOptions := db.ParseOptions(options...)
+	inArgs := statusToArgs(madeOptions.Statuses()...)
 
 	query := ETHTX{
 		From: fromAddress.String(),
@@ -147,7 +143,7 @@ func (s *Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID 
 		Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).
 		Group(fmt.Sprintf("%s, %s", nonceFieldName, chainIDFieldName)).
 		Order(fmt.Sprintf("%s asc", nonceFieldName)).
-		Limit(MaxResultsPerChain)
+		Limit(madeOptions.MaxResults())
 
 	joinQuery, err := interpol.WithMap(
 		"INNER JOIN (?) as subquery on `{table}`.`{id}` = `subquery`.`{id}` AND `{table}`.`{chainID}` = `subquery`.`{chainID}`", map[string]string{
@@ -180,8 +176,11 @@ func (s *Store) GetTXS(ctx context.Context, fromAddress common.Address, chainID 
 }
 
 // GetAllTXAttemptByStatus returns all transactions for a given address on a given (or any) chain id that match a given status.
-func (s *Store) GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, matchStatuses ...db.Status) (txs []db.TX, err error) {
+func (s *Store) GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, options ...db.Option) (txs []db.TX, err error) {
 	var dbTXs []ETHTX
+
+	madeOptions := db.ParseOptions(options...)
+	inArgs := statusToArgs(madeOptions.Statuses()...)
 
 	query := ETHTX{
 		From: fromAddress.String(),
@@ -199,10 +198,10 @@ func (s *Store) GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.
 	subQuery := s.DB().Model(&ETHTX{}).
 		Select(fmt.Sprintf("MAX(%s) as %s, %s, %s", idFieldName, idFieldName, nonceFieldName, chainIDFieldName)).
 		Where(query).
-		Where(fmt.Sprintf("%s IN ?", statusFieldName), statusToArgs(matchStatuses...)).
+		Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).
 		Group(fmt.Sprintf("%s, %s", nonceFieldName, chainIDFieldName)).
 		Order(fmt.Sprintf("%s asc", nonceFieldName)).
-		Limit(MaxResultsPerChain)
+		Limit(madeOptions.MaxResults())
 
 	// one consequence of innerjoining on nonce is we can't cap the max results for the whole query. This is a known limitation
 	joinQuery, err := interpol.WithMap(

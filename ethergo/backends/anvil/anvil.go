@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/ipfs/go-log"
 	"github.com/lmittmann/w3/w3types"
@@ -128,6 +129,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	address := fmt.Sprintf("%s:%s", "http://localhost", dockerutil.GetPort(resource, "8545/tcp"))
 
 	var chainID *big.Int
+	pool.MaxWait = time.Minute
 	if err := pool.Retry(func() error {
 		rpcClient, err := ethclient.DialContext(ctx, address)
 		if err != nil {
@@ -308,7 +310,7 @@ func (f *Backend) FundAccount(ctx context.Context, address common.Address, amoun
 	defer unlocker.Unlock()
 
 	prevBalance, err := f.Backend.BalanceAt(ctx, address, nil)
-	require.Nil(f.T(), err)
+	require.NoError(f.T(), err)
 
 	newBal := new(big.Int).Add(prevBalance, &amount)
 

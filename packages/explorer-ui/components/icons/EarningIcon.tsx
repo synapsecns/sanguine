@@ -1,4 +1,4 @@
-export default function EarningIcon({ className }) {
+export const EarningIcon = ({ className }) => {
   return (
     <svg
       id="Capa_1"

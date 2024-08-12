@@ -1,10 +1,9 @@
-export function SearchBox({
+export const SearchBox = ({
   searchField,
   setSearchField,
-  inputType,
   placeholder,
   extraStyling,
-}) {
+}) => {
   return (
     <form className="flex items-center">
       <div className="relative w-full group ">

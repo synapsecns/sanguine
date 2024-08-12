@@ -3,8 +3,9 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/base"
 	"os"
+
+	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql/base"
 
 	"github.com/ipfs/go-log"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
@@ -19,7 +20,7 @@ type Store struct {
 	*base.Store
 }
 
-var logger = log.Logger("scribe-sqlite")
+var logger = log.Logger("cctp-relayer-sqlite")
 
 // NewSqliteStore creates a new sqlite data store.
 func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Handler, skipMigrations bool) (_ *Store, err error) {

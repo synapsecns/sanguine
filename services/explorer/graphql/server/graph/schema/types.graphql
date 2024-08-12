@@ -179,6 +179,7 @@ type DateResultByChain {
   base: Float
   blast: Float
   scroll: Float
+  linea: Float
   total:  Float
 }
 

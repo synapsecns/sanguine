@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/synapsecns/sanguine/core"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -17,10 +19,15 @@ var DefaultChainConfig = ChainConfig{
 	OriginGasEstimate:       160000,
 	DestGasEstimate:         100000,
 	MinGasToken:             "100000000000000000", // 1 ETH
-	QuotePct:                100,
+	QuotePct:                NewFloatPtr(100),
 	QuoteWidthBps:           0,
-	QuoteFixedFeeMultiplier: 1,
-	RelayFixedFeeMultiplier: 1,
+	QuoteFixedFeeMultiplier: NewFloatPtr(1),
+	RelayFixedFeeMultiplier: NewFloatPtr(1),
+}
+
+// NewFloatPtr returns a pointer to a float64.
+func NewFloatPtr(val float64) *float64 {
+	return core.PtrTo(val)
 }
 
 // getChainConfigValue gets the value of a field from ChainConfig.
@@ -34,8 +41,8 @@ func (c Config) getChainConfigValue(chainID int, fieldName string) (interface{},
 		if err != nil {
 			return nil, err
 		}
-		if isNonZero(value) {
-			return value, nil
+		if !isNilOrZero(value) {
+			return derefPointer(value), nil
 		}
 	}
 
@@ -43,15 +50,15 @@ func (c Config) getChainConfigValue(chainID int, fieldName string) (interface{},
 	if err != nil {
 		return nil, err
 	}
-	if isNonZero(baseValue) {
-		return baseValue, nil
+	if !isNilOrZero(baseValue) {
+		return derefPointer(baseValue), nil
 	}
 
 	defaultValue, err := getFieldValue(DefaultChainConfig, fieldName)
 	if err != nil {
 		return nil, err
 	}
-	return defaultValue, nil
+	return derefPointer(defaultValue), nil
 }
 
 func getFieldValue(obj interface{}, fieldName string) (interface{}, error) {
@@ -85,50 +92,113 @@ func isChainConfigField(fieldName string) bool {
 	return ok
 }
 
-func isNonZero(value interface{}) bool {
-	return reflect.ValueOf(value).Interface() != reflect.Zero(reflect.TypeOf(value)).Interface()
+func derefPointer(value interface{}) interface{} {
+	val := reflect.ValueOf(value)
+	if val.Kind() == reflect.Ptr && !val.IsNil() {
+		return val.Elem().Interface()
+	}
+	return value
+}
+
+func isNilOrZero(value interface{}) bool {
+	val := reflect.ValueOf(value)
+	if val.Kind() == reflect.Ptr {
+		return val.IsNil()
+	}
+	return reflect.DeepEqual(value, reflect.Zero(val.Type()).Interface())
 }
 
 // GetRFQAddress returns the RFQ address for the given chainID.
-func (c Config) GetRFQAddress(chainID int) (value string, err error) {
+func (c Config) GetRFQAddress(chainID int) (value common.Address, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "RFQAddress")
 	if err != nil {
 		return value, err
 	}
 
-	value, ok := rawValue.(string)
+	strValue, ok := rawValue.(string)
 	if !ok {
 		return value, fmt.Errorf("failed to cast RFQAddress to string")
 	}
-	return value, nil
+
+	if strValue == "" {
+		return value, fmt.Errorf("no RFQAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(strValue), nil
 }
 
 // GetSynapseCCTPAddress returns the SynapseCCTP address for the given chainID.
-func (c Config) GetSynapseCCTPAddress(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "SynapseCCTPAddress")
-	if err != nil {
-		return value, err
-	}
-
-	value, ok := rawValue.(string)
+func (c Config) GetSynapseCCTPAddress(chainID int) (value common.Address, err error) {
+	chainCfg, ok := c.Chains[chainID]
 	if !ok {
-		return value, fmt.Errorf("failed to cast SynapseCCTPAddress to string")
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	return value, nil
+	if chainCfg.RebalanceConfigs.Synapse == nil {
+		return value, fmt.Errorf("no synapse config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Synapse.SynapseCCTPAddress == "" {
+		return value, fmt.Errorf("no SynapseCCTPAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(chainCfg.RebalanceConfigs.Synapse.SynapseCCTPAddress), nil
 }
 
 // GetTokenMessengerAddress returns the TokenMessenger address for the given chainID.
-func (c Config) GetTokenMessengerAddress(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "TokenMessengerAddress")
-	if err != nil {
-		return value, err
-	}
-
-	value, ok := rawValue.(string)
+func (c Config) GetTokenMessengerAddress(chainID int) (value common.Address, err error) {
+	chainCfg, ok := c.Chains[chainID]
 	if !ok {
-		return value, fmt.Errorf("failed to cast TokenMessengerAddress to string")
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	return value, nil
+	if chainCfg.RebalanceConfigs.Circle == nil {
+		return value, fmt.Errorf("no token messenger address config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Circle.TokenMessengerAddress == "" {
+		return value, fmt.Errorf("no TokenMessengerAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(chainCfg.RebalanceConfigs.Circle.TokenMessengerAddress), nil
+}
+
+// GetL1GatewayAddress returns the L1Gateway address for the given chainID.
+func (c Config) GetL1GatewayAddress(chainID int) (value common.Address, err error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll == nil {
+		return value, fmt.Errorf("no scroll config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll.L1GatewayAddress == "" {
+		return value, fmt.Errorf("no L1GatewayAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(chainCfg.RebalanceConfigs.Scroll.L1GatewayAddress), nil
+}
+
+// GetL1ScrollMessengerAddress returns the L1ScrollMessenger address for the given chainID.
+func (c Config) GetL1ScrollMessengerAddress(chainID int) (value common.Address, err error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll == nil {
+		return value, fmt.Errorf("no scroll config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll.L1ScrollMessengerAddress == "" {
+		return value, fmt.Errorf("no L1ScrollMessengerAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(chainCfg.RebalanceConfigs.Scroll.L1ScrollMessengerAddress), nil
+}
+
+// GetL2GatewayAddress returns the L2Gateway address for the given chainID.
+func (c Config) GetL2GatewayAddress(chainID int) (value common.Address, err error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll == nil {
+		return value, fmt.Errorf("no scroll config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll.L2GatewayAddress == "" {
+		return value, fmt.Errorf("no L2GatewayAddress for chain %d", chainID)
+	}
+	return common.HexToAddress(chainCfg.RebalanceConfigs.Scroll.L2GatewayAddress), nil
 }
 
 // GetConfirmations returns the Confirmations for the given chainID.
@@ -253,12 +323,34 @@ func (c Config) GetMinGasToken(chainID int) (value *big.Int, err error) {
 
 	strValue, ok := rawValue.(string)
 	if !ok {
-		return value, fmt.Errorf("failed to cast MinGasToken to int")
+		return value, fmt.Errorf("failed to cast MinGasToken to string")
 	}
 
 	value, ok = new(big.Int).SetString(strValue, 10)
 	if !ok {
 		return value, fmt.Errorf("failed to cast MinGasToken to bigint")
+	}
+	return value, nil
+}
+
+const defaultScrollMessageFee = 1e17
+
+// GetScrollMessageFee returns the ScrollMessageFee for the given chainID.
+func (c Config) GetScrollMessageFee(chainID int) (value *big.Int, err error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return value, fmt.Errorf("no chain config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll == nil {
+		return value, fmt.Errorf("no scroll config for chain %d", chainID)
+	}
+	if chainCfg.RebalanceConfigs.Scroll.ScrollMessageFee == nil {
+		return big.NewInt(defaultScrollMessageFee), nil
+	}
+
+	value, ok = new(big.Int).SetString(*chainCfg.RebalanceConfigs.Scroll.ScrollMessageFee, 10)
+	if !ok {
+		return value, fmt.Errorf("failed to cast ScrollMessageFee to bigint")
 	}
 	return value, nil
 }
@@ -298,6 +390,41 @@ func (c Config) GetQuoteOffsetBps(chainID int, tokenName string, isOrigin bool) 
 	return offset, nil
 }
 
+var defaultMaxBalance *big.Int // default to nil, signifies 'positive inf'
+
+// GetMaxBalance returns the MaxBalance for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+func (c Config) GetMaxBalance(chainID int, addr common.Address) *big.Int {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return defaultMaxBalance
+	}
+
+	var tokenCfg *TokenConfig
+	for _, cfg := range chainCfg.Tokens {
+		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
+			cfgCopy := cfg
+			tokenCfg = &cfgCopy
+			break
+		}
+	}
+	if tokenCfg == nil || tokenCfg.MaxBalance == nil {
+		return defaultMaxBalance
+	}
+	quoteAmountFlt, ok := new(big.Float).SetString(*tokenCfg.MaxBalance)
+	if !ok {
+		return defaultMaxBalance
+	}
+	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
+		return defaultMaxBalance
+	}
+
+	// Scale the minBalance by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return quoteAmountScaled
+}
+
 // GetQuoteWidthBps returns the QuoteWidthBps for the given chainID.
 func (c Config) GetQuoteWidthBps(chainID int) (value float64, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "QuoteWidthBps")
@@ -327,7 +454,7 @@ func (c Config) GetQuoteFixedFeeMultiplier(chainID int) (value float64, err erro
 		return value, fmt.Errorf("failed to cast QuoteFixedFeeMultiplier to int")
 	}
 	if value <= 0 {
-		value = DefaultChainConfig.QuoteFixedFeeMultiplier
+		value = *DefaultChainConfig.QuoteFixedFeeMultiplier
 	}
 	return value, nil
 }
@@ -353,16 +480,16 @@ func (c Config) GetRelayFixedFeeMultiplier(chainID int) (value float64, err erro
 	return value, nil
 }
 
-// GetCCTPStartBlock returns the CCTPStartBlock for the given chainID.
-func (c Config) GetCCTPStartBlock(chainID int) (value uint64, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "CCTPStartBlock")
+// GetRebalanceStartBlock returns the RebalanceStartBlock for the given chainID.
+func (c Config) GetRebalanceStartBlock(chainID int) (value uint64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "RebalanceStartBlock")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(uint64)
 	if !ok {
-		return value, fmt.Errorf("failed to cast CCTPStartBlock to int")
+		return value, fmt.Errorf("failed to cast RebalanceStartBlock to int")
 	}
 	return value, nil
 }
@@ -445,37 +572,45 @@ func (c Config) getTokenConfigByAddr(chainID int, tokenAddr string) (cfg TokenCo
 	return cfg, fmt.Errorf("no token config for chain %d and address %s", chainID, tokenAddr)
 }
 
-// GetRebalanceMethod returns the rebalance method for the given chain path and token address.
+// GetRebalanceMethods returns the rebalance method for the given chain path and token address.
 // This method will error if there is a rebalance method mismatch, and neither methods correspond to
-// RebalanceMethodNone.
-func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method RebalanceMethod, err error) {
+// RebalanceMethodsNone.
+func (c Config) GetRebalanceMethods(chainID int, tokenAddr string) (methods []RebalanceMethod, err error) {
 	tokenCfg, err := c.getTokenConfigByAddr(chainID, tokenAddr)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	method, err = RebalanceMethodFromString(tokenCfg.RebalanceMethod)
-	if err != nil {
-		return 0, err
-	}
-	return method, nil
-}
-
-// GetRebalanceMethods returns all rebalance methods present in the config.
-func (c Config) GetRebalanceMethods() (methods map[RebalanceMethod]bool, err error) {
-	methods = make(map[RebalanceMethod]bool)
-	for chainID, chainCfg := range c.Chains {
-		for _, tokenCfg := range chainCfg.Tokens {
-			method, err := c.GetRebalanceMethod(chainID, tokenCfg.Address)
-			if err != nil {
-				return nil, err
-			}
-			if method != RebalanceMethodNone {
-				methods[method] = true
-			}
+	methods = []RebalanceMethod{}
+	for _, m := range tokenCfg.RebalanceMethods {
+		method, err := RebalanceMethodFromString(m)
+		if err != nil {
+			return nil, err
+		}
+		if method != RebalanceMethodNone {
+			methods = append(methods, method)
 		}
 	}
 	return methods, nil
+}
+
+// GetAllRebalanceMethods returns all rebalance methods present in the config.
+func (c Config) GetAllRebalanceMethods() (allMethods map[RebalanceMethod]bool, err error) {
+	allMethods = make(map[RebalanceMethod]bool)
+	for chainID, chainCfg := range c.Chains {
+		for _, tokenCfg := range chainCfg.Tokens {
+			methods, err := c.GetRebalanceMethods(chainID, tokenCfg.Address)
+			if err != nil {
+				return nil, err
+			}
+			for _, method := range methods {
+				if method != RebalanceMethodNone {
+					allMethods[method] = true
+				}
+			}
+		}
+	}
+	return allMethods, nil
 }
 
 // GetMaintenanceBalancePct returns the maintenance balance percentage for the given chain and token address.

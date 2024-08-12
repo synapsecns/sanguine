@@ -1,18 +1,18 @@
-import { useState } from 'react'
 import numeral from 'numeral'
-import Card from '@components/tailwind/Card'
-import Grid from '@components/tailwind/Grid'
+import { useState } from 'react'
+import { Card } from '@components/tailwind/Card'
+import { Grid } from '@components/tailwind/Grid'
 
-export function Stats({
+export const Stats = ({
   bridgeVolume,
   transactions,
   addresses,
   setChartType,
   allTime,
-}) {
+}) => {
   const [activeState, setState] = useState('VOLUME')
 
-  function updateState(string) {
+  const updateState = (string) => {
     setState(string)
     setChartType(string)
   }
@@ -84,13 +84,13 @@ export function Stats({
   }
 }
 
-export function StatCard({
+export const StatCard = ({
   onClick,
   title,
   children,
   active = false,
   duration = '30-day',
-}) {
+}) => {
   const activeClass = active ? 'opacity-100' : 'opacity-20 hover:opacity-100'
   return (
     <Card
@@ -108,13 +108,13 @@ export function StatCard({
   )
 }
 
-export function AllTimeStatCard({
+export const AllTimeStatCard = ({
   onClick,
   title,
   children,
   active = false,
   duration = 'All-Time',
-}) {
+}) => {
   const activeClass = active ? 'opacity-100' : 'opacity-20 hover:opacity-100'
   return (
     <Card

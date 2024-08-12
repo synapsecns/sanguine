@@ -9,6 +9,8 @@ builds:
   - id: git-changes-action
     binary: git-changes-action
     ldflags: -installsuffix static
+    gcflags:
+      - all=-dwarflocationlists=true
     env:
       - CGO_ENABLED=0
     main: main.go
