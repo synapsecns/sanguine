@@ -138,6 +138,7 @@ func (s Store) UpdateLatestRebalance(ctx context.Context, rebalance reldb.Rebala
 }
 
 // GetPendingRebalances checks fetches all pending rebalances that involve the given chainIDs.
+// Note that no chainID filtering will be done if no chainID is specified.
 func (s Store) GetPendingRebalances(ctx context.Context, chainIDs ...uint64) ([]*reldb.Rebalance, error) {
 	var rebalances []Rebalance
 	var pendingRebalances []*reldb.Rebalance
@@ -149,7 +150,12 @@ func (s Store) GetPendingRebalances(ctx context.Context, chainIDs ...uint64) ([]
 	}
 
 	// TODO: can be made more efficient by doing below check inside sql query
-	tx := s.DB().WithContext(ctx).Model(&Rebalance{}).Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).Find(&rebalances)
+	var tx *gorm.DB
+	if len(matchStatuses) == 0 {
+		tx = s.DB().WithContext(ctx).Model(&Rebalance{}).Find(&rebalances)
+	} else {
+		tx = s.DB().WithContext(ctx).Model(&Rebalance{}).Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).Find(&rebalances)
+	}
 	if tx.Error != nil {
 		return pendingRebalances, fmt.Errorf("could not get db results: %w", tx.Error)
 	}
