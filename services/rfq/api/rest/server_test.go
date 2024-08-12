@@ -13,8 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 
-	apiClient "github.com/synapsecns/sanguine/services/rfq/api/client"
-
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
