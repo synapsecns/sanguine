@@ -70,6 +70,8 @@ type QuoteQuery = {
 }
 
 export type BridgeQuote = {
+  inputAmount: bigint
+  inputAmountString: string
   outputAmount: bigint
   outputAmountString: string
   routerAddress: string

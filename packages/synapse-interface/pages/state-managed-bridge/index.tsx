@@ -80,6 +80,7 @@ const StateManagedBridge = () => {
   const quoteToastRef = useRef({ id: '' })
 
   const {
+    fromValue,
     fromChainId,
     toChainId,
     fromToken,
@@ -284,6 +285,11 @@ const StateManagedBridge = () => {
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({
+            inputAmount: stringToBigInt(
+              debouncedFromValue,
+              fromToken?.decimals[fromChainId]
+            ),
+            inputAmountString: debouncedFromValue,
             outputAmount: toValueBigInt,
             outputAmountString: commify(
               formatBigIntToString(
@@ -389,6 +395,30 @@ const StateManagedBridge = () => {
         return
       }
     }
+
+    if (debouncedFromValue !== bridgeQuote.inputAmountString) {
+      await getAndSetBridgeQuote()
+
+      return (
+        toast.error(
+          <div>
+            <div className="w-full">{`Bridge error: please try again.`}</div>
+          </div>
+        ),
+        {
+          id: 'toast-error-execute-bridge',
+          duration: Infinity,
+        }
+      )
+    }
+
+    console.log(
+      'debouncedFromValue === bridgeQuote.inputAmountString: ',
+      debouncedFromValue === bridgeQuote.inputAmountString
+    )
+    console.log(
+      `executeBridge: \n displayed input value: ${debouncedFromValue} \n bridge quote output: ${bridgeQuote.outputAmountString} \n bridge quote input recorded: ${bridgeQuote.inputAmountString}`
+    )
 
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
