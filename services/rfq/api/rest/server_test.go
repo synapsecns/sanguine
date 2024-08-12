@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	apiClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
+
+	apiClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -203,6 +204,50 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 		}
 	}
 	c.Assert().True(found, "Newly added quote not found")
+}
+
+func (c *ServerSuite) TestMultiplePutRequestsWithIncorrectAuth() {
+	// Start the API server in a separate goroutine and wait for it to initialize.
+	c.startQuoterAPIServer()
+
+	// Create a random wallet for incorrect authorization
+	randomWallet, err := wallet.FromRandom()
+	c.Require().NoError(err)
+
+	// Prepare the authorization header with a signed timestamp using the incorrect wallet
+	header, err := c.prepareAuthHeader(randomWallet)
+	c.Require().NoError(err)
+
+	// Perform multiple PUT requests to the API server with the incorrect authorization header
+	for i := 0; i < 3; i++ {
+		resp, err := c.sendPutQuoteRequest(header)
+		c.Require().NoError(err)
+		defer func() {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}()
+
+		// Read the response body
+		body, err := io.ReadAll(resp.Body)
+		c.Require().NoError(err)
+
+		// Log the response body for debugging
+		fmt.Printf("Request %d response: Status: %d, Body: %s\n", i+1, resp.StatusCode, string(body))
+
+		switch resp.StatusCode {
+		case http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden:
+			// These are acceptable error status codes for failed authentication
+			c.Assert().True(true, "Request %d correctly failed with status %d", i+1, resp.StatusCode)
+		case http.StatusOK:
+			// The ModifyQuote method returns 200 OK with an empty body on success
+			c.Assert().Empty(string(body), "Request %d should return an empty body on success", i+1)
+
+			// Since this shouldn't happen with incorrect auth, fail the test
+			c.Fail("Request %d unexpectedly succeeded, while submitting incorrect authentication", i+1)
+		default:
+			c.Fail("Unexpected status code %d for request %d", resp.StatusCode, i+1)
+		}
+	}
 }
 
 func (c *ServerSuite) TestPutAck() {

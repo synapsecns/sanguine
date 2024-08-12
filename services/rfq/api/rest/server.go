@@ -278,18 +278,22 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 
 	if hasRole == nil || hasRole.IsExpired() {
 		has, roleErr := bridge.HasRole(ops, relayerRole, addressRecovered)
-		if roleErr == nil {
-			r.roleCache[destChainID].Set(addressRecovered.Hex(), has, cacheInterval)
-		}
-
 		if roleErr != nil {
 			err = fmt.Errorf("unable to check relayer role on-chain")
 			return addressRecovered, err
-		} else if !has {
-			err = fmt.Errorf("q.Relayer not an on-chain relayer")
+		}
+
+		r.roleCache[destChainID].Set(addressRecovered.Hex(), has, cacheInterval)
+
+		if !has {
+			err = fmt.Errorf("relayer not an on-chain relayer")
 			return addressRecovered, err
 		}
+	} else if !hasRole.Value() {
+		err = fmt.Errorf("relayer not an on-chain relayer")
+		return addressRecovered, err
 	}
+
 	return addressRecovered, nil
 }
 
