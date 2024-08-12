@@ -21,12 +21,12 @@ export function AmountInput({
   setIsTyping,
 }: AmountInputTypes) {
   const debouncedSetIsTyping = useCallback(
-    debounce((value: boolean) => setIsTyping(value), 500),
+    debounce((value: boolean) => setIsTyping?.(value), 500),
     [setIsTyping]
   )
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIsTyping(true)
+    setIsTyping?.(true)
     debouncedSetIsTyping(false)
     handleFromValueChange?.(event)
   }
