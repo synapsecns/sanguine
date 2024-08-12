@@ -8,7 +8,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -17,6 +16,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+type LatestBlockFetcher interface {
+	LatestBlock() uint64
+}
+
 // Limiter is the interface for rate limiting RFQs.
 type Limiter interface {
 	// IsAllowed returns true if the request is allowed, false otherwise.
@@ -24,7 +27,7 @@ type Limiter interface {
 }
 
 type limiterImpl struct {
-	listener   listener.ContractListener
+	listener   LatestBlockFetcher
 	metrics    metrics.Handler
 	quoter     quoter.Quoter
 	cfg        relconfig.Config
@@ -35,7 +38,7 @@ type limiterImpl struct {
 // TODO: implement the sliding window: queue up requests and process them in order if cumulative volume is above limit.
 func NewRateLimiter(
 	cfg relconfig.Config,
-	l listener.ContractListener,
+	l LatestBlockFetcher,
 	q quoter.Quoter,
 	metricHandler metrics.Handler,
 	tokens map[string]relconfig.TokenConfig,
