@@ -33,7 +33,13 @@ import { formatAmount } from '../../utils/formatAmount'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
-export const InputContainer = () => {
+interface InputContainerProps {
+  setIsTyping: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export const InputContainer: React.FC<InputContainerProps> = ({
+  setIsTyping,
+}) => {
   const dispatch = useAppDispatch()
   const { chain, isConnected } = useAccount()
   const { balances } = usePortfolioState()
@@ -155,6 +161,7 @@ export const InputContainer = () => {
         <FromTokenSelector />
         <div className="flex flex-wrap w-full">
           <AmountInput
+            setIsTyping={setIsTyping}
             inputRef={inputRef}
             showValue={showValue}
             handleFromValueChange={handleFromValueChange}

@@ -79,6 +79,8 @@ const StateManagedBridge = () => {
   const currentSDKRequestID = useRef(0)
   const quoteToastRef = useRef({ id: '' })
 
+  const [isTyping, setIsTyping] = useState(false)
+
   const {
     fromChainId,
     toChainId,
@@ -149,6 +151,7 @@ const StateManagedBridge = () => {
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
+
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
 
     /* clear stored bridge quote before requesting new bridge quote */
@@ -600,7 +603,7 @@ const StateManagedBridge = () => {
             </div>
           ) : (
             <>
-              <InputContainer />
+              <InputContainer setIsTyping={setIsTyping} />
               <SwitchButton
                 onClick={() => {
                   dispatch(setFromChainId(toChainId))
@@ -615,6 +618,7 @@ const StateManagedBridge = () => {
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />
               <BridgeTransactionButton
+                isTyping={isTyping}
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}

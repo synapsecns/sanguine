@@ -1,22 +1,22 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
+import { isAddress } from 'viem'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
-import { useEffect, useState } from 'react'
-import { isAddress } from 'viem'
-
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { stringToBigInt } from '@/utils/bigint/format'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
-import { useAppDispatch } from '@/store/hooks'
 import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
+import { useAppDispatch } from '@/store/hooks'
+import { stringToBigInt } from '@/utils/bigint/format'
 
 export const BridgeTransactionButton = ({
   approveTxn,
   executeBridge,
   isApproved,
   isBridgePaused,
+  isTyping,
 }) => {
   const dispatch = useAppDispatch()
   const [isConnected, setIsConnected] = useState(false)
@@ -85,6 +85,7 @@ export const BridgeTransactionButton = ({
 
   const isButtonDisabled =
     isLoading ||
+    isTyping ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||
