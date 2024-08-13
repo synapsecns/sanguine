@@ -8,9 +8,12 @@ type iOtelRecorder interface {
 	RecordVPrice(chainid int, vPrice float64)
 	// Token Balance Metrics.
 	RecordBridgeGasBalance(chainid int, gasBalance float64)
+	// Token Balance Metrics.
 	RecordTokenBalance(chainID int, tokenData tokenData)
 	// DFK Metrics.
 	RecordStuckHeroCount(stuckHeroes int64, chainname string)
 	// Submitter stats.
 	RecordSubmitterStats(chainid int, metadata submitterMetadata)
+	// Relayer stats.
+	RecordRelayerBalance(chainid int, metadata float64)
 }

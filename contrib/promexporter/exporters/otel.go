@@ -48,19 +48,24 @@ type otelRecorder struct {
 	submitters   *hashmap.Map[int, []submitterMetadata]
 	balanceGauge metric.Float64ObservableGauge
 	nonceGauge   metric.Int64ObservableGauge
+
+	// relayer stats
+	relayerBalance      *hashmap.Map[int, float64]
+	relayerBalanceGauge metric.Float64ObservableGauge
 }
 
 // TODO: unexport all methods.
 // nolint: cyclop
 func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 	otr := otelRecorder{
-		metrics:     meterHandler,
-		meter:       meterHandler.Meter(meterName),
-		stuckHeroes: hashmap.New[string, int64](),
-		vPrice:      hashmap.New[int, float64](),
-		gasBalance:  hashmap.New[int, float64](),
-		td:          hashmap.New[int, []tokenData](),
-		submitters:  hashmap.New[int, []submitterMetadata](),
+		metrics:        meterHandler,
+		meter:          meterHandler.Meter(meterName),
+		stuckHeroes:    hashmap.New[string, int64](),
+		vPrice:         hashmap.New[int, float64](),
+		gasBalance:     hashmap.New[int, float64](),
+		td:             hashmap.New[int, []tokenData](),
+		submitters:     hashmap.New[int, []submitterMetadata](),
+		relayerBalance: hashmap.New[int, float64](),
 	}
 
 	var err error
@@ -123,6 +128,10 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 
 	if _, err = otr.meter.RegisterCallback(otr.recordBridgeGasBalance, otr.gasBalanceGauge); err != nil {
 		log.Warnf("failed to register callback for bridge gas balance metrics: %v", err)
+	}
+
+	if _, err = otr.meter.RegisterCallback(otr.recordRelayerBalance, otr.relayerBalanceGauge); err != nil {
+		log.Warnf("failed to register callback for relayer balance metrics: %v", err)
 	}
 
 	return &otr
@@ -195,6 +204,7 @@ func (o *otelRecorder) RecordTokenBalance(
 
 	o.td.Set(chainID, td)
 }
+
 func (o *otelRecorder) recordTokenBalance(
 	_ context.Context,
 	observer metric.Observer,
@@ -309,4 +319,30 @@ func (o *otelRecorder) recordSubmitterStats(
 		return true
 	})
 	return nil
+}
+
+func (o *otelRecorder) RecordRelayerBalance(chainID int, balance float64) {
+	o.relayerBalance.Set(chainID, balance)
+}
+
+func (o *otelRecorder) recordRelayerBalance(
+	_ context.Context,
+	observer metric.Observer,
+) (err error) {
+	if o.metrics == nil || o.relayerBalance == nil {
+		return nil
+	}
+
+	o.relayerBalance.Range(func(chainID int, balance float64) bool {
+		observer.ObserveFloat64(
+			o.relayerBalanceGauge,
+			balance,
+			metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)),
+		)
+
+		return true
+	})
+
+	return nil
+
 }
