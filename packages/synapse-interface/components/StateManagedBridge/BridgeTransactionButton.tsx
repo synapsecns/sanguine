@@ -80,12 +80,16 @@ export const BridgeTransactionButton = ({
   const stringifiedBridgeQuote = constructStringifiedBridgeSelections(
     bridgeQuote.inputAmountForQuote,
     bridgeQuote.originChainId,
-    bridgeQuote.destChainId
+    bridgeQuote.originTokenForQuote,
+    bridgeQuote.destChainId,
+    bridgeQuote.destTokenForQuote
   )
   const stringifiedBridgeState = constructStringifiedBridgeSelections(
     debouncedFromValue,
     fromChainId,
-    toChainId
+    fromToken,
+    toChainId,
+    toToken
   )
 
   const bridgeStateMatchesQuote =
@@ -207,12 +211,16 @@ export const BridgeTransactionButton = ({
 const constructStringifiedBridgeSelections = (
   originAmount,
   originChainId,
-  destinationChainId
+  originToken,
+  destChainId,
+  destToken
 ) => {
   const state = {
     originAmount,
     originChainId,
-    destinationChainId,
+    originToken,
+    destChainId,
+    destToken,
   }
   return JSON.stringify(state)
 }
