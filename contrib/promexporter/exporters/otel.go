@@ -101,6 +101,10 @@ func newOtelRecorder(meterHandler metrics.Handler) iOtelRecorder {
 		log.Warnf("failed to create stuckHeroes gauge: %v", err)
 	}
 
+	if otr.relayerBalanceGauge, err = otr.meter.Float64ObservableGauge("relayer_balance"); err != nil {
+		log.Warnf("failed to create relayerBalance gauge: %v", err)
+	}
+
 	// Register VPrice callback
 	if _, err = otr.meter.RegisterCallback(otr.recordVpriceGauge, otr.vpriceGauge); err != nil {
 		log.Warnf("failed to register callback for vprice metrics: %v", err)
