@@ -4,11 +4,11 @@ import { useAppDispatch } from '@/store/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import {
   BridgeState,
-  setIsLoading,
   initialState,
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
 } from '@/slices/bridge/reducer'
+import { setIsLoading } from '@/slices/bridgeQuote/reducer'
 
 export const useBridgeListener = () => {
   const dispatch = useAppDispatch()

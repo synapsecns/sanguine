@@ -12,10 +12,11 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { useWalletState } from '@/slices/wallet/hooks'
+import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 
 export const OutputContainer = () => {
   const { address } = useAccount()
-  const { bridgeQuote, isLoading } = useBridgeState()
+  const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const { showDestinationAddress } = useBridgeDisplayState()
 
   const showValue =

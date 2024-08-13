@@ -27,8 +27,6 @@ export interface BridgeState {
   fromValue: string
   debouncedFromValue: string
   debouncedToTokensFromValue: string
-  bridgeQuote: BridgeQuote
-  isLoading: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
 }
@@ -62,8 +60,6 @@ export const initialState: BridgeState = {
   fromValue: '',
   debouncedFromValue: '',
   debouncedToTokensFromValue: '',
-  bridgeQuote: EMPTY_BRIDGE_QUOTE,
-  isLoading: false,
   deadlineMinutes: null,
   destinationAddress: null,
 }
@@ -72,9 +68,6 @@ export const bridgeSlice = createSlice({
   name: 'bridge',
   initialState,
   reducers: {
-    setIsLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload
-    },
     setFromChainId: (state, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
 
@@ -431,9 +424,6 @@ export const bridgeSlice = createSlice({
       state.toChainIds = toChainIds
       state.toTokens = toTokens
     },
-    setBridgeQuote: (state, action: PayloadAction<BridgeQuote>) => {
-      state.bridgeQuote = action.payload
-    },
     updateFromValue: (state, action: PayloadAction<string>) => {
       state.fromValue = action.payload
     },
@@ -455,9 +445,6 @@ export const bridgeSlice = createSlice({
     clearDestinationAddress: (state) => {
       state.destinationAddress = initialState.destinationAddress
     },
-    resetBridgeQuote: (state) => {
-      state.bridgeQuote = initialState.bridgeQuote
-    },
     resetBridgeInputs: (state) => {
       state.fromChainId = initialState.fromChainId
       state.fromToken = initialState.fromToken
@@ -472,8 +459,6 @@ export const bridgeSlice = createSlice({
 export const {
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
-  setBridgeQuote,
-  resetBridgeQuote,
   setFromChainId,
   setToChainId,
   setFromToken,
@@ -481,7 +466,6 @@ export const {
   updateFromValue,
   setDeadlineMinutes,
   setDestinationAddress,
-  setIsLoading,
   resetBridgeInputs,
   clearDestinationAddress,
 } = bridgeSlice.actions

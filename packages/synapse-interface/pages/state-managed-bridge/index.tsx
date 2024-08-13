@@ -36,8 +36,6 @@ import {
   setToChainId,
   setToToken,
   updateFromValue,
-  setBridgeQuote,
-  setIsLoading,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
 import { setIsWalletPending } from '@/slices/wallet/reducer'
@@ -70,6 +68,8 @@ import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { screenAddress } from '@/utils/screenAddress'
 import { useWalletState } from '@/slices/wallet/hooks'
+import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
+import { setBridgeQuote, setIsLoading } from '@/slices/bridgeQuote/reducer'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -86,11 +86,11 @@ const StateManagedBridge = () => {
     toChainId,
     fromToken,
     toToken,
-    bridgeQuote,
     debouncedFromValue,
     destinationAddress,
-    isLoading: isQuoteLoading,
   }: BridgeState = useBridgeState()
+
+  const { bridgeQuote, isLoading: isQuoteLoading } = useBridgeQuoteState()
 
   const { isWalletPending } = useWalletState()
 

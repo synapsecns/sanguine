@@ -8,6 +8,7 @@ import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
+import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 
 export const BridgeExchangeRateInfo = () => {
   /* TODO:
@@ -55,10 +56,11 @@ const DestinationAddress = () => {
 }
 
 const Slippage = () => {
+  const { fromValue } = useBridgeState()
+
   const {
-    fromValue,
     bridgeQuote: { exchangeRate },
-  } = useBridgeState()
+  } = useBridgeQuoteState()
 
   const { formattedPercentSlippage, safeFromAmount, underFee, textColor } =
     useExchangeRateInfo(fromValue, exchangeRate)
@@ -77,7 +79,7 @@ const Slippage = () => {
 const Router = () => {
   const {
     bridgeQuote: { bridgeModuleName },
-  } = useBridgeState()
+  } = useBridgeQuoteState()
   return (
     <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">Router</span>
@@ -87,7 +89,8 @@ const Router = () => {
 }
 
 const TimeEstimate = () => {
-  const { fromToken, bridgeQuote } = useBridgeState()
+  const { fromToken } = useBridgeState()
+  const { bridgeQuote } = useBridgeQuoteState()
 
   let showText
   let showTime
@@ -125,10 +128,10 @@ const TimeEstimate = () => {
 
 const GasDropLabel = () => {
   let decimalsToDisplay
+  const { toChainId } = useBridgeState()
   const {
     bridgeQuote: { gasDropAmount },
-    toChainId,
-  } = useBridgeState()
+  } = useBridgeQuoteState()
   const symbol = CHAINS_BY_ID[toChainId]?.nativeCurrency.symbol
 
   if ([CHAINS.FANTOM.id].includes(toChainId)) {
