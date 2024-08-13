@@ -22,7 +22,8 @@ type Config struct {
 	DFKPending []DFKPending `yaml:"dfk_pending"`
 	// SubmitterChecks is the list of gas checks
 	SubmitterChecks []SubmitterChecks `yaml:"gas_checks"`
-	OmnirpcURL      string            `yaml:"omnirpc_url" default:"https://rpc.omnirpc.io"`
+	// OmniRpcURL is the url of the omnirpc
+	OmnirpcURL string `yaml:"omnirpc_url" default:"https://rpc.omnirpc.io"`
 	// map chainid->address
 	BridgeChecks map[int]string
 	// VpriceCheckTokens is the list of tokens to check vprice for
