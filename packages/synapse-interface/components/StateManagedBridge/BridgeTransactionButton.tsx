@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
+import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { isAddress } from 'viem'
@@ -90,7 +90,6 @@ export const BridgeTransactionButton = ({
   const isButtonDisabled =
     isLoading ||
     isWalletPending ||
-    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||
     (isConnected && !sufficientBalance) ||

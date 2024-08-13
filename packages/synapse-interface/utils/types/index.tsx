@@ -85,6 +85,7 @@ export type BridgeQuote = {
   timestamp: number
   originChainId: number
   destChainId: number
+  requestId: number
 }
 
 interface TokensByChain {

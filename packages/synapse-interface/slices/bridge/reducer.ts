@@ -1,8 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { type Address } from 'viem'
 
-import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { type BridgeQuote, type Token } from '@/utils/types'
+import { type Token } from '@/utils/types'
 import {
   getRoutePossibilities,
   getSymbol,
