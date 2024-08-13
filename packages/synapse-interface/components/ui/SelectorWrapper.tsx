@@ -70,6 +70,7 @@ export const SelectorWrapper = ({
     }`,
     active: 'active:opacity-80',
     custom: label || open ? 'bg-transparent' : 'bg-white dark:bg-separator',
+    disabled: `${disabled ? 'hover:cursor-not-allowed' : ''}`,
   })
 
   // TODO: Unify chainImg/icon properties between Chain and Token types

@@ -41,6 +41,8 @@ export const SwapInputContainer = () => {
 
   const { balances } = usePortfolioState()
 
+  const { isWalletPending } = useWalletState()
+
   useEffect(() => {
     setHasMounted(true)
   }, [])
@@ -135,6 +137,7 @@ export const SwapInputContainer = () => {
             inputRef={inputRef}
             showValue={showValue}
             handleFromValueChange={handleFromValueChange}
+            disabled={isWalletPending}
           />
           <div className="flex">
             {hasMounted && isConnected && (
