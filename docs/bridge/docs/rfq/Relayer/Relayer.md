@@ -34,7 +34,7 @@ The rebalancing loop is more complex and is responsible for ensuring that the re
 3. If the amount to rebalance is greater than the `max_rebalance_amount`, set the amount to rebalance to the `max_rebalance_amount`. If the amount to rebalance is less than the `min_rebalance_amount`, do not rebalance.
 4. Repeat after `rebalance_interval`
 
-The implementation for certain native bridges (e.g Scroll) is also supported. It works slightly differently as flows are only supported between Scroll <> Mainnet. At a high level, the rebalancer checks inventory on Scroll versus other chains, and if imbalanced, initiates a bridge to mainnet, allowing the CCTP relayer to rebalance funds where needed.
+The implementation for certain native bridges (e.g Scroll) is also supported. It works slightly differently as flows are only supported between Scroll and Mainnet. At a high level, the rebalancer checks inventory on Scroll versus other chains, and if imbalanced, initiates a bridge to mainnet, allowing the CCTP relayer to rebalance funds where needed.
 
 
 ### Relaying
@@ -93,7 +93,7 @@ The relayer is configured with a yaml file. The following is an example configur
 
   screener_api_url: 'http://screener-url' # can be left blank
   rfq_url: 'http://rfq-api' # url of the rfq api backend.
-  omnirpc_url: 'http://omnirpc' # url of the omnirpc instance, please reference [this](../../Services/Omnirpc) for proper configuration
+  omnirpc_url: 'http://omnirpc' # url of the omnirpc instance, please reference the Omnirpc section under Services for proper configuration
   rebalance_interval: 2m # how often to rebalance
   relayer_api_port: '8081' # api port for the relayer api
 
