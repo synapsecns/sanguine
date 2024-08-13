@@ -1,6 +1,5 @@
 import toast from 'react-hot-toast'
 import { useEffect, useRef, useState } from 'react'
-import { commify } from '@ethersproject/units'
 import { Address, zeroAddress, isAddress } from 'viem'
 import { polygon } from 'viem/chains'
 import { useAccount } from 'wagmi'
@@ -63,7 +62,7 @@ import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { screenAddress } from '@/utils/screenAddress'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
-import { resetBridgeQuote, setIsLoading } from '@/slices/bridgeQuote/reducer'
+import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 
 const StateManagedBridge = () => {
@@ -123,7 +122,6 @@ const StateManagedBridge = () => {
       getAndSetBridgeQuote()
     } else {
       dispatch(resetBridgeQuote())
-      dispatch(setIsLoading(false))
     }
   }, [fromChainId, toChainId, fromToken, toToken, debouncedFromValue])
 

@@ -7,13 +7,11 @@ import { fetchBridgeQuote } from './thunks'
 export interface BridgeQuoteState {
   bridgeQuote: BridgeQuote
   isLoading: boolean
-  error: any
 }
 
 export const initialState: BridgeQuoteState = {
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
   isLoading: false,
-  error: null,
 }
 
 export const bridgeQuoteSlice = createSlice({
@@ -30,21 +28,17 @@ export const bridgeQuoteSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchBridgeQuote.pending, (state) => {
-        // state.status = FetchState.LOADING
         state.isLoading = true
       })
       .addCase(
         fetchBridgeQuote.fulfilled,
         (state, action: PayloadAction<BridgeQuote>) => {
           state.bridgeQuote = action.payload
-          // state.status = FetchState.VALID
           state.isLoading = false
         }
       )
-      .addCase(fetchBridgeQuote.rejected, (state, action) => {
-        // state.error = action.payload
+      .addCase(fetchBridgeQuote.rejected, (state) => {
         state.bridgeQuote = EMPTY_BRIDGE_QUOTE
-        // state.status = FetchState.INVALID
         state.isLoading = false
       })
   },
