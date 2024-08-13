@@ -44,10 +44,7 @@ func getRebalances(ctx context.Context, cfg relconfig.Config, inv map[int]map[co
 			}
 			methodCandidatesSlice = append(methodCandidatesSlice, *candidate)
 		}
-		rebalances[tokenName], err = getBestRebalance(methodCandidatesSlice)
-		if err != nil {
-			return nil, fmt.Errorf("could not get best rebalance: %w", err)
-		}
+		rebalances[tokenName] = getBestRebalance(methodCandidatesSlice)
 	}
 
 	return rebalances, nil
@@ -83,7 +80,48 @@ func getRebalanceCandidates(ctx context.Context, cfg relconfig.Config, inv map[i
 	return rebalances, nil
 }
 
+// getRebalanceForMethod gets the best rebalance action for a given rebalance method.
+//
+//nolint:nilnil
 func getRebalanceForMethod(ctx context.Context, cfg relconfig.Config, inv map[int]map[common.Address]*TokenMetadata, method relconfig.RebalanceMethod, tokenName string) (rebalance *RebalanceData, err error) {
+	candidateChains, err := getCandidateChains(cfg, inv, method, tokenName)
+	if err != nil {
+		return nil, fmt.Errorf("could not get candidate chains: %w", err)
+	}
+
+	// now we have candidate chains, produce the rebalance data for each permutation of the chains
+	rebalanceCandidates := []RebalanceData{}
+	for i := range candidateChains {
+		for j := range candidateChains {
+			if i == j {
+				continue
+			}
+
+			candidate := RebalanceData{
+				OriginMetadata: candidateChains[i],
+				DestMetadata:   candidateChains[j],
+				Method:         method,
+			}
+			rebalanceCandidates = append(rebalanceCandidates, candidate)
+		}
+	}
+
+	rebalance = getBestRebalance(rebalanceCandidates)
+	if rebalance != nil {
+		rebalance.Amount, err = getRebalanceAmount(ctx, cfg, inv, rebalance)
+		if err != nil {
+			return nil, fmt.Errorf("could not get rebalance amount: %w", err)
+		}
+		if rebalance.Amount == nil {
+			return nil, nil
+		}
+	}
+
+	return rebalance, nil
+}
+
+// getCandidateChains gets the respective token metadata for each chain that supports the rebalance method.
+func getCandidateChains(cfg relconfig.Config, inv map[int]map[common.Address]*TokenMetadata, method relconfig.RebalanceMethod, tokenName string) (map[int]*TokenMetadata, error) {
 	candidateChains := map[int]*TokenMetadata{}
 	for chainID, chainCfg := range cfg.Chains {
 		var validCandidate bool
@@ -119,42 +157,10 @@ func getRebalanceForMethod(ctx context.Context, cfg relconfig.Config, inv map[in
 		}
 	}
 
-	// now we have candidate chains, produce the rebalance data for each permutation of the chains
-	rebalanceCandidates := []RebalanceData{}
-	for i := range candidateChains {
-		for j := range candidateChains {
-			if i == j {
-				continue
-			}
-
-			candidate := RebalanceData{
-				OriginMetadata: candidateChains[i],
-				DestMetadata:   candidateChains[j],
-				Method:         method,
-			}
-			rebalanceCandidates = append(rebalanceCandidates, candidate)
-		}
-	}
-
-	rebalance, err = getBestRebalance(rebalanceCandidates)
-	if err != nil {
-		return nil, fmt.Errorf("could not get best rebalance: %w", err)
-	}
-
-	if rebalance != nil {
-		rebalance.Amount, err = getRebalanceAmount(ctx, cfg, inv, rebalance)
-		if err != nil {
-			return nil, fmt.Errorf("could not get rebalance amount: %w", err)
-		}
-		if rebalance.Amount == nil {
-			return nil, nil
-		}
-	}
-
-	return rebalance, nil
+	return candidateChains, nil
 }
 
-func getBestRebalance(candidates []RebalanceData) (best *RebalanceData, err error) {
+func getBestRebalance(candidates []RebalanceData) (best *RebalanceData) {
 	var maxDelta *big.Int
 	best = nil
 
@@ -171,7 +177,7 @@ func getBestRebalance(candidates []RebalanceData) (best *RebalanceData, err erro
 		}
 	}
 
-	return best, nil
+	return best
 }
 
 // getRebalanceAmount calculates the amount to rebalance based on the configured thresholds.
