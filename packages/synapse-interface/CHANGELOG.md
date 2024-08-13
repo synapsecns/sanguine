@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.34.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.2...@synapsecns/synapse-interface@0.34.3) (2024-08-13)
+
+
+### Bug Fixes
+
+* **synapse-interface:** disable bridge ui pending wallet ([#3014](https://github.com/synapsecns/sanguine/issues/3014)) ([fbe4b60](https://github.com/synapsecns/sanguine/commit/fbe4b60b952b52b8f5cbec01eae8a35f100caf81))
+
+
+
+
+
+## [0.34.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.1...@synapsecns/synapse-interface@0.34.2) (2024-08-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.34.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.0...@synapsecns/synapse-interface@0.34.1) (2024-08-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 # [0.34.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.33.0...@synapsecns/synapse-interface@0.34.0) (2024-08-09)
 
 

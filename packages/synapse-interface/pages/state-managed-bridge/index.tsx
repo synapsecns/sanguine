@@ -11,6 +11,7 @@ import {
   getPublicClient,
   waitForTransactionReceipt,
 } from '@wagmi/core'
+
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
@@ -37,9 +38,9 @@ import {
   updateFromValue,
   setBridgeQuote,
   setIsLoading,
-  setIsWalletPending,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
+import { setIsWalletPending } from '@/slices/wallet/reducer'
 import {
   setShowDestinationAddress,
   setShowSettingsSlideOver,
@@ -68,6 +69,7 @@ import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { screenAddress } from '@/utils/screenAddress'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -88,9 +90,11 @@ const StateManagedBridge = () => {
     debouncedFromValue,
     destinationAddress,
     isLoading: isQuoteLoading,
-    isWalletPending,
   }: BridgeState = useBridgeState()
-  const { showSettingsSlideOver } = useSelector(
+
+  const { isWalletPending } = useWalletState()
+
+  const { showSettingsSlideOver, showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
 
@@ -571,10 +575,6 @@ const StateManagedBridge = () => {
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
 
-      if (isTransactionUserRejectedError(error)) {
-        getAndSetBridgeQuote()
-      }
-
       /** Fetch balances if await transaction receipt times out */
       if (isTransactionReceiptError(error)) {
         dispatch(
@@ -604,6 +604,7 @@ const StateManagedBridge = () => {
             onClick={() =>
               dispatch(setShowSettingsSlideOver(!showSettingsSlideOver))
             }
+            disabled={isWalletPending}
           >
             <SettingsToggle showSettingsToggle={!showSettingsSlideOver} />
           </Button>
@@ -625,6 +626,7 @@ const StateManagedBridge = () => {
                   dispatch(setToChainId(fromChainId))
                   dispatch(setToToken(fromToken))
                 }}
+                disabled={isWalletPending}
               />
               <OutputContainer />
               <Warning />

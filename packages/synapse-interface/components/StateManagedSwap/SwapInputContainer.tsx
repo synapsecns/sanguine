@@ -29,6 +29,7 @@ import { MaxButton } from '../StateManagedBridge/MaxButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatAmount } from '@/utils/formatAmount'
 import { getParsedBalance } from '@/utils/getParsedBalance'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -39,6 +40,8 @@ export const SwapInputContainer = () => {
   const [hasMounted, setHasMounted] = useState(false)
 
   const { balances } = usePortfolioState()
+
+  const { isWalletPending } = useWalletState()
 
   useEffect(() => {
     setHasMounted(true)
@@ -134,6 +137,7 @@ export const SwapInputContainer = () => {
             inputRef={inputRef}
             showValue={showValue}
             handleFromValueChange={handleFromValueChange}
+            disabled={isWalletPending}
           />
           <div className="flex">
             {hasMounted && isConnected && (
@@ -157,6 +161,7 @@ export const SwapInputContainer = () => {
 
 const SwapChainSelector = () => {
   const { swapChainId } = useSwapState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <ChainSelector
@@ -167,12 +172,14 @@ const SwapChainSelector = () => {
       itemListFunction={useSwapChainListArray}
       setFunction={setSwapChainId}
       action="Swap"
+      disabled={isWalletPending}
     />
   )
 }
 
 const SwapFromTokenSelector = () => {
   const { swapFromToken } = useSwapState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <TokenSelector
@@ -183,6 +190,7 @@ const SwapFromTokenSelector = () => {
       itemListFunction={useSwapFromTokenListArray}
       setFunction={setSwapFromToken}
       action="Swap"
+      disabled={isWalletPending}
     />
   )
 }

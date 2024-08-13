@@ -18,6 +18,7 @@ export function ChainSelector({
   itemListFunction,
   setFunction,
   action,
+  disabled,
 }: ChainSelectorTypes) {
   const [searchStr, setSearchStr] = useState('')
   const [open, setOpen] = useState(false)
@@ -105,6 +106,7 @@ export function ChainSelector({
       open={open}
       setOpen={setOpen}
       onClose={onClose}
+      disabled={disabled}
     >
       {Object.entries(itemList).map(([key, value]: [string, Chain[]]) => {
         return value.length ? (
