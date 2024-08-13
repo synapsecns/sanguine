@@ -195,7 +195,6 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	if err != nil {
 		return nil, fmt.Errorf("could not get total balance: %w", err)
 	}
-	fmt.Printf("total balance: %v\n", totalBalance)
 	maintenanceThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePct/100)).Int(nil)
 	if span != nil {
 		span.SetAttributes(attribute.Float64("maintenance_pct", maintenancePct))
@@ -205,8 +204,6 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 		span.SetAttributes(attribute.String("total_balance", totalBalance.String()))
 		span.SetAttributes(attribute.String("maintenance_thresh", maintenanceThresh.String()))
 	}
-	fmt.Printf("maintenance thresh: %v\n", maintenanceThresh)
-	fmt.Printf("dest metadata balance: %v\n", rebalance.DestMetadata.Balance)
 
 	// no need to rebalance if we are not below maintenance threshold on destination
 	if rebalance.DestMetadata.Balance.Cmp(maintenanceThresh) > 0 {
