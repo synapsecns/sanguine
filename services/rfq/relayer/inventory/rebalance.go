@@ -132,18 +132,7 @@ func getCandidateChains(cfg relconfig.Config, inv map[int]map[common.Address]*To
 			}
 
 			// check that the token supports given rebalance method
-			supportedMethods, err := cfg.GetRebalanceMethods(chainID, tokenCfg.Address)
-			if err != nil {
-				return nil, fmt.Errorf("could not get rebalance methods: %w", err)
-			}
-			var supported bool
-			for _, m := range supportedMethods {
-				if m == method {
-					supported = true
-					break
-				}
-			}
-			if supported {
+			if supportsRebalanceMethod(cfg, chainID, tokenCfg.Address, method) {
 				validCandidate = true
 				candidateMetadata = inv[chainID][common.HexToAddress(tokenCfg.Address)]
 				if candidateMetadata == nil {
@@ -278,17 +267,20 @@ func getTotalBalance(cfg relconfig.Config, tokens map[int]map[common.Address]*To
 			if tokenData.Name != tokenName {
 				continue
 			}
-			rebalanceMethods, err := cfg.GetRebalanceMethods(tokenData.ChainID, tokenData.Addr.Hex())
-			if err != nil {
-				return nil, fmt.Errorf("could not get rebalance methods: %w", err)
-			}
-			for _, m := range rebalanceMethods {
-				if m == method {
-					totalBalance.Add(totalBalance, tokenData.Balance)
-					break
-				}
+			if supportsRebalanceMethod(cfg, tokenData.ChainID, tokenData.Addr.Hex(), method) {
+				totalBalance.Add(totalBalance, tokenData.Balance)
 			}
 		}
 	}
 	return totalBalance, nil
+}
+
+func supportsRebalanceMethod(cfg relconfig.Config, chainID int, addr string, method relconfig.RebalanceMethod) bool {
+	rebalanceMethods, _ := cfg.GetRebalanceMethods(chainID, addr)
+	for _, m := range rebalanceMethods {
+		if m == method {
+			return true
+		}
+	}
+	return false
 }
