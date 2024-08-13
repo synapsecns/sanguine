@@ -36,8 +36,12 @@ func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 			return fmt.Errorf("could not get confirmations client: %w", err)
 		}
 
-		var callsForCurrentChainID []w3types.Caller
 		relayerBalances := make([]*big.Int, 0, len(relayers))
+		for range relayers {
+			relayerBalances = append(relayerBalances, new(big.Int))
+		}
+
+		var callsForCurrentChainID []w3types.Caller
 		for i, relayer := range relayers {
 			callsForCurrentChainID = append(
 				callsForCurrentChainID,
