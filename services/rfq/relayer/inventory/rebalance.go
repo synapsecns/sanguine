@@ -44,7 +44,7 @@ func getRebalances(ctx context.Context, cfg relconfig.Config, inv map[int]map[co
 			}
 			methodCandidatesSlice = append(methodCandidatesSlice, *candidate)
 		}
-		rebalances[tokenName], err = getBestRebalance(ctx, methodCandidatesSlice)
+		rebalances[tokenName], err = getBestRebalance(methodCandidatesSlice)
 		if err != nil {
 			return nil, fmt.Errorf("could not get best rebalance: %w", err)
 		}
@@ -136,7 +136,7 @@ func getRebalanceForMethod(ctx context.Context, cfg relconfig.Config, inv map[in
 		}
 	}
 
-	rebalance, err = getBestRebalance(ctx, rebalanceCandidates)
+	rebalance, err = getBestRebalance(rebalanceCandidates)
 	if err != nil {
 		return nil, fmt.Errorf("could not get best rebalance: %w", err)
 	}
@@ -154,7 +154,7 @@ func getRebalanceForMethod(ctx context.Context, cfg relconfig.Config, inv map[in
 	return rebalance, nil
 }
 
-func getBestRebalance(ctx context.Context, candidates []RebalanceData) (best *RebalanceData, err error) {
+func getBestRebalance(candidates []RebalanceData) (best *RebalanceData, err error) {
 	var maxDelta *big.Int
 	best = nil
 
