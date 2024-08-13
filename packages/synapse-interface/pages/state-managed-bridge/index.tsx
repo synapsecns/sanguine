@@ -407,10 +407,6 @@ const StateManagedBridge = () => {
       )
     }
 
-    console.log(
-      `executeBridge: \n displayed input value: ${debouncedFromValue} \n bridge quote output: ${bridgeQuote.outputAmountString} \n bridge quote input recorded: ${bridgeQuote.inputAmountForQuote}`
-    )
-
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
