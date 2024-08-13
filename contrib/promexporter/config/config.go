@@ -32,7 +32,7 @@ type Config struct {
 	// BatchCallLimit is the limit of batch calls
 	BatchCallLimit int
 	// RFQAPIURL is the url of the RFQ API
-	RFQAPIUrl string `default:"https://rfq-api.omnirpc.io/quotes" yaml:"rfq_api_url"`
+	RFQAPIUrl string `yaml:"rfq_api_url" default:"http://rfq-api.omnirpc.io/quotes"`
 }
 
 // BridgeConfig contains the config for the bridge.

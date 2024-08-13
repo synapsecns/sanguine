@@ -10,6 +10,7 @@ import (
 	"slices"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/lmittmann/w3/w3types"
 	rfqAPIModel "github.com/synapsecns/sanguine/services/rfq/api/model"
@@ -42,7 +43,7 @@ func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 			return fmt.Errorf("could not get confirmations client: %w", err)
 		}
 
-		relayerBalances := make([]*big.Int, 0, len(relayers))
+		var relayerBalances []*big.Int
 		for range relayers {
 			relayerBalances = append(relayerBalances, new(big.Int))
 		}
@@ -57,9 +58,14 @@ func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 
 		_ = e.batchCalls(ctx, client, callsForCurrentChainID)
 
-		for _, balanceOfRelayer := range relayerBalances {
+		for i, balanceOfRelayer := range relayerBalances {
 			balanceFloat, _ := new(big.Float).SetInt(balanceOfRelayer).Float64()
-			e.otelRecorder.RecordRelayerBalance(chainID, balanceFloat)
+			relayerMetadata := relayerMetadata{
+				address: common.HexToAddress(relayers[i]),
+				balance: balanceFloat / params.Ether,
+			}
+			// the line of interest, where we record each relayer data for the respective chainID
+			e.otelRecorder.RecordRelayerBalance(chainID, relayerMetadata)
 		}
 	}
 

@@ -15,5 +15,5 @@ type iOtelRecorder interface {
 	// Submitter stats.
 	RecordSubmitterStats(chainid int, metadata submitterMetadata)
 	// Relayer stats.
-	RecordRelayerBalance(chainid int, balance float64)
+	RecordRelayerBalance(chainid int, balance relayerMetadata)
 }
