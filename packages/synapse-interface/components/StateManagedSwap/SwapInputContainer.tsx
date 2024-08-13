@@ -29,6 +29,7 @@ import { MaxButton } from '../StateManagedBridge/MaxButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatAmount } from '@/utils/formatAmount'
 import { getParsedBalance } from '@/utils/getParsedBalance'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -156,7 +157,8 @@ export const SwapInputContainer = () => {
 }
 
 const SwapChainSelector = () => {
-  const { swapChainId, isWalletPending } = useSwapState()
+  const { swapChainId } = useSwapState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <ChainSelector
@@ -173,7 +175,8 @@ const SwapChainSelector = () => {
 }
 
 const SwapFromTokenSelector = () => {
-  const { swapFromToken, isWalletPending } = useSwapState()
+  const { swapFromToken } = useSwapState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <TokenSelector

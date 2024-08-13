@@ -6,7 +6,6 @@ import { type Address } from 'viem'
 import { type Chain } from '@/utils/types'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeTransaction } from '@/slices/api/generated'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { tokenAddressToToken } from '@/constants/tokens'
@@ -16,6 +15,7 @@ import { Transaction, TransactionType } from './Transaction/Transaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
 import { NoSearchResultsContent } from '../Portfolio/components/NoSearchResultContent'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -23,7 +23,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
   }: TransactionsState = useTransactionsState()
-  const { isWalletPending } = useBridgeState()
+  const { isWalletPending } = useWalletState()
   const { searchInput, searchedBalances }: PortfolioState = usePortfolioState()
 
   const isLoading: boolean = isUserHistoricalTransactionsLoading

@@ -14,6 +14,7 @@ import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
 import GasIcon from '@/components/icons/GasIcon'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatAmount } from '@/utils/formatAmount'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()
@@ -33,7 +34,8 @@ export const PortfolioTokenAsset = ({
   connectedChainId,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
-  const { fromChainId, fromToken, isWalletPending } = useBridgeState()
+  const { fromChainId, fromToken } = useBridgeState()
+  const { isWalletPending } = useWalletState()
   const { icon, symbol, decimals, addresses } = token
   const tokenAddress = addresses[portfolioChainId]
   const tokenDecimals = isNumber(decimals)

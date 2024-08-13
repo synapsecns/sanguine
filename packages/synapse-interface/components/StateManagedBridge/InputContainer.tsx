@@ -181,7 +181,8 @@ export const InputContainer = () => {
 }
 
 const FromChainSelector = () => {
-  const { fromChainId, isWalletPending } = useBridgeState()
+  const { fromChainId } = useBridgeState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <ChainSelector
@@ -198,7 +199,8 @@ const FromChainSelector = () => {
 }
 
 const FromTokenSelector = () => {
-  const { fromToken, isWalletPending } = useBridgeState()
+  const { fromToken } = useBridgeState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <TokenSelector

@@ -11,6 +11,7 @@ import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useAppDispatch } from '@/store/hooks'
 import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -44,8 +45,9 @@ export const BridgeTransactionButton = ({
     toChainId,
     isLoading,
     bridgeQuote,
-    isWalletPending,
   } = useBridgeState()
+
+  const { isWalletPending } = useWalletState()
   const { showDestinationWarning, isDestinationWarningAccepted } =
     useBridgeDisplayState()
 

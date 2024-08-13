@@ -7,7 +7,6 @@ import {
   setIsLoading,
   setSwapFromToken,
   setSwapToToken,
-  setIsWalletPending,
 } from '@/slices/swap/reducer'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
@@ -43,6 +42,8 @@ import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { wagmiConfig } from '@/wagmiConfig'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
+import { useWalletState } from '@/slices/wallet/hooks'
+import { setIsWalletPending } from '@/slices/wallet/reducer'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -57,14 +58,10 @@ const StateManagedSwap = () => {
 
   const { balances: portfolioBalances } = useFetchPortfolioBalances()
 
-  const {
-    swapChainId,
-    swapFromToken,
-    swapToToken,
-    swapFromValue,
-    swapQuote,
-    isWalletPending,
-  } = useSwapState()
+  const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
+    useSwapState()
+
+  const { isWalletPending } = useWalletState()
 
   const {
     isSwapPaused,
