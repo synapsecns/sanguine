@@ -25,6 +25,7 @@ export interface SwapState {
   swapFromValue: string
   swapQuote: SwapQuote
   isLoading: boolean
+  isWalletPending: boolean
 }
 
 const { fromChainId, fromToken, toToken, fromChainIds, fromTokens, toTokens } =
@@ -46,6 +47,7 @@ export const initialState: SwapState = {
   swapFromValue: '',
   swapQuote: EMPTY_SWAP_QUOTE,
   isLoading: false,
+  isWalletPending: false,
 }
 
 export const swapSlice = createSlice({
@@ -54,6 +56,9 @@ export const swapSlice = createSlice({
   reducers: {
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload
+    },
+    setIsWalletPending: (state, action: PayloadAction<boolean>) => {
+      state.isWalletPending = action.payload
     },
     setSwapChainId: (state, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
@@ -290,6 +295,7 @@ export const {
   updateSwapFromValue,
   setSwapQuote,
   setIsLoading,
+  setIsWalletPending,
 } = swapSlice.actions
 
 export default swapSlice.reducer

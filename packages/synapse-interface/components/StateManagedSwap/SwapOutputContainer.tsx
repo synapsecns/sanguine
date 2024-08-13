@@ -27,7 +27,7 @@ export const SwapOutputContainer = () => {
 }
 
 const SwapToTokenSelector = () => {
-  const { swapToToken } = useSwapState()
+  const { swapToToken, isWalletPending } = useSwapState()
 
   return (
     <TokenSelector
@@ -38,6 +38,7 @@ const SwapToTokenSelector = () => {
       itemListFunction={useSwapToTokenListArray}
       setFunction={setSwapToToken}
       action="Swap"
+      disabled={isWalletPending}
     />
   )
 }

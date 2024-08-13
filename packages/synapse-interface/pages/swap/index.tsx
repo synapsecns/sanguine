@@ -7,6 +7,7 @@ import {
   setIsLoading,
   setSwapFromToken,
   setSwapToToken,
+  setIsWalletPending,
 } from '@/slices/swap/reducer'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
@@ -56,8 +57,14 @@ const StateManagedSwap = () => {
 
   const { balances: portfolioBalances } = useFetchPortfolioBalances()
 
-  const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
-    useSwapState()
+  const {
+    swapChainId,
+    swapFromToken,
+    swapToToken,
+    swapFromValue,
+    swapQuote,
+    isWalletPending,
+  } = useSwapState()
 
   const {
     isSwapPaused,
@@ -220,6 +227,7 @@ const StateManagedSwap = () => {
 
   const approveTxn = async () => {
     try {
+      dispatch(setIsWalletPending(true))
       const tx = approveToken(
         swapQuote?.routerAddress,
         swapChainId,
@@ -231,6 +239,8 @@ const StateManagedSwap = () => {
       getAndSetSwapQuote()
     } catch (error) {
       return txErrorHandler(error)
+    } finally {
+      dispatch(setIsWalletPending(false))
     }
   }
 
@@ -246,6 +256,8 @@ const StateManagedSwap = () => {
   }
   const executeSwap = async () => {
     const currentChainName = CHAINS_BY_ID[swapChainId]?.name
+
+    dispatch(setIsWalletPending(true))
 
     let pendingPopup: any
     pendingPopup = toast(
@@ -345,6 +357,8 @@ const StateManagedSwap = () => {
 
       toast.dismiss(pendingPopup)
       txErrorHandler(error)
+    } finally {
+      dispatch(setIsWalletPending(false))
     }
   }
 
@@ -363,6 +377,7 @@ const StateManagedSwap = () => {
                 dispatch(setSwapFromToken(swapToToken))
                 dispatch(setSwapToToken(swapFromToken))
               }}
+              disabled={isWalletPending}
             />
             <SwapOutputContainer />
             <SwapMaintenanceWarningMessage />

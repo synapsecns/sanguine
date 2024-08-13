@@ -156,7 +156,7 @@ export const SwapInputContainer = () => {
 }
 
 const SwapChainSelector = () => {
-  const { swapChainId } = useSwapState()
+  const { swapChainId, isWalletPending } = useSwapState()
 
   return (
     <ChainSelector
@@ -167,12 +167,13 @@ const SwapChainSelector = () => {
       itemListFunction={useSwapChainListArray}
       setFunction={setSwapChainId}
       action="Swap"
+      disabled={isWalletPending}
     />
   )
 }
 
 const SwapFromTokenSelector = () => {
-  const { swapFromToken } = useSwapState()
+  const { swapFromToken, isWalletPending } = useSwapState()
 
   return (
     <TokenSelector
@@ -183,6 +184,7 @@ const SwapFromTokenSelector = () => {
       itemListFunction={useSwapFromTokenListArray}
       setFunction={setSwapFromToken}
       action="Swap"
+      disabled={isWalletPending}
     />
   )
 }
