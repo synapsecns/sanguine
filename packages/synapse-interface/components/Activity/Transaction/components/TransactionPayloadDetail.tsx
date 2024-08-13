@@ -43,7 +43,7 @@ export const TransactionPayloadDetail = ({
         dispatch(setToChainId(chain?.id as number))
       }
     }
-  }, [isOrigin, chain])
+  }, [isOrigin, chain, disabled])
 
   const handleSelectTokenCallback = useCallback(() => {
     if (!disabled) {
@@ -55,7 +55,7 @@ export const TransactionPayloadDetail = ({
         dispatch(setToToken(token as Token))
       }
     }
-  }, [isOrigin, token, chain])
+  }, [isOrigin, token, chain, disabled])
 
   const tokenDecimals = useMemo(() => {
     if (token && chain) {
