@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"slices"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/lmittmann/w3/module/eth"
@@ -26,8 +27,13 @@ func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 
 	// Get all chain IDs
 	for _, quote := range quotes {
-		chainIDToRelayers[quote.OriginChainID] = append(chainIDToRelayers[quote.OriginChainID], quote.RelayerAddr)
-		chainIDToRelayers[quote.DestChainID] = append(chainIDToRelayers[quote.DestChainID], quote.RelayerAddr)
+		if !slices.Contains(chainIDToRelayers[quote.OriginChainID], quote.RelayerAddr) {
+			chainIDToRelayers[quote.OriginChainID] = append(chainIDToRelayers[quote.OriginChainID], quote.RelayerAddr)
+		}
+
+		if !slices.Contains(chainIDToRelayers[quote.DestChainID], quote.RelayerAddr) {
+			chainIDToRelayers[quote.DestChainID] = append(chainIDToRelayers[quote.DestChainID], quote.RelayerAddr)
+		}
 	}
 
 	for chainID, relayers := range chainIDToRelayers {
