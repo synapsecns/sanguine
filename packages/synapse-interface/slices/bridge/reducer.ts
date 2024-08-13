@@ -29,7 +29,6 @@ export interface BridgeState {
   debouncedToTokensFromValue: string
   bridgeQuote: BridgeQuote
   isLoading: boolean
-  isWalletPending: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
 }
@@ -65,7 +64,6 @@ export const initialState: BridgeState = {
   debouncedToTokensFromValue: '',
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
   isLoading: false,
-  isWalletPending: false,
   deadlineMinutes: null,
   destinationAddress: null,
 }
@@ -76,9 +74,6 @@ export const bridgeSlice = createSlice({
   reducers: {
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload
-    },
-    setIsWalletPending: (state, action: PayloadAction<boolean>) => {
-      state.isWalletPending = action.payload
     },
     setFromChainId: (state, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
@@ -487,7 +482,6 @@ export const {
   setDeadlineMinutes,
   setDestinationAddress,
   setIsLoading,
-  setIsWalletPending,
   resetBridgeInputs,
   clearDestinationAddress,
 } = bridgeSlice.actions
