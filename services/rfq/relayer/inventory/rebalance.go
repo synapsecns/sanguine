@@ -142,9 +142,12 @@ func getRebalanceForMethod(ctx context.Context, cfg relconfig.Config, inv map[in
 	}
 
 	if rebalance != nil {
-		rebalance.Amount, err = getRebalanceAmount(ctx, cfg, inv, rebalance.OriginMetadata, rebalance.DestMetadata)
+		rebalance.Amount, err = getRebalanceAmount(ctx, cfg, inv, rebalance)
 		if err != nil {
 			return nil, fmt.Errorf("could not get rebalance amount: %w", err)
+		}
+		if rebalance.Amount == nil {
+			return nil, nil
 		}
 	}
 
@@ -174,47 +177,46 @@ func getBestRebalance(ctx context.Context, candidates []RebalanceData) (best *Re
 // getRebalanceAmount calculates the amount to rebalance based on the configured thresholds.
 //
 //nolint:cyclop,nilnil
-func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, originTokenData, destTokenData *TokenMetadata) (amount *big.Int, err error) {
+func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, rebalance *RebalanceData) (amount *big.Int, err error) {
 	span := trace.SpanFromContext(ctx)
 
 	// get the maintenance and initial values for the destination chain
-	maintenancePct, err := cfg.GetMaintenanceBalancePct(destTokenData.ChainID, destTokenData.Addr.Hex())
+	maintenancePct, err := cfg.GetMaintenanceBalancePct(rebalance.DestMetadata.ChainID, rebalance.DestMetadata.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
 	}
-	initialPct, err := cfg.GetInitialBalancePct(destTokenData.ChainID, destTokenData.Addr.Hex())
+	initialPct, err := cfg.GetInitialBalancePct(rebalance.DestMetadata.ChainID, rebalance.DestMetadata.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get initial pct: %w", err)
 	}
 
 	// calculate maintenance threshold relative to total balance
-	tokenName := originTokenData.Name
-	totalBalance := big.NewInt(0)
-	for _, tokenMap := range tokens {
-		for _, tokenData := range tokenMap {
-			if tokenData.Name == tokenName {
-				totalBalance.Add(totalBalance, tokenData.Balance)
-			}
-		}
+	totalBalance, err := getTotalBalance(cfg, tokens, rebalance.OriginMetadata.Name, rebalance.Method)
+	if err != nil {
+		return nil, fmt.Errorf("could not get total balance: %w", err)
 	}
+	fmt.Printf("total balance: %v\n", totalBalance)
 	maintenanceThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePct/100)).Int(nil)
 	if span != nil {
 		span.SetAttributes(attribute.Float64("maintenance_pct", maintenancePct))
 		span.SetAttributes(attribute.Float64("initial_pct", initialPct))
-		span.SetAttributes(attribute.String("max_token_balance", originTokenData.Balance.String()))
-		span.SetAttributes(attribute.String("min_token_balance", destTokenData.Balance.String()))
+		span.SetAttributes(attribute.String("max_token_balance", rebalance.OriginMetadata.Balance.String()))
+		span.SetAttributes(attribute.String("min_token_balance", rebalance.DestMetadata.Balance.String()))
 		span.SetAttributes(attribute.String("total_balance", totalBalance.String()))
 		span.SetAttributes(attribute.String("maintenance_thresh", maintenanceThresh.String()))
 	}
+	fmt.Printf("maintenance thresh: %v\n", maintenanceThresh)
+	fmt.Printf("dest metadata balance: %v\n", rebalance.DestMetadata.Balance)
 
 	// no need to rebalance if we are not below maintenance threshold on destination
-	if destTokenData.Balance.Cmp(maintenanceThresh) > 0 {
+	if rebalance.DestMetadata.Balance.Cmp(maintenanceThresh) > 0 {
+		fmt.Println("returning nil")
 		return nil, nil
 	}
 
 	// calculate the amount to rebalance vs the initial threshold on destination
 	initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
-	amount = new(big.Int).Sub(originTokenData.Balance, initialThresh)
+	amount = new(big.Int).Sub(rebalance.OriginMetadata.Balance, initialThresh)
 
 	// no need to rebalance since amount would not be positive
 	if amount.Cmp(big.NewInt(0)) <= 0 {
@@ -223,7 +225,7 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	}
 
 	// filter the rebalance amount by the configured min
-	minAmount := cfg.GetMinRebalanceAmount(originTokenData.ChainID, originTokenData.Addr)
+	minAmount := cfg.GetMinRebalanceAmount(rebalance.OriginMetadata.ChainID, rebalance.OriginMetadata.Addr)
 	if amount.Cmp(minAmount) < 0 {
 		// no need to rebalance
 		//nolint:nilnil
@@ -231,7 +233,7 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	}
 
 	// clip the rebalance amount by the configured max
-	maxAmount := cfg.GetMaxRebalanceAmount(originTokenData.ChainID, originTokenData.Addr)
+	maxAmount := cfg.GetMaxRebalanceAmount(rebalance.OriginMetadata.ChainID, rebalance.OriginMetadata.Addr)
 	if amount.Cmp(maxAmount) > 0 {
 		amount = maxAmount
 	}
@@ -244,12 +246,12 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	}
 
 	// make sure that the rebalance amount does not take origin below maintenance threshold
-	maintenancePctOrigin, err := cfg.GetMaintenanceBalancePct(originTokenData.ChainID, originTokenData.Addr.Hex())
+	maintenancePctOrigin, err := cfg.GetMaintenanceBalancePct(rebalance.OriginMetadata.ChainID, rebalance.OriginMetadata.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
 	}
 	maintenanceThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePctOrigin/100)).Int(nil)
-	newBalanceOrigin := new(big.Int).Sub(originTokenData.Balance, amount)
+	newBalanceOrigin := new(big.Int).Sub(rebalance.OriginMetadata.Balance, amount)
 	if newBalanceOrigin.Cmp(maintenanceThreshOrigin) < 0 {
 		if span != nil {
 			span.SetAttributes(
@@ -262,4 +264,28 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	}
 
 	return amount, nil
+}
+
+// getTotalBalance calculates the total balance for a token
+// across all chains that support the given rebalance method.
+func getTotalBalance(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, method relconfig.RebalanceMethod) (*big.Int, error) {
+	totalBalance := big.NewInt(0)
+	for _, tokenMap := range tokens {
+		for _, tokenData := range tokenMap {
+			if tokenData.Name != tokenName {
+				continue
+			}
+			rebalanceMethods, err := cfg.GetRebalanceMethods(tokenData.ChainID, tokenData.Addr.Hex())
+			if err != nil {
+				return nil, fmt.Errorf("could not get rebalance methods: %w", err)
+			}
+			for _, m := range rebalanceMethods {
+				if m == method {
+					totalBalance.Add(totalBalance, tokenData.Balance)
+					break
+				}
+			}
+		}
+	}
+	return totalBalance, nil
 }
