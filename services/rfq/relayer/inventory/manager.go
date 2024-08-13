@@ -483,6 +483,7 @@ func (i *inventoryManagerImpl) tryExecuteRebalance(ctx context.Context, rebalanc
 		attribute.String("origin_balance", rebalance.OriginMetadata.Balance.String()),
 		attribute.String("dest_balance", rebalance.DestMetadata.Balance.String()),
 		attribute.String("rebalance_amount", rebalance.Amount.String()),
+		attribute.String("token_name", rebalance.OriginMetadata.Name),
 	))
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
@@ -493,7 +494,13 @@ func (i *inventoryManagerImpl) tryExecuteRebalance(ctx context.Context, rebalanc
 	if err != nil {
 		return fmt.Errorf("could not check pending rebalance: %w", err)
 	}
-	pending := len(pendingRebalances) > 0
+	var pending bool
+	for _, pendingRebalance := range pendingRebalances {
+		if pendingRebalance.TokenName == rebalance.OriginMetadata.Name {
+			pending = true
+			break
+		}
+	}
 	span.SetAttributes(attribute.Bool("rebalance_pending", pending))
 	if pending {
 		return nil
