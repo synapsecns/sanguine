@@ -3,12 +3,13 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/creasty/defaults"
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/contrib/promexporter/internal/types"
 	"gopkg.in/yaml.v2"
-	"os"
-	"path/filepath"
 )
 
 // Config contains the config for the prometheues exporter.
@@ -30,6 +31,8 @@ type Config struct {
 	BridgeConfig BridgeConfig
 	// BatchCallLimit is the limit of batch calls
 	BatchCallLimit int
+	// RFQAPIURL is the url of the RFQ API
+	RFQAPIUrl string `default:"https://rfq-api.omnirpc.io/quotes" yaml:"rfq_api_url"`
 }
 
 // BridgeConfig contains the config for the bridge.

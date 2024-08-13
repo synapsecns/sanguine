@@ -7,7 +7,6 @@ import (
 	"io"
 	"math/big"
 	"net/http"
-	"os"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/lmittmann/w3/module/eth"
@@ -15,10 +14,12 @@ import (
 	rfqAPIModel "github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
-func (e *exporter) fetchRelayerBalances(ctx context.Context) error {
-
+func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 	// Fetch relayer addresses
-	quotes := fetchRelayerAddresses()
+	quotes, err := e.fetchAllQuotes(ctx, url)
+	if err != nil {
+		return fmt.Errorf("could not fetch relayer addresses: %w", err)
+	}
 
 	// chainIDs is a map of chain ID to relayer addresses
 	chainIDToRelayers := make(map[int][]string)
@@ -55,28 +56,30 @@ func (e *exporter) fetchRelayerBalances(ctx context.Context) error {
 	return nil
 }
 
-func fetchRelayerAddresses() []rfqAPIModel.GetQuoteResponse {
-	url := "https://rfq-api.omnirpc.io/quotes"
-
-	resp, err := http.Get(url)
+func (e *exporter) fetchAllQuotes(ctx context.Context, url string) ([]rfqAPIModel.GetQuoteResponse, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		fmt.Println("Error fetching data:", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("could not get quotes: %w", err)
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	res, err := e.client.Do(req)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("could not get quotes: %w", err)
+	}
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read body: %w", err)
 	}
 
 	var quotes []rfqAPIModel.GetQuoteResponse
 	err = json.Unmarshal(body, &quotes)
 	if err != nil {
-		fmt.Println("Error unmarshalling JSON:", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("could not unmarshal quotes: %w", err)
 	}
 
-	return quotes
+	return quotes, nil
 }

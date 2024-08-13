@@ -155,6 +155,10 @@ func (e *exporter) collectMetrics(ctx context.Context) error {
 		}
 	}
 
+	if err := e.fetchRelayerBalances(ctx, e.cfg.RFQAPIUrl); err != nil {
+		errs = append(errs, fmt.Errorf("could not fetch relayer balances: %w", err))
+	}
+
 	if len(errs) > 0 {
 		return fmt.Errorf("could not collect metrics: %v", errs)
 	}

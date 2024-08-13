@@ -344,5 +344,4 @@ func (o *otelRecorder) recordRelayerBalance(
 	})
 
 	return nil
-
 }
