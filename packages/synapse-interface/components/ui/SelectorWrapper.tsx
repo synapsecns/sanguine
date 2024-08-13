@@ -20,6 +20,7 @@ export const SelectorWrapper = ({
   onSearch,
   open,
   setOpen,
+  disabled,
 }) => {
   const escPressed = useKeyPress('Escape', open)
 
@@ -82,7 +83,11 @@ export const SelectorWrapper = ({
       <button
         data-test-id={`${dataTestId}-button`}
         className={buttonClassName}
-        onClick={() => (!open ? setOpen(true) : onClose())}
+        onClick={() => {
+          if (!disabled) {
+            !open ? setOpen(true) : onClose()
+          }
+        }}
       >
         {itemName && (
           <img

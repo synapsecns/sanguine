@@ -44,6 +44,7 @@ export const BridgeTransactionButton = ({
     toChainId,
     isLoading,
     bridgeQuote,
+    isWalletPending,
   } = useBridgeState()
   const { showDestinationWarning, isDestinationWarningAccepted } =
     useBridgeDisplayState()
@@ -85,6 +86,7 @@ export const BridgeTransactionButton = ({
 
   const isButtonDisabled =
     isLoading ||
+    isWalletPending ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||

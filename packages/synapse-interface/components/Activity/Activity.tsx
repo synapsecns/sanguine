@@ -6,6 +6,7 @@ import { type Address } from 'viem'
 import { type Chain } from '@/utils/types'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeTransaction } from '@/slices/api/generated'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { tokenAddressToToken } from '@/constants/tokens'
@@ -22,6 +23,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     userHistoricalTransactions,
     isUserHistoricalTransactionsLoading,
   }: TransactionsState = useTransactionsState()
+  const { isWalletPending } = useBridgeState()
   const { searchInput, searchedBalances }: PortfolioState = usePortfolioState()
 
   const isLoading: boolean = isUserHistoricalTransactionsLoading
@@ -76,7 +78,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
             filteredHistoricalTransactions
               .slice(0, isSearchInputActive ? 100 : 6)
               .map((transaction: BridgeTransaction) =>
-                renderTransaction(transaction, address)
+                renderTransaction(transaction, address, isWalletPending)
               )}
           {isSearchInputActive && !hasFilteredSearchResults && (
             <NoSearchResultsContent searchStr={searchInput} />
@@ -90,7 +92,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
 const renderTransaction = (
   transaction: BridgeTransaction,
-  viewingAddress: Address
+  viewingAddress: Address,
+  disabled: boolean
 ) => {
   return (
     <Transaction
@@ -115,6 +118,7 @@ const renderTransaction = (
         transaction?.toInfo?.chainID,
         transaction?.toInfo?.tokenAddress
       )}
+      disabled={disabled}
     />
   )
 }

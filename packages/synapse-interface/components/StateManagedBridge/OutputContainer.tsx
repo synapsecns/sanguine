@@ -44,7 +44,7 @@ export const OutputContainer = () => {
 }
 
 const ToChainSelector = () => {
-  const { toChainId } = useBridgeState()
+  const { toChainId, isWalletPending } = useBridgeState()
 
   return (
     <ChainSelector
@@ -55,12 +55,13 @@ const ToChainSelector = () => {
       itemListFunction={useToChainListArray}
       setFunction={setToChainId}
       action="Bridge"
+      disabled={isWalletPending}
     />
   )
 }
 
 const ToTokenSelector = () => {
-  const { toToken } = useBridgeState()
+  const { toToken, isWalletPending } = useBridgeState()
 
   return (
     <TokenSelector
@@ -71,6 +72,7 @@ const ToTokenSelector = () => {
       itemListFunction={useToTokenListArray}
       setFunction={setToToken}
       action="Bridge"
+      disabled={isWalletPending}
     />
   )
 }

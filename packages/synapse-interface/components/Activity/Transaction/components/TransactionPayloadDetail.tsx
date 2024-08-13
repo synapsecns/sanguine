@@ -23,6 +23,7 @@ export const TransactionPayloadDetail = ({
   isOrigin,
   className,
   showChain = true,
+  disabled,
 }: {
   chain?: Chain
   token?: Token
@@ -30,24 +31,29 @@ export const TransactionPayloadDetail = ({
   isOrigin: boolean
   className?: string
   showChain?: boolean
+  disabled: boolean
 }) => {
   const dispatch = useAppDispatch()
 
   const handleSelectChainCallback = useCallback(() => {
-    if (isOrigin) {
-      dispatch(setFromChainId(chain?.id as number))
-    } else {
-      dispatch(setToChainId(chain?.id as number))
+    if (!disabled) {
+      if (isOrigin) {
+        dispatch(setFromChainId(chain?.id as number))
+      } else {
+        dispatch(setToChainId(chain?.id as number))
+      }
     }
   }, [isOrigin, chain])
 
   const handleSelectTokenCallback = useCallback(() => {
-    if (isOrigin && chain && token) {
-      dispatch(setFromChainId(chain?.id as number))
-      dispatch(setFromToken(token as Token))
-    } else {
-      dispatch(setToChainId(chain?.id as number))
-      dispatch(setToToken(token as Token))
+    if (!disabled) {
+      if (isOrigin && chain && token) {
+        dispatch(setFromChainId(chain?.id as number))
+        dispatch(setFromToken(token as Token))
+      } else {
+        dispatch(setToChainId(chain?.id as number))
+        dispatch(setToToken(token as Token))
+      }
     }
   }, [isOrigin, token, chain])
 

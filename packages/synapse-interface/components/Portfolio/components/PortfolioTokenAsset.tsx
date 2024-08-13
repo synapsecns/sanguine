@@ -33,7 +33,7 @@ export const PortfolioTokenAsset = ({
   connectedChainId,
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
-  const { fromChainId, fromToken } = useBridgeState()
+  const { fromChainId, fromToken, isWalletPending } = useBridgeState()
   const { icon, symbol, decimals, addresses } = token
   const tokenAddress = addresses[portfolioChainId]
   const tokenDecimals = isNumber(decimals)
@@ -101,7 +101,7 @@ export const PortfolioTokenAsset = ({
       </div>
       <PortfolioAssetActionButton
         selectCallback={handleFromSelectionCallback}
-        isDisabled={isDisabled || isTokenSelected}
+        isDisabled={isDisabled || isTokenSelected || isWalletPending}
         isSelected={isTokenSelected}
       />
     </div>
