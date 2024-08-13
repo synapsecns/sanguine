@@ -39,6 +39,7 @@ export const BridgeTransactionButton = ({
     destinationAddress,
     fromToken,
     fromValue,
+    debouncedFromValue,
     toToken,
     fromChainId,
     toChainId,
@@ -76,12 +77,19 @@ export const BridgeTransactionButton = ({
     )
   }, [bridgeQuote.outputAmount, fromValueBigInt])
 
-  const chainSelectionsMatchBridgeQuote = useMemo(() => {
-    return (
-      fromChainId === bridgeQuote.originChainId &&
-      toChainId === bridgeQuote.destChainId
-    )
-  }, [fromChainId, toChainId, bridgeQuote])
+  const stringifiedBridgeQuote = constructStringifiedBridgeSelections(
+    bridgeQuote.inputAmountForQuote,
+    bridgeQuote.originChainId,
+    bridgeQuote.destChainId
+  )
+  const stringifiedBridgeState = constructStringifiedBridgeSelections(
+    debouncedFromValue,
+    fromChainId,
+    toChainId
+  )
+
+  const bridgeStateMatchesQuote =
+    stringifiedBridgeQuote === stringifiedBridgeState
 
   const isButtonDisabled =
     isLoading ||
@@ -90,7 +98,7 @@ export const BridgeTransactionButton = ({
     (destinationAddress && !isAddress(destinationAddress)) ||
     (isConnected && !sufficientBalance) ||
     bridgeQuoteAmountGreaterThanInputForRfq ||
-    !chainSelectionsMatchBridgeQuote ||
+    !bridgeStateMatchesQuote ||
     isBridgePaused
 
   let buttonProperties
@@ -129,11 +137,7 @@ export const BridgeTransactionButton = ({
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (
-    !isLoading &&
-    !chainSelectionsMatchBridgeQuote &&
-    fromValueBigInt > 0
-  ) {
+  } else if (!isLoading && !bridgeStateMatchesQuote && fromValueBigInt > 0) {
     buttonProperties = {
       label: 'Please reset chain selection',
       onClick: null,
@@ -198,4 +202,17 @@ export const BridgeTransactionButton = ({
       </>
     )
   )
+}
+
+const constructStringifiedBridgeSelections = (
+  originAmount,
+  originChainId,
+  destinationChainId
+) => {
+  const state = {
+    originAmount,
+    originChainId,
+    destinationChainId,
+  }
+  return JSON.stringify(state)
 }

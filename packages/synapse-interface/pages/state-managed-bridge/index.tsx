@@ -80,7 +80,6 @@ const StateManagedBridge = () => {
   const quoteToastRef = useRef({ id: '' })
 
   const {
-    fromValue,
     fromChainId,
     toChainId,
     fromToken,
@@ -91,7 +90,7 @@ const StateManagedBridge = () => {
     isLoading: isQuoteLoading,
     isWalletPending,
   }: BridgeState = useBridgeState()
-  const { showSettingsSlideOver, showDestinationAddress } = useSelector(
+  const { showSettingsSlideOver } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
 
@@ -285,11 +284,7 @@ const StateManagedBridge = () => {
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           setBridgeQuote({
-            inputAmount: stringToBigInt(
-              debouncedFromValue,
-              fromToken?.decimals[fromChainId]
-            ),
-            inputAmountString: debouncedFromValue,
+            inputAmountForQuote: debouncedFromValue,
             outputAmount: toValueBigInt,
             outputAmountString: commify(
               formatBigIntToString(
@@ -396,7 +391,7 @@ const StateManagedBridge = () => {
       }
     }
 
-    if (debouncedFromValue !== bridgeQuote.inputAmountString) {
+    if (debouncedFromValue !== bridgeQuote.inputAmountForQuote) {
       await getAndSetBridgeQuote()
 
       return (
@@ -413,11 +408,7 @@ const StateManagedBridge = () => {
     }
 
     console.log(
-      'debouncedFromValue === bridgeQuote.inputAmountString: ',
-      debouncedFromValue === bridgeQuote.inputAmountString
-    )
-    console.log(
-      `executeBridge: \n displayed input value: ${debouncedFromValue} \n bridge quote output: ${bridgeQuote.outputAmountString} \n bridge quote input recorded: ${bridgeQuote.inputAmountString}`
+      `executeBridge: \n displayed input value: ${debouncedFromValue} \n bridge quote output: ${bridgeQuote.outputAmountString} \n bridge quote input recorded: ${bridgeQuote.inputAmountForQuote}`
     )
 
     segmentAnalyticsEvent(

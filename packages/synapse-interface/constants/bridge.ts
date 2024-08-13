@@ -4,8 +4,7 @@ import * as CHAINS from '@constants/chains/master'
 export const QUOTE_POLLING_INTERVAL = 10000
 
 export const EMPTY_BRIDGE_QUOTE = {
-  inputAmount: 0n,
-  inputAmountString: '',
+  inputAmountForQuote: '',
   outputAmount: 0n,
   outputAmountString: '',
   routerAddress: '',
@@ -24,8 +23,7 @@ export const EMPTY_BRIDGE_QUOTE = {
 }
 
 export const EMPTY_BRIDGE_QUOTE_ZERO = {
-  inputAmount: 0n,
-  inputAmountString: '',
+  inputAmountForQuote: '',
   outputAmount: 0n,
   outputAmountString: '0',
   routerAddress: '',
