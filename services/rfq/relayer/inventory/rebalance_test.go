@@ -13,7 +13,6 @@ import (
 )
 
 func TestGetRebalances(t *testing.T) {
-
 	t.Run("NoRebalanceMethod", func(t *testing.T) {
 		cfg := relconfig.Config{
 			Chains: map[int]relconfig.ChainConfig{
