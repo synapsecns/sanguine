@@ -12,28 +12,27 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Config contains the config for the prometheues exporter.
 type Config struct {
 	// Port is the port of the config
 	Port int `yaml:"port"`
 	// DFKApiUrl is the url of the DFK API
-	DFKUrl string `yaml:"dfk_url" default:"https://defi-kingdoms-community-api-gateway-co06z8vi.uc.gateway.dev/graphql"`
+	DFKUrl string `default:"https://defi-kingdoms-community-api-gateway-co06z8vi.uc.gateway.dev/graphql" yaml:"dfk_url"`
 	// DFKPending is the list of pending heroes
 	DFKPending []DFKPending `yaml:"dfk_pending"`
 	// SubmitterChecks is the list of gas checks
 	SubmitterChecks []SubmitterChecks `yaml:"gas_checks"`
 	// OmniRpcURL is the url of the omnirpc
-	OmnirpcURL string `yaml:"omnirpc_url" default:"https://rpc.omnirpc.io"`
-	// map chainid->address
-	BridgeChecks map[int]string
+	OmnirpcURL string `default:"https://rpc.omnirpc.io" yaml:"omnirpc_url"`
 	// VpriceCheckTokens is the list of tokens to check vprice for
 	VpriceCheckTokens []string `yaml:"vprice_tokens"`
+	// RFQAPIURL is the url of the RFQ API
+	RFQAPIUrl string `default:"http://rfq-api.omnirpc.io/quotes" yaml:"rfq_api_url"`
+	// map chainid->address
+	BridgeChecks map[int]string
 	// BridgeConfig is the config for the bridge.
 	BridgeConfig BridgeConfig
 	// BatchCallLimit is the limit of batch calls
 	BatchCallLimit int
-	// RFQAPIURL is the url of the RFQ API
-	RFQAPIUrl string `yaml:"rfq_api_url" default:"http://rfq-api.omnirpc.io/quotes"`
 }
 
 // BridgeConfig contains the config for the bridge.
