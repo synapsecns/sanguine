@@ -604,6 +604,7 @@ const StateManagedBridge = () => {
                   dispatch(setToChainId(fromChainId))
                   dispatch(setToToken(fromToken))
                 }}
+                disabled={isWalletPending}
               />
               <OutputContainer />
               <Warning />
