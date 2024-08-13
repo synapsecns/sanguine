@@ -30,6 +30,7 @@ import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { MaxButton } from './MaxButton'
 import { formatAmount } from '../../utils/formatAmount'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -37,14 +38,9 @@ export const InputContainer = () => {
   const dispatch = useAppDispatch()
   const { chain, isConnected } = useAccount()
   const { balances } = usePortfolioState()
-  const {
-    fromChainId,
-    toChainId,
-    fromToken,
-    toToken,
-    fromValue,
-    isWalletPending,
-  } = useBridgeState()
+  const { fromChainId, toChainId, fromToken, toToken, fromValue } =
+    useBridgeState()
+  const { isWalletPending } = useWalletState()
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
