@@ -170,7 +170,8 @@ export const InputContainer = () => {
               !isConnected ||
               !hasValidInputSelections ||
               isLoading ||
-              isInputMax
+              isInputMax ||
+              isWalletPending
             }
           />
         </div>
@@ -181,6 +182,7 @@ export const InputContainer = () => {
 
 const FromChainSelector = () => {
   const { fromChainId } = useBridgeState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <ChainSelector
@@ -191,12 +193,14 @@ const FromChainSelector = () => {
       itemListFunction={useFromChainListArray}
       setFunction={setFromChainId}
       action="Bridge"
+      disabled={isWalletPending}
     />
   )
 }
 
 const FromTokenSelector = () => {
   const { fromToken } = useBridgeState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <TokenSelector
@@ -207,6 +211,7 @@ const FromTokenSelector = () => {
       itemListFunction={useFromTokenListArray}
       setFunction={setFromToken}
       action="Bridge"
+      disabled={isWalletPending}
     />
   )
 }

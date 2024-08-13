@@ -587,6 +587,7 @@ const StateManagedBridge = () => {
             onClick={() =>
               dispatch(setShowSettingsSlideOver(!showSettingsSlideOver))
             }
+            disabled={isWalletPending}
           >
             <SettingsToggle showSettingsToggle={!showSettingsSlideOver} />
           </Button>
@@ -608,6 +609,7 @@ const StateManagedBridge = () => {
                   dispatch(setToChainId(fromChainId))
                   dispatch(setToToken(fromToken))
                 }}
+                disabled={isWalletPending}
               />
               <OutputContainer />
               <Warning />

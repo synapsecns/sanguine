@@ -11,6 +11,7 @@ import { DestinationAddressInput } from '@/components/StateManagedBridge/Destina
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 export const OutputContainer = () => {
   const { address } = useAccount()
@@ -45,6 +46,7 @@ export const OutputContainer = () => {
 
 const ToChainSelector = () => {
   const { toChainId } = useBridgeState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <ChainSelector
@@ -55,12 +57,14 @@ const ToChainSelector = () => {
       itemListFunction={useToChainListArray}
       setFunction={setToChainId}
       action="Bridge"
+      disabled={isWalletPending}
     />
   )
 }
 
 const ToTokenSelector = () => {
   const { toToken } = useBridgeState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <TokenSelector
@@ -71,6 +75,7 @@ const ToTokenSelector = () => {
       itemListFunction={useToTokenListArray}
       setFunction={setToToken}
       action="Bridge"
+      disabled={isWalletPending}
     />
   )
 }
