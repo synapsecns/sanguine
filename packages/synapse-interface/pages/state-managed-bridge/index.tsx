@@ -554,10 +554,6 @@ const StateManagedBridge = () => {
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
 
-      if (isTransactionUserRejectedError(error)) {
-        getAndSetBridgeQuote()
-      }
-
       /** Fetch balances if await transaction receipt times out */
       if (isTransactionReceiptError(error)) {
         dispatch(
