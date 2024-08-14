@@ -186,10 +186,7 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	}
 
 	// calculate maintenance threshold relative to total balance
-	totalBalance, err := getTotalBalance(cfg, tokens, rebalance.OriginMetadata.Name, rebalance.Method)
-	if err != nil {
-		return nil, fmt.Errorf("could not get total balance: %w", err)
-	}
+	totalBalance := getTotalBalance(cfg, tokens, rebalance.OriginMetadata.Name, rebalance.Method)
 	maintenanceThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePct/100)).Int(nil)
 	if span != nil {
 		span.SetAttributes(attribute.Float64("maintenance_pct", maintenancePct))
@@ -260,7 +257,7 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 
 // getTotalBalance calculates the total balance for a token
 // across all chains that support the given rebalance method.
-func getTotalBalance(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, method relconfig.RebalanceMethod) (*big.Int, error) {
+func getTotalBalance(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, tokenName string, method relconfig.RebalanceMethod) *big.Int {
 	totalBalance := big.NewInt(0)
 	for _, tokenMap := range tokens {
 		for _, tokenData := range tokenMap {
@@ -272,7 +269,7 @@ func getTotalBalance(cfg relconfig.Config, tokens map[int]map[common.Address]*To
 			}
 		}
 	}
-	return totalBalance, nil
+	return totalBalance
 }
 
 func supportsRebalanceMethod(cfg relconfig.Config, chainID int, addr string, method relconfig.RebalanceMethod) bool {

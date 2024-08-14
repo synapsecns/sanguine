@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
+//nolint:maintidx
 func TestGetRebalances(t *testing.T) {
 	t.Run("NoRebalanceMethod", func(t *testing.T) {
 		cfg := relconfig.Config{
