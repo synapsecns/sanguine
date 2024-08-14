@@ -13,10 +13,8 @@ import { useAppDispatch } from '@/store/hooks'
 import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
-import {
-  useBridgeValidations,
-  useBridgeSelections,
-} from './hooks/useBridgeSelections'
+import { useBridgeSelections } from './hooks/useBridgeSelections'
+import { useBridgeValidations } from './hooks/useBridgeValidations'
 
 export const BridgeTransactionButton = ({
   approveTxn,
