@@ -395,22 +395,6 @@ const StateManagedBridge = () => {
       }
     }
 
-    if (debouncedFromValue !== bridgeQuote.inputAmountForQuote) {
-      await getAndSetBridgeQuote()
-
-      return (
-        toast.error(
-          <div>
-            <div className="w-full">{`Bridge error: please try again.`}</div>
-          </div>
-        ),
-        {
-          id: 'toast-error-execute-bridge',
-          duration: Infinity,
-        }
-      )
-    }
-
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {

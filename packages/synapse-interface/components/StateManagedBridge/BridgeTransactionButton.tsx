@@ -143,7 +143,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (!isLoading && !bridgeStateMatchesQuote && fromValueBigInt > 0) {
     buttonProperties = {
-      label: 'Please reset chain selection',
+      label: 'Bridge quote error',
       onClick: null,
     }
   } else if (
