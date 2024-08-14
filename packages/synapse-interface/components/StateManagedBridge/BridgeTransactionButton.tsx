@@ -166,16 +166,7 @@ export const BridgeTransactionButton = ({
       destinationChainIdForState: toChainId,
       destinationTokenForState: toToken.symbol,
       destinationTokenAddressForState: toToken.addresses[toChainId],
-
-      inputAmountForQuote: bridgeQuote.inputAmountForQuote,
-      originChainIdForQuote: bridgeQuote.originChainId,
-      originTokenForQuote: bridgeQuote.originTokenForQuote.symbol,
-      originTokenAddressForQuote:
-        bridgeQuote.originTokenForQuote.addresses[bridgeQuote.originChainId],
-      destinationChainIdForQuote: bridgeQuote.destChainId,
-      destinationTokenForQuote: bridgeQuote.destTokenForQuote.symbol,
-      destinationTokenAddressForQuote:
-        bridgeQuote.destTokenForQuote.addresses[bridgeQuote.destChainId],
+      bridgeQuote,
     })
 
     buttonProperties = {
