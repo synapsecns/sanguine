@@ -65,6 +65,7 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
+import { useBridgeSelections } from '@/components/StateManagedBridge/hooks/useBridgeSelections'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -75,6 +76,16 @@ const StateManagedBridge = () => {
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
   const quoteToastRef = useRef({ id: '' })
+
+  const {
+    fromTokenSymbol,
+    fromTokenDecimals,
+    fromTokenAddress,
+    toTokenSymbol,
+    toTokenDecimals,
+    toTokenAddress,
+    debouncedFromValueBigInt,
+  } = useBridgeSelections()
 
   const {
     fromChainId,
