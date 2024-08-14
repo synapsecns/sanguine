@@ -10,10 +10,10 @@ import (
 // ChainListenerDB is the interface for the chain listener database.
 type ChainListenerDB interface {
 	// PutLatestBlock upserts the latest block on a given chain id to be new height.
-	PutLatestBlock(ctx context.Context, chainID, height uint64, name string) error
+	PutLatestBlock(ctx context.Context, chainID, height uint64) error
 	// LatestBlockForChain gets the latest block for a given chain id.
 	// will return ErrNoLatestBlockForChainID if no block exists for the chain.
-	LatestBlockForChain(ctx context.Context, chainID uint64, name string) (uint64, error)
+	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
 }
 
 // LastIndexed is used to make sure we haven't missed any events while offline.

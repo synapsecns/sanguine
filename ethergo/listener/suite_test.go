@@ -3,6 +3,11 @@ package listener_test
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ipfs/go-log"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
@@ -12,10 +17,6 @@ import (
 	db2 "github.com/synapsecns/sanguine/ethergo/listener/db"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"math/big"
-	"os"
-	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -153,5 +154,5 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate models: %w", err)
 	}
-	return db2.NewChainListenerStore(gdb, handler), nil
+	return db2.NewChainListenerStore(gdb, handler, "test"), nil
 }

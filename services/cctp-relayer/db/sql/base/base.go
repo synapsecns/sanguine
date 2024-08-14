@@ -21,7 +21,7 @@ type Store struct {
 // NewStore creates a new store.
 func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
 	txDB := txdb.NewTXStore(db, metrics)
-	return &Store{ChainListenerDB: listenerDB.NewChainListenerStore(db, metrics), db: db, metrics: metrics, submitterStore: txDB}
+	return &Store{ChainListenerDB: listenerDB.NewChainListenerStore(db, metrics, "cctp-relayer"), db: db, metrics: metrics, submitterStore: txDB}
 }
 
 // DB gets the database object for mutation outside of the lib.
