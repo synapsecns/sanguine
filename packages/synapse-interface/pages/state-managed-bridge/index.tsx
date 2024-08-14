@@ -62,7 +62,7 @@ import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { screenAddress } from '@/utils/screenAddress'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
-import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
+import { resetBridgeQuote, setIsLoading } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
 import { useBridgeSelections } from '@/components/StateManagedBridge/hooks/useBridgeSelections'
@@ -206,6 +206,8 @@ const StateManagedBridge = () => {
 
         return
       }
+    } finally {
+      dispatch(setIsLoading(false))
     }
   }
 

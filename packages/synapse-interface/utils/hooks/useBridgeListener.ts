@@ -24,7 +24,7 @@ export const useBridgeListener = () => {
 
     const animationTimer = setTimeout(() => {
       if (debouncedFromValue !== initialState.debouncedFromValue) {
-        dispatch(setIsLoading(true))
+        // dispatch(setIsLoading(true))
       }
     }, ANIMATION_DELAY)
 
