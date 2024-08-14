@@ -437,7 +437,7 @@ const StateManagedBridge = () => {
           ? destinationAddress
           : address
 
-      const data = await synapseSDK.bridge(
+      const payload = await synapseSDK.bridge(
         toAddress,
         bridgeQuote.routerAddress,
         fromChainId,
@@ -447,20 +447,6 @@ const StateManagedBridge = () => {
         bridgeQuote.originQuery,
         bridgeQuote.destQuery
       )
-
-      const payload =
-        fromToken?.addresses[fromChainId as keyof Token['addresses']] ===
-          zeroAddress ||
-        fromToken?.addresses[fromChainId as keyof Token['addresses']] === ''
-          ? {
-              data: data.data,
-              to: data.to,
-              value: stringToBigInt(
-                debouncedFromValue,
-                fromToken?.decimals[fromChainId]
-              ),
-            }
-          : data
 
       /** Setting custom gas limit for only Polygon transactions */
       let gasEstimate = undefined

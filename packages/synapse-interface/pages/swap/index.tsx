@@ -278,27 +278,13 @@ const StateManagedSwap = () => {
         chainId: swapChainId,
       })
 
-      const data = await synapseSDK.swap(
+      const payload = await synapseSDK.swap(
         swapChainId,
         address,
         swapFromToken.addresses[swapChainId],
         stringToBigInt(swapFromValue, swapFromToken.decimals[swapChainId]),
         swapQuote.quote
       )
-
-      const payload =
-        swapFromToken.addresses[swapChainId as keyof Token['addresses']] ===
-          zeroAddress ||
-        swapFromToken.addresses[swapChainId as keyof Token['addresses']] === ''
-          ? {
-              data: data.data,
-              to: data.to,
-              value: stringToBigInt(
-                swapFromValue,
-                swapFromToken.decimals[swapChainId]
-              ),
-            }
-          : data
 
       const tx = await wallet.sendTransaction(payload)
 
