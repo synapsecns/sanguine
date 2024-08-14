@@ -12,23 +12,25 @@ import (
 )
 
 // NewChainListenerStore creates a new transaction store.
-func NewChainListenerStore(db *gorm.DB, metrics metrics.Handler) *Store {
+func NewChainListenerStore(db *gorm.DB, metrics metrics.Handler, listenerName string) *Store {
 	return &Store{
-		db:      db,
-		metrics: metrics,
+		db:           db,
+		metrics:      metrics,
+		listenerName: listenerName,
 	}
 }
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
 type Store struct {
-	db      *gorm.DB
-	metrics metrics.Handler
+	db           *gorm.DB
+	metrics      metrics.Handler
+	listenerName string
 }
 
 // PutLatestBlock upserts the latest block into the database.
-func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64, name string) error {
+func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error {
 	tx := s.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: chainIDFieldName}, {Name: name}},
+		Columns:   []clause.Column{{Name: chainIDFieldName}, {Name: s.listenerName}},
 		DoUpdates: clause.AssignmentColumns([]string{chainIDFieldName, blockNumberFieldName}),
 	}).Create(&LastIndexed{
 		ChainID:     chainID,
@@ -42,8 +44,8 @@ func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64, name 
 }
 
 // LatestBlockForChain gets the latest block for a chain.
-func (s Store) LatestBlockForChain(ctx context.Context, chainID uint64, name string) (uint64, error) {
-	blockWatchModel := LastIndexed{ChainID: chainID, ListenerName: name}
+func (s Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error) {
+	blockWatchModel := LastIndexed{ChainID: chainID, ListenerName: s.listenerName}
 	err := s.db.WithContext(ctx).First(&blockWatchModel).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
