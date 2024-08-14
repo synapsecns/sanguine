@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.34.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.3...@synapsecns/synapse-interface@0.34.4) (2024-08-14)
+
+
+### Bug Fixes
+
+* **synapse-interface:** don't adjust `payload.value` that SDK already handles ([#3015](https://github.com/synapsecns/sanguine/issues/3015)) ([77f5863](https://github.com/synapsecns/sanguine/commit/77f58637d948c981b9e26f51b2137fd2f1e0578f))
+
+
+
+
+
 ## [0.34.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.2...@synapsecns/synapse-interface@0.34.3) (2024-08-13)
 
 
