@@ -80,23 +80,35 @@ export const BridgeTransactionButton = ({
     )
   }, [bridgeQuote.outputAmount, fromValueBigInt])
 
-  const stringifiedBridgeQuote = constructStringifiedBridgeSelections(
+  const stringifiedBridgeQuote = useMemo(() => {
+    return constructStringifiedBridgeSelections(
+      bridgeQuote.inputAmountForQuote,
+      bridgeQuote.originChainId,
+      bridgeQuote.originTokenForQuote,
+      bridgeQuote.destChainId,
+      bridgeQuote.destTokenForQuote
+    )
+  }, [
     bridgeQuote.inputAmountForQuote,
     bridgeQuote.originChainId,
     bridgeQuote.originTokenForQuote,
     bridgeQuote.destChainId,
-    bridgeQuote.destTokenForQuote
-  )
-  const stringifiedBridgeState = constructStringifiedBridgeSelections(
-    debouncedFromValue,
-    fromChainId,
-    fromToken,
-    toChainId,
-    toToken
-  )
+    bridgeQuote.destTokenForQuote,
+  ])
 
-  const bridgeStateMatchesQuote =
-    stringifiedBridgeQuote === stringifiedBridgeState
+  const stringifiedBridgeState = useMemo(() => {
+    return constructStringifiedBridgeSelections(
+      debouncedFromValue,
+      fromChainId,
+      fromToken,
+      toChainId,
+      toToken
+    )
+  }, [debouncedFromValue, fromChainId, fromToken, toChainId, toToken])
+
+  const bridgeStateMatchesQuote = useMemo(() => {
+    return stringifiedBridgeQuote === stringifiedBridgeState
+  }, [stringifiedBridgeQuote, stringifiedBridgeState])
 
   const isButtonDisabled =
     isLoading ||
@@ -147,7 +159,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (!isLoading && !bridgeStateMatchesQuote && fromValueBigInt > 0) {
     buttonProperties = {
-      label: 'Bridge quote error',
+      label: 'Error in bridge quote',
       onClick: null,
     }
   } else if (
