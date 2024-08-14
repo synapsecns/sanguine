@@ -2,17 +2,18 @@ package db
 
 import (
 	"context"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // ChainListenerDB is the interface for the chain listener database.
 type ChainListenerDB interface {
-	// PutLatestBlock upsers the latest block on a given chain id to be new height.
-	PutLatestBlock(ctx context.Context, chainID, height uint64) error
+	// PutLatestBlock upserts the latest block on a given chain id to be new height.
+	PutLatestBlock(ctx context.Context, chainID, height uint64, name string) error
 	// LatestBlockForChain gets the latest block for a given chain id.
 	// will return ErrNoLatestBlockForChainID if no block exists for the chain.
-	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
+	LatestBlockForChain(ctx context.Context, chainID uint64, name string) (uint64, error)
 }
 
 // LastIndexed is used to make sure we haven't missed any events while offline.
@@ -31,6 +32,8 @@ type LastIndexed struct {
 	ChainID uint64 `gorm:"column:chain_id;primaryKey;autoIncrement:false"`
 	// BlockHeight is the highest height we've seen on the chain
 	BlockNumber int `gorm:"block_number"`
+	// ListenerName is the name of the listener that is tracking this chain
+	ListenerName string `gorm:"listener_name"`
 }
 
 // GetAllModels gets all models to migrate

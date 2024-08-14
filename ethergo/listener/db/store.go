@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"gorm.io/gorm"
@@ -25,9 +26,9 @@ type Store struct {
 }
 
 // PutLatestBlock upserts the latest block into the database.
-func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error {
+func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64, name string) error {
 	tx := s.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: chainIDFieldName}},
+		Columns:   []clause.Column{{Name: chainIDFieldName}, {Name: name}},
 		DoUpdates: clause.AssignmentColumns([]string{chainIDFieldName, blockNumberFieldName}),
 	}).Create(&LastIndexed{
 		ChainID:     chainID,
@@ -41,8 +42,8 @@ func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error
 }
 
 // LatestBlockForChain gets the latest block for a chain.
-func (s Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error) {
-	blockWatchModel := LastIndexed{ChainID: chainID}
+func (s Store) LatestBlockForChain(ctx context.Context, chainID uint64, name string) (uint64, error) {
+	blockWatchModel := LastIndexed{ChainID: chainID, ListenerName: name}
 	err := s.db.WithContext(ctx).First(&blockWatchModel).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
