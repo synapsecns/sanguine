@@ -5,6 +5,8 @@ export const QUOTE_POLLING_INTERVAL = 10000
 
 export const EMPTY_BRIDGE_QUOTE = {
   inputAmountForQuote: '',
+  originTokenForQuote: null,
+  destTokenForQuote: null,
   outputAmount: 0n,
   outputAmountString: '',
   routerAddress: '',
@@ -24,6 +26,8 @@ export const EMPTY_BRIDGE_QUOTE = {
 
 export const EMPTY_BRIDGE_QUOTE_ZERO = {
   inputAmountForQuote: '',
+  originTokenForQuote: null,
+  destTokenForQuote: null,
   outputAmount: 0n,
   outputAmountString: '0',
   routerAddress: '',

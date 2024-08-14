@@ -289,6 +289,8 @@ const StateManagedBridge = () => {
         dispatch(
           setBridgeQuote({
             inputAmountForQuote: debouncedFromValue,
+            originTokenForQuote: fromToken,
+            destTokenForQuote: toToken,
             outputAmount: toValueBigInt,
             outputAmountString: commify(
               formatBigIntToString(
