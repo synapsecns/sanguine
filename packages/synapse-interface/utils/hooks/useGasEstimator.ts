@@ -184,7 +184,7 @@ const getBridgePayload = async (
   if (!bridgeQuote) return null
 
   try {
-    const data = await synapseSDK.bridge(
+    const payload = await synapseSDK.bridge(
       address,
       bridgeQuote.routerAddress,
       fromChainId,
@@ -194,18 +194,6 @@ const getBridgePayload = async (
       bridgeQuote.originQuery,
       bridgeQuote.destQuery
     )
-
-    const payload =
-      fromToken?.addresses[fromChainId as keyof Token['addresses']] ===
-        zeroAddress ||
-      fromToken?.addresses[fromChainId as keyof Token['addresses']] === ''
-        ? {
-            data: data.data,
-            to: data.to,
-            value: stringToBigInt(amount, fromToken?.decimals[fromChainId]),
-          }
-        : data
-
     return payload
   } catch (error) {
     console.error('getBridgePayload: ', error)
