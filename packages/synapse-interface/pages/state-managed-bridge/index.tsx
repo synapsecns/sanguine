@@ -64,6 +64,7 @@ import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
+import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -84,7 +85,14 @@ const StateManagedBridge = () => {
     destinationAddress,
   }: BridgeState = useBridgeState()
 
-  const { bridgeQuote, isLoading: isQuoteLoading } = useBridgeQuoteState()
+  const { bridgeQuote, isLoading } = useBridgeQuoteState()
+
+  const isApproved = useIsBridgeApproved(
+    fromToken,
+    fromChainId,
+    bridgeQuote,
+    debouncedFromValue
+  )
 
   const { isWalletPending } = useWalletState()
 
@@ -98,8 +106,6 @@ const StateManagedBridge = () => {
     BridgeMaintenanceProgressBar,
     BridgeMaintenanceWarningMessage,
   } = useMaintenance()
-
-  const [isApproved, setIsApproved] = useState<boolean>(false)
 
   const dispatch = useAppDispatch()
 
@@ -124,24 +130,6 @@ const StateManagedBridge = () => {
       dispatch(resetBridgeQuote())
     }
   }, [fromChainId, toChainId, fromToken, toToken, debouncedFromValue])
-
-  // don't like this, rewrite: could be custom hook
-  useEffect(() => {
-    if (fromToken && fromToken?.addresses[fromChainId] === zeroAddress) {
-      setIsApproved(true)
-    } else {
-      if (
-        fromToken &&
-        bridgeQuote?.allowance &&
-        stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId]) <=
-          bridgeQuote.allowance
-      ) {
-        setIsApproved(true)
-      } else {
-        setIsApproved(false)
-      }
-    }
-  }, [bridgeQuote, fromToken, debouncedFromValue, fromChainId, toChainId])
 
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
@@ -178,9 +166,9 @@ const StateManagedBridge = () => {
         }
 
         if (fetchBridgeQuote.rejected.match(result)) {
-          quoteToastRef.current.id = toast(result.payload as string, {
-            duration: 3000,
-          })
+          const message = result.payload as string
+
+          quoteToastRef.current.id = toast(message, { duration: 3000 })
         }
       }
     } catch (err) {
@@ -213,7 +201,7 @@ const StateManagedBridge = () => {
   useStaleQuoteUpdater(
     bridgeQuote,
     getAndSetBridgeQuote,
-    isQuoteLoading,
+    isLoading,
     isWalletPending
   )
 
