@@ -158,6 +158,11 @@ export const BridgeTransactionButton = ({
       onClick: null,
     }
   } else if (!isLoading && !bridgeStateMatchesQuote && fromValueBigInt > 0) {
+    buttonProperties = {
+      label: 'Error in bridge quote',
+      onClick: null,
+    }
+
     segmentAnalyticsEvent(`[Bridge] error: state out of sync with quote`, {
       inputAmountForState: debouncedFromValue,
       originChainIdForState: fromChainId,
@@ -168,11 +173,6 @@ export const BridgeTransactionButton = ({
       destinationTokenAddressForState: toToken.addresses[toChainId],
       bridgeQuote,
     })
-
-    buttonProperties = {
-      label: 'Error in bridge quote',
-      onClick: null,
-    }
   } else if (
     !isLoading &&
     bridgeQuoteAmountGreaterThanInputForRfq &&
