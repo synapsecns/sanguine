@@ -78,6 +78,15 @@ const StateManagedBridge = () => {
   const quoteToastRef = useRef({ id: '' })
 
   const {
+    fromChainId,
+    toChainId,
+    fromToken,
+    toToken,
+    debouncedFromValue,
+    destinationAddress,
+  }: BridgeState = useBridgeState()
+
+  const {
     fromTokenSymbol,
     fromTokenDecimals,
     fromTokenAddress,
@@ -86,15 +95,6 @@ const StateManagedBridge = () => {
     toTokenAddress,
     debouncedFromValueBigInt,
   } = useBridgeSelections()
-
-  const {
-    fromChainId,
-    toChainId,
-    fromToken,
-    toToken,
-    debouncedFromValue,
-    destinationAddress,
-  }: BridgeState = useBridgeState()
 
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
 
@@ -222,8 +222,8 @@ const StateManagedBridge = () => {
       const tx = approveToken(
         bridgeQuote?.routerAddress,
         fromChainId,
-        fromToken?.addresses[fromChainId],
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
+        fromTokenAddress,
+        debouncedFromValueBigInt
       )
       await tx
       /** Re-fetch bridge quote to re-check approval state */

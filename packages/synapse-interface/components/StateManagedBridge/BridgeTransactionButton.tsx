@@ -13,6 +13,10 @@ import { useAppDispatch } from '@/store/hooks'
 import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
+import {
+  useBridgeValidations,
+  useBridgeSelections,
+} from './hooks/useBridgeSelections'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -40,8 +44,8 @@ export const BridgeTransactionButton = ({
   const {
     destinationAddress,
     fromToken,
-    fromValue,
-    toToken,
+    // fromValue,
+    // toToken,
     fromChainId,
     toChainId,
   } = useBridgeState()
@@ -52,49 +56,59 @@ export const BridgeTransactionButton = ({
   const { showDestinationWarning, isDestinationWarningAccepted } =
     useBridgeDisplayState()
 
-  const balances = usePortfolioBalances()
-  const balancesForChain = balances[fromChainId]
-  const balanceForToken = balancesForChain?.find(
-    (t) => t.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.balance
+  const { fromTokenBalance, debouncedFromValueBigInt } = useBridgeSelections()
+  const {
+    hasValidInput,
+    hasValidQuote,
+    hasSufficientBalance,
+    doesChainSelectionsMatchBridgeQuote,
+    isBridgeQuoteAmountGreaterThanInputForRfq,
+    onSelectedChain,
+  } = useBridgeValidations()
 
-  const sufficientBalance = useMemo(() => {
-    if (!fromChainId || !fromToken || !toChainId || !toToken) return false
-    return (
-      stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
-      balanceForToken
-    )
-  }, [balanceForToken, fromValue, fromChainId, toChainId, toToken])
+  // const balances = usePortfolioBalances()
+  // const balancesForChain = balances[fromChainId]
+  // const balanceForToken = balancesForChain?.find(
+  //   (t) => t.tokenAddress === fromToken?.addresses[fromChainId]
+  // )?.balance
 
-  const fromTokenDecimals: number | undefined =
-    fromToken && fromToken?.decimals[fromChainId]
+  // const sufficientBalance = useMemo(() => {
+  //   if (!fromChainId || !fromToken || !toChainId || !toToken) return false
+  //   return (
+  //     stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
+  //     balanceForToken
+  //   )
+  // }, [balanceForToken, fromValue, fromChainId, toChainId, toToken])
 
-  const fromValueBigInt = useMemo(() => {
-    return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
-  }, [fromValue, fromTokenDecimals])
+  // const fromTokenDecimals: number | undefined =
+  //   fromToken && fromToken?.decimals[fromChainId]
 
-  const bridgeQuoteAmountGreaterThanInputForRfq = useMemo(() => {
-    return (
-      bridgeQuote.bridgeModuleName === 'SynapseRFQ' &&
-      bridgeQuote.outputAmount > fromValueBigInt
-    )
-  }, [bridgeQuote.outputAmount, fromValueBigInt])
+  // const fromValueBigInt = useMemo(() => {
+  //   return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
+  // }, [fromValue, fromTokenDecimals])
 
-  const chainSelectionsMatchBridgeQuote = useMemo(() => {
-    return (
-      fromChainId === bridgeQuote.originChainId &&
-      toChainId === bridgeQuote.destChainId
-    )
-  }, [fromChainId, toChainId, bridgeQuote])
+  // const bridgeQuoteAmountGreaterThanInputForRfq = useMemo(() => {
+  //   return (
+  //     bridgeQuote.bridgeModuleName === 'SynapseRFQ' &&
+  //     bridgeQuote.outputAmount > fromValueBigInt
+  //   )
+  // }, [bridgeQuote.outputAmount, fromValueBigInt])
+
+  // const chainSelectionsMatchBridgeQuote = useMemo(() => {
+  //   return (
+  //     fromChainId === bridgeQuote.originChainId &&
+  //     toChainId === bridgeQuote.destChainId
+  //   )
+  // }, [fromChainId, toChainId, bridgeQuote])
 
   const isButtonDisabled =
     isLoading ||
     isWalletPending ||
-    bridgeQuote === EMPTY_BRIDGE_QUOTE ||
+    !hasValidQuote ||
     (destinationAddress && !isAddress(destinationAddress)) ||
-    (isConnected && !sufficientBalance) ||
-    bridgeQuoteAmountGreaterThanInputForRfq ||
-    !chainSelectionsMatchBridgeQuote ||
+    (isConnected && !hasSufficientBalance) ||
+    isBridgeQuoteAmountGreaterThanInputForRfq ||
+    !doesChainSelectionsMatchBridgeQuote ||
     isBridgePaused
 
   let buttonProperties
@@ -126,8 +140,9 @@ export const BridgeTransactionButton = ({
     }
   } else if (
     !isLoading &&
-    bridgeQuote?.feeAmount === 0n &&
-    fromValueBigInt > 0
+    hasValidQuote &&
+    hasValidInput &&
+    bridgeQuote.feeAmount > debouncedFromValueBigInt
   ) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
@@ -135,8 +150,8 @@ export const BridgeTransactionButton = ({
     }
   } else if (
     !isLoading &&
-    !chainSelectionsMatchBridgeQuote &&
-    fromValueBigInt > 0
+    !doesChainSelectionsMatchBridgeQuote &&
+    hasValidInput
   ) {
     buttonProperties = {
       label: 'Please reset chain selection',
@@ -144,19 +159,19 @@ export const BridgeTransactionButton = ({
     }
   } else if (
     !isLoading &&
-    bridgeQuoteAmountGreaterThanInputForRfq &&
-    fromValueBigInt > 0
+    isBridgeQuoteAmountGreaterThanInputForRfq &&
+    hasValidInput
   ) {
     buttonProperties = {
       label: 'Invalid bridge quote',
       onClick: null,
     }
-  } else if (!isConnected && fromValueBigInt > 0) {
+  } else if (!isConnected && hasValidInput) {
     buttonProperties = {
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
     }
-  } else if (!isLoading && isConnected && !sufficientBalance) {
+  } else if (!isLoading && isConnected && !hasSufficientBalance) {
     buttonProperties = {
       label: 'Insufficient balance',
       onClick: null,
@@ -171,13 +186,13 @@ export const BridgeTransactionButton = ({
       onClick: () => dispatch(setIsDestinationWarningAccepted(true)),
       className: '!from-bgLight !to-bgLight',
     }
-  } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
+  } else if (!onSelectedChain && hasValidInput) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
       onClick: () => switchChain({ chainId: fromChainId }),
       pendingLabel: 'Switching chains',
     }
-  } else if (!isApproved && fromValueBigInt > 0 && bridgeQuote?.destQuery) {
+  } else if (!isApproved && hasValidInput && hasValidQuote) {
     buttonProperties = {
       onClick: approveTxn,
       label: `Approve ${fromToken?.symbol}`,
