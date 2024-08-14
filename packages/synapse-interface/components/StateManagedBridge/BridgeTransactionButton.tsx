@@ -1,17 +1,17 @@
-import { useMemo } from 'react'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
+import { useMemo, useEffect, useState } from 'react'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
-import { useEffect, useState } from 'react'
 import { isAddress } from 'viem'
 
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
-import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useAppDispatch } from '@/store/hooks'
-import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
 import { useWalletState } from '@/slices/wallet/hooks'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
+import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
+import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
+import { stringToBigInt } from '@/utils/bigint/format'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -158,6 +158,26 @@ export const BridgeTransactionButton = ({
       onClick: null,
     }
   } else if (!isLoading && !bridgeStateMatchesQuote && fromValueBigInt > 0) {
+    segmentAnalyticsEvent(`[Bridge] error: state out of sync with quote`, {
+      inputAmountForState: debouncedFromValue,
+      originChainIdForState: fromChainId,
+      originTokenForState: fromToken.symbol,
+      originTokenAddressForState: fromToken.addresses[fromChainId],
+      destinationChainIdForState: toChainId,
+      destinationTokenForState: toToken.symbol,
+      destinationTokenAddressForState: toToken.addresses[toChainId],
+
+      inputAmountForQuote: bridgeQuote.inputAmountForQuote,
+      originChainIdForQuote: bridgeQuote.originChainId,
+      originTokenForQuote: bridgeQuote.originTokenForQuote.symbol,
+      originTokenAddressForQuote:
+        bridgeQuote.originTokenForQuote.addresses[bridgeQuote.originChainId],
+      destinationChainIdForQuote: bridgeQuote.destChainId,
+      destinationTokenForQuote: bridgeQuote.destTokenForQuote.symbol,
+      destinationTokenAddressForQuote:
+        bridgeQuote.destTokenForQuote.addresses[bridgeQuote.destChainId],
+    })
+
     buttonProperties = {
       label: 'Error in bridge quote',
       onClick: null,
