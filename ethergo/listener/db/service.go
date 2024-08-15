@@ -35,7 +35,7 @@ type LastIndexed struct {
 	// BlockHeight is the highest height we've seen on the chain
 	BlockNumber int `gorm:"block_number"`
 	// ListenerName is the name of the listener that is tracking this chain
-	ListenerName string `gorm:"column:listener_name;primaryKey;autoIncrement:false"`
+	ListenerName string `gorm:"listener_name"`
 }
 
 // GetAllModels gets all models to migrate
