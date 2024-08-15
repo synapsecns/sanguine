@@ -60,6 +60,7 @@ export const BridgeTransactionButton = ({
     hasValidQuote,
     hasSufficientBalance,
     doesChainSelectionsMatchBridgeQuote,
+    isBridgeFeeGreaterThanInput,
     isBridgeQuoteAmountGreaterThanInputForRfq,
     onSelectedChain,
   } = useBridgeValidations()
@@ -136,12 +137,7 @@ export const BridgeTransactionButton = ({
       label: `Bridge ${fromToken?.symbol}`,
       onClick: null,
     }
-  } else if (
-    !isLoading &&
-    hasValidQuote &&
-    hasValidInput &&
-    bridgeQuote.feeAmount > debouncedFromValueBigInt
-  ) {
+  } else if (!isLoading && isBridgeFeeGreaterThanInput && hasValidInput) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
       onClick: null,
