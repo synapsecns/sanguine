@@ -231,15 +231,17 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			txHash, err := relClient.GetTxHashByNonce(ctx.Context(), &relapi.GetTxByNonceRequest{
 				ChainID: rawRequest.OriginChainID,
 				Nonce:   nonce,
-			},
-			)
+			})
+			if err != nil {
+				log.Printf("error fetching tx hash by nonce: %v\n", err)
+			}
+
 			_, err = ctx.Response().Reply(
 				fmt.Sprintf("refund submitted with nonce %d, transaction %s", nonce, toTXSlackLink(txHash.Hash, rawRequest.OriginChainID)),
 			)
 			if err != nil {
 				log.Println(err)
 			}
-			return
 		},
 	}
 }
@@ -272,6 +274,7 @@ func (b *Bot) makeFastBridge(ctx context.Context, originChainID uint32) (*fastbr
 	return fastBridgeHandle, nil
 }
 
+// Status is a struct that holds the relayer and the status of a quote request.
 type Status struct {
 	relayer string
 	*relapi.GetQuoteRequestStatusResponse
@@ -314,7 +317,7 @@ func (b *Bot) getStatuses(ctx *slacker.CommandContext) []Status {
 	}
 	wg.Wait()
 
-	return nil
+	return statuses
 }
 
 func (b *Bot) statusesToSlackBlocks(ctx *slacker.CommandContext, statuses []Status) []slack.Block {
