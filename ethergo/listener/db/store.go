@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"gorm.io/gorm"
@@ -20,29 +21,30 @@ func NewChainListenerStore(db *gorm.DB, metrics metrics.Handler) *Store {
 
 // Store is the sqlite store. It extends the base store for sqlite specific queries.
 type Store struct {
-	db      *gorm.DB
-	metrics metrics.Handler
+	db           *gorm.DB
+	metrics      metrics.Handler
+	listenerName string
 }
 
 // PutLatestBlock upserts the latest block into the database.
-func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error {
+func (s *Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error {
 	tx := s.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: chainIDFieldName}},
-		DoUpdates: clause.AssignmentColumns([]string{chainIDFieldName, blockNumberFieldName}),
+		Columns:   []clause.Column{{Name: chainIDFieldName}, {Name: listenerNameFieldName}},
+		DoUpdates: clause.AssignmentColumns([]string{chainIDFieldName, blockNumberFieldName, listenerNameFieldName}),
 	}).Create(&LastIndexed{
-		ChainID:     chainID,
-		BlockNumber: int(height),
+		ChainID:      chainID,
+		BlockNumber:  int(height),
+		ListenerName: s.listenerName,
 	})
-
 	if tx.Error != nil {
-		return fmt.Errorf("could not block updated: %w", tx.Error)
+		return fmt.Errorf("could not update latest block: %w", tx.Error)
 	}
 	return nil
 }
 
 // LatestBlockForChain gets the latest block for a chain.
-func (s Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error) {
-	blockWatchModel := LastIndexed{ChainID: chainID}
+func (s *Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error) {
+	blockWatchModel := LastIndexed{ChainID: chainID, ListenerName: s.listenerName}
 	err := s.db.WithContext(ctx).First(&blockWatchModel).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -54,10 +56,16 @@ func (s Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64,
 	return uint64(blockWatchModel.BlockNumber), nil
 }
 
+// SetListenerName sets the listener name.
+func (s *Store) SetListenerName(name string) {
+	s.listenerName = name
+}
+
 func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
 	chainIDFieldName = namer.GetConsistentName("ChainID")
 	blockNumberFieldName = namer.GetConsistentName("BlockNumber")
+	listenerNameFieldName = namer.GetConsistentName("ListenerName")
 }
 
 var (
@@ -65,6 +73,8 @@ var (
 	chainIDFieldName string
 	// blockNumberFieldName is the name of the block number field.
 	blockNumberFieldName string
+	// listenerNameFieldName is the name of the listener name field.
+	listenerNameFieldName string
 )
 
 // ErrNoLatestBlockForChainID is returned when no block exists for the chain.
