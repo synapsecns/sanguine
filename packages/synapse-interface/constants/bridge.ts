@@ -22,28 +22,9 @@ export const EMPTY_BRIDGE_QUOTE = {
   timestamp: null,
   originChainId: null,
   destChainId: null,
+  requestId: null,
 }
 
-export const EMPTY_BRIDGE_QUOTE_ZERO = {
-  inputAmountForQuote: '',
-  originTokenForQuote: null,
-  destTokenForQuote: null,
-  outputAmount: 0n,
-  outputAmountString: '0',
-  routerAddress: '',
-  allowance: 0n,
-  exchangeRate: 0n,
-  feeAmount: 0n,
-  delta: 0n,
-  originQuery: null,
-  destQuery: null,
-  estimatedTime: null,
-  bridgeModuleName: null,
-  gasDropAmount: 0n,
-  timestamp: null,
-  originChainId: null,
-  destChainId: null,
-}
 /**
  * ETH Only Bridge Config used to calculate swap fees
  *
