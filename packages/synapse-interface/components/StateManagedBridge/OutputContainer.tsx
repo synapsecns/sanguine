@@ -20,17 +20,17 @@ export const OutputContainer = () => {
   const { address } = useAccount()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const { showDestinationAddress } = useBridgeDisplayState()
-  const { hasValidInput } = useBridgeValidations()
+  const { hasValidInput, hasValidQuote } = useBridgeValidations()
 
   const showValue = useMemo(() => {
     if (!hasValidInput) {
       return ''
+    } else if (hasValidQuote) {
+      return bridgeQuote?.outputAmountString
     } else {
-      return bridgeQuote?.outputAmountString === '0'
-        ? ''
-        : bridgeQuote?.outputAmountString
+      return ''
     }
-  }, [bridgeQuote, hasValidInput])
+  }, [bridgeQuote, hasValidInput, hasValidQuote])
 
   return (
     <BridgeSectionContainer>

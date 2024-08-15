@@ -1,4 +1,4 @@
-import { debounce, isNull, isNumber } from 'lodash'
+import { debounce, isNull } from 'lodash'
 import toast from 'react-hot-toast'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useAccount } from 'wagmi'
@@ -12,7 +12,6 @@ import {
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { AvailableBalance } from './AvailableBalance'
@@ -23,33 +22,23 @@ import { formatAmount } from '../../utils/formatAmount'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { FromChainSelector } from '@/components/StateManagedBridge/FromChainSelector'
 import { FromTokenSelector } from '@/components/StateManagedBridge/FromTokenSelector'
+import { useBridgeSelections } from './hooks/useBridgeSelections'
+import { useBridgeValidations } from './hooks/useBridgeValidations'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
   const dispatch = useAppDispatch()
   const { chain, isConnected } = useAccount()
-  const { balances } = usePortfolioState()
-  const { fromChainId, toChainId, fromToken, toToken, debouncedFromValue } =
-    useBridgeState()
   const { isWalletPending } = useWalletState()
+  const { fromChainId, fromToken, debouncedFromValue } = useBridgeState()
   const [localInputValue, setLocalInputValue] = useState(debouncedFromValue)
 
-  const { addresses, decimals } = fromToken || {}
-  const tokenDecimals = isNumber(decimals) ? decimals : decimals?.[fromChainId]
-  const balance: bigint = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === addresses?.[fromChainId]
-  )?.balance
-  const parsedBalance = getParsedBalance(balance, tokenDecimals)
+  const { hasValidSelections } = useBridgeValidations()
+  const { fromTokenBalance, fromTokenDecimals } = useBridgeSelections()
+
+  const parsedBalance = getParsedBalance(fromTokenBalance, fromTokenDecimals)
   const formattedBalance = formatAmount(parsedBalance)
-
-  const hasValidFromSelections: boolean = useMemo(() => {
-    return Boolean(fromChainId && fromToken)
-  }, [fromChainId, fromToken])
-
-  const hasValidInputSelections: boolean = useMemo(() => {
-    return Boolean(fromChainId && fromToken && toChainId && toToken)
-  }, [fromChainId, toChainId, fromToken, toToken])
 
   const {
     isLoading,
@@ -166,13 +155,13 @@ export const InputContainer = () => {
             gasCost={parsedGasCost}
             isGasToken={isGasToken}
             isGasEstimateLoading={isLoading}
-            isDisabled={!isConnected || !hasValidFromSelections}
+            isDisabled={!isConnected || !hasValidSelections}
           />
           <MaxButton
             onClick={onMaxBalance}
             isHidden={
               !isConnected ||
-              !hasValidInputSelections ||
+              !hasValidSelections ||
               isLoading ||
               isInputMax ||
               isWalletPending

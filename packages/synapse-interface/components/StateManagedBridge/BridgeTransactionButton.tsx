@@ -1,19 +1,14 @@
-import { useMemo } from 'react'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
-import { useEffect, useState } from 'react'
 import { isAddress } from 'viem'
-
+import { useEffect, useState } from 'react'
+import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
-import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+
 import { useAppDispatch } from '@/store/hooks'
-import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
-import { useBridgeSelections } from './hooks/useBridgeSelections'
+import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
+import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 
 export const BridgeTransactionButton = ({
@@ -23,10 +18,10 @@ export const BridgeTransactionButton = ({
   isBridgePaused,
 }) => {
   const dispatch = useAppDispatch()
-  const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
+  const [isConnected, setIsConnected] = useState(false)
 
-  const { chain, isConnected: isConnectedInit } = useAccount()
+  const { isConnected: isConnectedInit } = useAccount()
   const { chains, switchChain } = useSwitchChain()
 
   useAccountEffect({
@@ -39,22 +34,14 @@ export const BridgeTransactionButton = ({
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  const {
-    destinationAddress,
-    fromToken,
-    debouncedFromValue,
-    toToken,
-    fromChainId,
-    toChainId,
-  } = useBridgeState()
-
-  const { isLoading, bridgeQuote } = useBridgeQuoteState()
+  const { destinationAddress, fromToken, fromChainId, toChainId } =
+    useBridgeState()
+  const { isLoading } = useBridgeQuoteState()
 
   const { isWalletPending } = useWalletState()
   const { showDestinationWarning, isDestinationWarningAccepted } =
     useBridgeDisplayState()
 
-  const { fromTokenBalance, debouncedFromValueBigInt } = useBridgeSelections()
   const {
     hasValidInput,
     hasValidQuote,
@@ -65,50 +52,16 @@ export const BridgeTransactionButton = ({
     onSelectedChain,
   } = useBridgeValidations()
 
-  // const balances = usePortfolioBalances()
-  // const balancesForChain = balances[fromChainId]
-  // const balanceForToken = balancesForChain?.find(
-  //   (t) => t.tokenAddress === fromToken?.addresses[fromChainId]
-  // )?.balance
-
-  // const sufficientBalance = useMemo(() => {
-  //   if (!fromChainId || !fromToken || !toChainId || !toToken) return false
-  //   return (
-  //     stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
-  //     balanceForToken
-  //   )
-  // }, [balanceForToken, fromValue, fromChainId, toChainId, toToken])
-
-  // const fromTokenDecimals: number | undefined =
-  //   fromToken && fromToken?.decimals[fromChainId]
-
-  // const fromValueBigInt = useMemo(() => {
-  //   return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
-  // }, [fromValue, fromTokenDecimals])
-
-  // const bridgeQuoteAmountGreaterThanInputForRfq = useMemo(() => {
-  //   return (
-  //     bridgeQuote.bridgeModuleName === 'SynapseRFQ' &&
-  //     bridgeQuote.outputAmount > fromValueBigInt
-  //   )
-  // }, [bridgeQuote.outputAmount, fromValueBigInt])
-
-  // const chainSelectionsMatchBridgeQuote = useMemo(() => {
-  //   return (
-  //     fromChainId === bridgeQuote.originChainId &&
-  //     toChainId === bridgeQuote.destChainId
-  //   )
-  // }, [fromChainId, toChainId, bridgeQuote])
-
   const isButtonDisabled =
+    isBridgePaused ||
     isLoading ||
     isWalletPending ||
+    !hasValidInput ||
     !hasValidQuote ||
-    (destinationAddress && !isAddress(destinationAddress)) ||
-    (isConnected && !hasSufficientBalance) ||
-    isBridgeQuoteAmountGreaterThanInputForRfq ||
     !doesChainSelectionsMatchBridgeQuote ||
-    isBridgePaused
+    isBridgeQuoteAmountGreaterThanInputForRfq ||
+    (isConnected && !hasSufficientBalance) ||
+    (destinationAddress && !isAddress(destinationAddress))
 
   let buttonProperties
 

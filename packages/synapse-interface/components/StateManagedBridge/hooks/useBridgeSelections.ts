@@ -1,7 +1,8 @@
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
-import { stringToBigInt } from '@/utils/bigint/format'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const useBridgeSelections = () => {
   const {
@@ -13,6 +14,9 @@ export const useBridgeSelections = () => {
   }: BridgeState = useBridgeState()
   const balances = usePortfolioBalances()
 
+  const fromChain = CHAINS_BY_ID[fromChainId]
+  const fromChainName = fromChain?.name
+
   const fromTokenSymbol = fromToken?.symbol
   const fromTokenDecimals = fromToken?.decimals[fromChainId]
   const fromTokenAddress = fromToken?.addresses[fromChainId]
@@ -21,6 +25,9 @@ export const useBridgeSelections = () => {
   const fromTokenBalance = fromChainBalances?.find(
     (t) => t.tokenAddress === fromTokenAddress
   )?.balance
+
+  const toChain = CHAINS_BY_ID[toChainId]
+  const toChainName = toChain?.name
 
   const toTokenSymbol = toToken?.symbol
   const toTokenDecimals = toToken?.decimals[toChainId]
@@ -33,9 +40,13 @@ export const useBridgeSelections = () => {
 
   return {
     fromTokenBalance,
+    fromChain,
+    fromChainName,
     fromTokenSymbol,
     fromTokenDecimals,
     fromTokenAddress,
+    toChain,
+    toChainName,
     toTokenSymbol,
     toTokenDecimals,
     toTokenAddress,
