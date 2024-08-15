@@ -245,11 +245,6 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				retry.WithMaxTotalTime(30*time.Second),
 			)
 
-			if err != nil {
-				log.Printf("error fetching tx hash by nonce: %v\n", err)
-				return
-			}
-
 			_, err = ctx.Response().Reply(
 				fmt.Sprintf("refund submitted with nonce %d, transaction %s", nonce, toTXSlackLink(txHash.Hash, rawRequest.OriginChainID)),
 			)
