@@ -34,7 +34,7 @@ export const InputContainer = () => {
   const { fromChainId, fromToken, debouncedFromValue } = useBridgeState()
   const [localInputValue, setLocalInputValue] = useState(debouncedFromValue)
 
-  const { hasValidSelections } = useBridgeValidations()
+  const { hasValidSelections, onSelectedChain } = useBridgeValidations()
   const { fromTokenBalance, fromTokenDecimals } = useBridgeSelections()
 
   const parsedBalance = getParsedBalance(fromTokenBalance, fromTokenDecimals)
@@ -127,9 +127,9 @@ export const InputContainer = () => {
   const connectedStatus = useMemo(() => {
     if (!isConnected) {
       return <ConnectWalletButton />
-    } else if (isConnected && fromChainId === chain?.id) {
+    } else if (isConnected && onSelectedChain) {
       return <ConnectedIndicator />
-    } else if (isConnected && fromChainId !== chain?.id) {
+    } else if (isConnected && onSelectedChain) {
       return <ConnectToNetworkButton chainId={fromChainId} />
     }
   }, [chain, fromChainId, isConnected])

@@ -24,6 +24,7 @@ import Button from '@/components/ui/tailwind/Button'
 import { SettingsToggle } from '@/components/StateManagedBridge/SettingsToggle'
 import { BridgeCard } from '@/components/ui/BridgeCard'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import {
@@ -40,8 +41,10 @@ import {
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { Token } from '@/utils/types'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { approveToken } from '@/utils/approveToken'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
@@ -58,11 +61,10 @@ import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { screenAddress } from '@/utils/screenAddress'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
-import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
+import { resetBridgeQuote, setIsLoading } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
 import { useBridgeSelections } from '@/components/StateManagedBridge/hooks/useBridgeSelections'
-import { useBridgeValidations } from '@/components/StateManagedBridge/hooks/useBridgeValidations'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -82,20 +84,6 @@ const StateManagedBridge = () => {
     debouncedFromValue,
     destinationAddress,
   }: BridgeState = useBridgeState()
-
-  const {
-    fromChain,
-    fromChainName,
-    fromTokenSymbol,
-    fromTokenAddress,
-    toChain,
-    toChainName,
-    toTokenSymbol,
-    debouncedFromValueBigInt,
-  } = useBridgeSelections()
-
-  const { hasValidSelections, hasValidInput, hasValidQuote } =
-    useBridgeValidations()
 
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
 
@@ -125,27 +113,18 @@ const StateManagedBridge = () => {
   }, [query])
 
   useEffect(() => {
-    if (hasValidInput && hasValidSelections) {
+    if (
+      fromToken &&
+      toToken &&
+      fromToken?.decimals[fromChainId] &&
+      stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]) > 0n
+    ) {
       console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
       dispatch(resetBridgeQuote())
     }
-  }, [
-    fromChainId,
-    toChainId,
-    fromToken,
-    toToken,
-    debouncedFromValue,
-    hasValidInput,
-    hasValidSelections,
-  ])
-
-  useEffect(() => {
-    if (!hasValidInput && hasValidQuote) {
-      dispatch(resetBridgeQuote())
-    }
-  }, [hasValidInput, bridgeQuote])
+  }, [fromChainId, toChainId, fromToken, toToken, debouncedFromValue])
 
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
@@ -176,7 +155,7 @@ const StateManagedBridge = () => {
         toast.dismiss(quoteToastRef.current.id)
 
         if (fetchBridgeQuote.fulfilled.match(result)) {
-          const message = `Route found for bridging ${debouncedFromValue} ${fromTokenSymbol} on ${fromChainName} to ${toTokenSymbol} on ${toChainName}`
+          const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
 
           quoteToastRef.current.id = toast(message, { duration: 3000 })
         }
@@ -202,7 +181,7 @@ const StateManagedBridge = () => {
         } else if (!toToken) {
           message = 'Please select a destination token'
         } else {
-          message = `No route found for bridging ${debouncedFromValue} ${fromTokenSymbol} on ${fromChainName} to ${toTokenSymbol} on ${toChainName}`
+          message = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         }
         console.log(message)
 
@@ -227,8 +206,8 @@ const StateManagedBridge = () => {
       const tx = approveToken(
         bridgeQuote?.routerAddress,
         fromChainId,
-        fromTokenAddress,
-        debouncedFromValueBigInt
+        fromToken?.addresses[fromChainId],
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
       await tx
       /** Re-fetch bridge quote to re-check approval state */
@@ -270,10 +249,10 @@ const StateManagedBridge = () => {
     dispatch(
       addPendingBridgeTransaction({
         id: currentTimestamp,
-        originChain: fromChain,
+        originChain: CHAINS_BY_ID[fromChainId],
         originToken: fromToken,
         originValue: debouncedFromValue,
-        destinationChain: toChain,
+        destinationChain: CHAINS_BY_ID[toChainId],
         destinationToken: toToken,
         transactionHash: undefined,
         timestamp: undefined,
@@ -298,10 +277,8 @@ const StateManagedBridge = () => {
         bridgeQuote.routerAddress,
         fromChainId,
         toChainId,
-        // fromToken?.addresses[fromChainId as keyof Token['addresses']],
-        fromTokenAddress,
-        // stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
-        debouncedFromValueBigInt,
+        fromToken?.addresses[fromChainId as keyof Token['addresses']],
+        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
         bridgeQuote.originQuery,
         bridgeQuote.destQuery
       )
@@ -327,8 +304,10 @@ const StateManagedBridge = () => {
         gas: gasEstimate,
       })
 
+      const originChainName = CHAINS_BY_ID[fromChainId]?.name
+      const destinationChainName = CHAINS_BY_ID[toChainId]?.name
       pendingPopup = toast(
-        `Bridging from ${fromTokenSymbol} on ${fromChainName} to ${toTokenSymbol} on ${toChainName}`,
+        `Bridging from ${fromToken?.symbol} on ${originChainName} to ${toToken.symbol} on ${destinationChainName}`,
         { id: 'bridge-in-progress-popup', duration: Infinity }
       )
       segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
@@ -358,8 +337,8 @@ const StateManagedBridge = () => {
       const successToastContent = (
         <div>
           <div>
-            Successfully initiated bridge from {fromTokenSymbol} on{' '}
-            {fromChainName} to {toTokenSymbol} on {toChainName}
+            Successfully initiated bridge from {fromToken?.symbol} on{' '}
+            {originChainName} to {toToken.symbol} on {destinationChainName}
           </div>
           <ExplorerToastLink
             transactionHash={tx ?? zeroAddress}
