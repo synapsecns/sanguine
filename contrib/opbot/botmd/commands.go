@@ -150,14 +150,6 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 			"rfq 0x30f96b45ba689c809f7e936c140609eb31c99b182bef54fccf49778716a7e1ca",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
-			type Status struct {
-				relayer string
-				*relapi.GetQuoteRequestStatusResponse
-			}
-
-			var statuses []Status
-			var sliceMux sync.Mutex
-
 			if len(b.cfg.RelayerURLS) == 0 {
 				_, err := ctx.Response().Reply("no relayer urls configured")
 				if err != nil {
@@ -166,39 +158,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				return
 			}
 
-			tx := stripLinks(ctx.Request().Param("tx"))
-
-			var wg sync.WaitGroup
-			// 2 routines per relayer, one for tx hashh one for tx id
-			wg.Add(len(b.cfg.RelayerURLS) * 2)
-			for _, relayer := range b.cfg.RelayerURLS {
-				client := relapi.NewRelayerClient(b.handler, relayer)
-				go func() {
-					defer wg.Done()
-					res, err := client.GetQuoteRequestStatusByTxHash(ctx.Context(), tx)
-					if err != nil {
-						log.Printf("error fetching quote request status by tx hash: %v\n", err)
-						return
-					}
-					sliceMux.Lock()
-					defer sliceMux.Unlock()
-					statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestStatusResponse: res})
-				}()
-
-				go func() {
-					defer wg.Done()
-					res, err := client.GetQuoteRequestStatusByTxID(ctx.Context(), tx)
-					if err != nil {
-						log.Printf("error fetching quote request status by tx id: %v\n", err)
-						return
-					}
-					sliceMux.Lock()
-					defer sliceMux.Unlock()
-					statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestStatusResponse: res})
-				}()
-			}
-			wg.Wait()
-
+			statuses := b.getStatuses(ctx)
 			if len(statuses) == 0 {
 				_, err := ctx.Response().Reply("no quote request found")
 				if err != nil {
@@ -207,57 +167,13 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				return
 			}
 
-			var slackBlocks []slack.Block
-
-			for _, status := range statuses {
-				client, err := b.rpcClient.GetChainClient(ctx.Context(), int(status.OriginChainID))
-				if err != nil {
-					log.Printf("error getting chain client: %v\n", err)
-				}
-
-				objects := []*slack.TextBlockObject{
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Relayer*: %s", status.relayer),
-					},
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Status*: %s", status.Status),
-					},
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*TxID*: %s", toExplorerSlackLink(status.TxID)),
-					},
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*OriginTxHash*: %s", toTXSlackLink(status.OriginTxHash, status.OriginChainID)),
-					},
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Estimated Tx Age*: %s", getTxAge(ctx.Context(), client, status.GetQuoteRequestStatusResponse)),
-					},
-				}
-
-				if status.DestTxHash == (common.Hash{}).String() {
-					objects = append(objects, &slack.TextBlockObject{
-						Type: slack.MarkdownType,
-						Text: "*DestTxHash*: not available",
-					})
-				} else {
-					objects = append(objects, &slack.TextBlockObject{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*DestTxHash*: %s", toTXSlackLink(status.DestTxHash, status.DestChainID)),
-					})
-				}
-
-				slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, objects, nil))
-			}
-
+			slackBlocks := b.statusesToSlackBlocks(ctx, statuses)
 			_, err := ctx.Response().ReplyBlocks(slackBlocks, slacker.WithUnfurlLinks(false))
 			if err != nil {
 				log.Println(err)
 			}
-		}}
+		},
+	}
 }
 
 // nolint: gocognit, cyclop.
@@ -268,7 +184,6 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 		Examples:    []string{"refund 0x1234"},
 		Handler: func(ctx *slacker.CommandContext) {
 			tx := stripLinks(ctx.Request().Param("tx"))
-
 			if len(tx) == 0 {
 				_, err := ctx.Response().Reply("please provide a tx hash")
 				if err != nil {
@@ -277,50 +192,59 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
+			var rawRequest *relapi.GetQuoteRequestResponse
+			var err error
+			var relClient relapi.RelayerClient
 			for _, relayer := range b.cfg.RelayerURLS {
-				relClient := relapi.NewRelayerClient(b.handler, relayer)
-
-				rawRequest, err := getQuoteRequest(ctx.Context(), relClient, tx)
+				relClient = relapi.NewRelayerClient(b.handler, relayer)
+				rawRequest, err = getQuoteRequest(ctx.Context(), relClient, tx)
 				if err != nil {
 					_, err := ctx.Response().Reply("error fetching quote request")
 					if err != nil {
 						log.Println(err)
 					}
-					return
-				}
-
-				fastBridgeContract, err := b.makeFastBridge(ctx.Context(), rawRequest)
-				if err != nil {
-					_, err := ctx.Response().Reply(err.Error())
-					if err != nil {
-						log.Println(err)
-					}
-					return
-				}
-				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
-					if err != nil {
-						return nil, fmt.Errorf("error submitting refund: %w", err)
-					}
-					return tx, nil
-				})
-				if err != nil {
-					log.Printf("error submitting refund: %v\n", err)
+					// continue through the rest of the relayers
 					continue
 				}
+			}
 
-				// TODO: follow the lead of https://github.com/synapsecns/sanguine/pull/2845
-				_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
+			fastBridgeContract, err := b.makeFastBridge(ctx.Context(), rawRequest.OriginChainID)
+			if err != nil {
+				_, err := ctx.Response().Reply(err.Error())
 				if err != nil {
 					log.Println(err)
 				}
 				return
 			}
+			nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
+				if err != nil {
+					return nil, fmt.Errorf("error submitting refund: %w", err)
+				}
+				return tx, nil
+			})
+			if err != nil {
+				log.Printf("error submitting refund: %v\n", err)
+			}
+
+			// TODO: follow the lead of https://github.com/synapsecns/sanguine/pull/2845
+			txHash, err := relClient.GetTxHashByNonce(ctx.Context(), &relapi.GetTxByNonceRequest{
+				ChainID: rawRequest.OriginChainID,
+				Nonce:   nonce,
+			},
+			)
+			_, err = ctx.Response().Reply(
+				fmt.Sprintf("refund submitted with nonce %d, transaction %s", nonce, toTXSlackLink(txHash.Hash, rawRequest.OriginChainID)),
+			)
+			if err != nil {
+				log.Println(err)
+			}
+			return
 		},
 	}
 }
 
-func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestResponse) (*fastbridge.FastBridge, error) {
+func (b *Bot) makeFastBridge(ctx context.Context, originChainID uint32) (*fastbridge.FastBridge, error) {
 	client, err := rfqClient.NewUnauthenticatedClient(b.handler, b.cfg.RFQApiURL)
 	if err != nil {
 		return nil, fmt.Errorf("error creating rfq client: %w", err)
@@ -331,12 +255,12 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 		return nil, fmt.Errorf("error fetching rfq contracts: %w", err)
 	}
 
-	chainClient, err := b.rpcClient.GetChainClient(ctx, int(req.OriginChainID))
+	chainClient, err := b.rpcClient.GetChainClient(ctx, int(originChainID))
 	if err != nil {
 		return nil, fmt.Errorf("error getting chain client: %w", err)
 	}
 
-	contractAddress, ok := contracts.Contracts[req.OriginChainID]
+	contractAddress, ok := contracts.Contracts[originChainID]
 	if !ok {
 		return nil, errors.New("contract address not found")
 	}
@@ -346,6 +270,99 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 		return nil, fmt.Errorf("error creating fast bridge: %w", err)
 	}
 	return fastBridgeHandle, nil
+}
+
+type Status struct {
+	relayer string
+	*relapi.GetQuoteRequestStatusResponse
+}
+
+func (b *Bot) getStatuses(ctx *slacker.CommandContext) []Status {
+	var statuses []Status
+	var sliceMux sync.Mutex
+
+	tx := stripLinks(ctx.Request().Param("tx"))
+
+	var wg sync.WaitGroup
+	// 2 routines per relayer, one for tx hashh one for tx id
+	wg.Add(len(b.cfg.RelayerURLS) * 2)
+	for _, relayer := range b.cfg.RelayerURLS {
+		client := relapi.NewRelayerClient(b.handler, relayer)
+		go func() {
+			defer wg.Done()
+			res, err := client.GetQuoteRequestStatusByTxHash(ctx.Context(), tx)
+			if err != nil {
+				log.Printf("error fetching quote request status by tx hash: %v\n", err)
+				return
+			}
+			sliceMux.Lock()
+			defer sliceMux.Unlock()
+			statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestStatusResponse: res})
+		}()
+
+		go func() {
+			defer wg.Done()
+			res, err := client.GetQuoteRequestStatusByTxID(ctx.Context(), tx)
+			if err != nil {
+				log.Printf("error fetching quote request status by tx id: %v\n", err)
+				return
+			}
+			sliceMux.Lock()
+			defer sliceMux.Unlock()
+			statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestStatusResponse: res})
+		}()
+	}
+	wg.Wait()
+
+	return nil
+}
+
+func (b *Bot) statusesToSlackBlocks(ctx *slacker.CommandContext, statuses []Status) []slack.Block {
+	var slackBlocks []slack.Block
+	for _, status := range statuses {
+		client, err := b.rpcClient.GetChainClient(ctx.Context(), int(status.OriginChainID))
+		if err != nil {
+			log.Printf("error getting chain client: %v\n", err)
+		}
+
+		objects := []*slack.TextBlockObject{
+			{
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf("*Relayer*: %s", status.relayer),
+			},
+			{
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf("*Status*: %s", status.Status),
+			},
+			{
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf("*TxID*: %s", toExplorerSlackLink(status.TxID)),
+			},
+			{
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf("*OriginTxHash*: %s", toTXSlackLink(status.OriginTxHash, status.OriginChainID)),
+			},
+			{
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf("*Estimated Tx Age*: %s", getTxAge(ctx.Context(), client, status.GetQuoteRequestStatusResponse)),
+			},
+		}
+
+		if status.DestTxHash == (common.Hash{}).String() {
+			objects = append(objects, &slack.TextBlockObject{
+				Type: slack.MarkdownType,
+				Text: "*DestTxHash*: not available",
+			})
+		} else {
+			objects = append(objects, &slack.TextBlockObject{
+				Type: slack.MarkdownType,
+				Text: fmt.Sprintf("*DestTxHash*: %s", toTXSlackLink(status.DestTxHash, status.DestChainID)),
+			})
+		}
+
+		slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, objects, nil))
+	}
+	return slackBlocks
 }
 
 func getTxAge(ctx context.Context, client client.EVM, res *relapi.GetQuoteRequestStatusResponse) string {
@@ -389,7 +406,7 @@ func stripLinks(input string) string {
 }
 
 func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (*relapi.GetQuoteRequestResponse, error) {
-	// at this point tx can be a txid or a has, we try both
+	// at this point tx can be a txid or a hash, we try both
 	txRequest, err := client.GetQuoteRequestStatusByTxHash(ctx, tx)
 	if err == nil {
 		// override tx with txid
