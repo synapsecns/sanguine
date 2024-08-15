@@ -18,6 +18,7 @@ export function TokenSelector({
   setFunction,
   isOrigin,
   action,
+  disabled,
 }: TokenSelectorTypes) {
   const [searchStr, setSearchStr] = useState('')
   const [open, setOpen] = useState(false)
@@ -110,6 +111,7 @@ export function TokenSelector({
       onClose={onClose}
       open={open}
       setOpen={setOpen}
+      disabled={disabled}
     >
       {Object.entries(itemList).map(([key, value]: [string, Token[]]) => {
         return value.length ? (

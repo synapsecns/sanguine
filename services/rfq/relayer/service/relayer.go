@@ -143,7 +143,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get api server: %w", err)
 	}
 
-	otelRecorder, err := newOtelRecorder(metricHandler, sg)
+	otelRecorder, err := newOtelRecorder(metricHandler, store, sg)
 	if err != nil {
 		return nil, fmt.Errorf("could not get otel recorder: %w", err)
 	}
@@ -431,7 +431,7 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 				defer wg.Done()
 				err = r.processRequest(ctx, request)
 				if err != nil {
-					logger.Errorf("could not process request: %w", err)
+					logger.Errorf("could not process request: %v", err)
 				}
 			}()
 		}

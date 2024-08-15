@@ -3,6 +3,55 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.34.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.3...@synapsecns/synapse-interface@0.34.4) (2024-08-14)
+
+
+### Bug Fixes
+
+* **synapse-interface:** don't adjust `payload.value` that SDK already handles ([#3015](https://github.com/synapsecns/sanguine/issues/3015)) ([77f5863](https://github.com/synapsecns/sanguine/commit/77f58637d948c981b9e26f51b2137fd2f1e0578f))
+
+
+
+
+
+## [0.34.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.2...@synapsecns/synapse-interface@0.34.3) (2024-08-13)
+
+
+### Bug Fixes
+
+* **synapse-interface:** disable bridge ui pending wallet ([#3014](https://github.com/synapsecns/sanguine/issues/3014)) ([fbe4b60](https://github.com/synapsecns/sanguine/commit/fbe4b60b952b52b8f5cbec01eae8a35f100caf81))
+
+
+
+
+
+## [0.34.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.1...@synapsecns/synapse-interface@0.34.2) (2024-08-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.34.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.0...@synapsecns/synapse-interface@0.34.1) (2024-08-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.34.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.33.0...@synapsecns/synapse-interface@0.34.0) (2024-08-09)
+
+
+### Features
+
+* **synapse-interface:** canto upgrade maintenance ([#2998](https://github.com/synapsecns/sanguine/issues/2998)) ([50fdd61](https://github.com/synapsecns/sanguine/commit/50fdd6140af7517b0e486cbe84e65d63e71fbea3))
+
+
+
+
+
 # [0.33.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.32.2...@synapsecns/synapse-interface@0.33.0) (2024-08-08)
 
 

@@ -2368,6 +2368,7 @@ type Pet struct {
 	CreatedAt             int64       `json:"createdAt"`
 	FoodType              *int64      `json:"foodType,omitempty"`
 	FedBy                 *Profile    `json:"fedBy,omitempty"`
+	Pool                  *int64      `json:"pool,omitempty"`
 }
 
 type PetAuction struct {
@@ -2697,6 +2698,14 @@ type PetFilter struct {
 	FoodTypeLte                        *int64    `json:"foodType_lte,omitempty"`
 	FoodTypeIn                         []*int64  `json:"foodType_in,omitempty"`
 	FoodTypeNotIn                      []*int64  `json:"foodType_not_in,omitempty"`
+	Pool                               *int64    `json:"pool,omitempty"`
+	PoolNot                            *int64    `json:"pool_not,omitempty"`
+	PoolGt                             *int64    `json:"pool_gt,omitempty"`
+	PoolLt                             *int64    `json:"pool_lt,omitempty"`
+	PoolGte                            *int64    `json:"pool_gte,omitempty"`
+	PoolLte                            *int64    `json:"pool_lte,omitempty"`
+	PoolIn                             []*int64  `json:"pool_in,omitempty"`
+	PoolNotIn                          []*int64  `json:"pool_not_in,omitempty"`
 }
 
 type Profile struct {
@@ -4095,6 +4104,7 @@ const (
 	PetOrderByCreatedAt         PetOrderBy = "createdAt"
 	PetOrderByFoodType          PetOrderBy = "foodType"
 	PetOrderByFedBy             PetOrderBy = "fedBy"
+	PetOrderByPool              PetOrderBy = "pool"
 )
 
 var AllPetOrderBy = []PetOrderBy{
@@ -4125,11 +4135,12 @@ var AllPetOrderBy = []PetOrderBy{
 	PetOrderByCreatedAt,
 	PetOrderByFoodType,
 	PetOrderByFedBy,
+	PetOrderByPool,
 }
 
 func (e PetOrderBy) IsValid() bool {
 	switch e {
-	case PetOrderByID, PetOrderByOwner, PetOrderByPreviousOwner, PetOrderByOriginID, PetOrderByName, PetOrderBySeason, PetOrderByEggType, PetOrderByRarity, PetOrderByElement, PetOrderByBonusCount, PetOrderByProfBonus, PetOrderByProfBonusScalar, PetOrderByCraftBonus, PetOrderByCraftBonusScalar, PetOrderByCombatBonus, PetOrderByCombatBonusScalar, PetOrderByAppearance, PetOrderByBackground, PetOrderByShiny, PetOrderByHungryAt, PetOrderByEquippableAt, PetOrderByEquippedTo, PetOrderBySaleAuction, PetOrderBySalePrice, PetOrderByCreatedAt, PetOrderByFoodType, PetOrderByFedBy:
+	case PetOrderByID, PetOrderByOwner, PetOrderByPreviousOwner, PetOrderByOriginID, PetOrderByName, PetOrderBySeason, PetOrderByEggType, PetOrderByRarity, PetOrderByElement, PetOrderByBonusCount, PetOrderByProfBonus, PetOrderByProfBonusScalar, PetOrderByCraftBonus, PetOrderByCraftBonusScalar, PetOrderByCombatBonus, PetOrderByCombatBonusScalar, PetOrderByAppearance, PetOrderByBackground, PetOrderByShiny, PetOrderByHungryAt, PetOrderByEquippableAt, PetOrderByEquippedTo, PetOrderBySaleAuction, PetOrderBySalePrice, PetOrderByCreatedAt, PetOrderByFoodType, PetOrderByFedBy, PetOrderByPool:
 		return true
 	}
 	return false

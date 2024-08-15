@@ -33,6 +33,7 @@ interface _TransactionProps {
   currentTime: number
   kappa?: string
   status: 'pending' | 'completed' | 'reverted'
+  disabled: boolean
 }
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
@@ -51,6 +52,7 @@ export const _Transaction = ({
   currentTime,
   kappa,
   status,
+  disabled,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
 
@@ -126,6 +128,7 @@ export const _Transaction = ({
           tokenAmount={originValue}
           isOrigin={true}
           showChain={false}
+          disabled={disabled}
         />
         <RightArrow className="stroke-secondaryTextColor mt-0.5 mx-1" />
         <TransactionPayloadDetail
@@ -133,6 +136,7 @@ export const _Transaction = ({
           token={destinationToken}
           tokenAmount={null}
           isOrigin={false}
+          disabled={disabled}
         />
         <div className="flex items-center justify-end gap-2 grow">
           <DropdownMenu

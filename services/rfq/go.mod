@@ -6,6 +6,7 @@ toolchain go1.22.4
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
+	github.com/alecthomas/assert v1.0.0
 	github.com/brianvoe/gofakeit/v6 v6.27.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20240618200428-90406d79077d
 	github.com/cornelk/hashmap v1.0.8
@@ -62,8 +63,11 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
+	github.com/Rookout/GoSDK v0.1.49 // indirect
 	github.com/Soft/iter v0.1.0 // indirect
 	github.com/VictoriaMetrics/fastcache v1.12.1 // indirect
+	github.com/alecthomas/colour v0.1.0 // indirect
+	github.com/alecthomas/repr v0.0.0-20210801044451-80ca428c5142 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.21.2 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.18.45 // indirect
@@ -131,6 +135,7 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/ethereum/c-kzg-4844 v0.4.0 // indirect
+	github.com/fallais/logrus-lumberjack-hook v0.0.0-20210917073259-3227e1ab93b0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fjl/memsize v0.0.2 // indirect
@@ -144,6 +149,7 @@ require (
 	github.com/gin-contrib/requestid v0.0.6 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-contrib/zap v0.2.0 // indirect
+	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
 	github.com/go-git/go-git/v5 v5.12.0 // indirect
@@ -284,6 +290,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
+	github.com/yhirose/go-peg v0.0.0-20210804202551-de25d6753cf1 // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.52.0 // indirect

@@ -1,14 +1,23 @@
 import { useState } from 'react'
 import { joinClassNames } from '@/utils/joinClassNames'
 
-export function SwitchButton({ onClick }: { onClick: () => void }) {
+const ms = 300
+
+export function SwitchButton({
+  onClick,
+  disabled,
+}: {
+  onClick: () => void
+  disabled: boolean
+}) {
   const [isActive, setIsActive] = useState(false)
-  const ms = 300
+
   const handleClick = () => {
-    onClick()
-    setIsActive(true)
-    setTimeout(() => setIsActive(false), ms)
-    console.log('click')
+    if (!disabled) {
+      onClick()
+      setIsActive(true)
+      setTimeout(() => setIsActive(false), ms)
+    }
   }
 
   const className = joinClassNames({

@@ -12,4 +12,6 @@ USER nonroot:nonroot
 WORKDIR /app
 COPY --chown=nonroot:nonroot omnirpc /app/omnirpc
 
+
+
 ENTRYPOINT ["/app/omnirpc"]
