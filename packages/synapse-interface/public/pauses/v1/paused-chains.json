@@ -26,9 +26,9 @@
     "endTimePauseChain": "2024-08-16T17:35:00Z",
     "startTimeBanner": "2024-08-15T17:35:00Z",
     "endTimeBanner": "2024-08-16T17:35:00Z",
-    "inputWarningMessage": "Canto chain paused.",
-    "bannerMessage": "Canto chain currently paused.",
-    "progressBarMessage": "Canto chain paused.",
+    "inputWarningMessage": "Canto chain paused due to chain instability.",
+    "bannerMessage": "Canto chain currently paused due to chain instability.",
+    "progressBarMessage": "Canto chain paused due to chain instability.",
     "disableBanner": false,
     "disableWarning": true,
     "disableCountdown": false
