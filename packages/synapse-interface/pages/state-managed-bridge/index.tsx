@@ -200,8 +200,6 @@ const StateManagedBridge = () => {
 
         return
       }
-    } finally {
-      dispatch(setIsLoading(false))
     }
   }
 
