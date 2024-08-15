@@ -64,9 +64,9 @@ export const BridgeTransactionButton = ({
     isLoading ||
     isWalletPending ||
     !hasValidInput ||
-    !hasValidQuote ||
     !doesBridgeStateMatchQuote ||
     isBridgeQuoteAmountGreaterThanInputForRfq ||
+    (isConnected && !hasValidQuote) ||
     (isConnected && !hasSufficientBalance) ||
     (destinationAddress && !isAddress(destinationAddress))
 
@@ -97,6 +97,11 @@ export const BridgeTransactionButton = ({
       label: `Bridge ${fromToken?.symbol}`,
       onClick: null,
     }
+  } else if (!isConnected && hasValidInput) {
+    buttonProperties = {
+      label: `Connect Wallet to Bridge`,
+      onClick: openConnectModal,
+    }
   } else if (!isLoading && isBridgeFeeGreaterThanInput && hasValidInput) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
@@ -126,11 +131,6 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: 'Invalid bridge quote',
       onClick: null,
-    }
-  } else if (!isConnected && hasValidInput) {
-    buttonProperties = {
-      label: `Connect Wallet to Bridge`,
-      onClick: openConnectModal,
     }
   } else if (!isLoading && isConnected && !hasSufficientBalance) {
     buttonProperties = {
