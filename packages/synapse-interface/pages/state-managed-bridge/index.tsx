@@ -61,10 +61,11 @@ import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { screenAddress } from '@/utils/screenAddress'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
-import { resetBridgeQuote, setIsLoading } from '@/slices/bridgeQuote/reducer'
+import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
 import { useBridgeSelections } from '@/components/StateManagedBridge/hooks/useBridgeSelections'
+import { useBridgeValidations } from '@/components/StateManagedBridge/hooks/useBridgeValidations'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -94,6 +95,8 @@ const StateManagedBridge = () => {
     toTokenAddress,
     debouncedFromValueBigInt,
   } = useBridgeSelections()
+
+  const {} = useBridgeValidations()
 
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
 

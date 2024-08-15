@@ -180,25 +180,13 @@ export const BridgeTransactionButton = ({
       onClick: () => dispatch(setIsDestinationWarningAccepted(true)),
       className: '!from-bgLight !to-bgLight',
     }
-<<<<<<< HEAD
   } else if (!onSelectedChain && hasValidInput) {
-=======
-  } else if (chain?.id != fromChainId && debouncedFromValueBigInt > 0) {
->>>>>>> fe/bridgeQuote-state
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
       onClick: () => switchChain({ chainId: fromChainId }),
       pendingLabel: 'Switching chains',
     }
-<<<<<<< HEAD
   } else if (!isApproved && hasValidInput && hasValidQuote) {
-=======
-  } else if (
-    !isApproved &&
-    debouncedFromValueBigInt > 0 &&
-    bridgeQuote?.destQuery
-  ) {
->>>>>>> fe/bridgeQuote-state
     buttonProperties = {
       onClick: approveTxn,
       label: `Approve ${fromToken?.symbol}`,
