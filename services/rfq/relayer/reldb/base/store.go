@@ -20,7 +20,7 @@ type Store struct {
 func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
 	txDB := txdb.NewTXStore(db, metrics)
 
-	return &Store{ChainListenerDB: listenerDB.NewChainListenerStore(db, metrics, "relayer"), db: db, submitterStore: txDB}
+	return &Store{ChainListenerDB: listenerDB.NewChainListenerStore(db, metrics), db: db, submitterStore: txDB}
 }
 
 // DB gets the database object for mutation outside of the lib.

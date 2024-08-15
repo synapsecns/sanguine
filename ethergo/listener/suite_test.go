@@ -154,5 +154,5 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate models: %w", err)
 	}
-	return db2.NewChainListenerStore(gdb, handler, "test"), nil
+	return db2.NewChainListenerStore(gdb, handler), nil
 }

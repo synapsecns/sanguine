@@ -12,11 +12,10 @@ import (
 )
 
 // NewChainListenerStore creates a new transaction store.
-func NewChainListenerStore(db *gorm.DB, metrics metrics.Handler, listenerName string) *Store {
+func NewChainListenerStore(db *gorm.DB, metrics metrics.Handler) *Store {
 	return &Store{
-		db:           db,
-		metrics:      metrics,
-		listenerName: listenerName,
+		db:      db,
+		metrics: metrics,
 	}
 }
 
