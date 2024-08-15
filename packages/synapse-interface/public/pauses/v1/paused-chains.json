@@ -22,15 +22,15 @@
     "pausedToChains": [7700],
     "pauseBridge": true,
     "pauseSwap": true,
-    "startTimePauseChain": "2024-08-09T14:15:00Z",
-    "endTimePauseChain": "2024-08-09T14:45:00Z",
-    "startTimeBanner": "2024-08-09T13:00:00Z",
-    "endTimeBanner": "2024-08-09T14:45:00Z",
-    "inputWarningMessage": "Canto chain paused until network upgrade completes.",
-    "bannerMessage": "Canto will be paused 15 minutes ahead of the upgrade (August 9th, 14:30 UTC). Will be back online shortly following the network upgrade.",
-    "progressBarMessage": "Canto upgrade in progress",
+    "startTimePauseChain": "2024-08-15T17:35:00Z",
+    "endTimePauseChain": "2024-08-16T17:35:00Z",
+    "startTimeBanner": "2024-08-15T17:35:00Z",
+    "endTimeBanner": "2024-08-16T17:35:00Z",
+    "inputWarningMessage": "Canto chain paused.",
+    "bannerMessage": "Canto chain currently paused.",
+    "progressBarMessage": "Canto chain paused.",
     "disableBanner": false,
-    "disableWarning": false,
+    "disableWarning": true,
     "disableCountdown": false
   }
 ]
