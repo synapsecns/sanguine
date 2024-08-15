@@ -14,6 +14,8 @@ type ChainListenerDB interface {
 	// LatestBlockForChain gets the latest block for a given chain id.
 	// will return ErrNoLatestBlockForChainID if no block exists for the chain.
 	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
+	// SetListenerName sets the listener name.
+	SetListenerName(name string)
 }
 
 // LastIndexed is used to make sure we haven't missed any events while offline.

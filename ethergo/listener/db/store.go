@@ -28,7 +28,7 @@ type Store struct {
 }
 
 // PutLatestBlock upserts the latest block into the database.
-func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error {
+func (s *Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error {
 	tx := s.db.WithContext(ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: chainIDFieldName}, {Name: s.listenerName}},
 		DoUpdates: clause.AssignmentColumns([]string{chainIDFieldName, blockNumberFieldName}),
@@ -44,7 +44,7 @@ func (s Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error
 }
 
 // LatestBlockForChain gets the latest block for a chain.
-func (s Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error) {
+func (s *Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error) {
 	blockWatchModel := LastIndexed{ChainID: chainID, ListenerName: s.listenerName}
 	err := s.db.WithContext(ctx).First(&blockWatchModel).Error
 	if err != nil {
@@ -55,6 +55,11 @@ func (s Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64,
 	}
 
 	return uint64(blockWatchModel.BlockNumber), nil
+}
+
+// SetListenerName sets the listener name.
+func (s *Store) SetListenerName(name string) {
+	s.listenerName = name
 }
 
 func init() {
