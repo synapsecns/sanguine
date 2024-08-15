@@ -40,7 +40,7 @@ export const BridgeTransactionButton = ({
   const {
     destinationAddress,
     fromToken,
-    fromValue,
+    debouncedFromValue,
     toToken,
     fromChainId,
     toChainId,
@@ -61,24 +61,26 @@ export const BridgeTransactionButton = ({
   const sufficientBalance = useMemo(() => {
     if (!fromChainId || !fromToken || !toChainId || !toToken) return false
     return (
-      stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
+      stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]) <=
       balanceForToken
     )
-  }, [balanceForToken, fromValue, fromChainId, toChainId, toToken])
+  }, [balanceForToken, debouncedFromValue, fromChainId, toChainId, toToken])
 
   const fromTokenDecimals: number | undefined =
     fromToken && fromToken?.decimals[fromChainId]
 
-  const fromValueBigInt = useMemo(() => {
-    return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
-  }, [fromValue, fromTokenDecimals])
+  const debouncedFromValueBigInt = useMemo(() => {
+    return fromTokenDecimals
+      ? stringToBigInt(debouncedFromValue, fromTokenDecimals)
+      : 0
+  }, [debouncedFromValue, fromTokenDecimals])
 
   const bridgeQuoteAmountGreaterThanInputForRfq = useMemo(() => {
     return (
       bridgeQuote.bridgeModuleName === 'SynapseRFQ' &&
-      bridgeQuote.outputAmount > fromValueBigInt
+      bridgeQuote.outputAmount > debouncedFromValueBigInt
     )
-  }, [bridgeQuote.outputAmount, fromValueBigInt])
+  }, [bridgeQuote.outputAmount, debouncedFromValueBigInt])
 
   const chainSelectionsMatchBridgeQuote = useMemo(() => {
     return (
@@ -127,7 +129,7 @@ export const BridgeTransactionButton = ({
   } else if (
     !isLoading &&
     bridgeQuote?.feeAmount === 0n &&
-    fromValueBigInt > 0
+    debouncedFromValueBigInt > 0
   ) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
@@ -136,7 +138,7 @@ export const BridgeTransactionButton = ({
   } else if (
     !isLoading &&
     !chainSelectionsMatchBridgeQuote &&
-    fromValueBigInt > 0
+    debouncedFromValueBigInt > 0
   ) {
     buttonProperties = {
       label: 'Please reset chain selection',
@@ -145,13 +147,13 @@ export const BridgeTransactionButton = ({
   } else if (
     !isLoading &&
     bridgeQuoteAmountGreaterThanInputForRfq &&
-    fromValueBigInt > 0
+    debouncedFromValueBigInt > 0
   ) {
     buttonProperties = {
       label: 'Invalid bridge quote',
       onClick: null,
     }
-  } else if (!isConnected && fromValueBigInt > 0) {
+  } else if (!isConnected && debouncedFromValueBigInt > 0) {
     buttonProperties = {
       label: `Connect Wallet to Bridge`,
       onClick: openConnectModal,
@@ -171,13 +173,17 @@ export const BridgeTransactionButton = ({
       onClick: () => dispatch(setIsDestinationWarningAccepted(true)),
       className: '!from-bgLight !to-bgLight',
     }
-  } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
+  } else if (chain?.id != fromChainId && debouncedFromValueBigInt > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
       onClick: () => switchChain({ chainId: fromChainId }),
       pendingLabel: 'Switching chains',
     }
-  } else if (!isApproved && fromValueBigInt > 0 && bridgeQuote?.destQuery) {
+  } else if (
+    !isApproved &&
+    debouncedFromValueBigInt > 0 &&
+    bridgeQuote?.destQuery
+  ) {
     buttonProperties = {
       onClick: approveTxn,
       label: `Approve ${fromToken?.symbol}`,

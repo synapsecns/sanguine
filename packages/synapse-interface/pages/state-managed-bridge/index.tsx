@@ -1,5 +1,5 @@
 import toast from 'react-hot-toast'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Address, zeroAddress, isAddress } from 'viem'
 import { polygon } from 'viem/chains'
 import { useAccount } from 'wagmi'
@@ -33,7 +33,6 @@ import {
   setFromToken,
   setToChainId,
   setToToken,
-  updateFromValue,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
 import { setIsWalletPending } from '@/slices/wallet/reducer'
@@ -87,16 +86,11 @@ const StateManagedBridge = () => {
 
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
 
-  const isApproved = useIsBridgeApproved(
-    fromToken,
-    fromChainId,
-    bridgeQuote,
-    debouncedFromValue
-  )
+  const isApproved = useIsBridgeApproved()
 
   const { isWalletPending } = useWalletState()
 
-  const { showSettingsSlideOver, showDestinationAddress } = useSelector(
+  const { showSettingsSlideOver } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
 
@@ -338,7 +332,6 @@ const StateManagedBridge = () => {
       dispatch(resetBridgeQuote())
       dispatch(setDestinationAddress(null))
       dispatch(setShowDestinationAddress(false))
-      dispatch(updateFromValue(''))
 
       const successToastContent = (
         <div>

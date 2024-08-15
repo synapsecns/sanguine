@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react'
 import { zeroAddress } from 'viem'
 
 import { stringToBigInt } from '@/utils/bigint/format'
-import { BridgeQuote, Token } from '@/utils/types'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 
-export const useIsBridgeApproved = (
-  fromToken: Token | null,
-  fromChainId: number,
-  bridgeQuote: BridgeQuote | null,
-  debouncedFromValue: string
-) => {
+export const useIsBridgeApproved = () => {
+  const { debouncedFromValue, fromChainId, fromToken } = useBridgeState()
+  const { bridgeQuote } = useBridgeQuoteState()
+
   const [isApproved, setIsApproved] = useState<boolean>(false)
 
   useEffect(() => {

@@ -56,14 +56,14 @@ const DestinationAddress = () => {
 }
 
 const Slippage = () => {
-  const { fromValue } = useBridgeState()
+  const { debouncedFromValue } = useBridgeState()
 
   const {
     bridgeQuote: { exchangeRate },
   } = useBridgeQuoteState()
 
   const { formattedPercentSlippage, safeFromAmount, underFee, textColor } =
-    useExchangeRateInfo(fromValue, exchangeRate)
+    useExchangeRateInfo(debouncedFromValue, exchangeRate)
   return (
     <div className="flex justify-between">
       <span className="text-zinc-500 dark:text-zinc-400">Slippage</span>
@@ -169,9 +169,9 @@ const GasDropLabel = () => {
   )
 }
 
-const useExchangeRateInfo = (fromValue, exchangeRate) => {
+const useExchangeRateInfo = (value, exchangeRate) => {
   const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
-  const safeFromAmount = fromValue ?? '0'
+  const safeFromAmount = value ?? '0'
 
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)

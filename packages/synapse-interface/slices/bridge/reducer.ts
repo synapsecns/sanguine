@@ -23,7 +23,6 @@ export interface BridgeState {
   fromTokens: Token[]
   toTokens: Token[]
 
-  fromValue: string
   debouncedFromValue: string
   debouncedToTokensFromValue: string
   deadlineMinutes: number | null
@@ -56,7 +55,6 @@ export const initialState: BridgeState = {
   fromTokens,
   toTokens,
 
-  fromValue: '',
   debouncedFromValue: '',
   debouncedToTokensFromValue: '',
   deadlineMinutes: null,
@@ -423,9 +421,6 @@ export const bridgeSlice = createSlice({
       state.toChainIds = toChainIds
       state.toTokens = toTokens
     },
-    updateFromValue: (state, action: PayloadAction<string>) => {
-      state.fromValue = action.payload
-    },
     updateDebouncedFromValue: (state, action: PayloadAction<string>) => {
       state.debouncedFromValue = action.payload
     },
@@ -449,7 +444,6 @@ export const bridgeSlice = createSlice({
       state.fromToken = initialState.fromToken
       state.toChainId = initialState.toChainId
       state.toToken = initialState.toToken
-      state.fromValue = initialState.fromValue
       state.debouncedFromValue = initialState.debouncedFromValue
     },
   },
@@ -462,7 +456,6 @@ export const {
   setToChainId,
   setFromToken,
   setToToken,
-  updateFromValue,
   setDeadlineMinutes,
   setDestinationAddress,
   resetBridgeInputs,
