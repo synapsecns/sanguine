@@ -42,8 +42,8 @@ export const BridgeTransactionButton = ({
   const {
     destinationAddress,
     fromToken,
-    // fromValue,
-    // toToken,
+    debouncedFromValue,
+    toToken,
     fromChainId,
     toChainId,
   } = useBridgeState()
