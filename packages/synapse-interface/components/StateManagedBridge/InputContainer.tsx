@@ -129,7 +129,7 @@ export const InputContainer = () => {
       return <ConnectWalletButton />
     } else if (isConnected && onSelectedChain) {
       return <ConnectedIndicator />
-    } else if (isConnected && onSelectedChain) {
+    } else if (isConnected && !onSelectedChain) {
       return <ConnectToNetworkButton chainId={fromChainId} />
     }
   }, [chain, fromChainId, isConnected])
