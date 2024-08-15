@@ -156,6 +156,9 @@ export const fetchBridgeQuote = createAsyncThunk(
     } = synapseSDK.applyBridgeSlippage(bridgeModuleName, originQuery, destQuery)
 
     return {
+      inputAmountForQuote: debouncedFromValue,
+      originTokenForQuote: fromToken,
+      destTokenForQuote: toToken,
       outputAmount: toValueBigInt,
       outputAmountString: commify(
         formatBigIntToString(toValueBigInt, toToken.decimals[toChainId], 8)

@@ -10,6 +10,7 @@ import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -34,9 +35,15 @@ export const BridgeTransactionButton = ({
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  const { destinationAddress, fromToken, fromChainId, toChainId } =
-    useBridgeState()
-  const { isLoading } = useBridgeQuoteState()
+  const {
+    destinationAddress,
+    fromToken,
+    fromChainId,
+    toToken,
+    toChainId,
+    debouncedFromValue,
+  } = useBridgeState()
+  const { bridgeQuote, isLoading } = useBridgeQuoteState()
 
   const { isWalletPending } = useWalletState()
   const { showDestinationWarning, isDestinationWarningAccepted } =
@@ -46,7 +53,7 @@ export const BridgeTransactionButton = ({
     hasValidInput,
     hasValidQuote,
     hasSufficientBalance,
-    doesChainSelectionsMatchBridgeQuote,
+    doesBridgeStateMatchQuote,
     isBridgeFeeGreaterThanInput,
     isBridgeQuoteAmountGreaterThanInputForRfq,
     onSelectedChain,
@@ -58,7 +65,7 @@ export const BridgeTransactionButton = ({
     isWalletPending ||
     !hasValidInput ||
     !hasValidQuote ||
-    !doesChainSelectionsMatchBridgeQuote ||
+    !doesBridgeStateMatchQuote ||
     isBridgeQuoteAmountGreaterThanInputForRfq ||
     (isConnected && !hasSufficientBalance) ||
     (destinationAddress && !isAddress(destinationAddress))
@@ -95,15 +102,22 @@ export const BridgeTransactionButton = ({
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (
-    !isLoading &&
-    !doesChainSelectionsMatchBridgeQuote &&
-    hasValidInput
-  ) {
+  } else if (!isLoading && !doesBridgeStateMatchQuote && hasValidInput) {
     buttonProperties = {
-      label: 'Please reset chain selection',
+      label: 'Error in bridge quote',
       onClick: null,
     }
+
+    segmentAnalyticsEvent(`[Bridge] error: state out of sync with quote`, {
+      inputAmountForState: debouncedFromValue,
+      originChainIdForState: fromChainId,
+      originTokenForState: fromToken.symbol,
+      originTokenAddressForState: fromToken.addresses[fromChainId],
+      destinationChainIdForState: toChainId,
+      destinationTokenForState: toToken.symbol,
+      destinationTokenAddressForState: toToken.addresses[toChainId],
+      bridgeQuote,
+    })
   } else if (
     !isLoading &&
     isBridgeQuoteAmountGreaterThanInputForRfq &&

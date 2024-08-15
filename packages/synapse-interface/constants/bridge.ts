@@ -4,6 +4,9 @@ import * as CHAINS from '@constants/chains/master'
 export const QUOTE_POLLING_INTERVAL = 10000
 
 export const EMPTY_BRIDGE_QUOTE = {
+  inputAmountForQuote: '',
+  originTokenForQuote: null,
+  destTokenForQuote: null,
   outputAmount: 0n,
   outputAmountString: '',
   routerAddress: '',
