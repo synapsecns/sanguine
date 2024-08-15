@@ -30,11 +30,12 @@ type Store struct {
 // PutLatestBlock upserts the latest block into the database.
 func (s *Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error {
 	tx := s.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: chainIDFieldName}, {Name: s.listenerName}},
+		Columns:   []clause.Column{{Name: chainIDFieldName}, {Name: listenerNameFieldName}},
 		DoUpdates: clause.AssignmentColumns([]string{chainIDFieldName, blockNumberFieldName}),
 	}).Create(&LastIndexed{
-		ChainID:     chainID,
-		BlockNumber: int(height),
+		ChainID:      chainID,
+		BlockNumber:  int(height),
+		ListenerName: s.listenerName,
 	})
 
 	if tx.Error != nil {
@@ -66,6 +67,7 @@ func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
 	chainIDFieldName = namer.GetConsistentName("ChainID")
 	blockNumberFieldName = namer.GetConsistentName("BlockNumber")
+	listenerNameFieldName = namer.GetConsistentName("ListenerName")
 }
 
 var (
@@ -73,6 +75,8 @@ var (
 	chainIDFieldName string
 	// blockNumberFieldName is the name of the block number field.
 	blockNumberFieldName string
+	// listenerNameFieldName is the name of the listener name field.
+	listenerNameFieldName string
 )
 
 // ErrNoLatestBlockForChainID is returned when no block exists for the chain.
