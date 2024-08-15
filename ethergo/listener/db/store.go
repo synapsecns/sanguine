@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // NewChainListenerStore creates a new transaction store.
@@ -27,14 +28,14 @@ type Store struct {
 
 // PutLatestBlock upserts the latest block into the database.
 func (s *Store) PutLatestBlock(ctx context.Context, chainID, height uint64) error {
-	updates := map[string]interface{}{
-		blockNumberFieldName: height,
-	}
-	tx := s.db.WithContext(ctx).
-		Model(&LastIndexed{}).
-		Where(fmt.Sprintf("%s = ?", chainIDFieldName), chainID).
-		Where(fmt.Sprintf("%s = ?", listenerNameFieldName), s.listenerName).
-		Updates(updates)
+	tx := s.db.WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: chainIDFieldName}, {Name: listenerNameFieldName}},
+		DoUpdates: clause.AssignmentColumns([]string{chainIDFieldName, blockNumberFieldName, listenerNameFieldName}),
+	}).Create(&LastIndexed{
+		ChainID:      chainID,
+		BlockNumber:  int(height),
+		ListenerName: s.listenerName,
+	})
 	if tx.Error != nil {
 		return fmt.Errorf("could not update latest block: %w", tx.Error)
 	}
