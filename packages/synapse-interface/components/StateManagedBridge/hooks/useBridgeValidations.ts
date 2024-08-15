@@ -41,17 +41,35 @@ export const useBridgeValidations = () => {
       : false
   }, [hasValidSelections, debouncedFromValueBigInt, fromTokenBalance])
 
-  const doesChainSelectionsMatchBridgeQuote = useMemo(() => {
-    return (
-      fromChainId === bridgeQuote.originChainId &&
-      toChainId === bridgeQuote.destChainId
+  const stringifiedBridgeQuote = useMemo(() => {
+    return constructStringifiedBridgeSelections(
+      bridgeQuote.inputAmountForQuote,
+      bridgeQuote.originChainId,
+      bridgeQuote.originTokenForQuote,
+      bridgeQuote.destChainId,
+      bridgeQuote.destTokenForQuote
     )
   }, [
-    fromChainId,
-    toChainId,
+    bridgeQuote.inputAmountForQuote,
     bridgeQuote.originChainId,
+    bridgeQuote.originTokenForQuote,
     bridgeQuote.destChainId,
+    bridgeQuote.destTokenForQuote,
   ])
+
+  const stringifiedBridgeState = useMemo(() => {
+    return constructStringifiedBridgeSelections(
+      debouncedFromValue,
+      fromChainId,
+      fromToken,
+      toChainId,
+      toToken
+    )
+  }, [debouncedFromValue, fromChainId, fromToken, toChainId, toToken])
+
+  const doesBridgeStateMatchQuote = useMemo(() => {
+    return stringifiedBridgeQuote === stringifiedBridgeState
+  }, [stringifiedBridgeQuote, stringifiedBridgeState])
 
   const isBridgeQuoteAmountGreaterThanInputForRfq = useMemo(() => {
     return (
@@ -80,9 +98,26 @@ export const useBridgeValidations = () => {
     hasValidSelections,
     hasValidQuote,
     hasSufficientBalance,
-    doesChainSelectionsMatchBridgeQuote,
+    doesBridgeStateMatchQuote,
     isBridgeFeeGreaterThanInput,
     isBridgeQuoteAmountGreaterThanInputForRfq,
     onSelectedChain,
   }
+}
+
+const constructStringifiedBridgeSelections = (
+  originAmount,
+  originChainId,
+  originToken,
+  destChainId,
+  destToken
+) => {
+  const state = {
+    originAmount,
+    originChainId,
+    originToken,
+    destChainId,
+    destToken,
+  }
+  return JSON.stringify(state)
 }

@@ -53,7 +53,7 @@ export const BridgeTransactionButton = ({
     hasValidInput,
     hasValidQuote,
     hasSufficientBalance,
-    doesChainSelectionsMatchBridgeQuote,
+    doesBridgeStateMatchQuote,
     isBridgeFeeGreaterThanInput,
     isBridgeQuoteAmountGreaterThanInputForRfq,
     onSelectedChain,
@@ -65,7 +65,7 @@ export const BridgeTransactionButton = ({
     isWalletPending ||
     !hasValidInput ||
     !hasValidQuote ||
-    !doesChainSelectionsMatchBridgeQuote ||
+    !doesBridgeStateMatchQuote ||
     isBridgeQuoteAmountGreaterThanInputForRfq ||
     (isConnected && !hasSufficientBalance) ||
     (destinationAddress && !isAddress(destinationAddress))
@@ -102,11 +102,7 @@ export const BridgeTransactionButton = ({
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (
-    !isLoading &&
-    !doesChainSelectionsMatchBridgeQuote &&
-    hasValidInput
-  ) {
+  } else if (!isLoading && !doesBridgeStateMatchQuote && hasValidInput) {
     buttonProperties = {
       label: 'Error in bridge quote',
       onClick: null,
@@ -182,21 +178,4 @@ export const BridgeTransactionButton = ({
       </>
     )
   )
-}
-
-const constructStringifiedBridgeSelections = (
-  originAmount,
-  originChainId,
-  originToken,
-  destChainId,
-  destToken
-) => {
-  const state = {
-    originAmount,
-    originChainId,
-    originToken,
-    destChainId,
-    destToken,
-  }
-  return JSON.stringify(state)
 }
