@@ -21,6 +21,7 @@ import (
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	rfqClient "github.com/synapsecns/sanguine/services/rfq/api/client"
@@ -227,13 +228,26 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				log.Printf("error submitting refund: %v\n", err)
 			}
 
-			// TODO: follow the lead of https://github.com/synapsecns/sanguine/pull/2845
-			txHash, err := relClient.GetTxHashByNonce(ctx.Context(), &relapi.GetTxByNonceRequest{
-				ChainID: rawRequest.OriginChainID,
-				Nonce:   nonce,
-			})
+			var txHash *relapi.TxHashByNonceResponse
+			retry.WithBackoff(
+				ctx.Context(),
+				func(_ context.Context) error {
+					txHash, err = relClient.GetTxHashByNonce(ctx.Context(), &relapi.GetTxByNonceRequest{
+						ChainID: rawRequest.OriginChainID,
+						Nonce:   nonce,
+					})
+					if err != nil {
+						return fmt.Errorf("error fetching tx hash by nonce: %w", err)
+					}
+					return nil
+				},
+				retry.WithMaxAttempts(5),
+				retry.WithMaxTotalTime(30*time.Second),
+			)
+
 			if err != nil {
 				log.Printf("error fetching tx hash by nonce: %v\n", err)
+				return
 			}
 
 			_, err = ctx.Response().Reply(
