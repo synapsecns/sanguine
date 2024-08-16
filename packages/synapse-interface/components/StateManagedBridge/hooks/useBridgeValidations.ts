@@ -74,19 +74,16 @@ export const useBridgeValidations = () => {
   const isBridgeQuoteAmountGreaterThanInputForRfq = useMemo(() => {
     return (
       bridgeQuote.bridgeModuleName === 'SynapseRFQ' &&
-      bridgeQuote.outputAmount > debouncedFromValueBigInt
+      bridgeQuote.outputAmountString > debouncedFromValue
     )
   }, [
     bridgeQuote.outputAmount,
     bridgeQuote.bridgeModuleName,
-    debouncedFromValueBigInt,
+    debouncedFromValue,
   ])
 
   const isBridgeFeeGreaterThanInput = useMemo(() => {
-    return (
-      bridgeQuote.feeAmount === 0n ||
-      bridgeQuote.feeAmount > debouncedFromValueBigInt
-    )
+    return bridgeQuote.feeAmount === 0n && debouncedFromValueBigInt > 0n
   }, [bridgeQuote.feeAmount, debouncedFromValueBigInt])
 
   const onSelectedChain: boolean = useMemo(() => {
