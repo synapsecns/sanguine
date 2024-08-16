@@ -46,13 +46,11 @@ export const fetchPortfolioBalances = async (
   const balanceRecord = {}
   const poolTokenBalances = {}
 
-  const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS).filter(
-    (id) => id !== '2000'
-  )
+  const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS)
   const isSingleNetworkCall: boolean = typeof chainId === 'number'
 
   const filteredChains: string[] = availableChains.filter((chain: string) => {
-    return isSingleNetworkCall ? Number(chain) === chainId : chain !== '2000' // need to figure out whats wrong with Dogechain
+    return !isSingleNetworkCall || Number(chain) === chainId
   })
 
   try {
@@ -86,9 +84,11 @@ export const fetchPortfolioBalances = async (
               ...currentChainGasTokens
             )
           }
+          console.log('currentChainTokens', currentChainId, currentChainTokens)
           const [tokenBalances] = await Promise.all([
             getTokenBalances(address, currentChainTokens, currentChainId),
           ])
+          console.log('tokenBalances', currentChainId, tokenBalances)
           return { currentChainId, tokenBalances }
         } catch (error) {
           console.error(
