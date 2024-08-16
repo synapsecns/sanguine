@@ -108,7 +108,6 @@ export const BridgeTransactionButton = ({
       onClick: null,
     }
   } else if (!isLoading && !doesBridgeStateMatchQuote && hasValidInput) {
-    console.log('out of sync')
     buttonProperties = {
       label: 'Error in bridge quote',
       onClick: null,
