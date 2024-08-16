@@ -1,16 +1,9 @@
-import { isNull, isNumber } from 'lodash'
+import { debounce, isNull } from 'lodash'
 import toast from 'react-hot-toast'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
-import {
-  initialState,
-  updateFromValue,
-  setFromChainId,
-  setFromToken,
-} from '@/slices/bridge/reducer'
-import { ChainSelector } from '@/components/ui/ChainSelector'
-import { TokenSelector } from '@/components/ui/TokenSelector'
+import { updateDebouncedFromValue } from '@/slices/bridge/reducer'
 import { AmountInput } from '@/components/ui/AmountInput'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -18,18 +11,19 @@ import {
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
-import { CHAINS_BY_ID } from '@/constants/chains'
-import { useFromChainListArray } from './hooks/useFromChainListArray'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
-import { useFromTokenListArray } from './hooks/useFromTokenListArray'
 import { AvailableBalance } from './AvailableBalance'
 import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { MaxButton } from './MaxButton'
 import { formatAmount } from '../../utils/formatAmount'
+import { useWalletState } from '@/slices/wallet/hooks'
+import { FromChainSelector } from '@/components/StateManagedBridge/FromChainSelector'
+import { FromTokenSelector } from '@/components/StateManagedBridge/FromTokenSelector'
+import { useBridgeSelections } from './hooks/useBridgeSelections'
+import { useBridgeValidations } from './hooks/useBridgeValidations'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -42,33 +36,16 @@ export const InputContainer: React.FC<InputContainerProps> = ({
 }) => {
   const dispatch = useAppDispatch()
   const { chain, isConnected } = useAccount()
-  const { balances } = usePortfolioState()
-  const {
-    fromChainId,
-    toChainId,
-    fromToken,
-    toToken,
-    fromValue,
-    isWalletPending,
-  } = useBridgeState()
-  const [showValue, setShowValue] = useState('')
-  const [hasMounted, setHasMounted] = useState(false)
+  const { isWalletPending } = useWalletState()
+  const { fromChainId, fromToken, debouncedFromValue } = useBridgeState()
+  const [localInputValue, setLocalInputValue] = useState(debouncedFromValue)
 
-  const { addresses, decimals } = fromToken || {}
-  const tokenDecimals = isNumber(decimals) ? decimals : decimals?.[fromChainId]
-  const balance: bigint = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === addresses?.[fromChainId]
-  )?.balance
-  const parsedBalance = getParsedBalance(balance, tokenDecimals)
+  const { hasValidFromSelections, hasValidSelections, onSelectedChain } =
+    useBridgeValidations()
+  const { fromTokenBalance, fromTokenDecimals } = useBridgeSelections()
+
+  const parsedBalance = getParsedBalance(fromTokenBalance, fromTokenDecimals)
   const formattedBalance = formatAmount(parsedBalance)
-
-  const hasValidFromSelections: boolean = useMemo(() => {
-    return Boolean(fromChainId && fromToken)
-  }, [fromChainId, fromToken])
-
-  const hasValidInputSelections: boolean = useMemo(() => {
-    return Boolean(fromChainId && fromToken && toChainId && toToken)
-  }, [fromChainId, toChainId, fromToken, toToken])
 
   const {
     isLoading,
@@ -80,27 +57,69 @@ export const InputContainer: React.FC<InputContainerProps> = ({
   } = useGasEstimator()
 
   const isInputMax =
-    maxBridgeableGas?.toString() === fromValue || parsedBalance === fromValue
+    maxBridgeableGas?.toString() === debouncedFromValue ||
+    parsedBalance === debouncedFromValue
+
+  const debouncedUpdateFromValue = useMemo(
+    () =>
+      debounce(
+        (value: string) => dispatch(updateDebouncedFromValue(value)),
+        300
+      ),
+    [dispatch]
+  )
+
+  useEffect(() => {
+    return () => {
+      debouncedUpdateFromValue.cancel()
+    }
+  }, [debouncedUpdateFromValue])
+
+  const handleFromValueChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const cleanedValue = cleanNumberInput(event.target.value)
+      try {
+        setLocalInputValue(cleanedValue)
+        debouncedUpdateFromValue(cleanedValue)
+      } catch (error) {
+        console.log('Invalid value for conversion to BigInteger')
+        const inputValue = event.target.value
+        const regex = /^[0-9]*[.,]?[0-9]*$/
+
+        if (regex.test(inputValue) || inputValue === '') {
+          setLocalInputValue(cleanedValue)
+          debouncedUpdateFromValue(cleanedValue)
+        }
+      }
+    },
+    [debouncedUpdateFromValue]
+  )
 
   const onMaxBalance = useCallback(async () => {
     if (hasValidGasEstimateInputs()) {
       const bridgeableBalance = await estimateBridgeableBalanceCallback()
 
       if (isNull(bridgeableBalance)) {
-        dispatch(updateFromValue(parsedBalance))
+        setLocalInputValue(parsedBalance)
+        dispatch(updateDebouncedFromValue(parsedBalance))
       } else if (bridgeableBalance > 0) {
-        dispatch(updateFromValue(bridgeableBalance?.toString()))
+        const bridgeableBalanceString = bridgeableBalance.toString()
+        setLocalInputValue(bridgeableBalanceString)
+        dispatch(updateDebouncedFromValue(bridgeableBalanceString))
       } else {
-        dispatch(updateFromValue('0.0'))
+        setLocalInputValue('0.0')
+        dispatch(updateDebouncedFromValue('0.0'))
         toast.error('Gas fees likely exceeds your balance.', {
           id: 'toast-error-not-enough-gas',
           duration: 10000,
         })
       }
     } else {
-      dispatch(updateFromValue(parsedBalance))
+      setLocalInputValue(parsedBalance)
+      dispatch(updateDebouncedFromValue(parsedBalance))
     }
   }, [
+    dispatch,
     fromChainId,
     fromToken,
     parsedBalance,
@@ -109,47 +128,18 @@ export const InputContainer: React.FC<InputContainerProps> = ({
   ])
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setLocalInputValue(debouncedFromValue)
+  }, [debouncedFromValue])
 
   const connectedStatus = useMemo(() => {
-    if (hasMounted && !isConnected) {
+    if (!isConnected) {
       return <ConnectWalletButton />
-    } else if (hasMounted && isConnected && fromChainId === chain?.id) {
+    } else if (isConnected && onSelectedChain) {
       return <ConnectedIndicator />
-    } else if (hasMounted && isConnected && fromChainId !== chain?.id) {
+    } else if (isConnected && !onSelectedChain) {
       return <ConnectToNetworkButton chainId={fromChainId} />
     }
-  }, [chain, fromChainId, isConnected, hasMounted])
-
-  useEffect(() => {
-    if (fromToken && tokenDecimals) {
-      setShowValue(fromValue)
-    }
-
-    if (fromValue === initialState.fromValue) {
-      setShowValue(initialState.fromValue)
-    }
-  }, [fromValue, inputRef, fromChainId, fromToken])
-
-  const handleFromValueChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const fromValueString: string = cleanNumberInput(event.target.value)
-    try {
-      dispatch(updateFromValue(fromValueString))
-      setShowValue(fromValueString)
-    } catch (error) {
-      console.error('Invalid value for conversion to BigInteger')
-      const inputValue = event.target.value
-      const regex = /^[0-9]*[.,]?[0-9]*$/
-
-      if (regex.test(inputValue) || inputValue === '') {
-        dispatch(updateFromValue(inputValue))
-        setShowValue(inputValue)
-      }
-    }
-  }
+  }, [chain, fromChainId, isConnected])
 
   return (
     <BridgeSectionContainer>
@@ -163,7 +153,7 @@ export const InputContainer: React.FC<InputContainerProps> = ({
           <AmountInput
             setIsTyping={setIsTyping}
             inputRef={inputRef}
-            showValue={showValue}
+            showValue={localInputValue}
             handleFromValueChange={handleFromValueChange}
             disabled={isWalletPending}
           />
@@ -179,45 +169,14 @@ export const InputContainer: React.FC<InputContainerProps> = ({
             onClick={onMaxBalance}
             isHidden={
               !isConnected ||
-              !hasValidInputSelections ||
+              !hasValidSelections ||
               isLoading ||
-              isInputMax
+              isInputMax ||
+              isWalletPending
             }
           />
         </div>
       </BridgeAmountContainer>
     </BridgeSectionContainer>
-  )
-}
-
-const FromChainSelector = () => {
-  const { fromChainId } = useBridgeState()
-
-  return (
-    <ChainSelector
-      dataTestId="bridge-origin-chain"
-      selectedItem={CHAINS_BY_ID[fromChainId]}
-      isOrigin={true}
-      label="From"
-      itemListFunction={useFromChainListArray}
-      setFunction={setFromChainId}
-      action="Bridge"
-    />
-  )
-}
-
-const FromTokenSelector = () => {
-  const { fromToken } = useBridgeState()
-
-  return (
-    <TokenSelector
-      dataTestId="bridge-origin-token"
-      selectedItem={fromToken}
-      isOrigin={true}
-      placeholder="Out"
-      itemListFunction={useFromTokenListArray}
-      setFunction={setFromToken}
-      action="Bridge"
-    />
   )
 }

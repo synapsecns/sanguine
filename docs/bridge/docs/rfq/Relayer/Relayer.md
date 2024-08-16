@@ -64,6 +64,24 @@ The relayer can also be run with docker. To do this, you will need to pull the [
 docker run ghcr.io/synapsecns/sanguine/rfq-relayer:latest --config /path/to/config
 ```
 
+### Withdrawals
+
+The `POST /withdraw` endpoint is exposed to allow for withdrawing from the relayer wallet without having to deal with the private key directly. This can be used for manual rebalancing, if desired. To use this feature, the following config values must be set:
+
+```yaml
+enable_api_withdrawals: true
+withdrawal_whitelist:
+  - <your_address_here>
+```
+
+The relayer CLI (at `services/rfq/relayer/main.go`) exposes a withdrawal command for convenience:
+
+```bash
+go run main.go withdraw --relayer-url https://localhost:8081 --chain-id 1 --amount 1000000000000000000 --token-address 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE --to 0x0000000000000000000000000000000000000000
+```
+
+Be sure to sub in your respective `to` address!
+
 ### Configuration
 
 The relayer is configured with a yaml file. The following is an example configuration:

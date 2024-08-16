@@ -21,7 +21,7 @@ export function AmountInput({
   setIsTyping,
 }: AmountInputTypes) {
   const debouncedSetIsTyping = useCallback(
-    debounce((value: boolean) => setIsTyping?.(value), 500),
+    debounce((value: boolean) => setIsTyping?.(value), 1200),
     [setIsTyping]
   )
 

@@ -38,6 +38,7 @@ export interface TransactionProps {
   kappa?: string
   children?: React.ReactNode
   isCompleted?: boolean
+  disabled: boolean
 }
 
 export const Transaction = React.memo(
@@ -60,6 +61,7 @@ export const Transaction = React.memo(
     kappa,
     children,
     isCompleted,
+    disabled,
   }: TransactionProps) => {
     const handleExplorerClick: () => void = useCallback(() => {
       if (kappa && originChain && destinationChain) {
@@ -92,6 +94,7 @@ export const Transaction = React.memo(
           tokenAmount={originValue}
           isOrigin={true}
           className="p-2"
+          disabled={disabled}
         />
         <TransactionArrow
           className={`
@@ -108,6 +111,7 @@ export const Transaction = React.memo(
           tokenAmount={destinationValue}
           isOrigin={false}
           className="p-2"
+          disabled={disabled}
         />
         <div className="ml-auto h-full py-2.5 -my-px px-4">
           {!isCompleted && transactionType === TransactionType.PENDING ? (
