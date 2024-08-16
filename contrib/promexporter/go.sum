@@ -1033,6 +1033,8 @@ github.com/synapsecns/fasthttp-http2 v1.0.0 h1:G1/8AKgAzVImHpGbCGZo8w4c0kUBXb4eR
 github.com/synapsecns/fasthttp-http2 v1.0.0/go.mod h1:QM9mQS/FygGB3PdvmW8a0/70FirWmEZVvj6Dlo1pisw=
 github.com/synapsecns/gqlgenc v0.10.0-hotfix h1:EkxocO6V/xRcHJ+1sNY+fwDY5l1/jL9qooPEpWzrbLg=
 github.com/synapsecns/gqlgenc v0.10.0-hotfix/go.mod h1:OeQhghEgvGWvRwzx9XjMeg3FUQOHnTo5/12iuJSJxLg=
+github.com/synapsecns/sanguine/services/rfq v1.8.0 h1:0s5ywpXMbtcoKGD3E00pPWa/OAHQi07l2+tHEpbbNSE=
+github.com/synapsecns/sanguine/services/rfq v1.8.0/go.mod h1:1jtien0M/VFz/2hzr/YHCkd8WxPOIWVNZ+47sGB+Gl8=
 github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954/go.mod h1:u2MKkTVTVJWe5D1rCvame8WqhBd88EuIwODJZ1VHCPM=
 github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 h1:epCh84lMvA70Z7CTTCmYQn2CKbY8j86K7/FAIr141uY=
 github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7/go.mod h1:q4W45IWZaF22tdD+VEXcAWRA037jwmWEB5VWYORlTpc=
