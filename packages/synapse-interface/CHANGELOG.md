@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.34.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.5...@synapsecns/synapse-interface@0.34.6) (2024-08-16)
+
+
+### Bug Fixes
+
+* **synapse-interface:** hide Blast WETH ([#3033](https://github.com/synapsecns/sanguine/issues/3033)) ([8da405f](https://github.com/synapsecns/sanguine/commit/8da405f81183817f6564e859914d2dc02a49735f))
+
+
+
+
+
 ## [0.34.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.4...@synapsecns/synapse-interface@0.34.5) (2024-08-15)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
