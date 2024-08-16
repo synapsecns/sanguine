@@ -9,6 +9,7 @@ import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { Token } from '@/utils/types'
+import { BridgeModulePause } from '@/components/Maintenance/Maintenance'
 
 export const fetchBridgeQuote = createAsyncThunk(
   'bridgeQuote/fetchBridgeQuote',
@@ -34,7 +35,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       requestId: number
       currentTimestamp: number
       address: Address
-      pausedModulesList: any
+      pausedModulesList: BridgeModulePause[]
     },
     { rejectWithValue }
   ) => {
