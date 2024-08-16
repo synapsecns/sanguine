@@ -208,6 +208,13 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					continue
 				}
 			}
+			if err != nil {
+				_, err := ctx.Response().Reply(fmt.Sprintf("could not fetch quote request from any relayer %v", err))
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
 
 			fastBridgeContract, err := b.makeFastBridge(ctx.Context(), rawRequest.OriginChainID)
 			if err != nil {
