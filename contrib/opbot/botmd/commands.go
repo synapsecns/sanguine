@@ -209,7 +209,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				}
 			}
 			if err != nil {
-				_, err := ctx.Response().Reply(fmt.Sprintf("could not fetch quote request from any relayer %v", err))
+				_, err := ctx.Response().Reply(fmt.Sprintf("could not fetch quote request from any relayer: %v", err))
 				if err != nil {
 					log.Println(err)
 				}
