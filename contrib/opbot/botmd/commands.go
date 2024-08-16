@@ -229,7 +229,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			}
 
 			var txHash *relapi.TxHashByNonceResponse
-			retry.WithBackoff(
+			err = retry.WithBackoff(
 				ctx.Context(),
 				func(_ context.Context) error {
 					txHash, err = relClient.GetTxHashByNonce(ctx.Context(), &relapi.GetTxByNonceRequest{
@@ -244,6 +244,9 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				retry.WithMaxAttempts(5),
 				retry.WithMaxTotalTime(30*time.Second),
 			)
+			if err != nil {
+				log.Printf("error fetching tx hash by nonce: %v\n", err)
+			}
 
 			_, err = ctx.Response().Reply(
 				fmt.Sprintf("refund submitted with nonce %d, transaction %s", nonce, toTXSlackLink(txHash.Hash, rawRequest.OriginChainID)),
