@@ -455,10 +455,10 @@ export const Widget = ({
           </section>
           <SwitchButton
             onClick={() => {
-              dispatch(setOriginChainId(destinationChainId))
-              dispatch(setOriginToken(destinationToken))
               dispatch(setDestinationChainId(originChainId))
               dispatch(setDestinationToken(originToken))
+              dispatch(setOriginChainId(destinationChainId))
+              dispatch(setOriginToken(destinationToken))
             }}
           />
           <section
