@@ -169,7 +169,7 @@ func (r *relayerClient) GetQuoteRequestByTXID(ctx context.Context, txid string) 
 	return &res, nil
 }
 
-func (r *relayerClient) GetQuoteRequestbyTxHash(ctx context.Context, txHash string) (*GetQuoteRequestResponse, error) {
+func (r *relayerClient) GetQuoteRequestByTxHash(ctx context.Context, txHash string) (*GetQuoteRequestResponse, error) {
 	var res GetQuoteRequestResponse
 	resp, err := r.client.R().SetContext(ctx).
 		SetQueryParam("hash", txHash).
