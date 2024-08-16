@@ -39,7 +39,7 @@ export const PAUSED_TOKENS_BY_CHAIN = {
   [CHAINS.BASE.id]: ['WETH'],
   [CHAINS.ARBITRUM.id]: ['WETH'],
   [CHAINS.FANTOM.id]: [],
-  [CHAINS.DOGE.id]: ['BUSD', 'WETH'],
+  [CHAINS.DOGE.id]: ['BUSD'],
   [CHAINS.KLAYTN.id]: ['WETH'],
 }
 
