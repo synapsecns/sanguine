@@ -12,17 +12,21 @@ export enum FetchState {
 
 export interface WalletState {
   balances: TokenBalance[]
+  balancesFetchStatus: FetchState
+  balancesFetchError?: any
   allowance: string
-  status: FetchState
-  error?: any
+  allowancesFetchStatus: FetchState
+  allowancesFetchError?: any
   isWalletPending: boolean
 }
 
 const initialState: WalletState = {
   balances: [],
+  balancesFetchStatus: FetchState.IDLE,
+  balancesFetchError: null,
   allowance: null,
-  status: FetchState.IDLE,
-  error: null,
+  allowancesFetchStatus: FetchState.IDLE,
+  allowancesFetchError: null,
   isWalletPending: false,
 }
 
@@ -38,36 +42,36 @@ export const walletSlice = createSlice({
     builder
       .addCase(fetchAndStoreTokenBalances.pending, (state) => {
         state.balances = []
-        state.status = FetchState.LOADING
-        state.error = null
+        state.balancesFetchStatus = FetchState.LOADING
+        state.balancesFetchError = null
       })
       .addCase(
         fetchAndStoreTokenBalances.fulfilled,
         (state, action: PayloadAction<TokenBalance[]>) => {
           state.balances = action.payload
-          state.status = FetchState.VALID
-          state.error = null
+          state.balancesFetchStatus = FetchState.VALID
+          state.balancesFetchError = null
         }
       )
       .addCase(fetchAndStoreTokenBalances.rejected, (state, action) => {
-        state.error = action.payload
-        state.status = FetchState.INVALID
+        state.balancesFetchError = action.payload
+        state.balancesFetchStatus = FetchState.INVALID
       })
       .addCase(fetchAndStoreAllowance.pending, (state) => {
-        state.status = FetchState.LOADING
-        state.error = null
+        state.allowancesFetchStatus = FetchState.LOADING
+        state.allowancesFetchError = null
       })
       .addCase(
         fetchAndStoreAllowance.fulfilled,
         (state, action: PayloadAction<string>) => {
           state.allowance = action.payload
-          state.status = FetchState.VALID
-          state.error = null
+          state.allowancesFetchStatus = FetchState.VALID
+          state.allowancesFetchError = null
         }
       )
       .addCase(fetchAndStoreAllowance.rejected, (state, action) => {
-        state.error = action.payload
-        state.status = FetchState.INVALID
+        state.allowancesFetchError = action.payload
+        state.allowancesFetchStatus = FetchState.INVALID
       })
   },
 })
