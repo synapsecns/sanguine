@@ -21,6 +21,7 @@ type RelayerClient interface {
 	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)
 	GetTxHashByNonce(ctx context.Context, req *GetTxByNonceRequest) (*TxHashByNonceResponse, error)
 	GetQuoteRequestByTXID(ctx context.Context, txid string) (*GetQuoteRequestResponse, error)
+	GetQuoteRequestByTxHash(ctx context.Context, txhash string) (*GetQuoteRequestResponse, error)
 }
 
 type relayerClient struct {
