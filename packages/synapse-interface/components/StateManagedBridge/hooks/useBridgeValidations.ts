@@ -27,6 +27,10 @@ export const useBridgeValidations = () => {
     return debouncedFromValueBigInt > 0n
   }, [debouncedFromValue, debouncedFromValueBigInt])
 
+  const hasValidFromSelections = useMemo(() => {
+    return Boolean(fromChainId && fromToken)
+  }, [fromChainId, fromToken])
+
   const hasValidSelections = useMemo(() => {
     return Boolean(fromChainId && fromToken && toChainId && toToken)
   }, [fromChainId, fromToken, toChainId, toToken])
@@ -92,6 +96,7 @@ export const useBridgeValidations = () => {
 
   return {
     hasValidInput,
+    hasValidFromSelections,
     hasValidSelections,
     hasValidQuote,
     hasSufficientBalance,

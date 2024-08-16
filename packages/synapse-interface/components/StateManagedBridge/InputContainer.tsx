@@ -34,7 +34,8 @@ export const InputContainer = () => {
   const { fromChainId, fromToken, debouncedFromValue } = useBridgeState()
   const [localInputValue, setLocalInputValue] = useState(debouncedFromValue)
 
-  const { hasValidSelections, onSelectedChain } = useBridgeValidations()
+  const { hasValidFromSelections, hasValidSelections, onSelectedChain } =
+    useBridgeValidations()
   const { fromTokenBalance, fromTokenDecimals } = useBridgeSelections()
 
   const parsedBalance = getParsedBalance(fromTokenBalance, fromTokenDecimals)
@@ -155,7 +156,7 @@ export const InputContainer = () => {
             gasCost={parsedGasCost}
             isGasToken={isGasToken}
             isGasEstimateLoading={isLoading}
-            isDisabled={!isConnected || !hasValidSelections}
+            isDisabled={!isConnected || !hasValidFromSelections}
           />
           <MaxButton
             onClick={onMaxBalance}
