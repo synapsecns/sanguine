@@ -30,9 +30,9 @@ export const SwitchButton = ({ onClick }: { onClick: () => void }) => {
     >
       <path
         d="M14 8V20M14 20L18 16M14 20L10 16"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   )
