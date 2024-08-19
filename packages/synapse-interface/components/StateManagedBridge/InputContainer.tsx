@@ -27,7 +27,13 @@ import { useBridgeValidations } from './hooks/useBridgeValidations'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
-export const InputContainer = () => {
+interface InputContainerProps {
+  setIsTyping: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export const InputContainer: React.FC<InputContainerProps> = ({
+  setIsTyping,
+}) => {
   const dispatch = useAppDispatch()
   const { chain, isConnected } = useAccount()
   const { isWalletPending } = useWalletState()
@@ -58,7 +64,7 @@ export const InputContainer = () => {
     () =>
       debounce(
         (value: string) => dispatch(updateDebouncedFromValue(value)),
-        300
+        400
       ),
     [dispatch]
   )
@@ -145,6 +151,7 @@ export const InputContainer = () => {
         <FromTokenSelector />
         <div className="flex flex-wrap w-full">
           <AmountInput
+            setIsTyping={setIsTyping}
             inputRef={inputRef}
             showValue={localInputValue}
             handleFromValueChange={handleFromValueChange}

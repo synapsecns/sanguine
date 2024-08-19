@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { debounce } from 'lodash'
 import LoadingDots from './tailwind/LoadingDots'
 import { joinClassNames } from '@/utils/joinClassNames'
 
@@ -8,6 +9,7 @@ interface AmountInputTypes {
   isLoading?: boolean
   showValue: string
   handleFromValueChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
+  setIsTyping?: (isTyping: boolean) => void
 }
 
 export function AmountInput({
@@ -16,7 +18,19 @@ export function AmountInput({
   isLoading = false,
   showValue,
   handleFromValueChange,
+  setIsTyping,
 }: AmountInputTypes) {
+  const debouncedSetIsTyping = useCallback(
+    debounce((value: boolean) => setIsTyping?.(value), 600),
+    [setIsTyping]
+  )
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsTyping?.(true)
+    debouncedSetIsTyping(false)
+    handleFromValueChange?.(event)
+  }
+
   const inputClassName = joinClassNames({
     unset: 'bg-transparent border-none p-0',
     layout: 'w-full',
@@ -37,7 +51,7 @@ export function AmountInput({
           readOnly={disabled}
           className={inputClassName}
           placeholder="0.0000"
-          onChange={handleFromValueChange}
+          onChange={handleInputChange}
           value={showValue}
           name="inputRow"
           autoComplete="off"

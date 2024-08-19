@@ -17,6 +17,7 @@ export const BridgeTransactionButton = ({
   executeBridge,
   isApproved,
   isBridgePaused,
+  isTyping,
 }) => {
   const dispatch = useAppDispatch()
   const { openConnectModal } = useConnectModal()
@@ -61,6 +62,7 @@ export const BridgeTransactionButton = ({
 
   const isButtonDisabled =
     isBridgePaused ||
+    isTyping ||
     isLoading ||
     isWalletPending ||
     !hasValidInput ||
@@ -107,7 +109,12 @@ export const BridgeTransactionButton = ({
       label: `Amount must be greater than fee`,
       onClick: null,
     }
-  } else if (!isLoading && !doesBridgeStateMatchQuote && hasValidInput) {
+  } else if (
+    !isLoading &&
+    !isTyping &&
+    !doesBridgeStateMatchQuote &&
+    hasValidInput
+  ) {
     buttonProperties = {
       label: 'Error in bridge quote',
       onClick: null,
