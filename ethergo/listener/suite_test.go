@@ -3,6 +3,11 @@ package listener_test
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ipfs/go-log"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
@@ -12,10 +17,6 @@ import (
 	db2 "github.com/synapsecns/sanguine/ethergo/listener/db"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"math/big"
-	"os"
-	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"

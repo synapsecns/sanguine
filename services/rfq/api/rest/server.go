@@ -274,22 +274,28 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 		return addressRecovered, err
 	}
 
-	hasRole := r.roleCache[destChainID].Get(addressRecovered.Hex())
+	// Check and update cache
+	cachedRoleItem := r.roleCache[destChainID].Get(addressRecovered.Hex())
+	var hasRole bool
 
-	if hasRole == nil || hasRole.IsExpired() {
-		has, roleErr := bridge.HasRole(ops, relayerRole, addressRecovered)
-		if roleErr == nil {
-			r.roleCache[destChainID].Set(addressRecovered.Hex(), has, cacheInterval)
+	if cachedRoleItem == nil || cachedRoleItem.IsExpired() {
+		// Cache miss or expired, check on-chain
+		hasRole, err = bridge.HasRole(ops, relayerRole, addressRecovered)
+		if err != nil {
+			return addressRecovered, fmt.Errorf("unable to check relayer role on-chain: %w", err)
 		}
-
-		if roleErr != nil {
-			err = fmt.Errorf("unable to check relayer role on-chain")
-			return addressRecovered, err
-		} else if !has {
-			err = fmt.Errorf("q.Relayer not an on-chain relayer")
-			return addressRecovered, err
-		}
+		// Update cache
+		r.roleCache[destChainID].Set(addressRecovered.Hex(), hasRole, cacheInterval)
+	} else {
+		// Use cached value
+		hasRole = cachedRoleItem.Value()
 	}
+
+	// Verify role
+	if !hasRole {
+		return addressRecovered, fmt.Errorf("relayer not an on-chain relayer")
+	}
+
 	return addressRecovered, nil
 }
 
