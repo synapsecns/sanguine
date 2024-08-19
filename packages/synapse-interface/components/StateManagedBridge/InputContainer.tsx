@@ -64,7 +64,7 @@ export const InputContainer: React.FC<InputContainerProps> = ({
     () =>
       debounce(
         (value: string) => dispatch(updateDebouncedFromValue(value)),
-        300
+        400
       ),
     [dispatch]
   )
