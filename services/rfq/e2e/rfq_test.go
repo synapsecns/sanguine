@@ -3,11 +3,13 @@ package e2e_test
 import (
 	"fmt"
 	"math/big"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -26,6 +28,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"github.com/synapsecns/sanguine/services/rfq/util"
+	"golang.org/x/sync/errgroup"
 )
 
 type IntegrationSuite struct {
@@ -538,11 +541,12 @@ func (i *IntegrationSuite) TestMultipleBridges() {
 	parser, err := fastbridge.NewParser(originFastBridge.Address())
 	i.NoError(err)
 
-	// send several txs at once and record txids
 	txIDs := [][32]byte{}
-	var nonce *big.Int
-	numTxs := 100
-	for k := 0; k < numTxs; k++ {
+	txMux := sync.Mutex{}
+	sendBridgeReq := func(nonce *big.Int) (*types.Transaction, error) {
+		txMux.Lock()
+		auth.TransactOpts.Nonce = nonce
+		defer txMux.Unlock()
 		tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
 			DstChainId:   uint32(i.destBackend.GetChainID()),
 			To:           i.userWallet.Address(),
@@ -553,24 +557,47 @@ func (i *IntegrationSuite) TestMultipleBridges() {
 			DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(5_000_000)),
 			Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
 		})
-		i.NoError(err)
-		nonce = big.NewInt(int64(tx.Nonce()))
-		auth.TransactOpts.Nonce = new(big.Int).Add(nonce, big.NewInt(1))
-
-		i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
-		receipt, err := i.originBackend.TransactionReceipt(i.GetTestContext(), tx.Hash())
-		i.NoError(err)
-		for _, log := range receipt.Logs {
-			_, parsedEvent, ok := parser.ParseEvent(*log)
-			if !ok {
-				continue
-			}
-			event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRequested)
-			if ok {
-				txIDs = append(txIDs, event.TransactionId)
-			}
+		if err != nil {
+			return nil, fmt.Errorf("failed to send bridge request: %w", err)
 		}
+		return tx, nil
 	}
+
+	// send several txs at once and record txids
+	numTxs := 100
+	txIDMux := sync.Mutex{}
+	g, ctx := errgroup.WithContext(i.GetTestContext())
+	for k := 0; k < numTxs; k++ {
+		nonce := big.NewInt(int64(k))
+		g.Go(func() error {
+			tx, err := sendBridgeReq(nonce)
+			if err != nil {
+				return fmt.Errorf("failed to send bridge request: %w", err)
+			}
+
+			i.originBackend.WaitForConfirmation(ctx, tx)
+			receipt, err := i.originBackend.TransactionReceipt(ctx, tx.Hash())
+			if err != nil {
+				return fmt.Errorf("failed to get receipt: %w", err)
+			}
+			for _, log := range receipt.Logs {
+				_, parsedEvent, ok := parser.ParseEvent(*log)
+				if !ok {
+					continue
+				}
+				event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRequested)
+				if ok {
+					txIDMux.Lock()
+					txIDs = append(txIDs, event.TransactionId)
+					txIDMux.Unlock()
+					return nil
+				}
+			}
+			return nil
+		})
+	}
+	err = g.Wait()
+	i.NoError(err)
 	i.Equal(numTxs, len(txIDs))
 
 	// TODO: this, but cleaner
@@ -604,7 +631,7 @@ func (i *IntegrationSuite) TestMultipleBridges() {
 				return false
 			}
 			fmt.Printf("result: %+v\n", result)
-			if result.Status <= reldb.RelayCompleted {
+			if result.Status <= reldb.ProvePosted {
 				return false
 			}
 		}
