@@ -15,7 +15,9 @@ import (
 // RelayerClient is the interface for the relayer client.
 type RelayerClient interface {
 	Health(ctx context.Context) (ok bool, err error)
+	// Deprecated: use GetQuoteRequestByTxHash
 	GetQuoteRequestStatusByTxHash(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
+	// Deprecated: use GetQuoteRequestStatusByTxID
 	GetQuoteRequestStatusByTxID(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
 	RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error)
 	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)

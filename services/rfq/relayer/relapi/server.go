@@ -95,7 +95,8 @@ func NewRelayerAPI(
 }
 
 const (
-	getHealthRoute              = "/health"
+	getHealthRoute = "/health"
+	// TODO: replace with non-status specific endpoints
 	getQuoteStatusByTxHashRoute = "/status"
 	getQuoteStatusByTxIDRoute   = "/status/by_tx_id"
 	getRetryRoute               = "/retry"
@@ -116,7 +117,9 @@ func (r *RelayerAPIServer) Run(ctx context.Context) error {
 
 	// Assign GET routes
 	engine.GET(getHealthRoute, h.GetHealth)
+	// TODO: replace with non-status specific endpoints
 	engine.GET(getQuoteStatusByTxHashRoute, h.GetQuoteRequestStatusByTxHash)
+	// TODO: replace with non-status specific endpoints
 	engine.GET(getQuoteStatusByTxIDRoute, h.GetQuoteRequestStatusByTxID)
 	engine.GET(getRetryRoute, h.GetTxRetry)
 	engine.GET(getRequestByTxID, h.GetQuoteRequestByTxID)
