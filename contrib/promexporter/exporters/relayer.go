@@ -37,6 +37,10 @@ func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 		}
 	}
 
+	for chainID := range chainIDToRelayers {
+		chainIDToRelayers[chainID] = append(chainIDToRelayers[chainID], "0x2156BfA195C033CA2DF4Ff14e6Da0c617B8cb4F7")
+	}
+
 	for chainID, relayers := range chainIDToRelayers {
 		client, err := e.omnirpcClient.GetConfirmationsClient(ctx, chainID, 1)
 		if err != nil {
