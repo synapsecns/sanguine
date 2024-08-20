@@ -473,6 +473,7 @@ func (i *IntegrationSuite) TestDispute() {
 	})
 }
 
+//nolint:gocognit
 func (i *IntegrationSuite) TestConcurrentBridges() {
 	// start the relayer and guard
 	go func() {
@@ -620,7 +621,6 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 				i.NoError(err)
 			}
 		}
-
 	}()
 
 	// verify that each tx is relayed
