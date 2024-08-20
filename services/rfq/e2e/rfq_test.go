@@ -473,7 +473,7 @@ func (i *IntegrationSuite) TestDispute() {
 	})
 }
 
-func (i *IntegrationSuite) TestMultipleBridges() {
+func (i *IntegrationSuite) TestConcurrentBridges() {
 	// start the relayer and guard
 	go func() {
 		_ = i.relayer.Start(i.GetTestContext())
@@ -630,7 +630,6 @@ func (i *IntegrationSuite) TestMultipleBridges() {
 			if err != nil {
 				return false
 			}
-			fmt.Printf("result: %+v\n", result)
 			if result.Status <= reldb.ProvePosted {
 				return false
 			}
