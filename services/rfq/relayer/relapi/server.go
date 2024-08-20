@@ -96,7 +96,7 @@ func NewRelayerAPI(
 
 const (
 	getHealthRoute = "/health"
-	// TODO: replace with non-status specific endpoints
+	// TODO: replace with non-status specific endpoints.
 	getQuoteStatusByTxHashRoute = "/status"
 	getQuoteStatusByTxIDRoute   = "/status/by_tx_id"
 	getRetryRoute               = "/retry"
