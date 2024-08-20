@@ -3,7 +3,6 @@ package e2e_test
 import (
 	"fmt"
 	"math/big"
-	"sync"
 	"testing"
 	"time"
 
@@ -27,7 +26,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 	"github.com/synapsecns/sanguine/services/rfq/util"
-	"golang.org/x/sync/errgroup"
 )
 
 type IntegrationSuite struct {
@@ -133,7 +131,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	i.Approve(i.originBackend, originUSDC, i.relayerWallet)
 
 	// add initial USDC to user on origin
-	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realRFQAmount)
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realStartAmount)
 	i.Nil(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 	i.Approve(i.originBackend, originUSDC, i.userWallet)
@@ -506,7 +504,7 @@ func (i *IntegrationSuite) TestMultipleBridges() {
 	i.Approve(i.originBackend, originUSDC, i.relayerWallet)
 
 	// add initial USDC to user on origin
-	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realRFQAmount)
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realStartAmount)
 	i.Nil(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 	i.Approve(i.originBackend, originUSDC, i.userWallet)
@@ -542,52 +540,38 @@ func (i *IntegrationSuite) TestMultipleBridges() {
 
 	// send several txs at once and record txids
 	txIDs := [][32]byte{}
-	txMux := sync.Mutex{}
 	var nonce *big.Int
-	g, ctx := errgroup.WithContext(i.GetTestContext())
-	for k := 0; k < 10; k++ {
-		g.Go(func() error {
-			txMux.Lock()
-			tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
-				DstChainId:   uint32(i.destBackend.GetChainID()),
-				To:           i.userWallet.Address(),
-				OriginToken:  originUSDC.Address(),
-				SendChainGas: true,
-				DestToken:    destUSDC.Address(),
-				OriginAmount: realRFQAmount,
-				DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(5_000_000)),
-				Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
-			})
-			if err != nil {
-				txMux.Unlock()
-				return fmt.Errorf("failed to bridge: %w", err)
-			}
-			nonce = big.NewInt(int64(tx.Nonce()))
-			auth.TransactOpts.Nonce = new(big.Int).Add(nonce, big.NewInt(1))
-			txMux.Unlock()
-
-			i.originBackend.WaitForConfirmation(ctx, tx)
-			receipt, err := i.originBackend.TransactionReceipt(ctx, tx.Hash())
-			if err != nil {
-				return fmt.Errorf("failed to get receipt: %w", err)
-			}
-			for _, log := range receipt.Logs {
-				_, parsedEvent, ok := parser.ParseEvent(*log)
-				if !ok {
-					continue
-				}
-				event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRequested)
-				if ok {
-					txMux.Lock()
-					txIDs = append(txIDs, event.TransactionId)
-					txMux.Unlock()
-				}
-			}
-			return nil
+	numTxs := 100
+	for k := 0; k < numTxs; k++ {
+		tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
+			DstChainId:   uint32(i.destBackend.GetChainID()),
+			To:           i.userWallet.Address(),
+			OriginToken:  originUSDC.Address(),
+			SendChainGas: true,
+			DestToken:    destUSDC.Address(),
+			OriginAmount: realRFQAmount,
+			DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(5_000_000)),
+			Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
 		})
+		i.NoError(err)
+		nonce = big.NewInt(int64(tx.Nonce()))
+		auth.TransactOpts.Nonce = new(big.Int).Add(nonce, big.NewInt(1))
+
+		i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+		receipt, err := i.originBackend.TransactionReceipt(i.GetTestContext(), tx.Hash())
+		i.NoError(err)
+		for _, log := range receipt.Logs {
+			_, parsedEvent, ok := parser.ParseEvent(*log)
+			if !ok {
+				continue
+			}
+			event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRequested)
+			if ok {
+				txIDs = append(txIDs, event.TransactionId)
+			}
+		}
 	}
-	err = g.Wait()
-	i.NoError(err)
+	i.Equal(numTxs, len(txIDs))
 
 	// TODO: this, but cleaner
 	anvilClient, err := anvil.Dial(i.GetTestContext(), i.originBackend.RPCAddress())
