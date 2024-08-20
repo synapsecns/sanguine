@@ -111,7 +111,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 
 	// load token contracts
 	const startAmount = 1000
-	const rfqAmount = 1
+	const rfqAmount = 900
 	opts := i.destBackend.GetTxContext(i.GetTestContext(), nil)
 	destUSDC, destUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
 	realStartAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(startAmount), destUSDC.ContractHandle())
@@ -134,7 +134,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	i.Approve(i.originBackend, originUSDC, i.relayerWallet)
 
 	// add initial USDC to user on origin
-	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realStartAmount)
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realRFQAmount)
 	i.Nil(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 	i.Approve(i.originBackend, originUSDC, i.userWallet)
@@ -173,7 +173,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		SendChainGas: true,
 		DestToken:    destUSDC.Address(),
 		OriginAmount: realRFQAmount,
-		DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(10_000)),
+		DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(10_000_000)),
 		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
 	})
 	i.NoError(err)
