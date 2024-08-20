@@ -11,25 +11,43 @@ import (
 
 func (d *DBSuite) TestBlock() {
 	d.RunOnAllDBs(func(testDB reldb.Service) {
-		const testChainID = 5
-		_, err := testDB.LatestBlockForChain(d.GetTestContext(), testChainID)
+		const chainIDA = 5
+		const chainIDB = 6
+		_, err := testDB.LatestBlockForChain(d.GetTestContext(), chainIDA)
+		d.True(errors.Is(err, listener.ErrNoLatestBlockForChainID))
+		_, err = testDB.LatestBlockForChain(d.GetTestContext(), chainIDB)
 		d.True(errors.Is(err, listener.ErrNoLatestBlockForChainID))
 
-		testHeight := 10
+		testHeightA := 10
+		testHeightB := 100
 
-		err = testDB.PutLatestBlock(d.GetTestContext(), testChainID, uint64(testHeight))
+		err = testDB.PutLatestBlock(d.GetTestContext(), chainIDA, uint64(testHeightA))
 		d.NoError(err)
 
-		lastHeight, err := testDB.LatestBlockForChain(d.GetTestContext(), testChainID)
+		err = testDB.PutLatestBlock(d.GetTestContext(), chainIDB, uint64(testHeightB))
 		d.NoError(err)
-		d.Equal(lastHeight, uint64(testHeight))
 
-		testHeight++
-		err = testDB.PutLatestBlock(d.GetTestContext(), testChainID, uint64(testHeight))
+		lastHeight, err := testDB.LatestBlockForChain(d.GetTestContext(), chainIDA)
 		d.NoError(err)
-		lastHeight, err = testDB.LatestBlockForChain(d.GetTestContext(), testChainID)
+		d.Equal(lastHeight, uint64(testHeightA))
+
+		lastHeight, err = testDB.LatestBlockForChain(d.GetTestContext(), chainIDB)
 		d.NoError(err)
-		d.Equal(lastHeight, uint64(testHeight))
+		d.Equal(lastHeight, uint64(testHeightB))
+
+		testHeightA++
+		err = testDB.PutLatestBlock(d.GetTestContext(), chainIDA, uint64(testHeightA))
+		d.NoError(err)
+		lastHeight, err = testDB.LatestBlockForChain(d.GetTestContext(), chainIDA)
+		d.NoError(err)
+		d.Equal(lastHeight, uint64(testHeightA))
+
+		testHeightB++
+		err = testDB.PutLatestBlock(d.GetTestContext(), chainIDB, uint64(testHeightB))
+		d.NoError(err)
+		lastHeight, err = testDB.LatestBlockForChain(d.GetTestContext(), chainIDB)
+		d.NoError(err)
+		d.Equal(lastHeight, uint64(testHeightB))
 	})
 }
 

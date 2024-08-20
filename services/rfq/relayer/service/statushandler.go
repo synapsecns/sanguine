@@ -52,12 +52,6 @@ type QuoteRequestHandler struct {
 	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
 	// handlerMtx is the mutex for relaying.
 	handlerMtx mapmutex.StringMapMutex
-	// balanceMtx is the mutex for balances.
-	balanceMtx mapmutex.StringMapMutex
-}
-
-func getBalanceMtxKey(chainID uint32, token common.Address) string {
-	return fmt.Sprintf("%d-%s", chainID, token.Hex())
 }
 
 // Handler is the handler for a quote request.
@@ -87,7 +81,6 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		apiClient:           r.apiClient,
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
-		balanceMtx:          r.balanceMtx,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened

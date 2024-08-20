@@ -44,16 +44,18 @@ func (s *Store) PutLatestBlock(ctx context.Context, chainID, height uint64) erro
 
 // LatestBlockForChain gets the latest block for a chain.
 func (s *Store) LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error) {
-	blockWatchModel := LastIndexed{ChainID: chainID, ListenerName: s.listenerName}
-	err := s.db.WithContext(ctx).First(&blockWatchModel).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	var lastIndexed LastIndexed
+	tx := s.db.WithContext(ctx).
+		Where(fmt.Sprintf("%s = ?", chainIDFieldName), chainID).
+		Where(fmt.Sprintf("%s = ?", listenerNameFieldName), s.listenerName).
+		First(&lastIndexed)
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			return 0, ErrNoLatestBlockForChainID
 		}
-		return 0, fmt.Errorf("could not fetch latest block: %w", err)
+		return 0, fmt.Errorf("could not fetch latest block: %w", tx.Error)
 	}
-
-	return uint64(blockWatchModel.BlockNumber), nil
+	return uint64(lastIndexed.BlockNumber), nil
 }
 
 // SetListenerName sets the listener name.
