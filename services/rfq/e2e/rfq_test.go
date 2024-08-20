@@ -473,7 +473,7 @@ func (i *IntegrationSuite) TestDispute() {
 	})
 }
 
-//nolint:gocognit
+//nolint:gocognit,cyclop
 func (i *IntegrationSuite) TestConcurrentBridges() {
 	// start the relayer and guard
 	go func() {
