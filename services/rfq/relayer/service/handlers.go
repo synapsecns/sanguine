@@ -163,7 +163,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 	}
 
 	// check balance and mark it as CommitPending
-	err = q.commitPendingBalance(ctx, span, request)
+	err = q.commitPendingBalance(ctx, span, &request)
 	if err != nil {
 		return fmt.Errorf("could not commit pending balance: %w", err)
 	}
@@ -180,7 +180,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 }
 
 // commitPendingBalance locks the balance and marks the request as CommitPending.
-func (q *QuoteRequestHandler) commitPendingBalance(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) commitPendingBalance(ctx context.Context, span trace.Span, request *reldb.QuoteRequest) (err error) {
 	// lock the consumed balance
 	key := getBalanceMtxKey(q.Dest.ChainID, request.Transaction.DestToken)
 	span.SetAttributes(attribute.String("balance_lock_key", key))
