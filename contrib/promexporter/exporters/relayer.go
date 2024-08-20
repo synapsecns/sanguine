@@ -16,6 +16,7 @@ import (
 	rfqAPIModel "github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
+//nolint:cyclop
 func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 	// Fetch relayer addresses
 	quotes, err := e.fetchAllQuotes(ctx, url)
