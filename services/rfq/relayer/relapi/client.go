@@ -15,10 +15,6 @@ import (
 // RelayerClient is the interface for the relayer client.
 type RelayerClient interface {
 	Health(ctx context.Context) (ok bool, err error)
-	// Deprecated: use GetQuoteRequestByTxHash
-	GetQuoteRequestStatusByTxHash(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
-	// Deprecated: use GetQuoteRequestStatusByTxID
-	GetQuoteRequestStatusByTxID(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
 	RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error)
 	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)
 	GetTxHashByNonce(ctx context.Context, req *GetTxByNonceRequest) (*TxHashByNonceResponse, error)
@@ -58,8 +54,8 @@ func (r *relayerClient) Health(ctx context.Context) (ok bool, err error) {
 	return ok, nil
 }
 
-func (r *relayerClient) GetQuoteRequestStatusByTxHash(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error) {
-	var res GetQuoteRequestStatusResponse
+func (r *relayerClient) GetQuoteRequestStatusByTxHash(ctx context.Context, hash string) (*GetQuoteRequestResponse, error) {
+	var res GetQuoteRequestResponse
 
 	resp, err := r.client.R().SetContext(ctx).
 		SetQueryParam("hash", hash).
@@ -75,8 +71,8 @@ func (r *relayerClient) GetQuoteRequestStatusByTxHash(ctx context.Context, hash 
 	return &res, nil
 }
 
-func (r *relayerClient) GetQuoteRequestStatusByTxID(ctx context.Context, txid string) (*GetQuoteRequestStatusResponse, error) {
-	var res GetQuoteRequestStatusResponse
+func (r *relayerClient) GetQuoteRequestStatusByTxID(ctx context.Context, txid string) (*GetQuoteRequestResponse, error) {
+	var res GetQuoteRequestResponse
 
 	resp, err := r.client.R().SetContext(ctx).
 		SetQueryParam("id", txid).

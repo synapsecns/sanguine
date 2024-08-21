@@ -63,10 +63,10 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 	c.Equal(http.StatusOK, resp.StatusCode)
 
 	// Compare to expected result
-	var result relapi.GetQuoteRequestStatusResponse
+	var result relapi.GetQuoteRequestResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
-	expectedResult := relapi.GetQuoteRequestStatusResponse{
+	expectedResult := relapi.GetQuoteRequestResponse{
 		Status:        quoteRequest.Status.String(),
 		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
 		OriginTxHash:  quoteRequest.OriginTxHash.String(),
@@ -102,10 +102,10 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	c.Equal(http.StatusOK, resp.StatusCode)
 
 	// Compare to expected result
-	var result relapi.GetQuoteRequestStatusResponse
+	var result relapi.GetQuoteRequestResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
-	expectedResult := relapi.GetQuoteRequestStatusResponse{
+	expectedResult := relapi.GetQuoteRequestResponse{
 		Status:        quoteRequest.Status.String(),
 		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
 		OriginTxHash:  quoteRequest.OriginTxHash.String(),

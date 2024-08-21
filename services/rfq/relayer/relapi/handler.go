@@ -66,13 +66,16 @@ func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
 		return
 	}
 
-	resp := GetQuoteRequestStatusResponse{
-		Status:        quoteRequest.Status.String(),
-		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash:  quoteRequest.OriginTxHash.String(),
-		OriginChainID: quoteRequest.Transaction.OriginChainId,
-		DestChainID:   quoteRequest.Transaction.DestChainId,
-		DestTxHash:    quoteRequest.DestTxHash.String(),
+	resp := GetQuoteRequestResponse{
+		Status:          quoteRequest.Status.String(),
+		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
+		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
+		OriginTxHash:    quoteRequest.OriginTxHash.String(),
+		DestTxHash:      quoteRequest.DestTxHash.String(),
+		OriginChainID:   quoteRequest.Transaction.OriginChainId,
+		DestChainID:     quoteRequest.Transaction.DestChainId,
+		OriginToken:     quoteRequest.Transaction.OriginToken.Hex(),
+		DestToken:       quoteRequest.Transaction.DestToken.Hex(),
 	}
 	c.JSON(http.StatusOK, resp)
 }
@@ -99,13 +102,16 @@ func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
 		return
 	}
 
-	resp := GetQuoteRequestStatusResponse{
-		Status:        quoteRequest.Status.String(),
-		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash:  quoteRequest.OriginTxHash.String(),
-		OriginChainID: quoteRequest.Transaction.OriginChainId,
-		DestChainID:   quoteRequest.Transaction.DestChainId,
-		DestTxHash:    quoteRequest.DestTxHash.String(),
+	resp := GetQuoteRequestResponse{
+		Status:          quoteRequest.Status.String(),
+		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
+		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
+		OriginTxHash:    quoteRequest.OriginTxHash.String(),
+		DestTxHash:      quoteRequest.DestTxHash.String(),
+		OriginChainID:   quoteRequest.Transaction.OriginChainId,
+		DestChainID:     quoteRequest.Transaction.DestChainId,
+		OriginToken:     quoteRequest.Transaction.OriginToken.Hex(),
+		DestToken:       quoteRequest.Transaction.DestToken.Hex(),
 	}
 	c.JSON(http.StatusOK, resp)
 }
