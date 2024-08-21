@@ -171,6 +171,12 @@ func getBestRebalance(candidates []RebalanceData) (best *RebalanceData) {
 
 // getRebalanceAmount calculates the amount to rebalance based on the configured thresholds.
 //
+// At a high level, there are three steps:
+//  1. Evaluate the relevant maintenance / initial thresholds on origin and destination
+//  2. Arrive at an initial rebalance amount, first targeting the initial threshold on origin,
+//     and then clipping by the initial threshold on destination if necessary
+//  3. Filter the rebalance amount by the configured min and max
+//
 //nolint:cyclop,nilnil
 func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, rebalance *RebalanceData) (amount *big.Int, err error) {
 	span := trace.SpanFromContext(ctx)
@@ -206,8 +212,6 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	// initially, set the rebalance amount such that it would take origin to the initial threshold
 	initialThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPctDest/100)).Int(nil)
 	amount = new(big.Int).Sub(rebalance.OriginMetadata.Balance, initialThreshOrigin)
-
-	// no need to rebalance since amount would not be positive
 	if amount.Cmp(big.NewInt(0)) <= 0 {
 		//nolint:nilnil
 		return nil, nil
@@ -218,6 +222,12 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	destDelta := new(big.Int).Sub(initialThreshDest, rebalance.DestMetadata.Balance)
 	if destDelta.Cmp(big.NewInt(0)) > 0 && destDelta.Cmp(amount) < 0 {
 		amount = destDelta
+	}
+	if span != nil {
+		span.SetAttributes(
+			attribute.String("initial_thresh_dest", initialThreshDest.String()),
+			attribute.String("dest_delta", destDelta.String()),
+		)
 	}
 
 	// make sure that the rebalance amount does not take origin below maintenance threshold
@@ -253,7 +263,6 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	}
 	if span != nil {
 		span.SetAttributes(
-			attribute.String("initial_thresh_dest", initialThreshDest.String()),
 			attribute.String("rebalance_amount", amount.String()),
 			attribute.String("max_rebalance_amount", maxAmount.String()),
 		)
