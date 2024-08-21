@@ -205,7 +205,6 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 
 	// no need to rebalance if we are not below maintenance threshold on destination
 	if rebalance.DestMetadata.Balance.Cmp(maintenanceThreshDest) > 0 {
-		fmt.Println("returning nil")
 		return nil, nil
 	}
 
