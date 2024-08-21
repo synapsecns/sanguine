@@ -11,6 +11,7 @@ import {
   getPublicClient,
   waitForTransactionReceipt,
 } from '@wagmi/core'
+
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
@@ -37,9 +38,9 @@ import {
   updateFromValue,
   setBridgeQuote,
   setIsLoading,
-  setIsWalletPending,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
+import { setIsWalletPending } from '@/slices/wallet/reducer'
 import {
   setShowDestinationAddress,
   setShowSettingsSlideOver,
@@ -68,6 +69,7 @@ import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { screenAddress } from '@/utils/screenAddress'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -88,8 +90,10 @@ const StateManagedBridge = () => {
     debouncedFromValue,
     destinationAddress,
     isLoading: isQuoteLoading,
-    isWalletPending,
   }: BridgeState = useBridgeState()
+
+  const { isWalletPending } = useWalletState()
+
   const { showSettingsSlideOver, showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
@@ -190,13 +194,39 @@ const StateManagedBridge = () => {
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
+      const nonRfqQuote = activeQuotes.find(
+        (quote) => quote.bridgeModuleName !== 'SynapseRFQ'
+      )
+
       let quote
 
-      if (rfqQuote) {
-        quote = rfqQuote
+      if (rfqQuote && nonRfqQuote) {
+        const rfqMaxAmountOut = BigInt(rfqQuote.maxAmountOut.toString())
+        const nonRfqMaxAmountOut = BigInt(nonRfqQuote.maxAmountOut.toString())
+
+        const allowedPercentileDifference = 30n
+        const maxDifference =
+          (nonRfqMaxAmountOut * allowedPercentileDifference) / 100n
+
+        if (rfqMaxAmountOut > nonRfqMaxAmountOut - maxDifference) {
+          quote = rfqQuote
+        } else {
+          quote = nonRfqQuote
+
+          segmentAnalyticsEvent(`[Bridge] use non-RFQ quote over RFQ`, {
+            bridgeModuleName: nonRfqQuote.bridgeModuleName,
+            originChainId: fromChainId,
+            originToken: fromToken.symbol,
+            originTokenAddress: fromToken.addresses[fromChainId],
+            destinationChainId: toChainId,
+            destinationToken: toToken.symbol,
+            destinationTokenAddress: toToken.addresses[toChainId],
+            rfqQuoteAmountOut: rfqQuote.maxAmountOut.toString(),
+            nonRfqMaxAmountOut: nonRfqQuote.maxAmountOut.toString(),
+          })
+        }
       } else {
-        /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-        quote = activeQuotes[0]
+        quote = rfqQuote ?? nonRfqQuote
       }
 
       const {
@@ -367,7 +397,6 @@ const StateManagedBridge = () => {
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
-        address,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -408,7 +437,7 @@ const StateManagedBridge = () => {
           ? destinationAddress
           : address
 
-      const data = await synapseSDK.bridge(
+      const payload = await synapseSDK.bridge(
         toAddress,
         bridgeQuote.routerAddress,
         fromChainId,
@@ -418,20 +447,6 @@ const StateManagedBridge = () => {
         bridgeQuote.originQuery,
         bridgeQuote.destQuery
       )
-
-      const payload =
-        fromToken?.addresses[fromChainId as keyof Token['addresses']] ===
-          zeroAddress ||
-        fromToken?.addresses[fromChainId as keyof Token['addresses']] === ''
-          ? {
-              data: data.data,
-              to: data.to,
-              value: stringToBigInt(
-                debouncedFromValue,
-                fromToken?.decimals[fromChainId]
-              ),
-            }
-          : data
 
       /** Setting custom gas limit for only Polygon transactions */
       let gasEstimate = undefined
@@ -461,7 +476,6 @@ const StateManagedBridge = () => {
         { id: 'bridge-in-progress-popup', duration: Infinity }
       )
       segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
-        address,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -524,16 +538,11 @@ const StateManagedBridge = () => {
       return tx
     } catch (error) {
       segmentAnalyticsEvent(`[Bridge]  error bridging`, {
-        address,
         errorCode: error.code,
       })
       dispatch(removePendingBridgeTransaction(currentTimestamp))
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
-
-      if (isTransactionUserRejectedError(error)) {
-        getAndSetBridgeQuote()
-      }
 
       /** Fetch balances if await transaction receipt times out */
       if (isTransactionReceiptError(error)) {
@@ -564,6 +573,7 @@ const StateManagedBridge = () => {
             onClick={() =>
               dispatch(setShowSettingsSlideOver(!showSettingsSlideOver))
             }
+            disabled={isWalletPending}
           >
             <SettingsToggle showSettingsToggle={!showSettingsSlideOver} />
           </Button>
@@ -585,6 +595,7 @@ const StateManagedBridge = () => {
                   dispatch(setToChainId(fromChainId))
                   dispatch(setToToken(fromToken))
                 }}
+                disabled={isWalletPending}
               />
               <OutputContainer />
               <Warning />

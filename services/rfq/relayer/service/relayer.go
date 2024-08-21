@@ -61,8 +61,10 @@ type Relayer struct {
 	decimalsCache  *xsync.MapOf[string, *uint8]
 	// semaphore is used to limit the number of concurrent requests
 	semaphore *semaphore.Weighted
-	// handlerMtx is used to synchronize handling of relay requests
-	handlerMtx   mapmutex.StringMapMutex
+	// handlerMtx is used to synchronize handling of relay requests, keyed on transaction ID
+	handlerMtx mapmutex.StringMapMutex
+	// balanceMtx is used to synchronize balance requests, keyed on a chainID and tokenAddress pair
+	balanceMtx   mapmutex.StringMapMutex
 	otelRecorder iOtelRecorder
 }
 
@@ -105,7 +107,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, rfqAddr, uint64(startBlock.Int64()), metricHandler)
+		chainListener, err := listener.NewChainListener(chainClient, store, rfqAddr, uint64(startBlock.Int64()), metricHandler, listener.WithName("relayer"))
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
@@ -143,7 +145,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get api server: %w", err)
 	}
 
-	otelRecorder, err := newOtelRecorder(metricHandler, sg)
+	otelRecorder, err := newOtelRecorder(metricHandler, store, sg)
 	if err != nil {
 		return nil, fmt.Errorf("could not get otel recorder: %w", err)
 	}
@@ -165,6 +167,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		apiClient:      apiClient,
 		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
 		handlerMtx:     mapmutex.NewStringMapMutex(),
+		balanceMtx:     mapmutex.NewStringMapMutex(),
 		otelRecorder:   otelRecorder,
 	}
 	return &rel, nil
@@ -431,7 +434,7 @@ func (r *Relayer) processDB(ctx context.Context, serial bool, matchStatuses ...r
 				defer wg.Done()
 				err = r.processRequest(ctx, request)
 				if err != nil {
-					logger.Errorf("could not process request: %w", err)
+					logger.Errorf("could not process request: %v", err)
 				}
 			}()
 		}

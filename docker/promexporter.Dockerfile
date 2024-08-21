@@ -12,4 +12,6 @@ USER nonroot:nonroot
 WORKDIR /app
 COPY --chown=nonroot:nonroot promexporter /app/promexporter
 
+
+
 ENTRYPOINT ["/app/promexporter"]

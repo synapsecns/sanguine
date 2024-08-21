@@ -351,7 +351,7 @@ export const METIS: Chain = {
   },
   nativeCurrency: {
     name: 'Metis',
-    symbol: 'METIS',
+    symbol: 'Metis',
     decimals: 18,
     address: zeroAddress,
     icon: metisImg,

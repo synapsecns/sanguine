@@ -34,6 +34,8 @@ type PendingProvenModel struct {
 	UpdatedAt time.Time
 	// Origin is the origin chain id
 	Origin uint32
+	// RelayerAddress is the address of the relayer that called prove()
+	RelayerAddress string
 	// TransactionID is the transaction id of the event
 	TransactionID string `gorm:"column:transaction_id;primaryKey"`
 	// TxHash is the hash of the relay transaction on destination
@@ -45,10 +47,11 @@ type PendingProvenModel struct {
 // FromPendingProven converts a quote request to an object that can be stored in the db.
 func FromPendingProven(proven guarddb.PendingProven) PendingProvenModel {
 	return PendingProvenModel{
-		Origin:        proven.Origin,
-		TransactionID: hexutil.Encode(proven.TransactionID[:]),
-		TxHash:        proven.TxHash.Hex(),
-		Status:        proven.Status,
+		Origin:         proven.Origin,
+		RelayerAddress: proven.RelayerAddress.Hex(),
+		TransactionID:  hexutil.Encode(proven.TransactionID[:]),
+		TxHash:         proven.TxHash.Hex(),
+		Status:         proven.Status,
 	}
 }
 
@@ -65,10 +68,11 @@ func (p PendingProvenModel) ToPendingProven() (*guarddb.PendingProven, error) {
 	}
 
 	return &guarddb.PendingProven{
-		Origin:        p.Origin,
-		TransactionID: transactionID,
-		TxHash:        common.HexToHash(p.TxHash),
-		Status:        p.Status,
+		Origin:         p.Origin,
+		RelayerAddress: common.HexToAddress(p.RelayerAddress),
+		TransactionID:  transactionID,
+		TxHash:         common.HexToHash(p.TxHash),
+		Status:         p.Status,
 	}, nil
 }
 
