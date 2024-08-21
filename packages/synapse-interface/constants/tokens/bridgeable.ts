@@ -1223,10 +1223,10 @@ export const METIS = new Token({
     [CHAINS.KLAYTN.id]: 18,
     [CHAINS.METIS.id]: 18,
   },
-  symbol: 'METIS',
+  symbol: 'Metis',
   name: 'Metis Token',
-  swapableType: 'METIS',
+  swapableType: 'Metis',
   logo: metisLogo,
   color: 'blue',
-  routeSymbol: 'METIS',
+  routeSymbol: 'Metis',
 })

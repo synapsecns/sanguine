@@ -931,7 +931,7 @@ export const BRIDGE_MAP = {
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
-      symbol: 'METIS',
+      symbol: 'Metis',
       origin: ['Metis'],
       destination: ['Metis'],
       swappable: [],
