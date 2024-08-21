@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.35.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.7...@synapsecns/synapse-interface@0.35.0) (2024-08-21)
+
+
+### Features
+
+* **synapse-interface:** METIS token ([#3044](https://github.com/synapsecns/sanguine/issues/3044)) ([d73373b](https://github.com/synapsecns/sanguine/commit/d73373b93395fbe09064671c39ec774ca521330f))
+
+
+
+
+
 ## [0.34.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.6...@synapsecns/synapse-interface@0.34.7) (2024-08-19)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
