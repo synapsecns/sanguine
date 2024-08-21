@@ -176,36 +176,36 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	span := trace.SpanFromContext(ctx)
 
 	// get the maintenance and initial values for the destination chain
-	maintenancePct, err := cfg.GetMaintenanceBalancePct(rebalance.DestMetadata.ChainID, rebalance.DestMetadata.Addr.Hex())
+	maintenancePctDest, err := cfg.GetMaintenanceBalancePct(rebalance.DestMetadata.ChainID, rebalance.DestMetadata.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
 	}
-	initialPct, err := cfg.GetInitialBalancePct(rebalance.DestMetadata.ChainID, rebalance.DestMetadata.Addr.Hex())
+	initialPctDest, err := cfg.GetInitialBalancePct(rebalance.DestMetadata.ChainID, rebalance.DestMetadata.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get initial pct: %w", err)
 	}
 
 	// calculate maintenance threshold relative to total balance
 	totalBalance := getTotalBalance(cfg, tokens, rebalance.OriginMetadata.Name, rebalance.Method)
-	maintenanceThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePct/100)).Int(nil)
+	maintenanceThreshDest, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePctDest/100)).Int(nil)
 	if span != nil {
-		span.SetAttributes(attribute.Float64("maintenance_pct", maintenancePct))
-		span.SetAttributes(attribute.Float64("initial_pct", initialPct))
+		span.SetAttributes(attribute.Float64("maintenance_pct_dest", maintenancePctDest))
+		span.SetAttributes(attribute.Float64("initial_pct_dest", initialPctDest))
 		span.SetAttributes(attribute.String("max_token_balance", rebalance.OriginMetadata.Balance.String()))
 		span.SetAttributes(attribute.String("min_token_balance", rebalance.DestMetadata.Balance.String()))
 		span.SetAttributes(attribute.String("total_balance", totalBalance.String()))
-		span.SetAttributes(attribute.String("maintenance_thresh", maintenanceThresh.String()))
+		span.SetAttributes(attribute.String("maintenance_thresh_dest", maintenanceThreshDest.String()))
 	}
 
 	// no need to rebalance if we are not below maintenance threshold on destination
-	if rebalance.DestMetadata.Balance.Cmp(maintenanceThresh) > 0 {
+	if rebalance.DestMetadata.Balance.Cmp(maintenanceThreshDest) > 0 {
 		fmt.Println("returning nil")
 		return nil, nil
 	}
 
-	// calculate the amount to rebalance vs the initial threshold on destination
-	initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
-	amount = new(big.Int).Sub(rebalance.OriginMetadata.Balance, initialThresh)
+	// initially, set the rebalance amount such that it would take origin to the initial threshold
+	initialThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPctDest/100)).Int(nil)
+	amount = new(big.Int).Sub(rebalance.OriginMetadata.Balance, initialThreshOrigin)
 
 	// no need to rebalance since amount would not be positive
 	if amount.Cmp(big.NewInt(0)) <= 0 {
@@ -213,25 +213,11 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 		return nil, nil
 	}
 
-	// filter the rebalance amount by the configured min
-	minAmount := cfg.GetMinRebalanceAmount(rebalance.OriginMetadata.ChainID, rebalance.OriginMetadata.Addr)
-	if amount.Cmp(minAmount) < 0 {
-		// no need to rebalance
-		//nolint:nilnil
-		return nil, nil
-	}
-
-	// clip the rebalance amount by the configured max
-	maxAmount := cfg.GetMaxRebalanceAmount(rebalance.OriginMetadata.ChainID, rebalance.OriginMetadata.Addr)
-	if amount.Cmp(maxAmount) > 0 {
-		amount = maxAmount
-	}
-	if span != nil {
-		span.SetAttributes(
-			attribute.String("initial_thresh", initialThresh.String()),
-			attribute.String("rebalance_amount", amount.String()),
-			attribute.String("max_rebalance_amount", maxAmount.String()),
-		)
+	// if destination needs less than the current amount, clip by initial threshold on dest
+	initialThreshDest, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPctDest/100)).Int(nil)
+	destDelta := new(big.Int).Sub(initialThreshDest, rebalance.DestMetadata.Balance)
+	if destDelta.Cmp(big.NewInt(0)) > 0 && destDelta.Cmp(amount) < 0 {
+		amount = destDelta
 	}
 
 	// make sure that the rebalance amount does not take origin below maintenance threshold
@@ -250,6 +236,27 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 			)
 		}
 		return nil, nil
+	}
+
+	// filter the rebalance amount by the configured min
+	minAmount := cfg.GetMinRebalanceAmount(rebalance.OriginMetadata.ChainID, rebalance.OriginMetadata.Addr)
+	if amount.Cmp(minAmount) < 0 {
+		// no need to rebalance
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	// clip the rebalance amount by the configured max
+	maxAmount := cfg.GetMaxRebalanceAmount(rebalance.OriginMetadata.ChainID, rebalance.OriginMetadata.Addr)
+	if amount.Cmp(maxAmount) > 0 {
+		amount = maxAmount
+	}
+	if span != nil {
+		span.SetAttributes(
+			attribute.String("initial_thresh_dest", initialThreshDest.String()),
+			attribute.String("rebalance_amount", amount.String()),
+			attribute.String("max_rebalance_amount", maxAmount.String()),
+		)
 	}
 
 	return amount, nil
