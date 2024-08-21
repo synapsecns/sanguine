@@ -120,12 +120,10 @@ func getRebalanceForMethod(ctx context.Context, cfg relconfig.Config, inv map[in
 	return rebalance, nil
 }
 
-// getCandidateChains gets the respective token metadata for each chain that supports the rebalance method.
+// getCandidateChains gets the respective token metadata for each chain that supports the rebalance method for the given token.
 func getCandidateChains(cfg relconfig.Config, inv map[int]map[common.Address]*TokenMetadata, method relconfig.RebalanceMethod, tokenName string) (map[int]*TokenMetadata, error) {
 	candidateChains := map[int]*TokenMetadata{}
 	for chainID, chainCfg := range cfg.Chains {
-		var validCandidate bool
-		var candidateMetadata *TokenMetadata
 		for name, tokenCfg := range chainCfg.Tokens {
 			if name != tokenName {
 				continue
@@ -133,22 +131,19 @@ func getCandidateChains(cfg relconfig.Config, inv map[int]map[common.Address]*To
 
 			// check that the token supports given rebalance method
 			if supportsRebalanceMethod(cfg, chainID, tokenCfg.Address, method) {
-				validCandidate = true
-				candidateMetadata = inv[chainID][common.HexToAddress(tokenCfg.Address)]
-				if candidateMetadata == nil {
+				candidateChains[chainID] = inv[chainID][common.HexToAddress(tokenCfg.Address)]
+				if candidateChains[chainID] == nil {
 					return nil, fmt.Errorf("could not get token metadata for chain %d and addr %s", chainID, tokenCfg.Address)
 				}
 				break
 			}
-		}
-		if validCandidate {
-			candidateChains[chainID] = candidateMetadata
 		}
 	}
 
 	return candidateChains, nil
 }
 
+// getBestRebalance selects the rebalance with the largest delta between origin and destination balance.
 func getBestRebalance(candidates []RebalanceData) (best *RebalanceData) {
 	var maxDelta *big.Int
 	best = nil
@@ -287,6 +282,7 @@ func getTotalBalance(cfg relconfig.Config, tokens map[int]map[common.Address]*To
 	return totalBalance
 }
 
+// supportsRebalanceMethod checks if a given token supports the provided rebalance method.
 func supportsRebalanceMethod(cfg relconfig.Config, chainID int, addr string, method relconfig.RebalanceMethod) bool {
 	rebalanceMethods, _ := cfg.GetRebalanceMethods(chainID, addr)
 	for _, m := range rebalanceMethods {

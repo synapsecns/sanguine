@@ -48,8 +48,7 @@ type Manager interface {
 	ApproveAllTokens(ctx context.Context) error
 	// HasSufficientGas checks if there is sufficient gas for a given route.
 	HasSufficientGas(ctx context.Context, chainID int, gasValue *big.Int) (bool, error)
-	// Rebalance checks whether a given token should be rebalanced, and
-	// executes the rebalance if necessary.
+	// Rebalance attempts any rebalances that could be executed across all supported tokens and chains.
 	Rebalance(ctx context.Context) error
 	// GetTokenMetadata gets the metadata for a token.
 	GetTokenMetadata(chainID int, token common.Address) (*TokenMetadata, error)
@@ -477,7 +476,7 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context) (err error) {
 func (i *inventoryManagerImpl) tryExecuteRebalance(ctx context.Context, rebalance *RebalanceData) (err error) {
 	ctx, span := i.handler.Tracer().Start(ctx, "tryExecuteRebalance", trace.WithAttributes(
 		attribute.Int("origin", rebalance.OriginMetadata.ChainID),
-		attribute.Int("dest", rebalance.OriginMetadata.ChainID),
+		attribute.Int("dest", rebalance.DestMetadata.ChainID),
 		attribute.String("origin_token", rebalance.OriginMetadata.Addr.Hex()),
 		attribute.String("dest_token", rebalance.DestMetadata.Addr.Hex()),
 		attribute.String("origin_balance", rebalance.OriginMetadata.Balance.String()),
