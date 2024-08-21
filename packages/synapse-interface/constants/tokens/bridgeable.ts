@@ -1216,7 +1216,7 @@ export const METIS = new Token({
   addresses: {
     [CHAINS.DFK.id]: '0x43E8E55792D6317328e5c6B0A0C89eF4b8102Fa2',
     [CHAINS.KLAYTN.id]: '0x543f1b2176F7E677a95D01ca83551FAa08F83D9F',
-    [CHAINS.METIS.id]: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+    [CHAINS.METIS.id]: zeroAddress,
   },
   decimals: {
     [CHAINS.DFK.id]: 18,
