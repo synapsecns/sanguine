@@ -202,6 +202,173 @@ func TestGetRebalances(t *testing.T) {
 		assert.Nil(t, rebalances["USDC"])
 	})
 
+	t.Run("RebalanceSingleMethodToOriginInitial", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               common.HexToAddress("0x1").Hex(),
+							RebalanceMethods:      []string{"circlecctp"},
+							MaintenanceBalancePct: 10,
+							InitialBalancePct:     50,
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               common.HexToAddress("0x2").Hex(),
+							RebalanceMethods:      []string{"circlecctp"},
+							MaintenanceBalancePct: 10,
+							InitialBalancePct:     80,
+						},
+					},
+				},
+			},
+		}
+		tokens := map[int]map[common.Address]*inventory.TokenMetadata{
+			1: {
+				common.HexToAddress("0x1"): {
+					Name:    "USDC",
+					Balance: big.NewInt(1_000_000),
+					ChainID: 1,
+					Addr:    common.HexToAddress("0x1"),
+				},
+			},
+			2: {
+				common.HexToAddress("0x2"): {
+					Name:    "USDC",
+					Balance: big.NewInt(9_000_000),
+					ChainID: 2,
+					Addr:    common.HexToAddress("0x2"),
+				},
+			},
+		}
+		rebalances, err := inventory.GetRebalances(context.Background(), cfg, tokens)
+		assert.Nil(t, err)
+		expectedRebalance := &inventory.RebalanceData{
+			Method:         relconfig.RebalanceMethodCircleCCTP,
+			OriginMetadata: tokens[2][common.HexToAddress("0x2")],
+			DestMetadata:   tokens[1][common.HexToAddress("0x1")],
+			Amount:         big.NewInt(1_000_000),
+		}
+		assert.Equal(t, rebalances["USDC"], expectedRebalance)
+	})
+
+	t.Run("RebalanceSingleMethodToDestInitial", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               common.HexToAddress("0x1").Hex(),
+							RebalanceMethods:      []string{"circlecctp"},
+							MaintenanceBalancePct: 10,
+							InitialBalancePct:     20,
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               common.HexToAddress("0x2").Hex(),
+							RebalanceMethods:      []string{"circlecctp"},
+							MaintenanceBalancePct: 10,
+							InitialBalancePct:     50,
+						},
+					},
+				},
+			},
+		}
+		tokens := map[int]map[common.Address]*inventory.TokenMetadata{
+			1: {
+				common.HexToAddress("0x1"): {
+					Name:    "USDC",
+					Balance: big.NewInt(1_000_000),
+					ChainID: 1,
+					Addr:    common.HexToAddress("0x1"),
+				},
+			},
+			2: {
+				common.HexToAddress("0x2"): {
+					Name:    "USDC",
+					Balance: big.NewInt(9_000_000),
+					ChainID: 2,
+					Addr:    common.HexToAddress("0x2"),
+				},
+			},
+		}
+		rebalances, err := inventory.GetRebalances(context.Background(), cfg, tokens)
+		assert.Nil(t, err)
+		expectedRebalance := &inventory.RebalanceData{
+			Method:         relconfig.RebalanceMethodCircleCCTP,
+			OriginMetadata: tokens[2][common.HexToAddress("0x2")],
+			DestMetadata:   tokens[1][common.HexToAddress("0x1")],
+			Amount:         big.NewInt(1_000_000),
+		}
+		assert.Equal(t, rebalances["USDC"], expectedRebalance)
+	})
+
+	t.Run("RebalanceSingleMethodAboveMax", func(t *testing.T) {
+		cfg := relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				1: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               common.HexToAddress("0x1").Hex(),
+							RebalanceMethods:      []string{"circlecctp"},
+							MaintenanceBalancePct: 10,
+							InitialBalancePct:     50,
+							Decimals:              6,
+						},
+					},
+				},
+				2: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               common.HexToAddress("0x2").Hex(),
+							RebalanceMethods:      []string{"circlecctp"},
+							MaintenanceBalancePct: 10,
+							InitialBalancePct:     50,
+							MaxRebalanceAmount:    "1",
+							Decimals:              6,
+						},
+					},
+				},
+			},
+		}
+		tokens := map[int]map[common.Address]*inventory.TokenMetadata{
+			1: {
+				common.HexToAddress("0x1"): {
+					Name:     "USDC",
+					Balance:  big.NewInt(1_000_000),
+					ChainID:  1,
+					Addr:     common.HexToAddress("0x1"),
+					Decimals: 6,
+				},
+			},
+			2: {
+				common.HexToAddress("0x2"): {
+					Name:     "USDC",
+					Balance:  big.NewInt(9_000_000),
+					ChainID:  2,
+					Addr:     common.HexToAddress("0x2"),
+					Decimals: 6,
+				},
+			},
+		}
+		rebalances, err := inventory.GetRebalances(context.Background(), cfg, tokens)
+		assert.Nil(t, err)
+		expectedRebalance := &inventory.RebalanceData{
+			Method:         relconfig.RebalanceMethodCircleCCTP,
+			OriginMetadata: tokens[2][common.HexToAddress("0x2")],
+			DestMetadata:   tokens[1][common.HexToAddress("0x1")],
+			Amount:         big.NewInt(1_000_000),
+		}
+		assert.Equal(t, rebalances["USDC"], expectedRebalance)
+	})
+
 	t.Run("RebalanceMultipleMethods", func(t *testing.T) {
 		cfg := relconfig.Config{
 			Chains: map[int]relconfig.ChainConfig{
