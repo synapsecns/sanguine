@@ -28,6 +28,7 @@
   },
   "description": "A node.js project exposing a rest api for synapse sdk quotes",
   "devDependencies": {
+    "@types/supertest": "^6.0.2",
     "concurrently": "^8.2.0",
     "lodash": "^4.17.21",
     "nodemon": "^3.0.1",
