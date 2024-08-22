@@ -10,10 +10,15 @@ The Synapse RFQ contract source code can be found [here](https://github.com/syna
 | Optimism | [0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E](https://optimistic.etherscan.io/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E) |
 | Scroll   | [0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E](https://scrollscan.com/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)          |
 | Linea    | [0x34F52752975222d5994C206cE08C1d5B329f24dD](https://lineascan.build/address/0x34F52752975222d5994C206cE08C1d5B329f24dD)         |
+<<<<<<< HEAD
 | BNB Chain| [0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E](https://bscscan.com/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)             |
 | Blast    | [0x34F52752975222d5994C206cE08C1d5B329f24dD](https://blastscan.io/address/0x34F52752975222d5994C206cE08C1d5B329f24dD)            |
 
 
+=======
+| Blast    | [0x34F52752975222d5994C206cE08C1d5B329f24dD](https://blastscan.io/address/0x34F52752975222d5994C206cE08C1d5B329f24dD)            |
+| BSC      | [0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E](https://bscscan.com/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)             |
+>>>>>>> master
 
 ### On-Chain Architecture & Transaction Flow
 

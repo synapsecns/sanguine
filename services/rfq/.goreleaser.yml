@@ -8,9 +8,11 @@ builds:
   # Linux AMD64
   - id: api
     binary: api
+    gcflags:
+      - all=-dwarflocationlists=true
     ldflags:
       # We need to build a static binary because we are building in a glibc based system and running in a musl container
-      - -s -w -extldflags '-static'
+       - -extldflags '-static' -X github.com/synapsecns/sanguine/core/config.DefaultVersion={{.Version}} -X github.com/synapsecns/sanguine/core/config.DefaultCommit={{.Commit}} -X github.com/synapsecns/sanguine/core/config.DefaultDate={{ .CommitDate }}
     # required workaround for https://github.com/Shopify/sarama/issues/2206
     # See: https://github.com/golang/go/issues/35067#issuecomment-544805311 because we're statically compiling,
     # without forcing netgo, we use the cgo resolver which will not work for .local (a canonical tld in kubernetes)
@@ -30,9 +32,11 @@ builds:
   # Linux AMD64
   - id: relayer
     binary: relayer
+    gcflags:
+      - all=-dwarflocationlists=true
     ldflags:
       # We need to build a static binary because we are building in a glibc based system and running in a musl container
-      - -s -w -extldflags '-static'
+       - -extldflags '-static' -X github.com/synapsecns/sanguine/core/config.DefaultVersion={{.Version}} -X github.com/synapsecns/sanguine/core/config.DefaultCommit={{.Commit}} -X github.com/synapsecns/sanguine/core/config.DefaultDate={{ .CommitDate }}
     # see above about workaround
     tags:
       - netgo
@@ -47,9 +51,11 @@ builds:
       - amd64
   - id: rfqdecoder
     binary: rfqdecoder
+    gcflags:
+      - all=-dwarflocationlists=true
     ldflags:
       # We need to build a static binary because we are building in a glibc based system and running in a musl container
-      - -s -w -extldflags '-static'
+       - -extldflags '-static' -X github.com/synapsecns/sanguine/core/config.DefaultVersion={{.Version}} -X github.com/synapsecns/sanguine/core/config.DefaultCommit={{.Commit}} -X github.com/synapsecns/sanguine/core/config.DefaultDate={{ .CommitDate }}
     # see above about workaround
     tags:
       - netgo

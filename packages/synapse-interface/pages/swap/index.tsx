@@ -42,6 +42,8 @@ import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { wagmiConfig } from '@/wagmiConfig'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
+import { useWalletState } from '@/slices/wallet/hooks'
+import { setIsWalletPending } from '@/slices/wallet/reducer'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -58,6 +60,8 @@ const StateManagedSwap = () => {
 
   const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
     useSwapState()
+
+  const { isWalletPending } = useWalletState()
 
   const {
     isSwapPaused,
@@ -220,6 +224,7 @@ const StateManagedSwap = () => {
 
   const approveTxn = async () => {
     try {
+      dispatch(setIsWalletPending(true))
       const tx = approveToken(
         swapQuote?.routerAddress,
         swapChainId,
@@ -231,6 +236,8 @@ const StateManagedSwap = () => {
       getAndSetSwapQuote()
     } catch (error) {
       return txErrorHandler(error)
+    } finally {
+      dispatch(setIsWalletPending(false))
     }
   }
 
@@ -246,6 +253,8 @@ const StateManagedSwap = () => {
   }
   const executeSwap = async () => {
     const currentChainName = CHAINS_BY_ID[swapChainId]?.name
+
+    dispatch(setIsWalletPending(true))
 
     let pendingPopup: any
     pendingPopup = toast(
@@ -269,27 +278,13 @@ const StateManagedSwap = () => {
         chainId: swapChainId,
       })
 
-      const data = await synapseSDK.swap(
+      const payload = await synapseSDK.swap(
         swapChainId,
         address,
         swapFromToken.addresses[swapChainId],
         stringToBigInt(swapFromValue, swapFromToken.decimals[swapChainId]),
         swapQuote.quote
       )
-
-      const payload =
-        swapFromToken.addresses[swapChainId as keyof Token['addresses']] ===
-          zeroAddress ||
-        swapFromToken.addresses[swapChainId as keyof Token['addresses']] === ''
-          ? {
-              data: data.data,
-              to: data.to,
-              value: stringToBigInt(
-                swapFromValue,
-                swapFromToken.decimals[swapChainId]
-              ),
-            }
-          : data
 
       const tx = await wallet.sendTransaction(payload)
 
@@ -345,6 +340,8 @@ const StateManagedSwap = () => {
 
       toast.dismiss(pendingPopup)
       txErrorHandler(error)
+    } finally {
+      dispatch(setIsWalletPending(false))
     }
   }
 
@@ -363,6 +360,7 @@ const StateManagedSwap = () => {
                 dispatch(setSwapFromToken(swapToToken))
                 dispatch(setSwapToToken(swapFromToken))
               }}
+              disabled={isWalletPending}
             />
             <SwapOutputContainer />
             <SwapMaintenanceWarningMessage />

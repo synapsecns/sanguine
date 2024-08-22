@@ -180,6 +180,31 @@ func (h *Handler) GetQuoteRequestByTxID(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// GetQuoteRequestByTxHash gets the quote request by tx hash.
+func (h *Handler) GetQuoteRequestByTxHash(c *gin.Context) {
+	txHashStr := c.Query("hash")
+	if txHashStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": unspecifiedTxHash})
+		return
+	}
+
+	txHash := common.HexToHash(txHashStr)
+	quoteRequest, err := h.db.GetQuoteRequestByOriginTxHash(c, txHash)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp := GetQuoteRequestResponse{
+		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
+		OriginChainID:   quoteRequest.Transaction.OriginChainId,
+		DestChainID:     quoteRequest.Transaction.DestChainId,
+		OriginToken:     quoteRequest.Transaction.OriginToken.Hex(),
+		DestToken:       quoteRequest.Transaction.DestToken.Hex(),
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 // Withdraw withdraws tokens from the relayer.
 //
 //nolint:cyclop
