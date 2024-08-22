@@ -204,7 +204,11 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	}
 
 	// initially, set the rebalance amount such that it would take origin to the initial threshold
-	initialThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPctDest/100)).Int(nil)
+	initialPctOrigin, err := cfg.GetInitialBalancePct(rebalance.OriginMetadata.ChainID, rebalance.OriginMetadata.Addr.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("could not get initial pct: %w", err)
+	}
+	initialThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPctOrigin/100)).Int(nil)
 	amount = new(big.Int).Sub(rebalance.OriginMetadata.Balance, initialThreshOrigin)
 	if amount.Cmp(big.NewInt(0)) <= 0 {
 		//nolint:nilnil
