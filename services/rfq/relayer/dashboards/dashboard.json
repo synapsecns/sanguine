@@ -228,7 +228,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "avg(inventory_balance{token_name=\"USD Coin\",relayer=\"$relayer\"}) by (chain_id)",
+          "expr": "avg(inventory_balance{token_name=\"USDC\",relayer=\"$relayer\"}) by (chain_id)",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -418,7 +418,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "avg(quote_amount{origin_token_name=\"USD Coin\"} / 1e6) by (origin_chain_id, destination_chain_id)",
+          "expr": "avg(quote_amount{origin_token_name=\"USDC\"} / 1e6) by (origin_chain_id, destination_chain_id)",
           "hide": false,
           "instant": false,
           "legendFormat": "{{origin_chain_id}} to {{destination_chain_id}} ",
@@ -537,9 +537,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "0xDD50676F81f607fD8bA7Ed3187DdF172DB174CD3",
-          "value": "0xDD50676F81f607fD8bA7Ed3187DdF172DB174CD3"
+          "selected": true,
+          "text": "0xDc927Bd56CF9DfC2e3779C7E3D6d28dA1C219969",
+          "value": "0xDc927Bd56CF9DfC2e3779C7E3D6d28dA1C219969"
         },
         "datasource": {
           "type": "prometheus",
@@ -573,6 +573,6 @@
   "timezone": "",
   "title": "RFQ Relayer",
   "uid": "c394e799-062f-4bfd-90d6-b94f2932575a",
-  "version": 18,
+  "version": 19,
   "weekStart": ""
 }
