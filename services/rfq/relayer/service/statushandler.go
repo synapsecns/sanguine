@@ -58,6 +58,12 @@ type QuoteRequestHandler struct {
 	limiter limiter.Limiter
 	// tokenNames is the map of addresses to token names
 	tokenNames map[string]relconfig.TokenConfig
+	// balanceMtx is the mutex for balances.
+	balanceMtx mapmutex.StringMapMutex
+}
+
+func getBalanceMtxKey(chainID uint32, token common.Address) string {
+	return fmt.Sprintf("%d-%s", chainID, token.Hex())
 }
 
 // Handler is the handler for a quote request.

@@ -50,3 +50,11 @@ func WithBlockWait(wait uint64) Option {
 		c.blockWait = wait
 	}
 }
+
+// WithName sets the listener name.
+func WithName(name string) Option {
+	return func(c *chainListener) {
+		c.name = name
+		c.store.SetListenerName(name)
+	}
+}

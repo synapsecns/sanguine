@@ -75,7 +75,7 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), metricHandler)
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), metricHandler, listener.WithName("guard"))
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}

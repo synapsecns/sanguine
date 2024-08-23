@@ -13,4 +13,6 @@ type iOtelRecorder interface {
 	RecordStuckHeroCount(stuckHeroes int64, chainname string)
 	// Submitter stats.
 	RecordSubmitterStats(chainid int, metadata submitterMetadata)
+	// RELAYER CODE.
+	RecordRelayerBalance(chainID int, relayer relayerMetadata)
 }

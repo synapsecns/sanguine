@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.35.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.7...@synapsecns/synapse-interface@0.35.0) (2024-08-21)
+
+
+### Features
+
+* **synapse-interface:** METIS token ([#3044](https://github.com/synapsecns/sanguine/issues/3044)) ([d73373b](https://github.com/synapsecns/sanguine/commit/d73373b93395fbe09064671c39ec774ca521330f))
+
+
+
+
+
+## [0.34.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.6...@synapsecns/synapse-interface@0.34.7) (2024-08-19)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.34.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.5...@synapsecns/synapse-interface@0.34.6) (2024-08-16)
+
+
+### Bug Fixes
+
+* **synapse-interface:** hide Blast WETH ([#3033](https://github.com/synapsecns/sanguine/issues/3033)) ([8da405f](https://github.com/synapsecns/sanguine/commit/8da405f81183817f6564e859914d2dc02a49735f))
+
+
+
+
+
+## [0.34.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.4...@synapsecns/synapse-interface@0.34.5) (2024-08-15)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.34.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.3...@synapsecns/synapse-interface@0.34.4) (2024-08-14)
 
 
