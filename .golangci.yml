@@ -27,7 +27,6 @@ linters-settings:
 linters:
   enable-all: true
   disable:
-    - intrange
     # Global variables are used in many places throughout the code base.
     - gochecknoglobals
 
