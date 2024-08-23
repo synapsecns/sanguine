@@ -177,8 +177,9 @@ func (c *RelayerServerSuite) SetupSuite() {
 
 	g, _ := errgroup.WithContext(c.GetSuiteContext())
 	for _, chainID := range chainIDs {
-		chainID := chainID // capture loop variable
+
 		// Setup Anvil backend for the suite to have RPC support
+		chainID := chainID // capture loop variable
 		g.Go(func() error {
 			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
 
@@ -283,6 +284,7 @@ func NewRelayerClientSuite(tb testing.TB) *RelayerClientSuite {
 		underlying: underlying,
 	}
 }
+
 func (c *RelayerClientSuite) SetupSuite() {
 	c.underlying.SetupSuite()
 }

@@ -280,12 +280,12 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	g, gctx := errgroup.WithContext(ctx)
 	mtx := sync.Mutex{}
 	for cid, balances := range inv {
-		cid := cid // capture loop variable
+		chainid := cid // capture loop variable
 		for a, b := range balances {
-			a := a
-			b := b
+			address := a
+			balance := b
 			g.Go(func() error {
-				quotes, err := m.generateQuotes(gctx, cid, a, b, inv)
+				quotes, err := m.generateQuotes(gctx, chainid, address, balance, inv)
 				if err != nil {
 					return fmt.Errorf("error generating quotes: %w", err)
 				}
