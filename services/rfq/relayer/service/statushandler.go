@@ -98,7 +98,6 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		apiClient:           r.apiClient,
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
-		// TODO: this should be configurable
 		limiter: limiter.NewRateLimiter(
 			r.cfg,
 			r.chainListeners[int(req.Transaction.OriginChainId)],
@@ -107,7 +106,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 			originTokens,
 		),
 		tokenNames: originTokens,
-		balanceMtx: mapmutex.NewStringMapMutex(),
+		balanceMtx: r.balanceMtx,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened
