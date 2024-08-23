@@ -180,6 +180,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 }
 
 // commitPendingBalance locks the balance and marks the request as CommitPending.
+// nolint: cyclop
 func (q *QuoteRequestHandler) commitPendingBalance(ctx context.Context, span trace.Span, request *reldb.QuoteRequest) (err error) {
 	// lock the consumed balance
 	key := getBalanceMtxKey(q.Dest.ChainID, request.Transaction.DestToken)
