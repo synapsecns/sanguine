@@ -390,32 +390,7 @@
             ]
           }
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "8453 to 59144 "
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 11,
@@ -562,9 +537,9 @@
     "list": [
       {
         "current": {
-          "selected": true,
-          "text": "0xDc927Bd56CF9DfC2e3779C7E3D6d28dA1C219969",
-          "value": "0xDc927Bd56CF9DfC2e3779C7E3D6d28dA1C219969"
+          "selected": false,
+          "text": "0xDD50676F81f607fD8bA7Ed3187DdF172DB174CD3",
+          "value": "0xDD50676F81f607fD8bA7Ed3187DdF172DB174CD3"
         },
         "datasource": {
           "type": "prometheus",
@@ -598,6 +573,6 @@
   "timezone": "",
   "title": "RFQ Relayer",
   "uid": "c394e799-062f-4bfd-90d6-b94f2932575a",
-  "version": 21,
+  "version": 22,
   "weekStart": ""
 }
