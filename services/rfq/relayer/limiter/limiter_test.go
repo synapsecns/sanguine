@@ -33,7 +33,7 @@ func (l *LimiterSuite) TestOverLimitEnoughConfirmations() {
 		},
 	}
 
-	allowed, err := l.limiter.IsAllowed(l.GetTestContext(), quote)
+	allowed, err := l.limiter.IsAllowed(l.GetTestContext(), &quote)
 	l.NoError(err)
 	l.True(allowed)
 }
@@ -54,7 +54,7 @@ func (l *LimiterSuite) TestUnderLimitEnoughConfirmations() {
 			DestAmount:    big.NewInt(100),
 		},
 	}
-	allowed, err := l.limiter.IsAllowed(l.GetTestContext(), quote)
+	allowed, err := l.limiter.IsAllowed(l.GetTestContext(), &quote)
 	l.NoError(err)
 	l.True(allowed)
 }
@@ -76,7 +76,7 @@ func (l *LimiterSuite) TestUnderLimitNotEnoughConfirmations() {
 		},
 	}
 
-	allowed, err := l.limiter.IsAllowed(l.GetTestContext(), quote)
+	allowed, err := l.limiter.IsAllowed(l.GetTestContext(), &quote)
 	l.NoError(err)
 	l.True(allowed)
 }
@@ -100,7 +100,7 @@ func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
 		},
 	}
 
-	allowed, err := l.limiter.IsAllowed(l.GetTestContext(), quote)
+	allowed, err := l.limiter.IsAllowed(l.GetTestContext(), &quote)
 	l.NoError(err)
 	l.False(allowed)
 }

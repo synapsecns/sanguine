@@ -25,7 +25,7 @@ type LatestBlockFetcher interface {
 // Limiter is the interface for rate limiting RFQs.
 type Limiter interface {
 	// IsAllowed returns true if the request is allowed, false otherwise.
-	IsAllowed(ctx context.Context, request reldb.QuoteRequest) (bool, error)
+	IsAllowed(ctx context.Context, request *reldb.QuoteRequest) (bool, error)
 }
 
 type limiterImpl struct {
@@ -55,9 +55,9 @@ func NewRateLimiter(
 }
 
 // IsAllowed returns true if the request is allowed, false otherwise.
-func (l *limiterImpl) IsAllowed(ctx context.Context, request reldb.QuoteRequest) (_ bool, err error) {
+func (l *limiterImpl) IsAllowed(ctx context.Context, request *reldb.QuoteRequest) (_ bool, err error) {
 	ctx, span := l.metrics.Tracer().Start(
-		ctx, "limiter.IsAllowed", trace.WithAttributes(util.QuoteRequestToAttributes(request)...),
+		ctx, "limiter.IsAllowed", trace.WithAttributes(util.QuoteRequestToAttributes(*request)...),
 	)
 
 	defer func() {
@@ -82,7 +82,7 @@ func (l *limiterImpl) IsAllowed(ctx context.Context, request reldb.QuoteRequest)
 	return withinSize, nil
 }
 
-func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request reldb.QuoteRequest) (_ bool, err error) {
+func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request *reldb.QuoteRequest) (_ bool, err error) {
 	_, span := l.metrics.Tracer().Start(ctx, "limiter.hasEnoughConfirmations")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -111,7 +111,7 @@ func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request reldb.
 	return hasEnoughConfirmations, nil
 }
 
-func (l *limiterImpl) withinSizeLimit(ctx context.Context, request reldb.QuoteRequest) (bool, error) {
+func (l *limiterImpl) withinSizeLimit(ctx context.Context, request *reldb.QuoteRequest) (bool, error) {
 	volumeLimit := l.cfg.GetVolumeLimit(int(request.Transaction.OriginChainId), request.Transaction.OriginToken)
 	// There is no limit.
 	if volumeLimit.Cmp(big.NewInt(-1)) == 0 {
@@ -128,7 +128,7 @@ func (l *limiterImpl) withinSizeLimit(ctx context.Context, request reldb.QuoteRe
 
 func (l *limiterImpl) getUSDAmountOfToken(
 	ctx context.Context,
-	request reldb.QuoteRequest,
+	request *reldb.QuoteRequest,
 ) (_ *big.Int, err error) {
 	ctx, span := l.metrics.Tracer().Start(ctx, "limiter.getUSDAmountOfToken")
 	defer func() {
