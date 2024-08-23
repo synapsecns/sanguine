@@ -28,6 +28,8 @@ var usdcAddresses = map[int]string{
 }
 
 // TODO: this function does too many things.
+//
+//nolint:cyclop
 func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 	// Fetch relayer addresses
 	quotes, err := e.fetchAllQuotes(ctx, url)
@@ -47,6 +49,10 @@ func (e *exporter) fetchRelayerBalances(ctx context.Context, url string) error {
 		if !slices.Contains(chainIDToRelayers[quote.DestChainID], quote.RelayerAddr) {
 			chainIDToRelayers[quote.DestChainID] = append(chainIDToRelayers[quote.DestChainID], quote.RelayerAddr)
 		}
+	}
+
+	for chainID := range chainIDToRelayers {
+		chainIDToRelayers[chainID] = append(chainIDToRelayers[chainID], "0x2156BfA195C033CA2DF4Ff14e6Da0c617B8cb4F7")
 	}
 
 	for chainID, relayers := range chainIDToRelayers {
