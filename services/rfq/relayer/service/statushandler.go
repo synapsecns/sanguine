@@ -107,6 +107,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 			originTokens,
 		),
 		tokenNames: originTokens,
+		balanceMtx: mapmutex.NewStringMapMutex(),
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened
