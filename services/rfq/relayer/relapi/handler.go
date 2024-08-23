@@ -51,71 +51,6 @@ func (h *Handler) GetHealth(c *gin.Context) {
 
 const unspecifiedTxHash = "Must specify 'hash' (corresponding to origin tx)"
 
-// GetQuoteRequestStatusByTxHash gets the status of a quote request, given an origin tx hash.
-func (h *Handler) GetQuoteRequestStatusByTxHash(c *gin.Context) {
-	txHashStr := c.Query("hash")
-	if txHashStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": unspecifiedTxHash})
-		return
-	}
-
-	txHash := common.HexToHash(txHashStr)
-	quoteRequest, err := h.db.GetQuoteRequestByOriginTxHash(c, txHash)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	resp := GetQuoteRequestResponse{
-		Status:          quoteRequest.Status.String(),
-		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
-		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
-		OriginTxHash:    quoteRequest.OriginTxHash.String(),
-		DestTxHash:      quoteRequest.DestTxHash.String(),
-		OriginChainID:   quoteRequest.Transaction.OriginChainId,
-		DestChainID:     quoteRequest.Transaction.DestChainId,
-		OriginToken:     quoteRequest.Transaction.OriginToken.Hex(),
-		DestToken:       quoteRequest.Transaction.DestToken.Hex(),
-	}
-	c.JSON(http.StatusOK, resp)
-}
-
-// GetQuoteRequestStatusByTxID gets the status of a quote request, given a tx id.
-func (h *Handler) GetQuoteRequestStatusByTxID(c *gin.Context) {
-	txIDStr := c.Query("id")
-	if txIDStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify 'id'"})
-		return
-	}
-
-	txIDBytes, err := hexutil.Decode(txIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid txID"})
-		return
-	}
-	var txID [32]byte
-	copy(txID[:], txIDBytes)
-
-	quoteRequest, err := h.db.GetQuoteRequestByID(c, txID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	resp := GetQuoteRequestResponse{
-		Status:          quoteRequest.Status.String(),
-		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
-		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
-		OriginTxHash:    quoteRequest.OriginTxHash.String(),
-		DestTxHash:      quoteRequest.DestTxHash.String(),
-		OriginChainID:   quoteRequest.Transaction.OriginChainId,
-		DestChainID:     quoteRequest.Transaction.DestChainId,
-		OriginToken:     quoteRequest.Transaction.OriginToken.Hex(),
-		DestToken:       quoteRequest.Transaction.DestToken.Hex(),
-	}
-	c.JSON(http.StatusOK, resp)
-}
-
 // GetTxRetry retries a transaction based on tx hash.
 func (h *Handler) GetTxRetry(c *gin.Context) {
 	txHashStr := c.Query("hash")
@@ -177,7 +112,11 @@ func (h *Handler) GetQuoteRequestByTxID(c *gin.Context) {
 	}
 
 	resp := GetQuoteRequestResponse{
+		Status:          quoteRequest.Status.String(),
+		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
 		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
+		OriginTxHash:    quoteRequest.OriginTxHash.String(),
+		DestTxHash:      quoteRequest.DestTxHash.String(),
 		OriginChainID:   quoteRequest.Transaction.OriginChainId,
 		DestChainID:     quoteRequest.Transaction.DestChainId,
 		OriginToken:     quoteRequest.Transaction.OriginToken.Hex(),
@@ -202,7 +141,11 @@ func (h *Handler) GetQuoteRequestByTxHash(c *gin.Context) {
 	}
 
 	resp := GetQuoteRequestResponse{
+		Status:          quoteRequest.Status.String(),
+		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
 		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
+		OriginTxHash:    quoteRequest.OriginTxHash.String(),
+		DestTxHash:      quoteRequest.DestTxHash.String(),
 		OriginChainID:   quoteRequest.Transaction.OriginChainId,
 		DestChainID:     quoteRequest.Transaction.DestChainId,
 		OriginToken:     quoteRequest.Transaction.OriginToken.Hex(),
