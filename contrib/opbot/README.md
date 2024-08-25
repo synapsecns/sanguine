@@ -45,6 +45,8 @@ signoz_password: "your-signoz-password"
 signoz_base_url: "https://signoz.example.com"
 ```
 
+Tokens can be obtained [here](https://api.slack.com/tutorials/tracks/getting-a-token).
+
 ### Configuration Fields
 
 - `slack_bot_token`: The token for your Slack bot.
