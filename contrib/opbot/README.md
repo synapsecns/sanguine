@@ -45,7 +45,7 @@ signoz_password: "your-signoz-password"
 signoz_base_url: "https://signoz.example.com"
 ```
 
-Tokens can be obtained [here](https://api.slack.com/tutorials/tracks/getting-a-token).
+Tokens can be obtained [here](https://api.slack.com/tutorials/tracks/getting-a-token). When creating an app, you can copy and paste the [manifest](manifest.json) file to configure the app automatically.
 
 ### Configuration Fields
 
