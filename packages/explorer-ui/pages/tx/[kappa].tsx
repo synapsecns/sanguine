@@ -37,7 +37,7 @@ export const BridgeTransaction = ({ queryResult }) => {
   const transaction = queryResult.bridgeTransactions[0]
   const { pending, fromInfo, toInfo } = transaction
 
-  // Get time taken to complete tx w/appropriate units.
+  // Get time taken to complete tx w/ appropriate units.
   const getTimeElapsedStr = (start, end) => {
     const diff = end - start;
     if (diff <= 0) {
