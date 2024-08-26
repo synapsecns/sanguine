@@ -6,7 +6,7 @@ import { getAddress } from '@ethersproject/address'
  *
  * @param {string} address
  * */
-export function validateAndParseAddress(address) {
+export const validateAndParseAddress = (address) => {
   try {
     const checksummedAddress = getAddress(address)
     warning(address === checksummedAddress, `${address} is not checksummed.`)

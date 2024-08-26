@@ -31,6 +31,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 
 	swaggerfiles "github.com/swaggo/files"
@@ -40,6 +41,7 @@ import (
 const (
 	okResponse  = "OK"
 	errResponse = "ERROR"
+	meterName   = "github.com/synapsecns/sanguine/contrib/screener-api"
 )
 
 // Screener is the interface for the screener.
@@ -48,15 +50,17 @@ type Screener interface {
 }
 
 type screenerImpl struct {
-	db                db.DB
-	router            *gin.Engine
-	metrics           metrics.Handler
-	cfg               config.Config
-	client            chainalysis.Client
-	whitelist         map[string]bool
-	blacklist         map[string]bool
-	blacklistCacheMux sync.RWMutex
-	requestMux        mapmutex.StringMapMutex
+	db                       db.DB
+	router                   *gin.Engine
+	metrics                  metrics.Handler
+	cfg                      config.Config
+	client                   chainalysis.Client
+	whitelist                map[string]bool
+	blacklist                map[string]bool
+	blacklistCacheMux        sync.RWMutex
+	requestMux               mapmutex.StringMapMutex
+	blockedAddressesMetric   metric.Int64Counter
+	unblockedAddressesMetric metric.Int64Counter
 }
 
 var logger = log.Logger("screener")
@@ -91,6 +95,15 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.db, err = sql.Connect(ctx, dbType, cfg.Database.DSN, metricHandler)
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to rules db: %w", err)
+	}
+
+	meter := metricHandler.Meter(meterName)
+	if screener.blockedAddressesMetric, err = meter.Int64Counter("blocked_addresses"); err != nil {
+		return nil, fmt.Errorf("could not create blocked addresses metric: %w", err)
+	}
+
+	if screener.unblockedAddressesMetric, err = meter.Int64Counter("unblocked_addresses"); err != nil {
+		return nil, fmt.Errorf("could not create unblocked addresses metric: %w", err)
 	}
 
 	screener.router = ginhelper.New(logger)
@@ -233,6 +246,12 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 		logger.Errorf("error screening address: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	if isAPIBlocked || isDBBlocked {
+		s.blockedAddressesMetric.Add(ctx, 1)
+	} else {
+		s.unblockedAddressesMetric.Add(ctx, 1)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"risk": isAPIBlocked || isDBBlocked})

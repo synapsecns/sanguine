@@ -1,12 +1,12 @@
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 
-export default function Privacy() {
+export const Privacy = () => {
   return (
     <StandardPageContainer title="Privacy Policy">
       <p className="text-lg font-medium text-white ">
         Last updated: January, 2023
       </p>
-      <div className="text-md  font-medium text-white pt-2">
+      <div className="pt-2 font-medium text-white text-md">
         <p>
           Interoperability Inc. ("Interoperability") is committed to protecting
           and respecting your privacy. This Privacy Policy describes how your
@@ -137,3 +137,9 @@ export default function Privacy() {
     </StandardPageContainer>
   )
 }
+
+const PrivacyPage = () => {
+  return <Privacy />
+}
+
+export default PrivacyPage

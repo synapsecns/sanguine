@@ -6,6 +6,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"math/big"
+	"regexp"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/dustin/go-humanize"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -14,15 +22,10 @@ import (
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	rfqClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
-	"log"
-	"math/big"
-	"regexp"
-	"strings"
-	"sync"
-	"time"
 )
 
 func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.CommandDefinition {
@@ -138,6 +141,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 	})
 }
 
+// nolint: gocognit
 func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 	return &slacker.CommandDefinition{
 		Command:     "rfq <tx>",
@@ -204,7 +208,13 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 			}
 
 			var slackBlocks []slack.Block
+
 			for _, status := range statuses {
+				client, err := b.rpcClient.GetChainClient(ctx.Context(), int(status.OriginChainID))
+				if err != nil {
+					log.Printf("error getting chain client: %v\n", err)
+				}
+
 				objects := []*slack.TextBlockObject{
 					{
 						Type: slack.MarkdownType,
@@ -221,6 +231,10 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 					{
 						Type: slack.MarkdownType,
 						Text: fmt.Sprintf("*OriginTxHash*: %s", toTXSlackLink(status.OriginTxHash, status.OriginChainID)),
+					},
+					{
+						Type: slack.MarkdownType,
+						Text: fmt.Sprintf("*Estimated Tx Age*: %s", getTxAge(ctx.Context(), client, status.GetQuoteRequestStatusResponse)),
 					},
 				}
 
@@ -332,6 +346,20 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 		return nil, fmt.Errorf("error creating fast bridge: %w", err)
 	}
 	return fastBridgeHandle, nil
+}
+
+func getTxAge(ctx context.Context, client client.EVM, res *relapi.GetQuoteRequestStatusResponse) string {
+	// TODO: add CreatedAt field to GetQuoteRequestStatusResponse so we don't need to make network calls?
+	receipt, err := client.TransactionReceipt(ctx, common.HexToHash(res.OriginTxHash))
+	if err != nil {
+		return "unknown time ago"
+	}
+	txBlock, err := client.HeaderByHash(ctx, receipt.BlockHash)
+	if err != nil {
+		return "unknown time ago"
+	}
+
+	return humanize.Time(time.Unix(int64(txBlock.Time), 0))
 }
 
 func toExplorerSlackLink(ogHash string) string {

@@ -210,6 +210,7 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
       base
       blast
       scroll
+      linea
       total
     }
   }

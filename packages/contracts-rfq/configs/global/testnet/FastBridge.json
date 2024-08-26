@@ -1,0 +1,11 @@
+{
+  "accounts": {
+    "admin": "0xB33F4bA8A4893854D03AbF45D9b692EBdf09406F",
+    "guards": ["0x82541eB993aa7b17FF346ac0b07e5E496540133e"],
+    "relayers": ["0x82541eB993aa7b17FF346ac0b07e5E496540133e"],
+    "refunders": ["0xB33F4bA8A4893854D03AbF45D9b692EBdf09406F"],
+    "governors": ["0xB33F4bA8A4893854D03AbF45D9b692EBdf09406F"]
+  },
+  "chainGasAmount": 0,
+  "protocolFeeRate": 0
+}

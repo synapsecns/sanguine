@@ -1,6 +1,6 @@
 import { TOKEN_HASH_MAP } from 'synapse-constants'
 
-export function addressToDecimals({ tokenAddress, chainId }) {
+export const addressToDecimals = ({ tokenAddress, chainId }) => {
   let decimals =
     tokenAddress &&
     chainId &&

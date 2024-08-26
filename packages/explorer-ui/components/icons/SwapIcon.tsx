@@ -1,4 +1,4 @@
-export default function SwapIcon({ className, ...props }) {
+export const SwapIcon = ({ className, ...props }) => {
   return (
     <svg
       className={`w-6 text-gray-800 cursor-pointer ${className ?? ''}`}

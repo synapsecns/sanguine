@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/service/indexer"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
+	"os"
 
 	"math"
 	"time"
@@ -398,8 +399,8 @@ func (c *ChainIndexer) livefillAtHead(parentContext context.Context) error {
 				continue
 			}
 
-			// Default refresh rate for livefill to tip is 1 second.
-			timeout = 1 * time.Second
+			// Default refresh rate for livefill to tip is 3 second.
+			timeout = defaultTimeout
 		}
 	}
 }
@@ -470,7 +471,15 @@ func (c *ChainIndexer) livefill(parentContext context.Context) error {
 
 			// Default refresh rate for livefill is 1 second.
 			// TODO add to config
-			timeout = 1 * time.Second
+			timeout = defaultTimeout
 		}
+	}
+}
+
+var defaultTimeout = 3 * time.Second
+
+func init() {
+	if os.Getenv("CI") != "" {
+		defaultTimeout = 1 * time.Second
 	}
 }

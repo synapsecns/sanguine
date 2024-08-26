@@ -1,8 +1,6 @@
-import { Fragment } from 'react'
+import React, { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import { DocumentTextIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
-import React from 'react'
-
 // import { useActiveWeb3React } from '@hooks/wallet/useActiveWeb3React'
 import {
   ANALYTICS_PATH,
@@ -10,7 +8,8 @@ import {
   CONTRACTS_PATH,
   DISCORD_URL,
   DOCS_URL,
-  FORUM_URL, INTERCHAIN_PATH,
+  FORUM_URL,
+  INTERCHAIN_PATH,
   LANDING_PATH,
   POOLS_PATH,
   PORTFOLIO_PATH,
@@ -19,19 +18,19 @@ import {
   TELEGRAM_URL,
   TWITTER_URL,
 } from '@urls'
-import Grid from '@components/tailwind/Grid'
-import ForumIcon from '@components/icons/ForumIcon'
-import TwitterIcon from '@components/icons/TwitterIcon'
-import DiscordIcon from '@components/icons/DiscordIcon'
-import TelegramIcon from '@components/icons/TelegramIcon'
+import { Grid } from '@components/tailwind/Grid'
+import { ForumIcon } from '@components/icons/ForumIcon'
+import { TwitterIcon } from '@components/icons/TwitterIcon'
+import { DiscordIcon } from '@components/icons/DiscordIcon'
+import { TelegramIcon } from '@components/icons/TelegramIcon'
 
 import { SynapseLogoSvg } from './SynapseLogoSvg'
-import TopBarNavLink from './TopBarNavLink'
-import WalletNetworkSection from './WalletNetworkSection'
-import MoreButton from './MoreButton'
 import { PageFooter } from './PageFooter'
+import { WalletNetworkSection } from './WalletNetworkSection'
+import TopBarNavLink from './TopBarNavLink'
+import MoreButton from './MoreButton'
 
-export function PageWrapper({ children }) {
+export const PageWrapper = ({ children }) => {
   return (
     <div
       className="min-h-screen bg-no-repeat bg-synapse tabular-nums"
@@ -47,7 +46,7 @@ export function PageWrapper({ children }) {
   )
 }
 
-export function LandingNav() {
+export const LandingNav = () => {
   const topBarBtns = <TopBarButtons />
   const mobileBarBtns = <MobileBarButtons />
   const moreInfoBtns = <MoreInfoButtons />
@@ -85,7 +84,6 @@ export function LandingNav() {
                   <>
                     <Popover.Button
                       as="div"
-                      onMouseEnter={() => {}}
                       className={`
                           ${open ? 'text-gray-900' : 'text-purple-800'}
                           group  rounded-md inline-flex items-center  hover:text-gray-900 focus:outline-none
@@ -152,7 +150,7 @@ export function LandingNav() {
   )
 }
 
-function PopoverPanelContainer({ children, className }) {
+const PopoverPanelContainer = ({ children, className }) => {
   return (
     <Transition
       as={Fragment}
@@ -180,7 +178,7 @@ function PopoverPanelContainer({ children, className }) {
   )
 }
 
-function TopBarButtons() {
+const TopBarButtons = () => {
   return (
     <>
       <TopBarNavLink to={LANDING_PATH} labelText="About" />
@@ -198,7 +196,7 @@ function TopBarButtons() {
   )
 }
 
-function MoreInfoButtons() {
+const MoreInfoButtons = () => {
   // const { chainId } = useActiveWeb3React()
 
   return (
@@ -228,7 +226,7 @@ function MoreInfoButtons() {
   )
 }
 
-function SocialButtons() {
+const SocialButtons = () => {
   return (
     <Grid cols={{ xs: 2, sm: 1 }} gapY={1}>
       <MiniInfoItem
@@ -295,7 +293,7 @@ function SocialButtons() {
   )
 }
 
-function MobileBarButtons() {
+const MobileBarButtons = () => {
   return (
     <>
       <MobileBarItem to={LANDING_PATH} labelText="About" />
@@ -308,7 +306,7 @@ function MobileBarButtons() {
   )
 }
 
-function MobileBarItem({ to, labelText }) {
+const MobileBarItem = ({ to, labelText }) => {
   return (
     <a
       key={labelText}
@@ -328,13 +326,18 @@ function MobileBarItem({ to, labelText }) {
 }
 
 interface MoreInfoItemProps {
-  to: string,
-  labelText: string,
+  to: string
+  labelText: string
   className?: string
   description?: string
 }
 
-const MoreInfoItem: React.FC<MoreInfoItemProps> = ({ to, labelText, description, className }) => {
+const MoreInfoItem: React.FC<MoreInfoItemProps> = ({
+  to,
+  labelText,
+  description,
+  className,
+}) => {
   return (
     <a
       key={labelText}
@@ -350,7 +353,7 @@ const MoreInfoItem: React.FC<MoreInfoItemProps> = ({ to, labelText, description,
   )
 }
 
-function MiniInfoItem({ href, icon, labelText }) {
+const MiniInfoItem = ({ href, icon, labelText }) => {
   return (
     <a
       key={labelText}
@@ -368,7 +371,7 @@ function MiniInfoItem({ href, icon, labelText }) {
   )
 }
 
-export function SynapseTitleLogo({ showText }) {
+export const SynapseTitleLogo = ({ showText }) => {
   return (
     <div>
       <a href={'/'} className="flex">

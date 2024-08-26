@@ -11,6 +11,7 @@ import (
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
 var defaultPrices = map[string]float64{"ETH": 2000., "USDC": 1., "MATIC": 0.5}
@@ -261,8 +262,8 @@ func (s *PricerSuite) TestGetGasPrice() {
 
 func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	// Override the fixed fee multiplier to greater than 1.
-	s.config.BaseChainConfig.QuoteFixedFeeMultiplier = 2
-	s.config.BaseChainConfig.RelayFixedFeeMultiplier = 4
+	s.config.BaseChainConfig.QuoteFixedFeeMultiplier = relconfig.NewFloatPtr(2)
+	s.config.BaseChainConfig.RelayFixedFeeMultiplier = relconfig.NewFloatPtr(4)
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
@@ -295,7 +296,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	s.Equal(expectedFee, fee)
 
 	// Override the fixed fee multiplier to less than 1; should default to 1.
-	s.config.BaseChainConfig.QuoteFixedFeeMultiplier = -1
+	s.config.BaseChainConfig.QuoteFixedFeeMultiplier = relconfig.NewFloatPtr(-1)
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.SuggestGasPrice), mock.Anything).Once().Return(headerOrigin, nil)
@@ -314,7 +315,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	s.Equal(expectedFee, fee)
 
 	// Reset the fixed fee multiplier to zero; should default to 1
-	s.config.BaseChainConfig.QuoteFixedFeeMultiplier = 0
+	s.config.BaseChainConfig.QuoteFixedFeeMultiplier = relconfig.NewFloatPtr(0)
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.SuggestGasPrice), mock.Anything).Once().Return(headerOrigin, nil)

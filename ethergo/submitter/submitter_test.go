@@ -299,7 +299,7 @@ func (s *SubmitterSuite) TestSubmitTransaction() {
 	// make sure the tx wasn't submitted
 	s.Equal(ogCounter.Uint64(), currentCounter.Uint64())
 
-	txs, err := s.store.GetTXS(s.GetTestContext(), s.signer.Address(), chainID, db.Stored)
+	txs, err := s.store.GetTXS(s.GetTestContext(), s.signer.Address(), chainID, db.WithStatuses(db.Stored))
 	s.Require().NoError(err)
 
 	s.Require().NotNil(txs[0])
@@ -356,7 +356,7 @@ func (s *SubmitterSuite) TestCheckAndSetConfirmation() {
 	err = ts.CheckAndSetConfirmation(s.GetTestContext(), chainClient, allTxes)
 	s.Require().NoError(err)
 
-	txs, err := s.store.GetAllTXAttemptByStatus(s.GetTestContext(), s.signer.Address(), tb.GetBigChainID(), db.ReplacedOrConfirmed, db.Confirmed, db.Replaced)
+	txs, err := s.store.GetAllTXAttemptByStatus(s.GetTestContext(), s.signer.Address(), tb.GetBigChainID(), db.WithStatuses(db.ReplacedOrConfirmed, db.Confirmed, db.Replaced))
 	s.Require().NoError(err)
 
 	var replacedCount int
@@ -398,7 +398,7 @@ func (s *SubmitterSuite) TestCheckAndSetConfirmationSingleTx() {
 	err = ts.CheckAndSetConfirmation(s.GetTestContext(), chainClient, allTxes)
 	s.Require().NoError(err)
 
-	txs, err := s.store.GetAllTXAttemptByStatus(s.GetTestContext(), s.signer.Address(), tb.GetBigChainID(), db.ReplacedOrConfirmed, db.Confirmed, db.Replaced)
+	txs, err := s.store.GetAllTXAttemptByStatus(s.GetTestContext(), s.signer.Address(), tb.GetBigChainID(), db.WithStatuses(db.ReplacedOrConfirmed, db.Confirmed, db.Replaced))
 	s.Require().NoError(err)
 
 	for _, tx := range txs {

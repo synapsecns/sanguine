@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.2.0...@synapsecns/explorer-ui@0.3.0) (2024-07-30)
+
+
+### Features
+
+* **explorer:** format raw transaction value ([#2961](https://github.com/synapsecns/sanguine/issues/2961)) ([9029c41](https://github.com/synapsecns/sanguine/commit/9029c41992df12674e8670839908d99398b02c76))
+
+
+
+
+
+# [0.2.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.1.49...@synapsecns/explorer-ui@0.2.0) (2024-07-30)
+
+
+### Features
+
+* **explorer-ui:** `formatAmount` ([#2956](https://github.com/synapsecns/sanguine/issues/2956)) ([8851088](https://github.com/synapsecns/sanguine/commit/8851088971bc7e7251a0717548fb8c91208abb4a))
+
+
+
+
+
+## [0.1.49](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.1.48...@synapsecns/explorer-ui@0.1.49) (2024-07-28)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.1.48](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.1.47...@synapsecns/explorer-ui@0.1.48) (2024-07-17)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
 ## [0.1.47](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.1.46...@synapsecns/explorer-ui@0.1.47) (2024-07-03)
 
 **Note:** Version bump only for package @synapsecns/explorer-ui

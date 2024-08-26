@@ -1,4 +1,4 @@
-export default function ContractsIcon({ className }) {
+export const ContractsIcon = ({ className }) => {
   return (
     <svg
       className={`h-6 w-6 ${className}`}

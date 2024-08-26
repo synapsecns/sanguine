@@ -99,6 +99,7 @@ export abstract class SynapseModuleSet {
    * @param tokenIn - The input token.
    * @param tokenOut - The output token.
    * @param amountIn - The amount of input token.
+   * @param originUserAddress - The address of the user on the origin chain.
    *
    * @returns - A list of BridgeRoute objects with the found routes.
    */
@@ -107,7 +108,8 @@ export abstract class SynapseModuleSet {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh
+    amountIn: BigintIsh,
+    originUserAddress?: string
   ): Promise<BridgeRoute[]>
 
   /**

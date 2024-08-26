@@ -57,6 +57,7 @@ func TestHandleJSONDailyStat(t *testing.T) {
 			Base      *float64 "json:\"base\" graphql:\"base\""
 			Blast     *float64 "json:\"blast\" graphql:\"blast\""
 			Scroll    *float64 "json:\"scroll\" graphql:\"scroll\""
+			Linea     *float64 "json:\"linea\" graphql:\"linea\""
 			Total     *float64 "json:\"total\" graphql:\"total\""
 		}{
 			{
