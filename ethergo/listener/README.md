@@ -2,6 +2,23 @@
 
 ![logo.png](logo.png)
 
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant EthereumNode
+    participant SQLiteDB
+    participant Listener
+
+    User->>Listener: Start Listener
+    Listener->>SQLiteDB: Connect and Migrate Models
+    Listener->>EthereumNode: Connect to Ethereum Node
+    Listener->>EthereumNode: Retrieve Latest Block
+    Listener->>Listener: Listen for Logs
+    Listener->>User: Process Log
+```
+
+
 # Using Listener DB
 
 There is a simple example [here](../examples/usdclistener).
