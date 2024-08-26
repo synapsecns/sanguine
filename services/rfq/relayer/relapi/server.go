@@ -95,15 +95,12 @@ func NewRelayerAPI(
 }
 
 const (
-	getHealthRoute = "/health"
-	// TODO: replace with non-status specific endpoints.
-	getQuoteStatusByTxHashRoute = "/status"
-	getQuoteStatusByTxIDRoute   = "/status/by_tx_id"
-	getRetryRoute               = "/retry"
-	postWithdrawRoute           = "/withdraw"
-	getTxHashByNonceRoute       = "/tx_hash/by_nonce"
-	getRequestByTxID            = "/request/by_tx_id"
-	getRequestByTxHash          = "/request/by_tx_hash"
+	getHealthRoute        = "/health"
+	getRetryRoute         = "/retry"
+	postWithdrawRoute     = "/withdraw"
+	getTxHashByNonceRoute = "/tx_hash/by_nonce"
+	getRequestByTxID      = "/request/by_tx_id"
+	getRequestByTxHash    = "/request/by_tx_hash"
 )
 
 var logger = log.Logger("relayer-api")

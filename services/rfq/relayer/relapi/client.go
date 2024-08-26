@@ -54,40 +54,6 @@ func (r *relayerClient) Health(ctx context.Context) (ok bool, err error) {
 	return ok, nil
 }
 
-func (r *relayerClient) GetQuoteRequestStatusByTxHash(ctx context.Context, hash string) (*GetQuoteRequestResponse, error) {
-	var res GetQuoteRequestResponse
-
-	resp, err := r.client.R().SetContext(ctx).
-		SetQueryParam("hash", hash).
-		SetResult(&res).
-		Get(getQuoteStatusByTxHashRoute)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get quote request status by tx hash: %w", err)
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-	}
-
-	return &res, nil
-}
-
-func (r *relayerClient) GetQuoteRequestStatusByTxID(ctx context.Context, txid string) (*GetQuoteRequestResponse, error) {
-	var res GetQuoteRequestResponse
-
-	resp, err := r.client.R().SetContext(ctx).
-		SetQueryParam("id", txid).
-		SetResult(&res).
-		Get(getQuoteStatusByTxIDRoute)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get quote request status by tx hash: %w", err)
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-	}
-
-	return &res, nil
-}
-
 func (r *relayerClient) RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error) {
 	var res GetTxRetryResponse
 	resp, err := r.client.R().SetContext(ctx).
