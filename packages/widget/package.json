@@ -18,8 +18,9 @@
   },
   "homepage": "https://github.com/synapsecns/sanguine/blob/master/packages/widget/README.md",
   "scripts": {
-    "build": "rollup -c --bundleConfigAsCjs",
-    "watch": "rollup -c -w --bundleConfigAsCjs",
+    "build": "npm run check-token-exports && rollup -c --bundleConfigAsCjs",
+    "watch": "npm run check-token-exports && rollup -c -w --bundleConfigAsCjs",
+    "check-token-exports": "node ./src/scripts/check-token-exports.js",
     "test:coverage": "echo 'No tests defined.'",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
