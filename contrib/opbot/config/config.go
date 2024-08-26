@@ -2,6 +2,7 @@
 package config
 
 import (
+	screenerConfig "github.com/synapsecns/sanguine/contrib/screener-api/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 )
@@ -31,6 +32,8 @@ type Config struct {
 	Signer config.SignerConfig `yaml:"signer"`
 	// SubmitterConfig is the submitter config.
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
+	// ScreenerConfig is the screener config.
+	ScreenerConfig screenerConfig.Config `yaml:"screener_config"`
 	// Database is the database config.
 	Database DatabaseConfig `yaml:"database"`
 }
