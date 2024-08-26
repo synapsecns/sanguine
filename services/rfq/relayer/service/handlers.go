@@ -385,7 +385,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 		return fmt.Errorf("could not get transaction receipt: %w", err)
 	}
 	currentBlockNumber := q.Origin.LatestBlock()
-	proveConfirmations, err := q.cfg.GetProveConfirmations(int(q.Dest.ChainID))
+	proveConfirmations, err := q.cfg.GetFinalityConfirmations(int(q.Dest.ChainID))
 	if err != nil {
 		return fmt.Errorf("could not get prove confirmations: %w", err)
 	}
