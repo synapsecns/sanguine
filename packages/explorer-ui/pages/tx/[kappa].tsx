@@ -37,12 +37,14 @@ export const BridgeTransaction = ({ queryResult }) => {
   const transaction = queryResult.bridgeTransactions[0]
   const { pending, fromInfo, toInfo } = transaction
 
-  const getTimeDifference = (start, end) => {
-    const diff = end - start
-    if (0 >= diff) {
-      return '1'
+  // Get time taken to complete tx w/appropriate units.
+  const getTimeElapsedStr = (start, end) => {
+    const diff = end - start;
+    if (diff <= 0) {
+      return '1 second';
     }
-    return diff.toString()
+    return diff === 1 ? '1 second' : `${diff} seconds`;
+
   }
   let content
 
@@ -105,8 +107,7 @@ export const BridgeTransaction = ({ queryResult }) => {
                   <p className="w-24 text-white text-opacity-60">Elapsed</p>
                   <p className="text-white ">
                     {toInfo
-                      ? getTimeDifference(fromInfo.time, toInfo.time) +
-                        ' seconds'
+                      ? getTimeElapsedStr(fromInfo.time, toInfo.time)
                       : '--'}{' '}
                   </p>
                 </div>
