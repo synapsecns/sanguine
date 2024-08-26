@@ -378,8 +378,28 @@ func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridge.Fast
 // Step 6: ProvePosting
 //
 // This is the sixth step in the bridge process. Here we submit the claim transaction to the origin chain.
-func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
-	// relays been completed, it's time to go back to the origin chain and try to prove
+func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
+	// first, ensure that enough confirmations have passed before proving
+	receipt, err := q.Dest.Client.TransactionReceipt(ctx, request.DestTxHash)
+	if err != nil {
+		return fmt.Errorf("could not get transaction receipt: %w", err)
+	}
+	currentBlockNumber := q.Origin.LatestBlock()
+	proveConfirmations, err := q.cfg.GetProveConfirmations(int(q.Dest.ChainID))
+	if err != nil {
+		return fmt.Errorf("could not get prove confirmations: %w", err)
+	}
+	span.SetAttributes(
+		attribute.Int("current_block_number", int(currentBlockNumber)),
+		attribute.Int("dest_block_number", int(receipt.BlockNumber.Int64())),
+		attribute.Int("prove_confirmations", int(proveConfirmations)),
+	)
+	if currentBlockNumber < request.BlockNumber+proveConfirmations {
+		span.AddEvent("not enough confirmations")
+		return nil
+	}
+
+	// relay has been finalized, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
