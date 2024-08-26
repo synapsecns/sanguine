@@ -110,6 +110,7 @@ export const BridgeTransactionButton = ({
       onClick: null,
     }
   } else if (
+    bridgeQuote.bridgeModuleName !== null &&
     !isLoading &&
     !isTyping &&
     !doesBridgeStateMatchQuote &&

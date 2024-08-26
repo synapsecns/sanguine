@@ -87,7 +87,11 @@ export const useBridgeValidations = () => {
   ])
 
   const isBridgeFeeGreaterThanInput = useMemo(() => {
-    return bridgeQuote.feeAmount === 0n && debouncedFromValueBigInt > 0n
+    return (
+      bridgeQuote.bridgeModuleName !== null &&
+      bridgeQuote.feeAmount === 0n &&
+      debouncedFromValueBigInt > 0n
+    )
   }, [bridgeQuote.feeAmount, debouncedFromValueBigInt])
 
   const onSelectedChain: boolean = useMemo(() => {
