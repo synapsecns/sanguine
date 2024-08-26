@@ -12,4 +12,7 @@ USER nonroot:nonroot
 WORKDIR /app
 COPY --chown=nonroot:nonroot agents /app/agents
 
+
+
+
 ENTRYPOINT ["/app/agents"]

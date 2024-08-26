@@ -494,6 +494,7 @@ export const USDT: BridgeableToken = {
     [CHAINS.KLAYTN.id]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
     [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
     [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
+    [CHAINS.LINEA.id]: '0xA219439258ca9da29E9Cc4cE5596924745e12B93',
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 6,
@@ -506,6 +507,7 @@ export const USDT: BridgeableToken = {
     [CHAINS.KLAYTN.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
+    [CHAINS.LINEA.id]: 6,
   },
   symbol: 'USDT',
   name: 'USD Tether',
@@ -1386,4 +1388,25 @@ export const SPECTRAL: BridgeableToken = {
   routeSymbol: 'SPEC',
   imgUrl:
     'https://105bc697.sanguine-fe.pages.dev/_next/static/media/spectral.6d51750c.svg',
+}
+
+export const METIS: BridgeableToken = {
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.DFK.id]: '0x43E8E55792D6317328e5c6B0A0C89eF4b8102Fa2',
+    [CHAINS.KLAYTN.id]: '0x543f1b2176F7E677a95D01ca83551FAa08F83D9F',
+    [CHAINS.METIS.id]: ZeroAddress,
+  },
+  decimals: {
+    [CHAINS.DFK.id]: 18,
+    [CHAINS.KLAYTN.id]: 18,
+    [CHAINS.METIS.id]: 18,
+  },
+  symbol: 'Metis',
+  name: 'Metis Token',
+  swapableType: 'Metis',
+  color: 'blue',
+  routeSymbol: 'Metis',
+  imgUrl:
+    'https://7bdf4de3.sanguine-fe.pages.dev/_next/static/media/metis.90b6abf0.svg',
 }

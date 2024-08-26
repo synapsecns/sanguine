@@ -15,5 +15,22 @@
     "disableBanner": true,
     "disableWarning": true,
     "disableCountdown": true
+  },
+  {
+    "id": "canto-chain-pause",
+    "pausedFromChains": [7700],
+    "pausedToChains": [7700],
+    "pauseBridge": true,
+    "pauseSwap": true,
+    "startTimePauseChain": "2024-08-20T17:35:00Z",
+    "endTimePauseChain": "2024-08-28T17:35:00Z",
+    "startTimeBanner": "2024-08-20T17:35:00Z",
+    "endTimeBanner": "2024-08-28T17:35:00Z",
+    "inputWarningMessage": "Canto chain paused due to chain instability.",
+    "bannerMessage": "Canto chain currently paused due to chain instability.",
+    "progressBarMessage": "Canto chain paused due to chain instability.",
+    "disableBanner": false,
+    "disableWarning": true,
+    "disableCountdown": false
   }
 ]

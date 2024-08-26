@@ -235,12 +235,24 @@ func (c *RelayerClientSuite) TestERC20WithdrawCLI() {
 	c.Require().NoError(err)
 	c.Require().NotNil(res)
 }
-func (c *RelayerClientSuite) TestGetQuoteByTX() {
+
+func (c *RelayerClientSuite) TestGetQuoteByTxID() {
 	testReq := c.underlying.getTestQuoteRequest(reldb.Seen)
 	err := c.underlying.database.StoreQuoteRequest(c.GetTestContext(), testReq)
 	c.Require().NoError(err)
 
 	resp, err := c.Client.GetQuoteRequestByTXID(c.GetTestContext(), hexutil.Encode(testReq.TransactionID[:]))
+	c.Require().NoError(err)
+
+	c.Equal(len(common.Hex2Bytes(resp.QuoteRequestRaw)), len(testReq.RawRequest))
+}
+
+func (c *RelayerClientSuite) TestGetQuoteByTxHash() {
+	testReq := c.underlying.getTestQuoteRequest(reldb.Seen)
+	err := c.underlying.database.StoreQuoteRequest(c.GetTestContext(), testReq)
+	c.Require().NoError(err)
+
+	resp, err := c.Client.GetQuoteRequestByTxHash(c.GetTestContext(), testReq.OriginTxHash.String())
 	c.Require().NoError(err)
 
 	c.Equal(len(common.Hex2Bytes(resp.QuoteRequestRaw)), len(testReq.RawRequest))

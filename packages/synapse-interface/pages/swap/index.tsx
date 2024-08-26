@@ -42,6 +42,8 @@ import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { wagmiConfig } from '@/wagmiConfig'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
+import { useWalletState } from '@/slices/wallet/hooks'
+import { setIsWalletPending } from '@/slices/wallet/reducer'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -52,12 +54,16 @@ const StateManagedSwap = () => {
   const router = useRouter()
   const { query, pathname } = router
 
+  const [isTyping, setIsTyping] = useState(false)
+
   useSyncQueryParamsWithSwapState()
 
   const { balances: portfolioBalances } = useFetchPortfolioBalances()
 
   const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
     useSwapState()
+
+  const { isWalletPending } = useWalletState()
 
   const {
     isSwapPaused,
@@ -220,6 +226,7 @@ const StateManagedSwap = () => {
 
   const approveTxn = async () => {
     try {
+      dispatch(setIsWalletPending(true))
       const tx = approveToken(
         swapQuote?.routerAddress,
         swapChainId,
@@ -231,6 +238,8 @@ const StateManagedSwap = () => {
       getAndSetSwapQuote()
     } catch (error) {
       return txErrorHandler(error)
+    } finally {
+      dispatch(setIsWalletPending(false))
     }
   }
 
@@ -247,6 +256,8 @@ const StateManagedSwap = () => {
   const executeSwap = async () => {
     const currentChainName = CHAINS_BY_ID[swapChainId]?.name
 
+    dispatch(setIsWalletPending(true))
+
     let pendingPopup: any
     pendingPopup = toast(
       `Initiating swap from ${swapFromToken.symbol} to ${swapToToken.symbol} on ${currentChainName}`,
@@ -255,7 +266,6 @@ const StateManagedSwap = () => {
     segmentAnalyticsEvent(
       `[Swap] initiates swap`,
       {
-        address,
         chainId: swapChainId,
         swapFromToken: swapFromToken.symbol,
         swapToToken: swapToToken.symbol,
@@ -270,27 +280,13 @@ const StateManagedSwap = () => {
         chainId: swapChainId,
       })
 
-      const data = await synapseSDK.swap(
+      const payload = await synapseSDK.swap(
         swapChainId,
         address,
         swapFromToken.addresses[swapChainId],
         stringToBigInt(swapFromValue, swapFromToken.decimals[swapChainId]),
         swapQuote.quote
       )
-
-      const payload =
-        swapFromToken.addresses[swapChainId as keyof Token['addresses']] ===
-          zeroAddress ||
-        swapFromToken.addresses[swapChainId as keyof Token['addresses']] === ''
-          ? {
-              data: data.data,
-              to: data.to,
-              value: stringToBigInt(
-                swapFromValue,
-                swapFromToken.decimals[swapChainId]
-              ),
-            }
-          : data
 
       const tx = await wallet.sendTransaction(payload)
 
@@ -309,7 +305,6 @@ const StateManagedSwap = () => {
       onSuccessSwap()
 
       segmentAnalyticsEvent(`[Swap] swaps successfully`, {
-        address,
         originChainId: swapChainId,
         inputAmount: swapFromValue,
         expectedReceivedAmount: swapQuote.outputAmountString,
@@ -347,6 +342,8 @@ const StateManagedSwap = () => {
 
       toast.dismiss(pendingPopup)
       txErrorHandler(error)
+    } finally {
+      dispatch(setIsWalletPending(false))
     }
   }
 
@@ -359,12 +356,13 @@ const StateManagedSwap = () => {
           </div>
           <BridgeCard bridgeRef={swapDisplayRef}>
             <SwapMaintenanceProgressBar />
-            <SwapInputContainer />
+            <SwapInputContainer setIsTyping={setIsTyping} />
             <SwitchButton
               onClick={() => {
                 dispatch(setSwapFromToken(swapToToken))
                 dispatch(setSwapToToken(swapFromToken))
               }}
+              disabled={isWalletPending}
             />
             <SwapOutputContainer />
             <SwapMaintenanceWarningMessage />
@@ -382,6 +380,7 @@ const StateManagedSwap = () => {
               toChainId={swapChainId}
             />
             <SwapTransactionButton
+              isTyping={isTyping}
               isApproved={isApproved}
               approveTxn={approveTxn}
               executeSwap={executeSwap}

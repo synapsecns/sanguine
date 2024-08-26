@@ -1,6 +1,5 @@
 import toast from 'react-hot-toast'
 import { useEffect, useRef, useState } from 'react'
-import { commify } from '@ethersproject/units'
 import { Address, zeroAddress, isAddress } from 'viem'
 import { polygon } from 'viem/chains'
 import { useAccount } from 'wagmi'
@@ -11,6 +10,7 @@ import {
   getPublicClient,
   waitForTransactionReceipt,
 } from '@wagmi/core'
+
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
@@ -24,8 +24,7 @@ import Button from '@/components/ui/tailwind/Button'
 import { SettingsToggle } from '@/components/StateManagedBridge/SettingsToggle'
 import { BridgeCard } from '@/components/ui/BridgeCard'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
-import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import {
@@ -34,20 +33,15 @@ import {
   setFromToken,
   setToChainId,
   setToToken,
-  updateFromValue,
-  setBridgeQuote,
-  setIsLoading,
-  setIsWalletPending,
   setDestinationAddress,
+  updateDebouncedFromValue,
 } from '@/slices/bridge/reducer'
+import { setIsWalletPending } from '@/slices/wallet/reducer'
 import {
   setShowDestinationAddress,
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { Token } from '@/utils/types'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { approveToken } from '@/utils/approveToken'
@@ -68,6 +62,11 @@ import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { screenAddress } from '@/utils/screenAddress'
+import { useWalletState } from '@/slices/wallet/hooks'
+import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
+import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
+import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
+import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
@@ -81,17 +80,22 @@ const StateManagedBridge = () => {
   const quoteToastRef = useRef({ id: '' })
   const quoteTimeout = 15000
 
+  const [isTyping, setIsTyping] = useState(false)
+
   const {
     fromChainId,
     toChainId,
     fromToken,
     toToken,
-    bridgeQuote,
     debouncedFromValue,
     destinationAddress,
-    isLoading: isQuoteLoading,
-    isWalletPending,
   }: BridgeState = useBridgeState()
+
+  const { bridgeQuote, isLoading } = useBridgeQuoteState()
+
+  const isApproved = useIsBridgeApproved()
+
+  const { isWalletPending } = useWalletState()
 
   const { showSettingsSlideOver } = useSelector(
     (state: RootState) => state.bridgeDisplay
@@ -103,8 +107,6 @@ const StateManagedBridge = () => {
     BridgeMaintenanceProgressBar,
     BridgeMaintenanceWarningMessage,
   } = useMaintenance()
-
-  const [isApproved, setIsApproved] = useState<boolean>(false)
 
   useEffect(() => {
     segmentAnalyticsEvent(`[Bridge page] arrives`, {
@@ -124,181 +126,50 @@ const StateManagedBridge = () => {
       console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
     } else {
-      dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-      dispatch(setIsLoading(false))
+      dispatch(resetBridgeQuote())
     }
   }, [fromChainId, toChainId, fromToken, toToken, debouncedFromValue])
-
-  // don't like this, rewrite: could be custom hook
-  useEffect(() => {
-    if (fromToken && fromToken?.addresses[fromChainId] === zeroAddress) {
-      setIsApproved(true)
-    } else {
-      if (
-        fromToken &&
-        bridgeQuote?.allowance &&
-        stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId]) <=
-          bridgeQuote.allowance
-      ) {
-        setIsApproved(true)
-      } else {
-        setIsApproved(false)
-      }
-    }
-  }, [bridgeQuote, fromToken, debouncedFromValue, fromChainId, toChainId])
 
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
+
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
 
     /* clear stored bridge quote before requesting new bridge quote */
-    dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+    dispatch(resetBridgeQuote())
+    const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
 
     try {
-      dispatch(setIsLoading(true))
-      const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
-
-      const allQuotes = await synapseSDK.allBridgeQuotes(
-        fromChainId,
-        toChainId,
-        fromToken.addresses[fromChainId],
-        toToken.addresses[toChainId],
-        stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
-        {
-          originUserAddress: address,
-        }
-      )
-
-      const pausedBridgeModules = new Set(
-        pausedModulesList
-          .filter((module) =>
-            module.chainId ? module.chainId === fromChainId : true
-          )
-          .flatMap(getBridgeModuleNames)
-      )
-
-      const activeQuotes = allQuotes.filter(
-        (quote) => !pausedBridgeModules.has(quote.bridgeModuleName)
-      )
-
-      if (activeQuotes.length === 0) {
-        const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
-        throw new Error(msg)
-      }
-
-      const rfqQuote = activeQuotes.find(
-        (quote) => quote.bridgeModuleName === 'SynapseRFQ'
-      )
-
-      let quote
-
-      if (rfqQuote) {
-        quote = rfqQuote
-      } else {
-        /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-        quote = activeQuotes[0]
-      }
-
-      const {
-        id,
-        feeAmount,
-        routerAddress,
-        maxAmountOut,
-        originQuery,
-        destQuery,
-        estimatedTime,
-        bridgeModuleName,
-        gasDropAmount,
-        originChainId,
-        destChainId,
-      } = quote
-
-      if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
-        dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-        dispatch(setIsLoading(false))
-        return
-      }
-
-      const toValueBigInt = BigInt(maxAmountOut.toString()) ?? 0n
-
-      // Bridge Lifecycle: originToken -> bridgeToken -> destToken
-      // debouncedFromValue is in originToken decimals
-      // originQuery.minAmountOut and feeAmount is in bridgeToken decimals
-      // Adjust feeAmount to be in originToken decimals
-      const adjustedFeeAmount =
-        (BigInt(feeAmount) *
-          stringToBigInt(
-            `${debouncedFromValue}`,
-            fromToken?.decimals[fromChainId]
-          )) /
-        BigInt(originQuery.minAmountOut)
-
-      const isUnsupported = AcceptedChainId[fromChainId] ? false : true
-
-      const allowance =
-        fromToken?.addresses[fromChainId] === zeroAddress ||
-        address === undefined ||
-        isUnsupported
-          ? 0n
-          : await getErc20TokenAllowance({
-              address,
-              chainId: fromChainId,
-              tokenAddress: fromToken?.addresses[fromChainId] as Address,
-              spender: routerAddress,
-            })
-
-      const {
-        originQuery: originQueryWithSlippage,
-        destQuery: destQueryWithSlippage,
-      } = synapseSDK.applyBridgeSlippage(
-        bridgeModuleName,
-        originQuery,
-        destQuery
-      )
-
       if (thisRequestId === currentSDKRequestID.current) {
-        dispatch(
-          setBridgeQuote({
-            outputAmount: toValueBigInt,
-            outputAmountString: commify(
-              formatBigIntToString(
-                toValueBigInt,
-                toToken.decimals[toChainId],
-                8
-              )
-            ),
-            routerAddress,
-            allowance,
-            exchangeRate: calculateExchangeRate(
-              stringToBigInt(
-                debouncedFromValue,
-                fromToken?.decimals[fromChainId]
-              ) - BigInt(adjustedFeeAmount),
-              fromToken?.decimals[fromChainId],
-              toValueBigInt,
-              toToken.decimals[toChainId]
-            ),
-            feeAmount,
-            delta: BigInt(maxAmountOut.toString()),
-            originQuery: originQueryWithSlippage,
-            destQuery: destQueryWithSlippage,
-            estimatedTime: estimatedTime,
-            bridgeModuleName: bridgeModuleName,
-            gasDropAmount: BigInt(gasDropAmount.toString()),
-            timestamp: currentTimestamp,
-            originChainId,
-            destChainId,
-            id,
+        const result = await dispatch(
+          fetchBridgeQuote({
+            synapseSDK,
+            fromChainId,
+            toChainId,
+            fromToken,
+            toToken,
+            debouncedFromValue,
+            requestId: thisRequestId,
+            currentTimestamp,
+            address,
+            pausedModulesList,
           })
         )
 
         toast.dismiss(quoteToastRef.current.id)
 
-        const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
-        console.log(message)
+        if (fetchBridgeQuote.fulfilled.match(result)) {
+          const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
 
-        quoteToastRef.current.id = toast(message, { duration: 3000 })
+          quoteToastRef.current.id = toast(message, { duration: 3000 })
+        }
+
+        if (fetchBridgeQuote.rejected.match(result)) {
+          const message = result.payload as string
+
+          quoteToastRef.current.id = toast(message, { duration: 3000 })
+        }
       }
     } catch (err) {
       console.log(err)
@@ -320,13 +191,9 @@ const StateManagedBridge = () => {
         console.log(message)
 
         quoteToastRef.current.id = toast(message, { duration: 3000 })
-        dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+        dispatch(resetBridgeQuote())
 
         return
-      }
-    } finally {
-      if (thisRequestId === currentSDKRequestID.current) {
-        dispatch(setIsLoading(false))
       }
     }
   }
@@ -334,7 +201,7 @@ const StateManagedBridge = () => {
   useStaleQuoteUpdater(
     bridgeQuote,
     getAndSetBridgeQuote,
-    isQuoteLoading,
+    isLoading,
     isWalletPending,
     quoteTimeout
   )
@@ -368,7 +235,7 @@ const StateManagedBridge = () => {
       bridgeQuoteTimestamp
     )
 
-    if (timeDifference > quoteTimeout && !isQuoteLoading) {
+    if (timeDifference > quoteTimeout && !isLoading) {
       await getAndSetBridgeQuote()
     }
 
@@ -424,7 +291,7 @@ const StateManagedBridge = () => {
           ? destinationAddress
           : address
 
-      const data = await synapseSDK.bridge(
+      const payload = await synapseSDK.bridge(
         toAddress,
         bridgeQuote.routerAddress,
         fromChainId,
@@ -434,20 +301,6 @@ const StateManagedBridge = () => {
         bridgeQuote.originQuery,
         bridgeQuote.destQuery
       )
-
-      const payload =
-        fromToken?.addresses[fromChainId as keyof Token['addresses']] ===
-          zeroAddress ||
-        fromToken?.addresses[fromChainId as keyof Token['addresses']] === ''
-          ? {
-              data: data.data,
-              to: data.to,
-              value: stringToBigInt(
-                debouncedFromValue,
-                fromToken?.decimals[fromChainId]
-              ),
-            }
-          : data
 
       /** Setting custom gas limit for only Polygon transactions */
       let gasEstimate = undefined
@@ -498,10 +351,10 @@ const StateManagedBridge = () => {
           isSubmitted: false,
         })
       )
-      dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+      dispatch(resetBridgeQuote())
       dispatch(setDestinationAddress(null))
       dispatch(setShowDestinationAddress(false))
-      dispatch(updateFromValue(''))
+      dispatch(updateDebouncedFromValue(''))
 
       const successToastContent = (
         <div>
@@ -540,7 +393,6 @@ const StateManagedBridge = () => {
       return tx
     } catch (error) {
       segmentAnalyticsEvent(`[Bridge]  error bridging`, {
-        address,
         errorCode: error.code,
       })
       dispatch(removePendingBridgeTransaction(currentTimestamp))
@@ -576,6 +428,7 @@ const StateManagedBridge = () => {
             onClick={() =>
               dispatch(setShowSettingsSlideOver(!showSettingsSlideOver))
             }
+            disabled={isWalletPending}
           >
             <SettingsToggle showSettingsToggle={!showSettingsSlideOver} />
           </Button>
@@ -589,7 +442,7 @@ const StateManagedBridge = () => {
             </div>
           ) : (
             <>
-              <InputContainer />
+              <InputContainer setIsTyping={setIsTyping} />
               <SwitchButton
                 onClick={() => {
                   dispatch(setFromChainId(toChainId))
@@ -597,6 +450,7 @@ const StateManagedBridge = () => {
                   dispatch(setToChainId(fromChainId))
                   dispatch(setToToken(fromToken))
                 }}
+                disabled={isWalletPending}
               />
               <OutputContainer />
               <Warning />
@@ -604,6 +458,7 @@ const StateManagedBridge = () => {
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />
               <BridgeTransactionButton
+                isTyping={isTyping}
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}

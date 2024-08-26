@@ -5,6 +5,7 @@ import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { setSwapToToken } from '@/slices/swap/reducer'
 import { useSwapToTokenListArray } from './hooks/useSwapToTokenListArray'
 import { AmountInput } from '@/components/ui/AmountInput'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 export const SwapOutputContainer = () => {
   const { swapQuote, isLoading } = useSwapState()
@@ -28,6 +29,7 @@ export const SwapOutputContainer = () => {
 
 const SwapToTokenSelector = () => {
   const { swapToToken } = useSwapState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <TokenSelector
@@ -38,6 +40,7 @@ const SwapToTokenSelector = () => {
       itemListFunction={useSwapToTokenListArray}
       setFunction={setSwapToToken}
       action="Swap"
+      disabled={isWalletPending}
     />
   )
 }

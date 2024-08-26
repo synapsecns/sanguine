@@ -18,9 +18,11 @@ export interface SelectorTypes {
 export interface TokenSelectorTypes extends SelectorTypes {
   selectedItem: Token
   action: ActionTypes
+  disabled: boolean
 }
 
 export interface ChainSelectorTypes extends SelectorTypes {
   selectedItem: Chain
   action: ActionTypes
+  disabled: boolean
 }

@@ -255,7 +255,7 @@ jobs:
   build:
     name: Build
     needs: changes
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     if: ${{ needs.changes.outputs.package_count_deps > 0 && github.event_name != 'pull_request' }}
     strategy:
       fail-fast: false

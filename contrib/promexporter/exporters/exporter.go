@@ -121,12 +121,16 @@ func (e *exporter) recordMetrics(ctx context.Context) (err error) {
 // nolint: cyclop
 func (e *exporter) collectMetrics(ctx context.Context) error {
 	var errs []error
+
+	if err := e.fetchRelayerBalances(ctx, e.cfg.RFQAPIUrl); err != nil {
+		errs = append(errs, fmt.Errorf("could not fetch relayer balances: %w", err))
+	}
+
 	if err := e.getTokenBalancesStats(ctx); err != nil {
 		errs = append(errs, fmt.Errorf("could not get token balances: %w", err))
 	}
 
 	// TODO: parallelize
-
 	for _, pending := range e.cfg.DFKPending {
 		if err := e.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName); err != nil {
 			errs = append(errs, fmt.Errorf("could not get stuck hero count: %w", err))

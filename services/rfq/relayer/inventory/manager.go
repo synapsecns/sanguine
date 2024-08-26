@@ -650,9 +650,11 @@ func (i *inventoryManagerImpl) refreshBalances(parentCtx context.Context) (err e
 	// here we register metrics for exporting through otel. We wait to call these functions until are tokens have been initialized to avoid nil issues.
 	for cid, tokenMap := range i.tokens {
 		chainID := cid // capture func literal
-		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
-		if err != nil {
-			return fmt.Errorf("could not get chain client: %w", err)
+		chainClient, clientErr := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
+		if clientErr != nil {
+			logger.Warnf("could not get chain client: %w", clientErr)
+			span.SetAttributes(attribute.String(fmt.Sprintf("client_error_%d", chainID), clientErr.Error()))
+			continue
 		}
 
 		// queue gas token balance fetch

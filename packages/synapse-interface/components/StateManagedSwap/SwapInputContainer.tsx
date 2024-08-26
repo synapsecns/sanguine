@@ -29,8 +29,16 @@ import { MaxButton } from '../StateManagedBridge/MaxButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatAmount } from '@/utils/formatAmount'
 import { getParsedBalance } from '@/utils/getParsedBalance'
+import { useWalletState } from '@/slices/wallet/hooks'
+import { debounce } from 'lodash'
 
-export const SwapInputContainer = () => {
+interface InputContainerProps {
+  setIsTyping: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export const SwapInputContainer: React.FC<InputContainerProps> = ({
+  setIsTyping,
+}) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const { swapChainId, swapFromToken, swapToToken, swapFromValue } =
     useSwapState()
@@ -39,6 +47,8 @@ export const SwapInputContainer = () => {
   const [hasMounted, setHasMounted] = useState(false)
 
   const { balances } = usePortfolioState()
+
+  const { isWalletPending } = useWalletState()
 
   useEffect(() => {
     setHasMounted(true)
@@ -74,20 +84,32 @@ export const SwapInputContainer = () => {
     }
   }, [swapFromValue, swapChainId, swapFromToken])
 
+  const debouncedUpdateSwapFromValue = useMemo(
+    () =>
+      debounce((value: string) => dispatch(updateSwapFromValue(value)), 400),
+    [dispatch]
+  )
+
+  useEffect(() => {
+    return () => {
+      debouncedUpdateSwapFromValue.cancel()
+    }
+  }, [debouncedUpdateSwapFromValue])
+
   const handleFromValueChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const swapFromValueString: string = cleanNumberInput(event.target.value)
     try {
-      dispatch(updateSwapFromValue(swapFromValueString))
       setShowValue(swapFromValueString)
+      debouncedUpdateSwapFromValue(swapFromValueString)
     } catch (error) {
       console.error('Invalid value for conversion to BigInteger')
       const inputValue = event.target.value
       const regex = /^[0-9]*[.,]?[0-9]*$/
 
       if (regex.test(inputValue) || inputValue === '') {
-        dispatch(updateSwapFromValue(''))
+        debouncedUpdateSwapFromValue(inputValue)
         setShowValue(inputValue)
       }
     }
@@ -131,9 +153,11 @@ export const SwapInputContainer = () => {
         <SwapFromTokenSelector />
         <div className="flex flex-col">
           <AmountInput
+            setIsTyping={setIsTyping}
             inputRef={inputRef}
             showValue={showValue}
             handleFromValueChange={handleFromValueChange}
+            disabled={isWalletPending}
           />
           <div className="flex">
             {hasMounted && isConnected && (
@@ -157,6 +181,7 @@ export const SwapInputContainer = () => {
 
 const SwapChainSelector = () => {
   const { swapChainId } = useSwapState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <ChainSelector
@@ -167,12 +192,14 @@ const SwapChainSelector = () => {
       itemListFunction={useSwapChainListArray}
       setFunction={setSwapChainId}
       action="Swap"
+      disabled={isWalletPending}
     />
   )
 }
 
 const SwapFromTokenSelector = () => {
   const { swapFromToken } = useSwapState()
+  const { isWalletPending } = useWalletState()
 
   return (
     <TokenSelector
@@ -183,6 +210,7 @@ const SwapFromTokenSelector = () => {
       itemListFunction={useSwapFromTokenListArray}
       setFunction={setSwapFromToken}
       action="Swap"
+      disabled={isWalletPending}
     />
   )
 }
