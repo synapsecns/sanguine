@@ -215,6 +215,20 @@ func (c Config) GetConfirmations(chainID int) (value uint64, err error) {
 	return value, nil
 }
 
+// GetProveConfirmations returns the ProveConfirmations for the given chainID.
+func (c Config) GetProveConfirmations(chainID int) (value uint64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "ProveConfirmations")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(uint64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast ProveConfirmations to int")
+	}
+	return value, nil
+}
+
 // GetNativeToken returns the NativeToken for the given chainID.
 func (c Config) GetNativeToken(chainID int) (value string, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "NativeToken")
