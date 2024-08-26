@@ -82,6 +82,7 @@ func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbri
 		TransactionID:  event.TransactionId,
 		TxHash:         event.TransactionHash,
 		Status:         guarddb.ProveCalled,
+		BlockNumber:    event.Raw.BlockNumber,
 	}
 	err = g.db.StorePendingProven(ctx, proven)
 	if err != nil {
@@ -116,7 +117,7 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 	}()
 
 	// first, verify that the prove tx is finalized
-	finalized, err := g.isFinalized(ctx, proven.TxHash, int(proven.Origin))
+	finalized, err := g.isFinalized(ctx, int(proven.Origin), proven.BlockNumber)
 	if err != nil {
 		return fmt.Errorf("could not check if tx is finalized: %w", err)
 	}
@@ -254,17 +255,14 @@ func relayMatchesBridgeRequest(event *fastbridge.FastBridgeBridgeRelayed, bridge
 }
 
 // isFinalized checks if a transaction is finalized versus the configured confirmations threshold.
-func (g *Guard) isFinalized(ctx context.Context, txHash common.Hash, chainID int) (bool, error) {
+func (g *Guard) isFinalized(ctx context.Context, chainID int, txBlockNumber uint64) (bool, error) {
 	span := trace.SpanFromContext(ctx)
 
 	client, err := g.client.GetChainClient(ctx, chainID)
 	if err != nil {
 		return false, fmt.Errorf("could not get chain client: %w", err)
 	}
-	receipt, err := client.TransactionReceipt(ctx, txHash)
-	if err != nil {
-		return false, fmt.Errorf("could not get receipt: %w", err)
-	}
+
 	currentBlockNumber, err := client.BlockNumber(ctx)
 	if err != nil {
 		return false, fmt.Errorf("could not get block number: %w", err)
@@ -274,14 +272,13 @@ func (g *Guard) isFinalized(ctx context.Context, txHash common.Hash, chainID int
 	if !ok {
 		return false, fmt.Errorf("could not get chain config for chain %d", chainID)
 	}
-	threshBlockNumber := uint64(receipt.BlockNumber.Int64()) + chainCfg.Confirmations
+	threshBlockNumber := txBlockNumber + chainCfg.Confirmations
 	span.SetAttributes(
-		attribute.String("tx_hash", txHash.Hex()),
 		attribute.Int("chain_id", chainID),
-		attribute.Int64("current_block_number", int64(currentBlockNumber)),
-		attribute.Int64("receipt_block_number", receipt.BlockNumber.Int64()),
+		attribute.Int("current_block_number", int(currentBlockNumber)),
+		attribute.Int("tx_block_number", int(txBlockNumber)),
 		attribute.Int("confirmations", int(chainCfg.Confirmations)),
 	)
 
-	return receipt != nil && currentBlockNumber >= threshBlockNumber, nil
+	return currentBlockNumber >= threshBlockNumber, nil
 }
