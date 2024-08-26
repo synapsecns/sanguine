@@ -242,3 +242,36 @@ func relayMatchesBridgeRequest(event *fastbridge.FastBridgeBridgeRelayed, bridge
 	}
 	return true
 }
+
+// isFinalized checks if a transaction is finalized versus the configured confirmations threshold.
+func (g *Guard) isFinalized(ctx context.Context, txHash common.Hash, chainID int) (bool, error) {
+	span := trace.SpanFromContext(ctx)
+
+	client, err := g.client.GetChainClient(ctx, chainID)
+	if err != nil {
+		return false, fmt.Errorf("could not get chain client: %w", err)
+	}
+	receipt, err := client.TransactionReceipt(ctx, txHash)
+	if err != nil {
+		return false, fmt.Errorf("could not get receipt: %w", err)
+	}
+	currentBlockNumber, err := client.BlockNumber(ctx)
+	if err != nil {
+		return false, fmt.Errorf("could not get block number: %w", err)
+	}
+
+	chainCfg, ok := g.cfg.Chains[chainID]
+	if !ok {
+		return false, fmt.Errorf("could not get chain config for chain %d", chainID)
+	}
+	threshBlockNumber := uint64(receipt.BlockNumber.Int64()) + chainCfg.Confirmations
+	span.SetAttributes(
+		attribute.String("tx_hash", txHash.Hex()),
+		attribute.Int("chain_id", chainID),
+		attribute.Int64("current_block_number", int64(currentBlockNumber)),
+		attribute.Int64("receipt_block_number", receipt.BlockNumber.Int64()),
+		attribute.Int("confirmations", int(chainCfg.Confirmations)),
+	)
+
+	return receipt != nil && currentBlockNumber >= threshBlockNumber, nil
+}
