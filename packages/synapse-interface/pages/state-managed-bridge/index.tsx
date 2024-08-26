@@ -34,6 +34,7 @@ import {
   setToChainId,
   setToToken,
   setDestinationAddress,
+  updateDebouncedFromValue,
 } from '@/slices/bridge/reducer'
 import { setIsWalletPending } from '@/slices/wallet/reducer'
 import {
@@ -335,6 +336,7 @@ const StateManagedBridge = () => {
       dispatch(resetBridgeQuote())
       dispatch(setDestinationAddress(null))
       dispatch(setShowDestinationAddress(false))
+      dispatch(updateDebouncedFromValue(''))
 
       const successToastContent = (
         <div>
