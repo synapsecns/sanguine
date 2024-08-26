@@ -45,6 +45,7 @@ let previousState = store.getState()
 store.subscribe(() => {
   const currentState = store.getState()
   const bridgeState = currentState.bridge
+  const bridgeQuoteState = currentState.bridgeQuote
 
   const address = currentState.application?.lastConnectedAddress
 
@@ -53,13 +54,14 @@ store.subscribe(() => {
 
   if (
     !_.isEqual(
-      previousState.bridge.bridgeQuote,
-      currentState.bridge.bridgeQuote
+      previousState.bridgeQuote.bridgeQuote,
+      currentState.bridgeQuote.bridgeQuote
     ) &&
-    currentState.bridge.bridgeQuote.outputAmount !== 0n
+    currentState.bridgeQuote.bridgeQuote.outputAmount !== 0n
   ) {
     const { outputAmountString, routerAddress, exchangeRate } =
-      bridgeState.bridgeQuote
+      bridgeQuoteState.bridgeQuote
+
     const { fromChainId, toChainId, fromToken, toToken, debouncedFromValue } =
       bridgeState
 
@@ -74,7 +76,7 @@ store.subscribe(() => {
       outputAmountString,
       routerAddress,
       exchangeRate: BigInt(exchangeRate.toString()),
-      bridgeQuote: currentState.bridge.bridgeQuote,
+      bridgeQuote: currentState.bridgeQuote.bridgeQuote,
     }
     segmentAnalyticsEvent(eventTitle, eventData)
   }

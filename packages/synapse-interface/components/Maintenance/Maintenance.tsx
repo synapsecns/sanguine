@@ -26,7 +26,7 @@ interface ChainPause {
   disableCountdown: boolean
 }
 
-interface BridgeModulePause {
+export interface BridgeModulePause {
   chainId?: number // If undefined, pause bridge module for all chains.
   bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
