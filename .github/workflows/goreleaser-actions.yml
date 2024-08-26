@@ -108,7 +108,6 @@ jobs:
         env:
           FILTERED_PATHS: ${{ steps.filter_go.outputs.changed_modules_deps }}
 
-  # TODO: we may want to dry run this on prs
   run-goreleaser:
     runs-on:
       - namespace-profile-fast-goreleaser
