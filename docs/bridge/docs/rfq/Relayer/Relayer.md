@@ -2,7 +2,11 @@
 sidebar_position: 0
 sidebar_label: Relayer
 ---
+:::note
 
+Relayers must be whitelisted in order to fill bridgeRequests.
+
+:::
 
 At a high level, the canonical implementation of the relayer has 3 different responsibilities.
 
@@ -23,12 +27,15 @@ The quoting loop is comparitively simple and updates the api on each route it su
 
 ### Rebalancing
 
-The rebalancing loop is more complex and is responsible for ensuring that the relayer has enough liquidity on each chain. Right now only the CCTP rebalancer is supported and works like this:
+The rebalancing loop is more complex and is responsible for ensuring that the relayer has enough liquidity on each chain. The CCTP rebalancer is supported and works like this:
 
 1. At `rebalance_interval`, check the `maintenance_balance_pct` of each token on each chain and compare it to the current balance. If the balance is below the `maintenance_balance_pct`, continue
 2. Calculate the amount to rebalance by taking the difference between the maintenance balance and the current balance and multiplying it by the `initial_balance_pct`.
 3. If the amount to rebalance is greater than the `max_rebalance_amount`, set the amount to rebalance to the `max_rebalance_amount`. If the amount to rebalance is less than the `min_rebalance_amount`, do not rebalance.
 4. Repeat after `rebalance_interval`
+
+The implementation for certain native bridges (e.g Scroll) is also supported. It works slightly differently as flows are only supported between Scroll and Mainnet. At a high level, the rebalancer checks inventory on Scroll versus other chains, and if imbalanced, initiates a bridge to mainnet, allowing the CCTP relayer to rebalance funds where needed.
+
 
 ### Relaying
 
@@ -104,7 +111,7 @@ The relayer is configured with a yaml file. The following is an example configur
 
   screener_api_url: 'http://screener-url' # can be left blank
   rfq_url: 'http://rfq-api' # url of the rfq api backend.
-  omnirpc_url: 'http://omnirpc' # url of the omnirpc instance
+  omnirpc_url: 'http://omnirpc' # url of the omnirpc instance, please reference the Omnirpc section under Services for proper configuration
   rebalance_interval: 2m # how often to rebalance
   relayer_api_port: '8081' # api port for the relayer api
 
@@ -190,7 +197,7 @@ The relayer is configured with a yaml file. The following is an example configur
       - chain_id: 10
         synapse_cctp_address: "0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E"
         token_messenger_address: "0x2B4069517957735bE00ceE0fadAE88a26365528f"
-    base_omnirpc_url: "http://omnirpc"
+    base_omnirpc_url: "http://omnirpc" # Make sure this is configured properly
     unbonded_signer:
       type: GCP
       file: /config/signer.txt

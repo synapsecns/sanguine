@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.36.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.35.1...@synapsecns/synapse-interface@0.36.0) (2024-08-26)
+
+
+### Features
+
+* **synapse-interface:** bridge quote state validations ([#3019](https://github.com/synapsecns/sanguine/issues/3019)) ([649b3f5](https://github.com/synapsecns/sanguine/commit/649b3f597787a3f81d98fdf64adf81bad851a45d)), closes [#3018](https://github.com/synapsecns/sanguine/issues/3018)
+
+
+
+
+
+## [0.35.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.35.0...@synapsecns/synapse-interface@0.35.1) (2024-08-25)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.35.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.7...@synapsecns/synapse-interface@0.35.0) (2024-08-21)
+
+
+### Features
+
+* **synapse-interface:** METIS token ([#3044](https://github.com/synapsecns/sanguine/issues/3044)) ([d73373b](https://github.com/synapsecns/sanguine/commit/d73373b93395fbe09064671c39ec774ca521330f))
+
+
+
+
+
 ## [0.34.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.34.6...@synapsecns/synapse-interface@0.34.7) (2024-08-19)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

@@ -101,6 +101,10 @@ const createBridgeQuoteTests = (
     result = await resultPromise
   })
 
+  it('Generates a bridge quote with valid uuid', async () => {
+    expect(typeof result.id).toBe('string')
+  })
+
   it('Fetches a bridge quote', async () => {
     expectCorrectBridgeQuote(result)
   })
@@ -402,6 +406,14 @@ describe('SynapseSDK', () => {
         amount
       )
 
+      const secondResultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
+        SupportedChainId.ARBITRUM,
+        SupportedChainId.ETH,
+        ARB_USDC,
+        ETH_USDC,
+        amount
+      )
+
       createBridgeQuoteTests(
         synapse,
         SupportedChainId.ARBITRUM,
@@ -428,6 +440,13 @@ describe('SynapseSDK', () => {
         )
         expect(result.originChainId).toEqual(SupportedChainId.ARBITRUM)
         expect(result.destChainId).toEqual(SupportedChainId.ETH)
+      })
+
+      it('Fetches a second Synapse bridge quote with a different ID', async () => {
+        const firstQuote = await resultPromise
+        const secondQuote = await secondResultPromise
+
+        expect(firstQuote.id).not.toEqual(secondQuote.id)
       })
     })
 
@@ -805,6 +824,17 @@ describe('SynapseSDK', () => {
       expect(allQuotes[0].destChainId).toEqual(SupportedChainId.ARBITRUM)
       expect(allQuotes[1].originChainId).toEqual(SupportedChainId.ETH)
       expect(allQuotes[1].destChainId).toEqual(SupportedChainId.ARBITRUM)
+    })
+
+    it('Generates unique IDs for SynapseBridge and SynapseCCTP quotes for USDC', async () => {
+      const allQuotes = await synapse.allBridgeQuotes(
+        SupportedChainId.ETH,
+        SupportedChainId.ARBITRUM,
+        ETH_USDC,
+        ARB_USDT,
+        BigNumber.from(10).pow(9)
+      )
+      expect(allQuotes[0].id).not.toEqual(allQuotes[1].id)
     })
 
     it('Fetches only SynapseBridge quotes for ETH', async () => {
