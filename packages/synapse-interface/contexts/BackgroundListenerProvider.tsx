@@ -1,7 +1,6 @@
 import React, { createContext } from 'react'
 
 import { useApplicationListener } from '@/utils/hooks/useApplicationListener'
-import { useBridgeListener } from '@/utils/hooks/useBridgeListener'
 import { usePortfolioListener } from '@/utils/hooks/usePortfolioListener'
 import { useRiskEvent } from '@/utils/hooks/useRiskEvent'
 import { useTransactionListener } from '@/utils/hooks/useTransactionListener'
@@ -18,7 +17,6 @@ export const BackgroundListenerProvider = ({ children }) => {
   usePortfolioListener()
   useTransactionListener()
   use_TransactionsListener()
-  useBridgeListener()
   useRiskEvent()
   useFetchPricesOnInterval()
   useFetchGasDataOnInterval()
