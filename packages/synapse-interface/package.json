@@ -72,7 +72,7 @@
     "typescript": "5.1.6",
     "use-persisted-state": "^0.3.3",
     "uuidv7": "^1.0.1",
-"viem": "^2.13.6",
+    "viem": "^2.13.6",
     "wagmi": "^2.9.8",
     "yarn": "^1.22.19"
   },
