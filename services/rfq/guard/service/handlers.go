@@ -115,7 +115,17 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// first, get the corresponding bridge request
+	// first, verify that the prove tx is finalized
+	finalized, err := g.isFinalized(ctx, proven.TxHash, int(proven.Origin))
+	if err != nil {
+		return fmt.Errorf("could not check if tx is finalized: %w", err)
+	}
+	span.SetAttributes(attribute.Bool("finalized", finalized))
+	if !finalized {
+		return nil
+	}
+
+	// get the corresponding bridge request
 	bridgeRequest, err := g.db.GetBridgeRequestByID(ctx, proven.TransactionID)
 	if err != nil {
 		return fmt.Errorf("could not get bridge request for txid %s: %w", hexutil.Encode(proven.TransactionID[:]), err)
