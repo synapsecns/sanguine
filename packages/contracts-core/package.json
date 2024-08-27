@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/contracts-core",
-  "version": "1.0.31",
+  "version": "1.1.0",
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
@@ -26,7 +26,7 @@
   "license": "MIT",
   "devDependencies": {
     "@typechain/ethers-v5": "10.0.0",
-    "hardhat": "2.22.2",
+    "hardhat": "2.22.9",
     "rimraf": "3.0.2",
     "solhint": "3.3.8",
     "typechain": "8.0.0",
