@@ -5,11 +5,13 @@ export const TokenOption = ({
   onSelect,
   selected,
   parsedBalance,
+  isOrigin,
 }: {
   option: BridgeableToken
   onSelect: (option: BridgeableToken) => void
   selected: BridgeableToken
   parsedBalance: string
+  isOrigin: boolean
 }) => {
   return (
     <li
@@ -58,7 +60,7 @@ export const TokenOption = ({
           )
         ) : (
           <span className="opacity-0 text-sm text-[--synapse-secondary] group-hover:opacity-100">
-            Receive
+            {isOrigin ? null : 'Receive'}
           </span>
         )}
       </data>

@@ -12,7 +12,7 @@ export const useCurrentTokenBalance = () => {
   const { balances } = useWalletState()
 
   return useMemo(() => {
-    if (!Array.isArray(balances) || !originToken) {
+    if (!Array.isArray(balances) || !originToken || !originChainId) {
       return {
         rawBalance: null,
         parsedBalance: null,

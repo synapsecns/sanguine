@@ -22,13 +22,20 @@ export const useEventCountdownProgressBar = (
 } => {
   let status: 'idle' | 'pending' | 'complete'
 
-  const { totalTimeRemainingInMinutes, hoursRemaining, isComplete, isPending } =
-    getCountdownTimeStatus(startDate, endDate)
+  const {
+    totalTimeRemainingInMinutes,
+    daysRemaining,
+    hoursRemaining,
+    isComplete,
+    isPending,
+  } = getCountdownTimeStatus(startDate, endDate)
 
   useIntervalTimer(60000, isComplete)
 
   const timeRemaining: string =
-    totalTimeRemainingInMinutes > 90
+    daysRemaining > 0
+      ? `${daysRemaining}d`
+      : totalTimeRemainingInMinutes > 90
       ? `${hoursRemaining}h`
       : `${totalTimeRemainingInMinutes}m`
 

@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation/slackertrace"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -45,7 +46,7 @@ func NewBot(handler metrics.Handler, cfg config.Config) *Bot {
 
 	bot.rpcClient = omnirpcClient.NewOmnirpcClient(cfg.OmniRPCURL, handler, omnirpcClient.WithCaptureReqRes())
 
-	bot.addMiddleware(bot.tracingMiddleware(), bot.metricsMiddleware())
+	bot.addMiddleware(slackertrace.TracingMiddleware(handler), slackertrace.MetricsMiddleware())
 	bot.addCommands(bot.traceCommand(), bot.rfqLookupCommand(), bot.rfqRefund())
 
 	return &bot
@@ -65,8 +66,11 @@ func (b *Bot) addCommands(commands ...*slacker.CommandDefinition) {
 
 // Start starts the bot server.
 // nolint: wrapcheck
-func (b *Bot) Start(ctx context.Context) error {
-	var err error
+func (b *Bot) Start(ctx context.Context) (err error) {
+	if err := b.cfg.Validate(); err != nil {
+		return fmt.Errorf("config validation failed: %w", err)
+	}
+
 	b.signer, err = signerConfig.SignerFromConfig(ctx, b.cfg.Signer)
 	if err != nil {
 		return fmt.Errorf("failed to create signer: %w", err)
