@@ -257,7 +257,8 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 			if err != nil {
 				log.Println(err)
 			}
-		}}
+		},
+	}
 }
 
 // nolint: gocognit, cyclop.
@@ -297,6 +298,24 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					}
 					return
 				}
+
+				canRefund, err := b.screener.ScreenAddress(ctx.Context(), rawRequest.DestAddress.String())
+				if err != nil {
+					_, err := ctx.Response().Reply("error screening address")
+					if err != nil {
+						log.Println(err)
+					}
+					return
+				}
+
+				if !canRefund {
+					_, err := ctx.Response().Reply("address cannot be refunded")
+					if err != nil {
+						log.Println(err)
+					}
+					return
+				}
+
 				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 					tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
 					if err != nil {

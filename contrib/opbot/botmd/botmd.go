@@ -7,7 +7,7 @@ import (
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/config"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
-	"github.com/synapsecns/sanguine/contrib/screener-api/screener"
+	screenerClient "github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -28,7 +28,7 @@ type Bot struct {
 	rpcClient     omnirpcClient.RPCClient
 	signer        signer.Signer
 	submitter     submitter.TransactionSubmitter
-	screener      screener.Screener
+	screener      screenerClient.ScreenerClient
 }
 
 // NewBot creates a new bot server.
@@ -87,11 +87,11 @@ func (b *Bot) Start(ctx context.Context) error {
 
 	b.submitter = submitter.NewTransactionSubmitter(b.handler, b.signer, b.rpcClient, store.SubmitterDB(), &b.cfg.SubmitterConfig)
 
-	screener, err := screener.NewScreener(ctx, b.cfg.ScreenerConfig, b.handler)
+	screenerClient, err := screenerClient.NewClient(b.handler, b.cfg.ScreenerURL)
 	if err != nil {
-		return fmt.Errorf("failed to create screener: %w", err)
+		return fmt.Errorf("could not create screener client: %w", err)
 	}
-	b.screener = screener
+	b.screener = screenerClient
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
@@ -100,10 +100,6 @@ func (b *Bot) Start(ctx context.Context) error {
 
 	g.Go(func() error {
 		return b.server.Listen(ctx)
-	})
-
-	g.Go(func() error {
-		return b.screener.Start(ctx)
 	})
 
 	// nolint: wrapcheck
