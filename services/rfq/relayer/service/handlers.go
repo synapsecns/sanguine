@@ -169,6 +169,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return fmt.Errorf("could not commit pending balance: %w", err)
 	}
 
+	//nolint:exhaustive
 	switch request.Status {
 	case reldb.CommittedPending:
 		// immediately forward the request to handleCommitPending
