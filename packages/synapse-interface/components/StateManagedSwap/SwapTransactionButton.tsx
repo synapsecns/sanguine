@@ -10,6 +10,7 @@ import { useSwapState } from '@/slices/swap/hooks'
 import { SWAP_CHAIN_IDS } from '@/constants/existingSwapRoutes'
 
 export const SwapTransactionButton = ({
+  isTyping,
   approveTxn,
   executeSwap,
   isApproved,
@@ -59,7 +60,8 @@ export const SwapTransactionButton = ({
     (isConnected && !sufficientBalance) ||
     swapQuote === EMPTY_SWAP_QUOTE_ZERO ||
     swapQuote === EMPTY_SWAP_QUOTE ||
-    isSwapPaused
+    isSwapPaused ||
+    isTyping
 
   let buttonProperties
 

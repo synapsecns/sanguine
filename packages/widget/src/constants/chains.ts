@@ -264,7 +264,7 @@ export const METIS: Chain = {
   explorerName: 'Metis Explorer',
   blockTime: 4000,
   imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/metis.3114f675.svg',
+    'https://7bdf4de3.sanguine-fe.pages.dev/_next/static/media/metis.90b6abf0.svg',
   networkName: 'Metis Andromeda Mainnet',
   networkUrl: 'https://andromeda.metis.io/?owner=1088',
   nativeCurrency: {

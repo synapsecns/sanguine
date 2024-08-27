@@ -17,6 +17,7 @@ import poolWithdraw from '@/slices/poolWithdrawSlice'
 import priceData from '@/slices/priceDataSlice'
 import gasData from '@/slices/gasDataSlice'
 import wallet from '@/slices/wallet/reducer'
+import bridgeQuote from '@/slices/bridgeQuote/reducer'
 import { api } from '@/slices/api/slice'
 import { RootActions } from '@/slices/application/actions'
 
@@ -48,6 +49,7 @@ export const appReducer = combineReducers({
   priceData,
   gasData,
   wallet,
+  bridgeQuote,
   [api.reducerPath]: api.reducer,
   ...persistedReducers,
 })

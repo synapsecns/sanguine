@@ -27,6 +27,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/grafana/otel-profiling-go v0.5.1
 	github.com/grafana/pyroscope-go v1.1.1
+	github.com/hedzr/log v1.6.3
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5
 	github.com/jpillora/backoff v1.0.0
@@ -38,6 +39,7 @@ require (
 	github.com/rung/go-safecast v1.0.1
 	github.com/samborkent/uuid v0.0.0-20240324164324-079317f91359
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0
+	github.com/slack-io/slacker v0.1.1
 	github.com/stretchr/testify v1.9.0
 	github.com/temoto/robotstxt v1.1.2
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.3.1
@@ -151,11 +153,15 @@ require (
 	github.com/prometheus/common v0.54.0 // indirect
 	github.com/prometheus/procfs v0.15.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.2.2 // indirect
+	github.com/slack-go/slack v0.13.0 // indirect
+	github.com/slack-io/commander v0.0.0-20231120025847-9fd78b4b2d54 // indirect
+	github.com/slack-io/proper v0.0.0-20231119200853-f78ba4fc878f // indirect
 	github.com/spf13/afero v1.10.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.8.0 // indirect

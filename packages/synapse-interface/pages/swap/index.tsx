@@ -54,6 +54,8 @@ const StateManagedSwap = () => {
   const router = useRouter()
   const { query, pathname } = router
 
+  const [isTyping, setIsTyping] = useState(false)
+
   useSyncQueryParamsWithSwapState()
 
   const { balances: portfolioBalances } = useFetchPortfolioBalances()
@@ -354,7 +356,7 @@ const StateManagedSwap = () => {
           </div>
           <BridgeCard bridgeRef={swapDisplayRef}>
             <SwapMaintenanceProgressBar />
-            <SwapInputContainer />
+            <SwapInputContainer setIsTyping={setIsTyping} />
             <SwitchButton
               onClick={() => {
                 dispatch(setSwapFromToken(swapToToken))
@@ -378,6 +380,7 @@ const StateManagedSwap = () => {
               toChainId={swapChainId}
             />
             <SwapTransactionButton
+              isTyping={isTyping}
               isApproved={isApproved}
               approveTxn={approveTxn}
               executeSwap={executeSwap}
