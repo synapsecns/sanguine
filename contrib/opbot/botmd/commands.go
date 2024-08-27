@@ -409,7 +409,7 @@ func stripLinks(input string) string {
 
 func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (*relapi.GetQuoteRequestResponse, error) {
 	// at this point tx can be a txid or a has, we try both
-	txRequest, err := client.GetQuoteRequestStatusByTxHash(ctx, tx)
+	txRequest, err := client.GetQuoteRequestByTxHash(ctx, tx)
 	if err == nil {
 		// override tx with txid
 		tx = txRequest.TxID
