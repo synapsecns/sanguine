@@ -43,6 +43,7 @@ type DatabaseConfig struct {
 	DSN  string `yaml:"dsn"` // Data Source Name
 }
 
+// Validate validates the configuration.
 func (c *Config) Validate() error {
 	if c.SlackBotToken == "" {
 		return errors.New("slack_bot_token is required")

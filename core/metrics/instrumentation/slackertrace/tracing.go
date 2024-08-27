@@ -8,6 +8,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// TracingMiddleware is a middleware that creates a new span for each command.
 func TracingMiddleware(handler metrics.Handler) slacker.CommandMiddlewareHandler {
 	return func(next slacker.CommandHandler) slacker.CommandHandler {
 		return func(cmdCtx *slacker.CommandContext) {
