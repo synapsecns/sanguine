@@ -19,6 +19,7 @@ import klayLogo from '@assets/icons/klay.svg'
 import l2daoLogo from '@assets/icons/l2dao.svg'
 import lusdLogo from '@assets/icons/lusd.svg'
 import maticLogo from '@assets/icons/matic.svg'
+import metisLogo from '@assets/icons/metis.svg'
 import movrLogo from '@assets/icons/movr.svg'
 import nethLogo from '@assets/icons/neth.svg'
 import newoLogo from '@assets/icons/newo.svg'
@@ -1208,4 +1209,24 @@ export const SPECTRAL = new Token({
   swapableType: 'SPEC',
   color: 'blue',
   routeSymbol: 'SPEC',
+})
+
+export const METIS = new Token({
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.DFK.id]: '0x43E8E55792D6317328e5c6B0A0C89eF4b8102Fa2',
+    [CHAINS.KLAYTN.id]: '0x543f1b2176F7E677a95D01ca83551FAa08F83D9F',
+    [CHAINS.METIS.id]: zeroAddress,
+  },
+  decimals: {
+    [CHAINS.DFK.id]: 18,
+    [CHAINS.KLAYTN.id]: 18,
+    [CHAINS.METIS.id]: 18,
+  },
+  symbol: 'Metis',
+  name: 'Metis Token',
+  swapableType: 'Metis',
+  logo: metisLogo,
+  color: 'blue',
+  routeSymbol: 'Metis',
 })

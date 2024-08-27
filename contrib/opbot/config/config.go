@@ -2,8 +2,10 @@
 package config
 
 import (
+	"errors"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
+	"strings"
 )
 
 // Config represents the configuration of the application.
@@ -39,4 +41,21 @@ type Config struct {
 type DatabaseConfig struct {
 	Type string `yaml:"type"`
 	DSN  string `yaml:"dsn"` // Data Source Name
+}
+
+// Validate validates the configuration.
+func (c *Config) Validate() error {
+	if c.SlackBotToken == "" {
+		return errors.New("slack_bot_token is required")
+	}
+	if !strings.HasPrefix(c.SlackBotToken, "xoxb-") {
+		return errors.New("slack_bot_token must start with xoxb-")
+	}
+	if c.SlackAppToken == "" {
+		return errors.New("slack_app_token is required")
+	}
+	if !strings.HasPrefix(c.SlackAppToken, "xapp-") {
+		return errors.New("slack_app_token must start with xapp-")
+	}
+	return nil
 }

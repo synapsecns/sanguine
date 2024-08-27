@@ -53,6 +53,7 @@ type chainListener struct {
 	blockWait       uint64
 	// otelRecorder is the recorder for the otel metrics.
 	otelRecorder iOtelRecorder
+	name         string
 }
 
 var (
@@ -94,7 +95,7 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 	}
 
 	if c.otelRecorder == nil {
-		c.otelRecorder, err = newOtelRecorder(c.handler, int(c.chainID))
+		c.otelRecorder, err = newOtelRecorder(c.handler, int(c.chainID), c.name)
 		if err != nil {
 			return fmt.Errorf("could not create otel recorder: %w", err)
 		}

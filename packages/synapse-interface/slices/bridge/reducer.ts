@@ -1,8 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { type Address } from 'viem'
 
-import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { type BridgeQuote, type Token } from '@/utils/types'
+import { type Token } from '@/utils/types'
 import {
   getRoutePossibilities,
   getSymbol,
@@ -24,12 +23,8 @@ export interface BridgeState {
   fromTokens: Token[]
   toTokens: Token[]
 
-  fromValue: string
   debouncedFromValue: string
   debouncedToTokensFromValue: string
-  bridgeQuote: BridgeQuote
-  isLoading: boolean
-  isWalletPending: boolean
   deadlineMinutes: number | null
   destinationAddress: Address | null
 }
@@ -60,12 +55,8 @@ export const initialState: BridgeState = {
   fromTokens,
   toTokens,
 
-  fromValue: '',
   debouncedFromValue: '',
   debouncedToTokensFromValue: '',
-  bridgeQuote: EMPTY_BRIDGE_QUOTE,
-  isLoading: false,
-  isWalletPending: false,
   deadlineMinutes: null,
   destinationAddress: null,
 }
@@ -74,12 +65,6 @@ export const bridgeSlice = createSlice({
   name: 'bridge',
   initialState,
   reducers: {
-    setIsLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload
-    },
-    setIsWalletPending: (state, action: PayloadAction<boolean>) => {
-      state.isWalletPending = action.payload
-    },
     setFromChainId: (state, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
 
@@ -436,12 +421,6 @@ export const bridgeSlice = createSlice({
       state.toChainIds = toChainIds
       state.toTokens = toTokens
     },
-    setBridgeQuote: (state, action: PayloadAction<BridgeQuote>) => {
-      state.bridgeQuote = action.payload
-    },
-    updateFromValue: (state, action: PayloadAction<string>) => {
-      state.fromValue = action.payload
-    },
     updateDebouncedFromValue: (state, action: PayloadAction<string>) => {
       state.debouncedFromValue = action.payload
     },
@@ -460,15 +439,11 @@ export const bridgeSlice = createSlice({
     clearDestinationAddress: (state) => {
       state.destinationAddress = initialState.destinationAddress
     },
-    resetBridgeQuote: (state) => {
-      state.bridgeQuote = initialState.bridgeQuote
-    },
     resetBridgeInputs: (state) => {
       state.fromChainId = initialState.fromChainId
       state.fromToken = initialState.fromToken
       state.toChainId = initialState.toChainId
       state.toToken = initialState.toToken
-      state.fromValue = initialState.fromValue
       state.debouncedFromValue = initialState.debouncedFromValue
     },
   },
@@ -477,17 +452,12 @@ export const bridgeSlice = createSlice({
 export const {
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
-  setBridgeQuote,
-  resetBridgeQuote,
   setFromChainId,
   setToChainId,
   setFromToken,
   setToToken,
-  updateFromValue,
   setDeadlineMinutes,
   setDestinationAddress,
-  setIsLoading,
-  setIsWalletPending,
   resetBridgeInputs,
   clearDestinationAddress,
 } = bridgeSlice.actions
