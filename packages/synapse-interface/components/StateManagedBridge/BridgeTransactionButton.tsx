@@ -12,6 +12,10 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
+import { getUnixTimeMinutesFromNow } from '@/utils/time'
+import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
+import { calculateTimeBetween } from '@/utils/time'
+
 export const BridgeTransactionButton = ({
   approveTxn,
   executeBridge,
@@ -25,6 +29,8 @@ export const BridgeTransactionButton = ({
 
   const { isConnected: isConnectedInit } = useAccount()
   const { chains, switchChain } = useSwitchChain()
+
+  const quoteTimeout = 15000
 
   useAccountEffect({
     onDisconnect() {
@@ -74,7 +80,19 @@ export const BridgeTransactionButton = ({
 
   let buttonProperties
 
-  if (isBridgePaused) {
+  const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
+  const bridgeQuoteTimestamp = convertUuidToUnix(bridgeQuote.id)
+  const timeDifference = calculateTimeBetween(
+    currentTimestamp,
+    bridgeQuoteTimestamp
+  )
+
+  if (timeDifference > quoteTimeout && !isLoading) {
+    buttonProperties = {
+      label: 'Stale quote',
+      onClick: null,
+    }
+  } else if (isBridgePaused) {
     buttonProperties = {
       label: 'Bridge paused',
       onClick: null,
