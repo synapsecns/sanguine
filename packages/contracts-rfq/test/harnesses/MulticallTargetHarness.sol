@@ -28,4 +28,11 @@ contract MulticallTargetHarness is MulticallTarget {
     function revertingFunction() external pure {
         revert(REVERT_MESSAGE);
     }
+
+    function undeterminedRevert() external pure {
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            revert(0, 0)
+        }
+    }
 }

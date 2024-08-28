@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {IMulticallTarget} from "../contracts/interfaces/IMulticallTarget.sol";
-import {MulticallTargetHarness} from "./harnesses/MulticallTargetHarness.sol";
+import {MulticallTargetHarness, MulticallTarget} from "./harnesses/MulticallTargetHarness.sol";
 
 import {Test} from "forge-std/Test.sol";
 
@@ -74,6 +74,24 @@ contract MulticallTargetTest is Test {
         );
     }
 
+    function getUndeterminedRevertData() internal view returns (bytes[] memory) {
+        return toArray(
+            abi.encodeCall(harness.setAddressField, (address(1234))),
+            abi.encodeCall(harness.setUintField, (42)),
+            abi.encodeCall(harness.undeterminedRevert, ()),
+            abi.encodeCall(harness.setAddressField, (address(0xDEADBEAF)))
+        );
+    }
+
+    function getUndeterminedRevertResults() internal pure returns (IMulticallTarget.Result[] memory) {
+        return toArray(
+            IMulticallTarget.Result(true, abi.encode(address(1234))),
+            IMulticallTarget.Result(true, abi.encode(42)),
+            IMulticallTarget.Result(false, ""),
+            IMulticallTarget.Result(true, abi.encode(address(0xDEADBEAF)))
+        );
+    }
+
     // ══════════════════════════════════════════ MULTICALL (NO RESULTS) ═══════════════════════════════════════════════
 
     function test_multicallNoResults_ignoreReverts_noReverts() public {
@@ -100,6 +118,14 @@ contract MulticallTargetTest is Test {
         assertEq(harness.uintField(), 42);
     }
 
+    function test_multicallNoResults_ignoreReverts_withUndeterminedRevert() public {
+        bytes[] memory data = getUndeterminedRevertData();
+        harness.multicallNoResults({data: data, ignoreReverts: true});
+
+        assertEq(harness.addressField(), address(0xDEADBEAF));
+        assertEq(harness.uintField(), 42);
+    }
+
     function test_multicallNoResults_dontIgnoreReverts_noReverts() public {
         bytes[] memory data = getNoRevertsData();
         harness.multicallNoResults({data: data, ignoreReverts: false});
@@ -118,6 +144,12 @@ contract MulticallTargetTest is Test {
         bytes[] memory data = getStringRevertData();
         string memory revertMessage = harness.REVERT_MESSAGE();
         vm.expectRevert(bytes(revertMessage));
+        harness.multicallNoResults({data: data, ignoreReverts: false});
+    }
+
+    function test_multicallNoResults_dontIgnoreReverts_withUndeterminedRevert() public {
+        bytes[] memory data = getUndeterminedRevertData();
+        vm.expectRevert(MulticallTarget.MulticallTarget__UndeterminedRevert.selector);
         harness.multicallNoResults({data: data, ignoreReverts: false});
     }
 
@@ -150,6 +182,15 @@ contract MulticallTargetTest is Test {
         assertEq(harness.uintField(), 42);
     }
 
+    function test_multicallWithResults_ignoreReverts_withUndeterminedRevert() public {
+        bytes[] memory data = getUndeterminedRevertData();
+        IMulticallTarget.Result[] memory results = harness.multicallWithResults({data: data, ignoreReverts: true});
+
+        assertEq(results, getUndeterminedRevertResults());
+        assertEq(harness.addressField(), address(0xDEADBEAF));
+        assertEq(harness.uintField(), 42);
+    }
+
     function test_multicallWithResults_dontIgnoreReverts_noReverts() public {
         bytes[] memory data = getNoRevertsData();
         IMulticallTarget.Result[] memory results = harness.multicallWithResults({data: data, ignoreReverts: false});
@@ -169,6 +210,12 @@ contract MulticallTargetTest is Test {
         bytes[] memory data = getStringRevertData();
         string memory revertMessage = harness.REVERT_MESSAGE();
         vm.expectRevert(bytes(revertMessage));
+        harness.multicallWithResults({data: data, ignoreReverts: false});
+    }
+
+    function test_multicallWithResults_dontIgnoreReverts_withUndeterminedRevert() public {
+        bytes[] memory data = getUndeterminedRevertData();
+        vm.expectRevert(MulticallTarget.MulticallTarget__UndeterminedRevert.selector);
         harness.multicallWithResults({data: data, ignoreReverts: false});
     }
 
