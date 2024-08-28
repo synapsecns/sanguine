@@ -299,7 +299,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					return
 				}
 
-				canRefund, err := b.screener.ScreenAddress(ctx.Context(), rawRequest.DestAddress.String())
+				canRefund, err := b.screener.ScreenAddress(ctx.Context(), rawRequest)
 				if err != nil {
 					_, err := ctx.Response().Reply("error screening address")
 					if err != nil {
@@ -407,19 +407,15 @@ func stripLinks(input string) string {
 	return linkRegex.ReplaceAllString(input, "$1")
 }
 
-func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (*relapi.GetQuoteRequestResponse, error) {
-	// at this point tx can be a txid or a has, we try both
-	txRequest, err := client.GetQuoteRequestByTxHash(ctx, tx)
-	if err == nil {
-		// override tx with txid
-		tx = txRequest.TxID
+func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (qr *relapi.GetQuoteRequestResponse, err error) {
+	if qr, err = client.GetQuoteRequestByTxHash(ctx, tx); err == nil {
+		return qr, nil
 	}
 
 	// look up quote request
-	qr, err := client.GetQuoteRequestByTXID(ctx, tx)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching quote request: %w", err)
+	if qr, err = client.GetQuoteRequestByTXID(ctx, tx); err == nil {
+		return qr, nil
 	}
 
-	return qr, nil
+	return nil, fmt.Errorf("error fetching quote request: %w", err)
 }
