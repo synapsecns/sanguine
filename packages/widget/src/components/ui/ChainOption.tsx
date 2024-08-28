@@ -17,9 +17,10 @@ export const ChainOption = ({
 }) => {
   const web3Context = useContext(Web3Context)
 
-  const {
-    web3Provider: { networkId },
-  } = web3Context
+  const { web3Provider } = web3Context || {}
+
+  const networkId = web3Provider?.networkId
+  const connectedAddress = web3Provider?.connectedAddress
 
   return (
     <li
@@ -49,11 +50,11 @@ export const ChainOption = ({
       {isOrigin &&
         (option.id === networkId ? (
           <ConnectedIndicator />
-        ) : (
+        ) : connectedAddress ? (
           <span className="opacity-0 text-sm text-[--synapse-secondary] group-hover:opacity-100">
             Switch
           </span>
-        ))}
+        ) : null)}
     </li>
   )
 }

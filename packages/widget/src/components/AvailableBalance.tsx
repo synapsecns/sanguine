@@ -7,6 +7,8 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
 import { useValidations } from '@/hooks/useValidations'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
+import { useWalletState } from '@/state/slices/wallet/hooks'
+import { FetchState } from '@/state/slices/wallet/reducer'
 
 export const AvailableBalance = ({
   connectedAddress,
@@ -18,6 +20,10 @@ export const AvailableBalance = ({
   const dispatch = useAppDispatch()
 
   const { originChainId, originToken } = useBridgeState()
+
+  const { balancesFetchStatus } = useWalletState()
+
+  const isFetchingBalance = balancesFetchStatus === FetchState.LOADING
 
   const tokenBalance = useCurrentTokenBalance()
 
@@ -45,6 +51,14 @@ export const AvailableBalance = ({
     )
   }
 
+  if (!originChainId) {
+    return (
+      <div className="text-sm text-[--synapse-secondary] whitespace-nowrap">
+        Select source chain
+      </div>
+    )
+  }
+
   return (
     <div
       className={`
@@ -52,12 +66,16 @@ export const AvailableBalance = ({
       flex items-center gap-1.5 px-1 text-sm justify-self-end
     `}
     >
-      <div
-        onClick={handleAvailableBalanceClick}
-        className="cursor-pointer hover:underline active:opacity-40 text-[--synapse-secondary] whitespace-nowrap"
-      >
-        Available {tokenBalance.parsedBalance ?? '0.0'}
-      </div>
+      {isFetchingBalance ? (
+        <div>loading...</div>
+      ) : (
+        <div
+          onClick={handleAvailableBalanceClick}
+          className="cursor-pointer hover:underline active:opacity-40 text-[--synapse-secondary] whitespace-nowrap"
+        >
+          Available {tokenBalance.parsedBalance ?? '0.0'}
+        </div>
+      )}
       {tokenBalance.parsedBalance && !hasEnoughBalance && (
         <Tooltip
           hoverText="Amount may not exceed available balance"
