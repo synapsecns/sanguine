@@ -4,9 +4,18 @@ pragma solidity ^0.8.0;
 import {IMulticallTarget} from "../interfaces/IMulticallTarget.sol";
 
 // solhint-disable avoid-low-level-calls
+/// @notice Template for a contract that supports batched calls (preserving the msg.sender).
+/// Only calls with zero msg.value could be batched.
 abstract contract MulticallTarget is IMulticallTarget {
     error MulticallTarget__UndeterminedRevert();
 
+    /// @notice Perform a batched call to this contract, preserving the msg.sender.
+    /// The return data from each call is discarded.
+    /// @dev The method is non-payable, so only calls with `msg.value == 0` could be batched.
+    /// It's possible to ignore the reverts from the calls by setting the `ignoreReverts` flag.
+    /// Otherwise, the whole batch call will be reverted with the original revert reason.
+    /// @param data             List of abi-encoded calldata for the calls to perform.
+    /// @param ignoreReverts    Whether to ignore the revert errors from the calls.
     function multicallNoResults(bytes[] calldata data, bool ignoreReverts) external {
         for (uint256 i = 0; i < data.length; ++i) {
             // We perform a delegate call to ourself to preserve the msg.sender. This is identical to `msg.sender`
@@ -20,6 +29,14 @@ abstract contract MulticallTarget is IMulticallTarget {
         }
     }
 
+    /// @notice Perform a batched call to this contract, preserving the msg.sender.
+    /// The return data from each call is preserved.
+    /// @dev The method is non-payable, so only calls with `msg.value == 0` could be batched.
+    /// It's possible to ignore the reverts from the calls by setting the `ignoreReverts` flag.
+    /// Otherwise, the whole batch call will be reverted with the original revert reason.
+    /// @param data             List of abi-encoded calldata for the calls to perform.
+    /// @param ignoreReverts    Whether to ignore the revert errors from the calls.
+    /// @return results         List of results from the calls: `(success, returnData)`.
     function multicallWithResults(
         bytes[] calldata data,
         bool ignoreReverts
