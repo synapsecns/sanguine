@@ -129,7 +129,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	address := fmt.Sprintf("%s:%s", "http://localhost", dockerutil.GetPort(resource, "8545/tcp"))
 
 	var chainID *big.Int
-	pool.MaxWait = time.Minute
+	pool.MaxWait = 10 * time.Minute
 	if err := pool.Retry(func() error {
 		rpcClient, err := ethclient.DialContext(ctx, address)
 		if err != nil {
