@@ -162,18 +162,28 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
-	// check balance and mark it as CommitPending
+	// check balance and mark it as CommitPending or NotEnoughInventory.
+	// note that this will update the request.Status in-place.
 	err = q.commitPendingBalance(ctx, span, &request)
 	if err != nil {
 		return fmt.Errorf("could not commit pending balance: %w", err)
 	}
 
-	// immediately forward the request to handleCommitPending
-	span.AddEvent("forwarding to handleCommitPending")
-	fwdErr := q.Forward(ctx, request)
-	if fwdErr != nil {
-		logger.Errorf("could not forward to handle commit pending: %w", fwdErr)
-		span.AddEvent("could not forward to handle commit pending")
+	//nolint:exhaustive
+	switch request.Status {
+	case reldb.CommittedPending:
+		// immediately forward the request to handleCommitPending
+		span.AddEvent("forwarding to handleCommitPending")
+		fwdErr := q.Forward(ctx, request)
+		if fwdErr != nil {
+			logger.Errorf("could not forward to handle commit pending: %w", fwdErr)
+			span.AddEvent(fmt.Sprintf("could not forward to handle commit pending: %s", fwdErr.Error()))
+		}
+	case reldb.NotEnoughInventory:
+		span.AddEvent("not enough inventory; not forwarding")
+	default:
+		logger.Errorf("unexpected request status: %s", request.Status.String())
+		span.AddEvent(fmt.Sprintf("unexpected request status: %s", request.Status.String()))
 	}
 
 	return nil
@@ -210,6 +220,7 @@ func (q *QuoteRequestHandler) commitPendingBalance(ctx context.Context, span tra
 
 	// check if we have enough inventory to handle the request
 	if committableBalance.Cmp(request.Transaction.DestAmount) < 0 {
+		request.Status = reldb.NotEnoughInventory
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory, &request.Status)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
