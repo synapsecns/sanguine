@@ -15,10 +15,6 @@ import (
 // RelayerClient is the interface for the relayer client.
 type RelayerClient interface {
 	Health(ctx context.Context) (ok bool, err error)
-	// Deprecated: use GetQuoteRequestByTxHash
-	GetQuoteRequestStatusByTxHash(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
-	// Deprecated: use GetQuoteRequestStatusByTxID
-	GetQuoteRequestStatusByTxID(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
 	RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error)
 	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)
 	GetTxHashByNonce(ctx context.Context, req *GetTxByNonceRequest) (*TxHashByNonceResponse, error)
@@ -56,40 +52,6 @@ func (r *relayerClient) Health(ctx context.Context) (ok bool, err error) {
 	ok = fastjson.GetString(resp.Body(), "status") == "ok"
 
 	return ok, nil
-}
-
-func (r *relayerClient) GetQuoteRequestStatusByTxHash(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error) {
-	var res GetQuoteRequestStatusResponse
-
-	resp, err := r.client.R().SetContext(ctx).
-		SetQueryParam("hash", hash).
-		SetResult(&res).
-		Get(getQuoteStatusByTxHashRoute)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get quote request status by tx hash: %w", err)
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-	}
-
-	return &res, nil
-}
-
-func (r *relayerClient) GetQuoteRequestStatusByTxID(ctx context.Context, txid string) (*GetQuoteRequestStatusResponse, error) {
-	var res GetQuoteRequestStatusResponse
-
-	resp, err := r.client.R().SetContext(ctx).
-		SetQueryParam("id", txid).
-		SetResult(&res).
-		Get(getQuoteStatusByTxIDRoute)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get quote request status by tx hash: %w", err)
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-	}
-
-	return &res, nil
 }
 
 func (r *relayerClient) RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error) {
