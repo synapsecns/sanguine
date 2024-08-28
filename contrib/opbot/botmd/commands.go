@@ -299,7 +299,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					return
 				}
 
-				canRefund, err := b.screener.ScreenAddress(ctx.Context(), rawRequest)
+				canRefund, err := b.screener.ScreenAddress(ctx.Context(), rawRequest.Sender)
 				if err != nil {
 					_, err := ctx.Response().Reply("error screening address")
 					if err != nil {
