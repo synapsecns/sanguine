@@ -15,7 +15,7 @@ abstract contract MulticallTarget is IMulticallTarget {
             // so it's always 0 and not a security risk.
             (bool success, bytes memory result) = address(this).delegatecall(data[i]);
             if (!success && !ignoreReverts) {
-                revert(string(result));
+                _bubbleRevert(result);
             }
         }
     }
@@ -35,8 +35,25 @@ abstract contract MulticallTarget is IMulticallTarget {
             // so it's always 0 and not a security risk.
             (results[i].success, results[i].returnData) = address(this).delegatecall(data[i]);
             if (!results[i].success && !ignoreReverts) {
-                revert(string(results[i].returnData));
+                _bubbleRevert(results[i].returnData);
             }
+        }
+    }
+
+    /// @dev Bubbles the revert message from the underlying call.
+    /// Note: preserves the same custom error or revert string, if one was used.
+    /// Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.0.2/contracts/utils/Address.sol#L143-L158
+    function _bubbleRevert(bytes memory returnData) internal pure {
+        // Look for revert reason and bubble it up if present
+        if (returnData.length > 0) {
+            // The easiest way to bubble the revert reason is using memory via assembly
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                let returndata_size := mload(returnData)
+                revert(add(32, returnData), returndata_size)
+            }
+        } else {
+            revert MulticallTarget__UndeterminedRevert();
         }
     }
 }
