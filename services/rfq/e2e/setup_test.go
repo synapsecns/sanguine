@@ -218,6 +218,12 @@ func addressToBytes32(addr common.Address) [32]byte {
 	return buf
 }
 
+func (i *IntegrationSuite) isDeployed(ctx context.Context, backend backends.SimulatedTestBackend, address common.Address) bool {
+	code, err := backend.CodeAt(ctx, address, nil)
+	i.NoError(err)
+	return len(code) > 0
+}
+
 func (i *IntegrationSuite) waitForContractDeployment(ctx context.Context, backend backends.SimulatedTestBackend, address common.Address) error {
 	return retry.WithBackoff(ctx, func(_ context.Context) error {
 		code, err := backend.CodeAt(ctx, address, nil)
