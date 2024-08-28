@@ -10,6 +10,8 @@ import {Test} from "forge-std/Test.sol";
 contract MulticallTargetTest is Test {
     MulticallTargetHarness public harness;
 
+    address public caller = makeAddr("Caller");
+
     function setUp() public {
         harness = new MulticallTargetHarness();
         harness.setAddressField(address(1));
@@ -18,6 +20,24 @@ contract MulticallTargetTest is Test {
 
     function getEncodedStringRevertMessage() internal view returns (bytes memory) {
         return abi.encodeWithSignature("Error(string)", harness.REVERT_MESSAGE());
+    }
+
+    function getMsgSenderData() internal view returns (bytes[] memory) {
+        return toArray(
+            abi.encodeCall(harness.setAddressField, (address(1234))),
+            abi.encodeCall(harness.addressField, ()),
+            abi.encodeCall(harness.setMsgSenderAsAddressField, ()),
+            abi.encodeCall(harness.addressField, ())
+        );
+    }
+
+    function getMsgSenderResults() internal view returns (IMulticallTarget.Result[] memory) {
+        return toArray(
+            IMulticallTarget.Result(true, abi.encode(address(1234))),
+            IMulticallTarget.Result(true, abi.encode(address(1234))),
+            IMulticallTarget.Result(true, abi.encode(caller)),
+            IMulticallTarget.Result(true, abi.encode(caller))
+        );
     }
 
     function getNoRevertsData() internal view returns (bytes[] memory) {
@@ -102,6 +122,15 @@ contract MulticallTargetTest is Test {
         assertEq(harness.uintField(), 42);
     }
 
+    function test_multicallNoResults_ignoreReverts_withMsgSender() public {
+        bytes[] memory data = getMsgSenderData();
+        vm.prank(caller);
+        harness.multicallNoResults({data: data, ignoreReverts: true});
+
+        assertEq(harness.addressField(), caller);
+        assertEq(harness.uintField(), 2);
+    }
+
     function test_multicallNoResults_ignoreReverts_withCustomErrorRevert() public {
         bytes[] memory data = getCustomErrorRevertData();
         harness.multicallNoResults({data: data, ignoreReverts: true});
@@ -134,6 +163,15 @@ contract MulticallTargetTest is Test {
         assertEq(harness.uintField(), 42);
     }
 
+    function test_multicallNoResults_dontIgnoreReverts_withMsgSender() public {
+        bytes[] memory data = getMsgSenderData();
+        vm.prank(caller);
+        harness.multicallNoResults({data: data, ignoreReverts: false});
+
+        assertEq(harness.addressField(), caller);
+        assertEq(harness.uintField(), 2);
+    }
+
     function test_multicallNoResults_dontIgnoreReverts_withCustomErrorRevert() public {
         bytes[] memory data = getCustomErrorRevertData();
         vm.expectRevert(MulticallTargetHarness.CustomError.selector);
@@ -162,6 +200,16 @@ contract MulticallTargetTest is Test {
         assertEq(results, getNoRevertsResults());
         assertEq(harness.addressField(), address(0xDEADBEAF));
         assertEq(harness.uintField(), 42);
+    }
+
+    function test_multicallWithResults_ignoreReverts_withMsgSender() public {
+        bytes[] memory data = getMsgSenderData();
+        vm.prank(caller);
+        IMulticallTarget.Result[] memory results = harness.multicallWithResults({data: data, ignoreReverts: true});
+
+        assertEq(results, getMsgSenderResults());
+        assertEq(harness.uintField(), 2);
+        assertEq(harness.addressField(), caller);
     }
 
     function test_multicallWithResults_ignoreReverts_withCustomErrorRevert() public {
@@ -198,6 +246,16 @@ contract MulticallTargetTest is Test {
         assertEq(results, getNoRevertsResults());
         assertEq(harness.addressField(), address(0xDEADBEAF));
         assertEq(harness.uintField(), 42);
+    }
+
+    function test_multicallWithResults_dontIgnoreReverts_withMsgSender() public {
+        bytes[] memory data = getMsgSenderData();
+        vm.prank(caller);
+        IMulticallTarget.Result[] memory results = harness.multicallWithResults({data: data, ignoreReverts: false});
+
+        assertEq(results, getMsgSenderResults());
+        assertEq(harness.addressField(), caller);
+        assertEq(harness.uintField(), 2);
     }
 
     function test_multicallWithResults_dontIgnoreReverts_withCustomErrorRevert() public {

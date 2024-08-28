@@ -11,6 +11,11 @@ contract MulticallTargetHarness is MulticallTarget {
 
     error CustomError();
 
+    function setMsgSenderAsAddressField() external returns (address) {
+        addressField = msg.sender;
+        return addressField;
+    }
+
     function setAddressField(address _addressField) external returns (address) {
         addressField = _addressField;
         return addressField;
