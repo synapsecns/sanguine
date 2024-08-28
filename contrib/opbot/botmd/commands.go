@@ -278,44 +278,47 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
+			var rawRequest *relapi.GetQuoteRequestResponse
+			var err error
 			for _, relayer := range b.cfg.RelayerURLS {
 				relClient := relapi.NewRelayerClient(b.handler, relayer)
-
-				rawRequest, err := getQuoteRequest(ctx.Context(), relClient, tx)
+				rawRequest, err = getQuoteRequest(ctx.Context(), relClient, tx)
 				if err != nil {
-					_, err := ctx.Response().Reply("error fetching quote request")
-					if err != nil {
-						log.Println(err)
-					}
-					return
-				}
-
-				fastBridgeContract, err := b.makeFastBridge(ctx.Context(), rawRequest)
-				if err != nil {
-					_, err := ctx.Response().Reply(err.Error())
-					if err != nil {
-						log.Println(err)
-					}
-					return
-				}
-				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
-					if err != nil {
-						return nil, fmt.Errorf("error submitting refund: %w", err)
-					}
-					return tx, nil
-				})
-				if err != nil {
-					log.Printf("error submitting refund: %v\n", err)
+					log.Println(err)
 					continue
 				}
-
-				// TODO: follow the lead of https://github.com/synapsecns/sanguine/pull/2845
-				_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
+			}
+			if err != nil {
+				_, err := ctx.Response().Reply(fmt.Sprintf("error fetching quote request %v", err))
 				if err != nil {
 					log.Println(err)
 				}
 				return
+			}
+
+			fastBridgeContract, err := b.makeFastBridge(ctx.Context(), rawRequest)
+			if err != nil {
+				_, err := ctx.Response().Reply(err.Error())
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+			nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
+				if err != nil {
+					return nil, fmt.Errorf("error submitting refund: %w", err)
+				}
+				return tx, nil
+			})
+			if err != nil {
+				log.Printf("error submitting refund: %v\n", err)
+			}
+
+			// TODO: follow the lead of https://github.com/synapsecns/sanguine/pull/2845
+			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
+			if err != nil {
+				log.Println(err)
 			}
 		},
 	}
