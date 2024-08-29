@@ -79,6 +79,11 @@ func (l *limiterImpl) IsAllowed(ctx context.Context, request *reldb.QuoteRequest
 		return false, fmt.Errorf("could not check volume limit: %w", err)
 	}
 
+	span.SetAttributes(
+		attribute.Bool("has_enough_confirmations", hasEnoughConfirmations),
+		attribute.Bool("within_size_limit", withinSize),
+	)
+
 	return withinSize, nil
 }
 
@@ -111,26 +116,40 @@ func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request *reldb
 	return hasEnoughConfirmations, nil
 }
 
-func (l *limiterImpl) withinSizeLimit(ctx context.Context, request *reldb.QuoteRequest) (bool, error) {
+func (l *limiterImpl) withinSizeLimit(ctx context.Context, request *reldb.QuoteRequest) (_ bool, err error) {
+	ctx, span := l.metrics.Tracer().Start(ctx, "limiter.withinSizeLimit")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	volumeLimit := l.cfg.GetVolumeLimit(int(request.Transaction.OriginChainId), request.Transaction.OriginToken)
 	// There is no limit.
 	if volumeLimit.Cmp(big.NewInt(-1)) == 0 {
 		return true, nil
 	}
 
-	tokenPrice, err := l.getUSDAmountOfToken(ctx, request)
+	tokenPrice, err := l.getRequestVolumeOfToken(ctx, request)
 	if err != nil {
 		return false, fmt.Errorf("could not get USD amount of token: %w", err)
 	}
 
-	return tokenPrice.Cmp(volumeLimit) < 0, nil
+	withinSizeLimit := tokenPrice.Cmp(volumeLimit) < 0
+	span.SetAttributes(
+		attribute.String("volume_limit", volumeLimit.String()),
+		attribute.String("token_price", tokenPrice.String()),
+		attribute.Bool("within_size_limit", withinSizeLimit),
+	)
+
+	return withinSizeLimit, nil
 }
 
-func (l *limiterImpl) getUSDAmountOfToken(
+// getRequestVolumeOfToken returns the volume of the token in USD. This value is NOT human readable.
+// We first get the price of the token in human readable units, then we multiply it by the OriginAmount.
+func (l *limiterImpl) getRequestVolumeOfToken(
 	ctx context.Context,
 	request *reldb.QuoteRequest,
 ) (_ *big.Int, err error) {
-	ctx, span := l.metrics.Tracer().Start(ctx, "limiter.getUSDAmountOfToken")
+	ctx, span := l.metrics.Tracer().Start(ctx, "limiter.getRequestVolumeOfToken")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -143,11 +162,13 @@ func (l *limiterImpl) getUSDAmountOfToken(
 		}
 	}
 
+	// Get the human readable price of the token.
 	price, err := l.quoter.GetPrice(ctx, tokenName)
 	if err != nil {
 		return nil, fmt.Errorf("could not get price: %w", err)
 	}
 	priceFlt := new(big.Float).SetFloat64(price)
+	// OriginAmount is NOT human readable. E.g. 3 USDC is 3000000 (3 * 10^6).
 	originAmountFlt := new(big.Float).SetInt(request.Transaction.OriginAmount)
 
 	product, _ := new(big.Float).Mul(priceFlt, originAmountFlt).Int(nil)
