@@ -379,11 +379,11 @@ func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridge.Fast
 //
 // This is the sixth step in the bridge process. Here we submit the claim transaction to the origin chain.
 func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
-	// first, ensure that enough confirmations have passed before proving
-	receipt, err := q.Dest.Client.TransactionReceipt(ctx, request.DestTxHash)
+	relayBlockNumber, err := q.getRelayBlockNumber(ctx, request)
 	if err != nil {
-		return fmt.Errorf("could not get transaction receipt: %w", err)
+		return fmt.Errorf("could not get relay block number: %w", err)
 	}
+
 	currentBlockNumber := q.Origin.LatestBlock()
 	proveConfirmations, err := q.cfg.GetFinalityConfirmations(int(q.Dest.ChainID))
 	if err != nil {
@@ -391,10 +391,10 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 	}
 	span.SetAttributes(
 		attribute.Int("current_block_number", int(currentBlockNumber)),
-		attribute.Int("dest_block_number", int(receipt.BlockNumber.Int64())),
+		attribute.Int("relay_block_number", int(relayBlockNumber)),
 		attribute.Int("prove_confirmations", int(proveConfirmations)),
 	)
-	if currentBlockNumber < request.BlockNumber+proveConfirmations {
+	if currentBlockNumber < relayBlockNumber+proveConfirmations {
 		span.AddEvent("not enough confirmations")
 		return nil
 	}
@@ -417,6 +417,35 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 		return fmt.Errorf("could not update request status: %w", err)
 	}
 	return nil
+}
+
+func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request reldb.QuoteRequest) (blockNumber uint64, err error) {
+	// fetch the transaction receipt for corresponding tx hash
+	receipt, err := q.Dest.Client.TransactionReceipt(ctx, request.DestTxHash)
+	if err != nil {
+		return blockNumber, fmt.Errorf("could not get transaction receipt: %w", err)
+	}
+	parser, err := fastbridge.NewParser(q.Dest.Bridge.Address())
+	if err != nil {
+		return blockNumber, fmt.Errorf("could not create parser: %w", err)
+	}
+
+	// check that a Relayed event was emitted
+	for _, log := range receipt.Logs {
+		if log == nil {
+			continue
+		}
+		_, parsedEvent, ok := parser.ParseEvent(*log)
+		if !ok {
+			continue
+		}
+		_, ok = parsedEvent.(*fastbridge.FastBridgeBridgeRelayed)
+		if ok {
+			return receipt.BlockNumber.Uint64(), nil
+		}
+	}
+
+	return blockNumber, fmt.Errorf("relayed event not found for dest tx hash: %s", request.DestTxHash.Hex())
 }
 
 // handleProofProvided handles the ProofProvided event emitted by the Bridge.
