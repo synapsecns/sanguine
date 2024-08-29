@@ -215,7 +215,7 @@ func (c Config) GetConfirmations(chainID int) (value uint64, err error) {
 	return value, nil
 }
 
-// GetLimitConfirmations returns the LimitConfirmations for the rate limiter
+// GetLimitConfirmations returns the LimitConfirmations for the rate limiter.
 func (c Config) GetLimitConfirmations() (value uint64, err error) {
 	rawValue, err := c.getChainConfigValue(0, "LimitConfirmations")
 	if err != nil {
@@ -843,6 +843,7 @@ func (c Config) GetVolumeLimit(chainID int, addr common.Address) *big.Int {
 	volumeLimitFlt := new(big.Float).SetFloat64(c.VolumeLimit)
 
 	// Scale the minBalance by the token decimals.
+	//nolint: mnd
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
 	volumeLimitScaled, _ := new(big.Float).Mul(volumeLimitFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return volumeLimitScaled
