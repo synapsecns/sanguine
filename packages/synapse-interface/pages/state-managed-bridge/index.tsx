@@ -229,15 +229,6 @@ const StateManagedBridge = () => {
     let pendingPopup: any
 
     const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
-    const bridgeQuoteTimestamp = convertUuidToUnix(bridgeQuote.id)
-    const timeDifference = calculateTimeBetween(
-      currentTimestamp,
-      bridgeQuoteTimestamp
-    )
-
-    if (timeDifference > quoteTimeout && !isLoading) {
-      await getAndSetBridgeQuote()
-    }
 
     if (destinationAddress) {
       const isRisky = await screenAddress(destinationAddress)
