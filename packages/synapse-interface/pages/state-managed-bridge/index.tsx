@@ -321,7 +321,6 @@ const StateManagedBridge = () => {
         { id: 'bridge-in-progress-popup', duration: Infinity }
       )
       segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
-        address,
         id: bridgeQuote.id,
         originChainId: fromChainId,
         destinationChainId: toChainId,
