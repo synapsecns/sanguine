@@ -383,12 +383,12 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 	if err != nil {
 		return fmt.Errorf("could not get relay block number: %w", err)
 	}
-
 	currentBlockNumber := q.Origin.LatestBlock()
 	proveConfirmations, err := q.cfg.GetFinalityConfirmations(int(q.Dest.ChainID))
 	if err != nil {
 		return fmt.Errorf("could not get prove confirmations: %w", err)
 	}
+
 	span.SetAttributes(
 		attribute.Int("current_block_number", int(currentBlockNumber)),
 		attribute.Int("relay_block_number", int(relayBlockNumber)),
@@ -419,6 +419,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 	return nil
 }
 
+// getRelayBlockNumber fetches the block number of the relay transaction for a given quote request.
 func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request reldb.QuoteRequest) (blockNumber uint64, err error) {
 	// fetch the transaction receipt for corresponding tx hash
 	receipt, err := q.Dest.Client.TransactionReceipt(ctx, request.DestTxHash)
