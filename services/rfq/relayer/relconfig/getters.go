@@ -216,8 +216,8 @@ func (c Config) GetConfirmations(chainID int) (value uint64, err error) {
 }
 
 // GetLimitConfirmations returns the LimitConfirmations for the rate limiter.
-func (c Config) GetLimitConfirmations() (value uint64, err error) {
-	rawValue, err := c.getChainConfigValue(0, "LimitConfirmations")
+func (c Config) GetLimitConfirmations(chainID int) (value uint64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "LimitConfirmations")
 	if err != nil {
 		return value, err
 	}
