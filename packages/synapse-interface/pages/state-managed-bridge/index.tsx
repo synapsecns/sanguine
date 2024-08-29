@@ -240,7 +240,6 @@ const StateManagedBridge = () => {
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
-        address,
         id: bridgeQuote.id,
         originChainId: fromChainId,
         destinationChainId: toChainId,
