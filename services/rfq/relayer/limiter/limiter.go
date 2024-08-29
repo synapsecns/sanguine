@@ -93,7 +93,7 @@ func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request *reldb
 		return false, fmt.Errorf("could not get block number: %w", err)
 	}
 
-	requiredConfirmations, err := l.cfg.GetConfirmations(int(request.Transaction.OriginChainId))
+	requiredConfirmations, err := l.cfg.GetLimitConfirmations()
 	if err != nil {
 		return false, fmt.Errorf("could not get required confirmations from config: %w", err)
 	}

@@ -215,6 +215,20 @@ func (c Config) GetConfirmations(chainID int) (value uint64, err error) {
 	return value, nil
 }
 
+// GetLimitConfirmations returns the LimitConfirmations for the rate limiter
+func (c Config) GetLimitConfirmations() (value uint64, err error) {
+	rawValue, err := c.getChainConfigValue(0, "LimitConfirmations")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(uint64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast LimitConfirmations to int")
+	}
+	return value, nil
+}
+
 // GetNativeToken returns the NativeToken for the given chainID.
 func (c Config) GetNativeToken(chainID int) (value string, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "NativeToken")

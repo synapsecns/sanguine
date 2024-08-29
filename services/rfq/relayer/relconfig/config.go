@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -20,8 +21,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/util"
 	"gopkg.in/yaml.v2"
-
-	"path/filepath"
 
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 )
@@ -68,6 +67,8 @@ type Config struct {
 	SubmitSingleQuotes bool `yaml:"submit_single_quotes"`
 	// VolumeLimit is the maximum dollar value of relayed transactions in the BlockWindow.
 	VolumeLimit float64 `yaml:"volume_limit"`
+	// LimitConfirmations is the number of confirmations to wait for before processing a quote.
+	LimitConfirmations uint64 `yaml:"limit_confirmations"`
 }
 
 // ChainConfig represents the configuration for a chain.
