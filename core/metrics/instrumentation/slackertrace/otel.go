@@ -1,50 +1,19 @@
-package botmd
+package slackertrace
 
 import (
 	"context"
-	"fmt"
 	"github.com/hedzr/log"
 	"github.com/slack-io/slacker"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
 	"time"
 )
 
 const (
-	instrumentationName    = "github.com/synapsecns/sanguine/contrib/opbot/botmd"
+	instrumentationName    = "github.com/synapsecns/sanguine/core/metrics/instrumentation/slcakertracer"
 	instrumentationVersion = "0.1.0"
 )
-
-func (b *Bot) tracingMiddleware() slacker.CommandMiddlewareHandler {
-	return func(next slacker.CommandHandler) slacker.CommandHandler {
-		return func(cmdCtx *slacker.CommandContext) {
-			ctx, span := b.handler.Tracer().Start(cmdCtx.Context(), fmt.Sprintf("command.%s", cmdCtx.Definition().Command), trace.WithAttributes(
-				attribute.String("user_id", cmdCtx.Event().UserID),
-				attribute.String("channel_id", retrieveChannelIfExists(cmdCtx.Event())),
-			))
-
-			cmdCtx.WithContext(ctx)
-
-			defer func() {
-				metrics.EndSpan(span)
-			}()
-
-			next(cmdCtx)
-		}
-	}
-}
-
-const unknownChannel = "unknown"
-
-func retrieveChannelIfExists(event *slacker.MessageEvent) string {
-	if event != nil && event.Channel != nil {
-		return event.Channel.ID
-	}
-	return unknownChannel
-}
 
 // assumes method is only called once.
 type otelRecorder struct {
@@ -95,7 +64,8 @@ func (r *otelRecorder) ObserverCommandDuration(ctx context.Context, duration tim
 	r.totalDuration.Record(ctx, int64(duration/time.Millisecond), metric.WithAttributes(attributes...))
 }
 
-func (b *Bot) metricsMiddleware() slacker.CommandMiddlewareHandler {
+// MetricsMiddleware returns a slacker middleware that records metrics for each command.
+func MetricsMiddleware() slacker.CommandMiddlewareHandler {
 	// assumes method is only called once.
 	otr := newOtelRecorder()
 
