@@ -174,7 +174,7 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: 'Confirm new price',
       onClick: () => setHasUserConfirmedChange(true),
-      className: 'border-synapsePurple !from-bgLight !to-bgLight',
+      className: '!border !border-synapsePurple !from-bgLight !to-bgLight',
     }
   } else if (!isApproved && hasValidInput && hasValidQuote) {
     buttonProperties = {

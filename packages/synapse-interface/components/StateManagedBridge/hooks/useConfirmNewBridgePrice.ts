@@ -36,15 +36,20 @@ export const useConfirmNewBridgePrice = () => {
   )
 
   useEffect(() => {
+    const isValidQuotes =
+      bridgeQuote?.outputAmount && previousBridgeQuote?.outputAmount
+
     const selectionsMatch =
       currentBridgeQuoteSelections === previousBridgeQuoteSelections
 
     const outputAmountChanged =
       bridgeQuote?.outputAmount !== previousBridgeQuote?.outputAmount
 
-    setHasQuoteOutputChanged(selectionsMatch && outputAmountChanged)
+    setHasQuoteOutputChanged(
+      isValidQuotes && selectionsMatch && outputAmountChanged
+    )
 
-    if (!selectionsMatch || !outputAmountChanged) {
+    if (outputAmountChanged || !selectionsMatch) {
       setHasUserConfirmedChange(false)
     }
   }, [
