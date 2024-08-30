@@ -298,6 +298,24 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					}
 					return
 				}
+
+				canRefund, err := b.screener.ScreenAddress(ctx.Context(), rawRequest.Sender)
+				if err != nil {
+					_, err := ctx.Response().Reply("error screening address")
+					if err != nil {
+						log.Println(err)
+					}
+					return
+				}
+
+				if !canRefund {
+					_, err := ctx.Response().Reply("address cannot be refunded")
+					if err != nil {
+						log.Println(err)
+					}
+					return
+				}
+
 				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 					tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
 					if err != nil {
@@ -389,19 +407,15 @@ func stripLinks(input string) string {
 	return linkRegex.ReplaceAllString(input, "$1")
 }
 
-func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (*relapi.GetQuoteRequestResponse, error) {
-	// at this point tx can be a txid or a has, we try both
-	txRequest, err := client.GetQuoteRequestByTxHash(ctx, tx)
-	if err == nil {
-		// override tx with txid
-		tx = txRequest.TxID
+func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (qr *relapi.GetQuoteRequestResponse, err error) {
+	if qr, err = client.GetQuoteRequestByTxHash(ctx, tx); err == nil {
+		return qr, nil
 	}
 
 	// look up quote request
-	qr, err := client.GetQuoteRequestByTXID(ctx, tx)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching quote request: %w", err)
+	if qr, err = client.GetQuoteRequestByTXID(ctx, tx); err == nil {
+		return qr, nil
 	}
 
-	return qr, nil
+	return nil, fmt.Errorf("error fetching quote request: %w", err)
 }

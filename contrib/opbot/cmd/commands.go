@@ -2,16 +2,18 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/synapsecns/sanguine/contrib/opbot/botmd"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 
 	// used for testing.
+
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/synapsecns/sanguine/contrib/opbot/config"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 var fileFlag = &cli.StringFlag{

@@ -3,9 +3,11 @@ package botmd
 import (
 	"context"
 	"fmt"
+
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/config"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
+	screenerClient "github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation/slackertrace"
@@ -27,6 +29,7 @@ type Bot struct {
 	rpcClient     omnirpcClient.RPCClient
 	signer        signer.Signer
 	submitter     submitter.TransactionSubmitter
+	screener      screenerClient.ScreenerClient
 }
 
 // NewBot creates a new bot server.
@@ -87,6 +90,12 @@ func (b *Bot) Start(ctx context.Context) (err error) {
 	}
 
 	b.submitter = submitter.NewTransactionSubmitter(b.handler, b.signer, b.rpcClient, store.SubmitterDB(), &b.cfg.SubmitterConfig)
+
+	screenerClient, err := screenerClient.NewClient(b.handler, b.cfg.ScreenerURL)
+	if err != nil {
+		return fmt.Errorf("could not create screener client: %w", err)
+	}
+	b.screener = screenerClient
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
