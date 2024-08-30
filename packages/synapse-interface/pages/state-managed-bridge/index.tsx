@@ -134,8 +134,6 @@ const StateManagedBridge = () => {
 
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
 
-    /* clear stored bridge quote before requesting new bridge quote */
-    dispatch(resetBridgeQuote())
     const currentTimestamp: number = getTimeMinutesFromNow(0)
 
     try {
