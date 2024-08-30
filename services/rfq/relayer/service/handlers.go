@@ -379,10 +379,18 @@ func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridge.Fast
 //
 // This is the sixth step in the bridge process. Here we submit the claim transaction to the origin chain.
 func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
+	// fetch the block of the relay transaction to confirm that it has been finalized
 	relayBlockNumber, err := q.getRelayBlockNumber(ctx, request)
 	if err != nil {
+		// relay tx must have gotten reorged; mark as RelayRaceLost
+		span.SetAttributes(attribute.String("receipt_error", err.Error()))
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayRaceLost, nil)
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
 		return fmt.Errorf("could not get relay block number: %w", err)
 	}
+
 	currentBlockNumber := q.Origin.LatestBlock()
 	proveConfirmations, err := q.cfg.GetFinalityConfirmations(int(q.Dest.ChainID))
 	if err != nil {
@@ -422,9 +430,16 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 // getRelayBlockNumber fetches the block number of the relay transaction for a given quote request.
 func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request reldb.QuoteRequest) (blockNumber uint64, err error) {
 	// fetch the transaction receipt for corresponding tx hash
-	receipt, err := q.Dest.Client.TransactionReceipt(ctx, request.DestTxHash)
+	var receipt *types.Receipt
+	err = retry.WithBackoff(ctx, func(context.Context) error {
+		receipt, err = q.Dest.Client.TransactionReceipt(ctx, request.DestTxHash)
+		if err != nil {
+			return fmt.Errorf("could not get transaction receipt: %w", err)
+		}
+		return nil
+	}, retry.WithMaxTotalTime(15*time.Second))
 	if err != nil {
-		return blockNumber, fmt.Errorf("could not get transaction receipt: %w", err)
+		return blockNumber, fmt.Errorf("could not get get receipt: %w", err)
 	}
 	parser, err := fastbridge.NewParser(q.Dest.Bridge.Address())
 	if err != nil {
