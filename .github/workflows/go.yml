@@ -21,7 +21,7 @@ jobs:
         with:
           cancel_others: 'true'
 
-  # changes allows us to only run a job on changed packages
+
   changes:
     name: Change Detection
     runs-on: ubuntu-latest
@@ -37,6 +37,9 @@ jobs:
       packages_nodeps: ${{ steps.filter_go.outputs.changed_modules }}
       package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
+      golangci_changed: ${{ steps.golangci_changed.outputs.any_changed }}
+      # New output for all packages
+      all_packages: ${{ steps.combine_packages.outputs.all_packages }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,6 +58,14 @@ jobs:
         with:
           files: |
             **/*.sol
+
+      - name: Check For GolangCI Changes
+        id: golangci_changed
+        uses: tj-actions/changed-files@v26.1
+        with:
+          files: |
+            **/.golangci.yml
+
       - name: Run step if any of the listed files above change
         if: steps.filter_solidity.outputs.any_changed == 'true'
         run: |
@@ -74,6 +85,16 @@ jobs:
           FILTERED_PATHS_DEPS: ${{ steps.filter_go.outputs.changed_modules_deps }}
           UNCHANGED_DEPS: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
           FILTERED_PATHS_NODEPS: ${{ steps.filter_go.outputs.changed_modules }}
+
+      # can be removed after https://github.com/orgs/community/discussions/11401 is resolved
+      - name: Combine changed and unchanged packages
+        id: combine_packages
+        run: |
+          ALL_PACKAGES=$(echo "$CHANGED_MODULES_DEPS $UNCHANGED_MODULES_DEPS" | jq -s 'add | unique')
+          echo "::set-output name=all_packages::$ALL_PACKAGES"
+        env:
+          CHANGED_MODULES_DEPS: ${{ steps.filter_go.outputs.changed_modules_deps }}
+          UNCHANGED_MODULES_DEPS: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
 
   test:
     name: Go Coverage
@@ -298,14 +319,12 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ needs.changes.outputs.package_count_deps > 0 && (github.event_name != 'push' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
+    if: ${{ (needs.changes.outputs.package_count_deps > 0 || needs.changes.outputs.golangci_changed == 'true') && (github.event_name != 'push' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
     strategy:
       fail-fast: false
       max-parallel: 8
       matrix:
-        # Parse JSON array containing names of all filters matching any of changed files
-        # e.g. ['package1', 'package2'] if both package folders contains changes
-        package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
+        package: ${{ needs.changes.outputs.golangci_changed == 'true' && fromJSON(needs.changes.outputs.all_packages) || fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
       - uses: actions/setup-go@v5
         with:
@@ -332,7 +351,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
           GOMEMLIMIT: 6GiB
           GOGC: -1
-
   pr_metadata:
     # this is needed to prevent us from hitting the github api rate limit
     name: Get PR Metadata
