@@ -39,14 +39,14 @@ jobs:
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
       golangci_changed: ${{ steps.golangci_changed.outputs.any_changed }}
       # New output for all packages
-      all_packages: ${{ steps.combine_packages.outputs.all_packages }}
+      all_packages: ${{ steps.filter_go.outputs.all_packages }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       # note: after this action is pushed, whatever this ends up being should go back to latest.
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:2a441cef30aafb7041ca715f536eeb7a5fac88f0
         id: filter_go
         with:
           github_token: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
@@ -94,29 +94,6 @@ jobs:
           FILTERED_PATHS_DEPS: ${{ steps.filter_go.outputs.changed_modules_deps }}
           UNCHANGED_DEPS: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
           FILTERED_PATHS_NODEPS: ${{ steps.filter_go.outputs.changed_modules }}
-
-      # can be removed after https://github.com/orgs/community/discussions/11401 is resolved
-      - name: Combine changed and unchanged packages
-        id: combine_packages
-        run: |
-          CHANGED_DEPS='${{ steps.filter_go.outputs.changed_modules_deps }}'
-          UNCHANGED_DEPS='${{ steps.filter_go.outputs.unchanged_modules_deps }}'
-          ALL_PACKAGES=$(echo "$CHANGED_DEPS $UNCHANGED_DEPS" | tr ' ' '\n' | sort -u | jq -R -s -c 'split("\n")[:-1]')
-          echo "all_packages=$ALL_PACKAGES" >> $GITHUB_OUTPUT
-
-      - name: Debug output
-        run: |
-          echo "All packages: ${{ steps.combine_packages.outputs.all_packages }}"
-          echo "Changed packages with deps: ${{ steps.filter_go.outputs.changed_modules_deps }}"
-          echo "Changed packages without deps: ${{ steps.filter_go.outputs.changed_modules }}"
-      # - name: Combine changed and unchanged packages
-      #   id: combine_packages
-      #   run: |
-      #     ALL_PACKAGES=$(echo "$CHANGED_MODULES_DEPS $UNCHANGED_MODULES_DEPS" | jq -s 'add | unique | tojson')
-      #     echo "all_packages=$ALL_PACKAGES" >> $GITHUB_OUTPUT
-      #   env:
-      #     CHANGED_MODULES_DEPS: ${{ steps.filter_go.outputs.changed_modules_deps }}
-      #     UNCHANGED_MODULES_DEPS: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
 
   test:
     name: Go Coverage
