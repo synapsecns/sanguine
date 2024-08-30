@@ -334,7 +334,7 @@ jobs:
       max-parallel: 8
       matrix:
         # package: ${{ needs.changes.outputs.golangci_changed == 'true' && fromJSON(needs.changes.outputs.all_packages) || fromJSON(needs.changes.outputs.packages_nodeps) }}
-        packagE:  ${{ fromJSON(needs.changes.outputs.all_packages) }}
+        package:  ${{ fromJSON(needs.changes.outputs.all_packages) }}
     steps:
       - uses: actions/setup-go@v5
         with:
