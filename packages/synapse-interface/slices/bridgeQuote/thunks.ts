@@ -106,6 +106,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     }
 
     const {
+      id,
       feeAmount,
       routerAddress,
       maxAmountOut,
@@ -184,6 +185,7 @@ export const fetchBridgeQuote = createAsyncThunk(
       originChainId,
       destChainId,
       requestId,
+      id,
     }
   }
 )

@@ -97,6 +97,7 @@ export const BridgeTransactionButton = ({
   } else if (isLoading) {
     buttonProperties = {
       label: `Bridge ${fromToken?.symbol}`,
+      pendingLabel: `Bridge ${fromToken?.symbol}`,
       onClick: null,
     }
   } else if (!isConnected && hasValidInput) {
