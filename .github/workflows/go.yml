@@ -101,7 +101,7 @@ jobs:
         run: |
           CHANGED_DEPS='${{ steps.filter_go.outputs.changed_modules_deps }}'
           UNCHANGED_DEPS='${{ steps.filter_go.outputs.unchanged_modules_deps }}'
-          ALL_PACKAGES=$(echo "$CHANGED_DEPS $UNCHANGED_DEPS" | jq -s 'add | unique | tostring')
+          ALL_PACKAGES=$(echo "$CHANGED_DEPS $UNCHANGED_DEPS" | jq -c 'split(" ") | unique | join(",")')
           echo "all_packages=$ALL_PACKAGES" >> $GITHUB_OUTPUT
 
       - name: Debug output
@@ -347,7 +347,7 @@ jobs:
       max-parallel: 8
       matrix:
         # package: ${{ needs.changes.outputs.golangci_changed == 'true' && fromJSON(needs.changes.outputs.all_packages) || fromJSON(needs.changes.outputs.packages_nodeps) }}
-        package: ${{ fromJson(needs.changes.outputs.all_packages) }}
+        package: ${{ fromJSON(needs.changes.outputs.all_packages) }}
     steps:
       - uses: actions/setup-go@v5
         with:
