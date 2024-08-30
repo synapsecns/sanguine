@@ -42,8 +42,8 @@ export const TransactionButton = ({
       style={style}
       disabled={disabled}
       className={`
-        ${BASE_PROPERTIES}
         ${className}
+        ${BASE_PROPERTIES}
         ${
           isPending
             ? 'from-fuchsia-400 dark:from-fuchsia-900 to-purple-400 dark:to-purple-900'

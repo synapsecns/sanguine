@@ -47,16 +47,16 @@ export const useConfirmNewBridgePrice = () => {
     const outputAmountChanged =
       bridgeQuote?.outputAmount !== previousBridgeQuote?.outputAmount
 
-    if (validQuotes && selectionsMatch && outputAmountChanged) {
+    if (selectionsMatch && validQuotes && outputAmountChanged) {
       // Ref quote that triggered the change
       triggeredQuoteRef.current = bridgeQuote
       setHasQuoteOutputChanged(true)
       setHasUserConfirmedChange(false)
     } else if (
-      bridgeQuote?.outputAmount === triggeredQuoteRef?.current?.outputAmount &&
-      selectionsMatch
+      selectionsMatch &&
+      bridgeQuote?.outputAmount === triggeredQuoteRef?.current?.outputAmount
     ) {
-      // Maintain status until User confirms ref changes
+      // Maintain status until User confirms ref quote update
       setHasQuoteOutputChanged(true)
     } else {
       setHasQuoteOutputChanged(false)
