@@ -116,7 +116,7 @@ func NewGuardConfigFromRelayer(relayerCfg relconfig.Config) Config {
 	for chainID, chainCfg := range relayerCfg.GetChains() {
 		cfg.Chains[chainID] = ChainConfig{
 			RFQAddress:    chainCfg.RFQAddress,
-			Confirmations: chainCfg.Confirmations,
+			Confirmations: chainCfg.FinalityConfirmations,
 		}
 	}
 	return cfg
