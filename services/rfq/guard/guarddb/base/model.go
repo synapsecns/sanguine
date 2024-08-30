@@ -42,6 +42,8 @@ type PendingProvenModel struct {
 	TxHash string
 	// Status is the status of the event
 	Status guarddb.PendingProvenStatus
+	// BlockNumber is the block number of the event
+	BlockNumber uint64
 }
 
 // FromPendingProven converts a quote request to an object that can be stored in the db.
@@ -52,6 +54,7 @@ func FromPendingProven(proven guarddb.PendingProven) PendingProvenModel {
 		TransactionID:  hexutil.Encode(proven.TransactionID[:]),
 		TxHash:         proven.TxHash.Hex(),
 		Status:         proven.Status,
+		BlockNumber:    proven.BlockNumber,
 	}
 }
 
@@ -73,6 +76,7 @@ func (p PendingProvenModel) ToPendingProven() (*guarddb.PendingProven, error) {
 		TransactionID:  transactionID,
 		TxHash:         common.HexToHash(p.TxHash),
 		Status:         p.Status,
+		BlockNumber:    p.BlockNumber,
 	}, nil
 }
 

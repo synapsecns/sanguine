@@ -64,6 +64,7 @@ type PendingProven struct {
 	TransactionID  [32]byte
 	TxHash         common.Hash
 	Status         PendingProvenStatus
+	BlockNumber    uint64
 }
 
 // PendingProvenStatus is the status of a quote request in the db.

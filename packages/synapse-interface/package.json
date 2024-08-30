@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.35.0",
+  "version": "0.37.0",
   "private": true,
   "engines": {
     "node": ">=18.18.0"
@@ -34,7 +34,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
-    "@synapsecns/sdk-router": "^0.10.0",
+    "@synapsecns/sdk-router": "^0.11.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
@@ -71,6 +71,7 @@
     "tailwindcss-border-gradient-radius": "^3.0.1",
     "typescript": "5.1.6",
     "use-persisted-state": "^0.3.3",
+    "uuidv7": "^1.0.1",
     "viem": "^2.13.6",
     "wagmi": "^2.9.8",
     "yarn": "^1.22.19"
@@ -96,9 +97,9 @@
   "keywords": [],
   "devDependencies": {
     "@depay/web3-mock": "^14.0.0",
-    "@graphql-codegen/cli": "5.0.0",
-    "@graphql-codegen/client-preset": "4.1.0",
-    "@graphql-codegen/introspection": "4.0.0",
+    "@graphql-codegen/cli": "5.0.2",
+    "@graphql-codegen/client-preset": "4.3.3",
+    "@graphql-codegen/introspection": "4.0.3",
     "@graphql-codegen/typescript-rtk-query": "^2.4.1",
     "@testing-library/react": "^14.0.0",
     "@types/react": "^18.2.67",

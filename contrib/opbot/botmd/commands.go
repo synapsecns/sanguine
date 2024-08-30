@@ -152,7 +152,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 		Handler: func(ctx *slacker.CommandContext) {
 			type Status struct {
 				relayer string
-				*relapi.GetQuoteRequestStatusResponse
+				*relapi.GetQuoteRequestResponse
 			}
 
 			var statuses []Status
@@ -175,26 +175,26 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				client := relapi.NewRelayerClient(b.handler, relayer)
 				go func() {
 					defer wg.Done()
-					res, err := client.GetQuoteRequestStatusByTxHash(ctx.Context(), tx)
+					res, err := client.GetQuoteRequestByTxHash(ctx.Context(), tx)
 					if err != nil {
 						log.Printf("error fetching quote request status by tx hash: %v\n", err)
 						return
 					}
 					sliceMux.Lock()
 					defer sliceMux.Unlock()
-					statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestStatusResponse: res})
+					statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestResponse: res})
 				}()
 
 				go func() {
 					defer wg.Done()
-					res, err := client.GetQuoteRequestStatusByTxID(ctx.Context(), tx)
+					res, err := client.GetQuoteRequestByTXID(ctx.Context(), tx)
 					if err != nil {
 						log.Printf("error fetching quote request status by tx id: %v\n", err)
 						return
 					}
 					sliceMux.Lock()
 					defer sliceMux.Unlock()
-					statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestStatusResponse: res})
+					statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestResponse: res})
 				}()
 			}
 			wg.Wait()
@@ -234,7 +234,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 					},
 					{
 						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Estimated Tx Age*: %s", getTxAge(ctx.Context(), client, status.GetQuoteRequestStatusResponse)),
+						Text: fmt.Sprintf("*Estimated Tx Age*: %s", getTxAge(ctx.Context(), client, status.GetQuoteRequestResponse)),
 					},
 				}
 
@@ -257,7 +257,8 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 			if err != nil {
 				log.Println(err)
 			}
-		}}
+		},
+	}
 }
 
 // nolint: gocognit, cyclop.
@@ -297,6 +298,24 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 					}
 					return
 				}
+
+				canRefund, err := b.screener.ScreenAddress(ctx.Context(), rawRequest.Sender)
+				if err != nil {
+					_, err := ctx.Response().Reply("error screening address")
+					if err != nil {
+						log.Println(err)
+					}
+					return
+				}
+
+				if !canRefund {
+					_, err := ctx.Response().Reply("address cannot be refunded")
+					if err != nil {
+						log.Println(err)
+					}
+					return
+				}
+
 				nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 					tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
 					if err != nil {
@@ -348,7 +367,7 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 	return fastBridgeHandle, nil
 }
 
-func getTxAge(ctx context.Context, client client.EVM, res *relapi.GetQuoteRequestStatusResponse) string {
+func getTxAge(ctx context.Context, client client.EVM, res *relapi.GetQuoteRequestResponse) string {
 	// TODO: add CreatedAt field to GetQuoteRequestStatusResponse so we don't need to make network calls?
 	receipt, err := client.TransactionReceipt(ctx, common.HexToHash(res.OriginTxHash))
 	if err != nil {
@@ -388,19 +407,15 @@ func stripLinks(input string) string {
 	return linkRegex.ReplaceAllString(input, "$1")
 }
 
-func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (*relapi.GetQuoteRequestResponse, error) {
-	// at this point tx can be a txid or a has, we try both
-	txRequest, err := client.GetQuoteRequestStatusByTxHash(ctx, tx)
-	if err == nil {
-		// override tx with txid
-		tx = txRequest.TxID
+func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (qr *relapi.GetQuoteRequestResponse, err error) {
+	if qr, err = client.GetQuoteRequestByTxHash(ctx, tx); err == nil {
+		return qr, nil
 	}
 
 	// look up quote request
-	qr, err := client.GetQuoteRequestByTXID(ctx, tx)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching quote request: %w", err)
+	if qr, err = client.GetQuoteRequestByTXID(ctx, tx); err == nil {
+		return qr, nil
 	}
 
-	return qr, nil
+	return nil, fmt.Errorf("error fetching quote request: %w", err)
 }

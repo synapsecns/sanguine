@@ -3,11 +3,14 @@ package botmd
 import (
 	"context"
 	"fmt"
+
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/config"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
+	screenerClient "github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/instrumentation/slackertrace"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -26,6 +29,7 @@ type Bot struct {
 	rpcClient     omnirpcClient.RPCClient
 	signer        signer.Signer
 	submitter     submitter.TransactionSubmitter
+	screener      screenerClient.ScreenerClient
 }
 
 // NewBot creates a new bot server.
@@ -45,7 +49,7 @@ func NewBot(handler metrics.Handler, cfg config.Config) *Bot {
 
 	bot.rpcClient = omnirpcClient.NewOmnirpcClient(cfg.OmniRPCURL, handler, omnirpcClient.WithCaptureReqRes())
 
-	bot.addMiddleware(bot.tracingMiddleware(), bot.metricsMiddleware())
+	bot.addMiddleware(slackertrace.TracingMiddleware(handler), slackertrace.MetricsMiddleware())
 	bot.addCommands(bot.traceCommand(), bot.rfqLookupCommand(), bot.rfqRefund())
 
 	return &bot
@@ -65,8 +69,11 @@ func (b *Bot) addCommands(commands ...*slacker.CommandDefinition) {
 
 // Start starts the bot server.
 // nolint: wrapcheck
-func (b *Bot) Start(ctx context.Context) error {
-	var err error
+func (b *Bot) Start(ctx context.Context) (err error) {
+	if err := b.cfg.Validate(); err != nil {
+		return fmt.Errorf("config validation failed: %w", err)
+	}
+
 	b.signer, err = signerConfig.SignerFromConfig(ctx, b.cfg.Signer)
 	if err != nil {
 		return fmt.Errorf("failed to create signer: %w", err)
@@ -83,6 +90,12 @@ func (b *Bot) Start(ctx context.Context) error {
 	}
 
 	b.submitter = submitter.NewTransactionSubmitter(b.handler, b.signer, b.rpcClient, store.SubmitterDB(), &b.cfg.SubmitterConfig)
+
+	screenerClient, err := screenerClient.NewClient(b.handler, b.cfg.ScreenerURL)
+	if err != nil {
+		return fmt.Errorf("could not create screener client: %w", err)
+	}
+	b.screener = screenerClient
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	moduledetector "github.com/synapsecns/sanguine/contrib/git-changes-action/detector/module"
-	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/package"
+	packagedetector "github.com/synapsecns/sanguine/contrib/git-changes-action/detector/package"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 
 	"github.com/sethvargo/go-githubactions"
@@ -45,12 +45,12 @@ func main() {
 		panic(err)
 	}
 
-	noDepChanged, noDepUnchanged, err := outputModuleChanges(workingDirectory, ct, false, dependencyLevelResolution)
+	noDepChanged, noDepUnchanged, _, err := outputModuleChanges(workingDirectory, ct, false, dependencyLevelResolution)
 	if err != nil {
 		panic(err)
 	}
 
-	depChanged, depUnchanged, err := outputModuleChanges(workingDirectory, ct, true, dependencyLevelResolution)
+	depChanged, depUnchanged, allModules, err := outputModuleChanges(workingDirectory, ct, true, dependencyLevelResolution)
 	if err != nil {
 		panic(err)
 	}
@@ -60,12 +60,15 @@ func main() {
 
 	githubactions.SetOutput("changed_modules_deps", depChanged)
 	githubactions.SetOutput("unchanged_modules_deps", depUnchanged)
+
+	githubactions.SetOutput("all_modules", allModules)
+
 }
 
 // outputModuleChanges outputs the changed modules.
 // this wraps detector.DetectChangedModules and handles the output formatting to be parsable by github actions.
 // the final output is a json array of strings.
-func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool, dependencyLevelResolution string) (changedJSON string, unchangedJSON string, err error) {
+func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool, dependencyLevelResolution string) (changedJSON string, unchangedJSON string, allModulesJSON string, err error) {
 	var modules map[string]bool
 
 	if dependencyLevelResolution == "packages" {
@@ -75,12 +78,13 @@ func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool
 	}
 
 	if err != nil {
-		return changedJSON, unchangedJSON, fmt.Errorf("failed to detect changed modules w/ include deps set to %v: %w", includeDeps, err)
+		return changedJSON, unchangedJSON, allModulesJSON, fmt.Errorf("failed to detect changed modules w/ include deps set to %v: %w", includeDeps, err)
 	}
 
-	var changedModules, unchangedModules []string
+	var changedModules, unchangedModules, allModules []string
 	for module, changed := range modules {
 		modName := strings.TrimPrefix(module, "./")
+		allModules = append(allModules, modName)
 
 		if changed {
 			changedModules = append(changedModules, modName)
@@ -91,18 +95,24 @@ func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool
 
 	sort.Strings(changedModules)
 	sort.Strings(unchangedModules)
+	sort.Strings(allModules)
 
 	marshalledChanged, err := json.Marshal(changedModules)
 	if err != nil {
-		return changedJSON, unchangedJSON, fmt.Errorf("failed to marshall changed module json w/ include deps set to %v: %w", includeDeps, err)
+		return changedJSON, unchangedJSON, allModulesJSON, fmt.Errorf("failed to marshall changed module json w/ include deps set to %v: %w", includeDeps, err)
 	}
 
 	marshalledUnchanged, err := json.Marshal(unchangedModules)
 	if err != nil {
-		return changedJSON, unchangedJSON, fmt.Errorf("failed to marshall unchanged module json w/ include deps set to %v: %w", includeDeps, err)
+		return changedJSON, unchangedJSON, allModulesJSON, fmt.Errorf("failed to marshall unchanged module json w/ include deps set to %v: %w", includeDeps, err)
 	}
 
-	return string(marshalledChanged), string(marshalledUnchanged), nil
+	marshalledAll, err := json.Marshal(allModules)
+	if err != nil {
+		return changedJSON, unchangedJSON, allModulesJSON, fmt.Errorf("failed to marshall all modules json w/ include deps set to %v: %w", includeDeps, err)
+	}
+
+	return string(marshalledChanged), string(marshalledUnchanged), string(marshalledAll), nil
 }
 
 // getTimeout gets the timeout setting. If it is not set, it defaults to 1 minute.

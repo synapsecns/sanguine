@@ -74,6 +74,8 @@ type ChainConfig struct {
 	RFQAddress string `yaml:"rfq_address"`
 	// Confirmations is the number of required confirmations.
 	Confirmations uint64 `yaml:"confirmations"`
+	// FinalityConfirmations is the number of required confirmations before proving.
+	FinalityConfirmations uint64 `yaml:"prove_confirmations"`
 	// Tokens is a map of token name -> token config.
 	Tokens map[string]TokenConfig `yaml:"tokens"`
 	// NativeToken is the native token of the chain (pays gas).

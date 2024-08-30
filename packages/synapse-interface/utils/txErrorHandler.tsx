@@ -12,8 +12,6 @@ function checkStringForNotEnoughGas(str: string) {
 }
 
 export const txErrorHandler = (err: any) => {
-  console.log('err from txErrorHandler: ', err)
-
   if (err?.details && checkStringForRejection(err?.details)) {
     return toast.error('User denied transaction', {
       id: 'toast-error-user-reject',

@@ -1,4 +1,5 @@
 import { useAccount } from 'wagmi'
+import { useMemo } from 'react'
 
 import { ChainSelector } from '@/components/ui/ChainSelector'
 import { TokenSelector } from '@/components/ui/TokenSelector'
@@ -12,16 +13,24 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { useWalletState } from '@/slices/wallet/hooks'
+import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
+import { useBridgeValidations } from './hooks/useBridgeValidations'
 
 export const OutputContainer = () => {
   const { address } = useAccount()
-  const { bridgeQuote, isLoading } = useBridgeState()
+  const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const { showDestinationAddress } = useBridgeDisplayState()
+  const { hasValidInput, hasValidQuote } = useBridgeValidations()
 
-  const showValue =
-    bridgeQuote?.outputAmountString === '0'
-      ? ''
-      : bridgeQuote?.outputAmountString
+  const showValue = useMemo(() => {
+    if (!hasValidInput) {
+      return ''
+    } else if (hasValidQuote) {
+      return bridgeQuote?.outputAmountString
+    } else {
+      return ''
+    }
+  }, [bridgeQuote, hasValidInput, hasValidQuote])
 
   return (
     <BridgeSectionContainer>
