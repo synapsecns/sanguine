@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { constructStringifiedBridgeSelections } from './useBridgeValidations'
@@ -8,6 +8,8 @@ export const useConfirmNewBridgePrice = () => {
     useState<boolean>(false)
   const [hasUserConfirmedChange, setHasUserConfirmedChange] =
     useState<boolean>(false)
+
+  const triggeredQuoteRef = useRef<any>(null)
 
   const { bridgeQuote, previousBridgeQuote } = useBridgeQuoteState()
 
@@ -36,7 +38,7 @@ export const useConfirmNewBridgePrice = () => {
   )
 
   useEffect(() => {
-    const isValidQuotes =
+    const validQuotes =
       bridgeQuote?.outputAmount && previousBridgeQuote?.outputAmount
 
     const selectionsMatch =
@@ -45,12 +47,19 @@ export const useConfirmNewBridgePrice = () => {
     const outputAmountChanged =
       bridgeQuote?.outputAmount !== previousBridgeQuote?.outputAmount
 
-    setHasQuoteOutputChanged(
-      isValidQuotes && selectionsMatch && outputAmountChanged
-    )
-
-    if (outputAmountChanged || !selectionsMatch) {
+    if (validQuotes && selectionsMatch && outputAmountChanged) {
+      // Ref quote that triggered the change
+      triggeredQuoteRef.current = bridgeQuote
+      setHasQuoteOutputChanged(true)
       setHasUserConfirmedChange(false)
+    } else if (
+      bridgeQuote?.outputAmount === triggeredQuoteRef?.current?.outputAmount &&
+      selectionsMatch
+    ) {
+      // Maintain status until User confirms ref changes
+      setHasQuoteOutputChanged(true)
+    } else {
+      setHasQuoteOutputChanged(false)
     }
   }, [
     bridgeQuote,
