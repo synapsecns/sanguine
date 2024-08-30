@@ -312,7 +312,6 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				}
 				return
 			}
-
 			if !canRefund {
 				_, err := ctx.Response().Reply("address cannot be refunded")
 				if err != nil {
@@ -338,7 +337,6 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			if err != nil {
 				log.Println(err)
 			}
-			return
 		},
 	}
 }
