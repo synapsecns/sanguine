@@ -71,6 +71,12 @@ jobs:
         run: |
           echo "One or more files listed above has changed."
 
+      - name: Golangci changed
+        if: steps.golangci_changed.outputs.any_changed == 'true'
+        run: |
+          echo "Golangci has changed."
+
+
       - id: length
         run: |
           export FILTER_LENGTH_DEPS=$(echo $FILTERED_PATHS_DEPS | jq '. | length')
