@@ -70,6 +70,7 @@ type QuoteQuery = {
 }
 
 export type BridgeQuote = {
+  id: string
   inputAmountForQuote: string
   originTokenForQuote: Token
   destTokenForQuote: Token

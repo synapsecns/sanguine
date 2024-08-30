@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.37.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.36.3...@synapsecns/synapse-interface@0.37.0) (2024-08-29)
+
+
+### Features
+
+* **synapse-interface:** bridge quote uuid ([#2900](https://github.com/synapsecns/sanguine/issues/2900)) ([b568cbe](https://github.com/synapsecns/sanguine/commit/b568cbe423e2c19297c7ac4aeb239c61840afb0c))
+
+
+
+
+
+## [0.36.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.36.2...@synapsecns/synapse-interface@0.36.3) (2024-08-27)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.36.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.36.1...@synapsecns/synapse-interface@0.36.2) (2024-08-27)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.36.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.36.0...@synapsecns/synapse-interface@0.36.1) (2024-08-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.36.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.35.1...@synapsecns/synapse-interface@0.36.0) (2024-08-26)
+
+
+### Features
+
+* **synapse-interface:** bridge quote state validations ([#3019](https://github.com/synapsecns/sanguine/issues/3019)) ([649b3f5](https://github.com/synapsecns/sanguine/commit/649b3f597787a3f81d98fdf64adf81bad851a45d)), closes [#3018](https://github.com/synapsecns/sanguine/issues/3018)
+
+
+
+
+
 ## [0.35.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.35.0...@synapsecns/synapse-interface@0.35.1) (2024-08-25)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

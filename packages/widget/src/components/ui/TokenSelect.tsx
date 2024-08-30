@@ -106,7 +106,7 @@ export const TokenSelect = ({ label, isOrigin, token, onChange }: Props) => {
     <TokenPopoverSelect
       options={options}
       remaining={remaining}
-      balances={isOrigin ? balances : []}
+      balances={originChainId && isOrigin ? balances : []}
       onSelect={(selected) => {
         onChange(selected)
       }}

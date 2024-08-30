@@ -26,7 +26,7 @@ func (c *RelayerClientSuite) TestGetQuoteRequestStatusByTxHash() {
 	err := c.underlying.database.StoreQuoteRequest(c.GetTestContext(), testReq)
 	c.Require().NoError(err)
 
-	resp, err := c.Client.GetQuoteRequestStatusByTxHash(c.GetTestContext(), testReq.OriginTxHash.String())
+	resp, err := c.Client.GetQuoteRequestByTxHash(c.GetTestContext(), testReq.OriginTxHash.String())
 	c.Require().NoError(err)
 
 	c.Equal(resp.Status, testReq.Status.String())
@@ -40,7 +40,7 @@ func (c *RelayerClientSuite) TestGetQuoteRequestStatusByTxID() {
 	err := c.underlying.database.StoreQuoteRequest(c.GetTestContext(), testReq)
 	c.Require().NoError(err)
 
-	resp, err := c.Client.GetQuoteRequestStatusByTxID(c.GetTestContext(), hexutil.Encode(testReq.TransactionID[:]))
+	resp, err := c.Client.GetQuoteRequestByTXID(c.GetTestContext(), hexutil.Encode(testReq.TransactionID[:]))
 	c.Require().NoError(err)
 
 	c.Equal(resp.Status, testReq.Status.String())
