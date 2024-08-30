@@ -439,7 +439,7 @@ func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request r
 		return nil
 	}, retry.WithMaxTotalTime(15*time.Second))
 	if err != nil {
-		return blockNumber, fmt.Errorf("could not get get receipt: %w", err)
+		return blockNumber, fmt.Errorf("could not get receipt: %w", err)
 	}
 	parser, err := fastbridge.NewParser(q.Dest.Bridge.Address())
 	if err != nil {
