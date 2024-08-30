@@ -46,7 +46,7 @@ jobs:
           fetch-depth: 0
 
       # note: after this action is pushed, whatever this ends up being should go back to latest.
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:2a441cef30aafb7041ca715f536eeb7a5fac88f0
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go
         with:
           github_token: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
