@@ -64,7 +64,7 @@ jobs:
         uses: tj-actions/changed-files@v26.1
         with:
           files: |
-            **/.golangci.yml
+           .golangci.yml
 
       - name: Run step if any of the listed files above change
         if: steps.filter_solidity.outputs.any_changed == 'true'
