@@ -454,6 +454,11 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 }
 
 func (i *inventoryManagerImpl) Rebalance(ctx context.Context) (err error) {
+	ctx, span := i.handler.Tracer().Start(ctx, "Rebalance")
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
 	rebalances, err := getRebalances(ctx, i.cfg, i.tokens)
 	if err != nil {
 		return fmt.Errorf("could not get rebalances: %w", err)
