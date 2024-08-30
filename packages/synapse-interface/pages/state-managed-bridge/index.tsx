@@ -54,11 +54,13 @@ import {
 } from '@/slices/transactions/actions'
 import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
-import { getTimeMinutesFromNow } from '@/utils/time'
+import { calculateTimeBetween, getUnixTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
-import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
+import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
+import { useMaintenance } from '@/components/Maintenance/Maintenance'
+import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { screenAddress } from '@/utils/screenAddress'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
@@ -67,6 +69,7 @@ import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
 
 const StateManagedBridge = () => {
+  const dispatch = useAppDispatch()
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()
   const router = useRouter()
@@ -75,6 +78,7 @@ const StateManagedBridge = () => {
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
   const quoteToastRef = useRef({ id: '' })
+  const quoteTimeout = 15000
 
   const [isTyping, setIsTyping] = useState(false)
 
@@ -104,8 +108,6 @@ const StateManagedBridge = () => {
     BridgeMaintenanceWarningMessage,
   } = useMaintenance()
 
-  const dispatch = useAppDispatch()
-
   useEffect(() => {
     segmentAnalyticsEvent(`[Bridge page] arrives`, {
       fromChainId,
@@ -134,7 +136,7 @@ const StateManagedBridge = () => {
 
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
 
-    const currentTimestamp: number = getTimeMinutesFromNow(0)
+    const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
 
     try {
       if (thisRequestId === currentSDKRequestID.current) {
@@ -198,7 +200,8 @@ const StateManagedBridge = () => {
     bridgeQuote,
     getAndSetBridgeQuote,
     isLoading,
-    isWalletPending
+    isWalletPending,
+    quoteTimeout
   )
 
   const approveTxn = async () => {
@@ -223,6 +226,8 @@ const StateManagedBridge = () => {
   const executeBridge = async () => {
     let pendingPopup: any
 
+    const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
+
     if (destinationAddress) {
       const isRisky = await screenAddress(destinationAddress)
       if (isRisky) {
@@ -233,6 +238,7 @@ const StateManagedBridge = () => {
     segmentAnalyticsEvent(
       `[Bridge] initiates bridge`,
       {
+        id: bridgeQuote.id,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -246,7 +252,7 @@ const StateManagedBridge = () => {
       },
       true
     )
-    const currentTimestamp: number = getTimeMinutesFromNow(0)
+
     dispatch(
       addPendingBridgeTransaction({
         id: currentTimestamp,
@@ -312,6 +318,7 @@ const StateManagedBridge = () => {
         { id: 'bridge-in-progress-popup', duration: Infinity }
       )
       segmentAnalyticsEvent(`[Bridge] bridges successfully`, {
+        id: bridgeQuote.id,
         originChainId: fromChainId,
         destinationChainId: toChainId,
         inputAmount: debouncedFromValue,
@@ -356,11 +363,10 @@ const StateManagedBridge = () => {
 
       toast.dismiss(pendingPopup)
 
-      const transactionReceipt = await waitForTransactionReceipt(wagmiConfig, {
+      await waitForTransactionReceipt(wagmiConfig, {
         hash: tx as Address,
         timeout: 60_000,
       })
-      console.log('Transaction Receipt: ', transactionReceipt)
 
       /** Update Origin Chain token balances after resolved tx or timeout reached */
       /** Assume tx has been actually resolved if above times out */
@@ -377,7 +383,7 @@ const StateManagedBridge = () => {
         errorCode: error.code,
       })
       dispatch(removePendingBridgeTransaction(currentTimestamp))
-      console.log('Error executing bridge', error)
+      console.error('Error executing bridge: ', error)
       toast.dismiss(pendingPopup)
 
       /** Fetch balances if await transaction receipt times out */

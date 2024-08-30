@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
@@ -54,6 +55,8 @@ type QuoteRequestHandler struct {
 	handlerMtx mapmutex.StringMapMutex
 	// balanceMtx is the mutex for balances.
 	balanceMtx mapmutex.StringMapMutex
+	// cfg is the relayer config.
+	cfg relconfig.Config
 }
 
 func getBalanceMtxKey(chainID uint32, token common.Address) string {
@@ -88,6 +91,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
 		balanceMtx:          r.balanceMtx,
+		cfg:                 r.cfg,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened

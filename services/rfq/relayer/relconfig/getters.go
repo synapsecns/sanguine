@@ -215,6 +215,20 @@ func (c Config) GetConfirmations(chainID int) (value uint64, err error) {
 	return value, nil
 }
 
+// GetFinalityConfirmations returns the FinalityConfirmations for the given chainID.
+func (c Config) GetFinalityConfirmations(chainID int) (value uint64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "FinalityConfirmations")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(uint64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast FinalityConfirmations to int")
+	}
+	return value, nil
+}
+
 // GetNativeToken returns the NativeToken for the given chainID.
 func (c Config) GetNativeToken(chainID int) (value string, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "NativeToken")

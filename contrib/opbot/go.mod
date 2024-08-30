@@ -22,6 +22,7 @@ require (
 	github.com/prometheus/prometheus v0.53.0
 	github.com/slack-go/slack v0.13.0
 	github.com/slack-io/slacker v0.1.1
+	github.com/synapsecns/sanguine/contrib/screener-api v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.1.0
 	github.com/synapsecns/sanguine/services/cctp-relayer v0.0.0-00010101000000-000000000000
@@ -294,6 +295,7 @@ replace (
 	// later versions give errors on uint64 being too high.
 	github.com/brianvoe/gofakeit/v6 => github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	github.com/synapsecns/sanguine/contrib/screener-api => ./../../contrib/screener-api
 	github.com/synapsecns/sanguine/core => ./../../core
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
 	github.com/synapsecns/sanguine/services/cctp-relayer => ./../../services/cctp-relayer
