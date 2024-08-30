@@ -84,6 +84,7 @@ func getRebalanceCandidates(ctx context.Context, cfg relconfig.Config, inv map[i
 //
 //nolint:nilnil
 func getRebalanceForMethod(ctx context.Context, cfg relconfig.Config, inv map[int]map[common.Address]*TokenMetadata, method relconfig.RebalanceMethod, tokenName string) (rebalance *RebalanceData, err error) {
+	span := trace.SpanFromContext(ctx)
 	candidateChains, err := getCandidateChains(cfg, inv, method, tokenName)
 	if err != nil {
 		return nil, fmt.Errorf("could not get candidate chains: %w", err)
@@ -103,6 +104,7 @@ func getRebalanceForMethod(ctx context.Context, cfg relconfig.Config, inv map[in
 				Method:         method,
 			}
 			rebalanceCandidates = append(rebalanceCandidates, candidate)
+			span.AddEvent(fmt.Sprintf("got rebalance candidate with origin %d and dest %d", i, j))
 		}
 	}
 
