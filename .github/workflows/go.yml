@@ -65,7 +65,8 @@ jobs:
         with:
           files: |
            .golangci.yml
-          since_last_remote_commit: true
+           .github/workflows/go.yml
+
 
       - name: Run step if any of the listed files above change
         if: steps.filter_solidity.outputs.any_changed == 'true'
