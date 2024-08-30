@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.37.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.36.3...@synapsecns/synapse-interface@0.37.0) (2024-08-29)
+
+
+### Features
+
+* **synapse-interface:** bridge quote uuid ([#2900](https://github.com/synapsecns/sanguine/issues/2900)) ([b568cbe](https://github.com/synapsecns/sanguine/commit/b568cbe423e2c19297c7ac4aeb239c61840afb0c))
+
+
+
+
+
 ## [0.36.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.36.2...@synapsecns/synapse-interface@0.36.3) (2024-08-27)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
