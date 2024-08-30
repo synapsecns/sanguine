@@ -99,8 +99,8 @@ jobs:
       - name: Combine changed and unchanged packages
         id: combine_packages
         run: |
-          ALL_PACKAGES=$(echo "$CHANGED_MODULES_DEPS $UNCHANGED_MODULES_DEPS" | jq -s 'add | unique')
-          echo "::set-output name=all_packages::$ALL_PACKAGES"
+          ALL_PACKAGES=$(echo "$CHANGED_MODULES_DEPS $UNCHANGED_MODULES_DEPS" | jq -s 'add | unique | tojson')
+          echo "all_packages=$ALL_PACKAGES" >> $GITHUB_OUTPUT
         env:
           CHANGED_MODULES_DEPS: ${{ steps.filter_go.outputs.changed_modules_deps }}
           UNCHANGED_MODULES_DEPS: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
