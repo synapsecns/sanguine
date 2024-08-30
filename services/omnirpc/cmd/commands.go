@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/synapsecns/sanguine/services/omnirpc/modules/rewiteconfirmable"
 	"os"
 	"time"
 
@@ -209,6 +210,24 @@ var receiptsProxy = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		simpleProxy := receiptsbackup.NewProxy(c.String(rpcFlag.Name), c.String(backupRPCFlag.Name), c.Duration(recieptsTimeoutFlag.Name), metrics.Get(), c.Int(portFlag.Name), c.Int(chainIDFlag.Name))
+
+		err := simpleProxy.Run(c.Context)
+		if err != nil {
+			return fmt.Errorf("return err: %w", err)
+		}
+		return nil
+	},
+}
+
+var rewriteConfirmProxy = &cli.Command{
+	Name:  "rewrite-confirmable",
+	Usage: "A rpc proxy for rewriting confirmable requests.",
+	Flags: []cli.Flag{
+		omnirpcURLFlag,
+		portFlag,
+	},
+	Action: func(c *cli.Context) error {
+		simpleProxy := rewiteconfirmable.NewProxy(c.String(omnirpcURLFlag.Name), metrics.Get(), c.Int(portFlag.Name), c.Int(confirmationsFlag.Value), c.Int(chainIDFlag.Name))
 
 		err := simpleProxy.Run(c.Context)
 		if err != nil {

@@ -13,7 +13,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// IsConfirmable exports isConfirmable for testing.
+// IsConfirmable exports IsConfirmable for testing.
 func IsConfirmable(body []byte) (bool, error) {
 	parsedPayload, err := rpc.ParseRPCPayload(body)
 	if err != nil {

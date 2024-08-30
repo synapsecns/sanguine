@@ -64,3 +64,13 @@ var recieptsTimeoutFlag = &cli.DurationFlag{
 	Name:  "receipts-timeout",
 	Usage: "timeout to use for hanging receipts requests",
 }
+
+var omnirpcURLFlag = &cli.StringFlag{
+	Name:  "omnirpc-url",
+	Usage: "Omnirpc rul flag",
+}
+
+var confirmationsFlag = &cli.StringFlag{
+	Name:  "confirmations",
+	Usage: "confirmations flag",
+}

@@ -14,7 +14,7 @@ import (
 	"math/big"
 )
 
-func isConfirmable(r ethergoRPC.Request) (bool, error) {
+func IsConfirmable(r ethergoRPC.Request) (bool, error) {
 	// TODO: should we error on default?
 	// TODO: look at RPCMethod.Comparable for lower, necessary?
 	//nolint: exhaustive
@@ -41,7 +41,7 @@ func areConfirmable(r ethergoRPC.Requests) (_ bool, errs error) {
 	unconfirmable := false
 
 	for i, request := range r {
-		canConfirm, err := isConfirmable(request)
+		canConfirm, err := IsConfirmable(request)
 		if err != nil {
 			errs = multierror.Append(errs, fmt.Errorf("request at index %d: %s is not parsable", i, spew.Sprint(request)))
 		}
