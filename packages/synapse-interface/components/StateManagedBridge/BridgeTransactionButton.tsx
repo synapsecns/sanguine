@@ -9,8 +9,12 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { useBridgeValidations } from './hooks/useBridgeValidations'
+import {
+  useBridgeValidations,
+  constructStringifiedBridgeSelections,
+} from './hooks/useBridgeValidations'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { useConfirmNewBridgePrice } from './hooks/useConfirmNewBridgePrice'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -45,6 +49,11 @@ export const BridgeTransactionButton = ({
     debouncedFromValue,
   } = useBridgeState()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
+  const {
+    hasQuoteOutputChanged,
+    hasUserConfirmedChange,
+    setHasUserConfirmedChange,
+  } = useConfirmNewBridgePrice()
 
   const { isWalletPending } = useWalletState()
   const { showDestinationWarning, isDestinationWarningAccepted } =
@@ -160,6 +169,12 @@ export const BridgeTransactionButton = ({
       label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
       onClick: () => switchChain({ chainId: fromChainId }),
       pendingLabel: 'Switching chains',
+    }
+  } else if (hasQuoteOutputChanged && !hasUserConfirmedChange) {
+    buttonProperties = {
+      label: 'Confirm new price',
+      onClick: () => setHasUserConfirmedChange(true),
+      className: 'border-synapsePurple !from-bgLight !to-bgLight',
     }
   } else if (!isApproved && hasValidInput && hasValidQuote) {
     buttonProperties = {
