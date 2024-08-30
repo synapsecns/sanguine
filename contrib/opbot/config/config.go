@@ -33,6 +33,8 @@ type Config struct {
 	Signer config.SignerConfig `yaml:"signer"`
 	// SubmitterConfig is the submitter config.
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
+	// ScreenerConfig is the screener config.
+	ScreenerURL string `yaml:"screener_url"`
 	// Database is the database config.
 	Database DatabaseConfig `yaml:"database"`
 }
