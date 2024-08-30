@@ -96,27 +96,15 @@ jobs:
           FILTERED_PATHS_NODEPS: ${{ steps.filter_go.outputs.changed_modules }}
 
       # can be removed after https://github.com/orgs/community/discussions/11401 is resolved
+
       - name: Combine changed and unchanged packages
         id: combine_packages
         run: |
-          CHANGED_DEPS='${{ steps.filter_go.outputs.changed_modules_deps }}'
-          UNCHANGED_DEPS='${{ steps.filter_go.outputs.unchanged_modules_deps }}'
-          ALL_PACKAGES=$(echo "$CHANGED_DEPS $UNCHANGED_DEPS" | jq -s 'add | unique | tostring')
+          ALL_PACKAGES=$(echo "$CHANGED_MODULES_DEPS $UNCHANGED_MODULES_DEPS" | jq -s 'add | unique | tojson')
           echo "all_packages=$ALL_PACKAGES" >> $GITHUB_OUTPUT
-
-      - name: Debug output
-        run: |
-          echo "All packages: ${{ steps.combine_packages.outputs.all_packages }}"
-          echo "Changed packages with deps: ${{ steps.filter_go.outputs.changed_modules_deps }}"
-          echo "Changed packages without deps: ${{ steps.filter_go.outputs.changed_modules }}"
-      # - name: Combine changed and unchanged packages
-      #   id: combine_packages
-      #   run: |
-      #     ALL_PACKAGES=$(echo "$CHANGED_MODULES_DEPS $UNCHANGED_MODULES_DEPS" | jq -s 'add | unique | tojson')
-      #     echo "all_packages=$ALL_PACKAGES" >> $GITHUB_OUTPUT
-      #   env:
-      #     CHANGED_MODULES_DEPS: ${{ steps.filter_go.outputs.changed_modules_deps }}
-      #     UNCHANGED_MODULES_DEPS: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
+        env:
+          CHANGED_MODULES_DEPS: ${{ steps.filter_go.outputs.changed_modules_deps }}
+          UNCHANGED_MODULES_DEPS: ${{ steps.filter_go.outputs.unchanged_modules_deps }}
 
   test:
     name: Go Coverage
@@ -128,7 +116,7 @@ jobs:
       matrix:
         go-version:
           - 1.22.x
-        package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
+        package: ${{ fromJson(needs.changes.outputs.packages_deps) }}
         exclude:
           - package: agents
     services:
