@@ -63,6 +63,7 @@ jobs:
         id: golangci_changed
         uses: tj-actions/changed-files@v26.1
         with:
+          # note: without building a yaml tree of our workflow, we won't be able to tell if golangci version changed so any ci change triggers full lint.
           files: |
            .golangci.yml
            .github/workflows/go.yml
