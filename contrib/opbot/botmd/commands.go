@@ -304,7 +304,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			canRefund, err := b.screener.ScreenAddress(ctx.Context(), rawRequest.Sender)
+			isScreened, err := b.screener.ScreenAddress(ctx.Context(), rawRequest.Sender)
 			if err != nil {
 				_, err := ctx.Response().Reply("error screening address")
 				if err != nil {
@@ -312,7 +312,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				}
 				return
 			}
-			if !canRefund {
+			if isScreened {
 				_, err := ctx.Response().Reply("address cannot be refunded")
 				if err != nil {
 					log.Println(err)
