@@ -351,11 +351,11 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				retry.WithMaxAttemptTime(15*time.Second),
 			)
 			if err != nil {
+				_, err := ctx.Response().Reply(fmt.Sprintf("error fetching explorer link to refund, but nonce is %d", nonce))
 				log.Printf("error fetching quote request: %v\n", err)
 				return
 			}
 
-			// TODO: follow the lead of https://github.com/synapsecns/sanguine/pull/2845
 			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toExplorerSlackLink(txHash.Hash)))
 			if err != nil {
 				log.Println(err)
