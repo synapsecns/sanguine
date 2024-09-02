@@ -21,6 +21,7 @@ import (
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	rfqClient "github.com/synapsecns/sanguine/services/rfq/api/client"
@@ -280,8 +281,9 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 
 			var rawRequest *relapi.GetQuoteRequestResponse
 			var err error
+			var relClient relapi.RelayerClient
 			for _, relayer := range b.cfg.RelayerURLS {
-				relClient := relapi.NewRelayerClient(b.handler, relayer)
+				relClient = relapi.NewRelayerClient(b.handler, relayer)
 				rawRequest, err = getQuoteRequest(ctx.Context(), relClient, tx)
 				if err == nil {
 					break
@@ -332,8 +334,29 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			// TODO: follow the lead of https://github.com/synapsecns/sanguine/pull/2845
-			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
+			var txHash *relapi.TxHashByNonceResponse
+			err = retry.WithBackoff(
+				ctx.Context(),
+				func(ctx context.Context) error {
+					txHash, err = relClient.GetTxHashByNonce(ctx, &relapi.GetTxByNonceRequest{
+						ChainID: rawRequest.OriginChainID,
+						Nonce:   nonce,
+					})
+					if err != nil {
+						return fmt.Errorf("error fetching quote request: %w", err)
+					}
+					return nil
+				},
+				retry.WithMaxAttempts(3),
+				retry.WithMaxAttemptTime(15*time.Second),
+			)
+			if err != nil {
+				_, err := ctx.Response().Reply(fmt.Sprintf("error fetching explorer link to refund, but nonce is %d", nonce))
+				log.Printf("error fetching quote request: %v\n", err)
+				return
+			}
+
+			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toExplorerSlackLink(txHash.Hash)))
 			if err != nil {
 				log.Println(err)
 			}
