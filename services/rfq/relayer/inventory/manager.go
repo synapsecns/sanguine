@@ -339,6 +339,10 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) (err error)
 			parentAddr, addrErr := i.cfg.GetL1GatewayAddress(chainID)
 			if addrErr == nil {
 				span.AddEvent(fmt.Sprintf("got l1 gateway address: %s", parentAddr.Hex()))
+				err = i.approve(ctx, tokenAddr, parentAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve L1GatewayRouter contract: %w", err)
+				}
 				contract, err := l1gateway.NewL1GatewayRouter(parentAddr, backendClient)
 				if err != nil {
 					return fmt.Errorf("could not get L1Gateway contract: %w", err)
@@ -357,6 +361,10 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) (err error)
 			parentAddr, addrErr = i.cfg.GetL2GatewayAddress(chainID)
 			if addrErr == nil {
 				span.AddEvent(fmt.Sprintf("got l2 gateway address: %s", parentAddr.Hex()))
+				err = i.approve(ctx, tokenAddr, parentAddr, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve L2GatewayRouter contract: %w", err)
+				}
 				contract, err := l2gateway.NewL2GatewayRouter(parentAddr, backendClient)
 				if err != nil {
 					return fmt.Errorf("could not get L2Gateway contract: %w", err)
