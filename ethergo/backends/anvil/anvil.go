@@ -245,7 +245,7 @@ func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, a
 		}
 	})
 	// since this is ran in a gofunc, context cancelation errors expected during pull, etc
-	if !errors.Is(err, context.Canceled) {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		return "", fmt.Errorf("failed to run otterscan container: %w", err)
 	}
 
