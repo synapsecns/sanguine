@@ -111,14 +111,28 @@ func (i *IntegrationSuite) setupBackends() {
 		defer wg.Done()
 		options := anvil.NewAnvilOptionBuilder()
 		options.SetChainID(1)
-		i.originBackend = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			i.originBackend, err = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+			if err != nil {
+				return fmt.Errorf("failed to create anvil backend: %w", err)
+			}
+			return nil
+		}, retry.WithMaxTotalTime(5*time.Minute))
+		i.Nil(err)
 		i.setupBE(i.originBackend)
 	}()
 	go func() {
 		defer wg.Done()
 		options := anvil.NewAnvilOptionBuilder()
 		options.SetChainID(destBackendChainID)
-		i.destBackend = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			i.destBackend, err = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+			if err != nil {
+				return fmt.Errorf("failed to create anvil backend: %w", err)
+			}
+			return nil
+		}, retry.WithMaxTotalTime(5*time.Minute))
+		i.Nil(err)
 		i.setupBE(i.destBackend)
 	}()
 	wg.Wait()
@@ -206,7 +220,7 @@ func (i *IntegrationSuite) setupCCTP() {
 				}
 			}
 			return nil
-		}, retry.WithMaxTotalTime(15*time.Second))
+		}, retry.WithMaxTotalTime(30*time.Second))
 		i.NoError(err)
 	}
 }
@@ -218,34 +232,36 @@ func addressToBytes32(addr common.Address) [32]byte {
 	return buf
 }
 
-// Approve checks if the token is approved and approves it if not.
-func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token contracts.DeployedContract, user wallet.Wallet) {
-	err := retry.WithBackoff(i.GetTestContext(), func(_ context.Context) (err error) {
-		erc20, err := ierc20.NewIERC20(token.Address(), backend)
+func (i *IntegrationSuite) waitForContractDeployment(ctx context.Context, backend backends.SimulatedTestBackend, address common.Address) error {
+	// nolint: wrapcheck
+	return retry.WithBackoff(ctx, func(_ context.Context) error {
+		code, err := backend.CodeAt(ctx, address, nil)
 		if err != nil {
-			return fmt.Errorf("could not get token at %s: %w", token.Address().String(), err)
+			return fmt.Errorf("could not get code: %w", err)
 		}
-
-		_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
-
-		allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
-		if err != nil {
-			return fmt.Errorf("could not get allowance: %w", err)
+		if len(code) == 0 {
+			return fmt.Errorf("contract not deployed at %s", address.Hex())
 		}
-
-		// TODO: can also use in mem cache
-		if allowance.Cmp(big.NewInt(0)) == 0 {
-			txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
-			tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
-			if err != nil {
-				return fmt.Errorf("could not approve: %w", err)
-			}
-			backend.WaitForConfirmation(i.GetTestContext(), tx)
-		}
-
 		return nil
-	}, retry.WithMaxTotalTime(15*time.Second))
-	i.NoError(err)
+	}, retry.WithMaxTotalTime(30*time.Second))
+}
+
+func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token contracts.DeployedContract, user wallet.Wallet) {
+	err := i.waitForContractDeployment(i.GetTestContext(), backend, token.Address())
+	i.Require().NoError(err, "Failed to wait for contract deployment")
+
+	erc20, err := ierc20.NewIERC20(token.Address(), backend)
+	i.Require().NoError(err, "Failed to get erc20")
+	_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
+	allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
+	i.Require().NoError(err, "Failed to get allowance")
+
+	if allowance.Cmp(big.NewInt(0)) == 0 {
+		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
+		tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
+		i.Require().NoError(err, "Failed to approve")
+		backend.WaitForConfirmation(i.GetTestContext(), tx)
+	}
 }
 
 func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {

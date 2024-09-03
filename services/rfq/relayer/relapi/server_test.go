@@ -76,6 +76,7 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 		DestChainID:     quoteRequest.Transaction.DestChainId,
 		OriginToken:     quoteRequest.Transaction.OriginToken.String(),
 		DestToken:       quoteRequest.Transaction.DestToken.String(),
+		Sender:          quoteRequest.Sender.String(),
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()
@@ -118,6 +119,7 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 		DestChainID:     quoteRequest.Transaction.DestChainId,
 		OriginToken:     quoteRequest.Transaction.OriginToken.String(),
 		DestToken:       quoteRequest.Transaction.DestToken.String(),
+		Sender:          quoteRequest.Sender.String(),
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()

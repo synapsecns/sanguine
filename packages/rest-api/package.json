@@ -7,6 +7,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:go": " ",
     "start": "node dist/app.js",
     "lint:fix": "eslint src/**/*.ts --fix",
     "lint:check": "eslint . --max-warnings=0",
