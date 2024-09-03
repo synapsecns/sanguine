@@ -22,6 +22,8 @@ contract FastBridge is IFastBridge, Admin {
     /// @notice Minimum deadline period to relay a requested bridge transaction
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
 
+    uint256 public constant MAX_DEADLINE_PERIOD = 120 minutes;
+
     enum BridgeStatus {
         NULL, // doesn't exist yet
         REQUESTED,

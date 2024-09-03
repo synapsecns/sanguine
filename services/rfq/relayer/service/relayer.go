@@ -104,6 +104,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 			return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
 		}
 		startBlock, err := contract.DeployBlock(&bind.CallOpts{Context: ctx})
+
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
