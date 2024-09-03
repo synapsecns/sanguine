@@ -1,4 +1,6 @@
 import React from 'react'
+import { useTranslations } from 'next-intl'
+
 import { joinClassNames } from '@/utils/joinClassNames'
 import { formatAmount } from '@/utils/formatAmount'
 
@@ -22,20 +24,24 @@ export const AvailableBalance = ({
     cursor: 'cursor-default',
   }
 
+  const t = useTranslations('Bridge')
+
   if (isDisabled) {
     return null
   } else if (isGasToken && isGasEstimateLoading) {
     return (
       <label className={joinClassNames(labelClassNames)} htmlFor="inputRow">
         <span className="animate-pulse text-zinc-500 dark:text-zinc-400">
-          calculating gas...
+          {t('calculating gas')}...
         </span>
       </label>
     )
   } else {
     return (
       <label className={joinClassNames(labelClassNames)} htmlFor="inputRow">
-        <span className="text-zinc-500 dark:text-zinc-400">Available: </span>
+        <span className="text-zinc-500 dark:text-zinc-400">
+          {t('Available')}:{' '}
+        </span>
         {formatAmount(maxBridgeableBalance?.toString()) ?? balance ?? '0.0'}
       </label>
     )

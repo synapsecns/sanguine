@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useTranslations } from 'next-intl'
+
 import ExclamationIcon from '@components/icons/ExclamationIcon'
 
 export const TimeRemaining = ({
@@ -12,14 +14,16 @@ export const TimeRemaining = ({
   delayedTime: number | null
   status: 'pending' | 'completed' | 'reverted'
 }) => {
+  const t = useTranslations('Time')
+
   if (status === 'completed') {
-    return <div className="text-sm text-green-400">Complete!</div>
+    return <div className="text-sm text-green-400">{t('Complete')}!</div>
   }
 
   if (status === 'reverted') {
     return (
       <span className="flex items-center space-x-1 text-sm">
-        <ExclamationIcon className="w-4 h-4" /> <span>Reverted</span>
+        <ExclamationIcon className="w-4 h-4" /> <span>{t('Reverted')}</span>
       </span>
     )
   }
@@ -30,7 +34,7 @@ export const TimeRemaining = ({
     const showDelayedTime = delayedTimeInMin < -1
     return (
       <div className="text-sm">
-        Waiting... {showDelayedTime ? `(${absoluteDelayedTime}m)` : null}
+        {t('Waiting')}... {showDelayedTime ? `(${absoluteDelayedTime}m)` : null}
       </div>
     )
   }

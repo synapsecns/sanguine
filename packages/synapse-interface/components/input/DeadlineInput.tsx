@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl'
+
 export const DeadlineInput = ({
   deadlineMinutes,
   setDeadlineMinutes,
@@ -5,6 +7,8 @@ export const DeadlineInput = ({
   deadlineMinutes: string
   setDeadlineMinutes: (value: string) => void
 }) => {
+  const t = useTranslations('Time')
+
   return (
     <div className="flex h-16 pb-4 space-x-2 text-left">
       <div
@@ -38,7 +42,7 @@ export const DeadlineInput = ({
           value={deadlineMinutes}
         />
         <span className="hidden text-lg text-white md:block opacity-30">
-          mins
+          {t('min')}
         </span>
       </div>
     </div>

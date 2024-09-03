@@ -1,4 +1,6 @@
 import { useCallback } from 'react'
+import { useTranslations } from 'next-intl'
+
 import { useAppDispatch } from '@/store/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
@@ -55,6 +57,8 @@ export const _Transaction = ({
   disabled,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
+
+  const t = useTranslations('Time')
 
   const handleClearTransaction = useCallback(() => {
     dispatch(removeTransaction({ originTxHash }))
@@ -150,7 +154,7 @@ export const _Transaction = ({
             }
           >
             <div className="p-2 mt-1 text-xs cursor-default text-zinc-300">
-              Began{' '}
+              {t('Began')}{' '}
               {new Date(timestamp * 1000).toLocaleString('en-US', {
                 month: 'short',
                 day: 'numeric',

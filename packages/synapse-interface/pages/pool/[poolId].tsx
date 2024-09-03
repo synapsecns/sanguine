@@ -19,21 +19,27 @@ import NoPoolBody from './NoPoolBody'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import StandardPageContainer from '@layouts/StandardPageContainer'
 
-export const getStaticPaths = async () => {
-  const paths = Object.keys(POOL_BY_ROUTER_INDEX).map((key) => ({
-    params: { poolId: key },
-  }))
-
+export const getStaticPaths = async ({ locales }) => {
+  const paths = Object.keys(POOL_BY_ROUTER_INDEX).flatMap((key) =>
+    locales.map((locale) => ({
+      params: { poolId: key },
+      locale,
+    }))
+  )
   return {
     paths,
-    fallback: false, // false or "blocking"
+    fallback: false,
   }
 }
 
-export const getStaticProps = async (context) => {
-  return { props: {} }
+export async function getStaticProps({ params, locale }) {
+  return {
+    props: {
+      messages: (await import(`../../messages/${locale}.json`)).default,
+      poolId: params.poolId,
+    },
+  }
 }
-
 const PoolPage = () => {
   const dispatch = useAppDispatch()
   const router = useRouter()

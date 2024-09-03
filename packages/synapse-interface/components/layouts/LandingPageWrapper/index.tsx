@@ -2,6 +2,8 @@ import { Fragment } from 'react'
 import { useRouter } from 'next/router'
 import { Popover, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
+import { useTranslations } from 'next-intl'
+
 import Grid from '@tw/Grid'
 import ForumIcon from '@icons/ForumIcon'
 import TwitterIcon from '@icons/TwitterIcon'
@@ -19,7 +21,6 @@ import {
   LANDING_PATH,
   TELEGRAM_URL,
   TWITTER_URL,
-  getBuySynUrl,
 } from '@/constants/urls'
 import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
@@ -72,6 +73,8 @@ export function LandingPageWrapper({ children }: { children: any }) {
 }
 
 export function LandingNav() {
+  const t = useTranslations('Nav')
+
   return (
     <Popover>
       <div className="flex gap-4 place-content-between p-8 max-w-[1440px] m-auto">
@@ -81,7 +84,7 @@ export function LandingNav() {
             data-test-id="mobile-navbar-button"
             className="p-2 text-gray-400 rounded-md hover:bg-gray-800 focus:outline-none"
           >
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{t('Open menu')}</span>
             <MenuIcon className="w-8 h-8" aria-hidden="true" />
           </Popover.Button>
         </div>
@@ -129,7 +132,7 @@ export function LandingNav() {
             <div className="flex items-center px-4 pt-4 place-content-between">
               <SynapseTitleLogo showText={true} />
               <Popover.Button className="p-2 text-gray-400 rounded-md hover:bg-gray-900 focus:outline-none">
-                <span className="sr-only">Close menu</span>
+                <span className="sr-only">{t('Close menu')}</span>
                 <XIcon className="w-8 h-8" aria-hidden="true" />
               </Popover.Button>
             </div>
@@ -181,11 +184,13 @@ export function PopoverPanelContainer({
 }
 
 function TopBarButtons() {
+  const t = useTranslations('Nav')
+
   const topBarNavLinks = Object.entries(NAVIGATION).map(([key, value]) => (
     <TopBarNavLink
       key={key}
       to={value.path}
-      labelText={value.text}
+      labelText={t(value.text)}
       match={value.match}
     />
   ))

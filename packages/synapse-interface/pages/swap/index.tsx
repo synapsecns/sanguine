@@ -1,6 +1,7 @@
 import { useAccount } from 'wagmi'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
+import { useTranslations } from 'next-intl'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import {
@@ -14,7 +15,6 @@ import { commify } from '@ethersproject/units'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState } from 'react'
-import { Token } from '@/utils/types'
 import { getWalletClient, waitForTransactionReceipt } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -45,6 +45,14 @@ import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { setIsWalletPending } from '@/slices/wallet/reducer'
 
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      messages: (await import(`../../messages/${locale}.json`)).default,
+    },
+  }
+}
+
 const StateManagedSwap = () => {
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()
@@ -53,6 +61,8 @@ const StateManagedSwap = () => {
   const currentSDKRequestID = useRef(0)
   const router = useRouter()
   const { query, pathname } = router
+
+  const t = useTranslations('Swap')
 
   const [isTyping, setIsTyping] = useState(false)
 
@@ -67,8 +77,6 @@ const StateManagedSwap = () => {
 
   const {
     isSwapPaused,
-    pausedChainsList,
-    pausedModulesList,
     SwapMaintenanceProgressBar,
     SwapMaintenanceWarningMessage,
   } = useMaintenance()
@@ -316,8 +324,14 @@ const StateManagedSwap = () => {
       const successToastContent = (
         <div>
           <div>
-            Successfully swapped from {swapFromToken.symbol} to{' '}
-            {swapToToken.symbol} on {currentChainName}
+            {t(
+              'Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}',
+              {
+                swapFromToken: swapFromToken.symbol,
+                swapToToken: swapToToken.symbol,
+                currentChainName: currentChainName,
+              }
+            )}
           </div>
           <ExplorerToastLink
             transactionHash={tx ?? zeroAddress}
@@ -352,7 +366,10 @@ const StateManagedSwap = () => {
       <div className="flex justify-center px-4 py-16 mx-auto lg:mx-0">
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
-            <PageHeader title="Swap" subtitle="Exchange assets on chain." />
+            <PageHeader
+              title={t('Swap')}
+              subtitle={t('Exchange assets on chain')}
+            />
           </div>
           <BridgeCard bridgeRef={swapDisplayRef}>
             <SwapMaintenanceProgressBar />

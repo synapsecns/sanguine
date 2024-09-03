@@ -2,6 +2,8 @@ import React, { useCallback } from 'react'
 import { zeroAddress } from 'viem'
 import { isNumber } from 'lodash'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
+
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId, setFromToken } from '@/slices/bridge/reducer'
 import { Token } from '@/utils/types'
@@ -52,6 +54,8 @@ export const PortfolioTokenAsset = ({
 
   const { maxBridgeableGas } = useGasEstimator()
 
+  const t = useTranslations('Portfolio')
+
   const handleFromSelectionCallback = useCallback(async () => {
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
@@ -77,7 +81,7 @@ export const PortfolioTokenAsset = ({
           hoverContent={
             isPortfolioChainSelected && isGasToken && maxBridgeableGas ? (
               <div className="whitespace-nowrap">
-                Available:{' '}
+                {t('Available')}:{' '}
                 {trimTrailingZeroesAfterDecimal(maxBridgeableGas.toFixed(8))}{' '}
                 {symbol}
               </div>
@@ -95,7 +99,9 @@ export const PortfolioTokenAsset = ({
 
         {isGasToken && (
           <HoverTooltip
-            hoverContent={<div className="whitespace-nowrap">Gas token</div>}
+            hoverContent={
+              <div className="whitespace-nowrap">{t('Gas token')}</div>
+            }
           >
             <GasIcon className="pt-0.5 m-auto fill-secondary" />
           </HoverTooltip>

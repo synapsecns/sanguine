@@ -10,6 +10,8 @@ import { store, persistor } from '@/store/store'
 import { WagmiProvider } from 'wagmi'
 import LogRocket from 'logrocket'
 import setupLogRocketReact from 'logrocket-react'
+import { NextIntlClientProvider } from 'next-intl'
+import { useRouter } from 'next/router'
 
 import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 import { UserProvider } from '@/contexts/UserProvider'
@@ -38,31 +40,38 @@ if (
 const queryClient = new QueryClient()
 
 function App({ Component, pageProps }: AppProps) {
+  const router = useRouter()
   return (
     <>
       <Head>
         <title>Synapse Protocol</title>
       </Head>
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <RainbowKitProvider theme={darkTheme()}>
-            <SynapseProvider chains={supportedChains}>
-              <Provider store={store}>
-                <PersistGate loading={null} persistor={persistor}>
-                  <SegmentAnalyticsProvider>
-                    <UserProvider>
-                      <BackgroundListenerProvider>
-                        <Component {...pageProps} />
-                      </BackgroundListenerProvider>
-                      <CustomToaster />
-                    </UserProvider>
-                  </SegmentAnalyticsProvider>
-                </PersistGate>
-              </Provider>
-            </SynapseProvider>
-          </RainbowKitProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
+      <NextIntlClientProvider
+        locale={router.locale}
+        timeZone="UTC"
+        messages={pageProps.messages}
+      >
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider theme={darkTheme()}>
+              <SynapseProvider chains={supportedChains}>
+                <Provider store={store}>
+                  <PersistGate loading={null} persistor={persistor}>
+                    <SegmentAnalyticsProvider>
+                      <UserProvider>
+                        <BackgroundListenerProvider>
+                          <Component {...pageProps} />
+                        </BackgroundListenerProvider>
+                        <CustomToaster />
+                      </UserProvider>
+                    </SegmentAnalyticsProvider>
+                  </PersistGate>
+                </Provider>
+              </SynapseProvider>
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </NextIntlClientProvider>
     </>
   )
 }

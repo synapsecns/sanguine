@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 
 import Grid from '@tw/Grid'
@@ -35,9 +36,11 @@ export default function ApyTooltip({
   const baseDailyApr: number = baseApyData.dailyApr ?? 0
   const baseYearlyApr: number = baseApyData.yearlyApr ?? 0
 
+  const t = useTranslations('Pools')
+
   return (
     <Tooltip
-      title="Rewards"
+      title={t('Rewards')}
       className={className}
       content={
         apyData && (
@@ -48,22 +51,22 @@ export default function ApyTooltip({
               className="inline-block font-medium"
             >
               <PercentageRow
-                title="Daily APR"
+                title={t('Daily APR')}
                 baseApr={baseDailyApr}
                 rewardApr={dailyApr}
               />
               <PercentageRow
-                title="Weekly APR"
+                title={t('Weekly APR')}
                 baseApr={baseWeeklyApr}
                 rewardApr={weeklyApr}
               />
               <PercentageRow
-                title="Yearly APR"
+                title={t('Yearly APR')}
                 baseApr={baseYearlyApr}
                 rewardApr={yearlyApr}
               />
               <PercentageRow
-                title="Yearly APY"
+                title={t('Yearly APY')}
                 baseApr={baseCompoundedApy}
                 rewardApr={compoundedApy}
               />
@@ -88,6 +91,8 @@ const PercentageRow = ({
 }) => {
   const totalApr = baseApr + rewardApr
 
+  const t = useTranslations('Pools')
+
   return (
     <div>
       <div className="text-sm font-normal text-gray-100 ">
@@ -98,7 +103,8 @@ const PercentageRow = ({
       </div>
       {baseApr > 0 && (
         <small className="float-left italic font-normal text-gray-300">
-          {rewardApr.toFixed(2)} reward + {baseApr.toFixed(2)} base
+          {rewardApr.toFixed(2)} {t('reward')} + {baseApr.toFixed(2)}{' '}
+          {t('base')}
         </small>
       )}
     </div>

@@ -1,4 +1,6 @@
 import React from 'react'
+import { useTranslations } from 'use-intl'
+
 import { joinClassNames } from '@/utils/joinClassNames'
 
 export const MaxButton = ({ onClick, isHidden }) => {
@@ -10,9 +12,11 @@ export const MaxButton = ({ onClick, isHidden }) => {
     hover: 'hover:opacity-70 cursor-pointer',
   }
 
+  const t = useTranslations('Bridge')
+
   return (
     <button onClick={onClick} className={joinClassNames(buttonClassNames)}>
-      Max
+      {t('Max')}
     </button>
   )
 }

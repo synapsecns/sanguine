@@ -1,17 +1,28 @@
-import Grid from '@tw/Grid'
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
+import { useTranslations } from 'next-intl'
 
+import Grid from '@tw/Grid'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import StandardPageContainer from '@layouts/StandardPageContainer'
 
 import PfpGeneratorCard from './PfpGeneratorCard'
 
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      messages: (await import(`../../messages/${locale}.json`)).default,
+    },
+  }
+}
+
 const ReturnToMonkePage = () => {
   const { address: currentAddress, chain } = useAccount()
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [address, setAddress] = useState(undefined)
+
+  const t = useTranslations('ReturnToMonke')
 
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)
@@ -29,7 +40,7 @@ const ReturnToMonkePage = () => {
         <div className="flex justify-between">
           <div>
             <div className="text-2xl text-white">
-              Generate Synaptic Profile Picture
+              {t('Generate Synaptic Profile Picture')}
             </div>
           </div>
         </div>

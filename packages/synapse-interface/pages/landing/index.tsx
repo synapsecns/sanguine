@@ -15,6 +15,14 @@ import { useEffect } from 'react'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      messages: (await import(`../../messages/${locale}.json`)).default,
+    },
+  }
+}
+
 const LandingPage = () => {
   const router = useRouter()
 

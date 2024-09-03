@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
+import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
+import toast from 'react-hot-toast'
+import { ChevronLeftIcon } from '@heroicons/react/outline'
+
 import { Token } from '@/utils/types'
 import { STAKABLE_TOKENS } from '@/constants/tokens'
 import Grid from '@/components/ui/tailwind/Grid'
 import { PageHeader } from '@/components/PageHeader'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import StakeCard from './StakeCard'
-import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import Link from 'next/link'
 import { POOLS_PATH } from '@/constants/urls'
-import { ChevronLeftIcon } from '@heroicons/react/outline'
-import toast from 'react-hot-toast'
+
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      messages: (await import(`../../messages/${locale}.json`)).default,
+    },
+  }
+}
 
 const StakePage = () => {
   const { chain: connectedChain } = useAccount()
@@ -19,6 +29,8 @@ const StakePage = () => {
   const [address, setAddress] = useState(undefined)
   const [isClient, setIsClient] = useState<boolean>(false)
   const [columns, setColumns] = useState<number>(1)
+
+  const t = useTranslations('Pools')
 
   const router = useRouter()
   const { query, pathname } = router
@@ -88,11 +100,11 @@ const StakePage = () => {
             <Link href={POOLS_PATH}>
               <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
                 <ChevronLeftIcon className="w-4 h-4" />
-                Back to Pools
+                {t('Back to Pools')}
               </div>
             </Link>
           </div>
-          <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
+          <PageHeader title={t('Stake')} subtitle={t('Stake your LP Tokens')} />
 
           <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
             {isClient &&

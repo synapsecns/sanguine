@@ -1,6 +1,8 @@
 import { useMemo, useState, useEffect } from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount } from 'wagmi'
+import { useTranslations } from 'next-intl'
+
 import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
 import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
@@ -39,6 +41,8 @@ export const Wallet = () => {
   const walletId = activeConnector?.id
 
   const [mounted, setMounted] = useState(false)
+
+  const t = useTranslations('Wallet')
 
   useEffect(() => {
     setMounted(true)
@@ -80,7 +84,7 @@ export const Wallet = () => {
                         whitespace-nowrap
                       `}
                     >
-                      Connect Wallet
+                      {t('Connect Wallet')}
                     </button>
                   )
                 }
@@ -96,7 +100,7 @@ export const Wallet = () => {
                         whitespace-nowrap
                       `}
                     >
-                      Wrong Network
+                      {t('Wrong Network')}
                     </button>
                   )
                 }
@@ -163,9 +167,4 @@ export const Wallet = () => {
   }, [connectedAddress, currentChain, walletId])
 
   return mounted && render
-}
-
-function FormattedDisplayName(displayName: string) {
-  const [, hex] = displayName.split('0x')
-  return '0x' + hex
 }

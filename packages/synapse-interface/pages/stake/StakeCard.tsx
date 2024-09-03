@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { type Address } from 'viem'
+import { useTranslations } from 'next-intl'
+
 import { useAppDispatch } from '@/store/hooks'
 import {
   fetchAndStoreSingleNetworkPortfolioBalances,
@@ -38,6 +40,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
   const stakingPoolId: number = tokenInfo?.poolId
+
+  const t = useTranslations('Pools')
 
   const { poolTokenBalances } = usePortfolioState()
 
@@ -134,7 +138,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       />
       <InfoSectionCard title="Your balances">
         <div className="flex items-center justify-between my-2">
-          <div className="text-[#EEEDEF]">Unstaked</div>
+          <div className="text-[#EEEDEF]">{t('Unstaked')}</div>
           <div className="text-white ">
             {!lpTokenBalance
               ? '\u2212'
@@ -147,7 +151,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           </div>
         </div>
         <div className="flex items-center justify-between my-2">
-          <div className="text-[#EEEDEF]">Staked</div>
+          <div className="text-[#EEEDEF]">{t('Staked')}</div>
           <div className="text-white ">
             {trimTrailingZeroesAfterDecimal(
               formatBigIntToString(userStakeData.amount, tokenInfo.decimals, 6)
@@ -159,7 +163,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         </div>
         <div className="flex items-center justify-between my-2">
           <div className="text-[#EEEDEF]">
-            {pool?.customRewardToken ?? 'SYN'} Earned
+            {pool?.customRewardToken ?? 'SYN'} {t('Earned')}
           </div>
           <div className="text-white ">
             {!userStakeData.reward
@@ -200,11 +204,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             {isPending ? (
               <div className="flex items-center justify-center space-x-5">
                 <ButtonLoadingDots className="mr-3" />
-                <span className="animate-pulse">Claiming</span>{' '}
+                <span className="animate-pulse">{t('Claiming')}</span>{' '}
               </div>
             ) : (
               <div className="font-thin">
-                Claim {pool.customRewardToken ?? 'SYN'}
+                {t('Claim')} {pool.customRewardToken ?? 'SYN'}
               </div>
             )}
           </Button>
@@ -220,7 +224,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               }}
               className="rounded-tl-sm"
             >
-              Stake
+              {t('Stake')}
             </TabItem>
             <TabItem
               isActive={!showStake}
@@ -229,7 +233,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               }}
               className="rounded-tr-sm"
             >
-              Unstake
+              {t('Unstake')}
             </TabItem>
           </Tabs>
         </div>
@@ -310,12 +314,12 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               title={pool?.symbol}
               buttonLabel={
                 !lpTokenBalance || lpTokenBalance < deposit.bi
-                  ? 'Insufficient Balance'
+                  ? t('Insufficient balance')
                   : allowance < deposit.bi
-                  ? `Approve ${pool?.symbol}`
-                  : 'Stake'
+                  ? `${t('Approve')} ${pool?.symbol}`
+                  : t('Stake')
               }
-              loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
+              loadingLabel={isPendingApprove ? t('Approving') : t('Staking')}
               disabled={
                 !lpTokenBalance ||
                 lpTokenBalance < deposit.bi ||
@@ -363,10 +367,10 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               title={pool?.symbol}
               buttonLabel={
                 userStakeData.amount < stringToBigInt(withdraw, 18)
-                  ? 'Insufficient balance'
-                  : 'Unstake'
+                  ? t('Insufficient balance')
+                  : t('Unstake')
               }
-              loadingLabel="Unstaking"
+              loadingLabel={t('Unstaking')}
               disabled={
                 !userStakeData.amount ||
                 userStakeData.amount < stringToBigInt(withdraw, 18) ||

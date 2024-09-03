@@ -2,6 +2,8 @@ import _ from 'lodash'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
+import { useTranslations } from 'next-intl'
+
 import { DISPLAY_POOLS_BY_CHAIN } from '@constants/tokens'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import {
@@ -16,6 +18,14 @@ import Grid from '@/components/ui/tailwind/Grid'
 import PoolCards from './PoolCards'
 import * as CHAINS from '@/constants/chains/master'
 
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      messages: (await import(`../../messages/${locale}.json`)).default,
+    },
+  }
+}
+
 const PoolsPage = () => {
   const { address: currentAddress } = useAccount()
   const { chain } = useAccount()
@@ -23,6 +33,8 @@ const PoolsPage = () => {
   const [address, setAddress] = useState(undefined)
 
   const router = useRouter()
+
+  const t = useTranslations('Pools')
 
   const migratedPools = {
     1088: [METIS_POOL_SWAP_TOKEN_MIGRATED, METIS_WETH_SWAP_TOKEN_MIGRATED],
@@ -68,8 +80,8 @@ const PoolsPage = () => {
       >
         <div className="flex-wrap justify-between mb-4 md:flex">
           <PageHeader
-            title="Incentivized Pools"
-            subtitle="Contributors are rewarded for balancing asset pools."
+            title={t('Incentivized Pools')}
+            subtitle={t('Contributors are rewarded for balancing asset pools')}
           />
         </div>
         <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
@@ -78,8 +90,8 @@ const PoolsPage = () => {
         </Grid>
         <div className="flex-wrap justify-between mt-8 mb-4 md:flex">
           <PageHeader
-            title="Unincentivized Pools"
-            subtitle="Pools without contributor rewards."
+            title={t('Unincentivized Pools')}
+            subtitle={t('Pools without contributor rewards')}
           />
         </div>
         <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
@@ -87,8 +99,8 @@ const PoolsPage = () => {
         </Grid>
         <div className="flex-wrap justify-between mt-8 mb-4 md:flex">
           <PageHeader
-            title="Migrated Pools"
-            subtitle="Pools migrated to new reward contracts."
+            title={t('Migrated Pools')}
+            subtitle={t('Pools migrated to new reward contracts')}
           />
         </div>
         <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
