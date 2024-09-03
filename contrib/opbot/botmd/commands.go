@@ -50,14 +50,14 @@ func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.Com
 // TODO: add trace middleware.
 func (b *Bot) traceCommand() *slacker.CommandDefinition {
 	return b.requiresSignoz(&slacker.CommandDefinition{
-		Command:     "trace <tags>",
+		Command:     "trace <tags> <order>",
 		Description: "find a transaction in signoz",
 		Examples: []string{
 			"trace transaction_id:0x1234 serviceName:rfq",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
-			tags := strings.ToLower(stripLinks(ctx.Request().Param("tags")))
-			splitTags := strings.Split(tags, " ")[:2]
+			tags := stripLinks(ctx.Request().Param("tags"))
+			splitTags := strings.Split(tags, " ")
 			if len(splitTags) == 0 {
 				_, err := ctx.Response().Reply("please provide tags in a key:value format")
 				if err != nil {
@@ -65,8 +65,6 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 				}
 				return
 			}
-
-			isDescending := strings.Contains(tags, "desc") || strings.Contains(tags, "dsc") || strings.Contains(tags, "d")
 
 			searchMap := make(map[string]string)
 			for _, combinedTag := range splitTags {
@@ -107,7 +105,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 				}
 				return
 			}
-
+			isDescending := ctx.Request().Param("order") == "desc" || ctx.Request().Param("order") == "d"
 			if isDescending {
 				sort.Slice(traceList, func(i, j int) bool {
 					return traceList[i].Timestamp.After(traceList[j].Timestamp)
