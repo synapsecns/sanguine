@@ -9,6 +9,7 @@ import (
 	"log"
 	"math/big"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -55,8 +56,8 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 			"trace transaction_id:0x1234 serviceName:rfq",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
-			tags := stripLinks(ctx.Request().Param("tags"))
-			splitTags := strings.Split(tags, " ")
+			tags := strings.ToLower(stripLinks(ctx.Request().Param("tags")))
+			splitTags := strings.Split(tags, " ")[:2]
 			if len(splitTags) == 0 {
 				_, err := ctx.Response().Reply("please provide tags in a key:value format")
 				if err != nil {
@@ -64,6 +65,8 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 				}
 				return
 			}
+
+			isDescending := strings.Contains(tags, "desc") || strings.Contains(tags, "dsc") || strings.Contains(tags, "d")
 
 			searchMap := make(map[string]string)
 			for _, combinedTag := range splitTags {
@@ -103,6 +106,12 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 					log.Println(err)
 				}
 				return
+			}
+
+			if isDescending {
+				sort.Slice(traceList, func(i, j int) bool {
+					return traceList[i].Timestamp.After(traceList[j].Timestamp)
+				})
 			}
 
 			slackBlocks := []slack.Block{slack.NewHeaderBlock(slack.NewTextBlockObject(slack.PlainTextType, fmt.Sprintf("Traces for %s", tags), false, false))}
