@@ -159,7 +159,6 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) (*B
 	if chainID == nil {
 		return nil, fmt.Errorf("chain id is nil")
 	}
-	fmt.Printf("got chain id: %s\n", chainID.String())
 
 	chainConfig := args.GetHardfork().ToChainConfig(chainID)
 
