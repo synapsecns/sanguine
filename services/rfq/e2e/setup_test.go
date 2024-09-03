@@ -117,7 +117,7 @@ func (i *IntegrationSuite) setupBackends() {
 				return fmt.Errorf("failed to create anvil backend: %w", err)
 			}
 			return nil
-		}, retry.WithMaxTotalTime(30*time.Second))
+		}, retry.WithMaxTotalTime(5*time.Minute))
 		i.Nil(err)
 		i.setupBE(i.originBackend)
 	}()
@@ -131,7 +131,7 @@ func (i *IntegrationSuite) setupBackends() {
 				return fmt.Errorf("failed to create anvil backend: %w", err)
 			}
 			return nil
-		}, retry.WithMaxTotalTime(30*time.Second))
+		}, retry.WithMaxTotalTime(5*time.Minute))
 		i.Nil(err)
 		i.setupBE(i.destBackend)
 	}()
