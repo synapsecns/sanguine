@@ -43,7 +43,7 @@ export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
 export const MIRROR_URL = 'https://synapse.mirror.xyz/'
 
 /** Synapse Docs Links */
-export const SYNAPSE_DOCS_URL = 'https://docs.synapseprotocol.com'
+export const SYNAPSE_DOCS_URL = 'https://synapse-3.gitbook.io/synapse-protocol'
 export const HOW_TO_BRIDGE_URL =
   'https://docs.synapseprotocol.com/how-to/bridge'
 export const HOW_TO_SWAP_URL = 'https://docs.synapseprotocol.com/how-to/swap'
