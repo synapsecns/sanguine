@@ -3,9 +3,10 @@ package config
 
 import (
 	"errors"
+	"strings"
+
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
-	"strings"
 )
 
 // Config represents the configuration of the application.
