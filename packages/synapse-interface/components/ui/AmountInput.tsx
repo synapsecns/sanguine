@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { debounce } from 'lodash'
 import LoadingDots from './tailwind/LoadingDots'
 import { joinClassNames } from '@/utils/joinClassNames'
+import { formatNumberWithCommas } from '@/utils/formatNumberWithCommas'
 
 interface AmountInputTypes {
   inputRef?: React.RefObject<HTMLInputElement>
@@ -52,7 +53,7 @@ export function AmountInput({
           className={joinClassNames(inputClassNames)}
           placeholder="0.0000"
           onChange={handleInputChange}
-          value={showValue}
+          value={formatNumberWithCommas(showValue)}
           name="inputRow"
           autoComplete="off"
           minLength={1}

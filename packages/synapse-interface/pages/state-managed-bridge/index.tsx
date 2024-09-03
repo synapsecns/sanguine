@@ -67,6 +67,7 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
+import { formatNumberWithCommas } from '@/utils/formatNumberWithCommas'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
@@ -160,7 +161,11 @@ const StateManagedBridge = () => {
         toast.dismiss(quoteToastRef.current.id)
 
         if (fetchBridgeQuote.fulfilled.match(result)) {
-          const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+          const message = `Route found for bridging ${formatNumberWithCommas(
+            debouncedFromValue
+          )} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${
+            toToken.symbol
+          } on ${CHAINS_BY_ID[toChainId]?.name}`
 
           quoteToastRef.current.id = toast(message, { duration: 3000 })
         }
@@ -186,7 +191,11 @@ const StateManagedBridge = () => {
         } else if (!toToken) {
           message = 'Please select a destination token'
         } else {
-          message = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+          message = `No route found for bridging ${formatNumberWithCommas(
+            debouncedFromValue
+          )} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${
+            toToken.symbol
+          } on ${CHAINS_BY_ID[toChainId]?.name}`
         }
         console.log(message)
 
