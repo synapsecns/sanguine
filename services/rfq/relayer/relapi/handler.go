@@ -112,6 +112,7 @@ func (h *Handler) GetQuoteRequestByTxID(c *gin.Context) {
 	}
 
 	resp := GetQuoteRequestResponse{
+		Sender:          quoteRequest.Sender.String(),
 		Status:          quoteRequest.Status.String(),
 		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
 		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
@@ -141,6 +142,7 @@ func (h *Handler) GetQuoteRequestByTxHash(c *gin.Context) {
 	}
 
 	resp := GetQuoteRequestResponse{
+		Sender:          quoteRequest.Sender.String(),
 		Status:          quoteRequest.Status.String(),
 		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
 		QuoteRequestRaw: common.Bytes2Hex(quoteRequest.RawRequest),
