@@ -1,108 +1,117 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { constructStringifiedBridgeSelections } from './useBridgeValidations'
 
 export const useConfirmNewBridgePrice = () => {
+  const quoteRef = useRef<any>(null)
+
   const [hasQuoteOutputChanged, setHasQuoteOutputChanged] =
     useState<boolean>(false)
   const [hasUserConfirmedChange, setHasUserConfirmedChange] =
     useState<boolean>(false)
 
-  const quoteRef = useRef<any>(null)
-
   const { bridgeQuote, previousBridgeQuote } = useBridgeQuoteState()
 
-  const currentBridgeQuoteSelections = useMemo(
-    () =>
+  const createBridgeSelections = useCallback(
+    (quote) =>
       constructStringifiedBridgeSelections(
-        bridgeQuote?.inputAmountForQuote,
-        bridgeQuote?.originChainId,
-        bridgeQuote?.originTokenForQuote,
-        bridgeQuote?.destChainId,
-        bridgeQuote?.destTokenForQuote
+        quote?.inputAmountForQuote,
+        quote?.originChainId,
+        quote?.originTokenForQuote,
+        quote?.destChainId,
+        quote?.destTokenForQuote
       ),
-    [bridgeQuote]
+    []
+  )
+
+  const currentBridgeQuoteSelections = useMemo(
+    () => createBridgeSelections(bridgeQuote),
+    [bridgeQuote, createBridgeSelections]
   )
 
   const previousBridgeQuoteSelections = useMemo(
-    () =>
-      constructStringifiedBridgeSelections(
-        previousBridgeQuote?.inputAmountForQuote,
-        previousBridgeQuote?.originChainId,
-        previousBridgeQuote?.originTokenForQuote,
-        previousBridgeQuote?.destChainId,
-        previousBridgeQuote?.destTokenForQuote
-      ),
-    [previousBridgeQuote]
+    () => createBridgeSelections(previousBridgeQuote),
+    [previousBridgeQuote, createBridgeSelections]
   )
+
+  const calculateOutputRelativeDifference = useCallback((quoteA, quoteB) => {
+    if (!quoteA?.outputAmountString || !quoteB?.outputAmountString) return null
+
+    const outputA = parseFloat(quoteA.outputAmountString)
+    const outputB = parseFloat(quoteB.outputAmountString)
+
+    return Math.abs(outputA - outputB) / outputB
+  }, [])
+
+  const handleRequestUserConfirmChange = (previousQuote) => {
+    if (!hasQuoteOutputChanged && !hasUserConfirmedChange) {
+      quoteRef.current = previousQuote
+      setHasQuoteOutputChanged(true)
+      setHasUserConfirmedChange(false)
+    }
+  }
+
+  const handleUserAcceptChange = () => {
+    quoteRef.current = null
+    setHasUserConfirmedChange(true)
+  }
+
+  const handleReset = () => {
+    if (hasUserConfirmedChange) {
+      quoteRef.current = null
+      setHasQuoteOutputChanged(false)
+      setHasUserConfirmedChange(false)
+    }
+  }
 
   useEffect(() => {
     const validQuotes =
       bridgeQuote?.outputAmount && previousBridgeQuote?.outputAmount
-
     const selectionsMatch =
       currentBridgeQuoteSelections === previousBridgeQuoteSelections
 
-    const outputAmountChanged =
-      bridgeQuote?.outputAmount !== previousBridgeQuote?.outputAmount
+    const outputAmountDiffMoreThan1bps = validQuotes
+      ? calculateOutputRelativeDifference(
+          bridgeQuote,
+          quoteRef.current ?? previousBridgeQuote
+        ) > 0.0001
+      : false
 
-    const outputAmountDiffMoreThan1bps =
-      validQuotes && quoteRef?.current?.outputAmountString
-        ? Math.abs(
-            parseFloat(bridgeQuote?.outputAmountString) -
-              parseFloat(quoteRef?.current?.outputAmountString)
-          ) /
-            parseFloat(quoteRef?.current?.outputAmountString) >
-          0.0001
-        : validQuotes
-        ? Math.abs(
-            parseFloat(bridgeQuote?.outputAmountString) -
-              parseFloat(previousBridgeQuote?.outputAmountString)
-          ) /
-            parseFloat(previousBridgeQuote?.outputAmountString) >
-          0.0001
-        : false
+    console.log('quoteRef.current:', quoteRef.current?.outputAmountString)
+    console.log(
+      'bridgeQuote?.outputAmountString: ',
+      bridgeQuote?.outputAmountString
+    )
+    console.log(
+      'previousBridgeQuote?.outputAmountString:',
+      previousBridgeQuote?.outputAmountString
+    )
+    console.log(
+      'relative difference: ',
+      calculateOutputRelativeDifference(
+        bridgeQuote,
+        quoteRef.current ?? previousBridgeQuote
+      )
+    )
+    console.log('outputAmountDiffMoreThan1bps: ', outputAmountDiffMoreThan1bps)
 
-    // console.log('outputAmountDiffMoreThan1bps:', outputAmountDiffMoreThan1bps)
-    // console.log(
-    //   'bridgeQuote?.outputAmountString: ',
-    //   bridgeQuote?.outputAmountString
-    // )
-    // console.log(
-    //   'previousBridgeQuote?.outputAmountString: ',
-    //   previousBridgeQuote?.outputAmountString
-    // )
-
-    if (
-      validQuotes &&
-      selectionsMatch &&
-      outputAmountChanged &&
-      outputAmountDiffMoreThan1bps
-    ) {
-      quoteRef.current = bridgeQuote
-      setHasQuoteOutputChanged(true)
-      setHasUserConfirmedChange(false)
-    } else if (
-      selectionsMatch &&
-      bridgeQuote?.outputAmount === quoteRef?.current?.outputAmount
-    ) {
-      // Maintain status until User confirms ref quote update
-      setHasQuoteOutputChanged(true)
+    if (validQuotes && selectionsMatch && outputAmountDiffMoreThan1bps) {
+      handleRequestUserConfirmChange(previousBridgeQuote)
     } else {
-      quoteRef.current = null
-      setHasQuoteOutputChanged(false)
+      handleReset()
     }
   }, [
     bridgeQuote,
     previousBridgeQuote,
     currentBridgeQuoteSelections,
     previousBridgeQuoteSelections,
+    calculateOutputRelativeDifference,
   ])
 
   return {
     hasQuoteOutputChanged,
     hasUserConfirmedChange,
-    setHasUserConfirmedChange,
+    handleUserAcceptChange,
   }
 }

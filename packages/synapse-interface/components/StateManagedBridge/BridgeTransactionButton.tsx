@@ -52,7 +52,7 @@ export const BridgeTransactionButton = ({
   const {
     hasQuoteOutputChanged,
     hasUserConfirmedChange,
-    setHasUserConfirmedChange,
+    handleUserAcceptChange,
   } = useConfirmNewBridgePrice()
 
   const { isWalletPending } = useWalletState()
@@ -174,7 +174,7 @@ export const BridgeTransactionButton = ({
   } else if (hasQuoteOutputChanged && !hasUserConfirmedChange) {
     buttonProperties = {
       label: 'Confirm new price',
-      onClick: () => setHasUserConfirmedChange(true),
+      onClick: () => handleUserAcceptChange(),
       className:
         '!border !border-synapsePurple !from-bgLight !to-bgLight !animate-pulse',
     }
