@@ -3,15 +3,15 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	"os"
-	"strings"
-	"time"
 )
 
 type otlpHandler struct {
@@ -28,15 +28,14 @@ func NewOTLPMetricsHandler(buildInfo config.BuildInfo) Handler {
 }
 
 func (n *otlpHandler) Start(ctx context.Context) (err error) {
-	var client otlptrace.Client
-	transport := transportFromString(core.GetEnv(otlpTransportEnv, otlpTransportGRPC.String()))
-	switch transport {
-	case otlpTransportHTTP:
-		client = otlptracehttp.NewClient()
-	case otlpTransportGRPC:
-		client = otlptracegrpc.NewClient()
-	default:
-		return fmt.Errorf("unknown transport type: %s", os.Getenv(otlpTransportEnv))
+	client, err := buildClientFromTransport(transportFromString(core.GetEnv(otlpTransportEnv, otlpTransportGRPC.String())))
+	if err != nil {
+		return fmt.Errorf("could not create client: %w", err)
+	}
+
+	secondaryClient, err := buildClientFromTransport(transportFromString(core.GetEnv(otlpTransportEnvSecondary, otlpTransportHTTP.String())))
+	if err != nil {
+		return fmt.Errorf("could not create secondary client: %w", err)
 	}
 
 	exporter, err := otlptrace.New(ctx, client)
@@ -44,7 +43,25 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 		return fmt.Errorf("failed to create otlp exporter: %w", err)
 	}
 
-	n.baseHandler = newBaseHandler(n.buildInfo, tracesdk.WithBatcher(exporter, tracesdk.WithMaxQueueSize(1000000), tracesdk.WithMaxExportBatchSize(2000)), tracesdk.WithSampler(tracesdk.AlwaysSample()))
+	secondaryExporter, err := otlptrace.New(ctx, secondaryClient)
+	if err != nil {
+		return fmt.Errorf("failed to create secondary otlp exporter: %w", err)
+	}
+
+	n.baseHandler = newBaseHandler(
+		n.buildInfo,
+		tracesdk.WithBatcher(
+			exporter,
+			tracesdk.WithMaxQueueSize(defaultMaxQueueSize),
+			tracesdk.WithMaxExportBatchSize(defaultMaxExportBatch),
+		),
+		tracesdk.WithBatcher(
+			secondaryExporter,
+			tracesdk.WithMaxQueueSize(defaultMaxQueueSize),
+			tracesdk.WithMaxExportBatchSize(metricsPortDefault),
+		),
+		tracesdk.WithSampler(tracesdk.AlwaysSample()),
+	)
 
 	// start the new parent
 	err = n.baseHandler.Start(ctx)
@@ -90,7 +107,8 @@ func handleShutdown(ctx context.Context, provider *tracesdk.TracerProvider) {
 }
 
 const (
-	otlpTransportEnv = "OTEL_EXPORTER_OTLP_TRANSPORT"
+	otlpTransportEnv          = "OTEL_EXPORTER_OTLP_TRANSPORT"
+	otlpTransportEnvSecondary = "OTEL_EXPORTER_OTLP_TRANSPORT_SECONDARY"
 )
 
 //go:generate go run golang.org/x/tools/cmd/stringer -type=otlpTransportType -linecomment
@@ -100,6 +118,17 @@ const (
 	otlpTransportHTTP otlpTransportType = iota + 1 // http
 	otlpTransportGRPC                              // grpc
 )
+
+func buildClientFromTransport(transport otlpTransportType) (otlptrace.Client, error) {
+	switch transport {
+	case otlpTransportHTTP:
+		return otlptracehttp.NewClient(), nil
+	case otlpTransportGRPC:
+		return otlptracegrpc.NewClient(), nil
+	default:
+		return nil, fmt.Errorf("unknown transport type: %s", transport.String())
+	}
+}
 
 // transportFromString converts a string to a transport type.
 // Defaults to http if the string is not recognized.
@@ -114,3 +143,8 @@ func transportFromString(transport string) otlpTransportType {
 	// (see uber's go stye guide for details)
 	return otlpTransportType(0)
 }
+
+const (
+	defaultMaxQueueSize   = 1000000
+	defaultMaxExportBatch = 2000
+)
