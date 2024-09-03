@@ -50,9 +50,9 @@ export const HOW_TO_SWAP_URL = 'https://docs.synapseprotocol.com/how-to/swap'
 export const HOW_TO_STAKE_URL =
   'https://docs.synapseprotocol.com/how-to/provide-liquidity'
 export const BUILD_ON_URL =
-  'https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network'
+  'https://synapse-3.gitbook.io/synapse-protocol/synapse-interchain-network-sin/build-on-the-synapse-interchain-network'
 export const TRANSACTION_SUPPORT_URL =
-  'https://docs.synapseprotocol.com/synapse-bridge/synapse-bridge/transaction-support-faq'
+  'https://synapse-3.gitbook.io/synapse-protocol/synapse-bridge/synapse-bridge/transaction-support-faq'
 
 /** Construct URL Helper Functions */
 export const getPoolUrl = (token: Token) => {
