@@ -9,7 +9,7 @@ export const useConfirmNewBridgePrice = () => {
   const [hasUserConfirmedChange, setHasUserConfirmedChange] =
     useState<boolean>(false)
 
-  const triggeredQuoteRef = useRef<any>(null)
+  const quoteRef = useRef<any>(null)
 
   const { bridgeQuote, previousBridgeQuote } = useBridgeQuoteState()
 
@@ -47,18 +47,50 @@ export const useConfirmNewBridgePrice = () => {
     const outputAmountChanged =
       bridgeQuote?.outputAmount !== previousBridgeQuote?.outputAmount
 
-    if (selectionsMatch && validQuotes && outputAmountChanged) {
-      // Ref quote that triggered the change
-      triggeredQuoteRef.current = bridgeQuote
+    const outputAmountDiffMoreThan1bps =
+      validQuotes && quoteRef?.current?.outputAmountString
+        ? Math.abs(
+            parseFloat(bridgeQuote?.outputAmountString) -
+              parseFloat(quoteRef?.current?.outputAmountString)
+          ) /
+            parseFloat(quoteRef?.current?.outputAmountString) >
+          0.0001
+        : validQuotes
+        ? Math.abs(
+            parseFloat(bridgeQuote?.outputAmountString) -
+              parseFloat(previousBridgeQuote?.outputAmountString)
+          ) /
+            parseFloat(previousBridgeQuote?.outputAmountString) >
+          0.0001
+        : false
+
+    // console.log('outputAmountDiffMoreThan1bps:', outputAmountDiffMoreThan1bps)
+    // console.log(
+    //   'bridgeQuote?.outputAmountString: ',
+    //   bridgeQuote?.outputAmountString
+    // )
+    // console.log(
+    //   'previousBridgeQuote?.outputAmountString: ',
+    //   previousBridgeQuote?.outputAmountString
+    // )
+
+    if (
+      validQuotes &&
+      selectionsMatch &&
+      outputAmountChanged &&
+      outputAmountDiffMoreThan1bps
+    ) {
+      quoteRef.current = bridgeQuote
       setHasQuoteOutputChanged(true)
       setHasUserConfirmedChange(false)
     } else if (
       selectionsMatch &&
-      bridgeQuote?.outputAmount === triggeredQuoteRef?.current?.outputAmount
+      bridgeQuote?.outputAmount === quoteRef?.current?.outputAmount
     ) {
       // Maintain status until User confirms ref quote update
       setHasQuoteOutputChanged(true)
     } else {
+      quoteRef.current = null
       setHasQuoteOutputChanged(false)
     }
   }, [
