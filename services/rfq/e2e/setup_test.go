@@ -111,14 +111,28 @@ func (i *IntegrationSuite) setupBackends() {
 		defer wg.Done()
 		options := anvil.NewAnvilOptionBuilder()
 		options.SetChainID(1)
-		i.originBackend = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			i.originBackend, err = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+			if err != nil {
+				return fmt.Errorf("failed to create anvil backend: %w", err)
+			}
+			return nil
+		}, retry.WithMaxTotalTime(30*time.Second))
+		i.Nil(err)
 		i.setupBE(i.originBackend)
 	}()
 	go func() {
 		defer wg.Done()
 		options := anvil.NewAnvilOptionBuilder()
 		options.SetChainID(destBackendChainID)
-		i.destBackend = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			i.destBackend, err = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+			if err != nil {
+				return fmt.Errorf("failed to create anvil backend: %w", err)
+			}
+			return nil
+		}, retry.WithMaxTotalTime(30*time.Second))
+		i.Nil(err)
 		i.setupBE(i.destBackend)
 	}()
 	wg.Wait()
