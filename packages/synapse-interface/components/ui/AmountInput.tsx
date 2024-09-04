@@ -47,18 +47,19 @@ export function AmountInput({
       ) : (
         <NumericFormat
           getInputRef={inputRef}
+          placeholder="0.0000"
           value={showValue}
-          thousandSeparator
-          onChange={handleInputChange}
-          pattern={disabled ? '[0-9.]+' : '^[0-9]*[.,]?[0-9]*$'}
+          pattern={disabled ? '[0-9.]+' : '^[0-9]+([.,]?[0-9]+)?$'}
           disabled={disabled}
           readOnly={disabled}
+          onChange={handleInputChange}
           className={joinClassNames(inputClassNames)}
-          placeholder="0.0000"
           name="inputRow"
-          autoComplete="off"
           minLength={1}
           maxLength={79}
+          autoComplete="off"
+          allowNegative={false}
+          thousandSeparator
         />
       )}
     </>
