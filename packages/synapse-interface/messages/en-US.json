@@ -68,6 +68,99 @@
     "WarningMessage3": "Do not",
     "WarningMessage4": "send assets to a custodial or exchange address. It may be impossible to recover your funds."
   },
+  "FauxBridge": {
+    "▼": "▼",
+    "Supported walletss": "Supported wallets",
+    "40,668 ETH": "40,668 ETH",
+    "Fantom": "Fantom",
+    "Ethereum": "Ethereum",
+    "Jan 29, 2022 - #1": "Jan 29, 2022 - #1",
+    "Max": "Max",
+    "Enter Bridge": "Enter Bridge",
+    "Bridge": "Bridge"
+  },
+  "Landing": {
+    "BridgeSection": {
+      "Powering": "Powering the most popular bridge",
+      "Synapse Bridge": "Synapse Bridge",
+      "Built on top of": "is built on top of the cross-chain infrastructure enabling users to seamlessly transfer assets across all blockchains. The Bridge has become the most widely-used method to move assets cross-chain, offering low cost, fast, and secure bridging.",
+      "Deep Liquidity": "Deep Liquidity",
+      "Swap native assets": "Swap native assets using our cross-chain AMM liquidity pools",
+      "Wide Support": "Wide Support",
+      "Access": "Access over 16 different EVM and non-EVM blockchains with more integrations coming soon",
+      "Developer Friendly": "Developer Friendly",
+      "Integrate": "Easily integrate cross-chain token bridging natively into your decentralized application"
+    },
+    "ExplorerSection": {
+      "Battle tested": "Battled-test infrastructure",
+      "Synapse has processed": "Synapse has processed millions of transactions and tens of billions in bridged assets.",
+      "Go to Explorer": "Go to Explorer",
+      "Total Value Locked": "Total Value Locked",
+      "Total Bridge Volume": "Total Bridge Volume",
+      "Total TX Count": "Total TX Count"
+    },
+    "HeroSection": {
+      "title": "Secure cross-chain communication",
+      "description": "Synapse is the most widely used, extensible, secure cross-chain communications network. Build truly cross-chain applications using the Synapse Protocol.",
+      "buildButton": "Build on Synapse",
+      "enterBridgeButton": "Enter Bridge"
+    },
+    "HowItWorksSection": {
+      "How it all works": "How it all works",
+      "description": "Smart contracts from one chain use the Synapse Messaging Router to send the message to the destination chain, where a corresponding Messaging Router sends it to the destination contract. Messages are optimistically verified to ensure security and trustlessness."
+    },
+    "IntegrationSection": {
+      "Widely integrated": "Widely integrated",
+      "Synapse is": "Synapse is widely integrated across the most-used Layer 1 and Layer 2 networks for a seamless cross-chain experience.",
+      "Layer": "Layer"
+    },
+    "ResourcesSection": {
+      "Get started now": "Get started now",
+      "Find the resources": "Find the resources you need to create integrations with Synapse.",
+      "References": "References",
+      "See references": "See references",
+      "Documentation": "Documentation",
+      "Read detailed": "Read a detailed breakdown of our APIs and smart contracts",
+      "Read the docs": "Read the docs",
+      "Tutorials": "Tutorials",
+      "Watch tutorials": "Watch interactive tutorials to learn how Synapse works",
+      "Go to tutorials": "Go to tutorials"
+    },
+    "UseCasesSection": {
+      "title": "Use cases",
+      "subtitle": "Here's a preview of what you can do using Synapse.",
+      "useCases": [
+        {
+          "title": "Cross-chain exchange",
+          "description": "Swap any asset on any blockchain using Synapse token swaps"
+        },
+        {
+          "title": "Universal money markets",
+          "description": "Borrow and lend assets across any blockchain using Synapse pools"
+        },
+        {
+          "title": "Multi-chain gaming",
+          "description": "Create unique gaming experiences that access multiple blockchains"
+        }
+      ]
+    },
+    "SecuritySection": {
+      "title": "Securely connect every blockchain",
+      "description": {
+        "part1": "Synapse is comprised of a",
+        "strong1": "cross-chain messaging framework",
+        "part2": "and an",
+        "strong2": "economically secure method",
+        "part3": "to reach consensus on the validity of cross-chain transactions, enabling developers to build truly native cross-chain apps."
+      },
+      "extensibleHeader": "Extensible",
+      "extensibleDescription": "Synapse's cross-chain messaging contracts can be deployed across any blockchain",
+      "secureHeader": "Secure",
+      "secureDescription": "Synapse employs an Optimistic security model to ensure integrity of cross-chain messages",
+      "generalizedHeader": "Generalized",
+      "generalizedDescription": "Any arbitrary data can be sent across chains including contract calls, NFTs, snapshots, and more"
+    }
+  },
   "Pools": {
     "Actions": "Actions",
     "Back to Pool": "Back to Pool",
@@ -231,16 +324,5 @@
     "Do not bridge via Fantom unless you understand the risks involved": "Do not bridge via Fantom unless you understand the risks involved.",
     "Alert: Transactions to Dogechain are temporarily paused": "Alert: Transactions to Dogechain are temporarily paused.",
     "You may still bridge funds from Dogechain to any supported destination chain": "You may still bridge funds from Dogechain to any supported destination chain."
-  },
-  "FauxBridge": {
-    "▼": "▼",
-    "Supported walletss": "Supported wallets",
-    "40,668 ETH": "40,668 ETH",
-    "Fantom": "Fantom",
-    "Ethereum": "Ethereum",
-    "Jan 29, 2022 - #1": "Jan 29, 2022 - #1",
-    "Max": "Max",
-    "Enter Bridge": "Enter Bridge",
-    "Bridge": "Bridge"
   }
 }

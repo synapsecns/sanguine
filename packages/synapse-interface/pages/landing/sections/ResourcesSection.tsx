@@ -1,41 +1,43 @@
 import Link from 'next/link'
+import { useTranslations } from 'use-intl'
+
 import Grid from '@/components/ui/tailwind/Grid'
 import Card from '@/components/ui/tailwind/Card'
 import Button from '@/components/ui/tailwind/Button'
-import { SectionContainer } from '../../../components/landing/shared'
+import { SectionContainer } from '@/components/landing/shared'
 import { GITHUB_URL, SYNAPSE_DOCS_URL, MEDIUM_URL } from '@/constants/urls'
 
 export default function ResourcesSection() {
+  const t = useTranslations('Landing.ResourcesSection')
   return (
-    <SectionContainer dataTestId="landing-resources-section" styles="max-w-5xl m-auto">
+    <SectionContainer
+      dataTestId="landing-resources-section"
+      styles="max-w-5xl m-auto"
+    >
       <h2 className="text-4xl font-medium text-center text-white">
-        Get started now
+        {t('Get started now')}
       </h2>
       <p className="mb-8 text-center text-secondaryTextColor">
-        Find the resources you need to create integrations with Synapse.
+        {t('Find the resources')}
       </p>
 
-      <Grid
-        cols={{ sm: 1, md: 1, lg: 3 }}
-        gap={6}
-        className="p-4"
-      >
+      <Grid cols={{ sm: 1, md: 1, lg: 3 }} gap={6} className="p-4">
         <ResourceCard
-          title="References"
-          description="Find the resources you need to create integrations with Synapse."
-          buttonText="See references"
+          title={t('References')}
+          description={t('Find the resources')}
+          buttonText={t('See references')}
           linkUrl={GITHUB_URL}
         />
         <ResourceCard
-          title="Documentation"
-          description="Read a detailed breakdown of our APIs and smart contracts."
-          buttonText="Read the docs"
+          title={t('Documentation')}
+          description={t('Read detailed')}
+          buttonText={t('Read the docs')}
           linkUrl={SYNAPSE_DOCS_URL}
         />
         <ResourceCard
-          title="Tutorials"
-          description="Watch interactive tutorials to learn how Synapse works."
-          buttonText="Go to tutorials"
+          title={t('Tutorials')}
+          description={t('Watch tutorials')}
+          buttonText={t('Go to tutorials')}
           linkUrl={MEDIUM_URL}
         />
       </Grid>
