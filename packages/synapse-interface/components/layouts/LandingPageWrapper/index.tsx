@@ -141,7 +141,8 @@ export function LandingNav() {
             <div className="flex flex-col gap-2 py-4" data-test-id="mobile-nav">
               <MobileBarButtons />
             </div>
-            <div className="px-2 py-4 bg-white/10">
+            <div className="flex items-center px-2 py-4 space-x-2 bg-white/10">
+              <LanguageSelector />
               <Wallet />
             </div>
           </div>

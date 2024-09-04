@@ -34,7 +34,7 @@ export const LanguageSelector = () => {
         <GlobeAltIcon className="w-6 h-6" />
       </button>
       {isOpen && (
-        <div className="absolute right-0 z-10 w-48 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+        <div className="absolute left-0 z-10 w-48 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
           <div
             className="py-1"
             role="menu"
