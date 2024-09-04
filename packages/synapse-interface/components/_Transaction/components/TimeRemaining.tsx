@@ -16,6 +16,14 @@ export const TimeRemaining = ({
 }) => {
   const t = useTranslations('Time')
 
+  const estTime = useMemo(() => {
+    if (remainingTime > 60) {
+      return `${Math.ceil(remainingTime / 60)}${t('m remaining')}`
+    } else {
+      return `${remainingTime}${t('s remaining')}`
+    }
+  }, [remainingTime])
+
   if (status === 'completed') {
     return <div className="text-sm text-green-400">{t('Complete')}!</div>
   }
@@ -38,14 +46,6 @@ export const TimeRemaining = ({
       </div>
     )
   }
-
-  const estTime = useMemo(() => {
-    if (remainingTime > 60) {
-      return Math.ceil(remainingTime / 60) + 'm remaining'
-    } else {
-      return remainingTime + 's remaining'
-    }
-  }, [remainingTime])
 
   return <div className="text-sm">{estTime}</div>
 }

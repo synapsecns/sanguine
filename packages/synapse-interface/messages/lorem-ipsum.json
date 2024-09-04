@@ -55,7 +55,7 @@
     "All sendable tokens": "Omnes mittendi signa",
     "All other tokens": "Omnia alia signa",
     "ReceiveWithEllipsis": "Accipe…",
-    "All receiveable tokens": "Omnia accipienda signa",
+    "All receivable tokens": "Omnia accipienda signa",
     "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Route ad pontis {debouncedFromValue} {fromToken} in {fromChainId} ad {toToken} in {toChainId} inventa est",
     "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Route ad pontis {debouncedFromValue} {fromToken} in {fromChainId} ad {toToken} in {toChainId} non inventa est"
   },
@@ -72,7 +72,7 @@
   },
   "FauxBridge": {
     "▼": "▼",
-    "Supported walletss": "Sustentatae cassidiles",
+    "Supported wallets": "Sustentatae cassidiles",
     "40,668 ETH": "40,668 ETH",
     "Fantom": "Fantom",
     "Ethereum": "Ethereum",
@@ -307,7 +307,9 @@
     "FAQ": "FAQ",
     "Support": "Support",
     "minutes": "minutae",
-    "seconds": "secundae"
+    "seconds": "secundae",
+    "m remaining": "m remanent",
+    "s remaining": "s remanent"
   },
   "Nav": {
     "Open menu": "Aperire Menu",
@@ -344,6 +346,7 @@
     "Click to Upload or": "Click ut Upload vel"
   },
   "Wallet": {
+    "Connect": "Coniunge",
     "Connected": "Coniunctus",
     "Connected to": "Coniunctus ad",
     "Connecting": "Coniungens",

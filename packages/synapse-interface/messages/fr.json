@@ -55,7 +55,7 @@
     "All sendable tokens": "Tous les jetons envoyables",
     "All other tokens": "Tous les autres jetons",
     "ReceiveWithEllipsis": "Recevoir…",
-    "All receiveable tokens": "Tous les jetons recevables",
+    "All receivable tokens": "Tous les jetons recevables",
     "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Route trouvée pour le transfert de {debouncedFromValue} {fromToken} sur {fromChainId} vers {toToken} sur {toChainId}",
     "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Aucune route trouvée pour le transfert de {debouncedFromValue} {fromToken} sur {fromChainId} vers {toToken} sur {toChainId}"
   },
@@ -72,7 +72,7 @@
   },
   "FauxBridge": {
     "▼": "▼",
-    "Supported walletss": "Portefeuilles pris en charge",
+    "Supported wallets": "Portefeuilles pris en charge",
     "40,668 ETH": "40 668 ETH",
     "Fantom": "Fantom",
     "Ethereum": "Ethereum",
@@ -308,7 +308,9 @@
     "FAQ": "FAQ",
     "Support": "Support",
     "minutes": "minutes",
-    "seconds": "secondes"
+    "seconds": "secondes",
+    "m remaining": "m restantes",
+    "s remaining": "s restantes"
   },
   "Nav": {
     "Open menu": "Ouvrir le menu",
@@ -345,6 +347,7 @@
     "Click to Upload or": "Cliquez pour télécharger ou"
   },
   "Wallet": {
+    "Connect": "Connecter",
     "Connected": "Connecté",
     "Connected to": "Connecté à",
     "Connecting": "Connexion en cours",
