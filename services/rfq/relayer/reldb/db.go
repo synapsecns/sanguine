@@ -185,6 +185,7 @@ type Rebalance struct {
 	Status          RebalanceStatus
 	OriginTxHash    common.Hash
 	DestTxHash      common.Hash
+	TokenName       string
 }
 
 // RebalanceStatus is the status of a rebalance action in the db.
