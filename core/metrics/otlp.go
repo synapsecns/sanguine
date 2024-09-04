@@ -28,6 +28,7 @@ func NewOTLPMetricsHandler(buildInfo config.BuildInfo) Handler {
 }
 
 func (n *otlpHandler) Start(ctx context.Context) (err error) {
+	// TODO: generalize this to allow for more than two exporters.
 	client, err := buildClientFromTransport(transportFromString(core.GetEnv(otlpTransportEnv, otlpTransportGRPC.String())))
 	if err != nil {
 		return fmt.Errorf("could not create client: %w", err)
@@ -48,17 +49,14 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 		return fmt.Errorf("failed to create secondary otlp exporter: %w", err)
 	}
 
+	multiExporter := NewMultiExporter(exporter, secondaryExporter)
+
 	n.baseHandler = newBaseHandler(
 		n.buildInfo,
 		tracesdk.WithBatcher(
-			exporter,
+			multiExporter,
 			tracesdk.WithMaxQueueSize(defaultMaxQueueSize),
 			tracesdk.WithMaxExportBatchSize(defaultMaxExportBatch),
-		),
-		tracesdk.WithBatcher(
-			secondaryExporter,
-			tracesdk.WithMaxQueueSize(defaultMaxQueueSize),
-			tracesdk.WithMaxExportBatchSize(metricsPortDefault),
 		),
 		tracesdk.WithSampler(tracesdk.AlwaysSample()),
 	)
