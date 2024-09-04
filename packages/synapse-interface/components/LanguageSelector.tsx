@@ -1,7 +1,6 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { GlobeAltIcon } from '@heroicons/react/outline'
-
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { useCloseOnEscape } from '@/utils/hooks/useCloseOnEscape'
 
@@ -13,14 +12,27 @@ const languages = [
 
 export const LanguageSelector = () => {
   const router = useRouter()
-  const { pathname, asPath, query, locale: currentLocale } = router
+  const { pathname, asPath, query } = router
   const [isOpen, setIsOpen] = useState(false)
+  const [currentLocale, setCurrentLocale] = useState(router.locale)
   const dropdownRef = useRef(null)
+
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem('selectedLanguage')
+    if (storedLanguage && storedLanguage !== router.locale) {
+      router.push({ pathname, query }, asPath, { locale: storedLanguage })
+    }
+  }, [])
+
+  useEffect(() => {
+    setCurrentLocale(router.locale)
+  }, [router.locale])
 
   const toggleDropdown = () => setIsOpen(!isOpen)
 
   const handleLanguageChange = (lang) => {
     router.push({ pathname, query }, asPath, { locale: lang.code })
+    localStorage.setItem('selectedLanguage', lang.code)
   }
 
   const closeDropdown = () => setIsOpen(false)
