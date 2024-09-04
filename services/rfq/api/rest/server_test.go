@@ -59,16 +59,12 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature() {
 		c.Require().NoError(err)
 	}()
 
-	// Log the response body for debugging.
-	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
-
 	// Assert that the response status code is HTTP 200 OK.
 	c.Equal(http.StatusOK, resp.StatusCode)
 }
 
-// TestEIP191_SuccessfulSignature_vCodeNormalize tests the EIP191 signature process for successful authentication
-// using a recovery ID (v) value of 27 instead of the 0/1 value. Should be normalized & still authenticate successfully
+// TestEIP191_SuccessfulSignature_vCodeNormalize tests the EIP191 signature process for successful authentication.
+// using a recovery ID (v) value of 27/28 instead of the 0/1 value. Should be normalized & still authenticate successfully.
 func (c *ServerSuite) TestEIP191_SuccessfulSignature_vCodeNormalize() {
 	// Start the API server in a separate goroutine and wait for it to initialize.
 	c.startQuoterAPIServer()
@@ -80,7 +76,7 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature_vCodeNormalize() {
 		return
 	}
 
-	// swap in v code 27/28 for 0/1 respectively
+	// swap in v code 27/28 for 0/1 respectively.
 	if header[len(header)-2:] == "00" {
 		header = header[:len(header)-2] + "1b"
 	} else if header[len(header)-2:] == "01" {
@@ -97,10 +93,6 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature_vCodeNormalize() {
 		err = resp.Body.Close()
 		c.Require().NoError(err)
 	}()
-
-	// Log the response body for debugging.
-	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
 
 	// Assert that the response status code is HTTP 200 OK.
 	c.Equal(http.StatusOK, resp.StatusCode)
