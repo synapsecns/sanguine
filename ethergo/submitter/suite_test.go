@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
 	"math/big"
 	"os"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
 
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
@@ -114,7 +115,9 @@ func (s *SubmitterSuite) SetupSuite() {
 			// make sure all the docker containers log to the same directory
 			options.SetProcessLogOptions(processlog.WithLogFileName(fmt.Sprintf("chain-%d.log", chainID)), processlog.WithLogDir(logDir))
 
-			s.testBackends[index] = anvil.NewAnvilBackend(s.GetSuiteContext(), s.T(), options)
+			var err error
+			s.testBackends[index], err = anvil.NewAnvilBackend(s.GetSuiteContext(), s.T(), options)
+			s.Require().NoError(err)
 			s.deployer.Get(s.GetSuiteContext(), s.testBackends[index], contracttests.CounterType)
 		}(i, chainID)
 	}

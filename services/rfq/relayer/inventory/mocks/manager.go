@@ -136,13 +136,13 @@ func (_m *Manager) HasSufficientGas(ctx context.Context, chainID int, gasValue *
 	return r0, r1
 }
 
-// Rebalance provides a mock function with given fields: ctx, chainID, token
-func (_m *Manager) Rebalance(ctx context.Context, chainID int, token common.Address) error {
-	ret := _m.Called(ctx, chainID, token)
+// Rebalance provides a mock function with given fields: ctx
+func (_m *Manager) Rebalance(ctx context.Context) error {
+	ret := _m.Called(ctx)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, common.Address) error); ok {
-		r0 = rf(ctx, chainID, token)
+	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = rf(ctx)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -133,7 +133,7 @@ func (s Store) UpdateRelayNonce(ctx context.Context, id [32]byte, nonce uint64) 
 }
 
 func isValidStateTransition(prevStatus, status reldb.QuoteRequestStatus) bool {
-	if status == reldb.DeadlineExceeded || status == reldb.WillNotProcess {
+	if status == reldb.DeadlineExceeded || status == reldb.WillNotProcess || status == reldb.RelayRaceLost {
 		return true
 	}
 	return status >= prevStatus

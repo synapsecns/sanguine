@@ -5,14 +5,14 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { CSSProperties } from 'react'
 import { joinClassNames } from '@/utils/joinClassNames'
 
-const BASE_PROPERTIES = joinClassNames({
+const baseClassNames = {
   flex: 'flex justify-center items-center',
   space: 'w-full rounded-md px-4 py-3 my-1',
   hover: 'hover:opacity-80',
   disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
   background: 'bg-zinc-400 dark:bg-bgLight',
   gradient: 'enabled:bg-gradient-to-r',
-})
+}
 
 export const TransactionButton = ({
   className,
@@ -43,7 +43,7 @@ export const TransactionButton = ({
       disabled={disabled}
       className={`
         ${className}
-        ${BASE_PROPERTIES}
+        ${joinClassNames(baseClassNames)}
         ${
           isPending
             ? 'from-fuchsia-400 dark:from-fuchsia-900 to-purple-400 dark:to-purple-900'

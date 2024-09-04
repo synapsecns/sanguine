@@ -14,6 +14,7 @@ import (
 	"github.com/ipfs/go-log"
 	"github.com/lmittmann/w3/w3types"
 	"github.com/ory/dockertest/v3"
+	"github.com/teivah/onecontext"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -34,7 +35,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
-	"github.com/teivah/onecontext"
 )
 
 const gasLimit = 10000000
@@ -65,19 +65,20 @@ func (b *Backend) BackendName() string {
 
 // NewAnvilBackend creates a test anvil backend.
 // nolint: cyclop
-func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Backend {
+func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) (*Backend, error) {
 	t.Helper()
 
 	pool, err := dockertest.NewPool("")
-	require.Nil(t, err)
-
-	pool.MaxWait = args.maxWait
 	if err != nil {
-		require.Nil(t, err)
+		return nil, fmt.Errorf("failed to create docker pool: %w", err)
 	}
 
+	pool.MaxWait = args.maxWait
+
 	commandArgs, err := args.Build()
-	require.Nil(t, err)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build command args: %w", err)
+	}
 
 	runOptions := &dockertest.RunOptions{
 		Repository: "ghcr.io/foundry-rs/foundry",
@@ -97,7 +98,9 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 			config.RestartPolicy = *args.restartPolicy
 		}
 	})
-	require.Nil(t, err)
+	if err != nil {
+		return nil, fmt.Errorf("failed to run anvil container: %w", err)
+	}
 
 	logInfoChan := make(chan processlog.LogMetadata)
 	go func() {
@@ -117,14 +120,19 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 
 	otterscanMessage := ""
 	if args.enableOtterscan {
-		otterAddress := setupOtterscan(ctx, t, pool, resource, args)
+		otterAddress, err := setupOtterscan(ctx, t, pool, resource, args)
+		if err != nil {
+			return nil, fmt.Errorf("failed to setup otterscan: %w", err)
+		}
 		otterscanMessage = fmt.Sprintf("otterscan is running at %s", otterAddress)
 	}
 
 	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
 	// containers should be removed on their own, but this is a safety net.
 	// to prevent old containers from piling up, we set a timeout to remove the container.
-	require.Nil(t, resource.Expire(args.expirySeconds))
+	if err := resource.Expire(args.expirySeconds); err != nil {
+		return nil, fmt.Errorf("failed to set expiry for anvil container: %w", err)
+	}
 
 	address := fmt.Sprintf("%s:%s", "http://localhost", dockerutil.GetPort(resource, "8545/tcp"))
 
@@ -145,10 +153,12 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 
 		return nil
 	}); err != nil {
-		require.Nil(t, err)
+		return nil, fmt.Errorf("failed to connect to anvil: %w", err)
 	}
 
-	require.NotNil(t, chainID)
+	if chainID == nil {
+		return nil, fmt.Errorf("chain id is nil")
+	}
 
 	chainConfig := args.GetHardfork().ToChainConfig(chainID)
 
@@ -156,7 +166,9 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		RPCUrl:  []string{address},
 		ChainID: int(chainConfig.ChainID.Int64()),
 	})
-	require.Nilf(t, err, "failed to create chain for chain id %s: %v", chainID, err)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create chain for chain id %s: %w", chainID, err)
+	}
 
 	chn.SetChainConfig(chainConfig)
 
@@ -168,7 +180,9 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	}
 
 	baseBackend, err := base.NewBaseBackend(ctx, t, chn)
-	require.Nil(t, err)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create base backend: %w", err)
+	}
 
 	backend := Backend{
 		Backend:     baseBackend,
@@ -179,7 +193,9 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	}
 
 	err = backend.storeWallets(args)
-	require.Nilf(t, err, "failed to store wallets on chain id %s: %v", chainID, err)
+	if err != nil {
+		return nil, fmt.Errorf("failed to store wallets on chain id %s: %w", chainID, err)
+	}
 
 	t.Cleanup(func() {
 		select {
@@ -190,7 +206,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 		}
 	})
 
-	return &backend
+	return &backend, nil
 }
 
 // TearDown purges docker resources associated with the backend.
@@ -205,7 +221,7 @@ func (b *Backend) BatchWithContext(ctx context.Context, calls ...w3types.Caller)
 	return b.BatchContext(ctx, calls...)
 }
 
-func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, anvilResource *dockertest.Resource, args *OptionBuilder) string {
+func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, anvilResource *dockertest.Resource, args *OptionBuilder) (string, error) {
 	tb.Helper()
 
 	runOptions := &dockertest.RunOptions{
@@ -228,14 +244,16 @@ func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, a
 		}
 	})
 	// since this is ran in a gofunc, context cancelation errors expected during pull, etc
-	if !errors.Is(err, context.Canceled) {
-		require.Nil(tb, err)
+	if err != nil && !errors.Is(err, context.Canceled) {
+		return "", fmt.Errorf("failed to run otterscan container: %w", err)
 	}
 
 	// Docker will hard kill the container in expiryseconds seconds (this is a test env).
 	// containers should be removed on their own, but this is a safety net.
 	// to prevent old containers from piling up, we set a timeout to remove the container.
-	require.Nil(tb, resource.Expire(args.expirySeconds))
+	if err := resource.Expire(args.expirySeconds); err != nil {
+		return "", fmt.Errorf("failed to set expiry for anvil container: %w", err)
+	}
 
 	logInfoChan := make(chan processlog.LogMetadata)
 	go func() {
@@ -259,9 +277,9 @@ func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, a
 	case logInfo := <-logInfoChan:
 		// debug level stuff
 		logger.Debugf("started otterscan for anvil instance %s as container %s. Logs will be stored at %s", anvilResource.Container.Name, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
-		return fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "80/tcp"))
+		return fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "80/tcp")), nil
 	}
-	return ""
+	return "", fmt.Errorf("failed to start otterscan")
 }
 
 var logger = log.Logger("anvil-docker")

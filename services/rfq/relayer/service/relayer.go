@@ -101,11 +101,11 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 
 		contract, err := fastbridge.NewFastBridgeRef(rfqAddr, chainClient)
 		if err != nil {
-			return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
+			return nil, fmt.Errorf("could not create fast bridge contract at address %s: %w", contract.Address(), err)
 		}
 		startBlock, err := contract.DeployBlock(&bind.CallOpts{Context: ctx})
 		if err != nil {
-			return nil, fmt.Errorf("could not get deploy block: %w", err)
+			return nil, fmt.Errorf("could not get deploy block at address %s: %w", contract.Address(), err)
 		}
 		chainListener, err := listener.NewChainListener(chainClient, store, rfqAddr, uint64(startBlock.Int64()), metricHandler, listener.WithName("relayer"))
 		if err != nil {

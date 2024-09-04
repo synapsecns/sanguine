@@ -31,13 +31,13 @@ export function AmountInput({
     handleFromValueChange?.(event)
   }
 
-  const inputClassName = joinClassNames({
+  const inputClassNames = {
     unset: 'bg-transparent border-none p-0',
     layout: 'w-full',
     placeholder: 'placeholder:text-zinc-500 placeholder:dark:text-zinc-400',
     font: 'text-xl md:text-2xl font-medium',
     focus: 'focus:outline-none focus:ring-0 focus:border-none',
-  })
+  }
 
   return (
     <>
@@ -49,7 +49,7 @@ export function AmountInput({
           pattern={disabled ? '[0-9.]+' : '^[0-9]*[.,]?[0-9]*$'}
           disabled={disabled}
           readOnly={disabled}
-          className={inputClassName}
+          className={joinClassNames(inputClassNames)}
           placeholder="0.0000"
           onChange={handleInputChange}
           value={showValue}
