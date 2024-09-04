@@ -312,7 +312,10 @@
     "minutes": "minutae",
     "seconds": "secundae",
     "m remaining": "m remanent",
-    "s remaining": "s remanent"
+    "s remaining": "s remanent",
+    "Clear notification": "Effacere notificationem",
+    "Clear transaction": "Effacere transactionem",
+    "Contact Support (Discord)": "Lorem Ipsum (Discord)"
   },
   "Nav": {
     "Open menu": "Aperire Menu",

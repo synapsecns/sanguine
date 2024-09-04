@@ -10,6 +10,7 @@ const languages = [
   { code: 'en-US', name: 'English' },
   { code: 'fr', name: 'Français' },
   { code: 'lorem-ipsum', name: 'Lorem Ipsum' },
+  { code: 'jp', name: '日本語' },
 ]
 
 export const LanguageSelector = () => {

@@ -178,12 +178,16 @@ export const _Transaction = ({
               />
             )}
             <MenuItem
-              text="Contact Support (Discord)"
+              text={t('Contact Support (Discord)')}
               link="https://discord.gg/synapseprotocol"
             />
             {status !== 'pending' && (
               <MenuItem
-                text={isTxReverted ? 'Clear notification' : 'Clear transaction'}
+                text={
+                  isTxReverted
+                    ? t('Clear notification')
+                    : t('Clear transaction')
+                }
                 link={null}
                 onClick={handleClearTransaction}
               />

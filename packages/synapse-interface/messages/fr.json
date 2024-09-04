@@ -313,7 +313,10 @@
     "minutes": "minutes",
     "seconds": "secondes",
     "m remaining": "m restantes",
-    "s remaining": "s restantes"
+    "s remaining": "s restantes",
+    "Clear notification": "Effacer la notification",
+    "Clear transaction": "Effacer la transaction",
+    "Contact Support (Discord)": "Contactez le support (Discord)"
   },
   "Nav": {
     "Open menu": "Ouvrir le menu",

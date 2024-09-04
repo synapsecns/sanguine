@@ -312,7 +312,10 @@
     "minutes": "minutes",
     "seconds": "seconds",
     "m remaining": "m remaining",
-    "s remaining": "s remaining"
+    "s remaining": "s remaining",
+    "Clear notification": "Clear notification",
+    "Clear transactions": "Clear transactions",
+    "Contact Support (Discord)": "Contact Support (Discord)"
   },
   "Nav": {
     "Open menu": "Open menu",
