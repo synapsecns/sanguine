@@ -81,7 +81,7 @@ const PoolsPage = () => {
         <div className="flex-wrap justify-between mb-4 md:flex">
           <PageHeader
             title={t('Incentivized Pools')}
-            subtitle={t('Contributors are rewarded for balancing asset pools')}
+            subtitle={t('Contributors are rewarded')}
           />
         </div>
         <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">

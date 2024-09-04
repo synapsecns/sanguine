@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useTranslations } from 'next-intl'
 import { DEFAULT_WITHDRAW_QUOTE } from '@/slices/poolWithdrawSlice'
 import {
   usePoolDataState,
@@ -12,10 +13,11 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
+  const t = useTranslations('Pools.WithdrawButton')
   const { chain, isConnected: isConnectedInit } = useAccount()
   const { chains, switchChain } = useSwitchChain()
   const { openConnectModal } = useConnectModal()
-  const [isConnected, setIsConnected] = useState(false) // Initialize to false
+  const [isConnected, setIsConnected] = useState(false)
 
   useAccountEffect({
     onDisconnect() {
@@ -45,7 +47,7 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
 
   if (!isBalanceEnough && isValidQuote && isValidInput) {
     buttonProperties = {
-      label: 'Insufficient Balance',
+      label: t('insufficientBalance'),
       onClick: null,
     }
   } else if (isLoading) {
@@ -59,26 +61,28 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
     }
   } else if (!isConnected) {
     buttonProperties = {
-      label: `Connect Wallet to Bridge`,
+      label: t('connectWallet'),
       onClick: openConnectModal,
     }
   } else if (chain?.id !== pool.chainId) {
     buttonProperties = {
-      label: `Switch to ${chains.find((c) => c.id === pool.chainId).name}`,
+      label: t('switchChain', {
+        chainName: chains.find((c) => c.id === pool.chainId).name,
+      }),
       onClick: () => switchChain({ chainId: pool.chainId }),
-      pendingLabel: 'Switching chains',
+      pendingLabel: t('switchingChains'),
     }
   } else if (!isApproved && isValidQuote && isValidInput) {
     buttonProperties = {
       onClick: approveTxn,
-      label: `Approve Token`,
-      pendingLabel: 'Approving',
+      label: t('approveToken'),
+      pendingLabel: t('approving'),
     }
   } else {
     buttonProperties = {
       onClick: withdrawTxn,
-      label: `Withdraw`,
-      pendingLabel: 'Withdrawing...',
+      label: t('withdraw'),
+      pendingLabel: t('withdrawing'),
     }
   }
 

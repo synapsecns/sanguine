@@ -163,6 +163,7 @@
   },
   "Pools": {
     "Actions": "Actions",
+    "Approve": "Approve",
     "Back to Pool": "Back to Pool",
     "Back to Pools": "Back to Pools",
     "Switch to": "Switch to",
@@ -173,6 +174,7 @@
     "Withdraw": "Withdraw",
     "Stake": "Stake",
     "Staked": "Staked",
+    "Staking": "Staking",
     "Unstake": "Unstake",
     "Unstaked": "Unstaked",
     "Unstaking": "Unstaking",
@@ -204,7 +206,38 @@
     "Completed withdrawal": "Completed withdrawal",
     "Successfully approved on": "Successfully approved on",
     "Stake completed": "Stake completed",
-    "Liquidity added": "Liquidity added"
+    "Liquidity added": "Liquidity added",
+    "Your balances": "Your balances",
+    "DepositButton": {
+      "insufficientBalance": "Insufficient Balance",
+      "connectWallet": "Connect Wallet to Bridge",
+      "switchChain": "Switch to {chainName}",
+      "switchingChains": "Switching chains",
+      "approveTokens": "Approve Token(s)",
+      "approving": "Approving",
+      "deposit": "Deposit",
+      "depositing": "Depositing"
+    },
+    "WithdrawButton": {
+      "insufficientBalance": "Insufficient Balance",
+      "connectWallet": "Connect Wallet to Bridge",
+      "switchChain": "Switch to {chainName}",
+      "switchingChains": "Switching chains",
+      "approveToken": "Approve Token",
+      "approving": "Approving",
+      "withdraw": "Withdraw",
+      "withdrawing": "Withdrawing..."
+    },
+    "Other": {
+      "Bonus": "Bonus",
+      "Price impact": "Price impact",
+      "Currency Reserves": "Currency Reserves",
+      "Pool Info": "Pool Info ",
+      "Trading Fee": "Trading Fee",
+      "Virtual Price": "Virtual Price",
+      "Total Liquidity": "Total Liquidity",
+      "Total Liquidity USD": "Total Liquidity USD"
+    }
   },
   "Portfolio": {
     "Portfolio": "Portfolio",

@@ -163,6 +163,7 @@
   },
   "Pools": {
     "Actions": "Actiones",
+    "Approve": "Probandum",
     "Back to Pool": "Retro ad Piscinam",
     "Back to Pools": "Retro ad Piscinas",
     "Switch to": "Verti ad",
@@ -173,6 +174,7 @@
     "Withdraw": "Retractare",
     "Stake": "Ponere",
     "Staked": "Ponus",
+    "Staking": "Ponens",
     "Unstake": "Detrahere",
     "Unstaked": "Retractatus",
     "Unstaking": "Detrahens",
@@ -204,7 +206,38 @@
     "Completed withdrawal": "Retractio perfecta",
     "Successfully approved on": "Felix approbatus in",
     "Stake completed": "Ponus perfectus",
-    "Liquidity added": "Liquoritas addita"
+    "Liquidity added": "Liquoritas addita",
+    "Your balances": "Tua balanea",
+    "DepositButton": {
+      "insufficientBalance": "Lorem ipsum dolor",
+      "connectWallet": "Connectere crumenam ad pontem",
+      "switchChain": "Muta ad {chainName}",
+      "switchingChains": "Mutans catenas",
+      "approveTokens": "Approbare symbolum(a)",
+      "approving": "Approbans",
+      "deposit": "Deponere",
+      "depositing": "Deponens"
+    },
+    "WithdrawButton": {
+      "insufficientBalance": "Lorem ipsum dolor",
+      "connectWallet": "Connectere crumenam ad pontem",
+      "switchChain": "Muta ad {chainName}",
+      "switchingChains": "Mutans catenas",
+      "approveToken": "Approbare symbolum",
+      "approving": "Approbans",
+      "withdraw": "Retrahere",
+      "withdrawing": "Retrahens..."
+    },
+    "Other": {
+      "Bonus": "Bonus",
+      "Price impact": "Impetus Pretii",
+      "Currency Reserves": "Reservae Monetariae",
+      "Pool Info": "Piscinae Info",
+      "Trading Fee": "Trading Fee",
+      "Virtual Price": "Virtualis Pretium",
+      "Total Liquidity": "Liquidité totale",
+      "Total Liquidity USD": "Liquidité totale USD"
+    }
   },
   "Portfolio": {
     "Portfolio": "Portitio",

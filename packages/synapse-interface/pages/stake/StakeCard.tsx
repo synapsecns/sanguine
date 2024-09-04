@@ -136,7 +136,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         poolLabel={stakingPoolLabel}
         lpTokenBalance={lpTokenBalance}
       />
-      <InfoSectionCard title="Your balances">
+      <InfoSectionCard title={t('Your balances')}>
         <div className="flex items-center justify-between my-2">
           <div className="text-[#EEEDEF]">{t('Unstaked')}</div>
           <div className="text-white ">

@@ -163,6 +163,7 @@
   },
   "Pools": {
     "Actions": "Actions",
+    "Approve": "Approuver",
     "Back to Pool": "Retour au pool",
     "Back to Pools": "Retour aux pools",
     "Switch to": "Passer à",
@@ -173,6 +174,7 @@
     "Withdraw": "Retrait",
     "Stake": "Staker",
     "Staked": "Staké",
+    "Staking": "Staking",
     "Unstake": "Déstaker",
     "Unstaked": "Déstaké",
     "Unstaking": "Déstakage",
@@ -204,7 +206,38 @@
     "Completed withdrawal": "Retrait terminé",
     "Successfully approved on": "Approuvé avec succès sur",
     "Stake completed": "Stake terminé",
-    "Liquidity added": "Liquidité ajoutée"
+    "Liquidity added": "Liquidité ajoutée",
+    "Your balances": "Vos soldes",
+    "DepositButton": {
+      "insufficientBalance": "Solde insuffisant",
+      "connectWallet": "Connecter le portefeuille pour transférer",
+      "switchChain": "Passer à {chainName}",
+      "switchingChains": "Changement de chaîne en cours",
+      "approveTokens": "Approuver le(s) jeton(s)",
+      "approving": "Approbation en cours",
+      "deposit": "Déposer",
+      "depositing": "Dépôt en cours"
+    },
+    "WithdrawButton": {
+      "insufficientBalance": "Solde insuffisant",
+      "connectWallet": "Connecter le portefeuille pour transférer",
+      "switchChain": "Passer à {chainName}",
+      "switchingChains": "Changement de chaîne en cours",
+      "approveToken": "Approuver le jeton",
+      "approving": "Approbation en cours",
+      "withdraw": "Retirer",
+      "withdrawing": "Retrait en cours..."
+    },
+    "Other": {
+      "Bonus": "Bonus",
+      "Price impact": "Impact du prix",
+      "Currency Reserves": "Réserves monétaires",
+      "Pool Info": "Informations sur le pool",
+      "Trading Fee": "Frais de trading",
+      "Virtual Price": "Prix virtuel",
+      "Total Liquidity": "Liquidité totale",
+      "Total Liquidity USD": "Liquidité totale USD"
+    }
   },
   "Portfolio": {
     "Portfolio": "Portefeuille",
