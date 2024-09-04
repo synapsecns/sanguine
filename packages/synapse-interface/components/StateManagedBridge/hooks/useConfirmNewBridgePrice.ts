@@ -48,8 +48,8 @@ export const useConfirmNewBridgePrice = () => {
     if (!hasQuoteOutputChanged && !hasUserConfirmedChange) {
       quoteRef.current = previousQuote
       setHasQuoteOutputChanged(true)
-      setHasUserConfirmedChange(false)
     }
+    setHasUserConfirmedChange(false)
   }
 
   const handleUserAcceptChange = () => {
