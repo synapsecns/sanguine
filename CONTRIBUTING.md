@@ -2,6 +2,29 @@
 
 Contributions should roughly follow the [uber style guide](https://github.com/uber-go/guide/blob/master/style.md)
 
+# Submitting a PR
+
+## Submitting a PR
+
+When preparing to submit a pull request, there are a few key points to keep in mind to ensure a smooth review process and maintain the quality of our codebase.
+
+First and foremost, we encourage you to use the default PR template provided in the repository. This template is designed to capture all the necessary information about your changes, making it easier for reviewers to understand the context and purpose of your work.
+
+If your PR is related to a specific task in Notion, it's helpful to include the Notion ID in your PR title or description. For example, you might use a format like [SLT-143] at the beginning of your PR title. This allows us to easily track the relationship between tasks and code changes.
+
+![Example](./assets/notion-example.png)
+
+During the review process, you might notice comments about code coverage changes. While we generally aim to maintain or improve code coverage, don't be overly concerned if you see minor fluctuations. If the coverage changes aren't material to the core functionality you're modifying, it's usually fine to proceed.
+
+You'll likely encounter suggestions from CodeRabbit, our automated code review tool. While CodeRabbit can provide valuable insights, remember that it's an AI tool and may not always understand the full context of your changes. Use its suggestions as a starting point for improvement, but don't feel obligated to implement every recommendation it makes. Your judgment as a developer is crucial in determining which suggestions are truly beneficial.
+
+If your PR gets labeled with `needs-go-generate`, don't worry - this is an easy fix. Simply run `go generate ./...` in your terminal, commit the changes, and push. This will update any auto-generated code that might be out of sync.
+
+Similarly, if you see a `needs-yarn-lock` label, it means your changes have affected the project's dependencies. To resolve this, navigate to the root directory of the project and run `yarn`. This will update the yarn.lock file, ensuring that all developers are working with the same dependency versions.
+
+Remember, these guidelines are here to help streamline our development process and maintain consistency across the project. We appreciate your contributions and look forward to reviewing your PRs!
+
+
 <!-- todo: more-->
 
 ## Adding a new JS/TS Package
@@ -16,11 +39,13 @@ If you need to make a new JS/TS package, here are the steps to follow:
 - If the package is a library that you'd like to publish, simply set the `private` field in `package.json` to `false` and the `publishConfig` access to public.
 - If the package is a UI, please see [here](./.github/workflows/ui-preview.md) for instructions on configuring vercel. Make sure to update the paths there as well.
 
+# Go
+
 ## Linting
 
 Linting for go is used using [golangci-lint](https://golangci-lint.run/) at the latest released version. Please upgrade or install using your package manager. and run `make lint` from your desired module.
 
-# Adding a new Go Module
+## Adding a new Go Module
 
 If you need to make a new go module, here are the steps to follow:
 
@@ -286,6 +311,6 @@ func TestEventDBSuite(t *testing.T) {
 
 ```
 
-## Github Actions
+# Github Actions
 
 If you want to do a shallow clone, use `fetch-depth: 2` rather than `fetch-depth: 1`. This allows [some actions](https://docs.codecov.com/docs/environment-specific-requirements) (though not all of them) to determine the correct sha.
