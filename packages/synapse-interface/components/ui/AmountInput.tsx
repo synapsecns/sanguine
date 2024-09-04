@@ -58,8 +58,8 @@ export function AmountInput({
           minLength={1}
           maxLength={79}
           autoComplete="off"
+          thousandSeparator={true}
           allowNegative={false}
-          thousandSeparator
         />
       )}
     </>
