@@ -163,6 +163,9 @@
       "generalizedDescription": "Toute donnée arbitraire peut être envoyée à travers les chaînes, y compris les appels de contrat, les NFT, les instantanés, et plus encore"
     }
   },
+  "LanguageSelector": {
+    "Language": "Langue"
+  },
   "Pools": {
     "Actions": "Actions",
     "Approve": "Approuver",

@@ -163,6 +163,9 @@
       "generalizedDescription": "Any arbitrary data can be sent across chains including contract calls, NFTs, snapshots, and more"
     }
   },
+  "LanguageSelector": {
+    "Language": "Language"
+  },
   "Pools": {
     "Actions": "Actions",
     "Approve": "Approve",

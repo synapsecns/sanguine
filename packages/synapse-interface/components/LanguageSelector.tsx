@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { useTranslations } from 'next-intl'
+
 import { GlobeAltIcon } from '@heroicons/react/outline'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { useCloseOnEscape } from '@/utils/hooks/useCloseOnEscape'
@@ -12,6 +14,7 @@ const languages = [
 
 export const LanguageSelector = () => {
   const router = useRouter()
+  const t = useTranslations('LanguageSelector')
   const { pathname, asPath, query } = router
   const [isOpen, setIsOpen] = useState(false)
   const [currentLocale, setCurrentLocale] = useState(router.locale)
@@ -46,13 +49,14 @@ export const LanguageSelector = () => {
         <GlobeAltIcon className="w-6 h-6" />
       </button>
       {isOpen && (
-        <div className="absolute left-0 z-10 w-48 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+        <div className="absolute left-0 z-10 w-48 mt-2 bg-white rounded-sm ">
           <div
             className="py-1"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="options-menu"
           >
+            <div className="px-2 mb-2 text-black ">{t('Language')}</div>
             {languages.map((lang) => (
               <div
                 key={lang.code}

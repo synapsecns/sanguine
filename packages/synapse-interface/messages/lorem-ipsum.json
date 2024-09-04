@@ -163,6 +163,9 @@
       "generalizedDescription": "Quaecumque notitia arbitraria potest transmitti trans catenas, inter contractuum vocatas, NFTs, momenta, et plura"
     }
   },
+  "LanguageSelector": {
+    "Language": "Lingua"
+  },
   "Pools": {
     "Actions": "Actiones",
     "Approve": "Probandum",
