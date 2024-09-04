@@ -55,7 +55,9 @@
     "All sendable tokens": "Omnes mittendi signa",
     "All other tokens": "Omnia alia signa",
     "ReceiveWithEllipsis": "Accipe…",
-    "All receiveable tokens": "Omnia accipienda signa"
+    "All receiveable tokens": "Omnia accipienda signa",
+    "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Route ad pontis {debouncedFromValue} {fromToken} in {fromChainId} ad {toToken} in {toChainId} inventa est",
+    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Route ad pontis {debouncedFromValue} {fromToken} in {fromChainId} ad {toToken} in {toChainId} non inventa est"
   },
   "Completed": {
     "to": "ad",
@@ -236,7 +238,10 @@
       "Trading Fee": "Trading Fee",
       "Virtual Price": "Virtualis Pretium",
       "Total Liquidity": "Liquidité totale",
-      "Total Liquidity USD": "Liquidité totale USD"
+      "Total Liquidity USD": "Liquidité totale USD",
+      "Requesting approval": "Solicitando approbationem",
+      "Starting your deposit": "Iniciando depositum...",
+      "Starting your claim": "Iniciando praetensio..."
     }
   },
   "Portfolio": {
@@ -285,7 +290,10 @@
     "Switching chains": "Catenae vertentes",
     "Approve": "Probare",
     "Approving": "Probandum",
-    "Swapping": "Mutans"
+    "Swapping": "Mutans",
+    "Route found for swapping {value} {fromSymbol} on {chain} to {toSymbol}": "Route reperit pro mutatione {value} {fromSymbol} in {chain} ad {toSymbol}",
+    "Initiating swap from {fromSymbol} to {toSymbol} on {chain}": "Initiando mutationem de {fromSymbol} ad {toSymbol} in {chain}",
+    "Swapping {fromSymbol} on {chain} to {toSymbol}": "Mutans {fromSymbol} in {chain} ad {toSymbol}"
   },
   "Time": {
     "d": "d",

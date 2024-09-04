@@ -161,13 +161,31 @@ const StateManagedBridge = () => {
         toast.dismiss(quoteToastRef.current.id)
 
         if (fetchBridgeQuote.fulfilled.match(result)) {
-          const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+          const message = t(
+            'Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}',
+            {
+              debouncedFromValue: debouncedFromValue,
+              fromToken: fromToken?.symbol,
+              fromChainId: CHAINS_BY_ID[fromChainId]?.name,
+              toToken: toToken?.symbol,
+              toChainId: CHAINS_BY_ID[toChainId]?.name,
+            }
+          )
 
           quoteToastRef.current.id = toast(message, { duration: 3000 })
         }
 
         if (fetchBridgeQuote.rejected.match(result)) {
-          const message = result.payload as string
+          const message = t(
+            'No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}',
+            {
+              debouncedFromValue: debouncedFromValue,
+              fromToken: fromToken?.symbol,
+              fromChainId: CHAINS_BY_ID[fromChainId]?.name,
+              toToken: toToken?.symbol,
+              toChainId: CHAINS_BY_ID[toChainId]?.name,
+            }
+          )
 
           quoteToastRef.current.id = toast(message, { duration: 3000 })
         }

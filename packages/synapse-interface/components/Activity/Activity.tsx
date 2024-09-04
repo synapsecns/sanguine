@@ -61,7 +61,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     >
       {!viewingAddress && (
         <div className="text-secondary">
-          {t('Your pending and recent transactions will appear here.')}
+          {t('Your pending and recent transactions will appear here')}
         </div>
       )}
 

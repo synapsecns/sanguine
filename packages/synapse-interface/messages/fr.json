@@ -55,7 +55,9 @@
     "All sendable tokens": "Tous les jetons envoyables",
     "All other tokens": "Tous les autres jetons",
     "ReceiveWithEllipsis": "Recevoir…",
-    "All receiveable tokens": "Tous les jetons recevables"
+    "All receiveable tokens": "Tous les jetons recevables",
+    "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Route trouvée pour le transfert de {debouncedFromValue} {fromToken} sur {fromChainId} vers {toToken} sur {toChainId}",
+    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Aucune route trouvée pour le transfert de {debouncedFromValue} {fromToken} sur {fromChainId} vers {toToken} sur {toChainId}"
   },
   "Completed": {
     "to": "vers",
@@ -178,6 +180,7 @@
     "Unstake": "Déstaker",
     "Unstaked": "Déstaké",
     "Unstaking": "Déstakage",
+    "withdrawing": "Retrait...",
     "Insufficient balance": "Solde insuffisant",
     "Earned": "Gagné",
     "Claim": "Réclamer",
@@ -236,7 +239,10 @@
       "Trading Fee": "Frais de trading",
       "Virtual Price": "Prix virtuel",
       "Total Liquidity": "Liquidité totale",
-      "Total Liquidity USD": "Liquidité totale USD"
+      "Total Liquidity USD": "Liquidité totale USD",
+      "Requesting approval": "Demande d'approbation",
+      "Starting your deposit": "Début du dépôt...",
+      "Starting your claim": "Début de la réclamation..."
     }
   },
   "Portfolio": {
@@ -285,7 +291,10 @@
     "Switching chains": "Changement de chaînes",
     "Approve": "Approuver",
     "Approving": "Approbation en cours",
-    "Swapping": "Échange en cours"
+    "Swapping": "Échange en cours",
+    "Route found for swapping {value} {fromSymbol} on {chain} to {toSymbol}": "Route trouvée pour échanger {value} {fromSymbol} sur {chain} vers {toSymbol}",
+    "Initiating swap from {fromSymbol} to {toSymbol} on {chain}": "Initiation de l'échange de {fromSymbol} vers {toSymbol} sur {chain}",
+    "Swapping {fromSymbol} on {chain} to {toSymbol}": "Échange de {fromSymbol} sur {chain} vers {toSymbol}"
   },
   "Time": {
     "d": "j",

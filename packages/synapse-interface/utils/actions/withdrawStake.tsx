@@ -39,7 +39,7 @@ export const withdrawStake = async (
     const toastContent = (
       <div>
         <div>
-          <TranslatedText key="Pools" text="Withdrawal completed" />:
+          <TranslatedText namespace="Pools" id="Withdrawal completed" />:
         </div>
         <ExplorerToastLink
           transactionHash={txReceipt.transactionHash}

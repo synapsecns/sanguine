@@ -51,7 +51,11 @@ export const withdraw = async (
   let pendingPopup: any
   let successPopup: any
 
-  pendingPopup = toast(`Starting your withdrawal...`, {
+  const msg = (
+    <TranslatedText namespace="Pools.WithdrawButton" id="withdrawing" />
+  )
+
+  pendingPopup = toast(msg, {
     id: 'withdraw-in-progress-popup',
     duration: Infinity,
   })
@@ -99,7 +103,7 @@ export const withdraw = async (
       const successToastContent = (
         <div>
           <div>
-            <TranslatedText key="Pools" text="Completed withdrawal" />:
+            <TranslatedText namespace="Pools" id="Completed withdrawal" />:
           </div>
           <ExplorerToastLink
             transactionHash={spendTransaction.transactionHash}

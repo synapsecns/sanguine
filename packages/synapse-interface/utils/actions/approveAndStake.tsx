@@ -25,7 +25,11 @@ export const approve = async (
     return
   }
 
-  pendingPopup = toast(`Requesting approval on ${currentChainName}`, {
+  const msg = (
+    <TranslatedText namespace="Pools.Other" id="Requesting approval" />
+  )
+
+  pendingPopup = toast(msg, {
     id: 'approve-in-progress-popup',
     duration: Infinity,
   })
@@ -44,7 +48,7 @@ export const approve = async (
       const successToastContent = (
         <div>
           <div>
-            <TranslatedText key="Pools" text="Successfully approved on" />{' '}
+            <TranslatedText namespace="Pools" id="Successfully approved on" />{' '}
             {currentChainName}
           </div>
           <ExplorerToastLink
@@ -80,7 +84,11 @@ export const stake = async (
 
   const miniChefAddress = pool.miniChefAddress
 
-  pendingPopup = toast(`Starting your deposit...`, {
+  const msg = (
+    <TranslatedText namespace="Pools.Other" id="Starting your deposit" />
+  )
+
+  pendingPopup = toast(msg, {
     id: 'deposit-in-progress-popup',
     duration: Infinity,
   })
@@ -110,7 +118,7 @@ export const stake = async (
     const successToastContent = (
       <div>
         <div>
-          <TranslatedText key="Pools" text="Stake completed" />:
+          <TranslatedText namespace="Pools" id="Stake completed" />:
         </div>
         <ExplorerToastLink
           transactionHash={tx?.transactionHash}

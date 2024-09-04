@@ -17,7 +17,11 @@ export const approveToken = async (
   let pendingPopup: any
   let successPopup: any
 
-  pendingPopup = toast(`Requesting approval on ${currentChainName}`, {
+  const msg = (
+    <TranslatedText namespace="Pools.Other" id="Requesting approval" />
+  )
+
+  pendingPopup = toast(msg, {
     id: 'approve-in-progress-popup',
     duration: Infinity,
   })
@@ -50,7 +54,7 @@ export const approveToken = async (
       const successToastContent = (
         <div>
           <div>
-            <TranslatedText key="Pools" text="Successfully approved on" />{' '}
+            <TranslatedText namespace="Pools" id="Successfully approved on" />{' '}
             {currentChainName}
           </div>
           <ExplorerToastLink

@@ -1,7 +1,7 @@
 import { useTranslations } from 'use-intl'
 
-export const TranslatedText = ({ key, text }) => {
-  const t = useTranslations(key)
+export const TranslatedText = ({ namespace, id }) => {
+  const t = useTranslations(namespace)
 
-  return <>{t(text)}</>
+  return <>{t(id)}</>
 }

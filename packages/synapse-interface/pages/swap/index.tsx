@@ -198,7 +198,15 @@ const StateManagedSwap = () => {
 
         toast.dismiss(quoteToastRef.current.id)
 
-        const message = `Route found for swapping ${swapFromValue} ${swapFromToken.symbol} on ${CHAINS_BY_ID[swapChainId]?.name} to ${swapToToken.symbol}`
+        const message = `${t(
+          'Route found for swapping {value} {fromSymbol} on {chain} to {toSymbol}',
+          {
+            value: swapFromValue,
+            fromSymbol: swapFromToken.symbol,
+            chain: CHAINS_BY_ID[swapChainId]?.name,
+            toSymbol: swapToToken.symbol,
+          }
+        )}`
         console.log(message)
 
         quoteToastRef.current.id = toast(message, { duration: 3000 })
@@ -266,11 +274,20 @@ const StateManagedSwap = () => {
 
     dispatch(setIsWalletPending(true))
 
-    let pendingPopup: any
-    pendingPopup = toast(
-      `Initiating swap from ${swapFromToken.symbol} to ${swapToToken.symbol} on ${currentChainName}`,
-      { id: 'swap-in-progress-popup', duration: Infinity }
+    const msg = t(
+      'Initiating swap from {fromSymbol} to {toSymbol} on {chain}',
+      {
+        fromSymbol: swapFromToken.symbol,
+        toSymbol: swapToToken.symbol,
+        chain: currentChainName,
+      }
     )
+
+    let pendingPopup: any
+    pendingPopup = toast(msg, {
+      id: 'swap-in-progress-popup',
+      duration: Infinity,
+    })
     segmentAnalyticsEvent(
       `[Swap] initiates swap`,
       {
@@ -299,10 +316,16 @@ const StateManagedSwap = () => {
       const tx = await wallet.sendTransaction(payload)
 
       const originChainName = CHAINS_BY_ID[swapChainId]?.name
-      pendingPopup = toast(
-        `Swapping ${swapFromToken.symbol} on ${originChainName} to ${swapToToken.symbol}`,
-        { id: 'swap-in-progress-popup', duration: Infinity }
-      )
+
+      const msg = t('Swapping {fromSymbol} on {chain} to {toSymbol}', {
+        fromSymbol: swapFromToken?.symbol,
+        chain: originChainName,
+        toSymbol: swapToToken?.symbol,
+      })
+      pendingPopup = toast(msg, {
+        id: 'swap-in-progress-popup',
+        duration: Infinity,
+      })
 
       const transactionReceipt = await waitForTransactionReceipt(wagmiConfig, {
         hash: tx as Address,

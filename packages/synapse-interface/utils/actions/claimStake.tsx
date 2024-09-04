@@ -18,7 +18,11 @@ export const claimStake = async (
   let successPopup: any
   let miniChefAddress = pool.miniChefAddress
 
-  pendingPopup = toast(`Starting your claim...`, {
+  const msg = (
+    <TranslatedText namespace="Pools.Other" id="Starting your claim" />
+  )
+
+  pendingPopup = toast(msg, {
     id: 'claim-in-progress-popup',
     duration: Infinity,
   })
@@ -44,7 +48,7 @@ export const claimStake = async (
     const successToastContent = (
       <div>
         <div>
-          <TranslatedText key="Pools" text="Claim completed" />:
+          <TranslatedText namespace="Pools" id="Claim completed" />:
         </div>
         <ExplorerToastLink
           transactionHash={tx?.transactionHash}

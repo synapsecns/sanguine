@@ -55,7 +55,9 @@
     "All sendable tokens": "All sendable tokens",
     "All other tokens": "All other tokens",
     "ReceiveWithEllipsis": "Receive…",
-    "All receiveable tokens": "All receiveable tokens"
+    "All receiveable tokens": "All receiveable tokens",
+    "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}",
+    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}"
   },
   "Completed": {
     "to": "to",
@@ -236,7 +238,10 @@
       "Trading Fee": "Trading Fee",
       "Virtual Price": "Virtual Price",
       "Total Liquidity": "Total Liquidity",
-      "Total Liquidity USD": "Total Liquidity USD"
+      "Total Liquidity USD": "Total Liquidity USD",
+      "Requesting approval": "Requesting approval",
+      "Starting your deposit": "Starting your deposit...",
+      "Starting your claim": "Starting your claim..."
     }
   },
   "Portfolio": {
@@ -285,7 +290,10 @@
     "Switching chains": "Switching chains",
     "Approve": "Approve",
     "Approving": "Approving",
-    "Swapping": "Swapping"
+    "Swapping": "Swapping",
+    "Route found for swapping {value} {fromSymbol} on {chain} to {toSymbol}": "Route found for swapping {value} {fromSymbol} on {chain} to {toSymbol}",
+    "Initiating swap from {fromSymbol} to {toSymbol} on {chain}": "Initiating swap from {fromSymbol} to {toSymbol} on {chain}",
+    "Swapping {fromSymbol} on {chain} to {toSymbol}": "Swapping {fromSymbol} on {chain} to {toSymbol}"
   },
   "Time": {
     "d": "d",
