@@ -29,12 +29,20 @@ func NewOTLPMetricsHandler(buildInfo config.BuildInfo) Handler {
 
 func (n *otlpHandler) Start(ctx context.Context) (err error) {
 	// TODO: generalize this to allow for more than two exporters.
-	client, err := buildClientFromTransport(transportFromString(core.GetEnv(otlpTransportEnv, otlpTransportGRPC.String())))
+	client, err := buildClientFromTransport(
+		transportFromString(
+			core.GetEnv(otlpTransportEnv, otlpTransportGRPC.String()),
+		),
+	)
 	if err != nil {
 		return fmt.Errorf("could not create client: %w", err)
 	}
 
-	secondaryClient, err := buildClientFromTransport(transportFromString(core.GetEnv(otlpTransportEnvSecondary, otlpTransportHTTP.String())))
+	secondaryClient, err := buildClientFromTransport(
+		transportFromString(
+			core.GetEnv(otlpTransportEnvSecondary, otlpTransportGRPC.String()),
+		),
+	)
 	if err != nil {
 		return fmt.Errorf("could not create secondary client: %w", err)
 	}
