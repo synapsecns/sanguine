@@ -5,7 +5,7 @@ import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PersistGate } from 'redux-persist/integration/react'
-import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
+import { RainbowKitProvider, darkTheme, Locale } from '@rainbow-me/rainbowkit'
 import { store, persistor } from '@/store/store'
 import { WagmiProvider } from 'wagmi'
 import LogRocket from 'logrocket'
@@ -53,7 +53,10 @@ function App({ Component, pageProps }: AppProps) {
       >
         <WagmiProvider config={wagmiConfig}>
           <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider theme={darkTheme()}>
+            <RainbowKitProvider
+              theme={darkTheme()}
+              locale={router.locale as Locale}
+            >
               <SynapseProvider chains={supportedChains}>
                 <Provider store={store}>
                   <PersistGate loading={null} persistor={persistor}>
