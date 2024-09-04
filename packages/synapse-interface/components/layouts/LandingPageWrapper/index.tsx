@@ -31,6 +31,7 @@ import {
   useMaintenance,
 } from '@/components/Maintenance/Maintenance'
 import { AnnouncementBanner } from '@/components/Maintenance/components/AnnouncementBanner'
+import { LanguageSelector } from '@/components/LanguageSelector'
 
 const wrapperClassNames = {
   textColor: 'text-zinc-800 dark:text-zinc-200',
@@ -97,6 +98,7 @@ export function LandingNav() {
         </Popover.Group>
         <div className="hidden lg:flex h-fit">
           <div className="flex items-center space-x-2">
+            <LanguageSelector />
             <Wallet />
             <Popover className="relative">
               {({ open }) => (
