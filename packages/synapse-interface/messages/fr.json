@@ -29,7 +29,7 @@
     "Switching chains": "Changement de chaînes",
     "Approve {symbol}": "Approuver {symbol}",
     "Approving": "Approbation en cours",
-    "Bridging": "Transfert en cours",
+    "Bridging": "Pont en cours",
     "Max": "Max",
     "available": "disponible",
     "Available": "Disponible",
@@ -43,27 +43,30 @@
     "Powered by Synapse": "Propulsé par Synapse",
     "Will also receive": "Recevra également",
     "From": "De",
-    "To": "À",
+    "FromWithEllipsis": "De…",
+    "ToWithEllipsis": "Vers…",
+    "To": "Vers",
     "In": "Entrée",
     "Out": "Sortie",
     "Network": "Réseau",
-    "Select origin token": "Sélectionner le jeton d'origine"
+    "Select origin token": "Sélectionner le jeton d'origine",
+    "All chains": "Toutes les chaînes"
   },
   "Completed": {
-    "to": "à",
+    "to": "vers",
     "Today": "Aujourd'hui",
     "Completed": "Terminé"
   },
   "Destination": {
     "WarningMessage1": "Requis :",
     "WarningMessage2": "Vérifiez votre adresse de destination pour continuer.",
-    "WarningMessage3": "Ne pas",
-    "WarningMessage4": "envoyer des actifs à une adresse de dépositaire ou d'échange. Il pourrait être impossible de récupérer vos fonds."
+    "WarningMessage3": "N'envoyez pas",
+    "WarningMessage4": "d'actifs à une adresse de dépôt ou d'échange. Il pourrait être impossible de récupérer vos fonds."
   },
   "Pools": {
     "Actions": "Actions",
-    "Back to Pool": "Retour au pool",
-    "Back to Pools": "Retour aux pools",
+    "Back to Pool": "Retour au Pool",
+    "Back to Pools": "Retour aux Pools",
     "Switch to": "Passer à",
     "to interact with the": "pour interagir avec le",
     "pool": "pool",
@@ -74,12 +77,12 @@
     "Staked": "Staké",
     "Unstake": "Déstaker",
     "Unstaked": "Déstaké",
-    "Unstaking": "Déstakage en cours",
+    "Unstaking": "Déstakage",
     "Insufficient balance": "Solde insuffisant",
     "Earned": "Gagné",
     "Claim": "Réclamer",
-    "Claiming": "Réclamation en cours",
-    "Approving": "Approbation en cours",
+    "Claiming": "Réclamation",
+    "Approving": "Approbation",
     "You will receive": "Vous recevrez",
     "Withdraw Percentage": "Pourcentage de retrait",
     "Add Liquidity": "Ajouter de la liquidité",
@@ -92,30 +95,34 @@
     "Yearly APR": "APR annuel",
     "Yearly APY": "APY annuel",
     "Stake your LP Tokens": "Stakez vos jetons LP",
-    "Incentivized Pools": "Pools incitatives",
-    "Contributors are rewarded": "Les contributeurs sont récompensés pour l'équilibrage des pools d'actifs.",
-    "Unincentivized Pools": "Pools non incitatives",
+    "Incentivized Pools": "Pools incentivés",
+    "Contributors are rewarded": "Les contributeurs sont récompensés pour équilibrer les pools d'actifs.",
+    "Unincentivized Pools": "Pools non incentivés",
     "Pools without contributor rewards": "Pools sans récompenses pour les contributeurs.",
-    "Migrated Pools": "Pools migrées",
-    "Pools migrated to new reward contracts": "Pools migrées vers de nouveaux contrats de récompense."
+    "Migrated Pools": "Pools migrés",
+    "Pools migrated to new reward contracts": "Pools migrés vers de nouveaux contrats de récompense."
   },
   "Portfolio": {
     "Portfolio": "Portefeuille",
     "Loading assets": "Chargement des actifs",
     "Synapse is the most widely used, extensible, and secure cross-chain communications network": "Synapse est le réseau de communication inter-chaînes le plus utilisé, extensible et sécurisé.",
-    "Get route quotes in the Bridge panel, and connect your wallet when you are ready to submit a transaction": "Obtenez des devis de route dans le panneau Pont et connectez votre portefeuille lorsque vous êtes prêt à soumettre une transaction.",
+    "Get route quotes in the Bridge panel, and connect your wallet when you are ready to submit a transaction": "Obtenez des devis de route dans le panneau Bridge et connectez votre portefeuille lorsque vous êtes prêt à soumettre une transaction.",
     "Gas token": "Jeton de gaz",
     "Available": "Disponible",
     "This chain is not yet supported; New chain or token support can be discussed on": "Cette chaîne n'est pas encore prise en charge. Le support de nouvelles chaînes ou jetons peut être discuté sur",
     "or": "ou",
     "Discord": "Discord",
     "Twitter": "Twitter",
-    "Viewing": "Visualisation"
+    "Viewing": "Affichage",
+    "Tokens, chains": "Jetons, chaînes",
+    "Bridge txs": "Transactions de pont",
+    "Search": "Rechercher"
   },
   "Search": {
     "No other results found for": "Aucun autre résultat trouvé pour",
     "No results found for": "Aucun résultat trouvé pour",
-    "Want to see it supported on Synapse? Let us know!": "Vous voulez le voir pris en charge sur Synapse ? Faites-le nous savoir !"
+    "Want to see it supported on Synapse? Let us know!": "Vous voulez le voir pris en charge sur Synapse ? Faites-le nous savoir !",
+    "Find": "Trouver"
   },
   "Settings": {
     "Settings": "Paramètres",
@@ -140,7 +147,7 @@
     "Switch to": "Passer à",
     "Switching chains": "Changement de chaînes",
     "Approve": "Approuver",
-    "Approving": "Approbation en cours",
+    "Approving": "Approbation",
     "Swapping": "Échange en cours"
   },
   "Time": {
@@ -165,11 +172,11 @@
     "|": "|",
     "About": "À propos",
     "Bridge": "Pont",
-    "Swap": "Échanger",
+    "Swap": "Échange",
     "Pools": "Pools",
     "Stake": "Staker",
     "Explorer": "Explorateur",
-    "Interchain Network": "Réseau Interchaîne",
+    "Interchain Network": "Réseau inter-chaînes",
     "Solana Bridge": "Pont Solana",
     "Careers": "Carrières",
     "Documentation": "Documentation",
@@ -184,7 +191,7 @@
     "Support": "Support"
   },
   "ReturnToMonke": {
-    "Choose Synapse": "Choisir Synapse",
+    "Choose Synapse": "Choisissez Synapse",
     "Generate Synaptic Profile Picture": "Générer une photo de profil synaptique",
     "Drag and drop image here": "Glissez et déposez l'image ici",
     "Select different image?": "Sélectionner une image différente ?",
@@ -208,9 +215,9 @@
   },
   "Warning": {
     "Warning! The Harmony bridge has been exploited": "Attention ! Le pont Harmony a été exploité.",
-    "Do not bridge via Harmony unless you understand the risks involved": "Ne transférez pas via Harmony à moins de comprendre les risques encourus.",
+    "Do not bridge via Harmony unless you understand the risks involved": "Ne transférez pas via Harmony à moins de comprendre les risques impliqués.",
     "Warning! The Fantom bridge has been exploited": "Attention ! Le pont Fantom a été exploité.",
-    "Do not bridge via Fantom unless you understand the risks involved": "Ne transférez pas via Fantom à moins de comprendre les risques encourus.",
+    "Do not bridge via Fantom unless you understand the risks involved": "Ne transférez pas via Fantom à moins de comprendre les risques impliqués.",
     "Alert: Transactions to Dogechain are temporarily paused": "Alerte : Les transactions vers Dogechain sont temporairement suspendues.",
     "You may still bridge funds from Dogechain to any supported destination chain": "Vous pouvez toujours transférer des fonds de Dogechain vers toute chaîne de destination prise en charge."
   },

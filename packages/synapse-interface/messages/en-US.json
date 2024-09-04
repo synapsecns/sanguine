@@ -43,11 +43,14 @@
     "Powered by Synapse": "Powered by Synapse",
     "Will also receive": "Will also receive",
     "From": "From",
+    "FromWithEllipsis": "From…",
+    "ToWithEllipsis": "To…",
     "To": "To",
     "In": "In",
     "Out": "Out",
     "Network": "Network",
-    "Select origin token": "Select origin token"
+    "Select origin token": "Select origin token",
+    "All chains": "All chains"
   },
   "Completed": {
     "to": "to",
@@ -110,12 +113,16 @@
     "or": "or",
     "Discord": "Discord",
     "Twitter": "Twitter",
-    "Viewing": "Viewing"
+    "Viewing": "Viewing",
+    "Tokens, chains": "Tokens, chains",
+    "Bridge txs": "Bridge txs",
+    "Search": "Search"
   },
   "Search": {
     "No other results found for": "No other results found for",
     "No results found for": "No results found for",
-    "Want to see it supported on Synapse? Let us know!": "Want to see it supported on Synapse? Let us know!"
+    "Want to see it supported on Synapse? Let us know!": "Want to see it supported on Synapse? Let us know!",
+    "Find": "Find"
   },
   "Settings": {
     "Settings": "Settings",
