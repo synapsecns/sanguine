@@ -416,6 +416,7 @@ func (c *rebalanceManagerScroll) Execute(ctx context.Context, rebalance *Rebalan
 		OriginAmount:    rebalance.Amount,
 		OriginTokenAddr: rebalance.OriginMetadata.Addr,
 		Status:          reldb.RebalanceInitiated,
+		TokenName:       rebalance.OriginMetadata.Name,
 	}
 	err = c.db.StoreRebalance(ctx, rebalanceModel)
 	if err != nil {
