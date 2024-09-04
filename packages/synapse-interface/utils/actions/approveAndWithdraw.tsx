@@ -10,6 +10,7 @@ import { type Address } from 'viem'
 import { swapPoolRemoveLiquidity } from '@/actions/swapPoolRemoveLiquidity'
 import { swapPoolRemoveLiquidityOneToken } from '@/actions/swapPoolRemoveLiquidityOneToken'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { TranslatedText } from '@/components/ui/TranslatedText'
 
 export const approve = async (
   pool: Token,
@@ -97,7 +98,9 @@ export const withdraw = async (
 
       const successToastContent = (
         <div>
-          <div>Completed Withdrawal: </div>
+          <div>
+            <TranslatedText key="Pools" text="Completed withdrawal" />:
+          </div>
           <ExplorerToastLink
             transactionHash={spendTransaction.transactionHash}
             chainId={chainId}

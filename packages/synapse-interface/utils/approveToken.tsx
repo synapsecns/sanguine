@@ -5,6 +5,7 @@ import ExplorerToastLink from '@components/ExplorerToastLink'
 import { type Address, zeroAddress } from 'viem'
 import { approveErc20Token } from '@/actions/approveErc20Token'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { TranslatedText } from '@/components/ui/TranslatedText'
 
 export const approveToken = async (
   address: string,
@@ -48,7 +49,10 @@ export const approveToken = async (
       })
       const successToastContent = (
         <div>
-          <div>Successfully approved on {currentChainName}</div>
+          <div>
+            <TranslatedText key="Pools" text="Successfully approved on" />{' '}
+            {currentChainName}
+          </div>
           <ExplorerToastLink
             transactionHash={approveTx?.transactionHash ?? zeroAddress}
             chainId={chainId}

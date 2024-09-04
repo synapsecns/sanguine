@@ -5,10 +5,11 @@ import { txErrorHandler } from '@utils/txErrorHandler'
 import ExplorerToastLink from '@components/ExplorerToastLink'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Token } from '../types'
-import { TransactionReceipt, zeroAddress } from 'viem'
+import { zeroAddress } from 'viem'
 import { approveErc20Token } from '@/actions/approveErc20Token'
 import { stakeLpToken } from '@/actions/stakeLpToken'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { TranslatedText } from '@/components/ui/TranslatedText'
 
 export const approve = async (
   pool: Token,
@@ -42,7 +43,10 @@ export const approve = async (
 
       const successToastContent = (
         <div>
-          <div>Successfully approved on {currentChainName}</div>
+          <div>
+            <TranslatedText key="Pools" text="Successfully approved on" />{' '}
+            {currentChainName}
+          </div>
           <ExplorerToastLink
             transactionHash={txReceipt?.transactionHash ?? zeroAddress}
             chainId={chainId}
@@ -105,7 +109,9 @@ export const stake = async (
 
     const successToastContent = (
       <div>
-        <div>Stake Completed:</div>
+        <div>
+          <TranslatedText key="Pools" text="Stake completed" />:
+        </div>
         <ExplorerToastLink
           transactionHash={tx?.transactionHash}
           chainId={chainId}

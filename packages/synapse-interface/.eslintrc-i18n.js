@@ -1,3 +1,5 @@
+const { ignorePatterns } = require('./.eslintrc')
+
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
@@ -9,6 +11,11 @@ module.exports = {
     },
   },
   plugins: ['i18next'],
+  ignorePatterns: [
+    'pages/lifi/index.tsx',
+    'components/Maintenance/example/EcotoneForkUpgrade.tsx',
+    'pages/_app.tsx',
+  ],
   rules: {
     // Enable the i18next rule
     'i18next/no-literal-string': 'error',

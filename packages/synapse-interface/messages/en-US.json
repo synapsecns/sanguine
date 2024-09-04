@@ -105,7 +105,13 @@
     "Unincentivized Pools": "Unincentivized Pools",
     "Pools without contributor rewards": "Pools without contributor rewards.",
     "Migrated Pools": "Migrated Pools",
-    "Pools migrated to new reward contracts": "Pools migrated to new reward contracts."
+    "Pools migrated to new reward contracts": "Pools migrated to new reward contracts.",
+    "Withdrawal completed": "Withdrawal completed",
+    "Claim completed": "Claim completed",
+    "Completed withdrawal": "Completed withdrawal",
+    "Successfully approved on": "Successfully approved on",
+    "Stake completed": "Stake completed",
+    "Liquidity added": "Liquidity added"
   },
   "Portfolio": {
     "Portfolio": "Portfolio",

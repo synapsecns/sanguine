@@ -6,6 +6,7 @@ import { txErrorHandler } from '@utils/txErrorHandler'
 import { harvestLpPool } from '@/actions/harvestLpPool'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { Token } from '@types'
+import { TranslatedText } from '@/components/ui/TranslatedText'
 
 export const claimStake = async (
   chainId: number,
@@ -42,7 +43,9 @@ export const claimStake = async (
 
     const successToastContent = (
       <div>
-        <div>Claim Completed:</div>
+        <div>
+          <TranslatedText key="Pools" text="Claim completed" />:
+        </div>
         <ExplorerToastLink
           transactionHash={tx?.transactionHash}
           chainId={chainId}
