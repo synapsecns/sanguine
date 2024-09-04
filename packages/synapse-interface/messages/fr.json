@@ -50,7 +50,12 @@
     "Out": "Sortie",
     "Network": "Réseau",
     "Select origin token": "Sélectionner le jeton d'origine",
-    "All chains": "Toutes les chaînes"
+    "All chains": "Toutes les chaînes",
+    "SendWithEllipsis": "Envoyer…",
+    "All sendable tokens": "Tous les jetons envoyables",
+    "All other tokens": "Tous les autres jetons",
+    "ReceiveWithEllipsis": "Recevoir…",
+    "All receiveable tokens": "Tous les jetons recevables"
   },
   "Completed": {
     "to": "vers",

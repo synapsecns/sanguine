@@ -50,7 +50,12 @@
     "Out": "Out",
     "Network": "Network",
     "Select origin token": "Select origin token",
-    "All chains": "All chains"
+    "All chains": "All chains",
+    "SendWithEllipsis": "Send…",
+    "All sendable tokens": "All sendable tokens",
+    "All other tokens": "All other tokens",
+    "ReceiveWithEllipsis": "Receive…",
+    "All receiveable tokens": "All receiveable tokens"
   },
   "Completed": {
     "to": "to",

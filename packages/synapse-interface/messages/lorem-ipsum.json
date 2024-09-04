@@ -50,7 +50,12 @@
     "Out": "Exitus",
     "Network": "Rete",
     "Select origin token": "Elige symbolum originis",
-    "All chains": "Omnes catenae"
+    "All chains": "Omnes catenae",
+    "SendWithEllipsis": "Mitto…",
+    "All sendable tokens": "Omnia symbola mittenda",
+    "All other tokens": "Omnia alia symbola",
+    "ReceiveWithEllipsis": "Accipio…",
+    "All receiveable tokens": "Omnia symbola accipienda"
   },
   "Completed": {
     "to": "ad",
