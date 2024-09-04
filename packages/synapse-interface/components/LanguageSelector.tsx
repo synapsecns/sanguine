@@ -46,7 +46,9 @@ export const LanguageSelector = () => {
   return (
     <div className="relative" ref={dropdownRef}>
       <button onClick={toggleDropdown} className="flex items-center">
-        <GlobeAltIcon className="w-6 h-6" />
+        <GlobeAltIcon
+          className={`w-6 h-6 hover:opacity-80 ${isOpen && 'opacity-80'}`}
+        />
       </button>
       {isOpen && (
         <div className="absolute left-0 z-10 w-48 mt-2 bg-white rounded-sm ">
