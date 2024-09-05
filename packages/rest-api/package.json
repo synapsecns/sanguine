@@ -1,12 +1,13 @@
 {
   "name": "@synapsecns/rest-api",
-  "version": "1.0.71",
+  "version": "1.0.72",
   "private": "true",
   "engines": {
     "node": ">=18.17.0"
   },
   "scripts": {
     "build": "tsc",
+    "build:go": " ",
     "start": "node dist/app.js",
     "lint:fix": "eslint src/**/*.ts --fix",
     "lint:check": "eslint . --max-warnings=0",
@@ -19,7 +20,7 @@
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/units": "5.7.0",
-    "@synapsecns/sdk-router": "^0.11.0",
+    "@synapsecns/sdk-router": "^0.11.1",
     "bignumber": "^1.1.0",
     "ethers": "5.7.2",
     "express": "^4.18.2",

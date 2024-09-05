@@ -137,11 +137,11 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
     }
   }, [chain, swapChainId, isConnected, hasMounted])
 
-  const labelClassName = joinClassNames({
+  const labelClassNames = {
     space: 'block',
     textColor: 'text-xxs md:text-xs',
     cursor: 'cursor-default',
-  })
+  }
 
   return (
     <BridgeSectionContainer>
@@ -161,7 +161,10 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
           />
           <div className="flex">
             {hasMounted && isConnected && (
-              <label htmlFor="inputRow" className={labelClassName}>
+              <label
+                htmlFor="inputRow"
+                className={joinClassNames(labelClassNames)}
+              >
                 <span className="text-zinc-500 dark:text-zinc-400">
                   Available:{' '}
                 </span>

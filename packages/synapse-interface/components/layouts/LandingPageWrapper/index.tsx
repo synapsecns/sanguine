@@ -31,14 +31,14 @@ import {
 } from '@/components/Maintenance/Maintenance'
 import { AnnouncementBanner } from '@/components/Maintenance/components/AnnouncementBanner'
 
-const wrapperClassName = joinClassNames({
+const wrapperClassNames = {
   textColor: 'text-zinc-800 dark:text-zinc-200',
   font: 'tracking-wide',
   bgColor: 'bg-gradient-to-b',
   bgGradient: 'from-white to-[hsl(235deg_75%_96%)]',
   bgGradientDark: 'dark:from-black dark:to-[hsl(265deg_25%_7.5%)]',
   // bgFrame: 'w-screen h-screen overflow-scroll', // TODO: Enable once wrapperStyle is removed
-})
+}
 
 const TODO_REMOVE_wrapperStyle = {
   background:
@@ -52,7 +52,10 @@ const TODO_REMOVE_wrapperStyle = {
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div className="dark">
-      <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
+      <div
+        className={joinClassNames(wrapperClassNames)}
+        style={TODO_REMOVE_wrapperStyle}
+      >
         <AnnouncementBanner
           bannerId="2024-07-22-rfq"
           bannerContent="Synapse now supports Linea - bridge to & from in 10 seconds"
