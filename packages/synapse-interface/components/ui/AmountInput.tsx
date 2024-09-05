@@ -46,6 +46,7 @@ export function AmountInput({
         <LoadingDots className="opacity-50" />
       ) : (
         <NumericFormat
+          inputMode="numeric"
           getInputRef={inputRef}
           placeholder="0.0000"
           value={showValue}
