@@ -272,11 +272,13 @@ func (g *Guard) isFinalized(ctx context.Context, chainID int, txBlockNumber uint
 		return false, fmt.Errorf("could not get chain config for chain %d", chainID)
 	}
 	threshBlockNumber := txBlockNumber + chainCfg.Confirmations
+
+	//nolint:gosec
 	span.SetAttributes(
 		attribute.Int("chain_id", chainID),
-		attribute.Int64("current_block_number", int64(currentBlockNumber)),
-		attribute.Int64("tx_block_number", int64(txBlockNumber)),
-		attribute.Int64("confirmations", int64(chainCfg.Confirmations)),
+		attribute.Int("current_block_number", int(currentBlockNumber)),
+		attribute.Int("tx_block_number", int(txBlockNumber)),
+		attribute.Int("confirmations", int(chainCfg.Confirmations)),
 	)
 
 	return currentBlockNumber >= threshBlockNumber, nil
