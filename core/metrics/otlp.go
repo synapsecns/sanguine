@@ -134,6 +134,10 @@ const (
 )
 
 func buildClientFromTransport(transport otlpTransportType, url string) (otlptrace.Client, error) {
+	if url == "" {
+		return nil, fmt.Errorf("no url specified")
+	}
+
 	switch transport {
 	case otlpTransportHTTP:
 		return otlptracehttp.NewClient(otlptracehttp.WithEndpointURL(url)), nil
@@ -159,9 +163,12 @@ func transportFromString(transport string) otlpTransportType {
 }
 
 func getClient(transportEnv string) (otlptrace.Client, error) {
+	transport := transportFromString(core.GetEnv(transportEnv, otlpTransportHTTP.String()))
+	url := core.GetEnv(transportEnv, "")
+
 	return buildClientFromTransport(
-		transportFromString(core.GetEnv(transportEnv, otlpTransportGRPC.String())),
-		core.GetEnv(transportEnv, ""),
+		transport,
+		url,
 	)
 }
 
