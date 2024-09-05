@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useTranslations } from 'next-intl'
+import deepmerge from 'deepmerge'
 
 import Grid from '@tw/Grid'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
@@ -10,9 +11,13 @@ import StandardPageContainer from '@layouts/StandardPageContainer'
 import PfpGeneratorCard from './PfpGeneratorCard'
 
 export async function getStaticProps({ locale }) {
+  const userMessages = (await import(`../../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
   return {
     props: {
-      messages: (await import(`../../messages/${locale}.json`)).default,
+      messages,
     },
   }
 }

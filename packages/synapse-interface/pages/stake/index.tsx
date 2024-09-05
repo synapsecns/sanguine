@@ -5,6 +5,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
+import deepmerge from 'deepmerge'
 
 import { Token } from '@/utils/types'
 import { STAKABLE_TOKENS } from '@/constants/tokens'
@@ -16,9 +17,13 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { POOLS_PATH } from '@/constants/urls'
 
 export async function getStaticProps({ locale }) {
+  const userMessages = (await import(`../../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
   return {
     props: {
-      messages: (await import(`../../messages/${locale}.json`)).default,
+      messages,
     },
   }
 }

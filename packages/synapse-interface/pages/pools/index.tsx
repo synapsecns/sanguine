@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useTranslations } from 'next-intl'
+import deepmerge from 'deepmerge'
 
 import { DISPLAY_POOLS_BY_CHAIN } from '@constants/tokens'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
@@ -19,9 +20,13 @@ import PoolCards from './PoolCards'
 import * as CHAINS from '@/constants/chains/master'
 
 export async function getStaticProps({ locale }) {
+  const userMessages = (await import(`../../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
   return {
     props: {
-      messages: (await import(`../../messages/${locale}.json`)).default,
+      messages,
     },
   }
 }

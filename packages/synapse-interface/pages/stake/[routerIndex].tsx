@@ -2,6 +2,7 @@ import { useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
+import deepmerge from 'deepmerge'
 
 import StandardPageContainer from '@layouts/StandardPageContainer'
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
@@ -27,9 +28,13 @@ export async function getStaticPaths({ locales }) {
 }
 
 export async function getStaticProps({ params, locale }) {
+  const userMessages = (await import(`../../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
   return {
     props: {
-      messages: (await import(`../../messages/${locale}.json`)).default,
+      messages,
       routerIndex: params.routerIndex,
     },
   }

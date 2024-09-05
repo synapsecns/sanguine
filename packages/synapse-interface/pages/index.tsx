@@ -1,7 +1,9 @@
+import deepmerge from 'deepmerge'
+import ReactGA from 'react-ga'
+
 import StateManagedBridge from './state-managed-bridge'
 import { Portfolio } from '@/components/Portfolio/Portfolio'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import ReactGA from 'react-ga'
 import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsWithBridgeState'
 
 // TODO: someone should add this to the .env, disable if blank, etc.
@@ -10,13 +12,14 @@ import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsW
 const TRACKING_ID = 'G-BBC13LQXBD'
 ReactGA.initialize(TRACKING_ID)
 
-export async function getStaticProps(context) {
+export async function getStaticProps({ locale }) {
+  const userMessages = (await import(`../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
   return {
     props: {
-      // You can get the messages from anywhere you like. The recommended
-      // pattern is to put them in JSON files separated by locale and read
-      // the desired one based on the `locale` received from Next.js.
-      messages: (await import(`../messages/${context.locale}.json`)).default,
+      messages,
     },
   }
 }

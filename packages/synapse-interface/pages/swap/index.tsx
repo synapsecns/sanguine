@@ -2,6 +2,7 @@ import { useAccount } from 'wagmi'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
 import { useTranslations } from 'next-intl'
+import deepmerge from 'deepmerge'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import {
@@ -46,13 +47,16 @@ import { useWalletState } from '@/slices/wallet/hooks'
 import { setIsWalletPending } from '@/slices/wallet/reducer'
 
 export async function getStaticProps({ locale }) {
+  const userMessages = (await import(`../../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
   return {
     props: {
-      messages: (await import(`../../messages/${locale}.json`)).default,
+      messages,
     },
   }
 }
-
 const StateManagedSwap = () => {
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()

@@ -2,6 +2,8 @@ import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useAccount } from 'wagmi'
+import deepmerge from 'deepmerge'
+
 import { useAppDispatch } from '@/store/hooks'
 import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
@@ -33,9 +35,13 @@ export const getStaticPaths = async ({ locales }) => {
 }
 
 export async function getStaticProps({ params, locale }) {
+  const userMessages = (await import(`../../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
   return {
     props: {
-      messages: (await import(`../../messages/${locale}.json`)).default,
+      messages,
       poolId: params.poolId,
     },
   }

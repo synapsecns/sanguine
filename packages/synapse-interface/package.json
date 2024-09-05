@@ -48,6 +48,7 @@
     "@wagmi/connectors": "^5.0.0",
     "@wagmi/core": "^2.10.5",
     "babel-plugin-transform-bigint": "^1.0.32",
+    "deepmerge": "^4.3.1",
     "ethers": "5.7.2",
     "fuse.js": "^6.6.2",
     "graphql": "^16.7.1",
