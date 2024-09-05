@@ -50,6 +50,7 @@ export const BridgeTransactionButton = ({
   } = useBridgeState()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const {
+    hasSameSelectionsAsPreviousQuote,
     hasQuoteOutputChanged,
     hasUserConfirmedChange,
     handleUserAcceptChange,
@@ -58,6 +59,11 @@ export const BridgeTransactionButton = ({
   const { isWalletPending } = useWalletState()
   const { showDestinationWarning, isDestinationWarningAccepted } =
     useBridgeDisplayState()
+
+  console.log(
+    'hasSameSelectionsAsPreviousQuote: ',
+    hasSameSelectionsAsPreviousQuote
+  )
 
   const {
     hasValidInput,
@@ -101,6 +107,11 @@ export const BridgeTransactionButton = ({
   } else if (!fromToken) {
     buttonProperties = {
       label: `Please select an Origin token`,
+      onClick: null,
+    }
+  } else if (isLoading && hasSameSelectionsAsPreviousQuote) {
+    buttonProperties = {
+      label: 'Updating quote',
       onClick: null,
     }
   } else if (isLoading) {
