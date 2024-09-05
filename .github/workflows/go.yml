@@ -315,8 +315,8 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    needs: changes
-    if: ${{ (needs.changes.outputs.package_count_deps > 0 || needs.changes.outputs.golangci_changed == 'true') && (github.event_name != 'push' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
+    needs: [changes, "Check for GolangCI Changes"]
+    if: ${{ (needs.changes.outputs.package_count_deps > 0 || needs['Check For GolangCI Changes'].outputs.golangci_changed == 'true') && (github.event_name != 'push' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
     strategy:
       fail-fast: false
       max-parallel: 8
