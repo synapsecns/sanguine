@@ -60,11 +60,6 @@ export const BridgeTransactionButton = ({
   const { showDestinationWarning, isDestinationWarningAccepted } =
     useBridgeDisplayState()
 
-  console.log(
-    'hasSameSelectionsAsPreviousQuote: ',
-    hasSameSelectionsAsPreviousQuote
-  )
-
   const {
     hasValidInput,
     hasValidQuote,
