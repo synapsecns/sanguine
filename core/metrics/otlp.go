@@ -55,15 +55,13 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 	}
 
 	// create the multi-exporter with optional secondary exporter
-	var multiExporter tracesdk.SpanExporter
+	multiExporter := NewMultiExporter(exporter)
 	if secondaryClient != nil {
 		secondaryExporter, err := otlptrace.New(ctx, secondaryClient)
 		if err != nil {
 			return fmt.Errorf("failed to create secondary otlp exporter: %w", err)
 		}
-		multiExporter = NewMultiExporter(exporter, secondaryExporter)
-	} else {
-		multiExporter = NewMultiExporter(exporter)
+		multiExporter.AddExporter(secondaryExporter)
 	}
 
 	n.baseHandler = newBaseHandler(
@@ -133,6 +131,18 @@ const (
 	otlpTransportGRPC                              // grpc
 )
 
+// getClient creates a new OTLP client based on the transport type and url.
+func getClient(transportEnv string) (otlptrace.Client, error) {
+	transport := transportFromString(core.GetEnv(transportEnv, otlpTransportHTTP.String()))
+	url := core.GetEnv(transportEnv, "")
+
+	return buildClientFromTransport(
+		transport,
+		url,
+	)
+}
+
+// buildClientFromTransport creates a new OTLP client based on the transport type and url.
 func buildClientFromTransport(transport otlpTransportType, url string) (otlptrace.Client, error) {
 	if url == "" {
 		return nil, fmt.Errorf("no url specified")
@@ -160,16 +170,6 @@ func transportFromString(transport string) otlpTransportType {
 	// will be unknown since we use iota+1
 	// (see uber's go stye guide for details)
 	return otlpTransportType(0)
-}
-
-func getClient(transportEnv string) (otlptrace.Client, error) {
-	transport := transportFromString(core.GetEnv(transportEnv, otlpTransportHTTP.String()))
-	url := core.GetEnv(transportEnv, "")
-
-	return buildClientFromTransport(
-		transport,
-		url,
-	)
 }
 
 const (
