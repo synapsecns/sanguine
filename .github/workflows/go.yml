@@ -37,6 +37,8 @@ jobs:
       packages_nodeps: ${{ steps.filter_go.outputs.changed_modules }}
       package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
+      golangci_changed: ${{ steps.golangci_changed.outputs.any_changed }}
+      # New output for all packages
       all_packages: ${{ steps.filter_go.outputs.all_modules }}
     steps:
       - uses: actions/checkout@v4
