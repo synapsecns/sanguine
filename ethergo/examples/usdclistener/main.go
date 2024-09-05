@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/synapsecns/sanguine/ethergo/client"
 	listenerDB "github.com/synapsecns/sanguine/ethergo/listener/db"
-	"log"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -21,6 +22,7 @@ const (
 	contractAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" // Replace with the contract address you want to listen to
 	dbPath          = ":memory:"
 	initialBlock    = 0 // Replace with the block number you want to start listening from
+	startBlock      = 20612563
 )
 
 func main() {
@@ -46,7 +48,7 @@ func main() {
 		}
 
 		// pick a reasonable start block, will default to 0.
-		err = store.PutLatestBlock(context.Background(), 1, 20612563)
+		err = store.PutLatestBlock(context.Background(), 1, startBlock)
 		if err != nil {
 			log.Fatalf("Failed to put latest block): %v", err)
 		}
