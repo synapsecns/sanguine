@@ -1,17 +1,20 @@
 const fs = require('fs')
 const path = require('path')
 
-// Read the en-US.json file
+/*** 
+  This script compares /messages/{locale}.json files against en-US.json
+  and prints out key diffs.
+***/
+
 const enUSPath = path.join(__dirname, '../messages', 'en-US.json')
 const enUSContent = JSON.parse(fs.readFileSync(enUSPath, 'utf8'))
 
-// Get all JSON files in the messages directory
 const messagesDir = path.join(__dirname, '../messages')
 const files = fs
   .readdirSync(messagesDir)
   .filter((file) => file.endsWith('.json') && file !== 'en-US.json')
 
-function compareKeys(obj1, obj2, path = '') {
+const compareKeys = (obj1, obj2, path = '') => {
   const differences = []
 
   for (const key in obj1) {
