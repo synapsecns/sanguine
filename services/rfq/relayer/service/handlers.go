@@ -20,7 +20,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-var maxRPCRetryTime = 30 * time.Second
+var (
+	maxTotalTime    = 15 * time.Second
+	maxRPCRetryTime = 30 * time.Second
+)
 
 // handleBridgeRequestedLog handles the BridgeRequestedLog event.
 // Step 1: Seen
@@ -448,7 +451,7 @@ func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request r
 			return fmt.Errorf("could not get transaction receipt: %w", err)
 		}
 		return nil
-	}, retry.WithMaxTotalTime(15*time.Second))
+	}, retry.WithMaxTotalTime(maxTotalTime))
 	if err != nil {
 		return blockNumber, fmt.Errorf("could not get receipt: %w", err)
 	}

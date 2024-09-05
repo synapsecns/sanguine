@@ -61,13 +61,15 @@ func EIP191Auth(c *gin.Context, deadline int64) (accountRecovered common.Address
 	// Ethereum signatures commonly use v values of 27 or 28 for EIP-191.
 	// Some libraries may return v as 0 or 1, so we need to handle both cases. crypto.SigToPub expects 0/1
 	switch signature[vIndex] {
+	//nolint: mnd
 	case 27, 28:
 		signature[vIndex] -= 27 // Normalize to 0 or 1 for crypto.SigToPub
+	//nolint: mnd
 	case 0, 1:
 		// do nothing, already normalized
 	default:
 		err = fmt.Errorf("unrecognized recovery ID value - expected 0, 1, 27, or 28")
-		c.JSON(400, gin.H{"msg": err})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
 		return common.Address{}, err
 	}
 
