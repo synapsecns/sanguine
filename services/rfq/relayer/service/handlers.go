@@ -411,6 +411,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 		return fmt.Errorf("could not get prove confirmations: %w", err)
 	}
 
+	//nolint:gosec
 	span.SetAttributes(
 		attribute.Int("current_block_number", int(currentBlockNumber)),
 		attribute.Int("relay_block_number", int(relayBlockNumber)),
