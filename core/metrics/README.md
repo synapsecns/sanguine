@@ -12,8 +12,13 @@ There's also a `NAME_PREFIX` environment variable that will prefix all the metri
 
 ## OTLP
 
-We do our best to support enviornment variables specified in the [Otel Spec](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/) and have added a few of our own. Key ones to note are:
+We do our best to support enviornment variables specified in the [Otel Spec](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/) and have added a few of our own. This was to allow for multiple exporter backends for traces, as otel clients only allow for one URL. The relevant multi exporter code is in `multiexporter.go`, and simply wraps multiple otel clients.
 
+The additional environment variables to note are:
+| Enviornment Variable                     | Description                               | Default |
+|------------------------------------------|-------------------------------------------|---------|
+| `OTEL_EXPORTER_OTLP_TRANSPORT_PRIMARY`   | Primary exporter URL to send traces to.   | `true`  |
+| `OTEL_EXPORTER_OTLP_TRANSPORT_SECONDARY` | Secondary exporter URL to send traces to. | `8080`  |
 
 ## Jaeger
 

@@ -28,25 +28,25 @@ func NewOTLPMetricsHandler(buildInfo config.BuildInfo) Handler {
 }
 
 func (n *otlpHandler) Start(ctx context.Context) (err error) {
-	// TODO: generalize this to allow for more than two exporters.
-	client, err := buildClientFromTransport(
-		transportFromString(
-			core.GetEnv(otlpTransportEnv, otlpTransportGRPC.String()),
-		),
-		core.GetEnv(otlpTransportEnv, "localhost:4317"),
-	)
-	if err != nil {
-		return fmt.Errorf("could not create client: %w", err)
-	}
+	isDefaultConfig := core.GetEnv(otlpTransportEnvDefault, "") != ""
 
-	secondaryClient, err := buildClientFromTransport(
-		transportFromString(
-			core.GetEnv(otlpTransportEnvSecondary, otlpTransportGRPC.String()),
-		),
-		core.GetEnv(otlpTransportEnvSecondary, "localhost:4317"),
-	)
-	if err != nil {
-		return fmt.Errorf("could not create secondary client: %w", err)
+	var client, secondaryClient otlptrace.Client
+	if isDefaultConfig {
+		client, err = getClient(otlpTransportEnvDefault)
+		if err != nil {
+			return fmt.Errorf("could not create default client: %w", err)
+		}
+	} else {
+		// instantiate both the primary and secondary clients
+		client, err = getClient(otlpTransportEnvPrimary)
+		if err != nil {
+			return fmt.Errorf("could not create primary client: %w", err)
+		}
+
+		secondaryClient, err = getClient(otlpTransportEnvSecondary)
+		if err != nil {
+			return fmt.Errorf("could not create secondary client: %w", err)
+		}
 	}
 
 	exporter, err := otlptrace.New(ctx, client)
@@ -54,12 +54,17 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 		return fmt.Errorf("failed to create otlp exporter: %w", err)
 	}
 
-	secondaryExporter, err := otlptrace.New(ctx, secondaryClient)
-	if err != nil {
-		return fmt.Errorf("failed to create secondary otlp exporter: %w", err)
+	// create the multi-exporter with optional secondary exporter
+	var multiExporter tracesdk.SpanExporter
+	if secondaryClient != nil {
+		secondaryExporter, err := otlptrace.New(ctx, secondaryClient)
+		if err != nil {
+			return fmt.Errorf("failed to create secondary otlp exporter: %w", err)
+		}
+		multiExporter = NewMultiExporter(exporter, secondaryExporter)
+	} else {
+		multiExporter = NewMultiExporter(exporter)
 	}
-
-	multiExporter := NewMultiExporter(exporter, secondaryExporter)
 
 	n.baseHandler = newBaseHandler(
 		n.buildInfo,
@@ -115,7 +120,8 @@ func handleShutdown(ctx context.Context, provider *tracesdk.TracerProvider) {
 }
 
 const (
-	otlpTransportEnv          = "OTEL_EXPORTER_OTLP_TRANSPORT_PRIMARY"
+	otlpTransportEnvDefault   = "OTEL_EXPORTER_OTLP_TRANSPORT"
+	otlpTransportEnvPrimary   = "OTEL_EXPORTER_OTLP_TRANSPORT_PRIMARY"
 	otlpTransportEnvSecondary = "OTEL_EXPORTER_OTLP_TRANSPORT_SECONDARY"
 )
 
@@ -150,6 +156,13 @@ func transportFromString(transport string) otlpTransportType {
 	// will be unknown since we use iota+1
 	// (see uber's go stye guide for details)
 	return otlpTransportType(0)
+}
+
+func getClient(transportEnv string) (otlptrace.Client, error) {
+	return buildClientFromTransport(
+		transportFromString(core.GetEnv(transportEnv, otlpTransportGRPC.String())),
+		core.GetEnv(transportEnv, ""),
+	)
 }
 
 const (
