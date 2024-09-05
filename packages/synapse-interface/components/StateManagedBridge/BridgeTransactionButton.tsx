@@ -109,6 +109,11 @@ export const BridgeTransactionButton = ({
       label: `Please select an Origin token`,
       onClick: null,
     }
+  } else if (isConnected && !hasSufficientBalance) {
+    buttonProperties = {
+      label: 'Insufficient balance',
+      onClick: null,
+    }
   } else if (isLoading && hasSameSelectionsAsPreviousQuote) {
     buttonProperties = {
       label: 'Updating quote',
@@ -159,11 +164,6 @@ export const BridgeTransactionButton = ({
   ) {
     buttonProperties = {
       label: 'Invalid bridge quote',
-      onClick: null,
-    }
-  } else if (!isLoading && isConnected && !hasSufficientBalance) {
-    buttonProperties = {
-      label: 'Insufficient balance',
       onClick: null,
     }
   } else if (destinationAddress && !isAddress(destinationAddress)) {
