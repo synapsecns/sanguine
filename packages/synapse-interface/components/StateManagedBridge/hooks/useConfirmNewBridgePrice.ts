@@ -35,6 +35,11 @@ export const useConfirmNewBridgePrice = () => {
     [previousBridgeQuote, createBridgeSelections]
   )
 
+  const hasSameSelectionsAsPreviousQuote = useMemo(
+    () => currentBridgeQuoteSelections === previousBridgeQuoteSelections,
+    [currentBridgeQuoteSelections, previousBridgeQuoteSelections]
+  )
+
   const calculateOutputRelativeDifference = useCallback((quoteA, quoteB) => {
     if (!quoteA?.outputAmountString || !quoteB?.outputAmountString) return null
 
@@ -48,8 +53,8 @@ export const useConfirmNewBridgePrice = () => {
     if (!hasQuoteOutputChanged && !hasUserConfirmedChange) {
       quoteRef.current = previousQuote
       setHasQuoteOutputChanged(true)
-      setHasUserConfirmedChange(false)
     }
+    setHasUserConfirmedChange(false)
   }
 
   const handleUserAcceptChange = () => {
@@ -110,6 +115,7 @@ export const useConfirmNewBridgePrice = () => {
   ])
 
   return {
+    hasSameSelectionsAsPreviousQuote,
     hasQuoteOutputChanged,
     hasUserConfirmedChange,
     handleUserAcceptChange,
