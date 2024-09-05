@@ -164,7 +164,7 @@ export const Wallet = () => {
         }}
       </ConnectButton.Custom>
     )
-  }, [connectedAddress, currentChain, walletId])
+  }, [connectedAddress, currentChain, walletId, t])
 
   return mounted && render
 }
