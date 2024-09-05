@@ -72,7 +72,7 @@
   },
   "FauxBridge": {
     "▼": "▼",
-    "Supported Wallets": "Wallets compatibles",
+    "Supported wallets": "Wallets compatibles",
     "40,668 ETH": "40,668 ETH",
     "Fantom": "Fantom",
     "Ethereum": "Ethereum",
@@ -251,7 +251,7 @@
     "Portfolio": "Portafolio",
     "Loading assets": "Cargando activos",
     "Synapse is the most widely used, extensible, and secure cross-chain communications network": "Synapse es la red de comunicaciones entre cadenas más utilizada, extensible y segura.",
-    "Get route quotes in the Bridge panel, and connect your Wallet when you are ready to submit a transaction": "Obtén cotizaciones de rutas en el panel del Puente y conecta tu Wallet cuando estés listo para enviar una transacción.",
+    "Get route quotes in the Bridge panel, and connect your wallet when you are ready to submit a transaction": "Obtén cotizaciones de rutas en el panel del Puente y conecta tu Wallet cuando estés listo para enviar una transacción.",
     "Gas token": "Token de gasolina",
     "Available": "Disponible",
     "This chain is not yet supported; New chain or token support can be discussed on": "Esta cadena aún no es compatible. El soporte para nuevas cadenas o tokens se puede discutir en",
@@ -314,7 +314,7 @@
     "m remaining": "m restantes",
     "s remaining": "s restantes",
     "Clear notification": "Borrar notificación",
-    "Clear transactions": "Borrar transacciones",
+    "Clear transaction": "Borrar transacciones",
     "Contact Support (Discord)": "Contactar Soporte (Discord)"
   },
   "Nav": {

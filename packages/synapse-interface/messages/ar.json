@@ -285,7 +285,7 @@
     "Slippage": "الانزلاق",
     "Swap paused": "التبديل متوقف مؤقتًا",
     "Please select Origin network": "يرجى اختيار شبكة المصدر",
-    "Swaps are not available not this network": "المقايضات غير متاحة على هذه الشبكة",
+    "Swaps are not available on this network": "المقايضات غير متاحة على هذه الشبكة",
     "Please select token": "يرجى اختيار الرمز",
     "Connect Wallet to Swap": "اتصل بالمحفظة للمبادلة",
     "Insufficient balance": "رصيد غير كافٍ",
@@ -314,7 +314,7 @@
     "m remaining": "م متبقية",
     "s remaining": "ث متبقية",
     "Clear notification": "مسح الإشعار",
-    "Clear transactions": "مسح المعاملات",
+    "Clear transaction": "مسح المعاملات",
     "Contact Support (Discord)": "اتصل بالدعم (ديسكورد)"
   },
   "Nav": {

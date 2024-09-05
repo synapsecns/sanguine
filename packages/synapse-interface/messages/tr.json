@@ -285,7 +285,7 @@
     "Slippage": "Kayma",
     "Swap paused": "Takas duraklatıldı",
     "Please select Origin network": "Lütfen Kaynak ağı seçin",
-    "Swaps are not available not this network": "Bu ağda takaslar mevcut değil",
+    "Swaps are not available on this network": "Bu ağda takaslar mevcut değil",
     "Please select token": "Lütfen token seçin",
     "Connect Wallet to Swap": "Takas için Cüzdanı Bağla",
     "Insufficient balance": "Yetersiz bakiye",
@@ -314,7 +314,7 @@
     "m remaining": "dk kaldı",
     "s remaining": "sn kaldı",
     "Clear notification": "Bildirimi temizle",
-    "Clear transactions": "İşlemleri temizle",
+    "Clear transaction": "İşlemleri temizle",
     "Contact Support (Discord)": "Destek ile İletişime Geç (Discord)"
   },
   "Nav": {

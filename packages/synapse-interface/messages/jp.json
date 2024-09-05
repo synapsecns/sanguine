@@ -285,7 +285,7 @@
     "Slippage": "スリッページ",
     "Swap paused": "スワップ一時停止中",
     "Please select Origin network": "オリジンネットワークを選択してください",
-    "Swaps are not available not this network": "このネットワークではスワップは利用できません",
+    "Swaps are not available on this network": "このネットワークではスワップは利用できません",
     "Please select token": "トークンを選択してください",
     "Connect Wallet to Swap": "ウォレットを接続してスワップ",
     "Insufficient balance": "残高不足",

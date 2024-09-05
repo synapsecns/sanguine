@@ -285,7 +285,7 @@
     "Slippage": "滑点",
     "Swap paused": "交换已暂停",
     "Please select Origin network": "请选择来源网络",
-    "Swaps are not available not this network": "此网络不支持交换",
+    "Swaps are not available on this network": "此网络不支持交换",
     "Please select token": "请选择代币",
     "Connect Wallet to Swap": "连接钱包以交换",
     "Insufficient balance": "余额不足",
@@ -314,7 +314,7 @@
     "m remaining": "分钟剩余",
     "s remaining": "秒剩余",
     "Clear notification": "清除通知",
-    "Clear transactions": "清除交易",
+    "Clear transaction": "清除交易",
     "Contact Support (Discord)": "联系支持（Discord）"
   },
   "Nav": {

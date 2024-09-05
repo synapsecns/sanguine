@@ -285,7 +285,7 @@
     "Slippage": "Slippage",
     "Swap paused": "Swap paused",
     "Please select Origin network": "Please select Origin network",
-    "Swaps are not available not this network": "Swaps are not available not this network",
+    "Swaps are not available on this network": "Swaps are not available on this network",
     "Please select token": "Please select token",
     "Connect Wallet to Swap": "Connect Wallet to Swap",
     "Insufficient balance": "Insufficient balance",
@@ -314,7 +314,7 @@
     "m remaining": "m remaining",
     "s remaining": "s remaining",
     "Clear notification": "Clear notification",
-    "Clear transactions": "Clear transactions",
+    "Clear transaction": "Clear transaction",
     "Contact Support (Discord)": "Contact Support (Discord)"
   },
   "Nav": {
