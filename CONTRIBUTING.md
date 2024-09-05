@@ -4,8 +4,6 @@ Contributions should roughly follow the [uber style guide](https://github.com/ub
 
 # Submitting a PR
 
-## Submitting a PR
-
 When preparing to submit a pull request, there are a few key points to keep in mind to ensure a smooth review process and maintain the quality of our codebase.
 
 First and foremost, we encourage you to use the default PR template provided in the repository. This template is designed to capture all the necessary information about your changes, making it easier for reviewers to understand the context and purpose of your work.
@@ -23,6 +21,36 @@ If your PR gets labeled with `needs-go-generate`, don't worry - this is an easy 
 Similarly, if you see a `needs-yarn-lock` label, it means your changes have affected the project's dependencies. To resolve this, navigate to the root directory of the project and run `yarn`. This will update the yarn.lock file, ensuring that all developers are working with the same dependency versions.
 
 Remember, these guidelines are here to help streamline our development process and maintain consistency across the project. We appreciate your contributions and look forward to reviewing your PRs!
+
+
+
+## Carefully Reviewing PRs
+
+Before merging a pull request, it's crucial to carefully review the changes. Here are some key points to consider:
+
+1. Code quality: Ensure the code follows our style guide and best practices.
+2. Functionality: Verify that the changes work as intended and don't introduce new bugs.
+3. Tests: Check that appropriate tests have been added or updated.
+4. Documentation: Confirm that any necessary documentation updates have been made.
+5. Performance: Consider the impact on performance, especially for critical paths.
+
+Take your time during the review process. It's better to have a thorough review than to rush and potentially introduce issues.
+
+## Using Squash and Merge
+
+When it's time to merge a PR, we prefer using the "Squash and Merge" option instead of rebasing. This approach combines all commits from the feature branch into a single commit in the main branch, which helps keep our commit history clean and easier to navigate.
+
+Here's how to use the "Squash and Merge" option:
+
+1. Once the PR is approved and ready to merge, click on the "Squash and merge" button in the GitHub interface.
+2. Review the commit message. It will be pre-filled with the PR title and description, but you can edit it if needed.
+3. Click "Confirm squash and merge".
+
+![Squash and Merge Example](./assets/merge-example.png)
+
+By using "Squash and Merge", we maintain a linear and clean history in our main branch, making it easier to understand the progression of our project and to revert changes if necessary.
+
+
 
 
 <!-- todo: more-->
