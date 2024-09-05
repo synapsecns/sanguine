@@ -402,7 +402,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 		return fmt.Errorf("could not get relay block number: %w", err)
 	}
 
-	currentBlockNumber := q.Origin.LatestBlock()
+	currentBlockNumber := q.Dest.LatestBlock()
 	proveConfirmations, err := q.cfg.GetFinalityConfirmations(int(q.Dest.ChainID))
 	if err != nil {
 		return fmt.Errorf("could not get prove confirmations: %w", err)
