@@ -33,6 +33,7 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 		transportFromString(
 			core.GetEnv(otlpTransportEnv, otlpTransportGRPC.String()),
 		),
+		core.GetEnv(otlpTransportEnv, "localhost:4317"),
 	)
 	if err != nil {
 		return fmt.Errorf("could not create client: %w", err)
@@ -42,6 +43,7 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 		transportFromString(
 			core.GetEnv(otlpTransportEnvSecondary, otlpTransportGRPC.String()),
 		),
+		core.GetEnv(otlpTransportEnvSecondary, "localhost:4317"),
 	)
 	if err != nil {
 		return fmt.Errorf("could not create secondary client: %w", err)
@@ -113,7 +115,7 @@ func handleShutdown(ctx context.Context, provider *tracesdk.TracerProvider) {
 }
 
 const (
-	otlpTransportEnv          = "OTEL_EXPORTER_OTLP_TRANSPORT"
+	otlpTransportEnv          = "OTEL_EXPORTER_OTLP_TRANSPORT_PRIMARY"
 	otlpTransportEnvSecondary = "OTEL_EXPORTER_OTLP_TRANSPORT_SECONDARY"
 )
 
@@ -125,12 +127,12 @@ const (
 	otlpTransportGRPC                              // grpc
 )
 
-func buildClientFromTransport(transport otlpTransportType) (otlptrace.Client, error) {
+func buildClientFromTransport(transport otlpTransportType, url string) (otlptrace.Client, error) {
 	switch transport {
 	case otlpTransportHTTP:
-		return otlptracehttp.NewClient(), nil
+		return otlptracehttp.NewClient(otlptracehttp.WithEndpointURL(url)), nil
 	case otlpTransportGRPC:
-		return otlptracegrpc.NewClient(), nil
+		return otlptracegrpc.NewClient(otlptracegrpc.WithEndpointURL(url)), nil
 	default:
 		return nil, fmt.Errorf("unknown transport type: %s", transport.String())
 	}
