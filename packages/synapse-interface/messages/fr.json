@@ -11,17 +11,17 @@
     "Selected": "Sélectionné"
   },
   "Bridge": {
-    "Bridge": "Pont",
+    "Bridge": "Bridge",
     "Send your assets across chains": "Envoyez vos actifs à travers les chaînes.",
-    "Bridge paused": "Pont en pause",
+    "Bridge paused": "Bridge en pause",
     "Please select Origin Network": "Veuillez sélectionner le réseau d'origine",
     "Please select Destination network": "Veuillez sélectionner le réseau de destination",
     "Please select an Origin token": "Veuillez sélectionner un jeton d'origine",
-    "Bridge {symbol}": "Pont {symbol}",
-    "Connect Wallet to Bridge": "Connecter le portefeuille au pont",
+    "Bridge {symbol}": "Bridge {symbol}",
+    "Connect Wallet to Bridge": "Connecter le portefeuille au bridge",
     "Amount must be greater than fee": "Le montant doit être supérieur aux frais",
-    "Error in bridge quote": "Erreur dans la citation du pont",
-    "Invalid bridge quote": "Citation de pont invalide",
+    "Error in bridge quote": "Erreur dans la citation du bridge",
+    "Invalid bridge quote": "Citation de bridge invalide",
     "Insufficient balance": "Solde insuffisant",
     "Invalid Destination address": "Adresse de destination invalide",
     "Confirm destination address": "Confirmer l'adresse de destination",
@@ -78,14 +78,14 @@
     "Ethereum": "Ethereum",
     "Jan 29, 2022 - #1": "29 jan. 2022 - #1",
     "Max": "Max",
-    "Enter Bridge": "Entrer dans le pont",
-    "Bridge": "Pont"
+    "Enter Bridge": "Entrer dans le bridge",
+    "Bridge": "Bridge"
   },
   "Landing": {
     "BridgeSection": {
-      "Powering": "Alimenter le pont le plus populaire",
-      "Synapse Bridge": "Pont Synapse",
-      "Built on top of": "est construit sur l'infrastructure inter-chaînes permettant aux utilisateurs de transférer facilement des actifs à travers toutes les blockchains. Le Pont est devenu la méthode la plus utilisée pour déplacer des actifs entre les chaînes, offrant un transfert à faible coût, rapide et sécurisé.",
+      "Powering": "Alimenter le bridge le plus populaire",
+      "Synapse Bridge": "Bridge Synapse",
+      "Built on top of": "est construit sur l'infrastructure inter-chaînes permettant aux utilisateurs de transférer facilement des actifs à travers toutes les blockchains. Le Bridge est devenu la méthode la plus utilisée pour déplacer des actifs entre les chaînes, offrant un transfert à faible coût, rapide et sécurisé.",
       "Deep Liquidity": "Liquidité profonde",
       "Swap native assets": "Échangez des actifs natifs en utilisant nos pools de liquidité AMM inter-chaînes",
       "Wide Support": "Large support",
@@ -98,14 +98,14 @@
       "Synapse has processed": "Synapse a traité des millions de transactions et des dizaines de milliards d'actifs transférés.",
       "Go to Explorer": "Aller à l'explorateur",
       "Total Value Locked": "Valeur totale verrouillée",
-      "Total Bridge Volume": "Volume total du pont",
+      "Total Bridge Volume": "Volume total du bridge",
       "Total TX Count": "Nombre total de transactions"
     },
     "HeroSection": {
       "title": "Communication inter-chaînes sécurisée",
       "description": "Synapse est le réseau de communications inter-chaînes le plus utilisé, extensible et sécurisé. Construisez des applications véritablement inter-chaînes en utilisant le protocole Synapse.",
       "buildButton": "Construire sur Synapse",
-      "enterBridgeButton": "Entrer dans le pont"
+      "enterBridgeButton": "Entrer dans le bridge"
     },
     "HowItWorksSection": {
       "How it all works": "Comment tout fonctionne",
@@ -251,7 +251,7 @@
     "Portfolio": "Portefeuille",
     "Loading assets": "Chargement des actifs",
     "Synapse is the most widely used, extensible, and secure cross-chain communications network": "Synapse est le réseau de communications inter-chaînes le plus utilisé, extensible et sécurisé.",
-    "Get route quotes in the Bridge panel, and connect your wallet when you are ready to submit a transaction": "Obtenez des devis de route dans le panneau Pont et connectez votre portefeuille lorsque vous êtes prêt à soumettre une transaction.",
+    "Get route quotes in the Bridge panel, and connect your wallet when you are ready to submit a transaction": "Obtenez des devis de route dans le panneau Bridge et connectez votre portefeuille lorsque vous êtes prêt à soumettre une transaction.",
     "Gas token": "Jeton de gaz",
     "Available": "Disponible",
     "This chain is not yet supported; New chain or token support can be discussed on": "Cette chaîne n'est pas encore prise en charge. Le support de nouvelles chaînes ou jetons peut être discuté sur",
@@ -260,7 +260,7 @@
     "Twitter": "Twitter",
     "Viewing": "Affichage",
     "Tokens, chains": "Jetons, chaînes",
-    "Bridge txs": "Transactions de pont",
+    "Bridge txs": "Transactions de bridge",
     "Search": "Rechercher"
   },
   "Search": {
@@ -324,13 +324,13 @@
     "Privacy Policy": "Politique de confidentialité",
     "|": "|",
     "About": "À propos",
-    "Bridge": "Pont",
+    "Bridge": "Bridge",
     "Swap": "Échanger",
     "Pools": "Pools",
     "Stake": "Staker",
     "Explorer": "Explorateur",
     "Interchain Network": "Réseau Interchain",
-    "Solana Bridge": "Pont Solana",
+    "Solana Bridge": "Bridge Solana",
     "Careers": "Carrières",
     "Documentation": "Documentation",
     "GitHub": "GitHub",
@@ -368,9 +368,9 @@
     "Twitter": "Twitter"
   },
   "Warning": {
-    "Warning! The Harmony bridge has been exploited": "Attention ! Le pont Harmony a été exploité.",
+    "Warning! The Harmony bridge has been exploited": "Attention ! Le bridge Harmony a été exploité.",
     "Do not bridge via Harmony unless you understand the risks involved": "Ne transférez pas via Harmony à moins de comprendre les risques impliqués.",
-    "Warning! The Fantom bridge has been exploited": "Attention ! Le pont Fantom a été exploité.",
+    "Warning! The Fantom bridge has been exploited": "Attention ! Le bridge Fantom a été exploité.",
     "Do not bridge via Fantom unless you understand the risks involved": "Ne transférez pas via Fantom à moins de comprendre les risques impliqués.",
     "Alert: Transactions to Dogechain are temporarily paused": "Alerte : Les transactions vers Dogechain sont temporairement suspendues.",
     "You may still bridge funds from Dogechain to any supported destination chain": "Vous pouvez toujours transférer des fonds de Dogechain vers toute chaîne de destination prise en charge."
