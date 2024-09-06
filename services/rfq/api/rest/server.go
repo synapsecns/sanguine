@@ -188,7 +188,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 
 	versionNumber, versionNumErr := getCurrentVersion()
 	if versionNumErr != nil {
-		return fmt.Errorf("could not get current API version: %v", versionNumErr)
+		return fmt.Errorf("could not get current API version: %w", versionNumErr)
 	}
 	engine.Use(APIVersionMiddleware(versionNumber))
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
