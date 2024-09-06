@@ -16,7 +16,7 @@
     "@mui/material": "^5.11.8",
     "@mui/x-date-pickers": "^5.0.17",
     "@popperjs/core": "^2.11.5",
-    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^13.2.0",
     "@testing-library/user-event": "^13.5.0",
     "@vercel/analytics": "^1.0.2",
