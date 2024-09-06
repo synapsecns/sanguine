@@ -1,5 +1,5 @@
 import { useAccount } from 'wagmi'
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 
 import { ChainSelector } from '@/components/ui/ChainSelector'
 import { TokenSelector } from '@/components/ui/TokenSelector'
@@ -14,11 +14,13 @@ import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
+import { BridgeQuote } from '@/utils/types'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
+import { useConfirmNewBridgePrice } from './hooks/useConfirmNewBridgePrice'
 
 export const OutputContainer = () => {
   const { address } = useAccount()
-  const { bridgeQuote, isLoading } = useBridgeQuoteState()
+  const { bridgeQuote, previousBridgeQuote, isLoading } = useBridgeQuoteState()
   const { showDestinationAddress } = useBridgeDisplayState()
   const { hasValidInput, hasValidQuote } = useBridgeValidations()
 
@@ -31,6 +33,8 @@ export const OutputContainer = () => {
       return ''
     }
   }, [bridgeQuote, hasValidInput, hasValidQuote])
+
+  const { hasSameSelectionsAsPreviousQuote } = useConfirmNewBridgePrice()
 
   return (
     <BridgeSectionContainer>
@@ -48,6 +52,9 @@ export const OutputContainer = () => {
           showValue={showValue}
           isLoading={isLoading}
         />
+        {hasValidQuote && !isLoading && (
+          <AnimatedCircle bridgeQuoteId={bridgeQuote?.id} />
+        )}
       </BridgeAmountContainer>
     </BridgeSectionContainer>
   )
@@ -86,5 +93,41 @@ const ToTokenSelector = () => {
       action="Bridge"
       disabled={isWalletPending}
     />
+  )
+}
+
+const AnimatedCircle = ({ bridgeQuoteId }) => {
+  const [animationKey, setAnimationKey] = useState(0) // Key to force re-render
+
+  useEffect(() => {
+    // Whenever the `quote` prop changes, restart the animation by updating the key
+    setAnimationKey((prevKey) => prevKey + 1)
+  }, [bridgeQuoteId])
+
+  return (
+    <svg
+      key={animationKey} // Update key to trigger re-render
+      width="36"
+      height="36"
+      viewBox="-12 -12 24 24"
+      stroke="currentcolor"
+      strokeOpacity=".33"
+      fill="none"
+      className="-rotate-90 -scale-y-100"
+    >
+      {/* Inner circle remains visible, no opacity animation */}
+      <circle r="8" />
+
+      {/* Outer circle with stroke animation */}
+      <circle r="8" strokeDasharray="1" pathLength="1">
+        <animate
+          attributeName="stroke-dashoffset"
+          values="1; 1; 2" // Stays outlined after completion
+          dur="15s"
+          keyTimes="0; .67; 1"
+          fill="freeze" // Ensures the final state is retained
+        />
+      </circle>
+    </svg>
   )
 }
