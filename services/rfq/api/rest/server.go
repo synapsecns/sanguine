@@ -35,11 +35,11 @@ import (
 const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
 
 func getCurrentVersion() (string, error) {
-	if len(apiVersions.Versions) == 0 {
+	if len(APIversions.Versions) == 0 {
 		return "", fmt.Errorf("no versions found")
 	}
 
-	return apiVersions.Versions[0].Version, nil
+	return APIversions.Versions[0].Version, nil
 }
 
 // QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
