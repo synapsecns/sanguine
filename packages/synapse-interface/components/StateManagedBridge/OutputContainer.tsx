@@ -51,7 +51,7 @@ export const OutputContainer = () => {
           isLoading={isLoading}
         />
         {hasValidQuote && !isLoading && (
-          <AnimatedCircle bridgeQuoteId={bridgeQuote?.id} />
+          <AnimatedProgressCircle bridgeQuoteId={bridgeQuote?.id} />
         )}
       </BridgeAmountContainer>
     </BridgeSectionContainer>
@@ -94,17 +94,16 @@ const ToTokenSelector = () => {
   )
 }
 
-const AnimatedCircle = ({ bridgeQuoteId }) => {
-  const [animationKey, setAnimationKey] = useState(0) // Key to force re-render
+const AnimatedProgressCircle = ({ bridgeQuoteId }) => {
+  const [animationKey, setAnimationKey] = useState(0)
 
   useEffect(() => {
-    // Whenever the `quote` prop changes, restart the animation by updating the key
     setAnimationKey((prevKey) => prevKey + 1)
   }, [bridgeQuoteId])
 
   return (
     <svg
-      key={animationKey} // Update key to trigger re-render
+      key={animationKey}
       width="36"
       height="36"
       viewBox="-12 -12 24 24"
@@ -113,17 +112,22 @@ const AnimatedCircle = ({ bridgeQuoteId }) => {
       fill="none"
       className="-rotate-90 -scale-y-100"
     >
-      {/* Inner circle remains visible, no opacity animation */}
-      <circle r="8" />
-
-      {/* Outer circle with stroke animation */}
+      <circle r="8">
+        <animate
+          attributeName="opacity"
+          values="0; 0; 1"
+          dur="15s"
+          fill="freeze"
+          keyTimes="0; .5; 1"
+        />
+      </circle>
       <circle r="8" strokeDasharray="1" pathLength="1">
         <animate
           attributeName="stroke-dashoffset"
-          values="1; 1; 2" // Stays outlined after completion
+          values="1; 1; 2"
           dur="15s"
           keyTimes="0; .67; 1"
-          fill="freeze" // Ensures the final state is retained
+          fill="freeze"
         />
       </circle>
     </svg>
