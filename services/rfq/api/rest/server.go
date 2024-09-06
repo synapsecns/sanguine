@@ -14,6 +14,7 @@ import (
 	"github.com/ipfs/go-log"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -37,7 +38,7 @@ import (
 const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
 
 func getCurrentVersion() (string, error) {
-	file, err := os.ReadFile("versions.json")
+	file, err := os.ReadFile(core.ExpandOrReturnPath("versions.json"))
 	if err != nil {
 		return "", fmt.Errorf("failed to read versions.json: %w", err)
 	}
