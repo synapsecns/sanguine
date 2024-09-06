@@ -3,7 +3,6 @@ package rest
 
 import (
 	"context"
-	"os"
 
 	"encoding/json"
 	"fmt"
@@ -14,7 +13,6 @@ import (
 	"github.com/ipfs/go-log"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -38,24 +36,20 @@ import (
 const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
 
 func getCurrentVersion() (string, error) {
-	file, err := os.ReadFile(core.ExpandOrReturnPath("versions.json"))
-	if err != nil {
-		return "", fmt.Errorf("failed to read versions.json: %w", err)
-	}
-
+	// Assuming versionsJson is imported from the separate Go file
 	var versions struct {
 		Versions []struct {
 			Version string `json:"version"`
 		} `json:"versions"`
 	}
 
-	err = json.Unmarshal(file, &versions)
+	err := json.Unmarshal([]byte(versionsJson), &versions)
 	if err != nil {
-		return "", fmt.Errorf("failed to unmarshal versions.json: %w", err)
+		return "", fmt.Errorf("failed to unmarshal versionsJson: %w", err)
 	}
 
 	if len(versions.Versions) == 0 {
-		return "", fmt.Errorf("no versions found in versions.json")
+		return "", fmt.Errorf("no versions found in versionsJson")
 	}
 
 	return versions.Versions[0].Version, nil

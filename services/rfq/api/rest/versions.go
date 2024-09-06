@@ -1,0 +1,13 @@
+package rest
+
+var versionsJson = `{
+  "_comment": "This file contains version information for the Synapse RFQ API. Deprecation notices & other alerts, if any, will be listed here.",
+  "versions": [
+      {
+          "version": "1.0",
+          "date": "2024-01-01",
+          "_comment": "",
+          "_alerts": ""
+      }
+  ]
+}`
