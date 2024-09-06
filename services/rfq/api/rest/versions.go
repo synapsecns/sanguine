@@ -1,6 +1,6 @@
 package rest
 
-var versionsJson = `{
+var versionsJSON = `{
   "_comment": "This file contains version information for the Synapse RFQ API. Deprecation notices & other alerts, if any, will be listed here.",
   "versions": [
       {

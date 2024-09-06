@@ -36,20 +36,19 @@ import (
 const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
 
 func getCurrentVersion() (string, error) {
-	// Assuming versionsJson is imported from the separate Go file
 	var versions struct {
 		Versions []struct {
 			Version string `json:"version"`
 		} `json:"versions"`
 	}
 
-	err := json.Unmarshal([]byte(versionsJson), &versions)
+	err := json.Unmarshal([]byte(versionsJSON), &versions)
 	if err != nil {
-		return "", fmt.Errorf("failed to unmarshal versionsJson: %w", err)
+		return "", fmt.Errorf("failed to unmarshal versionsJSON: %w", err)
 	}
 
 	if len(versions.Versions) == 0 {
-		return "", fmt.Errorf("no versions found in versionsJson")
+		return "", fmt.Errorf("no versions found in versionsJSON")
 	}
 
 	return versions.Versions[0].Version, nil
