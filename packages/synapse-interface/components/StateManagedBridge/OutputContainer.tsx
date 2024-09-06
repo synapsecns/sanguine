@@ -34,8 +34,6 @@ export const OutputContainer = () => {
     }
   }, [bridgeQuote, hasValidInput, hasValidQuote])
 
-  const { hasSameSelectionsAsPreviousQuote } = useConfirmNewBridgePrice()
-
   return (
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
