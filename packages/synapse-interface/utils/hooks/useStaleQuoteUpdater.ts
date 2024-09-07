@@ -2,7 +2,6 @@ import { isNull, isNumber } from 'lodash'
 import { useEffect, useRef } from 'react'
 
 import { BridgeQuote } from '@/utils/types'
-import { calculateTimeBetween } from '@/utils/time'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
 
@@ -14,25 +13,19 @@ export const useStaleQuoteUpdater = (
   quote: BridgeQuote,
   refreshQuoteCallback: () => Promise<void>,
   isQuoteLoading: boolean,
-  isWalletPending: boolean,
   staleTimeout: number = 15000 // Default 15_000ms or 15s
 ) => {
   const eventListenerRef = useRef<null | (() => void)>(null)
-
+  const timeoutRef = useRef<null | NodeJS.Timeout>(null)
   const quoteTime = quote?.id ? convertUuidToUnix(quote?.id) : null
   const isValidQuote = isNumber(quoteTime) && !isNull(quoteTime)
 
-  const currentTime = useIntervalTimer(staleTimeout, !isValidQuote)
+  useIntervalTimer(staleTimeout, !isValidQuote)
 
   useEffect(() => {
-    if (isValidQuote && !isQuoteLoading && !isWalletPending) {
-      const timeDifference = calculateTimeBetween(currentTime, quoteTime)
-      const isStaleQuote = timeDifference >= staleTimeout
-
-      if (isStaleQuote) {
-        if (eventListenerRef.current) {
-          document.removeEventListener('mousemove', eventListenerRef.current)
-        }
+    if (isValidQuote && !isQuoteLoading) {
+      timeoutRef.current = setTimeout(() => {
+        eventListenerRef.current = null
 
         const newEventListener = () => {
           refreshQuoteCallback()
@@ -44,7 +37,13 @@ export const useStaleQuoteUpdater = (
         })
 
         eventListenerRef.current = newEventListener
+      }, staleTimeout)
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
     }
-  }, [currentTime, staleTimeout])
+  }, [quote, isQuoteLoading])
 }

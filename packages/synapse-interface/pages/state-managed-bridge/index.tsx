@@ -200,7 +200,6 @@ const StateManagedBridge = () => {
     bridgeQuote,
     getAndSetBridgeQuote,
     isLoading,
-    isWalletPending,
     quoteTimeout
   )
 
