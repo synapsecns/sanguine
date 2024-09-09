@@ -197,7 +197,7 @@ const StateManagedBridge = () => {
     }
   }
 
-  const isStale = useStaleQuoteUpdater(
+  const isQuoteStale = useStaleQuoteUpdater(
     bridgeQuote,
     getAndSetBridgeQuote,
     isLoading,
@@ -444,7 +444,7 @@ const StateManagedBridge = () => {
                 }}
                 disabled={isWalletPending}
               />
-              <OutputContainer />
+              <OutputContainer isQuoteStale={isQuoteStale} />
               <Warning />
               <BridgeMaintenanceWarningMessage />
               <BridgeExchangeRateInfo />
@@ -455,7 +455,7 @@ const StateManagedBridge = () => {
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
                 isBridgePaused={isBridgePaused}
-                isQuoteStale={isStale}
+                isQuoteStale={isQuoteStale}
                 quoteTimeout={quoteTimeout}
               />
             </>
