@@ -249,6 +249,6 @@ Accepts 'SynapseRFQ', 'SynapseBridge', 'SynapseCCTP', or 'ALL'. If selecting 'AL
 
 ## Adding a New Language
 
-1. Update `next.config.js` with the new locale code.
-2. Update `LanguageSelector` component to include the new locale.
-3. Update `/messages/{locale.json}` with the new locale's translations. The keys in this should match `en-US.json`. See some of the other language files for reference.
+1. Add the new locale code to `next.config.js`.
+2. Include the new locale in the `LanguageSelector`.
+3. Populate `/messages/{locale.json}` translations for the new locale. The keys in this should match `en-US.json`. See some of the other language files for reference.

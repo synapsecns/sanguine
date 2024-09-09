@@ -8,7 +8,7 @@ export default function PfpGeneratorCard() {
 
   return (
     <Card
-      title={<>{t('Choose Synapse')}</>}
+      title={t('Choose Synapse')}
       divider={false}
       className="rounded-xl min-w-[380px]"
       titleClassName="text-center text-white text-opacity-50 font-normal py-2"

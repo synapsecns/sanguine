@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { useTranslations } from 'use-intl'
+import { useTranslations } from 'next-intl'
 
 import Grid from '@/components/ui/tailwind/Grid'
 import Card from '@/components/ui/tailwind/Card'

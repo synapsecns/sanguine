@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { useTranslations } from 'next-intl'
 
 import { formatBigIntToString } from '@utils/bigint/format'
