@@ -205,8 +205,6 @@ const StateManagedBridge = () => {
     quoteTimeout
   )
 
-  console.log('isStale: ', isStale)
-
   const approveTxn = async () => {
     try {
       dispatch(setIsWalletPending(true))
