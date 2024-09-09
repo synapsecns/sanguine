@@ -180,7 +180,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (hasQuoteOutputChanged && !hasUserConfirmedChange) {
     buttonProperties = {
-      label: 'Confirm new price',
+      label: 'Confirm new quote',
       onClick: () => onUserAcceptChange(),
       className:
         '!border !border-synapsePurple !from-bgLight !to-bgLight !animate-pulse',
