@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react'
 import { debounce } from 'lodash'
-import LoadingDots from './tailwind/LoadingDots'
+import React, { useCallback } from 'react'
+import { NumericFormat } from 'react-number-format'
 import { joinClassNames } from '@/utils/joinClassNames'
+import LoadingDots from './tailwind/LoadingDots'
 
 interface AmountInputTypes {
   inputRef?: React.RefObject<HTMLInputElement>
@@ -31,32 +32,35 @@ export function AmountInput({
     handleFromValueChange?.(event)
   }
 
-  const inputClassName = joinClassNames({
+  const inputClassNames = {
     unset: 'bg-transparent border-none p-0',
     layout: 'w-full',
     placeholder: 'placeholder:text-zinc-500 placeholder:dark:text-zinc-400',
     font: 'text-xl md:text-2xl font-medium',
     focus: 'focus:outline-none focus:ring-0 focus:border-none',
-  })
+  }
 
   return (
     <>
       {isLoading ? (
         <LoadingDots className="opacity-50" />
       ) : (
-        <input
-          ref={inputRef}
-          pattern={disabled ? '[0-9.]+' : '^[0-9]*[.,]?[0-9]*$'}
+        <NumericFormat
+          inputMode="numeric"
+          getInputRef={inputRef}
+          placeholder="0.0000"
+          value={showValue}
+          pattern={disabled ? '[0-9.]+' : '^[0-9]+([.,]?[0-9]+)?$'}
           disabled={disabled}
           readOnly={disabled}
-          className={inputClassName}
-          placeholder="0.0000"
           onChange={handleInputChange}
-          value={showValue}
+          className={joinClassNames(inputClassNames)}
           name="inputRow"
-          autoComplete="off"
           minLength={1}
           maxLength={79}
+          autoComplete="off"
+          thousandSeparator={true}
+          allowNegative={false}
         />
       )}
     </>

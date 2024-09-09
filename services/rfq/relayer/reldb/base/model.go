@@ -107,6 +107,7 @@ type Rebalance struct {
 	Status          reldb.RebalanceStatus
 	OriginTxHash    sql.NullString
 	DestTxHash      sql.NullString
+	TokenName       string
 }
 
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
@@ -156,6 +157,7 @@ func FromRebalance(rebalance reldb.Rebalance) Rebalance {
 		Status:          rebalance.Status,
 		OriginTxHash:    hashToNullString(rebalance.OriginTxHash),
 		DestTxHash:      hashToNullString(rebalance.DestTxHash),
+		TokenName:       rebalance.TokenName,
 	}
 }
 
@@ -241,6 +243,7 @@ func (r Rebalance) ToRebalance() (*reldb.Rebalance, error) {
 		Status:          r.Status,
 		OriginTxHash:    common.HexToHash(r.OriginTxHash.String),
 		DestTxHash:      common.HexToHash(r.DestTxHash.String),
+		TokenName:       r.TokenName,
 	}, nil
 }
 

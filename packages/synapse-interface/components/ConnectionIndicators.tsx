@@ -20,14 +20,18 @@ const Indicator = ({ className }) => (
 )
 
 export const ConnectedIndicator = () => {
-  const className = joinClassNames({
+  const classNames = {
     flex: 'flex items-center gap-2',
     space: 'px-3 py-1 rounded-full',
     hover: 'hover:opacity-80',
     font: 'text-sm',
-  })
+  }
   return (
-    <button data-test-id="connected-button" disabled className={className}>
+    <button
+      data-test-id="connected-button"
+      disabled
+      className={joinClassNames(classNames)}
+    >
       <Indicator className="bg-green-500 dark:bg-green-400" />
       Connected
     </button>
@@ -55,7 +59,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
     }
   }
 
-  const className = joinClassNames({
+  const classNames = {
     flex: 'flex items-center gap-2',
     space: 'px-3 py-1 rounded-full',
     border: 'border border-transparent',
@@ -63,12 +67,12 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
     bgHover: getNetworkHover(chain?.color),
     borderHover: getNetworkButtonBorderHover(chain?.color),
     active: 'hover:active:opacity-80',
-  })
+  }
 
   return (
     <button
       data-test-id="connect-button"
-      className={className}
+      className={joinClassNames(classNames)}
       onClick={handleConnectNetwork}
     >
       {isConnecting ? (
@@ -95,7 +99,7 @@ export function ConnectWalletButton() {
     setClientReady(true)
   }, [])
 
-  const className = joinClassNames({
+  const classNames = {
     flex: 'flex items-center gap-2',
     space: 'px-3 py-1 rounded-full',
     border: 'border border-transparent',
@@ -103,7 +107,7 @@ export function ConnectWalletButton() {
       'hover:bg-fuchsia-50 hover:border-fuchsia-500 hover:dark:bg-fuchsia-950',
     font: 'text-sm',
     active: 'active:opacity-80',
-  })
+  }
 
   return (
     <div data-test-id="">
@@ -115,7 +119,10 @@ export function ConnectWalletButton() {
                 {(() => {
                   if (!mounted || !account || !chain || !address) {
                     return (
-                      <button className={className} onClick={openConnectModal}>
+                      <button
+                        className={joinClassNames(classNames)}
+                        onClick={openConnectModal}
+                      >
                         <Indicator className="border-fuchsia-500" />
                         Connect Wallet
                       </button>
