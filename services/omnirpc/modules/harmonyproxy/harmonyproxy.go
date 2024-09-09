@@ -6,6 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"math/big"
+	"net/http"
+	"strings"
+	"sync"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -24,12 +30,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"io"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"math/big"
-	"net/http"
-	"strings"
-	"sync"
 )
 
 var logger = log.Logger("harmonyproxy")
@@ -239,7 +240,7 @@ func (r *HarmonyProxy) makeReq(parentCtx context.Context, body []byte) (_ []byte
 	return respBody, nil
 }
 
-const expectedVersion = "Harmony (C) 2023. harmony, version v8342-v2024.1.0-0-gb02ea4c83"
+const expectedVersion = "Harmony (C) 2023. harmony, version v8396-v2024.2.0-0-gc44c2ea8c"
 
 // nolint: cyclop
 func (r *HarmonyProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash common.Hash, rawBody []byte, checkVersion bool) (_ []byte, err error) {
