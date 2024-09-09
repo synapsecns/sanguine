@@ -8,12 +8,10 @@ import { useCloseOnEscape } from '@/utils/hooks/useCloseOnEscape'
 
 const languages = [
   { code: 'en-US', name: 'English' },
-  { code: 'fr', name: 'Français' },
-  { code: 'jp', name: '日本語' },
   { code: 'ar', name: 'العربية' },
-  { code: 'tr', name: 'Türkçe' },
   { code: 'es', name: 'Español' },
-  { code: 'zh-CN', name: '中文（简体）' },
+  { code: 'fr', name: 'Français' },
+  { code: 'tr', name: 'Türkçe' },
 ]
 
 export const LanguageSelector = () => {

@@ -44,7 +44,7 @@ const nextConfig = {
     tsconfigPath: './tsconfig.json',
   },
   i18n: {
-    locales: ['en-US', 'fr', 'jp', 'ar', 'tr', 'es', 'zh-CN'],
+    locales: ['en-US', 'fr', 'ar', 'tr', 'es'],
     defaultLocale: 'en-US',
   },
 }
