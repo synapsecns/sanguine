@@ -29,7 +29,7 @@
     "Switching chains": "التبديل بين السلاسل",
     "Approve {symbol}": "الموافقة على {symbol}",
     "Approving": "الموافقة",
-    "Bridging": "إجراء الجسر",
+    "Bridging": "الربط",
     "Max": "الأقصى",
     "available": "المتاح",
     "Available": "المتاح",
@@ -48,7 +48,7 @@
     "To": "إلى",
     "In": "في",
     "Out": "خارج",
-    "Network": "الشبكة",
+    "Network": "شبكة",
     "Select origin token": "اختر رمز المصدر",
     "All chains": "جميع السلاسل",
     "SendWithEllipsis": "إرسال…",
@@ -83,7 +83,7 @@
   },
   "Landing": {
     "BridgeSection": {
-      "Powering": "تزويد الجسر الأكثر شهرة",
+      "Powering": "تزويد الجسر الأكثر شهرة بالطاقة",
       "Synapse Bridge": "جسر سينابس",
       "Built on top of": "تم بناؤه فوق بنية تحتية عبر السلاسل تتيح للمستخدمين نقل الأصول بسلاسة عبر جميع سلاسل الكتل. أصبح الجسر الطريقة الأكثر استخدامًا لنقل الأصول عبر السلاسل، حيث يقدم تكاليف منخفضة وسرعة وأمان.",
       "Deep Liquidity": "السيولة العميقة",
@@ -225,7 +225,7 @@
     },
     "WithdrawButton": {
       "insufficientBalance": "رصيد غير كافٍ",
-      "connectWallet": "اتصل بالمحفظة للجسر",
+      "connectWallet": "اربط المحفظة",
       "switchChain": "التبديل إلى {chainName}",
       "switchingChains": "جار التبديل بين السلاسل",
       "approveToken": "الموافقة على الرمز",
@@ -250,7 +250,7 @@
   "Portfolio": {
     "Portfolio": "المحفظة",
     "Loading assets": "تحميل الأصول",
-    "Synapse is the most widely used, extensible, and secure cross-chain communications network": "سينابس هي الشبكة الأكثر استخدامًا، القابلة للتوسيع، والأمنة للاتصال عبر السلاسل.",
+    "Synapse is the most widely used, extensible, and secure cross-chain communications network": "سينابس هي شبكة الأكثر استخدامًا، القابلة للتوسيع، والأمنة للاتصال عبر السلاسل.",
     "Get route quotes in the Bridge panel, and connect your wallet when you are ready to submit a transaction": "احصل على عروض المسار في لوحة الجسر، واتصل بمحفظتك عندما تكون مستعدًا لتقديم معاملة.",
     "Gas token": "رمز الغاز",
     "Available": "المتاح",
@@ -283,9 +283,9 @@
     "available": "المتاح",
     "Expected price on": "السعر المتوقع على",
     "Slippage": "الانزلاق",
-    "Swap paused": "التبديل متوقف مؤقتًا",
+    "Swap paused": "التبادل موقف مؤقتا",
     "Please select Origin network": "يرجى اختيار شبكة المصدر",
-    "Swaps are not available on this network": "المقايضات غير متاحة على هذه الشبكة",
+    "Swaps are not available on this network": "المقايضات غير متاحة على هذه شبكة",
     "Please select token": "يرجى اختيار الرمز",
     "Connect Wallet to Swap": "اتصل بالمحفظة للمبادلة",
     "Insufficient balance": "رصيد غير كافٍ",
@@ -349,7 +349,7 @@
     "Drag and drop image here": "اسحب وأسقط الصورة هنا",
     "Select different image?": "اختر صورة مختلفة؟",
     "Download": "تحميل",
-    "Click to Upload or": "انقر للتحميل أو"
+    "Click to Upload or": "انقر للرفع او "
   },
   "Wallet": {
     "Connect": "الاتصال",
