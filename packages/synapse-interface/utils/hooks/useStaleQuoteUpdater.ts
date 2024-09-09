@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { BridgeQuote } from '@/utils/types'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
+import { calculateTimeBetween } from '../time'
 
 /**
  * Refreshes quotes based on selected stale timeout duration.
@@ -13,17 +14,18 @@ export const useStaleQuoteUpdater = (
   quote: BridgeQuote,
   refreshQuoteCallback: () => Promise<void>,
   isQuoteLoading: boolean,
+  isWalletPending: boolean,
   staleTimeout: number = 15000 // Default 15_000ms or 15s
 ) => {
   const eventListenerRef = useRef<null | (() => void)>(null)
   const timeoutRef = useRef<null | NodeJS.Timeout>(null)
   const quoteTime = quote?.id ? convertUuidToUnix(quote?.id) : null
-  const isValidQuote = isNumber(quoteTime) && !isNull(quoteTime)
+  const isQuoteValid = isNumber(quoteTime) && !isNull(quoteTime)
 
-  useIntervalTimer(staleTimeout, !isValidQuote)
+  useIntervalTimer(staleTimeout, !isQuoteValid)
 
   useEffect(() => {
-    if (isValidQuote && !isQuoteLoading) {
+    if (isQuoteValid && !isQuoteLoading && !isWalletPending) {
       timeoutRef.current = setTimeout(() => {
         eventListenerRef.current = null
 
@@ -45,5 +47,5 @@ export const useStaleQuoteUpdater = (
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [quote, isQuoteLoading])
+  }, [quote, isQuoteLoading, isWalletPending])
 }

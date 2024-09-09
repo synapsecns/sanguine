@@ -67,6 +67,7 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
+import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
@@ -200,6 +201,7 @@ const StateManagedBridge = () => {
     bridgeQuote,
     getAndSetBridgeQuote,
     isLoading,
+    isWalletPending,
     quoteTimeout
   )
 
@@ -393,6 +395,10 @@ const StateManagedBridge = () => {
             chainId: fromChainId,
           })
         )
+      }
+
+      if (isTransactionUserRejectedError) {
+        getAndSetBridgeQuote()
       }
 
       return txErrorHandler(error)
