@@ -19,6 +19,7 @@ export const TransactionButton = ({
   onClick,
   pendingLabel,
   label,
+  labelAnimation,
   onSuccess,
   disabled,
   chainId,
@@ -29,6 +30,7 @@ export const TransactionButton = ({
   onClick: () => Promise<TransactionResponse | any>
   pendingLabel: string
   label: string
+  labelAnimation?: React.ReactNode
   onSuccess?: () => void
   chainId?: number
   style?: CSSProperties
@@ -63,7 +65,9 @@ export const TransactionButton = ({
           <span className="opacity-30">{pendingLabel}</span>{' '}
         </>
       ) : (
-        <>{label}</>
+        <>
+          {label} {labelAnimation}
+        </>
       )}
     </Button>
   )

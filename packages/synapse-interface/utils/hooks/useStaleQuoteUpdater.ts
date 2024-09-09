@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react'
 import { BridgeQuote } from '@/utils/types'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
-import { calculateTimeBetween } from '../time'
 
 /**
  * Refreshes quotes based on selected stale timeout duration.

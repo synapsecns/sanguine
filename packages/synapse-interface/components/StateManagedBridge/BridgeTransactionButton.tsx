@@ -9,12 +9,10 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
-import {
-  useBridgeValidations,
-  constructStringifiedBridgeSelections,
-} from './hooks/useBridgeValidations'
+import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useConfirmNewBridgePrice } from './hooks/useConfirmNewBridgePrice'
+import { BridgeQuoteResetTimer } from './AnimatedProgressCircle'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -195,6 +193,12 @@ export const BridgeTransactionButton = ({
       onClick: executeBridge,
       label: `Bridge ${fromToken?.symbol}`,
       pendingLabel: 'Bridging',
+      labelAnimation: (
+        <BridgeQuoteResetTimer
+          bridgeQuote={bridgeQuote}
+          hasValidQuote={hasValidQuote}
+        />
+      ),
     }
   }
 
