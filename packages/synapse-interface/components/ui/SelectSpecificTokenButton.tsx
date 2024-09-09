@@ -35,7 +35,7 @@ export const SelectSpecificTokenButton = ({
 
   const { swapChainId } = useSwapState()
 
-  const buttonClass = joinClassNames({
+  const buttonClasses = {
     other: 'whitespace-nowrap',
     grid: 'grid gap-0.5',
     space: 'pl-2 pr-1.5 py-2.5 w-full',
@@ -44,7 +44,7 @@ export const SelectSpecificTokenButton = ({
     hover: getHoverStyleForButton(token?.color),
     activeStyle:
       isActive || isSelected ? getActiveStyleForButton(token?.color) : '',
-  })
+  }
 
   const chainId =
     action === 'Swap' ? swapChainId : isOrigin ? fromChainId : toChainId
@@ -54,7 +54,7 @@ export const SelectSpecificTokenButton = ({
       data-test-id="select-specific-token-button"
       ref={ref}
       onClick={onClick}
-      className={buttonClass}
+      className={joinClassNames(buttonClasses)}
     >
       <ButtonContent
         token={token}

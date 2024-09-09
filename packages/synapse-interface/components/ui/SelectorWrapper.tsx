@@ -60,7 +60,7 @@ export const SelectorWrapper = ({
 
   useCloseOnOutsideClick(parentRef, () => onClose())
 
-  const buttonClassName = joinClassNames({
+  const buttonClassNames = {
     flex: 'flex items-center gap-2',
     space: 'px-2 py-1.5 rounded',
     border: 'border border-zinc-200 dark:border-transparent',
@@ -71,7 +71,7 @@ export const SelectorWrapper = ({
     active: 'active:opacity-80',
     custom: label || open ? 'bg-transparent' : 'bg-white dark:bg-separator',
     disabled: `${disabled ? 'hover:cursor-not-allowed' : ''}`,
-  })
+  }
 
   // TODO: Unify chainImg/icon properties between Chain and Token types
   const imgSrc =
@@ -83,7 +83,7 @@ export const SelectorWrapper = ({
     <div className="relative min-w-fit" ref={parentRef}>
       <button
         data-test-id={`${dataTestId}-button`}
-        className={buttonClassName}
+        className={joinClassNames(buttonClassNames)}
         onClick={() => {
           if (!disabled) {
             !open ? setOpen(true) : onClose()

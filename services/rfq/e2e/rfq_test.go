@@ -246,7 +246,21 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		}
 		originPendingRebals, err := i.store.GetPendingRebalances(i.GetTestContext(), uint64(i.originBackend.GetChainID()))
 		i.NoError(err)
-		return len(originPendingRebals) > 0
+		if len(originPendingRebals) == 0 {
+			return false
+		}
+		expectedRebalance := reldb.Rebalance{
+			RebalanceID:     originPendingRebals[0].RebalanceID,
+			OriginAmount:    big.NewInt(445_000_000),
+			Origin:          uint64(i.originBackend.GetChainID()),
+			Destination:     uint64(i.destBackend.GetChainID()),
+			OriginTxHash:    originPendingRebals[0].OriginTxHash,
+			OriginTokenAddr: originPendingRebals[0].OriginTokenAddr,
+			Status:          reldb.RebalancePending,
+			TokenName:       "MockMintBurnToken",
+		}
+		i.Equal(expectedRebalance, *originPendingRebals[0])
+		return true
 	})
 
 	i.Eventually(func() bool {
