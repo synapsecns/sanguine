@@ -217,6 +217,7 @@ func (b *Backend) TearDown() {
 	}
 }
 
+// BatchWithContext is a batch RPC call with context.
 func (b *Backend) BatchWithContext(ctx context.Context, calls ...w3types.Caller) error {
 	return b.BatchContext(ctx, calls...)
 }
@@ -472,5 +473,7 @@ var warnImpersonationOnce sync.Once
 // warnUnsignedOnce warns if a tx is unsigned and thus not confirmable.
 var warnUnsignedOnce sync.Once
 
-var warnUint64Once sync.Once
-var _ backends.SimulatedTestBackend = &Backend{}
+var (
+	warnUint64Once sync.Once
+	_              backends.SimulatedTestBackend = &Backend{}
+)

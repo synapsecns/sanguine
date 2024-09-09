@@ -11,6 +11,8 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+const oneHundred = 100
+
 // RebalanceData contains metadata for a rebalance action.
 type RebalanceData struct {
 	OriginMetadata *TokenMetadata
@@ -190,7 +192,7 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 
 	// calculate maintenance threshold relative to total balance
 	totalBalance := getTotalBalance(cfg, tokens, rebalance.OriginMetadata.Name, rebalance.Method)
-	maintenanceThreshDest, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePctDest/100)).Int(nil)
+	maintenanceThreshDest, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePctDest/oneHundred)).Int(nil)
 	if span != nil {
 		span.SetAttributes(attribute.Float64("maintenance_pct_dest", maintenancePctDest))
 		span.SetAttributes(attribute.Float64("initial_pct_dest", initialPctDest))
@@ -210,7 +212,7 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	if err != nil {
 		return nil, fmt.Errorf("could not get initial pct: %w", err)
 	}
-	initialThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPctOrigin/100)).Int(nil)
+	initialThreshOrigin, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPctOrigin/oneHundred)).Int(nil)
 	amount = new(big.Int).Sub(rebalance.OriginMetadata.Balance, initialThreshOrigin)
 	if amount.Cmp(big.NewInt(0)) <= 0 {
 		//nolint:nilnil
@@ -218,7 +220,7 @@ func getRebalanceAmount(ctx context.Context, cfg relconfig.Config, tokens map[in
 	}
 
 	// if destination needs less than the current amount, clip by initial threshold on dest
-	initialThreshDest, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPctDest/100)).Int(nil)
+	initialThreshDest, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPctDest/oneHundred)).Int(nil)
 	destDelta := new(big.Int).Sub(initialThreshDest, rebalance.DestMetadata.Balance)
 	if destDelta.Cmp(big.NewInt(0)) > 0 && destDelta.Cmp(amount) < 0 {
 		amount = destDelta
