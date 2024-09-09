@@ -4,16 +4,26 @@ import { useState, useEffect } from 'react'
 export const BridgeQuoteResetTimer = ({
   bridgeQuote,
   hasValidQuote,
+  duration, // in ms
 }: {
   bridgeQuote: BridgeQuote
   hasValidQuote: boolean
+  duration: number
 }) => {
   if (hasValidQuote) {
-    return <AnimatedProgressCircle animateKey={bridgeQuote.id} />
+    return (
+      <AnimatedProgressCircle animateKey={bridgeQuote.id} duration={duration} />
+    )
   }
 }
 
-const AnimatedProgressCircle = ({ animateKey }) => {
+const AnimatedProgressCircle = ({
+  animateKey,
+  duration,
+}: {
+  animateKey: string
+  duration: number
+}) => {
   const [animationKey, setAnimationKey] = useState(0)
 
   useEffect(() => {
@@ -33,8 +43,16 @@ const AnimatedProgressCircle = ({ animateKey }) => {
     >
       <circle r="8" />
       <circle r="8" strokeDasharray="1" pathLength="1">
-        <animate attributeName="stroke-dashoffset" values="1; 2" dur="15s" />
+        <animate
+          attributeName="stroke-dashoffset"
+          values="1; 2"
+          dur={`${convertMsToSeconds(duration)}s`}
+        />
       </circle>
     </svg>
   )
+}
+
+const convertMsToSeconds = (ms: number) => {
+  return Math.ceil(ms / 1000)
 }

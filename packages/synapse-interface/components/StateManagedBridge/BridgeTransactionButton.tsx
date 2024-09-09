@@ -20,6 +20,8 @@ export const BridgeTransactionButton = ({
   isApproved,
   isBridgePaused,
   isTyping,
+  isQuoteStale,
+  quoteTimeout,
 }) => {
   const dispatch = useAppDispatch()
   const { openConnectModal } = useConnectModal()
@@ -70,6 +72,7 @@ export const BridgeTransactionButton = ({
 
   const isButtonDisabled =
     isBridgePaused ||
+    isQuoteStale ||
     isTyping ||
     isLoading ||
     isWalletPending ||
@@ -197,6 +200,7 @@ export const BridgeTransactionButton = ({
         <BridgeQuoteResetTimer
           bridgeQuote={bridgeQuote}
           hasValidQuote={hasValidQuote}
+          duration={quoteTimeout}
         />
       ),
     }

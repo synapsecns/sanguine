@@ -197,13 +197,15 @@ const StateManagedBridge = () => {
     }
   }
 
-  useStaleQuoteUpdater(
+  const isStale = useStaleQuoteUpdater(
     bridgeQuote,
     getAndSetBridgeQuote,
     isLoading,
     isWalletPending,
     quoteTimeout
   )
+
+  console.log('isStale: ', isStale)
 
   const approveTxn = async () => {
     try {
@@ -455,6 +457,8 @@ const StateManagedBridge = () => {
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
                 isBridgePaused={isBridgePaused}
+                isQuoteStale={isStale}
+                quoteTimeout={quoteTimeout}
               />
             </>
           )}

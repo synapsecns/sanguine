@@ -1,5 +1,5 @@
 import { isNull, isNumber } from 'lodash'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { BridgeQuote } from '@/utils/types'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
@@ -16,8 +16,10 @@ export const useStaleQuoteUpdater = (
   isWalletPending: boolean,
   staleTimeout: number = 15000 // Default 15_000ms or 15s
 ) => {
+  const [isStale, setIsStale] = useState<boolean>(false)
   const eventListenerRef = useRef<null | (() => void)>(null)
   const timeoutRef = useRef<null | NodeJS.Timeout>(null)
+
   const quoteTime = quote?.id ? convertUuidToUnix(quote?.id) : null
   const isQuoteValid = isNumber(quoteTime) && !isNull(quoteTime)
 
@@ -27,10 +29,12 @@ export const useStaleQuoteUpdater = (
     if (isQuoteValid && !isQuoteLoading && !isWalletPending) {
       timeoutRef.current = setTimeout(() => {
         eventListenerRef.current = null
+        setIsStale(true)
 
         const newEventListener = () => {
           refreshQuoteCallback()
           eventListenerRef.current = null
+          setIsStale(false)
         }
 
         document.addEventListener('mousemove', newEventListener, {
@@ -44,7 +48,10 @@ export const useStaleQuoteUpdater = (
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
+        setIsStale(false)
       }
     }
   }, [quote, isQuoteLoading, isWalletPending])
+
+  return isStale
 }
