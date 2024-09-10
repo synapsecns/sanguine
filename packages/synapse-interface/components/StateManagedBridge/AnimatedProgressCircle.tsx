@@ -1,5 +1,5 @@
 import { BridgeQuote } from '@/utils/types'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 export const BridgeQuoteResetTimer = ({
   bridgeQuote,
@@ -10,11 +10,19 @@ export const BridgeQuoteResetTimer = ({
   hasValidQuote: boolean
   duration: number
 }) => {
-  if (hasValidQuote) {
-    return (
-      <AnimatedProgressCircle animateKey={bridgeQuote.id} duration={duration} />
-    )
-  }
+  const memoizedTimer = useMemo(() => {
+    if (hasValidQuote) {
+      return (
+        <AnimatedProgressCircle
+          animateKey={bridgeQuote.id}
+          duration={duration}
+        />
+      )
+    }
+    return null
+  }, [bridgeQuote, hasValidQuote, duration])
+
+  return memoizedTimer
 }
 
 const AnimatedProgressCircle = ({

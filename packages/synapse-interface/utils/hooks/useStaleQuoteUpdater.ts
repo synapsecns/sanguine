@@ -9,49 +9,157 @@ import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
  * Refreshes quotes based on selected stale timeout duration.
  * Will refresh quote when browser is active and wallet prompt is not pending.
  */
+// export const useStaleQuoteUpdater = (
+//   quote: BridgeQuote,
+//   refreshQuoteCallback: () => Promise<void>,
+//   isQuoteLoading: boolean,
+//   isWalletPending: boolean,
+//   staleTimeout: number = 15000 // Default 15_000ms or 15s
+// ) => {
+//   const [isStale, setIsStale] = useState<boolean>(false)
+//   const eventListenerRef = useRef<null | (() => void)>(null)
+//   const timeoutRef = useRef<null | NodeJS.Timeout>(null)
+
+//   const quoteTime = quote?.id ? convertUuidToUnix(quote?.id) : null
+//   const isQuoteValid = isNumber(quoteTime) && !isNull(quoteTime)
+
+//   useIntervalTimer(staleTimeout, !isQuoteValid)
+
+//   useEffect(() => {
+//     if (isQuoteValid && !isQuoteLoading && !isWalletPending) {
+//       timeoutRef.current = setTimeout(() => {
+//         eventListenerRef.current = null
+//         setIsStale(true)
+
+//         const newEventListener = () => {
+//           refreshQuoteCallback()
+//           eventListenerRef.current = null
+//           setIsStale(false)
+//         }
+
+//         document.addEventListener('mousemove', newEventListener, {
+//           once: true,
+//         })
+
+//         eventListenerRef.current = newEventListener
+//       }, staleTimeout)
+//     }
+
+//     return () => {
+//       if (timeoutRef.current) {
+//         clearTimeout(timeoutRef.current)
+//         setIsStale(false)
+//       }
+//     }
+//   }, [quote, isQuoteLoading, isWalletPending])
+
+//   return isStale
+// }
+
 export const useStaleQuoteUpdater = (
   quote: BridgeQuote,
   refreshQuoteCallback: () => Promise<void>,
   isQuoteLoading: boolean,
   isWalletPending: boolean,
-  staleTimeout: number = 15000 // Default 15_000ms or 15s
+  staleTimeout: number = 15000, // in ms
+  autoRefreshDuration: number = 60000 // in ms
 ) => {
   const [isStale, setIsStale] = useState<boolean>(false)
   const eventListenerRef = useRef<null | (() => void)>(null)
   const timeoutRef = useRef<null | NodeJS.Timeout>(null)
+  const autoRefreshIntervalRef = useRef<null | NodeJS.Timeout>(null)
+  const autoRefreshStartTimeRef = useRef<null | number>(null)
+  const autoRefreshEndTimeRef = useRef<null | NodeJS.Timeout>(null)
 
   const quoteTime = quote?.id ? convertUuidToUnix(quote?.id) : null
-  const isQuoteValid = isNumber(quoteTime) && !isNull(quoteTime)
+  const isValid = isNumber(quoteTime) && !isNull(quoteTime)
 
-  useIntervalTimer(staleTimeout, !isQuoteValid)
+  useIntervalTimer(staleTimeout, !isValid)
+
+  const [moved, reset] = useTrackMouseMove()
 
   useEffect(() => {
-    if (isQuoteValid && !isQuoteLoading && !isWalletPending) {
-      timeoutRef.current = setTimeout(() => {
-        eventListenerRef.current = null
-        setIsStale(true)
+    console.log('has mouse moved:', moved)
+    if (moved && autoRefreshStartTimeRef.current) {
+      console.log('reset auto refresh timer')
+      autoRefreshStartTimeRef.current = null
+      reset()
+    }
+  }, [quote])
 
-        const newEventListener = () => {
+  // Start auto-refresh logic for 60 seconds
+  useEffect(() => {
+    if (isValid && !isQuoteLoading && !isWalletPending) {
+      // If auto-refresh has not started yet, initialize the start time
+      if (autoRefreshStartTimeRef.current === null) {
+        autoRefreshStartTimeRef.current = Date.now()
+      }
+
+      const elapsedTime = Date.now() - autoRefreshStartTimeRef.current
+
+      console.log('elapsedTime: ', elapsedTime)
+      // If autoRefreshDuration hasn't passed, keep auto-refreshing
+      if (elapsedTime < autoRefreshDuration) {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        if (autoRefreshIntervalRef.current)
+          clearInterval(autoRefreshIntervalRef.current)
+
+        autoRefreshIntervalRef.current = setInterval(() => {
           refreshQuoteCallback()
+        }, staleTimeout)
+      } else {
+        // If more than autoRefreshDuration have passed, stop auto-refreshing and switch to mousemove logic
+        clearInterval(autoRefreshIntervalRef.current)
+
+        timeoutRef.current = setTimeout(() => {
           eventListenerRef.current = null
-          setIsStale(false)
-        }
+          setIsStale(true)
 
-        document.addEventListener('mousemove', newEventListener, {
-          once: true,
-        })
+          const newEventListener = () => {
+            refreshQuoteCallback()
+            eventListenerRef.current = null
+            setIsStale(false)
+          }
 
-        eventListenerRef.current = newEventListener
-      }, staleTimeout)
+          document.addEventListener('mousemove', newEventListener, {
+            once: true,
+          })
+
+          eventListenerRef.current = newEventListener
+        }, staleTimeout)
+      }
     }
 
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
-        setIsStale(false)
       }
+      if (autoRefreshIntervalRef.current) {
+        clearInterval(autoRefreshIntervalRef.current)
+      }
+      if (autoRefreshEndTimeRef.current) {
+        clearTimeout(autoRefreshEndTimeRef.current)
+      }
+      setIsStale(false)
     }
   }, [quote, isQuoteLoading, isWalletPending])
 
   return isStale
+}
+
+export const useTrackMouseMove = (): [boolean, () => void] => {
+  const [moved, setMoved] = useState<boolean>(false)
+
+  const onMove = () => setMoved(true)
+  const reset = () => setMoved(false)
+
+  useEffect(() => {
+    document.addEventListener('mousemove', onMove)
+
+    return () => {
+      document.removeEventListener('mousemove', onMove)
+    }
+  }, [])
+
+  return [moved, reset]
 }

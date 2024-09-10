@@ -196,13 +196,6 @@ export const BridgeTransactionButton = ({
       onClick: executeBridge,
       label: `Bridge ${fromToken?.symbol}`,
       pendingLabel: 'Bridging',
-      labelAnimation: (
-        <BridgeQuoteResetTimer
-          bridgeQuote={bridgeQuote}
-          hasValidQuote={hasValidQuote}
-          duration={quoteTimeout}
-        />
-      ),
     }
   }
 
@@ -213,6 +206,16 @@ export const BridgeTransactionButton = ({
           {...buttonProperties}
           disabled={isButtonDisabled}
           chainId={fromChainId}
+          labelAnimation={
+            isConnected &&
+            hasValidQuote && (
+              <BridgeQuoteResetTimer
+                bridgeQuote={bridgeQuote}
+                hasValidQuote={hasValidQuote}
+                duration={quoteTimeout}
+              />
+            )
+          }
         />
       </>
     )
