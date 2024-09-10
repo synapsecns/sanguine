@@ -56,7 +56,7 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 		exporters = append(exporters, exporter)
 	}
 
-	// create the multi-exporter with optional secondary exporter
+	// create the multi-exporter with all the exporters
 	multiExporter := NewMultiExporter(exporters...)
 
 	n.baseHandler = newBaseHandler(
