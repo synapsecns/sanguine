@@ -51,17 +51,16 @@ func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.Com
 // TODO: add trace middleware.
 func (b *Bot) traceCommand() *slacker.CommandDefinition {
 	return b.requiresSignoz(&slacker.CommandDefinition{
-		Command:     "trace {order} <tags>",
+		Command:     "trace {tags} {order}",
 		Description: "find a transaction in signoz",
 		Examples: []string{
-			"trace asc transaction_id:0x1234 serviceName:rfq",
-			"trace a transaction_id:0x1234 serviceName:rfq",
-			"trace desc transaction_id:0x1234 serviceName:rfq",
-			"trace d transaction_id:0x1234 serviceName:rfq",
+			"trace transaction_id:0x1234@serviceName:rfq",
+			"trace transaction_id:0x1234@serviceName:rfq d",
+			"trace transaction_id:0x1234@serviceName:rfq desc",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
 			tags := stripLinks(ctx.Request().Param("tags"))
-			splitTags := strings.Split(tags, " ")
+			splitTags := strings.Split(tags, "@")
 			if len(splitTags) == 0 {
 				_, err := ctx.Response().Reply("please provide tags in a key:value format")
 				if err != nil {
