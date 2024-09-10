@@ -51,10 +51,13 @@ func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.Com
 // TODO: add trace middleware.
 func (b *Bot) traceCommand() *slacker.CommandDefinition {
 	return b.requiresSignoz(&slacker.CommandDefinition{
-		Command:     "trace <tags> <order>",
+		Command:     "trace {order} <tags>",
 		Description: "find a transaction in signoz",
 		Examples: []string{
-			"trace transaction_id:0x1234 serviceName:rfq",
+			"trace asc transaction_id:0x1234 serviceName:rfq",
+			"trace a transaction_id:0x1234 serviceName:rfq",
+			"trace desc transaction_id:0x1234 serviceName:rfq",
+			"trace d transaction_id:0x1234 serviceName:rfq",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
 			tags := stripLinks(ctx.Request().Param("tags"))
@@ -106,7 +109,9 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 				}
 				return
 			}
-			isDescending := ctx.Request().Param("order") == "desc" || ctx.Request().Param("order") == "d"
+
+			order := strings.ToLower(ctx.Request().Param("order"))
+			isDescending := order == "desc" || order == "d"
 			if isDescending {
 				sort.Slice(traceList, func(i, j int) bool {
 					return traceList[i].Timestamp.After(traceList[j].Timestamp)
