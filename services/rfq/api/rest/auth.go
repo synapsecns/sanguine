@@ -3,6 +3,7 @@ package rest
 import (
 	"crypto/ecdsa"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -25,7 +26,7 @@ func EIP191Auth(c *gin.Context, deadline int64) (accountRecovered common.Address
 	s := strings.Split(auth, ":")
 	if len(s) != 2 {
 		err = fmt.Errorf("invalid authorization header format")
-		c.JSON(400, gin.H{"msg": err})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
 		return common.Address{}, err
 	}
 
@@ -34,11 +35,11 @@ func EIP191Auth(c *gin.Context, deadline int64) (accountRecovered common.Address
 	timestamp, err = strconv.ParseInt(s[0], 10, 64)
 	if err != nil {
 		err = fmt.Errorf("invalid timestamp in authorization")
-		c.JSON(400, gin.H{"msg": err})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
 		return common.Address{}, err
 	} else if timestamp < deadline {
 		err = fmt.Errorf("authorization too old")
-		c.JSON(401, gin.H{"msg": err}) // Unauthorized
+		c.JSON(http.StatusUnauthorized, gin.H{"msg": err}) // Unauthorized
 		return common.Address{}, err
 	}
 
@@ -47,18 +48,36 @@ func EIP191Auth(c *gin.Context, deadline int64) (accountRecovered common.Address
 	signature, err = hexutil.Decode(s[1])
 	if err != nil {
 		err = fmt.Errorf("signature not hex encoded in authorization")
-		c.JSON(400, gin.H{"msg": err})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
 		return common.Address{}, err
 	}
 
 	data := "\x19Ethereum Signed Message:\n" + strconv.Itoa(len(s[0])) + s[0]
 	digest := crypto.Keccak256([]byte(data)) // TODO: check []byte(data) ok
 
+	// identify byte position of the recovery ID ("v")
+	vIndex := len(signature) - 1
+
+	// Ethereum signatures commonly use v values of 27 or 28 for EIP-191.
+	// Some libraries may return v as 0 or 1, so we need to handle both cases. crypto.SigToPub expects 0/1
+	switch signature[vIndex] {
+	//nolint: mnd
+	case 27, 28:
+		signature[vIndex] -= 27 // Normalize to 0 or 1 for crypto.SigToPub
+	//nolint: mnd
+	case 0, 1:
+		// do nothing, already normalized
+	default:
+		err = fmt.Errorf("unrecognized recovery ID value - expected 0, 1, 27, or 28")
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
+		return common.Address{}, err
+	}
+
 	var recovered *ecdsa.PublicKey
 	recovered, err = crypto.SigToPub(digest, signature)
 	if err != nil {
 		err = fmt.Errorf("failed to recover signer from authorization")
-		c.JSON(400, gin.H{"msg": err})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
 		return common.Address{}, err
 	}
 

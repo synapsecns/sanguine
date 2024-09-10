@@ -69,6 +69,7 @@ import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 import { useBridgeQuoteUpdater } from '@/hooks/useBridgeQuoteUpdater'
+import { SwitchButton } from '@/components/ui/SwitchButton'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -422,63 +423,74 @@ export const Widget = ({
       >
         <BridgeMaintenanceProgressBar />
         <Transactions connectedAddress={connectedAddress} />
-        <section
-          className={cardStyle}
-          style={{ background: 'var(--synapse-surface)' }}
-        >
-          <ChainSelect
-            label="From"
-            isOrigin={true}
-            chain={CHAINS_BY_ID[originChainId]}
-            onChange={handleOriginChainSelection}
-          />
-          <input
-            className={inputStyle}
-            placeholder="0"
-            value={inputAmount}
-            onChange={handleUserInput}
-          />
-          <div className="flex flex-col items-end justify-center gap-2">
-            <TokenSelect
-              label="In"
+        <section className="grid gap-0.5">
+          <section
+            className={cardStyle}
+            style={{ background: 'var(--synapse-surface)' }}
+          >
+            <ChainSelect
+              label="From"
               isOrigin={true}
-              token={originToken}
-              onChange={handleOriginTokenSelection}
+              chain={CHAINS_BY_ID[originChainId]}
+              onChange={handleOriginChainSelection}
             />
-            <AvailableBalance
-              connectedAddress={connectedAddress}
-              setInputAmount={setInputAmount}
+            <input
+              className={inputStyle}
+              placeholder="0"
+              value={inputAmount}
+              onChange={handleUserInput}
             />
-          </div>
-        </section>
-        <section
-          className={`${cardStyle} gap-3 pb-2.5`}
-          style={{ background: 'var(--synapse-surface)' }}
-        >
-          <ChainSelect
-            label="To"
-            isOrigin={false}
-            chain={CHAINS_BY_ID[destinationChainId]}
-            onChange={handleDestinationChainSelection}
+            <div className="flex flex-col items-end justify-center gap-2">
+              <TokenSelect
+                label="In"
+                isOrigin={true}
+                token={originToken}
+                onChange={handleOriginTokenSelection}
+              />
+              <AvailableBalance
+                connectedAddress={connectedAddress}
+                setInputAmount={setInputAmount}
+              />
+            </div>
+          </section>
+          <SwitchButton
+            onClick={() => {
+              dispatch(setDestinationChainId(originChainId))
+              dispatch(setDestinationToken(originToken))
+              dispatch(setOriginChainId(destinationChainId))
+              dispatch(setOriginToken(destinationToken))
+            }}
           />
-          <input
-            className={inputStyle}
-            disabled={true}
-            placeholder=""
-            value={destinationValue}
-          />
-          <div className="flex flex-col items-end justify-center">
-            <TokenSelect
-              label="Out"
+          <section
+            className={`${cardStyle} gap-3 pb-2.5`}
+            style={{ background: 'var(--synapse-surface)' }}
+          >
+            <ChainSelect
+              label="To"
               isOrigin={false}
-              token={destinationToken}
-              onChange={handleDestinationTokenSelection}
+              chain={CHAINS_BY_ID[destinationChainId]}
+              onChange={handleDestinationChainSelection}
             />
-          </div>
+            <input
+              className={inputStyle}
+              disabled={true}
+              placeholder=""
+              value={destinationValue}
+            />
+            <div className="flex flex-col items-end justify-center">
+              <TokenSelect
+                label="Out"
+                isOrigin={false}
+                token={destinationToken}
+                onChange={handleDestinationTokenSelection}
+              />
+            </div>
+          </section>
         </section>
         <BridgeMaintenanceWarningMessage />
         <Receipt
           quote={bridgeQuote ?? null}
+          loading={isLoading}
           send={formatBigIntToString(
             stringToBigInt(
               debouncedInputAmount,

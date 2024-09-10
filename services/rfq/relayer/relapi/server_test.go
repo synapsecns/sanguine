@@ -50,7 +50,7 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 
 	// Fetch the quote request by tx hash
 	client := &http.Client{}
-	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/status?hash=%s", c.port, quoteRequest.OriginTxHash), nil)
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/request/by_tx_hash?hash=%s", c.port, quoteRequest.OriginTxHash), nil)
 	c.Require().NoError(err)
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
@@ -63,16 +63,20 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 	c.Equal(http.StatusOK, resp.StatusCode)
 
 	// Compare to expected result
-	var result relapi.GetQuoteRequestStatusResponse
+	var result relapi.GetQuoteRequestResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
-	expectedResult := relapi.GetQuoteRequestStatusResponse{
-		Status:        quoteRequest.Status.String(),
-		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash:  quoteRequest.OriginTxHash.String(),
-		OriginChainID: quoteRequest.Transaction.OriginChainId,
-		DestChainID:   quoteRequest.Transaction.DestChainId,
-		DestTxHash:    quoteRequest.DestTxHash.String(),
+	expectedResult := relapi.GetQuoteRequestResponse{
+		Status:          quoteRequest.Status.String(),
+		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
+		QuoteRequestRaw: result.QuoteRequestRaw,
+		OriginTxHash:    quoteRequest.OriginTxHash.String(),
+		DestTxHash:      quoteRequest.DestTxHash.String(),
+		OriginChainID:   quoteRequest.Transaction.OriginChainId,
+		DestChainID:     quoteRequest.Transaction.DestChainId,
+		OriginToken:     quoteRequest.Transaction.OriginToken.String(),
+		DestToken:       quoteRequest.Transaction.DestToken.String(),
+		Sender:          quoteRequest.Sender.String(),
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()
@@ -89,7 +93,7 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	// Fetch the quote request by tx hash
 	client := &http.Client{}
 	txIDStr := hexutil.Encode(quoteRequest.TransactionID[:])
-	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/status/by_tx_id?id=%s", c.port, txIDStr), nil)
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/request/by_tx_id?id=%s", c.port, txIDStr), nil)
 	c.Require().NoError(err)
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
@@ -102,16 +106,20 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	c.Equal(http.StatusOK, resp.StatusCode)
 
 	// Compare to expected result
-	var result relapi.GetQuoteRequestStatusResponse
+	var result relapi.GetQuoteRequestResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
-	expectedResult := relapi.GetQuoteRequestStatusResponse{
-		Status:        quoteRequest.Status.String(),
-		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash:  quoteRequest.OriginTxHash.String(),
-		OriginChainID: quoteRequest.Transaction.OriginChainId,
-		DestChainID:   quoteRequest.Transaction.DestChainId,
-		DestTxHash:    quoteRequest.DestTxHash.String(),
+	expectedResult := relapi.GetQuoteRequestResponse{
+		Status:          quoteRequest.Status.String(),
+		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
+		QuoteRequestRaw: result.QuoteRequestRaw,
+		OriginTxHash:    quoteRequest.OriginTxHash.String(),
+		DestTxHash:      quoteRequest.DestTxHash.String(),
+		OriginChainID:   quoteRequest.Transaction.OriginChainId,
+		DestChainID:     quoteRequest.Transaction.DestChainId,
+		OriginToken:     quoteRequest.Transaction.OriginToken.String(),
+		DestToken:       quoteRequest.Transaction.DestToken.String(),
+		Sender:          quoteRequest.Sender.String(),
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()

@@ -28,7 +28,7 @@ export const SelectSpecificNetworkButton = ({
   const ref = useRef<any>(null)
   const chain = CHAINS_BY_ID[itemChainId]
 
-  const buttonClass = joinClassNames({
+  const buttonClasses = {
     other: 'whitespace-nowrap',
     grid: 'grid gap-0.5',
     space: 'pl-2 pr-1.5 py-2.5 w-full',
@@ -37,12 +37,12 @@ export const SelectSpecificNetworkButton = ({
     hover: getHoverStyleForButton(chain?.color),
     activeStyle:
       isActive || isSelected ? getActiveStyleForButton(chain?.color) : '',
-  })
+  }
 
   return (
     <button
       ref={ref}
-      className={buttonClass}
+      className={joinClassNames(buttonClasses)}
       onClick={onClick}
       data-test-id={`${dataId}-item`}
     >
@@ -107,7 +107,7 @@ const ChainTokens = ({
       className="flex items-center cursor-pointer hover-trigger text-sm text-secondary -space-x-1.5"
     >
       {balanceTokens?.slice(0, max).map((token: TokenAndBalance) => {
-        return <HoverIcon token={token} />
+        return <HoverIcon token={token} key={token.token.symbol} />
       })}
       {remainder > 0 && (
         <span className="relative">

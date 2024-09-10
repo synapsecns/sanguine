@@ -1,6 +1,8 @@
 import { useAccount } from 'wagmi'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
+import { useTranslations } from 'next-intl'
+import deepmerge from 'deepmerge'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import {
@@ -14,7 +16,6 @@ import { commify } from '@ethersproject/units'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState } from 'react'
-import { Token } from '@/utils/types'
 import { getWalletClient, waitForTransactionReceipt } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -45,6 +46,17 @@ import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { setIsWalletPending } from '@/slices/wallet/reducer'
 
+export async function getStaticProps({ locale }) {
+  const userMessages = (await import(`../../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
+  return {
+    props: {
+      messages,
+    },
+  }
+}
 const StateManagedSwap = () => {
   const { address } = useAccount()
   const { synapseSDK } = useSynapseContext()
@@ -53,6 +65,10 @@ const StateManagedSwap = () => {
   const currentSDKRequestID = useRef(0)
   const router = useRouter()
   const { query, pathname } = router
+
+  const t = useTranslations('Swap')
+
+  const [isTyping, setIsTyping] = useState(false)
 
   useSyncQueryParamsWithSwapState()
 
@@ -65,8 +81,6 @@ const StateManagedSwap = () => {
 
   const {
     isSwapPaused,
-    pausedChainsList,
-    pausedModulesList,
     SwapMaintenanceProgressBar,
     SwapMaintenanceWarningMessage,
   } = useMaintenance()
@@ -188,7 +202,15 @@ const StateManagedSwap = () => {
 
         toast.dismiss(quoteToastRef.current.id)
 
-        const message = `Route found for swapping ${swapFromValue} ${swapFromToken.symbol} on ${CHAINS_BY_ID[swapChainId]?.name} to ${swapToToken.symbol}`
+        const message = `${t(
+          'Route found for swapping {value} {fromSymbol} on {chain} to {toSymbol}',
+          {
+            value: swapFromValue,
+            fromSymbol: swapFromToken.symbol,
+            chain: CHAINS_BY_ID[swapChainId]?.name,
+            toSymbol: swapToToken.symbol,
+          }
+        )}`
         console.log(message)
 
         quoteToastRef.current.id = toast(message, { duration: 3000 })
@@ -256,11 +278,20 @@ const StateManagedSwap = () => {
 
     dispatch(setIsWalletPending(true))
 
-    let pendingPopup: any
-    pendingPopup = toast(
-      `Initiating swap from ${swapFromToken.symbol} to ${swapToToken.symbol} on ${currentChainName}`,
-      { id: 'swap-in-progress-popup', duration: Infinity }
+    const msg = t(
+      'Initiating swap from {fromSymbol} to {toSymbol} on {chain}',
+      {
+        fromSymbol: swapFromToken.symbol,
+        toSymbol: swapToToken.symbol,
+        chain: currentChainName,
+      }
     )
+
+    let pendingPopup: any
+    pendingPopup = toast(msg, {
+      id: 'swap-in-progress-popup',
+      duration: Infinity,
+    })
     segmentAnalyticsEvent(
       `[Swap] initiates swap`,
       {
@@ -289,10 +320,16 @@ const StateManagedSwap = () => {
       const tx = await wallet.sendTransaction(payload)
 
       const originChainName = CHAINS_BY_ID[swapChainId]?.name
-      pendingPopup = toast(
-        `Swapping ${swapFromToken.symbol} on ${originChainName} to ${swapToToken.symbol}`,
-        { id: 'swap-in-progress-popup', duration: Infinity }
-      )
+
+      const msg = t('Swapping {fromSymbol} on {chain} to {toSymbol}', {
+        fromSymbol: swapFromToken?.symbol,
+        chain: originChainName,
+        toSymbol: swapToToken?.symbol,
+      })
+      pendingPopup = toast(msg, {
+        id: 'swap-in-progress-popup',
+        duration: Infinity,
+      })
 
       const transactionReceipt = await waitForTransactionReceipt(wagmiConfig, {
         hash: tx as Address,
@@ -314,8 +351,14 @@ const StateManagedSwap = () => {
       const successToastContent = (
         <div>
           <div>
-            Successfully swapped from {swapFromToken.symbol} to{' '}
-            {swapToToken.symbol} on {currentChainName}
+            {t(
+              'Successfully swapped from {swapFromToken} to {swapToToken} on {currentChainName}',
+              {
+                swapFromToken: swapFromToken.symbol,
+                swapToToken: swapToToken.symbol,
+                currentChainName: currentChainName,
+              }
+            )}
           </div>
           <ExplorerToastLink
             transactionHash={tx ?? zeroAddress}
@@ -350,11 +393,14 @@ const StateManagedSwap = () => {
       <div className="flex justify-center px-4 py-16 mx-auto lg:mx-0">
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
-            <PageHeader title="Swap" subtitle="Exchange assets on chain." />
+            <PageHeader
+              title={t('Swap')}
+              subtitle={t('Exchange assets on chain')}
+            />
           </div>
           <BridgeCard bridgeRef={swapDisplayRef}>
             <SwapMaintenanceProgressBar />
-            <SwapInputContainer />
+            <SwapInputContainer setIsTyping={setIsTyping} />
             <SwitchButton
               onClick={() => {
                 dispatch(setSwapFromToken(swapToToken))
@@ -378,6 +424,7 @@ const StateManagedSwap = () => {
               toChainId={swapChainId}
             />
             <SwapTransactionButton
+              isTyping={isTyping}
               isApproved={isApproved}
               approveTxn={approveTxn}
               executeSwap={executeSwap}

@@ -22,6 +22,8 @@ import (
 )
 
 // ContractListener listens for chain events and calls HandleLog.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name ContractListener --output ./mocks --case=underscore
 type ContractListener interface {
 	// Listen starts the listener and call HandleLog for each event
 	Listen(ctx context.Context, handler HandleLog) error
@@ -53,6 +55,7 @@ type chainListener struct {
 	blockWait       uint64
 	// otelRecorder is the recorder for the otel metrics.
 	otelRecorder iOtelRecorder
+	name         string
 }
 
 var (
@@ -94,7 +97,7 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 	}
 
 	if c.otelRecorder == nil {
-		c.otelRecorder, err = newOtelRecorder(c.handler, int(c.chainID))
+		c.otelRecorder, err = newOtelRecorder(c.handler, int(c.chainID), c.name)
 		if err != nil {
 			return fmt.Errorf("could not create otel recorder: %w", err)
 		}

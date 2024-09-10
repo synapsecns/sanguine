@@ -111,6 +111,7 @@ issues:
       linters:
         - revive
         - stylecheck
+        - dupl
     # wrapping errors when exporting for testing is tedious
     - path: export_test\.go
       linters:
@@ -145,4 +146,4 @@ issues:
         - staticcheck
         - wrapcheck
   exclude-use-default: false
-  new-from-rev: a9a6f84f0569de877d06a027257aeca266aeda49
+  new-from-rev: 9fe0f033b73acf6b8240f0a832c4b4d21e68181b

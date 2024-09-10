@@ -15,12 +15,11 @@ import (
 // RelayerClient is the interface for the relayer client.
 type RelayerClient interface {
 	Health(ctx context.Context) (ok bool, err error)
-	GetQuoteRequestStatusByTxHash(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
-	GetQuoteRequestStatusByTxID(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error)
 	RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error)
 	Withdraw(ctx context.Context, req *WithdrawRequest) (*WithdrawResponse, error)
 	GetTxHashByNonce(ctx context.Context, req *GetTxByNonceRequest) (*TxHashByNonceResponse, error)
 	GetQuoteRequestByTXID(ctx context.Context, txid string) (*GetQuoteRequestResponse, error)
+	GetQuoteRequestByTxHash(ctx context.Context, txhash string) (*GetQuoteRequestResponse, error)
 }
 
 type relayerClient struct {
@@ -53,40 +52,6 @@ func (r *relayerClient) Health(ctx context.Context) (ok bool, err error) {
 	ok = fastjson.GetString(resp.Body(), "status") == "ok"
 
 	return ok, nil
-}
-
-func (r *relayerClient) GetQuoteRequestStatusByTxHash(ctx context.Context, hash string) (*GetQuoteRequestStatusResponse, error) {
-	var res GetQuoteRequestStatusResponse
-
-	resp, err := r.client.R().SetContext(ctx).
-		SetQueryParam("hash", hash).
-		SetResult(&res).
-		Get(getQuoteStatusByTxHashRoute)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get quote request status by tx hash: %w", err)
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-	}
-
-	return &res, nil
-}
-
-func (r *relayerClient) GetQuoteRequestStatusByTxID(ctx context.Context, txid string) (*GetQuoteRequestStatusResponse, error) {
-	var res GetQuoteRequestStatusResponse
-
-	resp, err := r.client.R().SetContext(ctx).
-		SetQueryParam("id", txid).
-		SetResult(&res).
-		Get(getQuoteStatusByTxIDRoute)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get quote request status by tx hash: %w", err)
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
-	}
-
-	return &res, nil
 }
 
 func (r *relayerClient) RetryTransaction(ctx context.Context, txhash string) (*GetTxRetryResponse, error) {
@@ -141,7 +106,6 @@ func (r *relayerClient) GetTxHashByNonce(ctx context.Context, req *GetTxByNonceR
 		SetQueryParam("chain_id", fmt.Sprintf("%d", req.ChainID)).
 		SetQueryParam("nonce", fmt.Sprintf("%d", req.Nonce)).
 		Get(getTxHashByNonceRoute)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tx hash by nonce: %w", err)
 	}
@@ -161,6 +125,23 @@ func (r *relayerClient) GetQuoteRequestByTXID(ctx context.Context, txid string) 
 		Get(getRequestByTxID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get quote request by tx id: %w", err)
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode())
+	}
+
+	return &res, nil
+}
+
+func (r *relayerClient) GetQuoteRequestByTxHash(ctx context.Context, txHash string) (*GetQuoteRequestResponse, error) {
+	var res GetQuoteRequestResponse
+	resp, err := r.client.R().SetContext(ctx).
+		SetQueryParam("hash", txHash).
+		SetResult(&res).
+		Get(getRequestByTxHash)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get quote request by tx hash: %w", err)
 	}
 
 	if resp.StatusCode() != http.StatusOK {

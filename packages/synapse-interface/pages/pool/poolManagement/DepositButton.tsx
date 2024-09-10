@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useTranslations } from 'next-intl'
+
 import {
   usePoolDataState,
   usePoolDepositState,
@@ -12,7 +14,8 @@ import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 const DepositButton = ({ approveTxn, depositTxn }) => {
-  const [isConnected, setIsConnected] = useState(false) // Initialize to false
+  const t = useTranslations('Pools.DepositButton')
+  const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
 
   const { chain, isConnected: isConnectedInit } = useAccount()
@@ -57,7 +60,6 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
       )
     }
   )
-
   const isEmptyPool = useMemo(() => {
     return poolData.totalLocked === 0
   }, [poolData])
@@ -74,7 +76,7 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
 
   if (!isBalanceEnough) {
     buttonProperties = {
-      label: 'Insufficient Balance',
+      label: t('insufficientBalance'),
       onClick: null,
     }
   } else if (isLoading) {
@@ -88,29 +90,29 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
     }
   } else if (!isConnected) {
     buttonProperties = {
-      label: `Connect Wallet to Bridge`,
+      label: t('connectWallet'),
       onClick: openConnectModal,
     }
   } else if (chain?.id !== pool.chainId) {
+    const targetChain = chains.find((c) => c.id === pool.chainId)
     buttonProperties = {
-      label: `Switch to ${chains.find((c) => c.id === pool.chainId).name}`,
+      label: t('switchChain', { chainName: targetChain.name }),
       onClick: () => switchChain({ chainId: pool.chainId }),
-      pendingLabel: 'Switching chains',
+      pendingLabel: t('switchingChains'),
     }
   } else if (isApprovalNeeded) {
     buttonProperties = {
       onClick: approveTxn,
-      label: `Approve Token(s)`,
-      pendingLabel: 'Approving',
+      label: t('approveTokens'),
+      pendingLabel: t('approving'),
     }
   } else {
     buttonProperties = {
       onClick: depositTxn,
-      label: `Deposit`,
-      pendingLabel: 'Depositing',
+      label: t('deposit'),
+      pendingLabel: t('depositing'),
     }
   }
-
   return (
     pool &&
     buttonProperties && (

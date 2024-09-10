@@ -95,13 +95,12 @@ func NewRelayerAPI(
 }
 
 const (
-	getHealthRoute              = "/health"
-	getQuoteStatusByTxHashRoute = "/status"
-	getQuoteStatusByTxIDRoute   = "/status/by_tx_id"
-	getRetryRoute               = "/retry"
-	postWithdrawRoute           = "/withdraw"
-	getTxHashByNonceRoute       = "/tx_hash/by_nonce"
-	getRequestByTxID            = "/request/by_tx_id"
+	getHealthRoute        = "/health"
+	getRetryRoute         = "/retry"
+	postWithdrawRoute     = "/withdraw"
+	getTxHashByNonceRoute = "/tx_hash/by_nonce"
+	getRequestByTxID      = "/request/by_tx_id"
+	getRequestByTxHash    = "/request/by_tx_hash"
 )
 
 var logger = log.Logger("relayer-api")
@@ -115,10 +114,9 @@ func (r *RelayerAPIServer) Run(ctx context.Context) error {
 
 	// Assign GET routes
 	engine.GET(getHealthRoute, h.GetHealth)
-	engine.GET(getQuoteStatusByTxHashRoute, h.GetQuoteRequestStatusByTxHash)
-	engine.GET(getQuoteStatusByTxIDRoute, h.GetQuoteRequestStatusByTxID)
 	engine.GET(getRetryRoute, h.GetTxRetry)
 	engine.GET(getRequestByTxID, h.GetQuoteRequestByTxID)
+	engine.GET(getRequestByTxHash, h.GetQuoteRequestByTxHash)
 	engine.GET(metrics.MetricsPathDefault, gin.WrapH(r.handler.Handler()))
 
 	if r.cfg.EnableAPIWithdrawals {

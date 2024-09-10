@@ -125,6 +125,7 @@ export const TokenPopoverSelect = ({
                     onSelect={handleSelect}
                     selected={selected}
                     parsedBalance={option?.parsedBalance}
+                    isOrigin={isOrigin}
                   />
                 )
               )}
@@ -146,6 +147,7 @@ export const TokenPopoverSelect = ({
                     onSelect={handleSelect}
                     selected={selected}
                     parsedBalance={option?.parsedBalance}
+                    isOrigin={isOrigin}
                   />
                 )
               )}

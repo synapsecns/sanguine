@@ -11,6 +11,6 @@ func StripLinks(input string) string {
 	return stripLinks(input)
 }
 
-func GetTxAge(ctx context.Context, client client.EVM, res *relapi.GetQuoteRequestStatusResponse) string {
+func GetTxAge(ctx context.Context, client client.EVM, res *relapi.GetQuoteRequestResponse) string {
 	return getTxAge(ctx, client, res)
 }

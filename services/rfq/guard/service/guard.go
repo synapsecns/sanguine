@@ -75,7 +75,7 @@ func NewGuard(ctx context.Context, metricHandler metrics.Handler, cfg guardconfi
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), metricHandler)
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), metricHandler, listener.WithName("guard"))
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
@@ -171,8 +171,8 @@ func (g *Guard) startChainIndexers(ctx context.Context) (err error) {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for chainID := range g.cfg.GetChains() {
-		chainID := chainID // capture func literal
-
+		//nolint: copyloopvar
+		chainID := chainID // capture loop variable
 		group.Go(func() error {
 			err := g.runChainIndexer(ctx, chainID)
 			if err != nil {
@@ -241,7 +241,6 @@ func (g Guard) runChainIndexer(ctx context.Context, chainID int) (err error) {
 
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("listener failed: %w", err)
 	}

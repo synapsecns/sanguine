@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useAccount } from 'wagmi'
+import { useTranslations } from 'next-intl'
+
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { formatBigIntToPercentString } from '@/utils/bigint/format'
@@ -8,6 +10,7 @@ import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
+import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 
 export const BridgeExchangeRateInfo = () => {
   /* TODO:
@@ -36,6 +39,8 @@ const DestinationAddress = () => {
   const { address } = useAccount()
   const { destinationAddress } = useBridgeState()
 
+  const t = useTranslations('Bridge')
+
   const showAddress =
     destinationAddress &&
     getValidAddress(address) !== getValidAddress(destinationAddress)
@@ -47,7 +52,7 @@ const DestinationAddress = () => {
   if (showAddress && isInputValidAddress) {
     return (
       <div className="flex items-center space-x-1">
-        <div>To: </div>
+        <div>{t('To')}: </div>
         <div className="text-primary">{destinationAddress}</div>
       </div>
     )
@@ -55,16 +60,18 @@ const DestinationAddress = () => {
 }
 
 const Slippage = () => {
+  const { debouncedFromValue } = useBridgeState()
+  const t = useTranslations('Bridge')
+
   const {
-    fromValue,
     bridgeQuote: { exchangeRate },
-  } = useBridgeState()
+  } = useBridgeQuoteState()
 
   const { formattedPercentSlippage, safeFromAmount, underFee, textColor } =
-    useExchangeRateInfo(fromValue, exchangeRate)
+    useExchangeRateInfo(debouncedFromValue, exchangeRate)
   return (
     <div className="flex justify-between">
-      <span className="text-zinc-500 dark:text-zinc-400">Slippage</span>
+      <span className="text-zinc-500 dark:text-zinc-400">{t('Slippage')}</span>
       {safeFromAmount !== '0' && !underFee ? (
         <span className={textColor}>{formattedPercentSlippage}</span>
       ) : (
@@ -77,17 +84,20 @@ const Slippage = () => {
 const Router = () => {
   const {
     bridgeQuote: { bridgeModuleName },
-  } = useBridgeState()
+  } = useBridgeQuoteState()
+  const t = useTranslations('Bridge')
   return (
     <div className="flex justify-between">
-      <span className="text-zinc-500 dark:text-zinc-400">Router</span>
+      <span className="text-zinc-500 dark:text-zinc-400">{t('Router')}</span>
       {bridgeModuleName}
     </div>
   )
 }
 
 const TimeEstimate = () => {
-  const { fromToken, bridgeQuote } = useBridgeState()
+  const { fromToken } = useBridgeState()
+  const { bridgeQuote } = useBridgeQuoteState()
+  const t = useTranslations()
 
   let showText
   let showTime
@@ -95,13 +105,13 @@ const TimeEstimate = () => {
 
   if (fromToken && bridgeQuote?.estimatedTime > 60) {
     showTime = bridgeQuote?.estimatedTime / 60
-    timeUnit = 'minutes'
+    timeUnit = t('Time.minutes')
     showText = `${showTime} ${timeUnit} via ${bridgeQuote.bridgeModuleName}`
   }
 
   if (fromToken && bridgeQuote.estimatedTime <= 60) {
     showTime = bridgeQuote?.estimatedTime
-    timeUnit = 'seconds'
+    timeUnit = t('Time.seconds')
     showText = `${showTime} ${timeUnit} via ${bridgeQuote.bridgeModuleName}`
   }
 
@@ -111,13 +121,13 @@ const TimeEstimate = () => {
   ) {
     showText = (
       <span className="text-zinc-500 dark:text-zinc-400">
-        Powered by Synapse
+        {t('Bridge.Powered by Synapse')}
       </span>
     )
   }
 
   if (!fromToken) {
-    showText = `Select origin token`
+    showText = t('Bridge.Select origin token')
   }
 
   return showText
@@ -125,10 +135,12 @@ const TimeEstimate = () => {
 
 const GasDropLabel = () => {
   let decimalsToDisplay
+  const { toChainId } = useBridgeState()
   const {
     bridgeQuote: { gasDropAmount },
-    toChainId,
-  } = useBridgeState()
+  } = useBridgeQuoteState()
+
+  const t = useTranslations('Bridge')
   const symbol = CHAINS_BY_ID[toChainId]?.nativeCurrency.symbol
 
   if ([CHAINS.FANTOM.id].includes(toChainId)) {
@@ -156,7 +168,7 @@ const GasDropLabel = () => {
   return (
     <>
       <span className="text-zinc-500 dark:text-zinc-400">
-        Will also receive {formattedGasDropAmount}
+        {t('Will also receive')} {formattedGasDropAmount}
       </span>
       <span>
         {' '}
@@ -166,9 +178,9 @@ const GasDropLabel = () => {
   )
 }
 
-const useExchangeRateInfo = (fromValue, exchangeRate) => {
+const useExchangeRateInfo = (value, exchangeRate) => {
   const safeExchangeRate = typeof exchangeRate === 'bigint' ? exchangeRate : 0n
-  const safeFromAmount = fromValue ?? '0'
+  const safeFromAmount = value ?? '0'
 
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 4)
   const numExchangeRate = Number(formattedExchangeRate)

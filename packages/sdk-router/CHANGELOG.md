@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.11.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.11.0...@synapsecns/sdk-router@0.11.1) (2024-09-04)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+# [0.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.10.0...@synapsecns/sdk-router@0.11.0) (2024-08-26)
+
+
+### Features
+
+* **sdk:** uuid `BridgeQuote.id` ([#2896](https://github.com/synapsecns/sanguine/issues/2896)) ([85b5f53](https://github.com/synapsecns/sanguine/commit/85b5f538034a47f513d434aac2e55979bdbe390c))
+
+
+
+
+
 # [0.10.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.9.0...@synapsecns/sdk-router@0.10.0) (2024-08-05)
 
 

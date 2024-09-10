@@ -10,6 +10,7 @@ import { type Address } from 'viem'
 import { swapPoolRemoveLiquidity } from '@/actions/swapPoolRemoveLiquidity'
 import { swapPoolRemoveLiquidityOneToken } from '@/actions/swapPoolRemoveLiquidityOneToken'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { TranslatedText } from '@/components/ui/TranslatedText'
 
 export const approve = async (
   pool: Token,
@@ -50,7 +51,11 @@ export const withdraw = async (
   let pendingPopup: any
   let successPopup: any
 
-  pendingPopup = toast(`Starting your withdrawal...`, {
+  const msg = (
+    <TranslatedText namespace="Pools.WithdrawButton" id="withdrawing" />
+  )
+
+  pendingPopup = toast(msg, {
     id: 'withdraw-in-progress-popup',
     duration: Infinity,
   })
@@ -97,7 +102,9 @@ export const withdraw = async (
 
       const successToastContent = (
         <div>
-          <div>Completed Withdrawal: </div>
+          <div>
+            <TranslatedText namespace="Pools" id="Completed withdrawal" />:
+          </div>
           <ExplorerToastLink
             transactionHash={spendTransaction.transactionHash}
             chainId={chainId}

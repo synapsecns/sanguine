@@ -61,8 +61,10 @@ type Relayer struct {
 	decimalsCache  *xsync.MapOf[string, *uint8]
 	// semaphore is used to limit the number of concurrent requests
 	semaphore *semaphore.Weighted
-	// handlerMtx is used to synchronize handling of relay requests
-	handlerMtx   mapmutex.StringMapMutex
+	// handlerMtx is used to synchronize handling of relay requests, keyed on transaction ID
+	handlerMtx mapmutex.StringMapMutex
+	// balanceMtx is used to synchronize balance requests, keyed on a chainID and tokenAddress pair
+	balanceMtx   mapmutex.StringMapMutex
 	otelRecorder iOtelRecorder
 }
 
@@ -99,13 +101,13 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 
 		contract, err := fastbridge.NewFastBridgeRef(rfqAddr, chainClient)
 		if err != nil {
-			return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
+			return nil, fmt.Errorf("could not create fast bridge contract at address %s: %w", contract.Address(), err)
 		}
 		startBlock, err := contract.DeployBlock(&bind.CallOpts{Context: ctx})
 		if err != nil {
-			return nil, fmt.Errorf("could not get deploy block: %w", err)
+			return nil, fmt.Errorf("could not get deploy block at address %s: %w", contract.Address(), err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, rfqAddr, uint64(startBlock.Int64()), metricHandler)
+		chainListener, err := listener.NewChainListener(chainClient, store, rfqAddr, uint64(startBlock.Int64()), metricHandler, listener.WithName("relayer"))
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
@@ -165,6 +167,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		apiClient:      apiClient,
 		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
 		handlerMtx:     mapmutex.NewStringMapMutex(),
+		balanceMtx:     mapmutex.NewStringMapMutex(),
 		otelRecorder:   otelRecorder,
 	}
 	return &rel, nil

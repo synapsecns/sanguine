@@ -28,6 +28,14 @@ func NewHandler(db db.APIDB, cfg config.Config) *Handler {
 	}
 }
 
+// APIVersionMiddleware adds the X-API-Version header to the response with the current version # from versions.json file.
+func APIVersionMiddleware(serverVersion string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("X-Api-Version", serverVersion)
+		c.Next()
+	}
+}
+
 // ModifyQuote upserts a quote
 //
 // PUT /quotes

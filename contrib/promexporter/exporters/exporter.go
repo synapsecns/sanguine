@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -119,18 +120,30 @@ func (e *exporter) recordMetrics(ctx context.Context) (err error) {
 }
 
 // nolint: cyclop
-func (e *exporter) collectMetrics(ctx context.Context) error {
+func (e *exporter) collectMetrics(parentCtx context.Context) (err error) {
 	var errs []error
+	ctx, span := e.metrics.Tracer().Start(parentCtx, "CollectMetrics")
+
+	defer func() {
+		metrics.EndSpanWithErr(span, combineErrors(errs))
+	}()
+
+	if err := e.fetchRelayerBalances(ctx, e.cfg.RFQAPIUrl); err != nil {
+		errs = append(errs, fmt.Errorf("could not fetch relayer balances: %w", err))
+		span.AddEvent("could not fetch relayer balances")
+	}
+
 	if err := e.getTokenBalancesStats(ctx); err != nil {
 		errs = append(errs, fmt.Errorf("could not get token balances: %w", err))
+		span.AddEvent("could not get token balances")
 	}
 
 	// TODO: parallelize
-
 	for _, pending := range e.cfg.DFKPending {
 		if err := e.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName); err != nil {
 			errs = append(errs, fmt.Errorf("could not get stuck hero count: %w", err))
 		}
+		span.AddEvent("could not get stuck hero count")
 	}
 
 	for _, gasCheck := range e.cfg.SubmitterChecks {
@@ -139,6 +152,7 @@ func (e *exporter) collectMetrics(ctx context.Context) error {
 				errs = append(errs, fmt.Errorf("could setup metric: %w", err))
 			}
 		}
+		span.AddEvent("could get submitter stats")
 	}
 
 	for chainID := range e.cfg.BridgeChecks {
@@ -153,11 +167,28 @@ func (e *exporter) collectMetrics(ctx context.Context) error {
 				return nil
 			}, retry.WithMaxAttempts(-1), retry.WithMaxAttemptTime(time.Second*10), retry.WithMaxTotalTime(-1))
 		}
+		span.AddEvent("could not get vprice stats")
 	}
 
 	if len(errs) > 0 {
+		span.AddEvent("could not collect metrics")
 		return fmt.Errorf("could not collect metrics: %v", errs)
 	}
 
 	return nil
+}
+
+func combineErrors(errs []error) error {
+	if len(errs) == 0 {
+		return nil
+	}
+
+	// collect all error messages
+	var errMessages []string
+	for _, err := range errs {
+		errMessages = append(errMessages, err.Error())
+	}
+
+	// join them into a single string and return a new error
+	return errors.New(strings.Join(errMessages, "; "))
 }

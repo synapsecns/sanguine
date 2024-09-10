@@ -1,37 +1,37 @@
 {
   "name": "@synapsecns/rest-api",
-  "version": "1.0.69",
+  "version": "1.0.72",
   "private": "true",
   "engines": {
     "node": ">=18.17.0"
   },
   "scripts": {
-    "test": "tsdx test",
-    "start": "node ./dist/app.js",
-    "dev": "yarn add @synapsecns/sdk-router && concurrently \"npx tsc --watch\" \"nodemon -q dist/app.js\"",
-    "test:coverage": "echo 'No tests defined.'",
-    "lint:fix": "eslint src/**.ts --fix",
+    "build": "tsc",
+    "build:go": " ",
+    "start": "node dist/app.js",
+    "lint:fix": "eslint src/**/*.ts --fix",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
-    "build:go": " ",
-    "build:slither": " ",
-    "build": "echo 'please run build api'",
-    "build:api": "yarn add @synapsecns/sdk-router && tsc",
+    "test": "tsdx test",
+    "test:coverage": "echo 'No tests defined.'",
     "postinstall": "npm run build"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/units": "5.7.0",
-    "@synapsecns/sdk-router": "^0.10.0",
+    "@synapsecns/sdk-router": "^0.11.1",
     "bignumber": "^1.1.0",
     "ethers": "5.7.2",
     "express": "^4.18.2",
+    "lodash": "^4.17.21",
     "supertest": "^6.3.3"
   },
   "description": "A node.js project exposing a rest api for synapse sdk quotes",
   "devDependencies": {
+    "@types/supertest": "^6.0.2",
     "concurrently": "^8.2.0",
+    "lodash": "^4.17.21",
     "nodemon": "^3.0.1",
     "typescript": "^4.8.3"
   }

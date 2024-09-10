@@ -18,6 +18,9 @@ export const ExplorerLinks = {
   1285: 'https://moonriver.moonscan.io',
   2000: 'https://explorer.dogechain.dog',
   8453: 'https://basescan.org',
+  81457: 'https://blastscan.io',
+  534352: 'https://scrollscan.com',
+  59144: 'https://lineascan.build',
 }
 
 export const ExplorerNames = {
@@ -40,4 +43,7 @@ export const ExplorerNames = {
   1285: 'Moonriver Explorer',
   2000: 'Dogechain Explorer',
   8453: 'BaseScan',
+  81457: 'Blastscan',
+  534352: 'Scrollscan',
+  59144: 'LineaScan',
 }

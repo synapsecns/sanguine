@@ -3,6 +3,7 @@ package rest
 
 import (
 	"context"
+
 	"fmt"
 	"net/http"
 	"sync"
@@ -32,6 +33,14 @@ import (
 )
 
 const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
+
+func getCurrentVersion() (string, error) {
+	if len(APIversions.Versions) == 0 {
+		return "", fmt.Errorf("no versions found")
+	}
+
+	return APIversions.Versions[0].Version, nil
+}
 
 // QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
@@ -158,6 +167,12 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
 	h := NewHandler(r.db, r.cfg)
+
+	versionNumber, versionNumErr := getCurrentVersion()
+	if versionNumErr != nil {
+		return fmt.Errorf("could not get current API version: %w", versionNumErr)
+	}
+	engine.Use(APIVersionMiddleware(versionNumber))
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Apply AuthMiddleware only to the PUT routes
@@ -274,22 +289,28 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 		return addressRecovered, err
 	}
 
-	hasRole := r.roleCache[destChainID].Get(addressRecovered.Hex())
+	// Check and update cache
+	cachedRoleItem := r.roleCache[destChainID].Get(addressRecovered.Hex())
+	var hasRole bool
 
-	if hasRole == nil || hasRole.IsExpired() {
-		has, roleErr := bridge.HasRole(ops, relayerRole, addressRecovered)
-		if roleErr == nil {
-			r.roleCache[destChainID].Set(addressRecovered.Hex(), has, cacheInterval)
+	if cachedRoleItem == nil || cachedRoleItem.IsExpired() {
+		// Cache miss or expired, check on-chain
+		hasRole, err = bridge.HasRole(ops, relayerRole, addressRecovered)
+		if err != nil {
+			return addressRecovered, fmt.Errorf("unable to check relayer role on-chain: %w", err)
 		}
-
-		if roleErr != nil {
-			err = fmt.Errorf("unable to check relayer role on-chain")
-			return addressRecovered, err
-		} else if !has {
-			err = fmt.Errorf("q.Relayer not an on-chain relayer")
-			return addressRecovered, err
-		}
+		// Update cache
+		r.roleCache[destChainID].Set(addressRecovered.Hex(), hasRole, cacheInterval)
+	} else {
+		// Use cached value
+		hasRole = cachedRoleItem.Value()
 	}
+
+	// Verify role
+	if !hasRole {
+		return addressRecovered, fmt.Errorf("relayer not an on-chain relayer")
+	}
+
 	return addressRecovered, nil
 }
 

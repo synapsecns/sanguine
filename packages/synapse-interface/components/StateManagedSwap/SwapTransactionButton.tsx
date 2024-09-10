@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useTranslations } from 'next-intl'
 
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { EMPTY_SWAP_QUOTE, EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
@@ -10,6 +11,7 @@ import { useSwapState } from '@/slices/swap/hooks'
 import { SWAP_CHAIN_IDS } from '@/constants/existingSwapRoutes'
 
 export const SwapTransactionButton = ({
+  isTyping,
   approveTxn,
   executeSwap,
   isApproved,
@@ -17,6 +19,8 @@ export const SwapTransactionButton = ({
 }) => {
   const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
+
+  const t = useTranslations('Swap')
 
   const { chain, isConnected: isConnectedInit } = useAccount()
   const { chains, switchChain } = useSwitchChain()
@@ -59,7 +63,8 @@ export const SwapTransactionButton = ({
     (isConnected && !sufficientBalance) ||
     swapQuote === EMPTY_SWAP_QUOTE_ZERO ||
     swapQuote === EMPTY_SWAP_QUOTE ||
-    isSwapPaused
+    isSwapPaused ||
+    isTyping
 
   let buttonProperties
 
@@ -74,39 +79,41 @@ export const SwapTransactionButton = ({
 
   if (isSwapPaused) {
     buttonProperties = {
-      label: 'Swap paused',
+      label: t('Swap paused'),
       onClick: null,
     }
   } else if (!swapChainId) {
     buttonProperties = {
-      label: 'Please select Origin network',
+      label: t('Please select Origin network'),
       onClick: null,
     }
   } else if (!SWAP_CHAIN_IDS.includes(swapChainId)) {
     buttonProperties = {
-      label: 'Swaps are not available on this network',
+      label: t('Swaps are not available on this network'),
       onClick: null,
     }
   } else if (!swapFromToken) {
     buttonProperties = {
-      label: `Please select token`,
+      label: t('Please select token'),
       onClick: null,
     }
   } else if (!isConnected && fromValueBigInt > 0) {
     buttonProperties = {
-      label: `Connect Wallet to Swap`,
+      label: t('Connect Wallet to Swap'),
       onClick: openConnectModal,
     }
   } else if (isConnected && !sufficientBalance) {
     buttonProperties = {
-      label: 'Insufficient balance',
+      label: t('Insufficient balance'),
       onClick: null,
     }
   } else if (chain?.id != swapChainId && fromValueBigInt > 0) {
     buttonProperties = {
-      label: `Switch to ${chains.find((c) => c.id === swapChainId).name}`,
+      label: `${t('Switch to')} ${
+        chains.find((c) => c.id === swapChainId).name
+      }`,
       onClick: () => switchChain({ chainId: swapChainId }),
-      pendingLabel: 'Switching chains',
+      pendingLabel: t('Switching chains'),
     }
   } else if (
     !isApproved &&
@@ -116,14 +123,14 @@ export const SwapTransactionButton = ({
   ) {
     buttonProperties = {
       onClick: approveTxn,
-      label: `Approve ${swapFromToken?.symbol}`,
-      pendingLabel: 'Approving',
+      label: `${t('Approve')} ${swapFromToken?.symbol}`,
+      pendingLabel: t('Approving'),
     }
   } else {
     buttonProperties = {
       onClick: executeSwap,
-      label: `Swap ${swapFromToken?.symbol} for ${swapToToken?.symbol}`,
-      pendingLabel: 'Swapping',
+      label: `${t('Swap')} ${swapFromToken?.symbol} for ${swapToToken?.symbol}`,
+      pendingLabel: t('Swapping'),
     }
   }
 

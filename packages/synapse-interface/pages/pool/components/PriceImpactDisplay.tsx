@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useTranslations } from 'next-intl'
+
 import { formatBigIntToString } from '@/utils/bigint/format'
 
 function removeLeadingZeros(inputValue: number): number {
@@ -15,6 +17,8 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
   let colorClassName: string
   let labelText: string
   let content: any
+
+  const t = useTranslations('Pools.Other')
 
   const priceImpactValue: number = useMemo(() => {
     if (!priceImpact) return 0
@@ -42,10 +46,10 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
 
   if (priceImpactValue > 0) {
     colorClassName = 'text-green-500'
-    labelText = 'Bonus'
+    labelText = t('Bonus')
   } else {
     colorClassName = 'text-red-500'
-    labelText = 'Price Impact'
+    labelText = t('Price impact')
   }
 
   if (priceImpactValue == 0) {

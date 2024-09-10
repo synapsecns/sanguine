@@ -20,7 +20,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-var maxRPCRetryTime = 30 * time.Second
+var (
+	maxTotalTime    = 15 * time.Second
+	maxRPCRetryTime = 30 * time.Second
+)
 
 // handleBridgeRequestedLog handles the BridgeRequestedLog event.
 // Step 1: Seen
@@ -162,6 +165,47 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
+	// check balance and mark it as CommitPending or NotEnoughInventory.
+	// note that this will update the request.Status in-place.
+	err = q.commitPendingBalance(ctx, span, &request)
+	if err != nil {
+		return fmt.Errorf("could not commit pending balance: %w", err)
+	}
+
+	//nolint:exhaustive
+	switch request.Status {
+	case reldb.CommittedPending:
+		// immediately forward the request to handleCommitPending
+		span.AddEvent("forwarding to handleCommitPending")
+		fwdErr := q.Forward(ctx, request)
+		if fwdErr != nil {
+			logger.Errorf("could not forward to handle commit pending: %w", fwdErr)
+			span.AddEvent(fmt.Sprintf("could not forward to handle commit pending: %s", fwdErr.Error()))
+		}
+	case reldb.NotEnoughInventory:
+		span.AddEvent("not enough inventory; not forwarding")
+	default:
+		logger.Errorf("unexpected request status: %s", request.Status.String())
+		span.AddEvent(fmt.Sprintf("unexpected request status: %s", request.Status.String()))
+	}
+
+	return nil
+}
+
+// commitPendingBalance locks the balance and marks the request as CommitPending.
+// nolint: cyclop
+func (q *QuoteRequestHandler) commitPendingBalance(ctx context.Context, span trace.Span, request *reldb.QuoteRequest) (err error) {
+	// lock the consumed balance
+	key := getBalanceMtxKey(q.Dest.ChainID, request.Transaction.DestToken)
+	span.SetAttributes(attribute.String("balance_lock_key", key))
+	unlocker, ok := q.balanceMtx.TryLock(key)
+	if !ok {
+		// balance is locked due to concurrent request, try again later
+		span.SetAttributes(attribute.Bool("locked", true))
+		return nil
+	}
+	defer unlocker.Unlock()
+
 	// get destination committable balance
 	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
 	if errors.Is(err, inventory.ErrUnsupportedChain) {
@@ -179,7 +223,21 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 
 	// check if we have enough inventory to handle the request
 	if committableBalance.Cmp(request.Transaction.DestAmount) < 0 {
+		request.Status = reldb.NotEnoughInventory
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory, &request.Status)
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+		return nil
+	}
+
+	allowed, err := q.limiter.IsAllowed(ctx, request)
+	if err != nil {
+		return fmt.Errorf("could not check if allowed: %w", err)
+	}
+	if !allowed {
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedConfirmed, &request.Status)
+		span.AddEvent("cannot relay due to rate limit. waiting for one block confirmation before relaying.")
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
@@ -209,14 +267,6 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending, &request.Status)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
-	}
-
-	// immediately forward the request to handleCommitPending
-	span.AddEvent("forwarding to handleCommitPending")
-	fwdErr := q.Forward(ctx, request)
-	if fwdErr != nil {
-		logger.Errorf("could not forward to handle commit pending: %w", fwdErr)
-		span.AddEvent("could not forward to handle commit pending")
 	}
 
 	return nil
@@ -356,8 +406,37 @@ func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridge.Fast
 // Step 6: ProvePosting
 //
 // This is the sixth step in the bridge process. Here we submit the claim transaction to the origin chain.
-func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
-	// relays been completed, it's time to go back to the origin chain and try to prove
+func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
+	// fetch the block of the relay transaction to confirm that it has been finalized
+	relayBlockNumber, err := q.getRelayBlockNumber(ctx, request)
+	if err != nil {
+		// relay tx must have gotten reorged; mark as RelayRaceLost
+		span.SetAttributes(attribute.String("receipt_error", err.Error()))
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayRaceLost, nil)
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+		return fmt.Errorf("could not get relay block number: %w", err)
+	}
+
+	currentBlockNumber := q.Dest.LatestBlock()
+	proveConfirmations, err := q.cfg.GetFinalityConfirmations(int(q.Dest.ChainID))
+	if err != nil {
+		return fmt.Errorf("could not get prove confirmations: %w", err)
+	}
+
+	//nolint:gosec
+	span.SetAttributes(
+		attribute.Int("current_block_number", int(currentBlockNumber)),
+		attribute.Int("relay_block_number", int(relayBlockNumber)),
+		attribute.Int("prove_confirmations", int(proveConfirmations)),
+	)
+	if currentBlockNumber < relayBlockNumber+proveConfirmations {
+		span.AddEvent("not enough confirmations")
+		return nil
+	}
+
+	// relay has been finalized, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
@@ -375,6 +454,43 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.
 		return fmt.Errorf("could not update request status: %w", err)
 	}
 	return nil
+}
+
+// getRelayBlockNumber fetches the block number of the relay transaction for a given quote request.
+func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request reldb.QuoteRequest) (blockNumber uint64, err error) {
+	// fetch the transaction receipt for corresponding tx hash
+	var receipt *types.Receipt
+	err = retry.WithBackoff(ctx, func(context.Context) error {
+		receipt, err = q.Dest.Client.TransactionReceipt(ctx, request.DestTxHash)
+		if err != nil {
+			return fmt.Errorf("could not get transaction receipt: %w", err)
+		}
+		return nil
+	}, retry.WithMaxTotalTime(maxTotalTime))
+	if err != nil {
+		return blockNumber, fmt.Errorf("could not get receipt: %w", err)
+	}
+	parser, err := fastbridge.NewParser(q.Dest.Bridge.Address())
+	if err != nil {
+		return blockNumber, fmt.Errorf("could not create parser: %w", err)
+	}
+
+	// check that a Relayed event was emitted
+	for _, log := range receipt.Logs {
+		if log == nil {
+			continue
+		}
+		_, parsedEvent, ok := parser.ParseEvent(*log)
+		if !ok {
+			continue
+		}
+		_, ok = parsedEvent.(*fastbridge.FastBridgeBridgeRelayed)
+		if ok {
+			return receipt.BlockNumber.Uint64(), nil
+		}
+	}
+
+	return blockNumber, fmt.Errorf("relayed event not found for dest tx hash: %s", request.DestTxHash.Hex())
 }
 
 // handleProofProvided handles the ProofProvided event emitted by the Bridge.
@@ -487,12 +603,23 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.
 // Error Handlers Only from this point below.
 //
 // handleNotEnoughInventory handles the not enough inventory status.
-func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
+	// acquire balance lock
+	key := getBalanceMtxKey(q.Dest.ChainID, request.Transaction.DestToken)
+	span.SetAttributes(attribute.String("balance_lock_key", key))
+	unlocker, ok := q.balanceMtx.TryLock(key)
+	if !ok {
+		// balance is locked due to concurrent request, try again later
+		span.SetAttributes(attribute.Bool("locked", true))
+		return nil
+	}
+	defer unlocker.Unlock()
+
+	// commit destination balance
 	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
 	if err != nil {
 		return fmt.Errorf("could not get committable balance: %w", err)
 	}
-	// if committableBalance > destAmount
 	if committableBalance.Cmp(request.Transaction.DestAmount) > 0 {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending, &request.Status)
 		if err != nil {

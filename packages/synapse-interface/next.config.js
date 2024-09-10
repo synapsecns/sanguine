@@ -43,6 +43,10 @@ const nextConfig = {
   typescript: {
     tsconfigPath: './tsconfig.json',
   },
+  i18n: {
+    locales: ['en-US', 'fr', 'ar', 'tr', 'es'],
+    defaultLocale: 'en-US',
+  },
 }
 
 module.exports = {
