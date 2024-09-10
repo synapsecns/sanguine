@@ -8,7 +8,7 @@ When preparing to submit a pull request, there are a few key points to keep in m
 
 First and foremost, we encourage you to use the default PR template provided in the repository. This template is designed to capture all the necessary information about your changes, making it easier for reviewers to understand the context and purpose of your work.
 
-If your PR is related to a specific task in Notion, it's helpful to include the Notion ID in your PR title or description. For example, you might use a format like [SLT-143] at the beginning of your PR title. This allows us to easily track the relationship between tasks and code changes.
+If your PR is related to a specific task in Notion, it's helpful to include the Notion ID in your PR title or description. For example, you might use a format like [SLT-143] at the end of your PR title. This allows us to easily track the relationship between tasks and code changes. **Note: It's important to include the Notion ID at the end, as if its put at the beginning it will be interpreted as semantic versioning and corrupt the changelog**.
 
 ![Example](./assets/notion-example.png)
 
