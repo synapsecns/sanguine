@@ -1,5 +1,7 @@
 import _ from 'lodash'
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
+
 import { useAppDispatch } from '@/store/hooks'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import Tooltip from '@tw/Tooltip'
@@ -17,6 +19,8 @@ import { useBridgeDisplayState } from '@/slices/bridge/hooks'
 
 const SettingsSlideOver = () => {
   const dispatch = useAppDispatch()
+  const t = useTranslations('Settings')
+
   const { showDestinationAddress } = useBridgeDisplayState()
 
   const onClose = () => {
@@ -42,13 +46,13 @@ const SettingsSlideOver = () => {
         `}
       >
         <div className="pt-2"></div>
-        <div className="text-sm font-light text-white">Options</div>
+        <div className="text-sm font-light text-white">{t('Options')}</div>
         {/* @ts-ignore */}
         <Switch.Group>
           <div className="flex items-center justify-between w-full">
             <Switch.Label className="flex items-center mr-4 text-white">
-              Show withdrawal address{' '}
-              <Tooltip content="Allows bridging to another address.">
+              {t('Show withdrawal address')}{' '}
+              <Tooltip content={t('Allows bridging to another address')}>
                 <InformationCircleIcon className="w-4 h-4 ml-1 cursor-pointer text-[#252027] fill-bgLighter" />
               </Tooltip>
             </Switch.Label>
@@ -90,6 +94,8 @@ const SettingsSlideOver = () => {
 const DeadlineInput = ({ deadlineMinutes }: { deadlineMinutes: number }) => {
   const dispatch = useAppDispatch()
 
+  const t = useTranslations('Time')
+
   return (
     <div className="flex h-16 pb-4 space-x-2 text-left">
       <div
@@ -113,7 +119,7 @@ const DeadlineInput = ({ deadlineMinutes }: { deadlineMinutes: number }) => {
           value={deadlineMinutes}
         />
         <span className="hidden text-lg text-white md:block opacity-30">
-          mins
+          {t('min')}
         </span>
       </div>
     </div>

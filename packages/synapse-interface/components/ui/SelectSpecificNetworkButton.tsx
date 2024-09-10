@@ -107,7 +107,7 @@ const ChainTokens = ({
       className="flex items-center cursor-pointer hover-trigger text-sm text-secondary -space-x-1.5"
     >
       {balanceTokens?.slice(0, max).map((token: TokenAndBalance) => {
-        return <HoverIcon token={token} />
+        return <HoverIcon token={token} key={token.token.symbol} />
       })}
       {remainder > 0 && (
         <span className="relative">

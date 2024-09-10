@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import Fuse from 'fuse.js'
+import { useTranslations } from 'next-intl'
 
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 import { Token } from '@/utils/types'
@@ -9,6 +10,8 @@ import { sortByPriorityRank } from '@/utils/sortByPriorityRank'
 
 export const useToTokenListArray = (searchStr: string = '') => {
   const { fromChainId, toTokens, toChainId }: BridgeState = useBridgeState()
+
+  const t = useTranslations('Bridge')
 
   let possibleTokens: Token[] = sortByPriorityRank(toTokens)
 
@@ -84,8 +87,8 @@ export const useToTokenListArray = (searchStr: string = '') => {
   }
 
   return {
-    'Receive…': possibleTokens,
-    'All receivable tokens': remainingChainTokens,
-    'All other tokens': allOtherToTokens,
+    [t('ReceiveWithEllipsis')]: possibleTokens,
+    [t('All receivable tokens')]: remainingChainTokens,
+    [t('All other tokens')]: allOtherToTokens,
   }
 }

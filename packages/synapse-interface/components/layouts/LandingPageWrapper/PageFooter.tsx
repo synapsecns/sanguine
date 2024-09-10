@@ -1,4 +1,5 @@
-import Grid from '@tw/Grid'
+import { useTranslations } from 'next-intl'
+
 import Link from 'next/link'
 
 import {
@@ -116,6 +117,7 @@ const supportList: FooterDataProps[] = [
 ]
 
 export function PageFooter() {
+  const t = useTranslations('Nav')
   return (
     <footer>
       <div className="flex flex-wrap justify-between max-w-4xl gap-8 p-8 m-auto">
@@ -134,10 +136,10 @@ export function PageFooter() {
             target="_blank"
             rel="noreferrer"
           >
-            Terms of Use
+            {t('Terms of Use')}
           </a>
         </div>
-        <p>｜</p>
+        <p>{t('|')}</p>
         <div className="text-opacity-50 text-secondaryTextColor">
           <a
             className="duration-75 hover:text-white transform-gpu hover:transition-all"
@@ -145,7 +147,7 @@ export function PageFooter() {
             target="_blank"
             rel="noreferrer"
           >
-            Privacy Policy
+            {t('Privacy Policy')}
           </a>
         </div>
       </div>
@@ -165,6 +167,7 @@ function FooterBlock({ elements }: { elements: FooterDataProps[] }) {
 
 function DisplayText({ element }: { element: FooterDataProps }) {
   const { text, url, type } = element
+  const t = useTranslations('Nav')
 
   if (type === FooterType.URL) {
     return (
@@ -175,7 +178,7 @@ function DisplayText({ element }: { element: FooterDataProps }) {
           target="_blank"
           rel="noreferrer"
         >
-          {text}
+          {t(text)}
         </a>
       </div>
     )
@@ -186,11 +189,11 @@ function DisplayText({ element }: { element: FooterDataProps }) {
           className="duration-75 hover:text-white hover:text-opacity-100 transform-gpu hover:transition-all"
           href={url}
         >
-          {text}
+          {t(text)}
         </Link>
       </div>
     )
   } else {
-    return <div className="text-opacity-80">{text}</div>
+    return <div className="text-opacity-80">{t(text)}</div>
   }
 }

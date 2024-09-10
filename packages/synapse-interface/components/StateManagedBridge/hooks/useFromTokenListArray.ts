@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import Fuse from 'fuse.js'
+import { useTranslations } from 'next-intl'
 
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -10,6 +11,8 @@ import { sortByPriorityRank } from '@/utils/sortByPriorityRank'
 export const useFromTokenListArray = (searchStr: string = '') => {
   const { fromTokens, fromChainId } = useBridgeState()
   const portfolioBalances = usePortfolioBalances()
+
+  const t = useTranslations('Bridge')
 
   let possibleTokens = sortByPriorityRank(fromTokens)
 
@@ -101,8 +104,8 @@ export const useFromTokenListArray = (searchStr: string = '') => {
   }
 
   return {
-    'Send…': possibleTokens,
-    'All sendable tokens': remainingTokens,
-    'All other tokens': allOtherFromTokens,
+    [t('SendWithEllipsis')]: possibleTokens,
+    [t('All sendable tokens')]: remainingTokens,
+    [t('All other tokens')]: allOtherFromTokens,
   }
 }

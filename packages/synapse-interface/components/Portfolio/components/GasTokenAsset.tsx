@@ -1,5 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
+
 import { Token } from '@/utils/types'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { HoverTooltip } from '@/components/HoverTooltip'
@@ -15,6 +17,8 @@ export const GasTokenAsset = ({
 }) => {
   const { icon, symbol, decimals } = token
   const parsedBalance = getParsedBalance(balance, decimals as number)
+
+  const t = useTranslations('Bridge')
 
   return (
     <div
@@ -43,13 +47,15 @@ export const GasTokenAsset = ({
           </div>
         </HoverTooltip>
         <HoverTooltip
-          hoverContent={<div className="whitespace-nowrap">Gas token</div>}
+          hoverContent={
+            <div className="whitespace-nowrap">{t('Gas token')}</div>
+          }
         >
           <GasIcon className="pt-0.5 m-auto fill-secondary" />
         </HoverTooltip>
       </div>
 
-      <div className="p-2 text-sm opacity-70">Not bridgeable</div>
+      <div className="p-2 text-sm opacity-70">{t('Not bridgeable')}</div>
     </div>
   )
 }

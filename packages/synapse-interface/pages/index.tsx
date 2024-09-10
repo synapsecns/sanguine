@@ -1,7 +1,9 @@
+import deepmerge from 'deepmerge'
+import ReactGA from 'react-ga'
+
 import StateManagedBridge from './state-managed-bridge'
 import { Portfolio } from '@/components/Portfolio/Portfolio'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import ReactGA from 'react-ga'
 import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsWithBridgeState'
 
 // TODO: someone should add this to the .env, disable if blank, etc.
@@ -9,6 +11,18 @@ import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsW
 // I'd recommend moving this to a sushi-style analytics provider wrapper.
 const TRACKING_ID = 'G-BBC13LQXBD'
 ReactGA.initialize(TRACKING_ID)
+
+export async function getStaticProps({ locale }) {
+  const userMessages = (await import(`../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
+  return {
+    props: {
+      messages,
+    },
+  }
+}
 
 const Home = () => {
   useSyncQueryParamsWithBridgeState()

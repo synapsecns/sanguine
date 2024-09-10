@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { useTranslations } from 'next-intl'
 
 export function ConnectWalletButton() {
   const [clientReady, setClientReady] = useState<boolean>(false)
   const { address } = useAccount()
+
+  const t = useTranslations('Wallet')
 
   useEffect(() => {
     setClientReady(true)
@@ -35,7 +38,7 @@ export function ConnectWalletButton() {
                         style={buttonStyle}
                         onClick={openConnectModal}
                       >
-                        Connect Wallet
+                        {t('Connect Wallet')}
                       </button>
                     )
                   }
