@@ -1,4 +1,6 @@
 import numeral from 'numeral'
+import { useTranslations } from 'next-intl'
+
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
@@ -12,14 +14,16 @@ import { usePoolDataState } from '@/slices/pools/hooks'
 const PoolInfoSection = () => {
   const { pool, poolData, isLoading } = usePoolDataState()
 
+  const t = useTranslations('Pools.Other')
+
   const usdFormat = poolData.totalLockedUSD > 1000000 ? '$0,0.0' : '$0,0'
 
   return (
     <div className="space-y-4">
       <CurrencyReservesCard />
-      <InfoSectionCard title="Pool Info">
+      <InfoSectionCard title={t('Pool Info')}>
         <InfoListItem
-          labelText="Trading Fee"
+          labelText={t('Trading Fee')}
           content={
             poolData && poolData.swapFee && !isLoading ? (
               formatBigIntToPercentString(poolData.swapFee, 8, 2, false)
@@ -29,7 +33,7 @@ const PoolInfoSection = () => {
           }
         />
         <InfoListItem
-          labelText="Virtual Price"
+          labelText={t('Virtual Price')}
           content={
             poolData && poolData?.virtualPrice && !isLoading ? (
               <AugmentWithUnits
@@ -42,7 +46,7 @@ const PoolInfoSection = () => {
           }
         />
         <InfoListItem
-          labelText="Total Liquidity"
+          labelText={t('Total Liquidity')}
           content={
             poolData && poolData?.totalLocked && !isLoading ? (
               <AugmentWithUnits
@@ -55,7 +59,7 @@ const PoolInfoSection = () => {
           }
         />
         <InfoListItem
-          labelText="Total Liquidity USD"
+          labelText={t('Total Liquidity USD')}
           content={
             poolData && poolData?.totalLockedUSD && !isLoading ? (
               <AugmentWithUnits

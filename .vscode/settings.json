@@ -1,6 +1,5 @@
 {
   "editor.fontLigatures": "'calt', 'liga', 'ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'ss06', 'ss07', 'ss08', 'ss09'",
-  // "editor.formatOnSave": true,
   "[typescript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
@@ -21,5 +20,10 @@
   "solidity.packageDefaultDependenciesDirectory": "lib",
   "solidity.compileUsingRemoteVersion": "v0.8.17+commit.8df45f5f",
   "solidity.formatter": "prettier",
-  "solidity.defaultCompiler": "remote"
+  "solidity.defaultCompiler": "remote",
+  "tailwindCSS.classAttributes": [
+    ".*class.*",
+    ".*Class.*",
+    ".*Properties.*",
+  ]
 }

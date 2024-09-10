@@ -1,5 +1,7 @@
 import { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
+import { useTranslations } from 'next-intl'
+
 import { Token } from '@/utils/types'
 import { useRouter } from 'next/router'
 import { DepositIcon } from '../icons/DepositIcon'
@@ -17,6 +19,8 @@ export const PoolActionOptions = ({
   options: string[]
 }) => {
   const router = useRouter()
+
+  const t = useTranslations('Pools')
 
   const handleWithdrawClick = () => {
     router.push(`/pool/${pool.routerIndex}`)
@@ -60,43 +64,43 @@ export const PoolActionOptions = ({
                 ${open ? 'bg-[#101018]' : ''}
               `}
             >
-              <div className="text-md text-[#BFBCC2]">Actions</div>
+              <div className="text-md text-[#BFBCC2]">{t('Actions')}</div>
               <DownArrow />
             </div>
           </Popover.Button>
           <TransactionPopoverContainer>
-            {options.includes('Deposit') && (
+            {options.includes(t('Deposit')) && (
               <OptionButton
                 icon={<DepositIcon />}
-                text={'Deposit'}
+                text={t('Deposit')}
                 onClick={handleDepositClick}
               />
             )}
-            {options.includes('Stake') && (
+            {options.includes(t('Stake')) && (
               <OptionButton
                 icon={<StakeIcon />}
-                text={'Stake'}
+                text={t('Stake')}
                 onClick={handleStakeClick}
               />
             )}
-            {options.includes('Unstake') && (
+            {options.includes(t('Unstake')) && (
               <OptionButton
                 icon={<UnstakeIcon />}
-                text={'Unstake'}
+                text={t('Unstake')}
                 onClick={handleUnstakeClick}
               />
             )}
-            {options.includes('Withdraw') && (
+            {options.includes(t('Withdraw')) && (
               <OptionButton
                 icon={<WithdrawIcon />}
-                text={'Withdraw'}
+                text={t('Withdraw')}
                 onClick={handleWithdrawClick}
               />
             )}
-            {options.includes('Claim') && (
+            {options.includes(t('Claim')) && (
               <OptionButton
                 icon={<ClaimIcon />}
-                text={'Claim'}
+                text={t('Claim')}
                 onClick={handleClaimClick}
               />
             )}

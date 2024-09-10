@@ -6,6 +6,8 @@ import { txErrorHandler } from '@utils/txErrorHandler'
 import { unstakeLpToken } from '@/actions/unstakeLpToken'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { Token } from '@types'
+import { useTranslations } from 'next-intl'
+import { TranslatedText } from '@/components/ui/TranslatedText'
 
 export const withdrawStake = async (
   address: Address,
@@ -36,7 +38,9 @@ export const withdrawStake = async (
 
     const toastContent = (
       <div>
-        <div>Withdraw completed:</div>
+        <div>
+          <TranslatedText namespace="Pools" id="Withdrawal completed" />:
+        </div>
         <ExplorerToastLink
           transactionHash={txReceipt.transactionHash}
           chainId={chainId}

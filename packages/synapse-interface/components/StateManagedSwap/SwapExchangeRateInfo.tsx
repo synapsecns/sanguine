@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
 import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
@@ -67,11 +68,12 @@ const ExpectedPrice = ({
   formattedExchangeRate,
   toToken,
 }) => {
+  const t = useTranslations('Swap')
+
   return (
     <div className="flex justify-between">
       <div className="flex space-x-2 text-[#88818C]">
-        <p>Expected Price on</p>
-        {expectedToChain}
+        <p>{t('Expected price on')}</p> {expectedToChain}
       </div>
       <span className="text-[#88818C]">
         {safeFromAmount != 0n ? (
@@ -93,9 +95,10 @@ const Slippage = ({
   textColor,
   formattedPercentSlippage,
 }) => {
+  const t = useTranslations('Swap')
   return (
     <div className="flex justify-between">
-      <p className="text-[#88818C] ">Slippage</p>
+      <p className="text-[#88818C] ">{t('Slippage')}</p>
       {safeFromAmount != 0n && !underFee ? (
         <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
       ) : (

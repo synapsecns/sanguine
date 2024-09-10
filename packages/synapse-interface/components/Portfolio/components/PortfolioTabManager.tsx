@@ -1,5 +1,7 @@
-import { useAppDispatch } from '@/store/hooks'
 import { useAccount } from 'wagmi'
+import { useTranslations } from 'next-intl'
+
+import { useAppDispatch } from '@/store/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
 import { SearchBar } from './SearchBar'
@@ -14,17 +16,19 @@ export const PortfolioTabManager = () => {
     dispatch(setActiveTab(newTab))
   }
 
+  const t = useTranslations()
+
   return (
     <div data-test-id="portfolio-tab-manager" className="flex flex-col">
       <div className="flex items-center">
         <Tab
-          display="Portfolio"
+          display={t('Portfolio.Portfolio')}
           activeTab={activeTab}
           tabType={PortfolioTabs.PORTFOLIO}
           handleTabChange={handleTabChange}
         />
         <Tab
-          display="Activity"
+          display={t('Activity.Activity')}
           activeTab={activeTab}
           tabType={PortfolioTabs.ACTIVITY}
           handleTabChange={handleTabChange}
