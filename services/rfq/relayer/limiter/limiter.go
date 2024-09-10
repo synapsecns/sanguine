@@ -106,6 +106,7 @@ func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request *reldb
 	actualConfirmations := currentBlockNumber - request.BlockNumber
 	hasEnoughConfirmations := actualConfirmations >= requiredConfirmations
 
+	//nolint: gosec
 	span.SetAttributes(
 		attribute.Int64("current_block_number", int64(currentBlockNumber)),
 		attribute.Int64("required_confirmations", int64(requiredConfirmations)),
