@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl'
+
 import { SettingsIcon } from '../icons/SettingsIcon'
 
 export const SettingsToggle = ({
@@ -5,15 +7,16 @@ export const SettingsToggle = ({
 }: {
   showSettingsToggle: boolean
 }) => {
+  const t = useTranslations('Settings')
   return (
     <>
       {showSettingsToggle ? (
         <>
           <SettingsIcon className="w-5 h-5 mr-2" />
-          <span>Settings</span>
+          <span>{t('Settings')}</span>
         </>
       ) : (
-        <span>Close</span>
+        <span>{t('Close')}</span>
       )}
     </>
   )

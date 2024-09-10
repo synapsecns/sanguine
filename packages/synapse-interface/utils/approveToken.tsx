@@ -5,6 +5,7 @@ import ExplorerToastLink from '@components/ExplorerToastLink'
 import { type Address, zeroAddress } from 'viem'
 import { approveErc20Token } from '@/actions/approveErc20Token'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { TranslatedText } from '@/components/ui/TranslatedText'
 
 export const approveToken = async (
   address: string,
@@ -16,7 +17,11 @@ export const approveToken = async (
   let pendingPopup: any
   let successPopup: any
 
-  pendingPopup = toast(`Requesting approval on ${currentChainName}`, {
+  const msg = (
+    <TranslatedText namespace="Pools.Other" id="Requesting approval" />
+  )
+
+  pendingPopup = toast(msg, {
     id: 'approve-in-progress-popup',
     duration: Infinity,
   })
@@ -48,7 +53,10 @@ export const approveToken = async (
       })
       const successToastContent = (
         <div>
-          <div>Successfully approved on {currentChainName}</div>
+          <div>
+            <TranslatedText namespace="Pools" id="Successfully approved on" />{' '}
+            {currentChainName}
+          </div>
           <ExplorerToastLink
             transactionHash={approveTx?.transactionHash ?? zeroAddress}
             chainId={chainId}

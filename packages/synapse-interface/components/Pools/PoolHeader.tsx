@@ -3,6 +3,7 @@ import { memo, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useAccount } from 'wagmi'
 import { Address } from 'viem'
+import { useTranslations } from 'next-intl'
 
 import { getPoolUrl } from '@urls'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -16,6 +17,8 @@ export const PoolHeader = memo(
     const { chain: connectedChain } = useAccount()
     const chain = CHAINS_BY_ID[pool.chainId]
     const { balances } = usePortfolioState()
+
+    const t = useTranslations('Pools')
 
     useEffect(() => {
       setMounted(true)
@@ -57,7 +60,7 @@ export const PoolHeader = memo(
         {canDeposit && pool.incentivized ? (
           <Link href={getPoolUrl(pool)}>
             <div className="text-sm text-[#99E6FF] flex items-center space-x-1">
-              <div className="hover:underline">Deposit</div>
+              <div className="hover:underline">{t('Deposit')}</div>
               <RightArrow color="#99E6FF" />
             </div>
           </Link>
@@ -72,10 +75,11 @@ export const PoolHeader = memo(
 )
 
 const ConnectedIndicator = () => {
+  const t = useTranslations('Wallet')
   return (
     <div className="flex flex-row space-x-1 text-sm">
       <div className="w-2 h-2 my-auto ml-auto bg-green-500 rounded-full " />
-      <div className="text-xs text-secondaryTextColor">Connected</div>
+      <div className="text-xs text-secondaryTextColor">{t('Connected')}</div>
     </div>
   )
 }

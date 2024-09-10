@@ -1,5 +1,6 @@
 import React from 'react'
 import Button from '@tw/Button'
+import { useTranslations } from 'next-intl'
 
 const InteractiveInputRow = ({
   title,
@@ -22,6 +23,8 @@ const InteractiveInputRow = ({
   disabled: boolean
   icon: string
 }) => {
+  const t = useTranslations('Bridge')
+
   return (
     <div className="flex flex-col rounded-sm bg-bgLight">
       <div className="border-none rounded-md">
@@ -101,7 +104,7 @@ const InteractiveInputRow = ({
                       `}
                       onClick={disabled ? undefined : onClickBalance}
                     >
-                      Max
+                      {t('Max')}
                     </Button>
                   </div>
                 )}
@@ -113,7 +116,10 @@ const InteractiveInputRow = ({
                   onClick={onClickBalance}
                 >
                   {balanceStr}
-                  <span className=" text-secondaryTextColor"> available</span>
+                  <span className=" text-secondaryTextColor">
+                    {' '}
+                    {t('available')}
+                  </span>
                 </label>
               )}
             </div>

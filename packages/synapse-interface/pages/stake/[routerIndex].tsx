@@ -1,23 +1,43 @@
 import { useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import deepmerge from 'deepmerge'
+
 import StandardPageContainer from '@layouts/StandardPageContainer'
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import StakeCard from './StakeCard'
 import { POOL_BY_ROUTER_INDEX } from '@/constants/tokens'
-import Link from 'next/link'
 import { POOL_PATH } from '@/constants/urls'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 
-export async function getStaticPaths() {
-  const paths = Object.keys(POOL_BY_ROUTER_INDEX).map((routerIndex) => ({
-    params: { routerIndex },
-  }))
+export async function getStaticPaths({ locales }) {
+  const poolRouterIndices = Object.keys(POOL_BY_ROUTER_INDEX)
 
-  return { paths, fallback: false }
+  const paths = poolRouterIndices.flatMap((routerIndex) =>
+    locales.map((locale) => ({
+      params: { routerIndex },
+      locale,
+    }))
+  )
+
+  return {
+    paths,
+    fallback: false,
+  }
 }
 
-export const getStaticProps = async (context) => {
-  return { props: {} }
+export async function getStaticProps({ params, locale }) {
+  const userMessages = (await import(`../../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
+  return {
+    props: {
+      messages,
+      routerIndex: params.routerIndex,
+    },
+  }
 }
 
 const SingleStakePage = () => {
@@ -25,6 +45,8 @@ const SingleStakePage = () => {
   const { routerIndex } = router.query
   const { address } = useAccount()
   const { chain } = useAccount()
+
+  const t = useTranslations('Pools')
 
   const pool = POOL_BY_ROUTER_INDEX[routerIndex as string]
 
@@ -41,7 +63,7 @@ const SingleStakePage = () => {
             <Link href={`${POOL_PATH}/${pool.routerIndex}`}>
               <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
                 <ChevronLeftIcon className="w-4 h-4" />
-                Back to Pool
+                {t('Back to Pool')}
               </div>
             </Link>
             <StakeCard address={address} chainId={pool.chainId} pool={pool} />

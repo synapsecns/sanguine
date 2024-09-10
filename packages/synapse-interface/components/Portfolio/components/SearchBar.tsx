@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react'
 import { Address } from 'viem'
+import { useTranslations } from 'next-intl'
+
 import { useAppDispatch } from '@/store/hooks'
 import {
   usePortfolioActionHandlers,
@@ -117,12 +119,14 @@ const FilterInput = ({
 }
 
 function getFilterPlaceholder(activeTab: PortfolioTabs | undefined) {
+  const t = useTranslations('Portfolio')
+
   switch (activeTab) {
     case PortfolioTabs.PORTFOLIO:
-      return 'Tokens, chains...'
+      return `${t('Tokens, chains')}...`
     case PortfolioTabs.ACTIVITY:
-      return 'Bridge txs...'
+      return `${t('Bridge txs')}...`
     default:
-      return 'Search...'
+      return `${t('Search')}...`
   }
 }

@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.38.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.38.1...@synapsecns/synapse-interface@0.38.2) (2024-09-10)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.38.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.38.0...@synapsecns/synapse-interface@0.38.1) (2024-09-10)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.38.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.37.4...@synapsecns/synapse-interface@0.38.0) (2024-09-06)
+
+
+### Features
+
+* **synapse-interface:** numerical input format ([#3101](https://github.com/synapsecns/sanguine/issues/3101)) ([98c9194](https://github.com/synapsecns/sanguine/commit/98c919460d80a1f48368702d081ff07f6663c1c5))
+
+
+
+
+
+## [0.37.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.37.3...@synapsecns/synapse-interface@0.37.4) (2024-09-06)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.37.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.37.2...@synapsecns/synapse-interface@0.37.3) (2024-09-04)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

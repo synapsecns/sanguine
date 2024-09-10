@@ -4,9 +4,11 @@ import { useEffect, useState, useMemo } from 'react'
 import { LoaderIcon } from 'react-hot-toast'
 import { Token } from '@/utils/types'
 import { getPoolApyData } from '@/utils/actions/getPoolApyData'
-import ApyTooltip from '@/components/ApyTooltip'
+import { ApyTooltipData } from '@/components/ApyTooltipData'
 import { hasAllPrices } from '@/utils/hasAllPrices'
 import { useAppSelector } from '@/store/hooks'
+import { HoverTooltip } from '@/components/HoverTooltip'
+import { InformationCircleIcon } from '@heroicons/react/outline'
 
 const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
   if (poolTokens)
@@ -84,17 +86,16 @@ const StakeCardTitle = ({
       <div className="text-lg font-normal text-white text-opacity-70">
         <div>
           {displayPoolApyData ? (
-            <span className="text-white ">{displayPoolApyData}</span>
+            <span className="text-white">{displayPoolApyData}</span>
           ) : (
             <LoaderIcon />
           )}
         </div>
-        <div className="flex">
+        <div className="flex items-center space-x-1">
           <div className="text-sm">APY</div>
-          <ApyTooltip
-            apyData={poolApyData}
-            className="flex items-center ml-1"
-          />
+          <HoverTooltip hoverContent={<ApyTooltipData apyData={poolApyData} />}>
+            <InformationCircleIcon className="w-4 h-4 hover:cursor-pointer" />
+          </HoverTooltip>
         </div>
       </div>
     </div>

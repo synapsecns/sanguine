@@ -1,4 +1,6 @@
-import { ARBITRUM, DOGE, FANTOM, HARMONY } from '@/constants/chains/master'
+import { useTranslations } from 'next-intl'
+
+import { DOGE, FANTOM, HARMONY } from '@/constants/chains/master'
 import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const Warning = () => {
@@ -8,15 +10,18 @@ export const Warning = () => {
   const isChainFantom = [fromChainId, toChainId].includes(FANTOM.id)
   const isChainDoge = [fromChainId, toChainId].includes(DOGE.id)
 
+  const t = useTranslations('Warning')
+
   if (isChainHarmony) {
     return (
       <WarningMessage
-        header="Warning! The Harmony bridge has been exploited."
+        header={t('Warning! The Harmony bridge has been exploited')}
         message={
           <>
             <p>
-              Do not bridge via Harmony unless you understand the risks
-              involved.
+              {t(
+                'Do not bridge via Harmony unless you understand the risks involved'
+              )}
             </p>
           </>
         }
@@ -25,11 +30,13 @@ export const Warning = () => {
   } else if (isChainFantom) {
     return (
       <WarningMessage
-        header="Warning! The Fantom bridge has been exploited."
+        header={t('Warning! The Fantom bridge has been exploited')}
         message={
           <>
             <p>
-              Do not bridge via Fantom unless you understand the risks involved.
+              {t(
+                'Do not bridge via Fantom unless you understand the risks involved'
+              )}
             </p>
           </>
         }
@@ -38,12 +45,13 @@ export const Warning = () => {
   } else if (isChainDoge) {
     return (
       <WarningMessage
-        header="Alert: Transactions to Dogechain are temporarily paused."
+        header={t('Alert: Transactions to Dogechain are temporarily paused')}
         message={
           <>
             <p>
-              You may still bridge funds from Dogechain to any supported
-              destination chain.
+              {t(
+                'You may still bridge funds from Dogechain to any supported destination chain'
+              )}
             </p>
           </>
         }

@@ -1,7 +1,11 @@
+import { useTranslations } from 'next-intl'
+
 import Tabs from '@tw/Tabs'
 import TabItem from '@tw/TabItem'
 
 const LiquidityManagementTabs = ({ cardNav, setCardNav }) => {
+  const t = useTranslations('Pools')
+
   return (
     <Tabs>
       <TabItem
@@ -11,7 +15,7 @@ const LiquidityManagementTabs = ({ cardNav, setCardNav }) => {
         }}
         className="rounded-tl-sm"
       >
-        Add Liquidity
+        {t('Add Liquidity')}
       </TabItem>
       <TabItem
         isActive={cardNav === 'removeLiquidity'}
@@ -20,7 +24,7 @@ const LiquidityManagementTabs = ({ cardNav, setCardNav }) => {
         }}
         className="rounded-tr-sm"
       >
-        Remove Liquidity
+        {t('Remove Liquidity')}
       </TabItem>
     </Tabs>
   )

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, memo } from 'react'
 import { useAccount } from 'wagmi'
 import { type Address } from 'viem'
 import { LoaderIcon, toast } from 'react-hot-toast'
+import { useTranslations } from 'next-intl'
+
 import { useAppSelector } from '@/store/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { getSinglePoolData } from '@utils/actions/getPoolData'
@@ -137,6 +139,8 @@ const ManageLp = ({ pool, stakedBalance, address }) => {
   const { poolTokenBalances } = usePortfolioState()
   const { amount, reward } = stakedBalance
 
+  const t = useTranslations('Pools')
+
   const lpTokenBalance = useMemo(() => {
     if (!address) {
       return null
@@ -171,7 +175,13 @@ const ManageLp = ({ pool, stakedBalance, address }) => {
         <div className="flex items-center text-xs">
           <PoolActionOptions
             pool={pool}
-            options={['Deposit', 'Withdraw', 'Stake', 'Unstake', 'Claim']}
+            options={[
+              t('Deposit'),
+              t('Withdraw'),
+              t('Stake'),
+              t('Unstake'),
+              t('Claim'),
+            ]}
           />
         </div>
       </div>
@@ -182,6 +192,8 @@ const ManageLp = ({ pool, stakedBalance, address }) => {
 export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
   const { poolTokenBalances } = usePortfolioState()
   const { amount, reward } = stakedBalance
+
+  const t = useTranslations('Pools')
 
   const lpTokenBalance = useMemo(() => {
     if (!address) {
@@ -238,7 +250,7 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
         </div>
         {reward > 0n && (
           <div className="text-sm">
-            <span className="text-white">Earned: </span>
+            <span className="text-white">{t('Earned')}: </span>
             <span className="text-green-400 hover:underline">
               <Link href={`${STAKE_PATH}/${pool.routerIndex}`}>
                 {formatBigIntToString(reward, 18, 5)}{' '}
