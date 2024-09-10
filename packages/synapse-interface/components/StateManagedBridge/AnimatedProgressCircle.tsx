@@ -45,16 +45,17 @@ const AnimatedProgressCircle = ({
       height="24"
       viewBox="-12 -12 24 24"
       stroke="currentcolor"
-      strokeOpacity=".33"
+      stroke-opacity=".33"
       fill="none"
-      className="absolute -rotate-90 -scale-y-100"
+      className="absolute -rotate-90"
     >
       <circle r="8" />
-      <circle r="8" strokeDasharray="1" pathLength="1">
+      <circle r="8" stroke-dasharray="1" pathLength="1">
         <animate
           attributeName="stroke-dashoffset"
-          values="1; 2"
+          values="2; 1"
           dur={`${convertMsToSeconds(duration)}s`}
+          fill="freeze"
         />
       </circle>
     </svg>
