@@ -1,8 +1,6 @@
 import { useTranslations } from 'next-intl'
-import { InformationCircleIcon } from '@heroicons/react/outline'
 
 import Grid from '@tw/Grid'
-import Tooltip from '@tw/Tooltip'
 
 interface ApyData {
   fullCompoundedAPY: number
@@ -17,14 +15,12 @@ interface BaseApyData {
   yearlyApr?: number
 }
 
-export default function ApyTooltip({
+export function ApyTooltipData({
   apyData,
   baseApyData = {},
-  className,
 }: {
   apyData: ApyData
   baseApyData?: BaseApyData
-  className?: string
 }) {
   const compoundedApy: number = apyData && apyData.fullCompoundedAPY
   const weeklyApr: number = apyData && apyData.weeklyAPR
@@ -39,44 +35,36 @@ export default function ApyTooltip({
   const t = useTranslations('Pools')
 
   return (
-    <Tooltip
-      title={t('Rewards')}
-      className={className}
-      content={
-        apyData && (
-          <div className="pb-2">
-            <Grid
-              cols={{ xs: 1, sm: 1 }}
-              gap={2}
-              className="inline-block font-medium"
-            >
-              <PercentageRow
-                title={t('Daily APR')}
-                baseApr={baseDailyApr}
-                rewardApr={dailyApr}
-              />
-              <PercentageRow
-                title={t('Weekly APR')}
-                baseApr={baseWeeklyApr}
-                rewardApr={weeklyApr}
-              />
-              <PercentageRow
-                title={t('Yearly APR')}
-                baseApr={baseYearlyApr}
-                rewardApr={yearlyApr}
-              />
-              <PercentageRow
-                title={t('Yearly APY')}
-                baseApr={baseCompoundedApy}
-                rewardApr={compoundedApy}
-              />
-            </Grid>
-          </div>
-        )
-      }
-    >
-      <InformationCircleIcon className="w-4 h-4 ml-1 cursor-pointer text-[#252027] fill-bgLighter" />
-    </Tooltip>
+    apyData && (
+      <div className="w-56 pb-2">
+        <Grid
+          cols={{ xs: 1, sm: 1 }}
+          gap={2}
+          className="inline-block font-medium"
+        >
+          <PercentageRow
+            title={t('Daily APR')}
+            baseApr={baseDailyApr}
+            rewardApr={dailyApr}
+          />
+          <PercentageRow
+            title={t('Weekly APR')}
+            baseApr={baseWeeklyApr}
+            rewardApr={weeklyApr}
+          />
+          <PercentageRow
+            title={t('Yearly APR')}
+            baseApr={baseYearlyApr}
+            rewardApr={yearlyApr}
+          />
+          <PercentageRow
+            title={t('Yearly APY')}
+            baseApr={baseCompoundedApy}
+            rewardApr={compoundedApy}
+          />
+        </Grid>
+      </div>
+    )
   )
 }
 
