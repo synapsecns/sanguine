@@ -7,6 +7,7 @@ import { BridgeQuote } from '@/utils/types'
 
 export const useConfirmNewBridgePrice = () => {
   const quoteRef = useRef<any>(null)
+  const bpsThreshold = 0.0001 // 1bps
 
   const [hasQuoteOutputChanged, setHasQuoteOutputChanged] =
     useState<boolean>(false)
@@ -50,16 +51,16 @@ export const useConfirmNewBridgePrice = () => {
     const validQuotes =
       bridgeQuote?.outputAmount && previousBridgeQuote?.outputAmount
 
-    const outputAmountDiffMoreThan1bps = validQuotes
+    const outputAmountDiffMoreThanThreshold = validQuotes
       ? calculateOutputRelativeDifference(
           bridgeQuote,
           quoteRef.current ?? previousBridgeQuote
-        ) > 0.0001
+        ) > bpsThreshold
       : false
 
     if (
       validQuotes &&
-      outputAmountDiffMoreThan1bps &&
+      outputAmountDiffMoreThanThreshold &&
       hasSameSelectionsAsPreviousQuote
     ) {
       requestUserConfirmChange(previousBridgeQuote)
