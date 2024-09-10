@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl'
+
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
 import { Token } from '@types'
@@ -11,6 +13,8 @@ const NoPoolBody = ({
   pool: Token
   poolChainId: number
 }) => {
+  const t = useTranslations('Pools')
+
   return pool && poolChainId ? (
     <Grid cols={{ xs: 1 }} gap={2}>
       <Card
@@ -23,18 +27,18 @@ const NoPoolBody = ({
         divider={false}
       >
         <div className="w-full pt-4 text-center text-gray-400">
-          Switch to{' '}
+          {t('Switch to')}{' '}
           <span className={`${getNetworkTextColor(pool.color)} font-medium`}>
             {CHAINS_BY_ID[poolChainId].name}
           </span>{' '}
-          to interact with the <u>{pool.name}</u> pool.
+          {t('to interact with the')} <u>{pool.name}</u> {t('pool')}.
         </div>
       </Card>
     </Grid>
   ) : (
     <Grid cols={{ xs: 1 }} gap={2}>
       <div className="w-full pt-4 text-center text-gray-400">
-        Invalid Pool ID
+        {t('Invalid Pool ID')}
       </div>
     </Grid>
   )

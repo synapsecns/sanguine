@@ -82,6 +82,7 @@ func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbri
 		TransactionID:  event.TransactionId,
 		TxHash:         event.TransactionHash,
 		Status:         guarddb.ProveCalled,
+		BlockNumber:    event.Raw.BlockNumber,
 	}
 	err = g.db.StorePendingProven(ctx, proven)
 	if err != nil {
@@ -115,7 +116,17 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// first, get the corresponding bridge request
+	// first, verify that the prove tx is finalized
+	finalized, err := g.isFinalized(ctx, int(proven.Origin), proven.BlockNumber)
+	if err != nil {
+		return fmt.Errorf("could not check if tx is finalized: %w", err)
+	}
+	span.SetAttributes(attribute.Bool("finalized", finalized))
+	if !finalized {
+		return nil
+	}
+
+	// get the corresponding bridge request
 	bridgeRequest, err := g.db.GetBridgeRequestByID(ctx, proven.TransactionID)
 	if err != nil {
 		return fmt.Errorf("could not get bridge request for txid %s: %w", hexutil.Encode(proven.TransactionID[:]), err)
@@ -148,7 +159,6 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 
 			return tx, nil
 		})
-
 		if err != nil {
 			return fmt.Errorf("could not dispute: %w", err)
 		}
@@ -218,7 +228,7 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 }
 
 func relayMatchesBridgeRequest(event *fastbridge.FastBridgeBridgeRelayed, bridgeRequest *guarddb.BridgeRequest) bool {
-	//TODO: is this exhaustive?
+	// TODO: is this exhaustive?
 	if event.TransactionId != bridgeRequest.TransactionID {
 		return false
 	}
@@ -241,4 +251,35 @@ func relayMatchesBridgeRequest(event *fastbridge.FastBridgeBridgeRelayed, bridge
 		return false
 	}
 	return true
+}
+
+// isFinalized checks if a transaction is finalized versus the configured confirmations threshold.
+func (g *Guard) isFinalized(ctx context.Context, chainID int, txBlockNumber uint64) (bool, error) {
+	span := trace.SpanFromContext(ctx)
+
+	client, err := g.client.GetChainClient(ctx, chainID)
+	if err != nil {
+		return false, fmt.Errorf("could not get chain client: %w", err)
+	}
+
+	currentBlockNumber, err := client.BlockNumber(ctx)
+	if err != nil {
+		return false, fmt.Errorf("could not get block number: %w", err)
+	}
+
+	chainCfg, ok := g.cfg.Chains[chainID]
+	if !ok {
+		return false, fmt.Errorf("could not get chain config for chain %d", chainID)
+	}
+	threshBlockNumber := txBlockNumber + chainCfg.Confirmations
+
+	//nolint:gosec
+	span.SetAttributes(
+		attribute.Int("chain_id", chainID),
+		attribute.Int("current_block_number", int(currentBlockNumber)),
+		attribute.Int("tx_block_number", int(txBlockNumber)),
+		attribute.Int("confirmations", int(chainCfg.Confirmations)),
+	)
+
+	return currentBlockNumber >= threshBlockNumber, nil
 }

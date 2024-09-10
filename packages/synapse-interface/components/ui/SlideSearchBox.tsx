@@ -6,7 +6,7 @@ const isMobileDevice = () => {
   return window.innerWidth <= 768
 }
 
-const className = joinClassNames({
+const classNames = {
   text: 'text-sm font-normal',
   placeholder: 'placeholder-white/40',
   focus: 'focus:ring-0',
@@ -14,7 +14,7 @@ const className = joinClassNames({
   flex: 'flex-grow',
   space: 'px-2 py-1.5',
   background: 'bg-[#252226]',
-})
+}
 
 export function SlideSearchBox({
   searchStr,
@@ -36,7 +36,7 @@ export function SlideSearchBox({
   return (
     <input
       ref={inputRef}
-      className={className}
+      className={joinClassNames(classNames)}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}
       value={searchStr}

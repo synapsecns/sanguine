@@ -4,6 +4,8 @@ import Slider from 'react-input-slider'
 import { useEffect, useMemo, useState } from 'react'
 import { waitForTransactionReceipt } from '@wagmi/core'
 import { type Address } from 'viem'
+import { useTranslations } from 'next-intl'
+
 import { useAppDispatch } from '@/store/hooks'
 import { getCoinTextColorCombined } from '@styles/tokens'
 import { ALL } from '@constants/withdrawTypes'
@@ -43,6 +45,8 @@ const Withdraw = ({ address }: { address: string }) => {
   const dispatch = useAppDispatch()
   const { synapseSDK } = useSynapseContext()
   const [percentage, setPercentage] = useState(0)
+
+  const t = useTranslations('Pools')
 
   const { pool, poolData } = usePoolDataState()
   const { poolUserData } = usePoolUserDataState()
@@ -247,15 +251,15 @@ const Withdraw = ({ address }: { address: string }) => {
     pool && (
       <div>
         <div className="percentage">
-          <span className="mr-2 text-white">Withdraw Percentage %</span>
+          <span className="mr-2 text-white">{t('Withdraw Percentage')} %</span>
           <input
             className={`
-            px-2 py-1 w-1/5 rounded-md
-            focus:ring-indigo-500 focus:outline-none focus:border-purple-700
-            border border-transparent
-            bg-[#111111]
-            text-gray-300
-          `}
+              px-2 py-1 w-1/5 rounded-md
+              focus:ring-indigo-500 focus:outline-none focus:border-purple-700
+              border border-transparent
+              bg-[#111111]
+              text-gray-300
+            `}
             placeholder="0"
             onChange={(e) => onPercentChange(Number(e.currentTarget.value))}
             onFocus={(e) => e.target.select()}

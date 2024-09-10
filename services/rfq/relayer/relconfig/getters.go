@@ -215,16 +215,16 @@ func (c Config) GetConfirmations(chainID int) (value uint64, err error) {
 	return value, nil
 }
 
-// GetLimitConfirmations returns the LimitConfirmations for the rate limiter.
-func (c Config) GetLimitConfirmations(chainID int) (value uint64, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "LimitConfirmations")
+// GetFinalityConfirmations returns the FinalityConfirmations for the given chainID.
+func (c Config) GetFinalityConfirmations(chainID int) (value uint64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "FinalityConfirmations")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(uint64)
 	if !ok {
-		return value, fmt.Errorf("failed to cast LimitConfirmations to int")
+		return value, fmt.Errorf("failed to cast FinalityConfirmations to int")
 	}
 	return value, nil
 }

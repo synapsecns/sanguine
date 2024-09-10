@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import toast from 'react-hot-toast'
+import { useTranslations } from 'next-intl'
+
 import { CHAINS_BY_ID } from '@constants/chains'
 import { getNetworkTextColor } from '@styles/chains'
-import { Chain } from '@/utils/types/index'
 import { AcceptedChainId } from '@constants/chains'
 
 const StandardPageContainer = ({
@@ -20,16 +21,7 @@ const StandardPageContainer = ({
   address: string
   connectedChainId: number
 }) => {
-  // useEffect(() => {
-  //   if (!address) return
-
-  //   toast(
-  //     <div>
-  //       <div>Switched account to</div>
-  //       <div className="break-all">{address}</div>
-  //     </div>
-  //   )
-  // }, [address])
+  const t = useTranslations('Wallet')
 
   useEffect(() => {
     if (!connectedChainId) return
@@ -39,18 +31,17 @@ const StandardPageContainer = ({
 
     if (unsupported) {
       unsupportedToaster = toast.error(
-        `Connected to an unsupported network. Please switch networks.`,
+        t('Connected to an unsupported network; Please switch networks.'),
         { id: 'unsupported-popup', duration: 5000 }
       )
     } else {
       toast(
         <>
-          Connected to the{' '}
+          {t('Connected to')}{' '}
           <p className={getNetworkTextColor(chain?.color) + ' mx-1'}>
             {' '}
             {chain?.altName ?? chain?.name}{' '}
           </p>
-          chain
         </>,
         { id: 'standard-popup', duration: 5000 }
       )

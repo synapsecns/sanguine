@@ -60,6 +60,8 @@ type QuoteRequestHandler struct {
 	tokenNames map[string]relconfig.TokenConfig
 	// balanceMtx is the mutex for balances.
 	balanceMtx mapmutex.StringMapMutex
+	// cfg is the relayer config.
+	cfg relconfig.Config
 }
 
 func getBalanceMtxKey(chainID uint32, token common.Address) string {
@@ -107,6 +109,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		),
 		tokenNames: originTokens,
 		balanceMtx: r.balanceMtx,
+		cfg:        r.cfg,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened

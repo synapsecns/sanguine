@@ -20,7 +20,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-var maxRPCRetryTime = 30 * time.Second
+var (
+	maxTotalTime    = 15 * time.Second
+	maxRPCRetryTime = 30 * time.Second
+)
 
 // handleBridgeRequestedLog handles the BridgeRequestedLog event.
 // Step 1: Seen
@@ -403,8 +406,37 @@ func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridge.Fast
 // Step 6: ProvePosting
 //
 // This is the sixth step in the bridge process. Here we submit the claim transaction to the origin chain.
-func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
-	// relays been completed, it's time to go back to the origin chain and try to prove
+func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
+	// fetch the block of the relay transaction to confirm that it has been finalized
+	relayBlockNumber, err := q.getRelayBlockNumber(ctx, request)
+	if err != nil {
+		// relay tx must have gotten reorged; mark as RelayRaceLost
+		span.SetAttributes(attribute.String("receipt_error", err.Error()))
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.RelayRaceLost, nil)
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+		return fmt.Errorf("could not get relay block number: %w", err)
+	}
+
+	currentBlockNumber := q.Dest.LatestBlock()
+	proveConfirmations, err := q.cfg.GetFinalityConfirmations(int(q.Dest.ChainID))
+	if err != nil {
+		return fmt.Errorf("could not get prove confirmations: %w", err)
+	}
+
+	//nolint:gosec
+	span.SetAttributes(
+		attribute.Int("current_block_number", int(currentBlockNumber)),
+		attribute.Int("relay_block_number", int(relayBlockNumber)),
+		attribute.Int("prove_confirmations", int(proveConfirmations)),
+	)
+	if currentBlockNumber < relayBlockNumber+proveConfirmations {
+		span.AddEvent("not enough confirmations")
+		return nil
+	}
+
+	// relay has been finalized, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
@@ -422,6 +454,43 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, _ trace.
 		return fmt.Errorf("could not update request status: %w", err)
 	}
 	return nil
+}
+
+// getRelayBlockNumber fetches the block number of the relay transaction for a given quote request.
+func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request reldb.QuoteRequest) (blockNumber uint64, err error) {
+	// fetch the transaction receipt for corresponding tx hash
+	var receipt *types.Receipt
+	err = retry.WithBackoff(ctx, func(context.Context) error {
+		receipt, err = q.Dest.Client.TransactionReceipt(ctx, request.DestTxHash)
+		if err != nil {
+			return fmt.Errorf("could not get transaction receipt: %w", err)
+		}
+		return nil
+	}, retry.WithMaxTotalTime(maxTotalTime))
+	if err != nil {
+		return blockNumber, fmt.Errorf("could not get receipt: %w", err)
+	}
+	parser, err := fastbridge.NewParser(q.Dest.Bridge.Address())
+	if err != nil {
+		return blockNumber, fmt.Errorf("could not create parser: %w", err)
+	}
+
+	// check that a Relayed event was emitted
+	for _, log := range receipt.Logs {
+		if log == nil {
+			continue
+		}
+		_, parsedEvent, ok := parser.ParseEvent(*log)
+		if !ok {
+			continue
+		}
+		_, ok = parsedEvent.(*fastbridge.FastBridgeBridgeRelayed)
+		if ok {
+			return receipt.BlockNumber.Uint64(), nil
+		}
+	}
+
+	return blockNumber, fmt.Errorf("relayed event not found for dest tx hash: %s", request.DestTxHash.Hex())
 }
 
 // handleProofProvided handles the ProofProvided event emitted by the Bridge.

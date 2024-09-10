@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import Fuse from 'fuse.js'
+import { useTranslations } from 'next-intl'
 
 import * as ALL_CHAINS from '@/constants/chains/master'
 import { CHAINS_BY_ID, sortChains } from '@/constants/chains'
@@ -7,6 +8,8 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const useFromChainListArray = (searchStr: string = '') => {
   const { fromChainIds } = useBridgeState()
+
+  const t = useTranslations('Bridge')
 
   let possibleChains = _(ALL_CHAINS)
     .pickBy((value) => _.includes(fromChainIds, value.id))
@@ -58,5 +61,8 @@ export const useFromChainListArray = (searchStr: string = '') => {
     )
   }
 
-  return { 'From…': possibleChains, 'All chains': remainingChains }
+  return {
+    [t('FromWithEllipsis')]: possibleChains,
+    [t('All chains')]: remainingChains,
+  }
 }

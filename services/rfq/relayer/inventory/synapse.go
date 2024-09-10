@@ -163,10 +163,12 @@ func (c *rebalanceManagerSynapseCCTP) Execute(parentCtx context.Context, rebalan
 
 	// store the rebalance in the db
 	model := reldb.Rebalance{
-		Origin:       uint64(rebalance.OriginMetadata.ChainID),
-		Destination:  uint64(rebalance.DestMetadata.ChainID),
-		OriginAmount: rebalance.Amount,
-		Status:       reldb.RebalanceInitiated,
+		Origin:          uint64(rebalance.OriginMetadata.ChainID),
+		Destination:     uint64(rebalance.DestMetadata.ChainID),
+		OriginAmount:    rebalance.Amount,
+		Status:          reldb.RebalanceInitiated,
+		OriginTokenAddr: rebalance.OriginMetadata.Addr,
+		TokenName:       rebalance.OriginMetadata.Name,
 	}
 	err = c.db.StoreRebalance(ctx, model)
 	if err != nil {
