@@ -15,6 +15,7 @@ import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
+import { useTranslations } from 'next-intl'
 
 export const OutputContainer = () => {
   const { address } = useAccount()
@@ -57,12 +58,14 @@ const ToChainSelector = () => {
   const { toChainId } = useBridgeState()
   const { isWalletPending } = useWalletState()
 
+  const t = useTranslations('Bridge')
+
   return (
     <ChainSelector
       dataTestId="bridge-destination-chain"
       isOrigin={false}
       selectedItem={CHAINS_BY_ID[toChainId]}
-      label="To"
+      label={t('To')}
       itemListFunction={useToChainListArray}
       setFunction={setToChainId}
       action="Bridge"
@@ -74,13 +77,14 @@ const ToChainSelector = () => {
 const ToTokenSelector = () => {
   const { toToken } = useBridgeState()
   const { isWalletPending } = useWalletState()
+  const t = useTranslations('Bridge')
 
   return (
     <TokenSelector
       dataTestId="bridge-destination-token"
       isOrigin={false}
       selectedItem={toToken}
-      placeholder="In"
+      placeholder={t('In')}
       itemListFunction={useToTokenListArray}
       setFunction={setToToken}
       action="Bridge"

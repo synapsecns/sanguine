@@ -1,4 +1,6 @@
 import { isNull } from 'lodash'
+import { useTranslations } from 'next-intl'
+
 import { LinearAnimatedProgressBar } from './LinearAnimatedProgressBar'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
@@ -76,6 +78,7 @@ export const EventCountdownProgressBar = ({
   status: 'idle' | 'pending' | 'complete'
 }) => {
   const isIndefinite = isNull(endDate)
+  const t = useTranslations('Activity')
 
   if (status === 'pending') {
     return (
@@ -88,7 +91,11 @@ export const EventCountdownProgressBar = ({
       >
         <div className="flex justify-between px-3 py-2 text-sm">
           <div>{eventLabel}</div>
-          {isIndefinite ? null : <div>{timeRemaining} remaining</div>}
+          {isIndefinite ? null : (
+            <div>
+              {timeRemaining} {t('remaining')}
+            </div>
+          )}
         </div>
         <div className="px-1">
           <LinearAnimatedProgressBar

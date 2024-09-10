@@ -1,4 +1,6 @@
 import React from 'react'
+import { useTranslations } from 'next-intl'
+
 import { TransactionStatus } from '../Transaction'
 import ProcessingIcon from '@/components/icons/ProcessingIcon'
 
@@ -9,6 +11,8 @@ export const EstimatedDuration = ({
   timeRemaining: number
   transactionStatus: TransactionStatus
 }) => {
+  const t = useTranslations('Time')
+
   return (
     <div
       data-test-id="estimated-duration"
@@ -17,7 +21,7 @@ export const EstimatedDuration = ({
       {timeRemaining >= 0 ? (
         <React.Fragment>
           <div>
-            {timeRemaining} - {timeRemaining + 1} min
+            {timeRemaining} - {timeRemaining + 1} {t('min')}
           </div>
           {transactionStatus !== TransactionStatus.PENDING_WALLET_ACTION && (
             <ProcessingIcon className="fill-[#343036] mt-0.5" />
@@ -25,7 +29,7 @@ export const EstimatedDuration = ({
         </React.Fragment>
       ) : (
         <React.Fragment>
-          <div>Waiting... </div>
+          <div>{t('Waiting')}... </div>
           <ProcessingIcon className="fill-[#343036] mt-0.5" />
         </React.Fragment>
       )}

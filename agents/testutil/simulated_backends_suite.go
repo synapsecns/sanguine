@@ -413,13 +413,15 @@ func (a *SimulatedBackendsTestSuite) SetupBackends() {
 
 	var wg sync.WaitGroup
 	wg.Add(3)
+	var err error
 	go func() {
 		defer wg.Done()
 		if useAnvil {
 			anvilOptsOrigin := anvil.NewAnvilOptionBuilder()
 			anvilOptsOrigin.SetChainID(uint64(params.SepoliaChainConfig.ChainID.Int64()))
 			anvilOptsOrigin.SetBlockTime(1 * time.Second)
-			a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsOrigin)
+			a.TestBackendOrigin, err = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsOrigin)
+			a.Nil(err)
 			a.TestSuite.DeferAfterTest(a.TestBackendOrigin.(*anvil.Backend).TearDown)
 		} else {
 			a.TestBackendOrigin = preset.GetSepolia().Geth(a.GetTestContext(), a.T())
@@ -431,7 +433,8 @@ func (a *SimulatedBackendsTestSuite) SetupBackends() {
 			anvilOptsDestination := anvil.NewAnvilOptionBuilder()
 			anvilOptsDestination.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
 			anvilOptsDestination.SetBlockTime(1 * time.Second)
-			a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsDestination)
+			a.TestBackendDestination, err = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsDestination)
+			a.Nil(err)
 			a.TestSuite.DeferAfterTest(a.TestBackendDestination.(*anvil.Backend).TearDown)
 		} else {
 			a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
@@ -443,7 +446,8 @@ func (a *SimulatedBackendsTestSuite) SetupBackends() {
 			anvilOptsSummit := anvil.NewAnvilOptionBuilder()
 			anvilOptsSummit.SetChainID(uint64(10))
 			anvilOptsSummit.SetBlockTime(1 * time.Second)
-			a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsSummit)
+			a.TestBackendSummit, err = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsSummit)
+			a.Nil(err)
 			a.TestSuite.DeferAfterTest(a.TestBackendSummit.(*anvil.Backend).TearDown)
 		} else {
 			a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
@@ -474,7 +478,7 @@ func (a *SimulatedBackendsTestSuite) SetupBackends() {
 
 	a.TestOmniRPC = omnirpcHelper.NewOmnirpcServer(a.GetTestContext(), a.T(), testBackends...)
 
-	err := a.TestDeployManager.LoadHarnessContractsOnChains(
+	err = a.TestDeployManager.LoadHarnessContractsOnChains(
 		a.GetTestContext(),
 		a.TestBackendSummit,
 		[]backends.SimulatedTestBackend{a.TestBackendOrigin, a.TestBackendDestination},

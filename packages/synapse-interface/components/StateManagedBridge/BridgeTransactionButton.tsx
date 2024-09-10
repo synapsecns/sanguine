@@ -2,6 +2,7 @@ import { isAddress } from 'viem'
 import { useEffect, useState } from 'react'
 import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useTranslations } from 'next-intl'
 
 import { useAppDispatch } from '@/store/hooks'
 import { useWalletState } from '@/slices/wallet/hooks'
@@ -25,6 +26,8 @@ export const BridgeTransactionButton = ({
 
   const { isConnected: isConnectedInit } = useAccount()
   const { chains, switchChain } = useSwitchChain()
+
+  const t = useTranslations('Bridge')
 
   useAccountEffect({
     onDisconnect() {
@@ -76,38 +79,38 @@ export const BridgeTransactionButton = ({
 
   if (isBridgePaused) {
     buttonProperties = {
-      label: 'Bridge paused',
+      label: t('Bridge paused'),
       onClick: null,
     }
   } else if (!fromChainId) {
     buttonProperties = {
-      label: 'Please select Origin Network',
+      label: t('Please select Origin Network'),
       onClick: null,
     }
   } else if (!toChainId) {
     buttonProperties = {
-      label: 'Please select Destination network',
+      label: t('Please select Destination network'),
       onClick: null,
     }
   } else if (!fromToken) {
     buttonProperties = {
-      label: `Please select an Origin token`,
+      label: t('Please select an Origin token'),
       onClick: null,
     }
   } else if (isLoading) {
     buttonProperties = {
-      label: `Bridge ${fromToken?.symbol}`,
-      pendingLabel: `Bridge ${fromToken?.symbol}`,
+      label: t('Bridge {symbol}', { symbol: fromToken?.symbol }),
+      pendingLabel: t('Bridge {symbol}', { symbol: fromToken?.symbol }),
       onClick: null,
     }
   } else if (!isConnected && hasValidInput) {
     buttonProperties = {
-      label: `Connect Wallet to Bridge`,
+      label: t('Connect Wallet to Bridge'),
       onClick: openConnectModal,
     }
   } else if (!isLoading && isBridgeFeeGreaterThanInput && hasValidInput) {
     buttonProperties = {
-      label: `Amount must be greater than fee`,
+      label: t('Amount must be greater than fee'),
       onClick: null,
     }
   } else if (
@@ -118,7 +121,7 @@ export const BridgeTransactionButton = ({
     hasValidInput
   ) {
     buttonProperties = {
-      label: 'Error in bridge quote',
+      label: t('Error in bridge quote'),
       onClick: null,
     }
 
@@ -138,41 +141,43 @@ export const BridgeTransactionButton = ({
     hasValidInput
   ) {
     buttonProperties = {
-      label: 'Invalid bridge quote',
+      label: t('Invalid bridge quote'),
       onClick: null,
     }
   } else if (!isLoading && isConnected && !hasSufficientBalance) {
     buttonProperties = {
-      label: 'Insufficient balance',
+      label: t('Insufficient balance'),
       onClick: null,
     }
   } else if (destinationAddress && !isAddress(destinationAddress)) {
     buttonProperties = {
-      label: 'Invalid Destination address',
+      label: t('Invalid Destination address'),
     }
   } else if (showDestinationWarning && !isDestinationWarningAccepted) {
     buttonProperties = {
-      label: 'Confirm destination address',
+      label: t('Confirm destination address'),
       onClick: () => dispatch(setIsDestinationWarningAccepted(true)),
       className: '!from-bgLight !to-bgLight',
     }
   } else if (!onSelectedChain && hasValidInput) {
     buttonProperties = {
-      label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
+      label: t('Switch to {chainName}', {
+        chainName: chains.find((c) => c.id === fromChainId)?.name,
+      }),
       onClick: () => switchChain({ chainId: fromChainId }),
-      pendingLabel: 'Switching chains',
+      pendingLabel: t('Switching chains'),
     }
   } else if (!isApproved && hasValidInput && hasValidQuote) {
     buttonProperties = {
       onClick: approveTxn,
-      label: `Approve ${fromToken?.symbol}`,
-      pendingLabel: 'Approving',
+      label: t('Approve {symbol}', { symbol: fromToken?.symbol }),
+      pendingLabel: t('Approving'),
     }
   } else {
     buttonProperties = {
       onClick: executeBridge,
-      label: `Bridge ${fromToken?.symbol}`,
-      pendingLabel: 'Bridging',
+      label: t('Bridge {symbol}', { symbol: fromToken?.symbol }),
+      pendingLabel: t('Bridging'),
     }
   }
 

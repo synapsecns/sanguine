@@ -20,7 +20,7 @@ export function SwitchButton({
     }
   }
 
-  const className = joinClassNames({
+  const classNames = {
     space: '-mt-4 -mb-4 rounded z-10 justify-self-center',
     background: 'bg-zinc-50 dark:bg-bgLight', // TODO: Remove
     // background: 'bg-zinc-50 dark:bg-zinc-800/50',
@@ -31,12 +31,12 @@ export function SwitchButton({
     transition: `hover:opacity-80 cursor-pointer transition-transform ${
       isActive ? `duration-${ms} rotate-180 ease-in-out` : 'ease-out' // 'duration-0'
     }`,
-  })
+  }
 
   return (
     <svg
       onClick={handleClick}
-      className={className}
+      className={joinClassNames(classNames)}
       width="32"
       height="32"
       viewBox="0 0 32 32"

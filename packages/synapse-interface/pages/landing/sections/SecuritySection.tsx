@@ -1,52 +1,48 @@
+import { useTranslations } from 'next-intl'
 import Grid from '@/components/ui/tailwind/Grid'
-import {
-  SectionContainer,
-  SupportCard,
-} from '../../../components/landing/shared'
+import { SectionContainer, SupportCard } from '@/components/landing/shared'
 import SynapseCircuit from '@/components/icons/LandingIcons/SynapseCircuit'
 import { SecureIcon } from '@/components/icons/LandingIcons/SecureIcon'
 import { ExtensibleIcon } from '@/components/icons/LandingIcons/ExtensibleIcon'
 import { GeneralizedIcon } from '@/components/icons/LandingIcons/GeneralizedIcon'
 
 export default function SecuritySection() {
+  const t = useTranslations('Landing.SecuritySection')
+
   return (
     <SectionContainer
       styles="flex flex-wrap gap-8 justify-center max-w-4xl m-auto"
       dataTestId="landing-security-section"
     >
-      <div className="dark flex flex-col lg:flex-row gap-8 items-center">
+      <div className="flex flex-col items-center gap-8 dark lg:flex-row">
         <SynapseCircuit />
-        <div className="max-w-md text-white text-center lg:text-left">
-          <h2 className="mb-4 text-4xl font-medium">
-            Securely connect every blockchain
-          </h2>
+        <div className="max-w-md text-center text-white lg:text-left">
+          <h2 className="mb-4 text-4xl font-medium">{t('title')}</h2>
           <div className="text-secondaryTextColor">
-            Synapse is comprised of a{' '}
+            {t('description.part1')}{' '}
             <strong className="font-medium text-white">
-              cross-chain messaging framework
+              {t('description.strong1')}
             </strong>{' '}
-            and an{' '}
+            {t('description.part2')}{' '}
             <strong className="font-medium text-white">
-              economically secure method
+              {t('description.strong2')}
             </strong>{' '}
-            to reach consensus on the validity of cross-chain transactions,
-            enabling developers to build truly native cross-chain apps.
-          </div>{' '}
+            {t('description.part3')}
+          </div>
         </div>
       </div>
-
       <Grid cols={{ sm: 1, md: 3 }} gap={8} className="md:p-4">
-        <SupportCard header="Extensible" image={<ExtensibleIcon />}>
-          Synapse’s cross-chain messaging contracts can be deployed across any
-          blockchain
+        <SupportCard header={t('extensibleHeader')} image={<ExtensibleIcon />}>
+          {t('extensibleDescription')}
         </SupportCard>
-        <SupportCard header="Secure" image={<SecureIcon />}>
-          Synapse employs an Optimistic security model to ensure integrity of
-          cross-chain messages
+        <SupportCard header={t('secureHeader')} image={<SecureIcon />}>
+          {t('secureDescription')}
         </SupportCard>
-        <SupportCard header="Generalized" image={<GeneralizedIcon />}>
-          Any arbitrary data can be sent across chains including contract calls,
-          NFTs, snapshots, and more
+        <SupportCard
+          header={t('generalizedHeader')}
+          image={<GeneralizedIcon />}
+        >
+          {t('generalizedDescription')}
         </SupportCard>
       </Grid>
     </SectionContainer>

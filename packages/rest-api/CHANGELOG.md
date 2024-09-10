@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.72](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.71...@synapsecns/rest-api@1.0.72) (2024-09-04)
+
+
+### Bug Fixes
+
+* **rfq-relayer:** e2e test flakes ([#3075](https://github.com/synapsecns/sanguine/issues/3075)) ([9ceacfe](https://github.com/synapsecns/sanguine/commit/9ceacfea214bfda769bf027014358c861422c17d))
+
+
+
+
+
 ## [1.0.71](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.70...@synapsecns/rest-api@1.0.71) (2024-08-29)
 
 **Note:** Version bump only for package @synapsecns/rest-api

@@ -6,6 +6,7 @@ import { txErrorHandler } from '@utils/txErrorHandler'
 import { harvestLpPool } from '@/actions/harvestLpPool'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { Token } from '@types'
+import { TranslatedText } from '@/components/ui/TranslatedText'
 
 export const claimStake = async (
   chainId: number,
@@ -17,7 +18,11 @@ export const claimStake = async (
   let successPopup: any
   let miniChefAddress = pool.miniChefAddress
 
-  pendingPopup = toast(`Starting your claim...`, {
+  const msg = (
+    <TranslatedText namespace="Pools.Other" id="Starting your claim" />
+  )
+
+  pendingPopup = toast(msg, {
     id: 'claim-in-progress-popup',
     duration: Infinity,
   })
@@ -42,7 +47,9 @@ export const claimStake = async (
 
     const successToastContent = (
       <div>
-        <div>Claim Completed:</div>
+        <div>
+          <TranslatedText namespace="Pools" id="Claim completed" />:
+        </div>
         <ExplorerToastLink
           transactionHash={tx?.transactionHash}
           chainId={chainId}
