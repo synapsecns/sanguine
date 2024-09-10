@@ -55,8 +55,8 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 		Description: "find a transaction in signoz",
 		Examples: []string{
 			"trace transaction_id:0x1234@serviceName:rfq",
-			"trace transaction_id:0x1234@serviceName:rfq d",
-			"trace transaction_id:0x1234@serviceName:rfq desc",
+			"trace transaction_id:0x1234@serviceName:rfq a",
+			"trace transaction_id:0x1234@serviceName:rfq asc",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
 			tags := stripLinks(ctx.Request().Param("tags"))
@@ -110,10 +110,10 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 			}
 
 			order := strings.ToLower(ctx.Request().Param("order"))
-			isDescending := order == "desc" || order == "d"
-			if isDescending {
+			isAscending := order == "a" || order == "asc"
+			if isAscending {
 				sort.Slice(traceList, func(i, j int) bool {
-					return traceList[i].Timestamp.After(traceList[j].Timestamp)
+					return traceList[i].Timestamp.Before(traceList[j].Timestamp)
 				})
 			}
 
