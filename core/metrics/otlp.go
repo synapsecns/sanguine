@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"os"
+
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -28,41 +30,37 @@ func NewOTLPMetricsHandler(buildInfo config.BuildInfo) Handler {
 }
 
 func (n *otlpHandler) Start(ctx context.Context) (err error) {
-	isDefaultConfig := core.GetEnv(otlpTransportEnvDefault, "") != ""
+	var exporters []tracesdk.SpanExporter
 
-	var client, secondaryClient otlptrace.Client
-	if isDefaultConfig {
-		client, err = getClient(otlpTransportEnvDefault)
-		if err != nil {
-			return fmt.Errorf("could not create default client: %w", err)
-		}
-	} else {
-		// instantiate both the primary and secondary clients
-		client, err = getClient(otlpTransportEnvPrimary)
-		if err != nil {
-			return fmt.Errorf("could not create primary client: %w", err)
-		}
-
-		secondaryClient, err = getClient(otlpTransportEnvSecondary)
-		if err != nil {
-			return fmt.Errorf("could not create secondary client: %w", err)
-		}
-	}
-
-	exporter, err := otlptrace.New(ctx, client)
+	primaryExporter, err := makeOTLPExporter(ctx, otelTransportEnv, otelEndpointEnv)
 	if err != nil {
-		return fmt.Errorf("failed to create otlp exporter: %w", err)
+		return fmt.Errorf("could not create default client: %w", err)
+	}
+	exporters = append(exporters, primaryExporter)
+
+	// Loop to create additional exporters
+	for i := 1; ; i++ {
+		envSuffix := fmt.Sprintf("%d", i)
+		transportEnv := otelTransportEnv + envSuffix
+		endpointEnv := otelEndpointEnv + envSuffix
+
+		// no more transports to add.
+		if !core.HasEnv(endpointEnv) {
+			break
+		}
+
+		exporter, err := makeOTLPExporter(ctx, transportEnv, endpointEnv)
+		if err != nil {
+			if err != nil {
+				return fmt.Errorf("could not create exporter %d: %v", i, err)
+			}
+		}
+
+		exporters = append(exporters, exporter)
 	}
 
 	// create the multi-exporter with optional secondary exporter
-	multiExporter := NewMultiExporter(exporter)
-	if secondaryClient != nil {
-		secondaryExporter, err := otlptrace.New(ctx, secondaryClient)
-		if err != nil {
-			return fmt.Errorf("failed to create secondary otlp exporter: %w", err)
-		}
-		multiExporter.AddExporter(secondaryExporter)
-	}
+	multiExporter := NewMultiExporter(exporters...)
 
 	n.baseHandler = newBaseHandler(
 		n.buildInfo,
@@ -118,9 +116,8 @@ func handleShutdown(ctx context.Context, provider *tracesdk.TracerProvider) {
 }
 
 const (
-	otlpTransportEnvDefault   = "OTEL_EXPORTER_OTLP_TRANSPORT"
-	otlpTransportEnvPrimary   = "OTEL_EXPORTER_OTLP_TRANSPORT_PRIMARY"
-	otlpTransportEnvSecondary = "OTEL_EXPORTER_OTLP_TRANSPORT_SECONDARY"
+	otelEndpointEnv  = "OTEL_EXPORTER_OTLP_ENDPOINT"
+	otelTransportEnv = "OTEL_EXPORTER_OTLP_TRANSPORT"
 )
 
 //go:generate go run golang.org/x/tools/cmd/stringer -type=otlpTransportType -linecomment
@@ -131,15 +128,24 @@ const (
 	otlpTransportGRPC                              // grpc
 )
 
-// getClient creates a new OTLP client based on the transport type and url.
-func getClient(transportEnv string) (otlptrace.Client, error) {
+// makeOTLPTrace creates a new OTLP client based on the transport type and url.
+func makeOTLPExporter(ctx context.Context, transportEnv, urlEnv string) (*otlptrace.Exporter, error) {
 	transport := transportFromString(core.GetEnv(transportEnv, otlpTransportHTTP.String()))
-	url := core.GetEnv(transportEnv, "")
+	url := os.GetEnv(urlEnv)
 
-	return buildClientFromTransport(
+	oteltraceClient, err := buildClientFromTransport(
 		transport,
 		url,
 	)
+	if err != nil {
+		return nil, fmt.Errorf("could not create client from transport: %w", err)
+	}
+
+	exporter, err := otlptrace.New(ctx, oteltraceClient)
+	if err != nil {
+		return nil, fmt.Errorf("ocould not create client: %w", err)
+	}
+	return exporter, nil
 }
 
 // buildClientFromTransport creates a new OTLP client based on the transport type and url.
