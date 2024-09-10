@@ -12,6 +12,7 @@ const languages = [
   { code: 'es', name: 'Español' },
   { code: 'fr', name: 'Français' },
   { code: 'tr', name: 'Türkçe' },
+  { code: 'zh-CN', name: '中文（简体）' },
 ]
 
 export const LanguageSelector = () => {
