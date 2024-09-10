@@ -3,10 +3,9 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
-
-	"os"
 
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
@@ -131,7 +130,7 @@ const (
 // makeOTLPTrace creates a new OTLP client based on the transport type and url.
 func makeOTLPExporter(ctx context.Context, transportEnv, urlEnv string) (*otlptrace.Exporter, error) {
 	transport := transportFromString(core.GetEnv(transportEnv, otlpTransportHTTP.String()))
-	url := os.GetEnv(urlEnv)
+	url := os.Getenv(urlEnv)
 
 	oteltraceClient, err := buildClientFromTransport(
 		transport,
