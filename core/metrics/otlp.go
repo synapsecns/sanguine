@@ -50,9 +50,7 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 
 		exporter, err := makeOTLPExporter(ctx, transportEnv, endpointEnv)
 		if err != nil {
-			if err != nil {
-				return fmt.Errorf("could not create exporter %d: %v", i, err)
-			}
+			return fmt.Errorf("could not create exporter %d: %v", i, err)
 		}
 
 		exporters = append(exporters, exporter)

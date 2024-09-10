@@ -1,4 +1,4 @@
-package metrics
+package metrics_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/synapsecns/sanguine/core/metrics"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
@@ -16,7 +17,7 @@ func TestMultiExporter(t *testing.T) {
 	exporter2 := tracetest.NewInMemoryExporter()
 
 	// Create multi-exporter
-	multiExporter := NewMultiExporter(exporter1, exporter2)
+	multiExporter := metrics.NewMultiExporter(exporter1, exporter2)
 
 	// Create test spans
 	spans := []sdktrace.ReadOnlySpan{
