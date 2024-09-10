@@ -1,8 +1,10 @@
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+
 import Grid from '@/components/ui/tailwind/Grid'
 import Button from '@/components/ui/tailwind/Button'
 import Card from '@/components/ui/tailwind/Card'
-import { SectionContainer } from '../../../components/landing/shared'
+import { SectionContainer } from '@/components/landing/shared'
 import { EXPLORER_PATH } from '@/constants/urls'
 import {
   getTotalBridgeVolume,
@@ -16,20 +18,21 @@ export default function ExplorerSection() {
   const totalTxCount = getTotalTxCount()
   const totalValueLocked = getTotalValueLocked()
 
+  const t = useTranslations('Landing.ExplorerSection')
+
   return (
     <SectionContainer dataTestId="landing-explorer-section" styles="-mx-4">
       <div className="w-full bg-[#1F1D22] pb-6">
         <Grid
           cols={{ sm: 1, md: 2 }}
-          className="flex items-center p-6 m-auto max-w-4xl"
+          className="flex items-center max-w-4xl p-6 m-auto"
         >
           <div>
-            <h2 className="mb-3 text-3xl font-medium text-white text-center md:text-left">
-              Battle-tested infrastructure
+            <h2 className="mb-3 text-3xl font-medium text-center text-white md:text-left">
+              {t('Battle tested')}
             </h2>
-            <p className="text-secondaryTextColor text-center md:text-left">
-              Synapse has processed millions of transactions and tens of billions
-              in bridged assets.
+            <p className="text-center text-secondaryTextColor md:text-left">
+              {t('Synapse has processed')}
             </p>
           </div>
           <div className="hidden col-span-1 text-right md:block">
@@ -45,7 +48,7 @@ export default function ExplorerSection() {
                   borderRadius: '10px',
                 }}
               >
-                Go to Explorer
+                {t('Go to Explorer')}
               </Button>
             </Link>
           </div>
@@ -54,11 +57,17 @@ export default function ExplorerSection() {
         <Grid
           cols={{ sm: 1, md: 3 }}
           gap={4}
-          className="max-w-4xl justify-center m-auto"
+          className="justify-center max-w-4xl m-auto"
         >
-          <StatisticsCard title="Total Value Locked" value={totalValueLocked} />
-          <StatisticsCard title="Total Bridge Volume" value={totalBridgeVolume} />
-          <StatisticsCard title="Total TX Count" value={totalTxCount} />
+          <StatisticsCard
+            title={t('Total Value Locked')}
+            value={totalValueLocked}
+          />
+          <StatisticsCard
+            title={t('Total Bridge Volume')}
+            value={totalBridgeVolume}
+          />
+          <StatisticsCard title={t('Total TX Count')} value={totalTxCount} />
         </Grid>
       </div>
     </SectionContainer>

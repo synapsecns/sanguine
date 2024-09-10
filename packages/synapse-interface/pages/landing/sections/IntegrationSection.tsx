@@ -1,7 +1,9 @@
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+
 import Grid from '@/components/ui/tailwind/Grid'
 import Card from '@/components/ui/tailwind/Card'
-import { SectionContainer } from '../../../components/landing/shared'
+import { SectionContainer } from '@/components/landing/shared'
 import { ORDERED_CHAINS_BY_ID, ChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { Chain } from '@/utils/types'
 import { getNetworkButtonBorderHover } from '@/styles/chains'
@@ -15,6 +17,8 @@ export default function IntegrationSection() {
   ).map((chainId) => {
     return CHAINS_BY_ID[chainId]
   })
+
+  const t = useTranslations('Landing.IntegrationSection')
 
   return (
     <SectionContainer dataTestId="landing-integration-section">
@@ -31,7 +35,7 @@ export default function IntegrationSection() {
             border-r-0 md:border-r md:border-b-1 md:border-white
           `}
         >
-          Widely integrated
+          {t('Widely integrated')}
         </h2>
         <p
           className={`
@@ -40,16 +44,14 @@ export default function IntegrationSection() {
             max-w-lg
           `}
         >
-          Synapse is widely integrated across the most-used Layer 1 and{' '}
-          <br className="hidden md:block" />
-          Layer 2 networks for a seamless cross-chain experience.
+          {t('Synapse is')}
         </p>
       </div>
 
       <Grid
         cols={{ xs: 2, sm: 2, md: 3, lg: 5 }}
         gap={4}
-        className="py-8 m-auto max-w-6xl"
+        className="max-w-6xl py-8 m-auto"
       >
         {OrderedSupportedNetworks.map((network: Chain, index: number) => (
           <NetworkCard
@@ -89,6 +91,8 @@ function NetworkCard({
   const dispatch = useAppDispatch()
   const chain = CHAINS_BY_ID[chainId]
 
+  const t = useTranslations('Landing.IntegrationSection')
+
   const handleSelection = () => {
     dispatch(setFromChainId(chainId))
   }
@@ -113,7 +117,7 @@ function NetworkCard({
         <div className="inline-block ">
           <div className="text-lg font-medium text-white">{chainName}</div>
           <div className="mt-1 text-sm text-opacity-75 text-secondaryTextColor">
-            Layer {layer}
+            {t('Layer')} {layer}
           </div>
         </div>
       </Card>

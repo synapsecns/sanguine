@@ -1,9 +1,13 @@
+import { useTranslations } from 'next-intl'
+
 import { useAppDispatch } from '@/store/hooks'
 import { useBridgeDisplayState } from '@/slices/bridge/hooks'
 import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
 
 export const ConfirmDestinationAddressWarning = () => {
   const dispatch = useAppDispatch()
+  const t = useTranslations('Destination')
+
   const {
     showDestinationWarning,
     isDestinationWarningAccepted,
@@ -36,11 +40,8 @@ export const ConfirmDestinationAddressWarning = () => {
         />
         <div>
           <p className="text-sm text-secondary">
-            <strong>Required:</strong> Verify your destination address to
-            continue.
-            <br />
-            Do <strong>not</strong> send assets to a custodial or exchange
-            address. It may be impossible to recover your funds.
+            <b>{t('WarningMessage1')}</b> {t('WarningMessage2')} <br />
+            <b>{t('WarningMessage3')}</b> {t('WarningMessage4')}
           </p>
         </div>
       </div>

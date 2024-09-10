@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { switchChain } from '@wagmi/core'
+import { useTranslations } from 'next-intl'
+
 import { setFromChainId } from '@/slices/bridge/reducer'
 import { wagmiConfig } from '@/wagmiConfig'
 
@@ -29,6 +31,8 @@ export const PortfolioConnectButton = ({
 }
 
 const ConnectedButton = () => {
+  const t = useTranslations('Wallet')
+
   return (
     <button
       id="connected-button"
@@ -47,7 +51,7 @@ const ConnectedButton = () => {
             bg-green-400 rounded-full
           `}
         />
-        Connected
+        {t('Connected')}
       </div>
     </button>
   )
@@ -56,6 +60,8 @@ const ConnectedButton = () => {
 const ConnectButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
+
+  const t = useTranslations('Wallet')
 
   function scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -93,7 +99,7 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
               border border-green-400 border-solid rounded-full
             `}
           />
-          Connecting...
+          {t('Connecting')}...
         </div>
       ) : (
         <div className="flex flex-row text-sm">
@@ -103,7 +109,7 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
               border border-indigo-300 border-solid rounded-full
             `}
           />
-          Connect
+          {t('Connect')}
         </div>
       )}
     </button>

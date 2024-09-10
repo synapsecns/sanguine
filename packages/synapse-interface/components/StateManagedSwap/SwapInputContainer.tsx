@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
+import { debounce } from 'lodash'
+import { useTranslations } from 'next-intl'
+
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
@@ -30,7 +33,6 @@ import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterD
 import { formatAmount } from '@/utils/formatAmount'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 import { useWalletState } from '@/slices/wallet/hooks'
-import { debounce } from 'lodash'
 
 interface InputContainerProps {
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>
@@ -69,6 +71,8 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
   const formattedBalance = formatAmount(parsedBalance)
 
   const isInputMax = parsedBalance === swapFromValue
+
+  const t = useTranslations('Swap')
 
   useEffect(() => {
     if (
@@ -166,7 +170,7 @@ export const SwapInputContainer: React.FC<InputContainerProps> = ({
                 className={joinClassNames(labelClassNames)}
               >
                 <span className="text-zinc-500 dark:text-zinc-400">
-                  Available:{' '}
+                  {t('available')}:{' '}
                 </span>
                 {formattedBalance ?? '0.0'}
               </label>
@@ -186,12 +190,14 @@ const SwapChainSelector = () => {
   const { swapChainId } = useSwapState()
   const { isWalletPending } = useWalletState()
 
+  const t = useTranslations('Bridge')
+
   return (
     <ChainSelector
       dataTestId="swap-origin-chain"
       isOrigin={true}
       selectedItem={CHAINS_BY_ID[swapChainId]}
-      label="From"
+      label={t('From')}
       itemListFunction={useSwapChainListArray}
       setFunction={setSwapChainId}
       action="Swap"
@@ -204,12 +210,14 @@ const SwapFromTokenSelector = () => {
   const { swapFromToken } = useSwapState()
   const { isWalletPending } = useWalletState()
 
+  const t = useTranslations('Bridge')
+
   return (
     <TokenSelector
       dataTestId="swap-origin-token"
       selectedItem={swapFromToken}
       isOrigin={true}
-      placeholder="In"
+      placeholder={t('In')}
       itemListFunction={useSwapFromTokenListArray}
       setFunction={setSwapFromToken}
       action="Swap"

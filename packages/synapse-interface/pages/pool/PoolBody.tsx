@@ -4,6 +4,8 @@ import { Address } from 'viem'
 import { useEffect, useState } from 'react'
 import { useAccount, useSwitchChain } from 'wagmi'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
+import { useTranslations } from 'next-intl'
+
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
 import { zeroAddress } from 'viem'
@@ -33,6 +35,8 @@ const PoolBody = ({
   const { poolUserData } = usePoolUserDataState()
   const { pool, poolAPYData } = usePoolDataState()
 
+  const t = useTranslations('Pools')
+
   useEffect(() => {
     setIsClient(true)
   }, [])
@@ -53,7 +57,7 @@ const PoolBody = ({
         <Link href={POOLS_PATH}>
           <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
             <ChevronLeftIcon className="w-4 h-4" />
-            Back to Pools
+            {t('Back to Pools')}
           </div>
         </Link>
         <div className="flex justify-between">
@@ -69,7 +73,7 @@ const PoolBody = ({
             </div>
             <PoolActionOptions
               pool={pool}
-              options={['Stake', 'Unstake', 'Claim']}
+              options={[t('Stake'), t('Unstake'), t('Claim')]}
             />
             <div className="flex space-x-4">
               <div className="text-right">
