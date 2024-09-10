@@ -10,7 +10,7 @@ import (
 
 // MultiExporter is an interface that allows exporting spans to multiple OTLP trace exporters.
 type MultiExporter interface {
-	tracesdk.SpanExporter
+	trace.SpanExporter
 	AddExporter(exporter trace.SpanExporter)
 }
 
@@ -28,7 +28,7 @@ func NewMultiExporter(exporters ...trace.SpanExporter) MultiExporter {
 }
 
 // ExportSpans exports a batch of spans.
-func (m *multiExporter) ExportSpans(ctx context.Context, ss []tracesdk.ReadOnlySpan) error {
+func (m *multiExporter) ExportSpans(ctx context.Context, ss []trace.ReadOnlySpan) error {
 	for _, exporter := range m.exporters {
 		err := exporter.ExportSpans(ctx, ss)
 		if err != nil {
