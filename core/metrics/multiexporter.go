@@ -8,14 +8,20 @@ import (
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
+// MultiExporter is an interface that allows exporting spans to multiple OTLP trace exporters.
+type MultiExporter interface {
+	tracesdk.SpanExporter
+	AddExporter(exporter trace.SpanExporter)
+}
+
 type multiExporter struct {
 	exporters []trace.SpanExporter
 }
 
 // NewMultiExporter creates a new multi exporter that forwards spans to multiple OTLP trace exporters.
-// It takes in one or more otlptrace.Exporter instances and ensures that spans are sent to all of them.
+// It takes in one or more trace.SpanExporter instances and ensures that spans are sent to all of them.
 // This is useful when you need to send trace data to multiple backends or endpoints.
-func NewMultiExporter(exporters ...trace.SpanExporter) tracesdk.SpanExporter {
+func NewMultiExporter(exporters ...trace.SpanExporter) MultiExporter {
 	return &multiExporter{
 		exporters: exporters,
 	}
@@ -41,6 +47,11 @@ func (m *multiExporter) Shutdown(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+// AddExporter adds an exporter to the multi exporter.
+func (m *multiExporter) AddExporter(exporter trace.SpanExporter) {
+	m.exporters = append(m.exporters, exporter)
 }
 
 var _ tracesdk.SpanExporter = &multiExporter{}
