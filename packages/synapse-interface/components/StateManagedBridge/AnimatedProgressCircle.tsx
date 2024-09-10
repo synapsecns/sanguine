@@ -47,7 +47,7 @@ const AnimatedProgressCircle = ({
       stroke="currentcolor"
       strokeOpacity=".33"
       fill="none"
-      className="absolute -rotate-90 -scale-y-100 right-4"
+      className="absolute -rotate-90 -scale-y-100"
     >
       <circle r="8" />
       <circle r="8" strokeDasharray="1" pathLength="1">

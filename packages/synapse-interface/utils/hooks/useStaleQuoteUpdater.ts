@@ -79,9 +79,7 @@ export const useStaleQuoteUpdater = (
   const [moved, reset] = useTrackMouseMove()
 
   useEffect(() => {
-    console.log('has mouse moved:', moved)
     if (moved && autoRefreshStartTimeRef.current) {
-      console.log('reset auto refresh timer')
       autoRefreshStartTimeRef.current = null
       reset()
     }
@@ -97,7 +95,6 @@ export const useStaleQuoteUpdater = (
 
       const elapsedTime = Date.now() - autoRefreshStartTimeRef.current
 
-      console.log('elapsedTime: ', elapsedTime)
       // If autoRefreshDuration hasn't passed, keep auto-refreshing
       if (elapsedTime < autoRefreshDuration) {
         if (timeoutRef.current) clearTimeout(timeoutRef.current)

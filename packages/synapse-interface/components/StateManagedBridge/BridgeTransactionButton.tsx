@@ -12,7 +12,6 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useConfirmNewBridgePrice } from './hooks/useConfirmNewBridgePrice'
-import { BridgeQuoteResetTimer } from './AnimatedProgressCircle'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -21,7 +20,6 @@ export const BridgeTransactionButton = ({
   isBridgePaused,
   isTyping,
   isQuoteStale,
-  quoteTimeout,
 }) => {
   const dispatch = useAppDispatch()
   const { openConnectModal } = useConnectModal()
@@ -206,16 +204,6 @@ export const BridgeTransactionButton = ({
           {...buttonProperties}
           disabled={isButtonDisabled}
           chainId={fromChainId}
-          labelAnimation={
-            isConnected &&
-            hasValidQuote && (
-              <BridgeQuoteResetTimer
-                bridgeQuote={bridgeQuote}
-                hasValidQuote={hasValidQuote}
-                duration={quoteTimeout}
-              />
-            )
-          }
         />
       </>
     )

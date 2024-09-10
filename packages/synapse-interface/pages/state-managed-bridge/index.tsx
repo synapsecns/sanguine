@@ -68,10 +68,12 @@ import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
+import { BridgeQuoteResetTimer } from '@/components/StateManagedBridge/AnimatedProgressCircle'
+import { useBridgeValidations } from '@/components/StateManagedBridge/hooks/useBridgeValidations'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
   const { synapseSDK } = useSynapseContext()
   const router = useRouter()
   const { query, pathname } = router
@@ -95,6 +97,8 @@ const StateManagedBridge = () => {
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
 
   const isApproved = useIsBridgeApproved()
+
+  const { hasValidQuote } = useBridgeValidations()
 
   const { isWalletPending } = useWalletState()
 
@@ -449,15 +453,25 @@ const StateManagedBridge = () => {
               <BridgeMaintenanceWarningMessage />
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />
-              <BridgeTransactionButton
-                isTyping={isTyping}
-                isApproved={isApproved}
-                approveTxn={approveTxn}
-                executeBridge={executeBridge}
-                isBridgePaused={isBridgePaused}
-                isQuoteStale={isQuoteStale}
-                quoteTimeout={quoteTimeout}
-              />
+              <div className="relative flex items-center">
+                <BridgeTransactionButton
+                  isTyping={isTyping}
+                  isApproved={isApproved}
+                  approveTxn={approveTxn}
+                  executeBridge={executeBridge}
+                  isBridgePaused={isBridgePaused}
+                  isQuoteStale={isQuoteStale}
+                />
+                {isConnected && hasValidQuote && (
+                  <div className="absolute flex items-center !right-10">
+                    <BridgeQuoteResetTimer
+                      bridgeQuote={bridgeQuote}
+                      hasValidQuote={hasValidQuote}
+                      duration={quoteTimeout}
+                    />
+                  </div>
+                )}
+              </div>
             </>
           )}
         </BridgeCard>
