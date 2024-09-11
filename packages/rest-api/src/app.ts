@@ -471,6 +471,114 @@ app.get('/bridgeTxInfo', async (req, res) => {
   }
 })
 
+// Get Synapse Transaction ID
+app.get('/getSynapseTxId', (req, res) => {
+  try {
+    const query = req.query
+    const originChainId = Number(query.originChainId)
+    const bridgeModuleName = String(query.bridgeModuleName)
+    const txHash = String(query.txHash)
+
+    if (!originChainId || !bridgeModuleName || !txHash) {
+      res.status(400).send({
+        message: 'Invalid request: Missing required parameters',
+      })
+      return
+    }
+
+    Synapse.getSynapseTxId(originChainId, bridgeModuleName, txHash)
+      .then((synapseTxId) => {
+        res.json({ synapseTxId })
+      })
+      .catch((err) => {
+        res.status(400).send({
+          message:
+            'Ensure that your request matches the following format: /getSynapseTxId?originChainId=8453&bridgeModuleName=SynapseRFQ&txHash=0x4acd82091b54cf584d50adcad9f57c61055beaca130016ecc3798d3d61f5487a',
+          error: err.message,
+        })
+      })
+  } catch (err) {
+    res.status(400).send({
+      message:
+        'Ensure that your request matches the following format: /getSynapseTxId?originChainId=8453&bridgeModuleName=SynapseRFQ&txHash=0x4acd82091b54cf584d50adcad9f57c61055beaca130016ecc3798d3d61f5487a',
+      error: err.message,
+    })
+  }
+})
+
+// Get Bridge Transaction Status
+app.get('/getBridgeTxStatus', async (req, res) => {
+  try {
+    const query = req.query
+    const destChainId = Number(query.destChainId)
+    const bridgeModuleName = String(query.bridgeModuleName)
+    const synapseTxId = String(query.synapseTxId)
+
+    if (!destChainId || !bridgeModuleName || !synapseTxId) {
+      res.status(400).send({
+        message: 'Invalid request: Missing required parameters',
+      })
+      return
+    }
+
+    try {
+      const status = await Synapse.getBridgeTxStatus(
+        destChainId,
+        bridgeModuleName,
+        synapseTxId
+      )
+
+      if (status) {
+        const txIdWithout0x = synapseTxId.startsWith('0x')
+          ? synapseTxId.slice(2)
+          : synapseTxId
+        const graphqlEndpoint = 'https://explorer.omnirpc.io/graphql'
+        const graphqlQuery = `
+          {
+            bridgeTransactions(
+              useMv: true
+              kappa: "${txIdWithout0x}"
+            ) {
+              toInfo {
+                chainID
+                address
+                txnHash
+                USDValue
+                tokenSymbol
+                blockNumber
+                formattedTime
+              }
+            }
+          }
+        `
+
+        const graphqlResponse = await fetch(graphqlEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ query: graphqlQuery }),
+        })
+
+        const graphqlData = await graphqlResponse.json()
+        res.json({ status, graphqlData })
+      } else {
+        res.json({ status })
+      }
+    } catch (err) {
+      res.status(400).send({
+        message: 'Error fetching bridge transaction status',
+        error: err.message,
+      })
+    }
+  } catch (err) {
+    res.status(400).send({
+      message: 'Invalid request',
+      error: err.message,
+    })
+  }
+})
+
 export const server = app.listen(port, () => {
   console.log(`Server listening at ${port}`)
 })
