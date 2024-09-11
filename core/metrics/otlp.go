@@ -116,6 +116,7 @@ const (
 	otelEndpointEnv  = "OTEL_EXPORTER_OTLP_ENDPOINT"
 	otelTransportEnv = "OTEL_EXPORTER_OTLP_TRANSPORT"
 	otelInsecureEvn  = "INSECURE_MODE"
+	otelHeadersEnv   = "OTEL_EXPORTER_OTLP_HEADERS"
 )
 
 //go:generate go run golang.org/x/tools/cmd/stringer -type=otlpTransportType -linecomment
@@ -137,6 +138,7 @@ func makeOTLPExporter(ctx context.Context, envSuffix string) (*otlptrace.Exporte
 	transport := transportFromString(getEnvSuffix(otelTransportEnv, envSuffix, otlpTransportHTTP.String()))
 	url := getEnvSuffix(otelEndpointEnv, envSuffix, "")
 	insecure := getEnvSuffix(otelInsecureEvn, envSuffix, "false")
+	headers := getEnvSuffix(otelHeadersEnv, envSuffix, "")
 
 	if url == "" {
 		return nil, fmt.Errorf("could not create exporter: url is empty")
@@ -146,6 +148,7 @@ func makeOTLPExporter(ctx context.Context, envSuffix string) (*otlptrace.Exporte
 		transport,
 		WithURL(url),
 		WithInsecure(insecure == "true"),
+		WithHeaders(headers),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not create client from transport: %w", err)
@@ -212,6 +215,37 @@ func WithInsecure(isInsecure bool) Option {
 
 		return nil
 	}
+}
+
+func WithHeaders(headers string) Option {
+	return func(o *transportOptions) error {
+		realHeaders := headersToMap(headers)
+		o.httpOptions = append(o.httpOptions, otlptracehttp.WithHeaders(realHeaders))
+		o.grpcOptions = append(o.grpcOptions, otlptracegrpc.WithHeaders(realHeaders))
+		return nil
+	}
+}
+
+func headersToMap(input string) map[string]string {
+	// Initialize the map
+	result := make(map[string]string)
+
+	// Split the input string by comma to get key=value pairs
+	pairs := strings.Split(input, ",")
+
+	// Iterate over each pair
+	for _, pair := range pairs {
+		// Split each pair by '=' to get the key and value
+		kv := strings.SplitN(pair, "=", 2)
+		if len(kv) == 2 {
+			key := kv[0]
+			value := kv[1]
+			// Add the key and value to the map
+			result[key] = value
+		}
+	}
+
+	return result
 }
 
 // transportFromString converts a string to a transport type.
