@@ -28,6 +28,7 @@ func NewMultiExporter(exporters ...trace.SpanExporter) MultiExporter {
 }
 
 // ExportSpans exports a batch of spans.
+// TODO parallellelize.
 func (m *multiExporter) ExportSpans(ctx context.Context, ss []trace.ReadOnlySpan) error {
 	for _, exporter := range m.exporters {
 		err := exporter.ExportSpans(ctx, ss)

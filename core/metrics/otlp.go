@@ -265,5 +265,5 @@ func transportFromString(transport string) otlpTransportType {
 
 const (
 	defaultMaxQueueSize   = 1000000
-	defaultMaxExportBatch = 2000
+	defaultMaxExportBatch = 10
 )
