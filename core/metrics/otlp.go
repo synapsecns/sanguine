@@ -147,7 +147,8 @@ func makeOTLPExporter(ctx context.Context, envSuffix string) (*otlptrace.Exporte
 	oteltraceClient, err := buildClientFromTransport(
 		transport,
 		WithURL(url),
-		WithInsecure(insecure == "true"),
+		// defaults to true
+		WithInsecure(insecure == "false"),
 		WithHeaders(headers),
 	)
 	if err != nil {
