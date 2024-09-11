@@ -3,10 +3,9 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/credentials"
 	"strings"
 	"time"
-
-	"os"
 
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
@@ -32,7 +31,7 @@ func NewOTLPMetricsHandler(buildInfo config.BuildInfo) Handler {
 func (n *otlpHandler) Start(ctx context.Context) (err error) {
 	var exporters []tracesdk.SpanExporter
 
-	primaryExporter, err := makeOTLPExporter(ctx, otelTransportEnv, otelEndpointEnv)
+	primaryExporter, err := makeOTLPExporter(ctx, "")
 	if err != nil {
 		return fmt.Errorf("could not create default client: %w", err)
 	}
@@ -40,8 +39,8 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 
 	// Loop to create additional exporters
 	for i := 1; ; i++ {
-		envSuffix := fmt.Sprintf("%d", i)
-		transportEnv := otelTransportEnv + envSuffix
+		envSuffix := fmt.Sprintf("_%d", i)
+		// if this is empty we can assume no config exists at all.
 		endpointEnv := otelEndpointEnv + envSuffix
 
 		// no more transports to add.
@@ -49,11 +48,9 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 			break
 		}
 
-		exporter, err := makeOTLPExporter(ctx, transportEnv, endpointEnv)
+		exporter, err := makeOTLPExporter(ctx, envSuffix)
 		if err != nil {
-			if err != nil {
-				return fmt.Errorf("could not create exporter %d: %v", i, err)
-			}
+			return fmt.Errorf("could not create exporter %d: %v", i, err)
 		}
 
 		exporters = append(exporters, exporter)
@@ -118,6 +115,7 @@ func handleShutdown(ctx context.Context, provider *tracesdk.TracerProvider) {
 const (
 	otelEndpointEnv  = "OTEL_EXPORTER_OTLP_ENDPOINT"
 	otelTransportEnv = "OTEL_EXPORTER_OTLP_TRANSPORT"
+	otelInsecureEvn  = "INSECURE_MODE"
 )
 
 //go:generate go run golang.org/x/tools/cmd/stringer -type=otlpTransportType -linecomment
@@ -128,14 +126,26 @@ const (
 	otlpTransportGRPC                              // grpc
 )
 
+// getEnvSuffix returns the value of an environment variable with a suffix.
+func getEnvSuffix(env, suffix, defaultRet string) string {
+	newEnv := env + suffix
+	return core.GetEnv(newEnv, defaultRet)
+}
+
 // makeOTLPTrace creates a new OTLP client based on the transport type and url.
-func makeOTLPExporter(ctx context.Context, transportEnv, urlEnv string) (*otlptrace.Exporter, error) {
-	transport := transportFromString(core.GetEnv(transportEnv, otlpTransportHTTP.String()))
-	url := os.GetEnv(urlEnv)
+func makeOTLPExporter(ctx context.Context, envSuffix string) (*otlptrace.Exporter, error) {
+	transport := transportFromString(getEnvSuffix(otelTransportEnv, envSuffix, otlpTransportHTTP.String()))
+	url := getEnvSuffix(otelEndpointEnv, envSuffix, "")
+	insecure := getEnvSuffix(otelInsecureEvn, envSuffix, "false")
+
+	if url == "" {
+		return nil, fmt.Errorf("could not create exporter: url is empty")
+	}
 
 	oteltraceClient, err := buildClientFromTransport(
 		transport,
-		url,
+		WithURL(url),
+		WithInsecure(insecure == "true"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not create client from transport: %w", err)
@@ -149,18 +159,58 @@ func makeOTLPExporter(ctx context.Context, transportEnv, urlEnv string) (*otlptr
 }
 
 // buildClientFromTransport creates a new OTLP client based on the transport type and url.
-func buildClientFromTransport(transport otlpTransportType, url string) (otlptrace.Client, error) {
-	if url == "" {
-		return nil, fmt.Errorf("no url specified")
+func buildClientFromTransport(transport otlpTransportType, options ...Option) (otlptrace.Client, error) {
+	to := transportOptions{}
+	for _, option := range options {
+		if err := option(&to); err != nil {
+			return nil, fmt.Errorf("could not apply option: %w", err)
+		}
 	}
+
+	// TODO: make sure url is validated
 
 	switch transport {
 	case otlpTransportHTTP:
-		return otlptracehttp.NewClient(otlptracehttp.WithEndpointURL(url)), nil
+		return otlptracehttp.NewClient(to.httpOptions...), nil
 	case otlpTransportGRPC:
-		return otlptracegrpc.NewClient(otlptracegrpc.WithEndpointURL(url)), nil
+		return otlptracegrpc.NewClient(to.grpcOptions...), nil
 	default:
 		return nil, fmt.Errorf("unknown transport type: %s", transport.String())
+	}
+}
+
+type transportOptions struct {
+	// httpOptions are the options for the http transport.
+	httpOptions []otlptracehttp.Option
+	// grpcOptions are the options for the grpc transport.
+	grpcOptions []otlptracegrpc.Option
+}
+
+// Option Each option appends the correspond option for both http and grpc options.
+// only one will be used in creating the actual client.
+type Option func(*transportOptions) error
+
+func WithURL(url string) Option {
+	return func(o *transportOptions) error {
+		o.httpOptions = append(o.httpOptions, otlptracehttp.WithEndpointURL(url))
+		o.grpcOptions = append(o.grpcOptions, otlptracegrpc.WithEndpointURL(url))
+
+		return nil
+	}
+}
+
+func WithInsecure(isInsecure bool) Option {
+	return func(o *transportOptions) error {
+		if isInsecure {
+			o.httpOptions = append(o.httpOptions, otlptracehttp.WithInsecure())
+			o.grpcOptions = append(o.grpcOptions, otlptracegrpc.WithInsecure())
+		} else {
+			tlsCreds := credentials.NewClientTLSFromCert(nil, "")
+			// note: you do not need to specify the tls creds for http, this happens automatically when https:// is used as the protocol scheme.
+			o.grpcOptions = append(o.grpcOptions, otlptracegrpc.WithTLSCredentials(tlsCreds))
+		}
+
+		return nil
 	}
 }
 
