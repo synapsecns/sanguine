@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/synapsecns/sanguine/compare/FastBridge@0.2.14...FastBridge@0.3.0) (2024-09-10)
+
+
+### Features
+
+* **contracts-rfq:** Multicall target abstraction [SLT-134] ([#3078](https://github.com/synapsecns/sanguine/issues/3078)) ([100324f](https://github.com/synapsecns/sanguine/commit/100324f269f77f73fc10913d0162676f5f918996))
+
+
+
+
+
 ## [0.2.14](https://github.com/synapsecns/sanguine/compare/FastBridge@0.2.13...FastBridge@0.2.14) (2024-07-29)
 
 **Note:** Version bump only for package FastBridge

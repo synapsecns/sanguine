@@ -1,22 +1,20 @@
 import _ from 'lodash'
-
+import { zeroAddress } from 'viem'
 import toast from 'react-hot-toast'
 
 import { subtractSlippageBigInt } from '@utils/slippage'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
-
 import ExplorerToastLink from '@components/ExplorerToastLink'
-
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { WETHE, WETH } from '@constants/tokens/bridgeable'
 import { AVWETH } from '@/constants/tokens/auxilliary'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
-import { zeroAddress } from 'viem'
 import { swapPoolCalculateTokenAmount } from '@/actions/swapPoolCalculateTokenAmount'
 import { swapPoolAddLiquidity } from '@/actions/swapPoolAddLiquidity'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { TranslatedText } from '@/components/ui/TranslatedText'
 
 export const approve = async (
   pool: Token,
@@ -28,13 +26,14 @@ export const approve = async (
 
   const { poolAddress, swapType } = getSwapDepositContractFields(pool, chainId)
 
-  const requestingApprovalPopup = toast(
-    `Requesting approval on ${currentChainName}`,
-    {
-      id: 'approve-in-progress-popup',
-      duration: Infinity,
-    }
+  const msg = (
+    <TranslatedText namespace="Pools.Other" id="Requesting approval" />
   )
+
+  const requestingApprovalPopup = toast(msg, {
+    id: 'approve-in-progress-popup',
+    duration: Infinity,
+  })
 
   const handleApproval = async (token, tokenAddr) => {
     if (
@@ -68,7 +67,10 @@ export const approve = async (
     toast.dismiss(requestingApprovalPopup)
     const successToastContent = (
       <div>
-        <div>Successfully approved on {currentChainName}</div>
+        <div>
+          <TranslatedText namespace="Pools" id="Successfully approved on" />{' '}
+          {currentChainName}
+        </div>
         <ExplorerToastLink
           transactionHash={approveTx ?? zeroAddress}
           chainId={chainId}
@@ -115,7 +117,11 @@ export const deposit = async (
   let pendingPopup: any
   let successPopup: any
 
-  pendingPopup = toast(`Starting your deposit...`, {
+  const msg = (
+    <TranslatedText namespace="Pools.Other" id="Starting your deposit" />
+  )
+
+  pendingPopup = toast(msg, {
     id: 'deposit-in-progress-popup',
     duration: Infinity,
   })
@@ -171,7 +177,9 @@ export const deposit = async (
 
     const successToastContent = (
       <div>
-        <div>Liquidity added!</div>
+        <div>
+          <TranslatedText namespace="Pools" id="Liquidity added" />
+        </div>
         <ExplorerToastLink
           transactionHash={tx?.transactionHash}
           chainId={chainId}
@@ -210,7 +218,11 @@ export const emptyPoolDeposit = async (
   let pendingPopup: any
   let successPopup: any
 
-  pendingPopup = toast(`Starting your deposit...`, {
+  const msg = (
+    <TranslatedText namespace="Pools.Other" id="Starting your deposit" />
+  )
+
+  pendingPopup = toast(msg, {
     id: 'deposit-in-progress-popup',
     duration: Infinity,
   })
@@ -253,7 +265,9 @@ export const emptyPoolDeposit = async (
 
     const successToastContent = (
       <div>
-        <div>Liquidity added!</div>
+        <div>
+          <TranslatedText namespace="Pools" id="Liquidity added" />
+        </div>
         <ExplorerToastLink
           transactionHash={tx?.transactionHash}
           chainId={chainId}

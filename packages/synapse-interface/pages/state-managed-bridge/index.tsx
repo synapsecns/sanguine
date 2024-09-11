@@ -10,6 +10,7 @@ import {
   getPublicClient,
   waitForTransactionReceipt,
 } from '@wagmi/core'
+import { useTranslations } from 'next-intl'
 
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
@@ -80,6 +81,8 @@ const StateManagedBridge = () => {
   const currentSDKRequestID = useRef(0)
   const quoteToastRef = useRef({ id: '' })
   const quoteTimeout = 15000
+
+  const t = useTranslations('Bridge')
 
   const [isTyping, setIsTyping] = useState(false)
 
@@ -161,13 +164,31 @@ const StateManagedBridge = () => {
         toast.dismiss(quoteToastRef.current.id)
 
         if (fetchBridgeQuote.fulfilled.match(result)) {
-          const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
+          const message = t(
+            'Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}',
+            {
+              debouncedFromValue: debouncedFromValue,
+              fromToken: fromToken?.symbol,
+              fromChainId: CHAINS_BY_ID[fromChainId]?.name,
+              toToken: toToken?.symbol,
+              toChainId: CHAINS_BY_ID[toChainId]?.name,
+            }
+          )
 
           quoteToastRef.current.id = toast(message, { duration: 3000 })
         }
 
         if (fetchBridgeQuote.rejected.match(result)) {
-          const message = result.payload as string
+          const message = t(
+            'No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}',
+            {
+              debouncedFromValue: debouncedFromValue,
+              fromToken: fromToken?.symbol,
+              fromChainId: CHAINS_BY_ID[fromChainId]?.name,
+              toToken: toToken?.symbol,
+              toChainId: CHAINS_BY_ID[toChainId]?.name,
+            }
+          )
 
           quoteToastRef.current.id = toast(message, { duration: 3000 })
         }
@@ -349,8 +370,15 @@ const StateManagedBridge = () => {
       const successToastContent = (
         <div>
           <div>
-            Successfully initiated bridge from {fromToken?.symbol} on{' '}
-            {originChainName} to {toToken.symbol} on {destinationChainName}
+            {t(
+              'Succesfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}',
+              {
+                fromToken: fromToken?.symbol,
+                originChainName: originChainName,
+                toToken: toToken?.symbol,
+                destinationChainName: destinationChainName,
+              }
+            )}
           </div>
           <ExplorerToastLink
             transactionHash={tx ?? zeroAddress}
@@ -414,8 +442,8 @@ const StateManagedBridge = () => {
       <div className="flex flex-col">
         <div className="flex items-center justify-between">
           <PageHeader
-            title="Bridge"
-            subtitle="Send your assets across chains."
+            title={t('Bridge')}
+            subtitle={t('Send your assets across chains')}
           />
           <Button
             className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
