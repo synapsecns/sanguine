@@ -12,6 +12,7 @@ const baseClassNames = {
   disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
   background: 'bg-zinc-400 dark:bg-bgLight',
   gradient: 'enabled:bg-gradient-to-r',
+  transition: 'transition',
 }
 
 export const TransactionButton = ({

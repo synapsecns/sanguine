@@ -8,8 +8,6 @@ import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
 export const useStaleQuoteUpdater = (
   quote: BridgeQuote,
   refreshQuoteCallback: () => Promise<void>,
-  // isQuoteLoading: boolean,
-  // isWalletPending: boolean,
   isActive: boolean,
   staleTimeout: number = 15000, // in ms
   autoRefreshDuration: number = 30000 // in ms

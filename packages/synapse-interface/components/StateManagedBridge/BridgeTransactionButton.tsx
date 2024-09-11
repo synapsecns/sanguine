@@ -182,6 +182,7 @@ export const BridgeTransactionButton = ({
       pendingLabel: t('Switching chains'),
     }
   } else if (
+    isApproved &&
     hasValidQuote &&
     hasQuoteOutputChanged &&
     hasSameSelectionsAsPreviousQuote &&
