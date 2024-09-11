@@ -7,7 +7,7 @@ import { BridgeQuote } from '@/utils/types'
 
 export const useConfirmNewBridgePrice = () => {
   const quoteRef = useRef<any>(null)
-  const bpsThreshold = 0.0000000001 // 1bps
+  const bpsThreshold = 0.0001 // 1bps
 
   const [hasQuoteOutputChanged, setHasQuoteOutputChanged] =
     useState<boolean>(false)

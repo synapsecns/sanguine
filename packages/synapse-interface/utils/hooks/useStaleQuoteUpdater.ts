@@ -31,7 +31,6 @@ export const useStaleQuoteUpdater = (
     if (moved && autoRefreshStartTimeRef.current) {
       autoRefreshStartTimeRef.current = null
       reset()
-      console.log('reset autorefresh')
     }
   }, [quote])
 
@@ -45,7 +44,6 @@ export const useStaleQuoteUpdater = (
 
       const elapsedTime = Date.now() - autoRefreshStartTimeRef.current
 
-      console.log('elapsedTime: ', elapsedTime)
       // If autoRefreshDuration hasn't passed, keep auto-refreshing
       if (elapsedTime < autoRefreshDuration) {
         if (timeoutRef.current) clearTimeout(timeoutRef.current)
