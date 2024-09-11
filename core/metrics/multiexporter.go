@@ -3,9 +3,11 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"go.uber.org/multierr"
+	"sync"
+	"time"
 
 	"go.opentelemetry.io/otel/sdk/trace"
-	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
 // MultiExporter is an interface that allows exporting spans to multiple OTLP trace exporters.
@@ -27,26 +29,50 @@ func NewMultiExporter(exporters ...trace.SpanExporter) MultiExporter {
 	}
 }
 
+const defaultTimeout = 30 * time.Second
+
 // ExportSpans exports a batch of spans.
-func (m *multiExporter) ExportSpans(ctx context.Context, ss []trace.ReadOnlySpan) error {
+func (m *multiExporter) ExportSpans(parentCtx context.Context, ss []trace.ReadOnlySpan) error {
+	return m.doParallel(parentCtx, func(ctx context.Context, exporter trace.SpanExporter) error {
+		return exporter.ExportSpans(ctx, ss)
+	})
+}
+
+func (m *multiExporter) doParallel(parentCtx context.Context, fn func(context.Context, trace.SpanExporter) error) error {
+	ctx, cancel := context.WithTimeout(parentCtx, defaultTimeout)
+	defer cancel()
+
+	var wg sync.WaitGroup
+	var errors []error
+	var mu sync.Mutex
+
+	wg.Add(len(m.exporters))
 	for _, exporter := range m.exporters {
-		err := exporter.ExportSpans(ctx, ss)
-		if err != nil {
-			return fmt.Errorf("could not export spans: %w", err)
-		}
+		go func(exporter trace.SpanExporter) {
+			defer wg.Done()
+			err := fn(ctx, exporter)
+			if err != nil {
+				mu.Lock()
+				errors = append(errors, fmt.Errorf("error in doMultiple: %w", err))
+				mu.Unlock()
+			}
+		}(exporter)
 	}
+
+	wg.Wait()
+	if len(errors) > 0 {
+		// nolint: wrapcheck
+		return multierr.Combine(errors...)
+	}
+
 	return nil
 }
 
 // Shutdown notifies the exporter of a pending halt to operations.
 func (m *multiExporter) Shutdown(ctx context.Context) error {
-	for _, exporter := range m.exporters {
-		err := exporter.Shutdown(ctx)
-		if err != nil {
-			return fmt.Errorf("could not stop exporter: %w", err)
-		}
-	}
-	return nil
+	return m.doParallel(ctx, func(ctx context.Context, exporter trace.SpanExporter) error {
+		return exporter.Shutdown(ctx)
+	})
 }
 
 // AddExporter adds an exporter to the multi exporter.
@@ -54,4 +80,4 @@ func (m *multiExporter) AddExporter(exporter trace.SpanExporter) {
 	m.exporters = append(m.exporters, exporter)
 }
 
-var _ tracesdk.SpanExporter = &multiExporter{}
+var _ trace.SpanExporter = &multiExporter{}

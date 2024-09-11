@@ -51,7 +51,7 @@ func (n *otlpHandler) Start(ctx context.Context) (err error) {
 
 		exporter, err := makeOTLPExporter(ctx, envSuffix)
 		if err != nil {
-			return fmt.Errorf("could not create exporter %d: %v", i, err)
+			return fmt.Errorf("could not create exporter %d: %w", i, err)
 		}
 
 		exporters = append(exporters, exporter)
@@ -163,10 +163,10 @@ func makeOTLPExporter(ctx context.Context, envSuffix string) (*otlptrace.Exporte
 
 	oteltraceClient, err := buildClientFromTransport(
 		transport,
-		WithURL(url),
+		withURL(url),
 		// defaults to true
-		WithSecure(secure),
-		WithHeaders(headers),
+		withSecure(secure),
+		withHeaders(headers),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not create client from transport: %w", err)
@@ -211,7 +211,7 @@ type transportOptions struct {
 // only one will be used in creating the actual client.
 type Option func(*transportOptions) error
 
-func WithURL(url string) Option {
+func withURL(url string) Option {
 	return func(o *transportOptions) error {
 		o.httpOptions = append(o.httpOptions, otlptracehttp.WithEndpointURL(url))
 		o.grpcOptions = append(o.grpcOptions, otlptracegrpc.WithEndpointURL(url))
@@ -220,7 +220,7 @@ func WithURL(url string) Option {
 	}
 }
 
-func WithSecure(secure bool) Option {
+func withSecure(secure bool) Option {
 	return func(o *transportOptions) error {
 		if secure {
 			tlsCreds := credentials.NewClientTLSFromCert(nil, "")
@@ -228,6 +228,7 @@ func WithSecure(secure bool) Option {
 			o.grpcOptions = append(o.grpcOptions, otlptracegrpc.WithTLSCredentials(tlsCreds))
 
 			tlsConfig := &tls.Config{
+				MinVersion: tls.VersionTLS12,
 				// RootCAs is nil, which means the default system root CAs are used
 			}
 			o.httpOptions = append(o.httpOptions, otlptracehttp.WithTLSClientConfig(tlsConfig))
@@ -240,7 +241,7 @@ func WithSecure(secure bool) Option {
 	}
 }
 
-func WithHeaders(headers string) Option {
+func withHeaders(headers string) Option {
 	return func(o *transportOptions) error {
 		realHeaders := headersToMap(headers)
 		o.httpOptions = append(o.httpOptions, otlptracehttp.WithHeaders(realHeaders))
