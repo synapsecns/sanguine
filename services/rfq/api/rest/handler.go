@@ -49,6 +49,7 @@ func APIVersionMiddleware(serverVersion string) gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Success 200
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /quotes [put].
 func (h *Handler) ModifyQuote(c *gin.Context) {
 	// Retrieve the request from context
@@ -94,6 +95,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /bulk_quotes [put].
 func (h *Handler) ModifyBulkQuotes(c *gin.Context) {
 	// Retrieve the request from context
@@ -176,6 +178,7 @@ func parseDBQuote(putRequest model.PutQuoteRequest, relayerAddr interface{}) (*d
 // @Accept json
 // @Produce json
 // @Success 200 {array} model.GetQuoteResponse
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /quotes [get].
 func (h *Handler) GetQuotes(c *gin.Context) {
 	originChainIDStr := c.Query("originChainID")
@@ -240,6 +243,7 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 {array} model.GetContractsResponse
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /contracts [get].
 func (h *Handler) GetContracts(c *gin.Context) {
 	// Convert quotes from db model to api model
