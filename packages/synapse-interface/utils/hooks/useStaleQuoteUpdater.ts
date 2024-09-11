@@ -8,8 +8,8 @@ import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
 export const useStaleQuoteUpdater = (
   quote: BridgeQuote,
   refreshQuoteCallback: () => Promise<void>,
-  isQuoteLoading: boolean,
-  isWalletPending: boolean,
+  // isQuoteLoading: boolean,
+  // isWalletPending: boolean,
   isActive: boolean,
   staleTimeout: number = 15000, // in ms
   autoRefreshDuration: number = 30000 // in ms
@@ -37,7 +37,7 @@ export const useStaleQuoteUpdater = (
 
   // Start auto-refresh logic for autoRefreshDuration seconds
   useEffect(() => {
-    if (isValid && isActive && !isQuoteLoading && !isWalletPending) {
+    if (isValid && isActive) {
       // If auto-refresh has not started yet, initialize the start time
       if (autoRefreshStartTimeRef.current === null) {
         autoRefreshStartTimeRef.current = Date.now()
@@ -89,7 +89,7 @@ export const useStaleQuoteUpdater = (
       }
       setIsStale(false)
     }
-  }, [quote, isQuoteLoading, isWalletPending])
+  }, [quote, isActive])
 
   return isStale
 }

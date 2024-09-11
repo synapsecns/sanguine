@@ -3,17 +3,15 @@ import { useState, useEffect, useMemo } from 'react'
 
 export const BridgeQuoteResetTimer = ({
   bridgeQuote,
-  hasValidQuote,
   isActive,
   duration, // in ms
 }: {
   bridgeQuote: BridgeQuote
-  hasValidQuote: boolean
   isActive: boolean
   duration: number
 }) => {
   const memoizedTimer = useMemo(() => {
-    if (hasValidQuote && isActive) {
+    if (isActive) {
       return (
         <AnimatedProgressCircle
           animateKey={bridgeQuote.id}
@@ -22,7 +20,7 @@ export const BridgeQuoteResetTimer = ({
       )
     }
     return null
-  }, [bridgeQuote, hasValidQuote, duration, isActive])
+  }, [bridgeQuote, duration, isActive])
 
   return memoizedTimer
 }
