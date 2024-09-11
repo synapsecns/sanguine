@@ -73,7 +73,6 @@ export const BridgeTransactionButton = ({
 
   const isButtonDisabled =
     isBridgePaused ||
-    isQuoteStale ||
     isTyping ||
     isLoading ||
     isWalletPending ||
@@ -82,6 +81,7 @@ export const BridgeTransactionButton = ({
     isBridgeQuoteAmountGreaterThanInputForRfq ||
     (isConnected && !hasValidQuote) ||
     (isConnected && !hasSufficientBalance) ||
+    (isConnected && isQuoteStale) ||
     (destinationAddress && !isAddress(destinationAddress))
 
   let buttonProperties
