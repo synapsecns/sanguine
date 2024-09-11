@@ -58,7 +58,6 @@ import { RootState } from '@/store/store'
 import { getUnixTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { wagmiConfig } from '@/wagmiConfig'
-import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { screenAddress } from '@/utils/screenAddress'
 import { useWalletState } from '@/slices/wallet/hooks'
@@ -69,6 +68,7 @@ import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 import { BridgeQuoteResetTimer } from '@/components/StateManagedBridge/BridgeQuoteResetTimer'
 import { useBridgeValidations } from '@/components/StateManagedBridge/hooks/useBridgeValidations'
+import { useStaleQuoteUpdater } from '@/components/StateManagedBridge/hooks/useStaleQuoteUpdater'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
