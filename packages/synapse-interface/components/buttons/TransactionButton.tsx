@@ -43,8 +43,8 @@ export const TransactionButton = ({
       style={style}
       disabled={disabled}
       className={`
-        ${className}
         ${joinClassNames(baseClassNames)}
+        ${className}
         ${
           isPending
             ? 'from-fuchsia-400 dark:from-fuchsia-900 to-purple-400 dark:to-purple-900'
