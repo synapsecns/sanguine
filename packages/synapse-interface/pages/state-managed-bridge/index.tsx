@@ -54,13 +54,11 @@ import {
 } from '@/slices/transactions/actions'
 import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '@/store/store'
-import { calculateTimeBetween, getUnixTimeMinutesFromNow } from '@/utils/time'
+import { getUnixTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { wagmiConfig } from '@/wagmiConfig'
 import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
-import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
-import { getBridgeModuleNames } from '@/utils/getBridgeModuleNames'
 import { screenAddress } from '@/utils/screenAddress'
 import { useWalletState } from '@/slices/wallet/hooks'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
@@ -462,15 +460,13 @@ const StateManagedBridge = () => {
                   isBridgePaused={isBridgePaused}
                   isQuoteStale={isQuoteStale}
                 />
-                {isConnected && hasValidQuote && (
-                  <div className="absolute flex items-center !right-10">
-                    <BridgeQuoteResetTimer
-                      bridgeQuote={bridgeQuote}
-                      hasValidQuote={hasValidQuote}
-                      duration={quoteTimeout}
-                    />
-                  </div>
-                )}
+                <div className="absolute flex items-center !right-10">
+                  <BridgeQuoteResetTimer
+                    bridgeQuote={bridgeQuote}
+                    hasValidQuote={hasValidQuote}
+                    duration={quoteTimeout}
+                  />
+                </div>
               </div>
             </>
           )}
