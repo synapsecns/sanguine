@@ -190,8 +190,7 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: t('Confirm new quote'),
       onClick: () => onUserAcceptChange(),
-      className:
-        '!border !border-synapsePurple !from-bgLight !to-bgLight !animate-pulse',
+      className: '!border !border-synapsePurple !from-bgLight !to-bgLight',
     }
   } else if (!isApproved && hasValidInput && hasValidQuote) {
     buttonProperties = {
