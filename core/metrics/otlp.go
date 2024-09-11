@@ -115,7 +115,7 @@ func handleShutdown(ctx context.Context, provider *tracesdk.TracerProvider) {
 const (
 	otelEndpointEnv  = "OTEL_EXPORTER_OTLP_ENDPOINT"
 	otelTransportEnv = "OTEL_EXPORTER_OTLP_TRANSPORT"
-	otelInsecureEvn  = "INSECURE_MODE"
+	otelInsecureEvn  = "OTEL_EXPORTER_OTLP_INSECURE_MODE"
 	otelHeadersEnv   = "OTEL_EXPORTER_OTLP_HEADERS"
 )
 
