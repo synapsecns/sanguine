@@ -108,12 +108,12 @@ export const BridgeTransactionButton = ({
     }
   } else if (isConnected && !hasSufficientBalance) {
     buttonProperties = {
-      label: 'Insufficient balance',
+      label: t('Insufficient balance'),
       onClick: null,
     }
   } else if (isLoading && hasSameSelectionsAsPreviousQuote) {
     buttonProperties = {
-      label: 'Updating quote',
+      label: t('Updating quote'),
       onClick: null,
     }
   } else if (isLoading) {
@@ -183,7 +183,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (hasQuoteOutputChanged && !hasUserConfirmedChange) {
     buttonProperties = {
-      label: 'Confirm new quote',
+      label: t('Confirm new quote'),
       onClick: () => onUserAcceptChange(),
       className:
         '!border !border-synapsePurple !from-bgLight !to-bgLight !animate-pulse',
