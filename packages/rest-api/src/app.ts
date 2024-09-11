@@ -476,31 +476,31 @@ app.get('/getSynapseTxId', (req, res) => {
   try {
     const query = req.query
     const originChainId = Number(query.originChainId)
-    const bridgeModuleName = String(query.bridgeModuleName)
+    const bridgeModule = String(query.bridgeModule)
     const txHash = String(query.txHash)
 
-    if (!originChainId || !bridgeModuleName || !txHash) {
+    if (!originChainId || !bridgeModule || !txHash) {
       res.status(400).send({
         message: 'Invalid request: Missing required parameters',
       })
       return
     }
 
-    Synapse.getSynapseTxId(originChainId, bridgeModuleName, txHash)
+    Synapse.getSynapseTxId(originChainId, bridgeModule, txHash)
       .then((synapseTxId) => {
         res.json({ synapseTxId })
       })
       .catch((err) => {
         res.status(400).send({
           message:
-            'Ensure that your request matches the following format: /getSynapseTxId?originChainId=8453&bridgeModuleName=SynapseRFQ&txHash=0x4acd82091b54cf584d50adcad9f57c61055beaca130016ecc3798d3d61f5487a',
+            'Ensure that your request matches the following format: /getSynapseTxId?originChainId=8453&bridgeModule=SynapseRFQ&txHash=0x4acd82091b54cf584d50adcad9f57c61055beaca130016ecc3798d3d61f5487a',
           error: err.message,
         })
       })
   } catch (err) {
     res.status(400).send({
       message:
-        'Ensure that your request matches the following format: /getSynapseTxId?originChainId=8453&bridgeModuleName=SynapseRFQ&txHash=0x4acd82091b54cf584d50adcad9f57c61055beaca130016ecc3798d3d61f5487a',
+        'Ensure that your request matches the following format: /getSynapseTxId?originChainId=8453&bridgeModule=SynapseRFQ&txHash=0x4acd82091b54cf584d50adcad9f57c61055beaca130016ecc3798d3d61f5487a',
       error: err.message,
     })
   }
@@ -511,10 +511,10 @@ app.get('/getBridgeTxStatus', async (req, res) => {
   try {
     const query = req.query
     const destChainId = Number(query.destChainId)
-    const bridgeModuleName = String(query.bridgeModuleName)
+    const bridgeModule = String(query.bridgeModule)
     const synapseTxId = String(query.synapseTxId)
 
-    if (!destChainId || !bridgeModuleName || !synapseTxId) {
+    if (!destChainId || !bridgeModule || !synapseTxId) {
       res.status(400).send({
         message: 'Invalid request: Missing required parameters',
       })
@@ -524,7 +524,7 @@ app.get('/getBridgeTxStatus', async (req, res) => {
     try {
       const status = await Synapse.getBridgeTxStatus(
         destChainId,
-        bridgeModuleName,
+        bridgeModule,
         synapseTxId
       )
 
@@ -561,7 +561,9 @@ app.get('/getBridgeTxStatus', async (req, res) => {
         })
 
         const graphqlData = await graphqlResponse.json()
-        res.json({ status, graphqlData })
+        const toInfo = graphqlData.data.bridgeTransactions[0]?.toInfo || null
+
+        res.json({ status, toInfo })
       } else {
         res.json({ status })
       }
