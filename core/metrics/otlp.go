@@ -135,7 +135,7 @@ func getEnvSuffix(env, suffix, defaultRet string) string {
 
 // makeOTLPTrace creates a new OTLP client based on the transport type and url.
 func makeOTLPExporter(ctx context.Context, envSuffix string) (*otlptrace.Exporter, error) {
-	transport := transportFromString(getEnvSuffix(otelTransportEnv, envSuffix, otlpTransportHTTP.String()))
+	transport := transportFromString(getEnvSuffix(otelTransportEnv, envSuffix, otlpTransportGRPC.String()))
 	url := getEnvSuffix(otelEndpointEnv, envSuffix, "")
 	insecure := getEnvSuffix(otelInsecureEvn, envSuffix, "false")
 	headers := getEnvSuffix(otelHeadersEnv, envSuffix, "")
