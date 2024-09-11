@@ -22,6 +22,8 @@ import (
 )
 
 // ContractListener listens for chain events and calls HandleLog.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name ContractListener --output ./mocks --case=underscore
 type ContractListener interface {
 	// Listen starts the listener and call HandleLog for each event
 	Listen(ctx context.Context, handler HandleLog) error

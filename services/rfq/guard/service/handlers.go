@@ -159,7 +159,6 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 
 			return tx, nil
 		})
-
 		if err != nil {
 			return fmt.Errorf("could not dispute: %w", err)
 		}
@@ -229,7 +228,7 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 }
 
 func relayMatchesBridgeRequest(event *fastbridge.FastBridgeBridgeRelayed, bridgeRequest *guarddb.BridgeRequest) bool {
-	//TODO: is this exhaustive?
+	// TODO: is this exhaustive?
 	if event.TransactionId != bridgeRequest.TransactionID {
 		return false
 	}
@@ -273,6 +272,8 @@ func (g *Guard) isFinalized(ctx context.Context, chainID int, txBlockNumber uint
 		return false, fmt.Errorf("could not get chain config for chain %d", chainID)
 	}
 	threshBlockNumber := txBlockNumber + chainCfg.Confirmations
+
+	//nolint:gosec
 	span.SetAttributes(
 		attribute.Int("chain_id", chainID),
 		attribute.Int("current_block_number", int(currentBlockNumber)),

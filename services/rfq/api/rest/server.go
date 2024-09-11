@@ -3,6 +3,7 @@ package rest
 
 import (
 	"context"
+
 	"fmt"
 	"net/http"
 	"sync"
@@ -32,6 +33,14 @@ import (
 )
 
 const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
+
+func getCurrentVersion() (string, error) {
+	if len(APIversions.Versions) == 0 {
+		return "", fmt.Errorf("no versions found")
+	}
+
+	return APIversions.Versions[0].Version, nil
+}
 
 // QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
@@ -158,6 +167,12 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
 	h := NewHandler(r.db, r.cfg)
+
+	versionNumber, versionNumErr := getCurrentVersion()
+	if versionNumErr != nil {
+		return fmt.Errorf("could not get current API version: %w", versionNumErr)
+	}
+	engine.Use(APIVersionMiddleware(versionNumber))
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Apply AuthMiddleware only to the PUT routes
@@ -315,6 +330,7 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 // @Accept json
 // @Produce json
 // @Success 200
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /ack [put].
 func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 	req, exists := c.Get("putRequest")

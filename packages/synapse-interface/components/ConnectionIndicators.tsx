@@ -4,6 +4,7 @@ import { useAccount } from 'wagmi'
 import { switchChain } from '@wagmi/core'
 import { LoaderIcon } from 'react-hot-toast'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { useTranslations } from 'next-intl'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { setFromChainId } from '@/slices/bridge/reducer'
@@ -26,6 +27,9 @@ export const ConnectedIndicator = () => {
     hover: 'hover:opacity-80',
     font: 'text-sm',
   }
+
+  const t = useTranslations('Wallet')
+
   return (
     <button
       data-test-id="connected-button"
@@ -33,7 +37,7 @@ export const ConnectedIndicator = () => {
       className={joinClassNames(classNames)}
     >
       <Indicator className="bg-green-500 dark:bg-green-400" />
-      Connected
+      {t('Connected')}
     </button>
   )
 }
@@ -42,6 +46,8 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
   const chain = CHAINS_BY_ID[chainId]
+
+  const t = useTranslations('Wallet')
 
   function scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -78,13 +84,13 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
       {isConnecting ? (
         <>
           <Indicator className="border-green-500 dark:border-green-400" />
-          Connecting
+          {t('Connecting')}
           <LoaderIcon />
         </>
       ) : (
         <>
           <Indicator className="border-indigo-500 dark:border-indigo-300" />
-          Switch Network
+          {t('Switch Network')}
         </>
       )}
     </button>
@@ -94,6 +100,8 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
 export function ConnectWalletButton() {
   const [clientReady, setClientReady] = useState<boolean>(false)
   const { address } = useAccount()
+
+  const t = useTranslations('Wallet')
 
   useEffect(() => {
     setClientReady(true)
@@ -124,7 +132,7 @@ export function ConnectWalletButton() {
                         onClick={openConnectModal}
                       >
                         <Indicator className="border-fuchsia-500" />
-                        Connect Wallet
+                        {t('Connect Wallet')}
                       </button>
                     )
                   }

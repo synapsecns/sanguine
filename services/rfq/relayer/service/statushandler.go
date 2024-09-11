@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/limiter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -53,6 +54,10 @@ type QuoteRequestHandler struct {
 	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
 	// handlerMtx is the mutex for relaying.
 	handlerMtx mapmutex.StringMapMutex
+	// limiter is the rate limiter.
+	limiter limiter.Limiter
+	// tokenNames is the map of addresses to token names
+	tokenNames map[string]relconfig.TokenConfig
 	// balanceMtx is the mutex for balances.
 	balanceMtx mapmutex.StringMapMutex
 	// cfg is the relayer config.
@@ -77,6 +82,11 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		return nil, fmt.Errorf("could not get dest chain: %w", err)
 	}
 
+	originTokens, err := r.cfg.GetTokens(req.Transaction.OriginChainId)
+	if err != nil {
+		return nil, fmt.Errorf("could not get tokens: %w", err)
+	}
+
 	qr := &QuoteRequestHandler{
 		Origin:              *origin,
 		Dest:                *dest,
@@ -90,8 +100,16 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		apiClient:           r.apiClient,
 		mutexMiddlewareFunc: r.mutexMiddleware,
 		handlerMtx:          r.handlerMtx,
-		balanceMtx:          r.balanceMtx,
-		cfg:                 r.cfg,
+		limiter: limiter.NewRateLimiter(
+			r.cfg,
+			r.chainListeners[int(req.Transaction.OriginChainId)],
+			r.quoter,
+			r.metrics,
+			originTokens,
+		),
+		tokenNames: originTokens,
+		balanceMtx: r.balanceMtx,
+		cfg:        r.cfg,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened

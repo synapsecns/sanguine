@@ -3,6 +3,8 @@ import _ from 'lodash'
 import Fuse from 'fuse.js'
 import { useAccount } from 'wagmi'
 import { type Address } from 'viem'
+import { useTranslations } from 'next-intl'
+
 import { type Chain } from '@/utils/types'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
@@ -50,6 +52,8 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     } else return null
   }, [isMasqueradeActive, masqueradeAddress, address])
 
+  const t = useTranslations('Activity')
+
   return (
     <div
       data-test-id="activity"
@@ -57,23 +61,23 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
     >
       {!viewingAddress && (
         <div className="text-secondary">
-          Your pending and recent transactions will appear here.
+          {t('Your pending and recent transactions will appear here')}
         </div>
       )}
 
       {viewingAddress && isLoading && (
-        <div className="text-secondary">Loading activity...</div>
+        <div className="text-secondary">{t('Loading activity')}...</div>
       )}
 
       {viewingAddress && !isLoading && !hasHistoricalTransactions && (
         <div className="text-secondary">
-          No transactions in last 30 days.
+          {t('No transactions in last 30 days.')}
           <UserExplorerLink connectedAddress={viewingAddress} />
         </div>
       )}
 
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
-        <ActivitySection title="Recent">
+        <ActivitySection title={t('Recent')}>
           {userHistoricalTransactions &&
             filteredHistoricalTransactions
               .slice(0, isSearchInputActive ? 100 : 6)

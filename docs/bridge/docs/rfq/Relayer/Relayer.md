@@ -27,7 +27,29 @@ The quoting loop is comparitively simple and updates the api on each route it su
 
 ### Rebalancing
 
-The rebalancing loop is more complex and is responsible for ensuring that the relayer has enough liquidity on each chain. The CCTP rebalancer is supported and works like this:
+Automated rebalancing is configurable by token and currently supports CCTP routes as well as native bridging in the case of Scroll. Rebalancing evaluation follows this logic on every `rebalance_interval`:
+
+- For every supported rebalance method, compute the 'total balance' of each token as the sum of all balances across chains that support the given rebalance method.
+- For every supported token, compute the 'maintenance threshold' as the product of the `maintenance_balance_pct` and the 'total balance'. A token is eligible for rebalancing if the current balance is below the 'maintenance threshold'.
+
+To limit the amount of inventory that is inflight, only one rebalance can be pending at a time for each token. As such, we select the 'best' rebalance candidate as the rebalance with the largest delta between origin balance and destination balance.
+
+The final step in evaluating a rebalance is determining the rebalance amount:
+
+- Arrive at an initial rebalance amount by computing the delta between current balance and the initial threshold on origin.
+- Check if this rebalance amount is too much, i.e. it would take the destination balance above its initial threshold. If so, clip the rebalance amount to target the destination initial threshold.
+- Filter the rebalance amount by the configured min and max.
+
+An example of this process is given below:
+
+We are dealing with chains 1, 2, and 3. Chains 1 and 2 support USDC with CCTP, and chain 3 supports USDC but does not support CCTP. Each chain has a `maintenance_pct` of 20%, while chains 1 and 2 have `initial_pct` of 40% and chain 3 has 20%. Assume chain 1 has a balance of 100 USDC, chain 2 has 900 USDC, and chain 3 has 2000 USDC.
+
+The system would trigger a rebalance from chain 2 to chain 1, since the total balance of CCTP-supported chains is 1000 USDC, and chain 1 is below the 20% maintenance threshold. Chain 3 is not considered for rebalance since it does not support CCTP.
+
+The rebalance amount would be initially be targeted as 600 since this would take chain 2 to its 40% initial threshold. However, since chain 1 only needs 300 to reach its initial 40% threshold, the rebalance amount is clipped at 300.
+
+So, the final result is a rebalance of 300 USDC from chain 2 to chain 1, leading to chain 1 having 400 USDC, chain 2 having 600 USDC, and chain 3 having 2000 USDC.
+
 
 1. At `rebalance_interval`, check the `maintenance_balance_pct` of each token on each chain and compare it to the current balance. If the balance is below the `maintenance_balance_pct`, continue
 2. Calculate the amount to rebalance by taking the difference between the maintenance balance and the current balance and multiplying it by the `initial_balance_pct`.
@@ -114,6 +136,7 @@ The relayer is configured with a yaml file. The following is an example configur
   omnirpc_url: 'http://omnirpc' # url of the omnirpc instance, please reference the Omnirpc section under Services for proper configuration
   rebalance_interval: 2m # how often to rebalance
   relayer_api_port: '8081' # api port for the relayer api
+  volume_limit: 10000 # USD price cap for a bridge under block confirmation minimum (configurable under `chains`)
 
   base_chain_config: # this is hte base chain config, other chains override it
     confirmations: 0

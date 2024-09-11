@@ -59,6 +59,9 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature() {
 		c.Require().NoError(err)
 	}()
 
+	// Check for X-Api-Version on the response
+	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
 	// Assert that the response status code is HTTP 200 OK.
 	c.Equal(http.StatusOK, resp.StatusCode)
 }
@@ -146,6 +149,9 @@ func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
 		_ = resp.Body.Close()
 	}()
 
+	// Check for X-Api-Version on the response
+	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
 	// Log the response body for debugging.
 	body, err := io.ReadAll(resp.Body)
 	c.Require().NoError(err)
@@ -170,6 +176,9 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 	}()
 	c.Assert().Equal(http.StatusOK, putResp.StatusCode)
 
+	// Check for X-Api-Version on the response
+	c.Equal(putResp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
 	// Send GET request to verify the PUT
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/quotes?originChainId=1&originTokenAddr=0xOriginTokenAddrdestChainId=42161&destTokenAddr=0xDestTokenAddr", c.port), nil)
@@ -181,6 +190,9 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 		_ = getResp.Body.Close()
 	}()
 	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
+
+	// Check for X-Api-Version on the response
+	c.Equal(getResp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
 
 	var quotes []*model.GetQuoteResponse
 	err = json.NewDecoder(getResp.Body).Decode(&quotes)
@@ -212,6 +224,9 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 	}()
 	c.Assert().Equal(http.StatusOK, putResp.StatusCode)
 
+	// Check for X-Api-Version on the response
+	c.Equal(putResp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
 	// Send GET request to verify the PUT
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/quotes?relayerAddress=%s", c.port, c.testWallet.Address().Hex()), nil)
@@ -223,6 +238,9 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 		_ = getResp.Body.Close()
 	}()
 	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
+
+	// Check for X-Api-Version on the response
+	c.Equal(getResp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
 
 	var quotes []*model.GetQuoteResponse
 	err = json.NewDecoder(getResp.Body).Decode(&quotes)
@@ -263,6 +281,9 @@ func (c *ServerSuite) TestMultiplePutRequestsWithIncorrectAuth() {
 		// Read the response body
 		body, err := io.ReadAll(resp.Body)
 		c.Require().NoError(err)
+
+		// Check for X-Api-Version on the response
+		c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
 
 		// Log the response body for debugging
 		fmt.Printf("Request %d response: Status: %d, Body: %s\n", i+1, resp.StatusCode, string(body))
@@ -322,6 +343,9 @@ func (c *ServerSuite) TestPutAck() {
 	c.Equal(expectedResult, result)
 	err = resp.Body.Close()
 	c.Require().NoError(err)
+
+	// Check for X-Api-Version on the response
+	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
 
 	// Send another request with same txID
 	header, err = c.prepareAuthHeader(c.testWallet)

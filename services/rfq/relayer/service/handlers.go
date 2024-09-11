@@ -20,7 +20,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-var maxRPCRetryTime = 30 * time.Second
+var (
+	maxTotalTime    = 15 * time.Second
+	maxRPCRetryTime = 30 * time.Second
+)
 
 // handleBridgeRequestedLog handles the BridgeRequestedLog event.
 // Step 1: Seen
@@ -190,6 +193,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 }
 
 // commitPendingBalance locks the balance and marks the request as CommitPending.
+// nolint: cyclop
 func (q *QuoteRequestHandler) commitPendingBalance(ctx context.Context, span trace.Span, request *reldb.QuoteRequest) (err error) {
 	// lock the consumed balance
 	key := getBalanceMtxKey(q.Dest.ChainID, request.Transaction.DestToken)
@@ -221,6 +225,19 @@ func (q *QuoteRequestHandler) commitPendingBalance(ctx context.Context, span tra
 	if committableBalance.Cmp(request.Transaction.DestAmount) < 0 {
 		request.Status = reldb.NotEnoughInventory
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory, &request.Status)
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+		return nil
+	}
+
+	allowed, err := q.limiter.IsAllowed(ctx, request)
+	if err != nil {
+		return fmt.Errorf("could not check if allowed: %w", err)
+	}
+	if !allowed {
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedConfirmed, &request.Status)
+		span.AddEvent("cannot relay due to rate limit. waiting for one block confirmation before relaying.")
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
@@ -408,6 +425,7 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 		return fmt.Errorf("could not get prove confirmations: %w", err)
 	}
 
+	//nolint:gosec
 	span.SetAttributes(
 		attribute.Int("current_block_number", int(currentBlockNumber)),
 		attribute.Int("relay_block_number", int(relayBlockNumber)),
@@ -448,7 +466,7 @@ func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request r
 			return fmt.Errorf("could not get transaction receipt: %w", err)
 		}
 		return nil
-	}, retry.WithMaxTotalTime(15*time.Second))
+	}, retry.WithMaxTotalTime(maxTotalTime))
 	if err != nil {
 		return blockNumber, fmt.Errorf("could not get receipt: %w", err)
 	}

@@ -1,9 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
+
 import Button from '@tw/Button'
 
 export default function ImageUploader() {
   const [uploadedImage, setUploadedImage] = useState(null)
   const [processedImage, setProcessedImage] = useState(null)
+
+  const t = useTranslations('ReturnToMonke')
 
   const fileInput = useRef(null)
   const imgRef = useRef(null)
@@ -94,12 +98,12 @@ export default function ImageUploader() {
         <p className="p-3 m-auto text-lg text-center center">
           {!processedImage && (
             <>
-              Click to Upload or
+              {t('Click to Upload or')}
               <br />
-              Drag and drop image here...
+              {t('Drag and drop image here')}...
             </>
           )}
-          {processedImage && <>Select different image?</>}
+          {processedImage && <>{t('Select different image?')}</>}
         </p>
         <input
           type="file"
@@ -129,7 +133,7 @@ export default function ImageUploader() {
             )
           }}
         >
-          Download
+          {t('Download')}
         </Button>
       )}
     </div>

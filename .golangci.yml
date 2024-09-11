@@ -102,6 +102,8 @@ linters:
     - perfsprint
     # malfunctions on embedded structs
     - typecheck
+    # magic numbers
+    - mnd
   fast: false
 
 issues:
