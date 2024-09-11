@@ -150,10 +150,6 @@ func makeOTLPExporter(ctx context.Context, envSuffix string) (*otlptrace.Exporte
 		return nil, fmt.Errorf("could not create exporter: secure mode is not set correctly")
 	}
 
-	if url == "" {
-		return nil, fmt.Errorf("could not create exporter: url is empty")
-	}
-
 	// I spent about 2 hours trying to figure out why this was failing to no avail. I'm going to leave it as is for now.
 	// My best guess is the issue is around the tsl config.
 	// Should you attempt to fix this and fail, please increment the counter above, although I send my umost encouragement.
