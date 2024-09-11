@@ -136,6 +136,7 @@ The relayer is configured with a yaml file. The following is an example configur
   omnirpc_url: 'http://omnirpc' # url of the omnirpc instance, please reference the Omnirpc section under Services for proper configuration
   rebalance_interval: 2m # how often to rebalance
   relayer_api_port: '8081' # api port for the relayer api
+  volume_limit: 10000 # USD price cap for a bridge under block confirmation minimum (configurable under `chains`)
 
   base_chain_config: # this is hte base chain config, other chains override it
     confirmations: 0

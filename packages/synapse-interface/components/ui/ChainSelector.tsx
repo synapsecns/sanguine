@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { useTranslations } from 'next-intl'
 
 import { type Chain } from '@/utils/types'
 import { SelectSpecificNetworkButton } from '@/components/ui/SelectSpecificNetworkButton'
@@ -25,6 +26,8 @@ export function ChainSelector({
 
   const [currentId, setCurrentId] = useState(null)
   const dispatch = useDispatch()
+
+  const t = useTranslations('Bridge')
 
   const handleSetChainId = (chainId) => {
     if (selectedItem?.id !== chainId) {
@@ -99,7 +102,7 @@ export function ChainSelector({
       key={dataTestId}
       dataTestId={dataTestId}
       label={label}
-      placeholder={placeholder ?? 'Network'}
+      placeholder={placeholder ?? t('Network')}
       selectedItem={selectedItem}
       searchStr={searchStr}
       onSearch={onSearch}

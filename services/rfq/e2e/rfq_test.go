@@ -273,7 +273,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 
 // nolint: cyclop
 func (i *IntegrationSuite) TestETHtoETH() {
-
 	// start the relayer and guard
 	go func() {
 		_ = i.relayer.Start(i.GetTestContext())

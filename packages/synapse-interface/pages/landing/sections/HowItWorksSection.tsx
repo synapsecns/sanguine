@@ -1,7 +1,11 @@
-import { SectionContainer } from '../../../components/landing/shared'
+import { useTranslations } from 'next-intl'
+
+import { SectionContainer } from '@/components/landing/shared'
 import { HowSynapseWorks } from '@/components/icons/LandingIcons/HowSynapseWorks'
 
 export default function HowItWorksSection() {
+  const t = useTranslations('Landing.HowItWorksSection')
+
   return (
     <div className="hidden lg:block">
       <SectionContainer
@@ -11,13 +15,10 @@ export default function HowItWorksSection() {
         <div className="flex justify-center">
           <div className="max-w-4xl">
             <h2 className="mt-12 mb-3 text-4xl text-center text-white">
-              How it all works
+              {t('How it all works')}
             </h2>
             <p className="mt-6 text-center text-secondaryTextColor">
-              Smart contracts from one chain use the Synapse Messaging Router to
-              send the message to the destination chain, where a corresponding
-              Messaging Router sends it to the destination contract. Messages
-              are optimistically verified to ensure security and trustlessness.
+              {t('description')}
             </p>
           </div>
         </div>
