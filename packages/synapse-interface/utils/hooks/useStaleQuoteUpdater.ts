@@ -10,8 +10,9 @@ export const useStaleQuoteUpdater = (
   refreshQuoteCallback: () => Promise<void>,
   isQuoteLoading: boolean,
   isWalletPending: boolean,
+  isActive: boolean,
   staleTimeout: number = 15000, // in ms
-  autoRefreshDuration: number = 60000 // in ms
+  autoRefreshDuration: number = 30000 // in ms
 ) => {
   const [isStale, setIsStale] = useState<boolean>(false)
   const eventListenerRef = useRef<null | (() => void)>(null)
@@ -34,9 +35,9 @@ export const useStaleQuoteUpdater = (
     }
   }, [quote])
 
-  // Start auto-refresh logic for 60 seconds
+  // Start auto-refresh logic for autoRefreshDuration seconds
   useEffect(() => {
-    if (isValid && !isQuoteLoading && !isWalletPending) {
+    if (isValid && isActive && !isQuoteLoading && !isWalletPending) {
       // If auto-refresh has not started yet, initialize the start time
       if (autoRefreshStartTimeRef.current === null) {
         autoRefreshStartTimeRef.current = Date.now()

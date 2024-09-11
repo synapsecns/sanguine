@@ -67,7 +67,7 @@ import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
 import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
-import { BridgeQuoteResetTimer } from '@/components/StateManagedBridge/AnimatedProgressCircle'
+import { BridgeQuoteResetTimer } from '@/components/StateManagedBridge/BridgeQuoteResetTimer'
 import { useBridgeValidations } from '@/components/StateManagedBridge/hooks/useBridgeValidations'
 
 const StateManagedBridge = () => {
@@ -99,7 +99,7 @@ const StateManagedBridge = () => {
 
   const isApproved = useIsBridgeApproved()
 
-  const { hasValidQuote } = useBridgeValidations()
+  const { hasValidQuote, hasSufficientBalance } = useBridgeValidations()
 
   const { isWalletPending } = useWalletState()
 
@@ -220,11 +220,15 @@ const StateManagedBridge = () => {
     }
   }
 
+  const isUpdaterActive =
+    hasValidQuote && hasSufficientBalance && !isLoading && !isBridgePaused
+
   const isQuoteStale = useStaleQuoteUpdater(
     bridgeQuote,
     getAndSetBridgeQuote,
     isLoading,
     isWalletPending,
+    isUpdaterActive,
     quoteTimeout
   )
 
@@ -492,6 +496,7 @@ const StateManagedBridge = () => {
                   <BridgeQuoteResetTimer
                     bridgeQuote={bridgeQuote}
                     hasValidQuote={hasValidQuote}
+                    isActive={isUpdaterActive}
                     duration={quoteTimeout}
                   />
                 </div>

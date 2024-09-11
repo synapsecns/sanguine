@@ -181,7 +181,12 @@ export const BridgeTransactionButton = ({
       onClick: () => switchChain({ chainId: fromChainId }),
       pendingLabel: t('Switching chains'),
     }
-  } else if (hasQuoteOutputChanged && !hasUserConfirmedChange) {
+  } else if (
+    hasValidQuote &&
+    hasQuoteOutputChanged &&
+    hasSameSelectionsAsPreviousQuote &&
+    !hasUserConfirmedChange
+  ) {
     buttonProperties = {
       label: t('Confirm new quote'),
       onClick: () => onUserAcceptChange(),
