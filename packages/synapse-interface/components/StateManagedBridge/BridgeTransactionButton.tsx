@@ -115,13 +115,15 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: t('Updating quote'),
       onClick: null,
-      className: `${
+      className: `
+      ${
         hasQuoteOutputChanged &&
         hasSameSelectionsAsPreviousQuote &&
         !hasUserConfirmedChange
           ? '!outline !outline-1 !outline-synapsePurple !outline-offset-[-1px] !from-bgLight !to-bgLight'
           : '!bg-gradient-to-r !from-fuchsia-500 !to-purple-500 dark:!to-purple-600'
-      } !opacity-100`,
+      }
+      !opacity-100`,
     }
   } else if (isLoading) {
     buttonProperties = {
