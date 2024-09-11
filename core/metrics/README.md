@@ -28,6 +28,8 @@ The additional environment variables to note are:
 | `OTEL_EXPORTER_OTLP_TRANSPORT_3`         | The transport protocol for the third additional OTLP exporter | `http` |
 | ...                                      | Additional transports can be specified by incrementing the number | `http` |
 
+<!-- TODO: fully document before pr  merged-->
+
 Note: The OTLP exporter endpoints and transports can be specified for multiple exporters by using incrementing numbers (1, 2, 3, etc.) in the environment variable names. This allows for configuration of multiple OTLP exporters. The primary exporter uses the base names without numbers.
 
 

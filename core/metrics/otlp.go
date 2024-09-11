@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"google.golang.org/grpc/credentials"
 	"strings"
@@ -115,7 +116,7 @@ func handleShutdown(ctx context.Context, provider *tracesdk.TracerProvider) {
 const (
 	otelEndpointEnv  = "OTEL_EXPORTER_OTLP_ENDPOINT"
 	otelTransportEnv = "OTEL_EXPORTER_OTLP_TRANSPORT"
-	otelInsecureEvn  = "OTEL_EXPORTER_OTLP_INSECURE_MODE"
+	otelInsecureEvn  = "OTEL_EXPORTER_OTLP_SECURE_MODE"
 	otelHeadersEnv   = "OTEL_EXPORTER_OTLP_HEADERS"
 )
 
@@ -129,26 +130,42 @@ const (
 
 // getEnvSuffix returns the value of an environment variable with a suffix.
 func getEnvSuffix(env, suffix, defaultRet string) string {
-	newEnv := env + suffix
-	return core.GetEnv(newEnv, defaultRet)
+	return core.GetEnv(makeEnv(env, suffix), defaultRet)
+}
+
+func makeEnv(env, suffix string) string {
+	return env + suffix
 }
 
 // makeOTLPTrace creates a new OTLP client based on the transport type and url.
 func makeOTLPExporter(ctx context.Context, envSuffix string) (*otlptrace.Exporter, error) {
 	transport := transportFromString(getEnvSuffix(otelTransportEnv, envSuffix, otlpTransportGRPC.String()))
 	url := getEnvSuffix(otelEndpointEnv, envSuffix, "")
-	insecure := getEnvSuffix(otelInsecureEvn, envSuffix, "false")
+	secure := core.GetEnvBool(makeEnv(otelInsecureEvn, envSuffix), false)
 	headers := getEnvSuffix(otelHeadersEnv, envSuffix, "")
+
+	isCorrect := envSuffix != ""
+
+	if isCorrect != secure {
+		return nil, fmt.Errorf("could not create exporter: secure mode is not set correctly")
+	}
 
 	if url == "" {
 		return nil, fmt.Errorf("could not create exporter: url is empty")
+	}
+
+	// I spent about 2 hours trying to figure out why this was failing to no avail. I'm going to leave it as is for now.
+	// My best guess is the issue is around the tsl config.
+	// Should you attempt to fix this and fail, please increment the counter above, although I send my umost encouragement.
+	if secure && transport == otlpTransportHTTP {
+		return nil, fmt.Errorf("could not create exporter: http transport does not support secure mode")
 	}
 
 	oteltraceClient, err := buildClientFromTransport(
 		transport,
 		WithURL(url),
 		// defaults to true
-		WithInsecure(insecure == "false"),
+		WithSecure(secure),
 		WithHeaders(headers),
 	)
 	if err != nil {
@@ -203,15 +220,20 @@ func WithURL(url string) Option {
 	}
 }
 
-func WithInsecure(isInsecure bool) Option {
+func WithSecure(secure bool) Option {
 	return func(o *transportOptions) error {
-		if isInsecure {
-			o.httpOptions = append(o.httpOptions, otlptracehttp.WithInsecure())
-			o.grpcOptions = append(o.grpcOptions, otlptracegrpc.WithInsecure())
-		} else {
+		if secure {
 			tlsCreds := credentials.NewClientTLSFromCert(nil, "")
 			// note: you do not need to specify the tls creds for http, this happens automatically when https:// is used as the protocol scheme.
 			o.grpcOptions = append(o.grpcOptions, otlptracegrpc.WithTLSCredentials(tlsCreds))
+
+			tlsConfig := &tls.Config{
+				// RootCAs is nil, which means the default system root CAs are used
+			}
+			o.httpOptions = append(o.httpOptions, otlptracehttp.WithTLSClientConfig(tlsConfig))
+		} else {
+			o.httpOptions = append(o.httpOptions, otlptracehttp.WithInsecure())
+			o.grpcOptions = append(o.grpcOptions, otlptracegrpc.WithInsecure())
 		}
 
 		return nil
