@@ -221,6 +221,7 @@ const StateManagedBridge = () => {
   }
 
   const isUpdaterActive =
+    isConnected &&
     hasValidQuote &&
     hasSufficientBalance &&
     isApproved &&
