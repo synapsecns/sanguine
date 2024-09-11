@@ -1301,7 +1301,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    function test_failedRelayNotRelayer() public {
+    function test_failedRelayNotRelayer() public virtual {
         // Set up the roles for the test
         setUpRoles();
 
@@ -1646,7 +1646,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    function test_failedClaimNotOldRelayer() public {
+    function test_failedClaimNotOldRelayer() public virtual {
         setUpRoles();
         test_successfulBridge();
 
@@ -1683,7 +1683,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    function test_failedClaimNotRelayer() public {
+    function test_failedClaimNotRelayer() public virtual {
         setUpRoles();
         test_successfulRelayProof();
 
