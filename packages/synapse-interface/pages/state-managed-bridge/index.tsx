@@ -225,7 +225,6 @@ const StateManagedBridge = () => {
     hasValidQuote &&
     hasSufficientBalance &&
     isApproved &&
-    // !isLoading &&
     !isBridgePaused &&
     !isWalletPending
 
