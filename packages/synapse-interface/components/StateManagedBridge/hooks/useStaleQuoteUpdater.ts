@@ -15,16 +15,34 @@ export const useStaleQuoteUpdater = (
   const [isStale, setIsStale] = useState<boolean>(false)
   const autoRefreshIntervalRef = useRef<null | NodeJS.Timeout>(null)
   const autoRefreshStartTimeRef = useRef<null | number>(null)
-  const autoRefreshEndTimeRef = useRef<null | NodeJS.Timeout>(null)
   const mouseMoveListenerRef = useRef<null | (() => void)>(null)
-  const timeoutRef = useRef<null | NodeJS.Timeout>(null)
+  const manualRefreshRef = useRef<null | NodeJS.Timeout>(null)
 
+  //TODO: Remove isValid, use isActive only
   const quoteTime = quote?.id ? convertUuidToUnix(quote?.id) : null
   const isValid = isNumber(quoteTime) && !isNull(quoteTime)
 
   useIntervalTimer(staleTimeout, !isValid)
 
   const [mouseMoved, resetMouseMove] = useTrackMouseMove()
+
+  const clearManualRefreshTimeout = () => {
+    if (manualRefreshRef.current) {
+      clearTimeout(manualRefreshRef.current)
+    }
+  }
+
+  const clearAutoRefreshInterval = () => {
+    if (autoRefreshIntervalRef.current) {
+      clearInterval(autoRefreshIntervalRef.current)
+    }
+  }
+
+  const clearMouseMoveListener = () => {
+    if (mouseMoveListenerRef.current) {
+      mouseMoveListenerRef.current = null
+    }
+  }
 
   useEffect(() => {
     if (mouseMoved && autoRefreshStartTimeRef.current) {
@@ -45,27 +63,23 @@ export const useStaleQuoteUpdater = (
 
       // If ${autoRefreshDuration}ms hasn't passed, keep auto-refreshing
       if (elapsedTime < autoRefreshDuration) {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current)
-        }
-        if (autoRefreshIntervalRef.current) {
-          clearInterval(autoRefreshIntervalRef.current)
-        }
+        clearManualRefreshTimeout()
+        clearAutoRefreshInterval()
 
         autoRefreshIntervalRef.current = setInterval(() => {
           refreshQuoteCallback()
         }, staleTimeout)
       } else {
         // If more than ${autoRefreshDuration}ms have passed, stop auto-refreshing and switch to mousemove logic
-        clearInterval(autoRefreshIntervalRef.current)
+        clearAutoRefreshInterval()
 
-        timeoutRef.current = setTimeout(() => {
-          mouseMoveListenerRef.current = null
+        manualRefreshRef.current = setTimeout(() => {
+          clearMouseMoveListener()
           setIsStale(true)
 
           const handleMouseMove = () => {
             refreshQuoteCallback()
-            mouseMoveListenerRef.current = null
+            clearMouseMoveListener()
             setIsStale(false)
           }
 
@@ -79,15 +93,8 @@ export const useStaleQuoteUpdater = (
     }
 
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-      if (autoRefreshIntervalRef.current) {
-        clearInterval(autoRefreshIntervalRef.current)
-      }
-      if (autoRefreshEndTimeRef.current) {
-        clearTimeout(autoRefreshEndTimeRef.current)
-      }
+      clearManualRefreshTimeout()
+      clearAutoRefreshInterval()
       setIsStale(false)
     }
   }, [quote, isActive])
@@ -99,7 +106,7 @@ export const useTrackMouseMove = (): [boolean, () => void] => {
   const [moved, setMoved] = useState<boolean>(false)
 
   const onMove = () => setMoved(true)
-  const reset = () => setMoved(false)
+  const onReset = () => setMoved(false)
 
   useEffect(() => {
     document.addEventListener('mousemove', onMove)
@@ -109,5 +116,5 @@ export const useTrackMouseMove = (): [boolean, () => void] => {
     }
   }, [])
 
-  return [moved, reset]
+  return [moved, onReset]
 }
