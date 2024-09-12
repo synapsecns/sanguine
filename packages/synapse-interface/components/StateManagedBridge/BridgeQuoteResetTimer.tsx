@@ -1,5 +1,7 @@
-import { BridgeQuote } from '@/utils/types'
 import { useState, useEffect, useMemo } from 'react'
+
+import { BridgeQuote } from '@/utils/types'
+import { convertMsToSeconds } from '@/utils/time'
 
 export const BridgeQuoteResetTimer = ({
   bridgeQuote,
@@ -39,26 +41,6 @@ const AnimatedProgressCircle = ({
   }, [animateKey])
 
   return (
-    // <svg
-    //   key={animationKey}
-    //   width="24"
-    //   height="24"
-    //   viewBox="-12 -12 24 24"
-    //   stroke="currentcolor"
-    //   stroke-opacity=".33"
-    //   fill="none"
-    //   className="absolute -rotate-90"
-    // >
-    //   <circle r="8" />
-    //   <circle r="8" stroke-dasharray="1" pathLength="1">
-    //     <animate
-    //       attributeName="stroke-dashoffset"
-    //       values="2; 1"
-    //       dur={`${convertMsToSeconds(duration)}s`}
-    //       fill="freeze"
-    //     />
-    //   </circle>
-    // </svg>
     <svg
       key={animationKey}
       width="24"
@@ -101,8 +83,4 @@ const AnimatedProgressCircle = ({
       </circle>
     </svg>
   )
-}
-
-const convertMsToSeconds = (ms: number) => {
-  return Math.ceil(ms / 1000)
 }
