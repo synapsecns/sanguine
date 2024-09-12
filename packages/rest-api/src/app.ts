@@ -581,6 +581,72 @@ app.get('/getBridgeTxStatus', async (req, res) => {
   }
 })
 
+// Get Destination Transaction Hash
+app.get('/getDestinationTx', async (req, res) => {
+  try {
+    const query = req.query
+    const originChainId = Number(query.originChainId)
+    const txHash = String(query.txHash)
+
+    if (!originChainId || !txHash) {
+      res.status(400).send({
+        message: 'Invalid request: Missing required parameters',
+      })
+      return
+    }
+
+    try {
+      const graphqlEndpoint = 'https://explorer.omnirpc.io/graphql'
+      const graphqlQuery = `
+          {
+            bridgeTransactions(
+              useMv: true
+              chainIDFrom: ${originChainId}
+              txnHash: "${txHash}"
+            ) {
+              toInfo {
+                chainID
+                address
+                txnHash
+                USDValue
+                tokenSymbol
+                blockNumber
+                formattedTime
+              }
+            }
+          }
+        `
+
+      const graphqlResponse = await fetch(graphqlEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: graphqlQuery }),
+      })
+
+      const graphqlData = await graphqlResponse.json()
+      const toInfo = graphqlData.data.bridgeTransactions[0]?.toInfo || null
+
+      if (toInfo === null) {
+        res.json({ status: 'pending' })
+      } else {
+        res.json({ status: 'completed', toInfo })
+      }
+    } catch (err) {
+      res.status(400).send({
+        message: 'Error fetching bridge transaction status',
+        error: err.message,
+      })
+    }
+  } catch (err) {
+    res.status(400).send({
+      message: 'Invalid request',
+      error: err.message,
+    })
+  }
+})
+
 export const server = app.listen(port, () => {
   console.log(`Server listening at ${port}`)
 })
