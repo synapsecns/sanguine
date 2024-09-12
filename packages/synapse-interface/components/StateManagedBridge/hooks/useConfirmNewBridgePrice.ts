@@ -6,7 +6,7 @@ import { constructStringifiedBridgeSelections } from './useBridgeValidations'
 import { BridgeQuote } from '@/utils/types'
 
 export const useConfirmNewBridgePrice = () => {
-  const quoteRef = useRef<any>(null)
+  const triggerQuoteRef = useRef<any>(null)
   const bpsThreshold = 0.0001 // 1bps
 
   const [hasQuoteOutputChanged, setHasQuoteOutputChanged] =
@@ -51,17 +51,28 @@ export const useConfirmNewBridgePrice = () => {
     const validQuotes =
       bridgeQuote?.outputAmount && previousBridgeQuote?.outputAmount
 
+    const hasBridgeModuleChanged =
+      bridgeQuote?.bridgeModuleName !==
+      (triggerQuoteRef.current?.bridgeModuleName ??
+        previousBridgeQuote?.bridgeModuleName)
+
     const outputAmountDiffMoreThanThreshold = validQuotes
       ? calculateOutputRelativeDifference(
           bridgeQuote,
-          quoteRef.current ?? previousBridgeQuote
+          triggerQuoteRef.current ?? previousBridgeQuote
         ) > bpsThreshold
       : false
 
     if (
       validQuotes &&
-      outputAmountDiffMoreThanThreshold &&
-      hasSameSelectionsAsPreviousQuote
+      hasSameSelectionsAsPreviousQuote &&
+      hasBridgeModuleChanged
+    ) {
+      requestUserConfirmChange(previousBridgeQuote)
+    } else if (
+      validQuotes &&
+      hasSameSelectionsAsPreviousQuote &&
+      outputAmountDiffMoreThanThreshold
     ) {
       requestUserConfirmChange(previousBridgeQuote)
     } else {
@@ -71,7 +82,7 @@ export const useConfirmNewBridgePrice = () => {
 
   const requestUserConfirmChange = (previousQuote: BridgeQuote) => {
     if (!hasQuoteOutputChanged && !hasUserConfirmedChange) {
-      quoteRef.current = previousQuote
+      triggerQuoteRef.current = previousQuote
       setHasQuoteOutputChanged(true)
     }
     setHasUserConfirmedChange(false)
@@ -79,14 +90,14 @@ export const useConfirmNewBridgePrice = () => {
 
   const resetConfirm = () => {
     if (hasUserConfirmedChange) {
-      quoteRef.current = null
+      triggerQuoteRef.current = null
       setHasQuoteOutputChanged(false)
       setHasUserConfirmedChange(false)
     }
   }
 
   const onUserAcceptChange = () => {
-    quoteRef.current = null
+    triggerQuoteRef.current = null
     setHasUserConfirmedChange(true)
   }
 
