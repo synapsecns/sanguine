@@ -5,15 +5,21 @@ import { convertMsToSeconds } from '@/utils/time'
 
 export const BridgeQuoteResetTimer = ({
   bridgeQuote,
+  isLoading,
   isActive,
   duration, // in ms
 }: {
   bridgeQuote: BridgeQuote
+  isLoading: boolean
   isActive: boolean
   duration: number
 }) => {
   const memoizedTimer = useMemo(() => {
-    if (isActive) {
+    if (!isActive) return null
+
+    if (isLoading) {
+      return <AnimatedLoadingCircle />
+    } else {
       return (
         <AnimatedProgressCircle
           animateKey={bridgeQuote.id}
@@ -21,10 +27,31 @@ export const BridgeQuoteResetTimer = ({
         />
       )
     }
-    return null
   }, [bridgeQuote, duration, isActive])
 
   return memoizedTimer
+}
+
+const AnimatedLoadingCircle = () => {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="-12 -12 24 24"
+      stroke="currentcolor"
+      fill="none"
+      className="absolute block -rotate-90"
+    >
+      <circle r="8" pathLength="1" stroke-dashArray="0.05" stroke-opacity=".5">
+        <animate
+          attributeName="stroke-dashoffset"
+          to="-1"
+          dur="2.5s"
+          repeatCount="indefinite"
+        />
+      </circle>
+    </svg>
+  )
 }
 
 const AnimatedProgressCircle = ({

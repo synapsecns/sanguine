@@ -225,7 +225,7 @@ const StateManagedBridge = () => {
     hasValidQuote &&
     hasSufficientBalance &&
     isApproved &&
-    !isLoading &&
+    // !isLoading &&
     !isBridgePaused &&
     !isWalletPending
 
@@ -499,6 +499,7 @@ const StateManagedBridge = () => {
                 <div className="absolute flex items-center !right-10">
                   <BridgeQuoteResetTimer
                     bridgeQuote={bridgeQuote}
+                    isLoading={isLoading}
                     isActive={isUpdaterEnabled}
                     duration={quoteTimeout}
                   />
