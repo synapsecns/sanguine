@@ -1,14 +1,12 @@
-import { isNull, isNumber } from 'lodash'
 import { useEffect, useRef, useState } from 'react'
 
 import { BridgeQuote } from '@/utils/types'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
-import { convertUuidToUnix } from '@/utils/convertUuidToUnix'
 
 export const useStaleQuoteUpdater = (
   quote: BridgeQuote,
   refreshQuoteCallback: () => Promise<void>,
-  isActive: boolean,
+  enabled: boolean,
   staleTimeout: number = 15000, // in ms
   autoRefreshDuration: number = 30000 // in ms
 ) => {
@@ -18,11 +16,7 @@ export const useStaleQuoteUpdater = (
   const mouseMoveListenerRef = useRef<null | (() => void)>(null)
   const manualRefreshRef = useRef<null | NodeJS.Timeout>(null)
 
-  //TODO: Remove isValid, use isActive only
-  const quoteTime = quote?.id ? convertUuidToUnix(quote?.id) : null
-  const isValid = isNumber(quoteTime) && !isNull(quoteTime)
-
-  useIntervalTimer(staleTimeout, !isValid)
+  useIntervalTimer(staleTimeout, !enabled)
 
   const [mouseMoved, resetMouseMove] = useTrackMouseMove()
 
@@ -53,7 +47,7 @@ export const useStaleQuoteUpdater = (
 
   // Start auto-refresh logic for ${autoRefreshDuration}ms seconds
   useEffect(() => {
-    if (isValid && isActive) {
+    if (enabled) {
       // If auto-refresh has not started yet, initialize the start time
       if (autoRefreshStartTimeRef.current === null) {
         autoRefreshStartTimeRef.current = Date.now()
@@ -97,7 +91,7 @@ export const useStaleQuoteUpdater = (
       clearAutoRefreshInterval()
       setIsStale(false)
     }
-  }, [quote, isActive])
+  }, [quote, enabled])
 
   return isStale
 }

@@ -220,7 +220,7 @@ const StateManagedBridge = () => {
     }
   }
 
-  const isUpdaterActive =
+  const isUpdaterEnabled =
     isConnected &&
     hasValidQuote &&
     hasSufficientBalance &&
@@ -232,7 +232,7 @@ const StateManagedBridge = () => {
   const isQuoteStale = useStaleQuoteUpdater(
     bridgeQuote,
     getAndSetBridgeQuote,
-    isUpdaterActive,
+    isUpdaterEnabled,
     quoteTimeout
   )
 
@@ -499,7 +499,7 @@ const StateManagedBridge = () => {
                 <div className="absolute flex items-center !right-10">
                   <BridgeQuoteResetTimer
                     bridgeQuote={bridgeQuote}
-                    isActive={isUpdaterActive}
+                    isActive={isUpdaterEnabled}
                     duration={quoteTimeout}
                   />
                 </div>
