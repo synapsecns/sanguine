@@ -12,7 +12,27 @@ There's also a `NAME_PREFIX` environment variable that will prefix all the metri
 
 ## OTLP
 
-We do our best to support enviornment variables specified in the [Otel Spec](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/) and have added a few of our own. Key ones to note are:
+We do our best to support enviornment variables specified in the [Otel Spec](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/) and the [OTLP Spec](https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/) and have added a few of our own. This was to allow for multiple exporter backends for traces, as otel clients only allow for one URL. The relevant multi exporter code is in `multiexporter.go`, and simply wraps multiple otel clients.
+
+The additional environment variables to note are:
+| Enviornment Variable                     | Description                               | Default |
+|------------------------------------------|-------------------------------------------|---------|
+| `OTEL_EXPORTER_OTLP_ENDPOINT`            | The endpoint for the primary OTLP exporter | None    |
+| `OTEL_EXPORTER_OTLP_ENDPOINT_1`          | The endpoint for the first additional OTLP exporter | None    |
+| `OTEL_EXPORTER_OTLP_ENDPOINT_2`          | The endpoint for the second additional OTLP exporter | None    |
+| `OTEL_EXPORTER_OTLP_ENDPOINT_3`          | The endpoint for the third additional OTLP exporter | None    |
+| ...                                      | Additional endpoints can be added by incrementing the number | None    |
+| `OTEL_EXPORTER_OTLP_TRANSPORT`           | The transport protocol for the primary OTLP exporter | `http` |
+| `OTEL_EXPORTER_OTLP_TRANSPORT_1`         | The transport protocol for the first additional OTLP exporter | `http` |
+| `OTEL_EXPORTER_OTLP_TRANSPORT_2`         | The transport protocol for the second additional OTLP exporter | `http` |
+| `OTEL_EXPORTER_OTLP_TRANSPORT_3`         | The transport protocol for the third additional OTLP exporter | `http` |
+| ...                                      | Additional transports can be specified by incrementing the number | `http` |
+
+You can do the same thing for `OTEL_EXPORTER_OTLP_SECURE_MODE` and `OTEL_EXPORTER_OTLP_HEADERS`
+
+<!-- TODO: fully document these optins-->
+
+Note: The OTLP exporter endpoints and transports can be specified for multiple exporters by using incrementing numbers (1, 2, 3, etc.) in the environment variable names. This allows for configuration of multiple OTLP exporters. The primary exporter uses the base names without numbers.
 
 
 ## Jaeger

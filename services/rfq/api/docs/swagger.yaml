@@ -99,6 +99,10 @@ paths:
       responses:
         "200":
           description: OK
+          headers:
+            X-Api-Version:
+              description: API Version Number - See docs for more info
+              type: string
       summary: Relay ack
       tags:
       - ack
@@ -119,6 +123,10 @@ paths:
       responses:
         "200":
           description: OK
+          headers:
+            X-Api-Version:
+              description: API Version Number - See docs for more info
+              type: string
       summary: Upsert quotes
       tags:
       - quotes
@@ -132,6 +140,10 @@ paths:
       responses:
         "200":
           description: OK
+          headers:
+            X-Api-Version:
+              description: API Version Number - See docs for more info
+              type: string
           schema:
             items:
               $ref: '#/definitions/model.GetContractsResponse'
@@ -170,6 +182,10 @@ paths:
       responses:
         "200":
           description: OK
+          headers:
+            X-Api-Version:
+              description: API Version Number - See docs for more info
+              type: string
           schema:
             items:
               $ref: '#/definitions/model.GetQuoteResponse'
@@ -193,6 +209,10 @@ paths:
       responses:
         "200":
           description: OK
+          headers:
+            X-Api-Version:
+              description: API Version Number - See docs for more info
+              type: string
       summary: Upsert quote
       tags:
       - quotes

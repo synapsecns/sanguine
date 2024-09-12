@@ -330,6 +330,7 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 // @Accept json
 // @Produce json
 // @Success 200
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /ack [put].
 func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 	req, exists := c.Get("putRequest")
