@@ -47,6 +47,11 @@ export const useConfirmNewBridgePrice = () => {
     [currentBridgeQuoteSelections, previousBridgeQuoteSelections]
   )
 
+  const isPendingConfirmChange =
+    hasQuoteOutputChanged &&
+    hasSameSelectionsAsPreviousQuote &&
+    !hasUserConfirmedChange
+
   useEffect(() => {
     const validQuotes =
       bridgeQuote?.outputAmount && previousBridgeQuote?.outputAmount
@@ -102,9 +107,7 @@ export const useConfirmNewBridgePrice = () => {
   }
 
   return {
-    hasSameSelectionsAsPreviousQuote,
-    hasQuoteOutputChanged,
-    hasUserConfirmedChange,
+    isPendingConfirmChange,
     onUserAcceptChange,
   }
 }

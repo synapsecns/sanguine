@@ -50,12 +50,8 @@ export const BridgeTransactionButton = ({
     debouncedFromValue,
   } = useBridgeState()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
-  const {
-    hasSameSelectionsAsPreviousQuote,
-    hasQuoteOutputChanged,
-    hasUserConfirmedChange,
-    onUserAcceptChange,
-  } = useConfirmNewBridgePrice()
+  const { isPendingConfirmChange, onUserAcceptChange } =
+    useConfirmNewBridgePrice()
 
   const { isWalletPending } = useWalletState()
   const { showDestinationWarning, isDestinationWarningAccepted } =
@@ -111,15 +107,16 @@ export const BridgeTransactionButton = ({
       label: t('Insufficient balance'),
       onClick: null,
     }
-  } else if (isLoading && hasSameSelectionsAsPreviousQuote) {
+  } else if (isLoading && hasValidQuote) {
     buttonProperties = {
-      label: t('Updating quote'),
+      label: isPendingConfirmChange
+        ? t('Confirm quote')
+        : t('Bridge {symbol}', { symbol: fromToken?.symbol }),
+      pendingLabel: t('Bridge {symbol}', { symbol: fromToken?.symbol }),
       onClick: null,
       className: `
       ${
-        hasQuoteOutputChanged &&
-        hasSameSelectionsAsPreviousQuote &&
-        !hasUserConfirmedChange
+        isPendingConfirmChange
           ? '!outline !outline-1 !outline-synapsePurple !outline-offset-[-1px] !from-bgLight !to-bgLight'
           : '!bg-gradient-to-r !from-fuchsia-500 !to-purple-500 dark:!to-purple-600'
       }
@@ -190,13 +187,7 @@ export const BridgeTransactionButton = ({
       onClick: () => switchChain({ chainId: fromChainId }),
       pendingLabel: t('Switching chains'),
     }
-  } else if (
-    isApproved &&
-    hasValidQuote &&
-    hasQuoteOutputChanged &&
-    hasSameSelectionsAsPreviousQuote &&
-    !hasUserConfirmedChange
-  ) {
+  } else if (isApproved && hasValidQuote && isPendingConfirmChange) {
     buttonProperties = {
       label: t('Confirm quote'),
       onClick: () => onUserAcceptChange(),
