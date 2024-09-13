@@ -14,10 +14,6 @@ export const swapTxInfoController = async (req, res) => {
     const fromTokenInfo = res.locals.tokenInfo.fromToken
     const toTokenInfo = res.locals.tokenInfo.toToken
 
-    if (!fromTokenInfo || !toTokenInfo) {
-      return res.status(400).json({ error: 'Invalid token symbol' })
-    }
-
     const amountInWei = parseUnits(amount.toString(), fromTokenInfo.decimals)
 
     const quote = await Synapse.swapQuote(
