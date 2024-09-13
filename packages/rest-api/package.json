@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc",
     "build:go": " ",
+    "dev": "nodemon --watch src --exec ts-node src/app.ts",
     "start": "node dist/app.js",
     "lint:fix": "eslint src/**/*.ts --fix",
     "lint:check": "eslint . --max-warnings=0",
@@ -24,6 +25,7 @@
     "bignumber": "^1.1.0",
     "ethers": "5.7.2",
     "express": "^4.18.2",
+    "express-validator": "^7.2.0",
     "lodash": "^4.17.21",
     "supertest": "^6.3.3"
   },
@@ -33,6 +35,7 @@
     "concurrently": "^8.2.0",
     "lodash": "^4.17.21",
     "nodemon": "^3.0.1",
+    "ts-node": "^10.9.2",
     "typescript": "^4.8.3"
   }
 }
