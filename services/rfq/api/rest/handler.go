@@ -63,7 +63,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
 		return
 	}
-	putRequest, ok := req.(*model.PutQuoteRequest)
+	putRequest, ok := req.(*model.PutRelayerQuoteRequest)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request type"})
 		return
@@ -133,7 +133,7 @@ func (h *Handler) ModifyBulkQuotes(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func parseDBQuote(putRequest model.PutQuoteRequest, relayerAddr interface{}) (*db.Quote, error) {
+func parseDBQuote(putRequest model.PutRelayerQuoteRequest, relayerAddr interface{}) (*db.Quote, error) {
 	destAmount, err := decimal.NewFromString(putRequest.DestAmount)
 	if err != nil {
 		return nil, fmt.Errorf("invalid DestAmount")
