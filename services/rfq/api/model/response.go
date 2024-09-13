@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 // GetQuoteResponse contains the schema for a GET /quote response.
 type GetQuoteResponse struct {
 	// OriginChainID is the chain which the relayer is willing to relay from
@@ -40,4 +42,51 @@ type PutRelayAckResponse struct {
 type GetContractsResponse struct {
 	// Contracts is a map of chain id to contract address
 	Contracts map[uint32]string `json:"contracts"`
+}
+
+// ActiveRFQMessage represents the general structure of WebSocket messages for Active RFQ
+type ActiveRFQMessage struct {
+	Op      string      `json:"op"`
+	Content interface{} `json:"content"`
+	Success bool        `json:"success"`
+}
+
+// QuoteRequest represents a request for a quote
+type QuoteRequest struct {
+	RequestID string    `json:"request_id"`
+	Data      QuoteData `json:"data"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// QuoteData represents the data within a quote request
+type QuoteData struct {
+	UserAddress      string `json:"user_address"`
+	OriginChainID    int    `json:"origin_chain_id"`
+	DestChainID      int    `json:"dest_chain_id"`
+	OriginTokenAddr  string `json:"origin_token_addr"`
+	DestTokenAddr    string `json:"dest_token_addr"`
+	MaxOriginAmount  string `json:"max_origin_amount"`
+	ExpirationWindow int64  `json:"expiration_window"`
+}
+
+// QuoteResponse represents a response to a quote request
+type QuoteResponse struct {
+	RequestID string            `json:"request_id"`
+	QuoteID   string            `json:"quote_id"`
+	Data      QuoteResponseData `json:"data"`
+	UpdatedAt time.Time         `json:"updated_at"`
+}
+
+// QuoteResponseData represents the data within a quote response
+type QuoteResponseData struct {
+	OriginChainID           int    `json:"origin_chain_id"`
+	DestChainID             int    `json:"dest_chain_id"`
+	OriginTokenAddr         string `json:"origin_token_addr"`
+	DestTokenAddr           string `json:"dest_token_addr"`
+	MaxOriginAmount         string `json:"max_origin_amount"`
+	DestAmount              string `json:"dest_amount"`
+	FixedFee                string `json:"fixed_fee"`
+	RelayerAddress          string `json:"relayer_address"`
+	OriginFastBridgeAddress string `json:"origin_fast_bridge_address"`
+	DestFastBridgeAddress   string `json:"dest_fast_bridge_address"`
 }
