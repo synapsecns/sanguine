@@ -47,6 +47,10 @@ export const getDestinationTxController = async (req, res) => {
       res.json({ status: 'completed', toInfo })
     }
   } catch (err) {
-    res.status(500).json({ error: 'Server error' })
+    res.status(500).json({
+      error:
+        'An unexepected error occurred in /getDestinationTx. Please try again later.',
+      details: err.message,
+    })
   }
 }

@@ -57,6 +57,12 @@ export const getBridgeTxStatusController = async (req, res) => {
       res.json({ status })
     }
   } catch (err) {
-    res.status(500).json({ error: 'Server error' })
+    res
+      .status(500)
+      .json({
+        error:
+          'An unexpected error occurred in /getBridgeTxStatus. Please try again later.',
+        details: err.message,
+      })
   }
 }

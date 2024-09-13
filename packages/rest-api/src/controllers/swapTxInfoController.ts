@@ -33,6 +33,12 @@ export const swapTxInfoController = async (req, res) => {
 
     res.json(txInfo)
   } catch (err) {
-    res.status(500).json({ error: 'Server error' })
+    res
+      .status(500)
+      .json({
+        error:
+          'An unexpected error occurred in /swapTxInfo. Please try again later.',
+        details: err.message,
+      })
   }
 }

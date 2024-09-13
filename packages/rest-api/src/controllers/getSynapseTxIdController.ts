@@ -18,6 +18,12 @@ export const getSynapseTxIdController = async (req, res) => {
     )
     res.json({ synapseTxId })
   } catch (err) {
-    res.status(500).json({ error: 'Server error' })
+    res
+      .status(500)
+      .json({
+        error:
+          'An unexpected error occurred in /getSynapseTxId. Please try again later.',
+        details: err.message,
+      })
   }
 }
