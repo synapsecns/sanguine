@@ -1,7 +1,7 @@
 package model
 
-// PutQuoteRequest contains the schema for a PUT /quote request.
-type PutQuoteRequest struct {
+// PutRelayerQuoteRequest contains the schema for a PUT /quote request.
+type PutRelayerQuoteRequest struct {
 	OriginChainID           int    `json:"origin_chain_id"`
 	OriginTokenAddr         string `json:"origin_token_addr"`
 	DestChainID             int    `json:"dest_chain_id"`
@@ -15,7 +15,7 @@ type PutQuoteRequest struct {
 
 // PutBulkQuotesRequest contains the schema for a PUT /quote request.
 type PutBulkQuotesRequest struct {
-	Quotes []PutQuoteRequest `json:"quotes"`
+	Quotes []PutRelayerQuoteRequest `json:"quotes"`
 }
 
 // PutAckRequest contains the schema for a PUT /ack request.

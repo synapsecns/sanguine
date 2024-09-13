@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // GetQuoteResponse contains the schema for a GET /quote response.
 type GetQuoteResponse struct {
@@ -51,6 +55,22 @@ type ActiveRFQMessage struct {
 	Success bool        `json:"success"`
 }
 
+// PutUserQuoteRequest represents a user request for quote.
+type PutUserQuoteRequest struct {
+	UserAddress string    `json:"user_address"`
+	QuoteTypes  []string  `json:"quote_types"`
+	Data        QuoteData `json:"data"`
+}
+
+// PutUserQuoteResponse represents a response to a user quote request.
+type PutUserQuoteResponse struct {
+	Success     bool      `json:"success"`
+	Reason      string    `json:"reason"`
+	UserAddress string    `json:"user_address"`
+	QuoteType   string    `json:"quote_type"`
+	Data        QuoteData `json:"data"`
+}
+
 // QuoteRequest represents a request for a quote
 type QuoteRequest struct {
 	RequestID string    `json:"request_id"`
@@ -60,33 +80,36 @@ type QuoteRequest struct {
 
 // QuoteData represents the data within a quote request
 type QuoteData struct {
-	UserAddress      string `json:"user_address"`
-	OriginChainID    int    `json:"origin_chain_id"`
-	DestChainID      int    `json:"dest_chain_id"`
-	OriginTokenAddr  string `json:"origin_token_addr"`
-	DestTokenAddr    string `json:"dest_token_addr"`
-	MaxOriginAmount  string `json:"max_origin_amount"`
-	ExpirationWindow int64  `json:"expiration_window"`
+	OriginChainID    int     `json:"origin_chain_id"`
+	DestChainID      int     `json:"dest_chain_id"`
+	OriginTokenAddr  string  `json:"origin_token_addr"`
+	DestTokenAddr    string  `json:"dest_token_addr"`
+	OriginAmount     string  `json:"origin_amount"`
+	ExpirationWindow int64   `json:"expiration_window"`
+	DestAmount       *string `json:"dest_amount"`
+	RelayerAddress   *string `json:"relayer_address"`
 }
 
-// QuoteResponse represents a response to a quote request
-type QuoteResponse struct {
-	RequestID string            `json:"request_id"`
-	QuoteID   string            `json:"quote_id"`
-	Data      QuoteResponseData `json:"data"`
-	UpdatedAt time.Time         `json:"updated_at"`
+// RelayerWsQuoteRequest represents a request for a quote to a relayer
+type RelayerWsQuoteRequest struct {
+	RequestID string    `json:"request_id"`
+	Data      QuoteData `json:"data"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
-// QuoteResponseData represents the data within a quote response
-type QuoteResponseData struct {
-	OriginChainID           int    `json:"origin_chain_id"`
-	DestChainID             int    `json:"dest_chain_id"`
-	OriginTokenAddr         string `json:"origin_token_addr"`
-	DestTokenAddr           string `json:"dest_token_addr"`
-	MaxOriginAmount         string `json:"max_origin_amount"`
-	DestAmount              string `json:"dest_amount"`
-	FixedFee                string `json:"fixed_fee"`
-	RelayerAddress          string `json:"relayer_address"`
-	OriginFastBridgeAddress string `json:"origin_fast_bridge_address"`
-	DestFastBridgeAddress   string `json:"dest_fast_bridge_address"`
+// NewRelayerWsQuoteRequest creates a new RelayerWsQuoteRequest
+func NewRelayerWsQuoteRequest(data QuoteData) *RelayerWsQuoteRequest {
+	return &RelayerWsQuoteRequest{
+		RequestID: uuid.New().String(),
+		Data:      data,
+		CreatedAt: time.Now(),
+	}
+}
+
+// RelayerWsQuoteResponse represents a response to a quote request
+type RelayerWsQuoteResponse struct {
+	RequestID string    `json:"request_id"`
+	QuoteID   string    `json:"quote_id"`
+	Data      QuoteData `json:"data"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

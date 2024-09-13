@@ -3,6 +3,7 @@ package rest
 
 import (
 	"context"
+	"math/big"
 
 	"fmt"
 	"net/http"
@@ -10,19 +11,17 @@ import (
 	"time"
 
 	"github.com/ipfs/go-log"
+	"github.com/puzpuzpuz/xsync"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 
-	"encoding/json"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -63,8 +62,10 @@ type QuoterAPIServer struct {
 	relayAckCache *ttlcache.Cache[string, string]
 	// ackMux is a mutex used to ensure that only one transaction id can be acked at a time.
 	ackMux sync.Mutex
-	// latestQuoteAgeGauge is a gauge that records the age of the latest quote
+	// latestQuoteAgeGauge is a gauge that records the age of the latest quote.
 	latestQuoteAgeGauge metric.Float64ObservableGauge
+	// wsClients maintains a mapping of connection ID to a channel for sending quote requests.
+	wsClients *xsync.MapOf[string, WsClient]
 }
 
 // NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -136,6 +137,7 @@ func NewAPI(
 		roleCache:           roles,
 		relayAckCache:       relayAckCache,
 		ackMux:              sync.Mutex{},
+		wsClients:           xsync.NewMapOf[WsClient](),
 	}
 
 	// Prometheus metrics setup
@@ -164,7 +166,9 @@ const (
 	ContractsRoute = "/contracts"
 	// QuoteRequestsRoute is the API endpoint for handling active quote requests via websocket.
 	QuoteRequestsRoute = "/quote_requests"
-	cacheInterval      = time.Minute
+	// PutQuoteRequestRoute is the API endpoint for handling put quote requests.
+	PutQuoteRequestRoute = "/quote_request"
+	cacheInterval        = time.Minute
 )
 
 var logger = log.Logger("rfq-api")
@@ -199,10 +203,11 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	})
 
 	// GET routes without the AuthMiddleware
-	// engine.PUT("/quotes", h.ModifyQuote)
 	engine.GET(QuoteRoute, h.GetQuotes)
-
 	engine.GET(ContractsRoute, h.GetContracts)
+
+	// RFQ request without AuthMiddleware
+	engine.PUT(PutQuoteRequestRoute, r.PutUserQuoteRequest)
 
 	// WebSocket upgrader
 	r.upgrader = websocket.Upgrader{
@@ -233,7 +238,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		// Parse the dest chain id from the request
 		switch c.Request.URL.Path {
 		case QuoteRoute:
-			var req model.PutQuoteRequest
+			var req model.PutRelayerQuoteRequest
 			err = c.BindJSON(&req)
 			if err == nil {
 				destChainIDs = append(destChainIDs, uint32(req.DestChainID))
@@ -429,114 +434,208 @@ func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Cont
 		logger.Error("Failed to set websocket upgrade", "error", err)
 		return
 	}
-	defer ws.Close()
 
-	// pass the run context here in case the server is shutdown
-	r.handleWebSocket(ctx, ws)
+	// use the relayer address as the ID for the connection
+	rawRelayerAddr, exists := c.Get("relayerAddr")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
+		return
+	}
+	relayerAddr, ok := rawRelayerAddr.(string)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid relayer address type"})
+		return
+	}
+
+	// only one connection per relayer allowed
+	_, ok = r.wsClients.Load(relayerAddr)
+	if ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "relayer already connected"})
+		return
+	}
+
+	defer func() {
+		// cleanup ws registry
+		r.wsClients.Delete(relayerAddr)
+	}()
+
+	client := newWsClient(ws)
+	r.wsClients.Store(relayerAddr, client)
+	err = client.Run(ctx)
+	if err != nil {
+		logger.Error("Error running websocket client", "error", err)
+	}
 }
 
 const (
-	pingOp         = "ping"
-	pongOp         = "pong"
-	requestQuoteOp = "request_quote"
-	sendQuoteOp    = "send_quote"
+	quoteTypeActive  = "active"
+	quoteTypePassive = "passive"
 )
 
-// Update handleWebSocket to accept the context
-func (r *QuoterAPIServer) handleWebSocket(ctx context.Context, conn *websocket.Conn) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			// Read message from WebSocket
-			_, message, err := conn.ReadMessage()
-			if err != nil {
-				logger.Error("Error reading WebSocket message", "error", err)
-				return
-			}
-
-			// Process the message
-			response, err := r.processQuoteRequest(message)
-			if err != nil {
-				logger.Error("Error processing quote request", "error", err)
-				continue
-			}
-
-			// Send response back through WebSocket
-			if err := conn.WriteMessage(websocket.TextMessage, response); err != nil {
-				logger.Error("Error writing WebSocket message", "error", err)
-				return
-			}
-		}
-	}
-}
-
-func (r *QuoterAPIServer) processQuoteRequest(message []byte) ([]byte, error) {
-	var wsMessage model.ActiveRFQMessage
-	err := json.Unmarshal(message, &wsMessage)
+// PutUserQuoteRequest handles a user request for a quote.
+func (r *QuoterAPIServer) PutUserQuoteRequest(c *gin.Context) {
+	var req model.PutUserQuoteRequest
+	err := c.BindJSON(&req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal WebSocket message: %w", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	switch wsMessage.Op {
-	case pingOp:
-		return json.Marshal(model.ActiveRFQMessage{
-			Op:      pongOp,
-			Success: true,
-		})
-
-	case requestQuoteOp:
-		var quoteRequest model.QuoteRequest
-		err := json.Unmarshal(message, &quoteRequest)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal quote request: %w", err)
+	var isActiveRFQ bool
+	for _, quoteType := range req.QuoteTypes {
+		if quoteType == quoteTypeActive {
+			isActiveRFQ = true
+			break
 		}
+	}
 
-		// Process the quote request and generate a response
-		quoteResponse, err := r.generateQuoteResponse(quoteRequest)
-		if err != nil {
-			return json.Marshal(model.ActiveRFQMessage{
-				Op:      sendQuoteOp,
-				Content: err.Error(),
-				Success: false,
-			})
-		}
+	// if specified, fetch the active quote. always consider passive quotes
+	var activeQuote *model.QuoteData
+	if isActiveRFQ {
+		activeQuote = r.handleActiveRFQ(c.Request.Context(), &req)
+	}
 
-		return json.Marshal(model.ActiveRFQMessage{
-			Op:      sendQuoteOp,
-			Content: quoteResponse,
-			Success: true,
-		})
+	passiveQuote, err := r.handlePassiveRFQ(c.Request.Context(), &req)
+	if err != nil {
+		logger.Error("Error handling passive RFQ", "error", err)
+	}
+	quote := getBestQuote(activeQuote, passiveQuote)
 
-	default:
-		return json.Marshal(model.ActiveRFQMessage{
-			Content: "Unknown operation",
+	// construct the response
+	var resp model.PutUserQuoteResponse
+	if quote == nil {
+		resp = model.PutUserQuoteResponse{
 			Success: false,
-		})
+			Reason:  "no quotes found",
+		}
+	} else {
+		quoteType := quoteTypeActive
+		if activeQuote == nil {
+			quoteType = quoteTypePassive
+		}
+		resp = model.PutUserQuoteResponse{
+			Success:   true,
+			Data:      *quote,
+			QuoteType: quoteType,
+		}
 	}
+	c.JSON(http.StatusOK, resp)
 }
 
-func (r *QuoterAPIServer) generateQuoteResponse(request model.QuoteRequest) (model.QuoteResponse, error) {
-	// TODO: Implement actual quote generation logic
-	// This is a placeholder implementation
-	quoteResponse := model.QuoteResponse{
-		RequestID: request.RequestID,
-		QuoteID:   uuid.New().String(),
-		Data: model.QuoteResponseData{
-			OriginChainID:           request.Data.OriginChainID,
-			DestChainID:             request.Data.DestChainID,
-			OriginTokenAddr:         request.Data.OriginTokenAddr,
-			DestTokenAddr:           request.Data.DestTokenAddr,
-			MaxOriginAmount:         request.Data.MaxOriginAmount,
-			DestAmount:              "0",                                          // TODO: Calculate actual destination amount
-			FixedFee:                "0",                                          // TODO: Calculate actual fee
-			RelayerAddress:          "0x1234567890123456789012345678901234567890", // TODO: Use actual relayer address
-			OriginFastBridgeAddress: "0x0987654321098765432109876543210987654321", // TODO: Use actual origin fast bridge address
-			DestFastBridgeAddress:   "0x5432109876543210987654321098765432109876", // TODO: Use actual destination fast bridge address
-		},
-		UpdatedAt: time.Now(),
+func getBestQuote(a, b *model.QuoteData) *model.QuoteData {
+	if a == nil && b == nil {
+		return nil
+	}
+	if a == nil {
+		return b
+	}
+	if b == nil {
+		return a
+	}
+	aAmount, _ := new(big.Int).SetString(*a.DestAmount, 10)
+	bAmount, _ := new(big.Int).SetString(*b.DestAmount, 10)
+	if aAmount.Cmp(bAmount) > 0 {
+		return a
+	}
+	return b
+}
+
+func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest) (quote *model.QuoteData) {
+	rfqCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond)
+
+	// publish the quote request to all connected clients
+	relayerReq := model.NewRelayerWsQuoteRequest(request.Data)
+	r.wsClients.Range(func(key string, client WsClient) bool {
+		client.SendQuoteRequest(rfqCtx, relayerReq)
+		return true
+	})
+
+	// collect responses from all clients until expiration window closes
+	wg := sync.WaitGroup{}
+	respMux := sync.Mutex{}
+	responses := map[string]*model.RelayerWsQuoteResponse{}
+	r.wsClients.Range(func(key string, client WsClient) bool {
+		wg.Add(1)
+		go func(client WsClient) {
+			defer wg.Done()
+			resp, err := client.ReceiveQuoteResponse(rfqCtx)
+			if err != nil {
+				logger.Error("Error receiving quote response", "error", err)
+				return
+			}
+			respMux.Lock()
+			responses[key] = resp
+			respMux.Unlock()
+		}(client)
+		return true
+	})
+
+	select {
+	case <-rfqCtx.Done():
+		// Context expired before all responses were received
+	case <-func() chan struct{} {
+		ch := make(chan struct{})
+		go func() {
+			wg.Wait()
+			close(ch)
+		}()
+		return ch
+	}():
+		// All responses received
 	}
 
-	return quoteResponse, nil
+	// construct the response
+	// at this point, all responses should have been validated
+	for _, resp := range responses {
+		quote = getBestQuote(quote, &resp.Data)
+	}
+
+	return quote
+}
+
+func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest) (*model.QuoteData, error) {
+	quotes, err := r.db.GetQuotesByOriginAndDestination(ctx, uint64(request.Data.OriginChainID), request.Data.OriginTokenAddr, uint64(request.Data.DestChainID), request.Data.DestTokenAddr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get quotes: %w", err)
+	}
+
+	originAmount, ok := new(big.Int).SetString(request.Data.OriginAmount, 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid origin amount")
+	}
+
+	var bestQuote *model.QuoteData
+	for _, quote := range quotes {
+		quoteOriginAmount, ok := new(big.Int).SetString(quote.MaxOriginAmount.String(), 10)
+		if !ok {
+			continue
+		}
+		if quoteOriginAmount.Cmp(originAmount) < 0 {
+			continue
+		}
+		quotePrice := new(big.Float).Quo(
+			new(big.Float).SetInt(quote.DestAmount.BigInt()),
+			new(big.Float).SetInt(quote.MaxOriginAmount.BigInt()),
+		)
+
+		rawDestAmount := new(big.Float).Mul(
+			new(big.Float).SetInt(originAmount),
+			quotePrice,
+		)
+
+		rawDestAmountInt, _ := rawDestAmount.Int(nil)
+		destAmount := new(big.Int).Sub(rawDestAmountInt, quote.FixedFee.BigInt()).String()
+		quoteData := &model.QuoteData{
+			OriginChainID:   int(quote.OriginChainID),
+			DestChainID:     int(quote.DestChainID),
+			OriginTokenAddr: quote.OriginTokenAddr,
+			DestTokenAddr:   quote.DestTokenAddr,
+			OriginAmount:    quote.MaxOriginAmount.String(),
+			DestAmount:      &destAmount,
+			RelayerAddress:  &quote.RelayerAddr,
+		}
+		bestQuote = getBestQuote(bestQuote, quoteData)
+	}
+
+	return bestQuote, nil
 }
