@@ -544,6 +544,7 @@ app.get('/getBridgeTxStatus', async (req, res) => {
                 address
                 txnHash
                 USDValue
+                formattedValue
                 tokenSymbol
                 blockNumber
                 formattedTime
