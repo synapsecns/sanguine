@@ -77,7 +77,7 @@ app.get('/', (_req, res) => {
   )
 })
 
-app.get('/get-quotes', async (req, res) => {
+app.get('/get-quote-max', async (req, res) => {
   try {
     const {
       originChainId,
@@ -144,13 +144,13 @@ app.get('/get-quotes', async (req, res) => {
           getAddress(quote.dest_token_addr) === destTokenAddress
       )
 
-    const bestQuote = filteredQuotes.reduce((maxQuote, currentQuote) => {
+    const bestRfqQuote = filteredQuotes.reduce((maxQuote, currentQuote) => {
       const currentAmount = Number(currentQuote.max_origin_amount)
       const maxAmount = maxQuote ? Number(maxQuote.max_origin_amount) : 0
       return currentAmount > maxAmount ? currentQuote : maxQuote
     }, null)
 
-    if (!bestQuote) {
+    if (!bestRfqQuote) {
       return res.status(404).json({ error: 'No matching RFQ quotes found' })
     }
 
@@ -168,11 +168,18 @@ app.get('/get-quotes', async (req, res) => {
       return res.status(404).json({ error: 'No bridge quotes found' })
     }
 
-    const bestBridgeQuote = bridgeQuotes[0]
+    const bestSDKQuote = bridgeQuotes[0]
+
+    const bestRfqQuoteMaxAmountBN = BigNumber.from(bestRfqQuote.max_origin_amount)
+
+    const maxOriginQuote = bestRfqQuoteMaxAmountBN.gt(bestSDKQuote.maxAmountOut)
+      ? { source: 'RFQ', amount: bestRfqQuoteMaxAmountBN }
+      : { source: bestSDKQuote.bridgeModuleName, amount: bestSDKQuote.maxAmountOut }
 
     return res.json({
-      rfqBestQuote: bestQuote,
-      bridgeBestQuote: bestBridgeQuote,
+      rfqBestQuote: bestRfqQuote,
+      sdkBestQuote: bestSDKQuote,
+      maxOriginQuote,
     })
   } catch (error) {
     console.error('Error fetching quotes:', error)
