@@ -42,9 +42,16 @@ func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.Rel
 	return nil
 }
 
-func (c *wsClient) ReceiveQuoteResponse(ctx context.Context) (*model.RelayerWsQuoteResponse, error) {
-	response := <-c.responseChan
-	return response, nil
+func (c *wsClient) ReceiveQuoteResponse(ctx context.Context) (resp *model.RelayerWsQuoteResponse, err error) {
+	select {
+	case resp = <-c.responseChan:
+		// successfuly received
+	case <-c.doneChan:
+		return nil, fmt.Errorf("websocket client is closed")
+	case <-ctx.Done():
+		return nil, fmt.Errorf("expiration reached without response")
+	}
+	return resp, nil
 }
 
 const (
