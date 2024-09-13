@@ -8,8 +8,9 @@ import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 
 import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
+import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
 
-contract FastBridge is IFastBridge, Admin {
+contract FastBridge is IFastBridge, IFastBridgeV2, Admin {
     using SafeERC20 for IERC20;
     using UniversalTokenLib for address;
 
@@ -124,12 +125,12 @@ contract FastBridge is IFastBridge, Admin {
     }
 
     /// @inheritdoc IFastBridge
-    function relay(bytes memory request) external {
+    function relay(bytes memory request) external payable {
         relay(request, msg.sender);
     }
 
-    /// @inheritdoc IFastBridge
-    function relay(bytes memory request, address relayer) external payable {
+    /// @inheritdoc IFastBridgeV2
+    function relay(bytes memory request, address relayer) public payable {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
         if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
@@ -178,8 +179,8 @@ contract FastBridge is IFastBridge, Admin {
         prove(request, destTxHash, msg.sender);
     }
 
-    /// @inheritdoc IFastBridge
-    function prove(bytes memory request, bytes32 destTxHash, address relayer) external onlyRole(RELAYER_ROLE) {
+    /// @inheritdoc IFastBridgeV2
+    function prove(bytes memory request, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
         bytes32 transactionId = keccak256(request);
         // update bridge tx status given proof provided
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
@@ -209,13 +210,13 @@ contract FastBridge is IFastBridge, Admin {
         return _timeSince(proof) > DISPUTE_PERIOD;
     }
 
-    /// @inheritdoc IFastBridge
+    /// @inheritdoc IFastBridgeV2
     function claim(bytes memory request) external {
-        claim(request, 0);
+        claim(request, address(0));
     }
 
     /// @inheritdoc IFastBridge
-    function claim(bytes memory request, address to) external {
+    function claim(bytes memory request, address to) public {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
 
