@@ -107,14 +107,16 @@ app.get('/get-quote-max', async (req, res) => {
       !isString(destTokenSymbol) ||
       !isString(destTokenAddress)
     ) {
-      return res.status(400).json({ error: 'Invalid chainid parameters' })
+      return res.status(400).json({ error: 'Invalid parameters type' })
     }
 
     const originTokenInfo = findTokenInfo(originChainId, originTokenSymbol)
     const destTokenInfo = findTokenInfo(destChainId, destTokenSymbol)
 
     if (!originTokenInfo || !destTokenInfo) {
-      return res.status(404).json({ error: 'Invalid token symbols or chains' })
+      return res
+        .status(404)
+        .json({ error: 'Invalid token symbols or chainids' })
     }
 
     const { decimals: originTokenDecimals } = originTokenInfo
@@ -130,28 +132,24 @@ app.get('/get-quote-max', async (req, res) => {
 
     const rfqQuotes = rfqResponse.data
 
-    if (!Array.isArray(rfqQuotes) || rfqQuotes.length === 0) {
-      return res.status(404).json({ error: 'No RFQ quotes found' })
-    }
+    let bestRfqQuote = null
 
-    const filteredQuotes = rfqQuotes
-      .slice(0, 20)
-      .filter(
-        (quote) =>
-          Number(quote.origin_chain_id) === Number(originChainId) &&
-          getAddress(quote.origin_token_addr) === originTokenAddress &&
-          Number(quote.dest_chain_id) === Number(destChainId) &&
-          getAddress(quote.dest_token_addr) === destTokenAddress
-      )
+    if (Array.isArray(rfqQuotes) && rfqQuotes.length > 0) {
+      const filteredQuotes = rfqQuotes
+        .slice(0, 20)
+        .filter(
+          (quote) =>
+            Number(quote.origin_chain_id) === Number(originChainId) &&
+            getAddress(quote.origin_token_addr) === originTokenAddress &&
+            Number(quote.dest_chain_id) === Number(destChainId) &&
+            getAddress(quote.dest_token_addr) === destTokenAddress
+        )
 
-    const bestRfqQuote = filteredQuotes.reduce((maxQuote, currentQuote) => {
-      const currentAmount = Number(currentQuote.max_origin_amount)
-      const maxAmount = maxQuote ? Number(maxQuote.max_origin_amount) : 0
-      return currentAmount > maxAmount ? currentQuote : maxQuote
-    }, null)
-
-    if (!bestRfqQuote) {
-      return res.status(404).json({ error: 'No matching RFQ quotes found' })
+      bestRfqQuote = filteredQuotes.reduce((maxQuote, currentQuote) => {
+        const currentAmount = Number(currentQuote.max_origin_amount)
+        const maxAmount = maxQuote ? Number(maxQuote.max_origin_amount) : 0
+        return currentAmount > maxAmount ? currentQuote : maxQuote
+      }, null)
     }
 
     const amount = parseUnits('1000000', originTokenDecimals)
@@ -170,11 +168,24 @@ app.get('/get-quote-max', async (req, res) => {
 
     const bestSDKQuote = bridgeQuotes[0]
 
-    const bestRfqQuoteMaxAmountBN = BigNumber.from(bestRfqQuote.max_origin_amount)
-
-    const maxOriginQuote = bestRfqQuoteMaxAmountBN.gt(bestSDKQuote.maxAmountOut)
-      ? { source: 'RFQ', amount: bestRfqQuoteMaxAmountBN }
-      : { source: bestSDKQuote.bridgeModuleName, amount: bestSDKQuote.maxAmountOut }
+    let maxOriginQuote
+    if (bestRfqQuote) {
+      const bestRfqQuoteMaxAmountBN = BigNumber.from(
+        bestRfqQuote.max_origin_amount
+      )
+      maxOriginQuote = bestRfqQuoteMaxAmountBN.gt(bestSDKQuote.maxAmountOut)
+        ? { source: 'RFQ', amount: bestRfqQuoteMaxAmountBN }
+        : {
+            source: bestSDKQuote.bridgeModuleName,
+            amount: bestSDKQuote.maxAmountOut,
+          }
+    } else {
+      // If no RFQ quote, simply use the SDK quote
+      maxOriginQuote = {
+        source: bestSDKQuote.bridgeModuleName,
+        amount: bestSDKQuote.maxAmountOut,
+      }
+    }
 
     return res.json({
       rfqBestQuote: bestRfqQuote,
