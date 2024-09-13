@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import {FastBridgeTest, SenderIncorrect} from "./FastBridge.t.sol";
 
-contract FastBridgeV2Test is FastBridgeTest {
+// solhint-disable func-name-mixedcase, ordering
+contract FastBridgeV2ParityTest is FastBridgeTest {
     address public anotherRelayer = makeAddr("Another Relayer");
 
     function deployFastBridge() internal virtual override returns (address) {
-        // TODO: change to FastBridgeV2
-        return super.deployFastBridge();
+        // Use the cheatcode to deploy 0.8.24 contract within a 0.8.20 test
+        return deployCode({what: "FastBridgeV2", args: abi.encode(owner)});
     }
 
     /// @notice Relay function is no longer permissioned, so we skip this test
