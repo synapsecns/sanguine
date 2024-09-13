@@ -5,6 +5,7 @@ import { formatUnits, parseUnits } from '@ethersproject/units'
 import { getAddress } from '@ethersproject/address'
 import express from 'express'
 import axios from 'axios'
+import { isString } from 'lodash'
 
 import * as tokensList from './constants/bridgeable'
 import { CHAINS_ARRAY } from './constants/chains'
@@ -78,19 +79,47 @@ app.get('/', (_req, res) => {
 
 app.get('/get-quotes', async (req, res) => {
   try {
-    const { originChainId, originTokenAddress, destChainId, destTokenAddress } =
-      req.query
+    const {
+      originChainId,
+      originTokenAddress,
+      originTokenSymbol,
+      destChainId,
+      destTokenAddress,
+      destTokenSymbol,
+    } = req.query
 
     if (
       !originChainId ||
+      !originTokenSymbol ||
       !originTokenAddress ||
       !destChainId ||
+      !destTokenSymbol ||
       !destTokenAddress
     ) {
       return res.status(400).json({ error: 'Missing required parameters' })
     }
 
-    const response = await axios.get('https://rfq-api.omnirpc.io/quotes', {
+    if (
+      !isString(originChainId) ||
+      !isString(originTokenAddress) ||
+      !isString(destChainId) ||
+      !isString(originTokenSymbol) ||
+      !isString(destTokenSymbol) ||
+      !isString(destTokenAddress)
+    ) {
+      return res.status(400).json({ error: 'Invalid chainid parameters' })
+    }
+
+    const originTokenInfo = findTokenInfo(originChainId, originTokenSymbol)
+    const destTokenInfo = findTokenInfo(destChainId, destTokenSymbol)
+
+    if (!originTokenInfo || !destTokenInfo) {
+      return res.status(404).json({ error: 'Invalid token symbols or chains' })
+    }
+
+    const { decimals: originTokenDecimals } = originTokenInfo
+
+    const rfqResponse = await axios.get('https://rfq-api.omnirpc.io/quotes', {
       params: {
         originChainId,
         originTokenAddress,
@@ -99,13 +128,13 @@ app.get('/get-quotes', async (req, res) => {
       },
     })
 
-    const quotes = response.data
+    const rfqQuotes = rfqResponse.data
 
-    if (!Array.isArray(quotes) || quotes.length === 0) {
-      return res.status(404).json({ error: 'No quotes found' })
+    if (!Array.isArray(rfqQuotes) || rfqQuotes.length === 0) {
+      return res.status(404).json({ error: 'No RFQ quotes found' })
     }
 
-    const filteredQuotes = quotes
+    const filteredQuotes = rfqQuotes
       .slice(0, 20)
       .filter(
         (quote) =>
@@ -122,13 +151,32 @@ app.get('/get-quotes', async (req, res) => {
     }, null)
 
     if (!bestQuote) {
-      return res.status(404).json({ error: 'No matching quotes found' })
+      return res.status(404).json({ error: 'No matching RFQ quotes found' })
     }
 
-    return res.json(bestQuote)
+    const amount = parseUnits('1000000', originTokenDecimals)
+
+    const bridgeQuotes = await Synapse.allBridgeQuotes(
+      Number(originChainId),
+      Number(destChainId),
+      originTokenAddress,
+      destTokenAddress,
+      amount
+    )
+
+    if (!Array.isArray(bridgeQuotes) || bridgeQuotes.length === 0) {
+      return res.status(404).json({ error: 'No bridge quotes found' })
+    }
+
+    const bestBridgeQuote = bridgeQuotes[0]
+
+    return res.json({
+      rfqBestQuote: bestQuote,
+      bridgeBestQuote: bestBridgeQuote,
+    })
   } catch (error) {
-    console.error('Error fetching RFQ quotes:', error)
-    return res.status(500).json({ error: 'Failed to fetch RFQ quotes' })
+    console.error('Error fetching quotes:', error)
+    return res.status(500).json({ error: 'Failed to fetch quotes' })
   }
 })
 
