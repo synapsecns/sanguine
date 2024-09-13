@@ -1,5 +1,6 @@
 import express from 'express'
 import { check } from 'express-validator'
+
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { getBridgeTxStatusController } from '../controllers/getBridgeTxStatusController'
 import { CHAINS_ARRAY } from '../constants/chains'
