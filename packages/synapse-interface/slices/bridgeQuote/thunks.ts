@@ -50,6 +50,8 @@ export const fetchBridgeQuote = createAsyncThunk(
       }
     )
 
+    console.log('allQuotes: ', allQuotes)
+
     const pausedBridgeModules = new Set(
       pausedModulesList
         .filter((module) =>

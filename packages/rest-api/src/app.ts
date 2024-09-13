@@ -2,7 +2,9 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatUnits, parseUnits } from '@ethersproject/units'
+import { getAddress } from '@ethersproject/address'
 import express from 'express'
+import axios from 'axios'
 
 import * as tokensList from './constants/bridgeable'
 import { CHAINS_ARRAY } from './constants/chains'
@@ -72,6 +74,62 @@ app.get('/', (_req, res) => {
     <h2>Available Tokens (symbols to use)</h2>
     ${tokenHtml}`
   )
+})
+
+app.get('/get-quotes', async (req, res) => {
+  try {
+    const { originChainId, originTokenAddress, destChainId, destTokenAddress } =
+      req.query
+
+    if (
+      !originChainId ||
+      !originTokenAddress ||
+      !destChainId ||
+      !destTokenAddress
+    ) {
+      return res.status(400).json({ error: 'Missing required parameters' })
+    }
+
+    const response = await axios.get('https://rfq-api.omnirpc.io/quotes', {
+      params: {
+        originChainId,
+        originTokenAddress,
+        destChainId,
+        destTokenAddress,
+      },
+    })
+
+    const quotes = response.data
+
+    if (!Array.isArray(quotes) || quotes.length === 0) {
+      return res.status(404).json({ error: 'No quotes found' })
+    }
+
+    const filteredQuotes = quotes
+      .slice(0, 20)
+      .filter(
+        (quote) =>
+          Number(quote.origin_chain_id) === Number(originChainId) &&
+          getAddress(quote.origin_token_addr) === originTokenAddress &&
+          Number(quote.dest_chain_id) === Number(destChainId) &&
+          getAddress(quote.dest_token_addr) === destTokenAddress
+      )
+
+    const bestQuote = filteredQuotes.reduce((maxQuote, currentQuote) => {
+      const currentAmount = Number(currentQuote.max_origin_amount)
+      const maxAmount = maxQuote ? Number(maxQuote.max_origin_amount) : 0
+      return currentAmount > maxAmount ? currentQuote : maxQuote
+    }, null)
+
+    if (!bestQuote) {
+      return res.status(404).json({ error: 'No matching quotes found' })
+    }
+
+    return res.json(bestQuote)
+  } catch (error) {
+    console.error('Error fetching RFQ quotes:', error)
+    return res.status(500).json({ error: 'Failed to fetch RFQ quotes' })
+  }
 })
 
 app.get('/tokenList', (_req, res) => {
