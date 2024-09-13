@@ -41,12 +41,10 @@ export const bridgeTxInfoController = async (req, res) => {
     )
     res.json(txInfoArray)
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        error:
-          'An unexpected error occurred in /bridgeTxInfo. Please try again later.',
-        details: err.message,
-      })
+    res.status(500).json({
+      error:
+        'An unexpected error occurred in /bridgeTxInfo. Please try again later.',
+      details: err.message,
+    })
   }
 }

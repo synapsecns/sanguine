@@ -36,12 +36,9 @@ export const bridgeController = async (req, res) => {
     }))
     res.json(payload)
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        error:
-          'An unexpected error occurred in /bridge. Please try again later.',
-        details: err.message,
-      })
+    res.status(500).json({
+      error: 'An unexpected error occurred in /bridge. Please try again later.',
+      details: err.message,
+    })
   }
 }

@@ -25,11 +25,9 @@ export const swapController = async (req, res) => {
       ...quote,
     })
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        error: 'An unexpected error occurred in /swap. Please try again later.',
-        details: err.message,
-      })
+    res.status(500).json({
+      error: 'An unexpected error occurred in /swap. Please try again later.',
+      details: err.message,
+    })
   }
 }

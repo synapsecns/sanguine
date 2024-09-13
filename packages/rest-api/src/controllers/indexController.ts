@@ -22,11 +22,9 @@ export const indexController = async (_req, res) => {
       availableTokens: tokensWithChains,
     })
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        error: 'An unexpected error occurred in /. Please try again later.',
-        details: err.message,
-      })
+    res.status(500).json({
+      error: 'An unexpected error occurred in /. Please try again later.',
+      details: err.message,
+    })
   }
 }
