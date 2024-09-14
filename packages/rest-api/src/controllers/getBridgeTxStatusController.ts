@@ -1,6 +1,8 @@
 import { validationResult } from 'express-validator'
+import { ethers } from 'ethers'
 
 import { Synapse } from '../services/synapseService'
+import { getTokenDecimals } from '../utils/getTokenDecimals'
 
 export const getBridgeTxStatusController = async (req, res) => {
   const errors = validationResult(req)
@@ -23,36 +25,53 @@ export const getBridgeTxStatusController = async (req, res) => {
         : synapseTxId
       const graphqlEndpoint = 'https://explorer.omnirpc.io/graphql'
       const graphqlQuery = `
-          {
-            bridgeTransactions(
-              useMv: true
-              kappa: "${txIdWithout0x}"
-            ) {
-              toInfo {
-                chainID
-                address
-                txnHash
-                USDValue
-                tokenSymbol
-                blockNumber
-                formattedTime
-              }
+        {
+          bridgeTransactions(useMv: true, kappa: "${txIdWithout0x}") {
+            toInfo {
+              chainID
+              address
+              txnHash
+              value
+              USDValue
+              tokenSymbol
+              tokenAddress
+              formattedTime
             }
           }
-        `
+        }
+      `
 
       const graphqlResponse = await fetch(graphqlEndpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: graphqlQuery }),
       })
 
       const graphqlData = await graphqlResponse.json()
-      const toInfo = graphqlData.data.bridgeTransactions[0]?.toInfo || null
+      const toInfo = graphqlData.data.bridgeTransactions[0]?.toInfo
 
-      res.json({ status, toInfo })
+      if (toInfo) {
+        const tokenDecimals = getTokenDecimals(
+          toInfo.chainID,
+          toInfo.tokenAddress
+        )
+        const formattedValue = ethers.utils.formatUnits(
+          toInfo.value,
+          tokenDecimals
+        )
+        // the below line is to deconstruct the toInfo object
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { tokenAddress, value, ...restToInfo } = toInfo
+        res.json({
+          status,
+          toInfo: {
+            ...restToInfo,
+            formattedValue: `${formattedValue}`,
+          },
+        })
+      } else {
+        res.json({ status, toInfo: null })
+      }
     } else {
       res.json({ status })
     }
