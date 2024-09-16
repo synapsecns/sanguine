@@ -1,0 +1,32 @@
+{
+  "name": "rfq-indexer",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:local": "rm -rf .ponder && APP_ENV=local ponder dev",
+    "dev": "ponder dev",
+    "start": "ponder start",
+    "codegen": "ponder codegen",
+    "lint": "eslint .",
+    "ci:lint": "eslint .",
+    "typecheck": "tsc",
+    "test:coverage": "echo 'No tests defined.'"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ponder/core": "^0.4.41",
+    "viem": "^1.19.3"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.0",
+    "eslint": "^8.53.0",
+    "eslint-config-ponder": "^0.3.11",
+    "typescript": "^5.2.2"
+  }
+}

@@ -1,0 +1,83 @@
+
+type Transaction {
+  transactionId: String!
+  originChain: String!
+  destChain: String!
+  originChainId: Int!
+  destChainId: Int!
+  originToken: String!
+  destToken: String!
+  originAmountFormatted: String!
+  destAmountFormatted: String!
+  sender: String!
+  sendChainGas: String!
+}
+
+type Deposit {
+  blockNumber: Int!
+  blockTimestamp: Int!
+  transactionHash: String!
+}
+
+type Relay {
+  blockNumber: Int!
+  blockTimestamp: Int!
+  transactionHash: String!
+
+  relayer: String!
+  to: String!
+}
+
+type Proof {
+  blockNumber: Int!
+  blockTimestamp: Int!
+  transactionHash: String!
+  
+  relayer: String!
+}
+
+type Claim {
+  blockNumber: Int!
+  blockTimestamp: Int!
+  transactionHash: String!
+  
+  relayer: String!
+  to: String!
+  amountFormatted: String!
+}
+
+type Refund {
+  blockNumber: Int!
+  blockTimestamp: Int!
+  transactionHash: String!
+  
+  to: String!
+  amountFormatted: String!
+}
+
+
+
+
+type PendingTransactionMissingRelay {
+  Bridge: Transaction!
+  BridgeRequest: Deposit!
+}
+
+type PendingTransactionMissingProof {
+  Bridge: Transaction!
+  BridgeRequest: Deposit!
+  BridgeRelay: Relay!
+}
+
+type PendingTransactionMissingClaim {
+  Bridge: Transaction!
+  BridgeRequest: Deposit!
+  BridgeRelay: Relay!
+  BridgeProof: Proof!
+}
+
+type Query {
+  pendingTransactionsMissingRelay: [PendingTransactionMissingRelay!]!
+  pendingTransactionsMissingProof: [PendingTransactionMissingProof!]!
+  pendingTransactionsMissingClaim: [PendingTransactionMissingClaim!]!
+}
