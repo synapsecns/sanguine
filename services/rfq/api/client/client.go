@@ -4,10 +4,13 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/ipfs/go-log"
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -17,10 +20,13 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/go-resty/resty/v2"
+	"github.com/gorilla/websocket"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 )
+
+var logger = log.Logger("rfq-client")
 
 // AuthenticatedClient is an interface for the RFQ API.
 // It provides methods for creating, retrieving and updating quotes.
@@ -28,6 +34,7 @@ type AuthenticatedClient interface {
 	PutQuote(ctx context.Context, q *model.PutRelayerQuoteRequest) error
 	PutBulkQuotes(ctx context.Context, q *model.PutBulkQuotesRequest) error
 	PutRelayAck(ctx context.Context, req *model.PutAckRequest) (*model.PutRelayAckResponse, error)
+	SubscribeActiveQuotes(ctx context.Context, reqChan chan *model.ActiveRFQMessage) (respChan chan *model.ActiveRFQMessage, err error)
 	UnauthenticatedClient
 }
 
@@ -157,6 +164,60 @@ func (c *clientImpl) PutRelayAck(ctx context.Context, req *model.PutAckRequest) 
 	}
 
 	return ack, nil
+}
+
+func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, reqChan chan *model.ActiveRFQMessage) (respChan chan *model.ActiveRFQMessage, err error) {
+	respChan = make(chan *model.ActiveRFQMessage)
+
+	wsURL := fmt.Sprintf("ws://%s%s", c.rClient.HostURL, rest.QuoteRequestsRoute)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
+	}
+
+	go func() {
+		defer close(respChan)
+		defer conn.Close()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case msg, ok := <-reqChan:
+				if !ok {
+					return
+				}
+				err := conn.WriteJSON(msg)
+				if err != nil {
+					logger.Warnf("error sending message to websocket: %v", err)
+					return
+				}
+			default:
+				_, message, err := conn.ReadMessage()
+				if err != nil {
+					if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+						logger.Warnf("websocket connection closed unexpectedly: %v", err)
+					}
+					return
+				}
+
+				var rfqMsg model.ActiveRFQMessage
+				err = json.Unmarshal(message, &rfqMsg)
+				if err != nil {
+					logger.Warn("error unmarshalling message: %v", err)
+					continue
+				}
+
+				select {
+				case respChan <- &rfqMsg:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}
+	}()
+
+	return respChan, nil
 }
 
 // GetAllQuotes retrieves all quotes from the RFQ quoting API.
