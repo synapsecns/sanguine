@@ -7,7 +7,7 @@ import (
 // TODO: @aurelius tese tests make a lot less sesnes w/ a composite index
 
 func (c *ClientSuite) TestPutAndGetQuote() {
-	req := model.PutQuoteRequest{
+	req := model.PutRelayerQuoteRequest{
 		OriginChainID:   1,
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     42161,
@@ -40,7 +40,7 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 
 func (c *ClientSuite) TestPutAndGetBulkQuotes() {
 	req := model.PutBulkQuotesRequest{
-		Quotes: []model.PutQuoteRequest{
+		Quotes: []model.PutRelayerQuoteRequest{
 			{
 				OriginChainID:   1,
 				OriginTokenAddr: "0xOriginTokenAddr",
@@ -98,7 +98,7 @@ func (c *ClientSuite) TestPutAndGetBulkQuotes() {
 }
 
 func (c *ClientSuite) TestGetSpecificQuote() {
-	req := model.PutQuoteRequest{
+	req := model.PutRelayerQuoteRequest{
 		OriginChainID:   1,
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     42161,
@@ -135,7 +135,7 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 }
 
 func (c *ClientSuite) TestGetQuoteByRelayerAddress() {
-	req := model.PutQuoteRequest{
+	req := model.PutRelayerQuoteRequest{
 		OriginChainID:   1,
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     42161,

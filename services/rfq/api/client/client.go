@@ -25,7 +25,7 @@ import (
 // AuthenticatedClient is an interface for the RFQ API.
 // It provides methods for creating, retrieving and updating quotes.
 type AuthenticatedClient interface {
-	PutQuote(ctx context.Context, q *model.PutQuoteRequest) error
+	PutQuote(ctx context.Context, q *model.PutRelayerQuoteRequest) error
 	PutBulkQuotes(ctx context.Context, q *model.PutBulkQuotesRequest) error
 	PutRelayAck(ctx context.Context, req *model.PutAckRequest) (*model.PutRelayAckResponse, error)
 	UnauthenticatedClient
@@ -115,7 +115,7 @@ func NewUnauthenticatedClient(metricHandler metrics.Handler, rfqURL string) (Una
 }
 
 // PutQuote puts a new quote in the RFQ quoting API.
-func (c *clientImpl) PutQuote(ctx context.Context, q *model.PutQuoteRequest) error {
+func (c *clientImpl) PutQuote(ctx context.Context, q *model.PutRelayerQuoteRequest) error {
 	res, err := c.rClient.R().
 		SetContext(ctx).
 		SetBody(q).
