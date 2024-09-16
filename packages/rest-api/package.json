@@ -14,7 +14,7 @@
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "test": "jest",
-    "test:coverage": "echo 'No tests defined.'",
+    "test:coverage": "jest --collect-coverage",
     "postinstall": "npm run build"
   },
   "dependencies": {
