@@ -401,9 +401,7 @@ func (c *ServerSuite) prepareAuthHeader(wallet wallet.Wallet) (string, error) {
 func (c *ServerSuite) sendPutQuoteRequest(header string) (*http.Response, error) {
 	// Prepare the PUT request with JSON data.
 	client := &http.Client{}
-	putData := model.PutQuoteRequest{
-		OriginChainID:   1,
-		OriginTokenAddr: "0xOriginTokenAddr",
+	putData := model.PutRelayerQuoteRequest{
 		DestChainID:     42161,
 		DestTokenAddr:   "0xDestTokenAddr",
 		DestAmount:      "100.0",
