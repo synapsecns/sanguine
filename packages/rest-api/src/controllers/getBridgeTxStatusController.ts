@@ -51,17 +51,11 @@ export const getBridgeTxStatusController = async (req, res) => {
       const toInfo = graphqlData.data.bridgeTransactions[0]?.toInfo
 
       if (toInfo) {
-        const tokenDecimals = getTokenDecimals(
-          toInfo.chainID,
-          toInfo.tokenAddress
-        )
-        const formattedValue = ethers.utils.formatUnits(
-          toInfo.value,
-          tokenDecimals
-        )
-        // the below line is to deconstruct the toInfo object
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { tokenAddress, value, ...restToInfo } = toInfo
+
+        const tokenDecimals = getTokenDecimals(toInfo.chainID, tokenAddress)
+        const formattedValue = ethers.utils.formatUnits(value, tokenDecimals)
+
         res.json({
           status,
           toInfo: {

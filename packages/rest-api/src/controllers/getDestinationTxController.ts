@@ -46,20 +46,12 @@ export const getDestinationTxController = async (req, res) => {
     const graphqlData = await graphqlResponse.json()
     const toInfo = graphqlData.data.bridgeTransactions[0]?.toInfo || null
 
-    if (toInfo === null) {
-      res.json({ status: 'pending' })
-    } else {
-      const tokenDecimals = getTokenDecimals(
-        toInfo.chainID,
-        toInfo.tokenAddress
-      )
-      const formattedValue = ethers.utils.formatUnits(
-        toInfo.value,
-        tokenDecimals
-      )
-      // the below line is to deconstruct the toInfo object
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    if (toInfo) {
       const { tokenAddress, value, ...restToInfo } = toInfo
+
+      const tokenDecimals = getTokenDecimals(toInfo.chainID, tokenAddress)
+      const formattedValue = ethers.utils.formatUnits(value, tokenDecimals)
+
       res.json({
         status: 'completed',
         toInfo: {
@@ -67,6 +59,8 @@ export const getDestinationTxController = async (req, res) => {
           formattedValue: `${formattedValue}`,
         },
       })
+    } else {
+      res.json({ status: 'pending', toInfo: null })
     }
   } catch (err) {
     res.status(500).json({
