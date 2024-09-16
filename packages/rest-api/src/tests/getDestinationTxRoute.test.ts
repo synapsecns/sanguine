@@ -14,8 +14,6 @@ describe('Get Destination TX Route', () => {
         '0x13486d9eaefd68de6a20b704d70deb8436effbac1f77fddfc0c7ef14f08e96c3',
     })
 
-    console.log(response.body)
-
     expect(response.status).toBe(200)
     expect(response.body).toHaveProperty('status')
     expect(response.body).toHaveProperty('toInfo')

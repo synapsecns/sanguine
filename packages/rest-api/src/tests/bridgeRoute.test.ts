@@ -57,7 +57,6 @@ describe('Bridge Route with Real Synapse Service', () => {
       amount: '1000',
     })
 
-    console.log(response.body.error)
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'fromToken')
   }, 10000)
@@ -69,7 +68,7 @@ describe('Bridge Route with Real Synapse Service', () => {
       fromToken: 'USDC',
       toToken: 'USDC',
     })
-    console.log(response.body.error)
+
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'amount')
   }, 10000)
