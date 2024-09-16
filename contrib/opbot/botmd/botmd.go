@@ -11,11 +11,14 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation/slackertrace"
+	"github.com/synapsecns/sanguine/core/metrics/logger"
+	experimentalLogger "github.com/synapsecns/sanguine/core/metrics/logger"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	cctpSql "github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -30,15 +33,20 @@ type Bot struct {
 	signer        signer.Signer
 	submitter     submitter.TransactionSubmitter
 	screener      screenerClient.ScreenerClient
+	logger        logger.ExperimentalLogger
 }
 
 // NewBot creates a new bot server.
 func NewBot(handler metrics.Handler, cfg config.Config) *Bot {
 	server := slacker.NewClient(cfg.SlackBotToken, cfg.SlackAppToken)
+
+	sugaredLogger := otelzap.New(experimentalLogger.MakeZapLogger()).Sugar()
+
 	bot := Bot{
 		handler: handler,
 		cfg:     cfg,
 		server:  server,
+		logger:  experimentalLogger.MakeWrappedSugaredLogger(sugaredLogger),
 	}
 
 	// you should be able to run opbot even without signoz.
