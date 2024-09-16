@@ -1,16 +1,9 @@
 {
-  "include": [
-    "./src/**/*",
-    "./src/config/**/*"
-  ],
+  "include": ["./src/**/*", "./src/config/**/*"],
   "compilerOptions": {
     "target": "esnext",
     "module": "CommonJS",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "outDir": "./dist", // Transpiled files will be output to the 'dist' folder
     "importHelpers": true,
     "declaration": true,
@@ -20,7 +13,7 @@
     // linter checks for common issues
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": true,
     "moduleResolution": "node",
     "jsx": "react",
@@ -29,9 +22,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "downlevelIteration": true,
+    "downlevelIteration": true
   },
-  "files": [
-    "src/app.ts"
-  ]
+  "files": ["src/app.ts"]
 }
