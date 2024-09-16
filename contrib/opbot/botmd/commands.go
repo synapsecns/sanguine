@@ -82,6 +82,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 			// search for the transaction
 			res, err := b.signozClient.SearchTraces(ctx.Context(), signoz.Last3Hr, searchMap)
 			if err != nil {
+				b.logger.Errorf(ctx.Context(), "error searching for the transaction: %v", err)
 				_, err := ctx.Response().Reply("error searching for the transaction")
 				if err != nil {
 					log.Println(err)
@@ -290,6 +291,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				}
 			}
 			if err != nil {
+				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				_, err := ctx.Response().Reply("error fetching quote request")
 				if err != nil {
 					log.Println(err)
@@ -338,19 +340,23 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			err = retry.WithBackoff(
 				ctx.Context(),
 				func(ctx context.Context) error {
-					txHash, err = relClient.GetTxHashByNonce(ctx, &relapi.GetTxByNonceRequest{
-						ChainID: rawRequest.OriginChainID,
-						Nonce:   nonce,
-					})
+					txHash, err = relClient.GetTxHashByNonce(
+						ctx,
+						&relapi.GetTxByNonceRequest{
+							ChainID: rawRequest.OriginChainID,
+							Nonce:   nonce,
+						})
 					if err != nil {
+						b.logger.Errorf(ctx, "error fetching quote request: %v", err)
 						return fmt.Errorf("error fetching quote request: %w", err)
 					}
 					return nil
 				},
-				retry.WithMaxAttempts(3),
-				retry.WithMaxAttemptTime(15*time.Second),
+				retry.WithMaxAttempts(5),
+				retry.WithMaxAttemptTime(30*time.Second),
 			)
 			if err != nil {
+				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				_, err := ctx.Response().Reply(fmt.Sprintf("error fetching explorer link to refund, but nonce is %d", nonce))
 				log.Printf("error fetching quote request: %v\n", err)
 				return

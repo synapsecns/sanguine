@@ -28,6 +28,7 @@ require (
 	github.com/synapsecns/sanguine/services/cctp-relayer v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/services/rfq v0.0.0-00010101000000-000000000000
+	github.com/uptrace/opentelemetry-go-extra/otelzap v0.3.1
 	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/sync v0.8.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -240,7 +241,6 @@ require (
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.3.1 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.3.1 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelutil v0.3.1 // indirect
-	github.com/uptrace/opentelemetry-go-extra/otelzap v0.3.1 // indirect
 	github.com/valyala/fastjson v1.6.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
