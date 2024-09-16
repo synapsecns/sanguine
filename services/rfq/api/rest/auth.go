@@ -20,7 +20,7 @@ import (
 // so that full auth header string: auth = strconv.Itoa(time.Now().Unix()) + ":" + signature
 // see: https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sign
 func EIP191Auth(c *gin.Context, deadline int64) (accountRecovered common.Address, err error) {
-	auth := c.Request.Header.Get("Authorization")
+	auth := c.Request.Header.Get(AuthorizationHeader)
 
 	// parse <timestamp>:<signature>
 	s := strings.Split(auth, ":")

@@ -43,6 +43,9 @@ type ServerSuite struct {
 	handler              metrics.Handler
 	QuoterAPIServer      *rest.QuoterAPIServer
 	port                 uint16
+	wsPort               uint16
+	originChainID        int
+	destChainID          int
 }
 
 // NewServerSuite creates a end-to-end test suite.
@@ -60,14 +63,19 @@ func (c *ServerSuite) SetupTest() {
 	omniRPCClient := omniClient.NewOmnirpcClient(testOmnirpc, c.handler, omniClient.WithCaptureReqRes())
 	c.omniRPCClient = omniRPCClient
 
-	arbFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(42161)
+	c.originChainID = 1
+	c.destChainID = 42161
+	arbFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(uint64(c.destChainID))
 	c.True(ok)
-	ethFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(1)
+	ethFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(uint64(c.originChainID))
 	c.True(ok)
 	port, err := freeport.GetFreePort()
 	c.port = uint16(port)
+	wsPort, err := freeport.GetFreePort()
+	c.wsPort = uint16(wsPort)
 	c.Require().NoError(err)
 
+	wsPortStr := fmt.Sprintf("%d", wsPort)
 	testConfig := config.Config{
 		Database: config.DatabaseConfig{
 			Type: "sqlite",
@@ -78,8 +86,9 @@ func (c *ServerSuite) SetupTest() {
 			1:     ethFastBridgeAddress.Hex(),
 			42161: arbFastBridgeAddress.Hex(),
 		},
-		Port:        fmt.Sprintf("%d", port),
-		MaxQuoteAge: 15 * time.Minute,
+		Port:          fmt.Sprintf("%d", port),
+		WebsocketPort: &wsPortStr,
+		MaxQuoteAge:   15 * time.Minute,
 	}
 	c.cfg = testConfig
 

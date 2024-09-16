@@ -28,8 +28,8 @@ type wsClient struct {
 func newWsClient(conn *websocket.Conn) *wsClient {
 	return &wsClient{
 		conn:         conn,
-		requestChan:  make(chan *model.RelayerWsQuoteRequest),
-		responseChan: make(chan *model.RelayerWsQuoteResponse),
+		requestChan:  make(chan *model.RelayerWsQuoteRequest, 1),
+		responseChan: make(chan *model.RelayerWsQuoteResponse, 1),
 		doneChan:     make(chan struct{}),
 	}
 }
@@ -45,15 +45,17 @@ func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.Rel
 }
 
 func (c *wsClient) ReceiveQuoteResponse(ctx context.Context) (resp *model.RelayerWsQuoteResponse, err error) {
-	select {
-	case resp = <-c.responseChan:
-		// successfuly received
-	case <-c.doneChan:
-		return nil, fmt.Errorf("websocket client is closed")
-	case <-ctx.Done():
-		return nil, fmt.Errorf("expiration reached without response")
+	for {
+		select {
+		case resp = <-c.responseChan:
+			// successfuly received
+			return resp, nil
+		case <-c.doneChan:
+			return nil, fmt.Errorf("websocket client is closed")
+		case <-ctx.Done():
+			return nil, fmt.Errorf("expiration reached without response")
+		}
 	}
-	return resp, nil
 }
 
 const (

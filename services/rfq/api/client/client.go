@@ -34,7 +34,7 @@ type AuthenticatedClient interface {
 	PutQuote(ctx context.Context, q *model.PutRelayerQuoteRequest) error
 	PutBulkQuotes(ctx context.Context, q *model.PutBulkQuotesRequest) error
 	PutRelayAck(ctx context.Context, req *model.PutAckRequest) (*model.PutRelayAckResponse, error)
-	SubscribeActiveQuotes(ctx context.Context, reqChan chan *model.ActiveRFQMessage) (respChan chan *model.ActiveRFQMessage, err error)
+	SubscribeActiveQuotes(ctx context.Context, req *model.SubscribeActiveRFQRequest, reqChan chan *model.ActiveRFQMessage) (respChan chan *model.ActiveRFQMessage, err error)
 	UnauthenticatedClient
 }
 
@@ -58,12 +58,14 @@ func (c unauthenticatedClient) resty() *resty.Client {
 
 type clientImpl struct {
 	UnauthenticatedClient
-	rClient *resty.Client
+	rClient   *resty.Client
+	wsURL     *string
+	reqSigner signer.Signer
 }
 
 // NewAuthenticatedClient creates a new client for the RFQ quoting API.
 // TODO: @aurelius,  you don't actually need to be authed for GET Requests.
-func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, reqSigner signer.Signer) (AuthenticatedClient, error) {
+func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, wsURL *string, reqSigner signer.Signer) (AuthenticatedClient, error) {
 	unauthedClient, err := NewUnauthenticatedClient(metrics, rfqURL)
 	if err != nil {
 		return nil, fmt.Errorf("could not create unauthenticated client: %w", err)
@@ -73,31 +75,39 @@ func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, reqSigner si
 	// to a new variable for clarity.
 	authedClient := unauthedClient.resty().
 		OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
-			// if request.Method == "PUT" && request.URL == rfqURL+rest.QUOTE_ROUTE {
-			// i.e. signature (hex encoded) = keccak(bytes.concat("\x19Ethereum Signed Message:\n", len(strconv.Itoa(time.Now().Unix()), strconv.Itoa(time.Now().Unix())))
-			// so that full auth header string: auth = strconv.Itoa(time.Now().Unix()) + ":" + signature
-			// Get the current Unix timestamp as a string.
-			now := strconv.Itoa(int(time.Now().Unix()))
-
-			// Prepare the data to be signed.
-			data := "\x19Ethereum Signed Message:\n" + strconv.Itoa(len(now)) + now
-
-			sig, err := reqSigner.SignMessage(request.Context(), []byte(data), true)
-
+			authHeader, err := getAuthHeader(request.Context(), reqSigner)
 			if err != nil {
-				return fmt.Errorf("failed to sign request: %w", err)
+				return fmt.Errorf("failed to get auth header: %w", err)
 			}
-
-			res := fmt.Sprintf("%s:%s", now, hexutil.Encode(signer.Encode(sig)))
-			request.SetHeader("Authorization", res)
-
+			request.SetHeader(rest.AuthorizationHeader, authHeader)
 			return nil
 		})
 
 	return &clientImpl{
 		UnauthenticatedClient: unauthedClient,
 		rClient:               authedClient,
+		wsURL:                 wsURL,
+		reqSigner:             reqSigner,
 	}, nil
+}
+
+func getAuthHeader(ctx context.Context, reqSigner signer.Signer) (string, error) {
+	// if request.Method == "PUT" && request.URL == rfqURL+rest.QUOTE_ROUTE {
+	// i.e. signature (hex encoded) = keccak(bytes.concat("\x19Ethereum Signed Message:\n", len(strconv.Itoa(time.Now().Unix()), strconv.Itoa(time.Now().Unix())))
+	// so that full auth header string: auth = strconv.Itoa(time.Now().Unix()) + ":" + signature
+	// Get the current Unix timestamp as a string.
+	now := strconv.Itoa(int(time.Now().Unix()))
+
+	// Prepare the data to be signed.
+	data := "\x19Ethereum Signed Message:\n" + strconv.Itoa(len(now)) + now
+
+	sig, err := reqSigner.SignMessage(ctx, []byte(data), true)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to sign request: %w", err)
+	}
+
+	return fmt.Sprintf("%s:%s", now, hexutil.Encode(signer.Encode(sig))), nil
 }
 
 // NewUnauthenticatedClient creates a new client for the RFQ quoting API.
@@ -167,14 +177,36 @@ func (c *clientImpl) PutRelayAck(ctx context.Context, req *model.PutAckRequest) 
 	return ack, nil
 }
 
-func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, reqChan chan *model.ActiveRFQMessage) (respChan chan *model.ActiveRFQMessage, err error) {
-	respChan = make(chan *model.ActiveRFQMessage)
+func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.SubscribeActiveRFQRequest, reqChan chan *model.ActiveRFQMessage) (respChan chan *model.ActiveRFQMessage, err error) {
+	if c.wsURL == nil {
+		return nil, fmt.Errorf("websocket URL is not set")
+	}
+	if len(req.ChainIDs) == 0 {
+		return nil, fmt.Errorf("chain IDs are required")
+	}
 
-	wsURL := fmt.Sprintf("ws://%s%s", c.rClient.HostURL, rest.QuoteRequestsRoute)
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	reqURL := *c.wsURL + rest.QuoteRequestsRoute
+	fmt.Printf("reqURL: %s\n", reqURL)
+
+	header := http.Header{}
+	chainIDsJSON, err := json.Marshal(req.ChainIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal chain IDs: %w", err)
+	}
+	header.Set(rest.ChainsHeader, string(chainIDsJSON))
+	authHeader, err := getAuthHeader(ctx, c.reqSigner)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get auth header: %w", err)
+	}
+	header.Set(rest.AuthorizationHeader, authHeader)
+
+	// Use the header when dialing
+	conn, _, err := websocket.DefaultDialer.Dial(reqURL, header)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
 	}
+
+	respChan = make(chan *model.ActiveRFQMessage)
 
 	go func() {
 		defer close(respChan)

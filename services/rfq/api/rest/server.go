@@ -3,6 +3,7 @@ package rest
 
 import (
 	"context"
+	"encoding/json"
 
 	"fmt"
 	"net/http"
@@ -65,6 +66,7 @@ type QuoterAPIServer struct {
 	latestQuoteAgeGauge metric.Float64ObservableGauge
 	// wsClients maintains a mapping of connection ID to a channel for sending quote requests.
 	wsClients *xsync.MapOf[string, WsClient]
+	wsServer  *http.Server
 }
 
 // NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -139,6 +141,24 @@ func NewAPI(
 		wsClients:           xsync.NewMapOf[WsClient](),
 	}
 
+	// Initialize WebSocket server if WebsocketPort is set
+	if cfg.WebsocketPort != nil {
+		wsEngine := gin.New()
+		wsEngine.Use(q.AuthMiddleware())
+		wsEngine.GET(QuoteRequestsRoute, func(c *gin.Context) {
+			q.GetActiveRFQWebsocket(ctx, c)
+		})
+		wsEngine.GET("", func(c *gin.Context) {
+			q.GetActiveRFQWebsocket(ctx, c)
+		})
+
+		wsPort := *cfg.WebsocketPort
+		q.wsServer = &http.Server{
+			Addr:    ":" + wsPort,
+			Handler: wsEngine,
+		}
+	}
+
 	// Prometheus metrics setup
 	var err error
 	q.latestQuoteAgeGauge, err = q.meter.Float64ObservableGauge("latest_quote_age")
@@ -167,7 +187,11 @@ const (
 	QuoteRequestsRoute = "/quote_requests"
 	// PutQuoteRequestRoute is the API endpoint for handling put quote requests.
 	PutQuoteRequestRoute = "/quote_request"
-	cacheInterval        = time.Minute
+	// ChainsHeader is the header for specifying chains during a websocket handshake
+	ChainsHeader = "Chains"
+	// AuthorizationHeader is the header for specifying the authorization
+	AuthorizationHeader = "Authorization"
+	cacheInterval       = time.Minute
 )
 
 var logger = log.Logger("rfq-api")
@@ -195,11 +219,6 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	ackPut := engine.Group(AckRoute)
 	ackPut.Use(r.AuthMiddleware())
 	ackPut.PUT("", r.PutRelayAck)
-	activeRFQGet := engine.Group(QuoteRequestsRoute)
-	activeRFQGet.Use(r.AuthMiddleware())
-	activeRFQGet.GET("", func(c *gin.Context) {
-		r.GetActiveRFQWebsocket(ctx, c)
-	})
 
 	// GET routes without the AuthMiddleware
 	engine.GET(QuoteRoute, h.GetQuotes)
@@ -217,8 +236,20 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 
 	r.engine = engine
 
+	// Start the main HTTP server
 	connection := baseServer.Server{}
 	fmt.Printf("starting api at http://localhost:%s\n", r.cfg.Port)
+
+	// Start WebSocket server if configured
+	if r.wsServer != nil {
+		fmt.Printf("starting websocket server at ws://localhost:%s\n", *r.cfg.WebsocketPort)
+		go func() {
+			if err := r.wsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				logger.Error("WebSocket server error", "error", err)
+			}
+		}()
+	}
+
 	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%s", r.cfg.Port), r.engine)
 	if err != nil {
 		return fmt.Errorf("could not start rest api server: %w", err)
@@ -258,6 +289,17 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 			if err == nil {
 				destChainIDs = append(destChainIDs, uint32(req.DestChainID))
 				loggedRequest = &req
+			}
+		case QuoteRequestsRoute:
+			chainsHeader := c.GetHeader(ChainsHeader)
+			if chainsHeader != "" {
+				var chainIDs []int
+				err = json.Unmarshal([]byte(chainsHeader), &chainIDs)
+				if err == nil {
+					for _, chainID := range chainIDs {
+						destChainIDs = append(destChainIDs, uint32(chainID))
+					}
+				}
 			}
 		default:
 			err = fmt.Errorf("unexpected request path: %s", c.Request.URL.Path)
@@ -399,11 +441,13 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 
 // GetActiveRFQWebsocket handles the WebSocket connection for active quote requests.
 func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Context) {
+	fmt.Printf("GetActiveRFQWebsocket\n")
 	ws, err := r.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		logger.Error("Failed to set websocket upgrade", "error", err)
 		return
 	}
+	fmt.Printf("GetActiveRFQWebsocket: after upgrader\n")
 
 	// use the relayer address as the ID for the connection
 	rawRelayerAddr, exists := c.Get("relayerAddr")
@@ -518,5 +562,16 @@ func (r *QuoterAPIServer) recordLatestQuoteAge(ctx context.Context, observer met
 		observer.ObserveFloat64(r.latestQuoteAgeGauge, age, opts)
 	}
 
+	return nil
+}
+
+// Shutdown gracefully shuts down the WebSocket server
+func (r *QuoterAPIServer) Shutdown(ctx context.Context) error {
+	if r.wsServer != nil {
+		if err := r.wsServer.Shutdown(ctx); err != nil {
+			return fmt.Errorf("WebSocket server shutdown error: %w", err)
+		}
+	}
+	// Add any other cleanup or shutdown logic here
 	return nil
 }

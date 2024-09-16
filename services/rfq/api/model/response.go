@@ -97,6 +97,13 @@ type RelayerWsQuoteRequest struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// SubscribeActiveRFQRequest represents a request to subscribe to active quotes
+// Note that this request is not actually bound to the request body, but rather the chain IDs
+// are encoded under the ChainsHeader.
+type SubscribeActiveRFQRequest struct {
+	ChainIDs []int `json:"chain_ids"`
+}
+
 // NewRelayerWsQuoteRequest creates a new RelayerWsQuoteRequest
 func NewRelayerWsQuoteRequest(data QuoteData) *RelayerWsQuoteRequest {
 	return &RelayerWsQuoteRequest{
