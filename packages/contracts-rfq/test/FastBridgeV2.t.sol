@@ -107,7 +107,7 @@ abstract contract FastBridgeV2Test is Test {
         });
     }
 
-    function getTxId(IFastBridge.BridgeTransaction memory bridgeTx) public returns (bytes32) {
+    function getTxId(IFastBridge.BridgeTransaction memory bridgeTx) public pure returns (bytes32) {
         return keccak256(abi.encode(bridgeTx));
     }
 
