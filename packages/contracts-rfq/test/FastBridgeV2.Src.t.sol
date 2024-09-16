@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import {
     DisputePeriodNotPassed,
     DisputePeriodPassed,
+    DeadlineNotExceeded,
     MsgValueIncorrect,
     SenderIncorrect,
     StatusIncorrect
@@ -33,7 +34,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
 
     event BridgeProofDisputed(bytes32 indexed transactionId, address indexed relayer);
 
+    event BridgeDepositRefunded(bytes32 indexed transactionId, address indexed to, address token, uint256 amount);
+
     uint256 public constant CLAIM_DELAY = 30 minutes;
+    uint256 public constant PERMISSIONLESS_REFUND_DELAY = 7 days;
 
     uint256 public constant LEFTOVER_BALANCE = 1 ether;
     uint256 public constant INITIAL_PROTOCOL_FEES_TOKEN = 456_789;
@@ -146,6 +150,16 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         vm.expectEmit(address(fastBridge));
         // Note: BridgeProofDisputed event has a mislabeled address parameter, this is actually the guard
         emit BridgeProofDisputed({transactionId: txId, relayer: guard});
+    }
+
+    function expectBridgeDepositRefunded(IFastBridge.BridgeParams memory bridgeParams, bytes32 txId) public {
+        vm.expectEmit(address(fastBridge));
+        emit BridgeDepositRefunded({
+            transactionId: txId,
+            to: bridgeParams.sender,
+            token: bridgeParams.originToken,
+            amount: bridgeParams.originAmount
+        });
     }
 
     function assertEq(FastBridgeV2.BridgeStatus a, FastBridgeV2.BridgeStatus b) public pure {
@@ -599,5 +613,166 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         refund({caller: refunder, bridgeTx: tokenTx});
         vm.expectRevert(StatusIncorrect.selector);
         dispute({caller: guard, txId: txId});
+    }
+
+    // ══════════════════════════════════════════════════ REFUND ═══════════════════════════════════════════════════════
+
+    function test_refund_token() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(DEADLINE + 1);
+        expectBridgeDepositRefunded({bridgeParams: tokenParams, txId: txId});
+        refund({caller: refunder, bridgeTx: tokenTx});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+        assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + tokenParams.originAmount);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    /// @notice Deposit should be refunded to the BridgeParams.sender, regardless of the actual caller
+    function test_refund_token_diffSender() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userB, msgValue: 0, params: tokenParams});
+        skip(DEADLINE + 1);
+        expectBridgeDepositRefunded({bridgeParams: tokenParams, txId: txId});
+        refund({caller: refunder, bridgeTx: tokenTx});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+        assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + 2 * tokenParams.originAmount);
+        assertEq(srcToken.balanceOf(userB), LEFTOVER_BALANCE);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    function test_refund_token_longDelay() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(DEADLINE + 30 days);
+        expectBridgeDepositRefunded({bridgeParams: tokenParams, txId: txId});
+        refund({caller: refunder, bridgeTx: tokenTx});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+        assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + tokenParams.originAmount);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    function test_refund_token_permisionless(address caller) public {
+        vm.assume(caller != refunder);
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(DEADLINE + PERMISSIONLESS_REFUND_DELAY + 1);
+        expectBridgeDepositRefunded({bridgeParams: tokenParams, txId: txId});
+        refund({caller: caller, bridgeTx: tokenTx});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+        assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + tokenParams.originAmount);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    function test_refund_eth() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        skip(DEADLINE + 1);
+        expectBridgeDepositRefunded({bridgeParams: ethParams, txId: txId});
+        refund({caller: refunder, bridgeTx: ethTx});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
+        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
+    }
+
+    /// @notice Deposit should be refunded to the BridgeParams.sender, regardless of the actual caller
+    function test_refund_eth_diffSender() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams});
+        skip(DEADLINE + 1);
+        expectBridgeDepositRefunded({bridgeParams: ethParams, txId: txId});
+        refund({caller: refunder, bridgeTx: ethTx});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
+        assertEq(address(userA).balance, LEFTOVER_BALANCE + 2 * ethParams.originAmount);
+        assertEq(address(userB).balance, LEFTOVER_BALANCE);
+        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
+    }
+
+    function test_refund_eth_longDelay() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        skip(DEADLINE + 30 days);
+        expectBridgeDepositRefunded({bridgeParams: ethParams, txId: txId});
+        refund({caller: refunder, bridgeTx: ethTx});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
+        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
+    }
+
+    function test_refund_eth_permisionless(address caller) public {
+        vm.assume(caller != refunder);
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        skip(DEADLINE + PERMISSIONLESS_REFUND_DELAY + 1);
+        expectBridgeDepositRefunded({bridgeParams: ethParams, txId: txId});
+        refund({caller: caller, bridgeTx: ethTx});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
+        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
+    }
+
+    function test_refund_revert_zeroDelay() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        vm.expectRevert(DeadlineNotExceeded.selector);
+        refund({caller: refunder, bridgeTx: ethTx});
+    }
+
+    function test_refund_revert_justBeforeDeadline() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(DEADLINE);
+        vm.expectRevert(DeadlineNotExceeded.selector);
+        refund({caller: refunder, bridgeTx: ethTx});
+    }
+
+    function test_refund_revert_justBeforeDeadline_permisionless(address caller) public {
+        vm.assume(caller != refunder);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(DEADLINE + PERMISSIONLESS_REFUND_DELAY);
+        vm.expectRevert(DeadlineNotExceeded.selector);
+        refund({caller: caller, bridgeTx: ethTx});
+    }
+
+    function test_refund_revert_statusNull() public {
+        vm.skip(true); // TODO: unskip when fixed
+        vm.expectRevert(StatusIncorrect.selector);
+        refund({caller: refunder, bridgeTx: ethTx});
+    }
+
+    function test_refund_revert_statusProven() public {
+        vm.skip(true); // TODO: unskip when fixed
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
+        vm.expectRevert(StatusIncorrect.selector);
+        refund({caller: refunder, bridgeTx: tokenTx});
+    }
+
+    function test_refund_revert_statusClaimed() public {
+        vm.skip(true); // TODO: unskip when fixed
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
+        skip(CLAIM_DELAY + 1);
+        claim({caller: relayerA, bridgeTx: tokenTx, to: relayerA});
+        vm.expectRevert(StatusIncorrect.selector);
+        refund({caller: refunder, bridgeTx: tokenTx});
+    }
+
+    function test_refund_revert_statusRefunded() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(DEADLINE + 1);
+        refund({caller: refunder, bridgeTx: tokenTx});
+        vm.expectRevert(StatusIncorrect.selector);
+        refund({caller: refunder, bridgeTx: tokenTx});
     }
 }
