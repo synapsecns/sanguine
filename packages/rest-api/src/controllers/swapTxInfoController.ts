@@ -10,7 +10,7 @@ export const swapTxInfoController = async (req, res) => {
   }
 
   try {
-    const { chain, amount } = req.query
+    const { chain, amount, address } = req.query
     const fromTokenInfo = res.locals.tokenInfo.fromToken
     const toTokenInfo = res.locals.tokenInfo.toToken
 
@@ -25,7 +25,7 @@ export const swapTxInfoController = async (req, res) => {
 
     const txInfo = await Synapse.swap(
       Number(chain),
-      fromTokenInfo.address,
+      address,
       toTokenInfo.address,
       amountInWei,
       quote.query
