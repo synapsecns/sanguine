@@ -11,7 +11,6 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation/slackertrace"
-	"github.com/synapsecns/sanguine/core/metrics/logger"
 	experimentalLogger "github.com/synapsecns/sanguine/core/metrics/logger"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -33,7 +32,7 @@ type Bot struct {
 	signer        signer.Signer
 	submitter     submitter.TransactionSubmitter
 	screener      screenerClient.ScreenerClient
-	logger        logger.ExperimentalLogger
+	logger        experimentalLogger.ExperimentalLogger
 }
 
 // NewBot creates a new bot server.
