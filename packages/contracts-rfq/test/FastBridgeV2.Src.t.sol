@@ -2,7 +2,11 @@
 pragma solidity ^0.8.20;
 
 import {
-    DisputePeriodNotPassed, MsgValueIncorrect, SenderIncorrect, StatusIncorrect
+    DisputePeriodNotPassed,
+    DisputePeriodPassed,
+    MsgValueIncorrect,
+    SenderIncorrect,
+    StatusIncorrect
 } from "../contracts/libs/Errors.sol";
 
 import {FastBridgeV2, FastBridgeV2Test, IFastBridge} from "./FastBridgeV2.t.sol";
@@ -26,6 +30,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     event BridgeDepositClaimed(
         bytes32 indexed transactionId, address indexed relayer, address indexed to, address token, uint256 amount
     );
+
+    event BridgeProofDisputed(bytes32 indexed transactionId, address indexed relayer);
 
     uint256 public constant CLAIM_DELAY = 30 minutes;
 
@@ -134,6 +140,12 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
             token: bridgeTx.originToken,
             amount: bridgeTx.originAmount
         });
+    }
+
+    function expectBridgeProofDisputed(bytes32 txId, address guard) public {
+        vm.expectEmit(address(fastBridge));
+        // Note: BridgeProofDisputed event has a mislabeled address parameter, this is actually the guard
+        emit BridgeProofDisputed({transactionId: txId, relayer: guard});
     }
 
     function assertEq(FastBridgeV2.BridgeStatus a, FastBridgeV2.BridgeStatus b) public pure {
@@ -487,5 +499,105 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         fastBridge.canClaim(txId, relayerA);
         vm.expectRevert(StatusIncorrect.selector);
         claim({caller: relayerA, bridgeTx: tokenTx, to: relayerA});
+    }
+
+    // ══════════════════════════════════════════════════ DISPUTE ══════════════════════════════════════════════════════
+
+    function test_dispute_token() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
+        expectBridgeProofDisputed({txId: txId, guard: guard});
+        dispute({caller: guard, txId: txId});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+    }
+
+    function test_dispute_token_justBeforeDeadline() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
+        skip(CLAIM_DELAY);
+        expectBridgeProofDisputed({txId: txId, guard: guard});
+        dispute({caller: guard, txId: txId});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+    }
+
+    function test_dispute_eth() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        prove({caller: relayerA, bridgeTx: ethTx, destTxHash: hex"01"});
+        expectBridgeProofDisputed({txId: txId, guard: guard});
+        dispute({caller: guard, txId: txId});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
+        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
+    }
+
+    function test_dispute_eth_justBeforeDeadline() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        prove({caller: relayerA, bridgeTx: ethTx, destTxHash: hex"01"});
+        skip(CLAIM_DELAY);
+        expectBridgeProofDisputed({txId: txId, guard: guard});
+        dispute({caller: guard, txId: txId});
+        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
+        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
+    }
+
+    function test_dispute_revert_afterDeadline() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
+        skip(CLAIM_DELAY + 1);
+        vm.expectRevert(DisputePeriodPassed.selector);
+        dispute({caller: guard, txId: txId});
+    }
+
+    function test_dispute_revert_callerNotGuard(address caller) public {
+        vm.assume(caller != guard);
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
+        expectUnauthorized(caller, fastBridge.GUARD_ROLE());
+        dispute({caller: caller, txId: txId});
+    }
+
+    function test_dispute_revert_statusNull() public {
+        bytes32 txId = getTxId(tokenTx);
+        vm.expectRevert(StatusIncorrect.selector);
+        dispute({caller: guard, txId: txId});
+    }
+
+    function test_dispute_revert_statusRequested() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        vm.expectRevert(StatusIncorrect.selector);
+        dispute({caller: guard, txId: txId});
+    }
+
+    function test_dispute_revert_statusClaimed() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
+        skip(CLAIM_DELAY + 1);
+        claim({caller: relayerA, bridgeTx: tokenTx, to: relayerA});
+        vm.expectRevert(StatusIncorrect.selector);
+        dispute({caller: guard, txId: txId});
+    }
+
+    function test_dispute_revert_statusRefunded() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(DEADLINE + 1);
+        refund({caller: refunder, bridgeTx: tokenTx});
+        vm.expectRevert(StatusIncorrect.selector);
+        dispute({caller: guard, txId: txId});
     }
 }
