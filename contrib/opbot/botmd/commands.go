@@ -24,6 +24,7 @@ import (
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
 	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/submitter"
 	rfqClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
@@ -336,17 +337,12 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			var txHash *relapi.TxHashByNonceResponse
+			var status submitter.SubmissionStatus
 			err = retry.WithBackoff(
 				ctx.Context(),
 				func(ctx context.Context) error {
-					txHash, err = relClient.GetTxHashByNonce(
-						ctx,
-						&relapi.GetTxByNonceRequest{
-							ChainID: rawRequest.OriginChainID,
-							Nonce:   nonce,
-						})
-					if err != nil {
+					status, err = b.submitter.GetSubmissionStatus(ctx, big.NewInt(int64(rawRequest.OriginChainID)), nonce)
+					if err != nil || !status.HasTx() {
 						b.logger.Errorf(ctx, "error fetching quote request: %v", err)
 						return fmt.Errorf("error fetching quote request: %w", err)
 					}
@@ -362,7 +358,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toExplorerSlackLink(txHash.Hash)))
+			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toExplorerSlackLink(status.TxHash().String())))
 			if err != nil {
 				log.Println(err)
 			}
