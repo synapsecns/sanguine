@@ -1,8 +1,8 @@
 import express from 'express'
 import { check } from 'express-validator'
+import { isAddress } from 'ethers/lib/utils'
 
 import { CHAINS_ARRAY } from '../constants/chains'
-import { validateTokens } from '../validations/validateTokens'
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { bridgeTxInfoController } from '../controllers/bridgeTxInfoController'
 
@@ -23,10 +23,22 @@ router.get(
       .withMessage('Unsupported toChain')
       .exists()
       .withMessage('toChain is required'),
-    validateTokens('fromChain', 'fromToken', 'fromToken'),
-    validateTokens('toChain', 'toToken', 'toToken'),
-    check('amount').isNumeric(),
-    check('destAddress').isString(),
+    check('fromToken')
+      .exists()
+      .withMessage('fromToken is required')
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid fromToken address'),
+    check('toToken')
+      .exists()
+      .withMessage('toToken is required')
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid toToken address'),
+    check('amount').isNumeric().exists().withMessage('amount is required'),
+    check('destAddress')
+      .exists()
+      .withMessage('destAddress is required')
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid destination address'),
   ],
   showFirstValidationError,
   bridgeTxInfoController

@@ -1,7 +1,7 @@
 import express from 'express'
 import { check } from 'express-validator'
+import { isAddress } from 'ethers/lib/utils'
 
-import { validateTokens } from '../validations/validateTokens'
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { swapController } from '../controllers/swapController'
 import { CHAINS_ARRAY } from '../constants/chains'
@@ -17,8 +17,16 @@ router.get(
       .withMessage('Unsupported chain')
       .exists()
       .withMessage('chain is required'),
-    validateTokens('chain', 'fromToken', 'fromToken'),
-    validateTokens('chain', 'toToken', 'toToken'),
+    check('fromToken')
+      .exists()
+      .withMessage('fromToken is required')
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid fromToken address'),
+    check('toToken')
+      .exists()
+      .withMessage('toToken is required')
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid toToken address'),
     check('amount').isNumeric().exists().withMessage('amount is required'),
   ],
   showFirstValidationError,

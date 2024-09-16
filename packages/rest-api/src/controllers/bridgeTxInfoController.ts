@@ -1,7 +1,9 @@
 import { validationResult } from 'express-validator'
 import { parseUnits } from '@ethersproject/units'
+import { isAddress } from 'ethers/lib/utils'
 
 import { Synapse } from '../services/synapseService'
+import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 
 export const bridgeTxInfoController = async (req, res) => {
   const errors = validationResult(req)
@@ -10,17 +12,28 @@ export const bridgeTxInfoController = async (req, res) => {
   }
 
   try {
-    const { fromChain, toChain, amount, destAddress } = req.query
-    const fromTokenInfo = res.locals.tokenInfo.fromToken
-    const toTokenInfo = res.locals.tokenInfo.toToken
+    const { fromChain, toChain, amount, destAddress, fromToken, toToken } = req.query
+
+    if (!isAddress(fromToken) || !isAddress(toToken)) {
+      return res.status(400).json({ error: 'Invalid token address' })
+    }
+
+    const fromTokenInfo = tokenAddressToToken(fromChain.toString(), fromToken)
+    const toTokenInfo = tokenAddressToToken(toChain.toString(), toToken)
+
+    if (!fromTokenInfo || !toTokenInfo) {
+      return res
+        .status(400)
+        .json({ error: 'Token not supported on specified chain' })
+    }
 
     const amountInWei = parseUnits(amount.toString(), fromTokenInfo.decimals)
 
     const quotes = await Synapse.allBridgeQuotes(
       Number(fromChain),
       Number(toChain),
-      fromTokenInfo.address,
-      toTokenInfo.address,
+      fromToken,
+      toToken,
       amountInWei
     )
 
@@ -31,7 +44,7 @@ export const bridgeTxInfoController = async (req, res) => {
           quote.routerAddress,
           Number(fromChain),
           Number(toChain),
-          fromTokenInfo.address,
+          fromToken,
           amountInWei,
           quote.originQuery,
           quote.destQuery
