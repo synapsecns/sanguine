@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { tokenListController } from '../controllers/tokensListController'
+import { tokenListController } from '../controllers/tokenListController'
 
 const router = express.Router()
 
