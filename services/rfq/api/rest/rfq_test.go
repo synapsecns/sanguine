@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/shopspring/decimal"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
+	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
@@ -206,5 +208,71 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		c.Assert().Equal("active", userQuoteResp.QuoteType)
 		c.Assert().Equal(destAmountStr, *userQuoteResp.Data.DestAmount)
 		c.Assert().Equal(originAmount, userQuoteResp.Data.OriginAmount)
+	})
+
+	c.Run("FallbackToPassive", func() {
+		userRequestAmount := big.NewInt(1_000_000)
+
+		// Upsert passive quotes into the database
+		passiveQuotes := []db.Quote{
+			{
+				RelayerAddr:     c.relayerWallets[0].Address().Hex(),
+				OriginChainID:   1,
+				OriginTokenAddr: "0x1111111111111111111111111111111111111111",
+				DestChainID:     2,
+				DestTokenAddr:   "0x2222222222222222222222222222222222222222",
+				DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(1000)), 0),
+				MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
+				FixedFee:        decimal.NewFromInt(1000),
+			},
+		}
+
+		for _, quote := range passiveQuotes {
+			err := c.database.UpsertQuote(c.GetTestContext(), &quote)
+			c.Require().NoError(err)
+		}
+
+		// Prepare user quote request with 0 expiration window
+		userQuoteReq := &model.PutUserQuoteRequest{
+			Data: model.QuoteData{
+				OriginChainID:    1,
+				OriginTokenAddr:  "0x1111111111111111111111111111111111111111",
+				DestChainID:      2,
+				DestTokenAddr:    "0x2222222222222222222222222222222222222222",
+				OriginAmount:     userRequestAmount.String(),
+				ExpirationWindow: 0,
+			},
+			QuoteTypes: []string{"active", "passive"},
+		}
+
+		// Prepare mock relayer response (which should be ignored due to 0 expiration window)
+		destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
+		quoteResp := &model.RelayerWsQuoteResponse{
+			Data: model.QuoteData{
+				OriginChainID:   userQuoteReq.Data.OriginChainID,
+				OriginTokenAddr: userQuoteReq.Data.OriginTokenAddr,
+				DestChainID:     userQuoteReq.Data.DestChainID,
+				DestTokenAddr:   userQuoteReq.Data.DestTokenAddr,
+				DestAmount:      &destAmount,
+				OriginAmount:    userQuoteReq.Data.OriginAmount,
+			},
+		}
+
+		respCtx, cancel := context.WithCancel(c.GetTestContext())
+		defer cancel()
+
+		// Run mock relayer even though we expect it to be ignored
+		runMockRelayer(respCtx, c.relayerWallets[0], quoteResp)
+
+		// Submit the user quote request
+		userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
+		c.Require().NoError(err)
+
+		// Assert the response
+		c.Assert().True(userQuoteResp.Success)
+		c.Assert().Equal("passive", userQuoteResp.QuoteType)
+		c.Assert().Equal("998000", *userQuoteResp.Data.DestAmount) // destAmount is quote destAmount minus fixed fee
+		c.Assert().Equal(userRequestAmount.String(), userQuoteResp.Data.OriginAmount)
+		c.Assert().Equal(c.relayerWallets[0].Address().Hex(), *userQuoteResp.Data.RelayerAddress)
 	})
 }
