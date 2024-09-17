@@ -6,6 +6,7 @@ import { getAddress } from '@ethersproject/address'
 
 import { Synapse } from '../services/synapseService'
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
+import { formatBNToString } from '../utils/formatBNToString'
 
 export const getBridgeLimitsController = async (req, res) => {
   const errors = validationResult(req)
@@ -72,7 +73,6 @@ export const getBridgeLimitsController = async (req, res) => {
     const bestUpperLimitSDKQuote = upperLimitBridgeQuotes[0]
 
     let maxOriginQuote
-
     const minBridgeFeeQuote = lowerLimitBridgeQuotes.reduce(
       (minQuote, currentQuote) => {
         const currentFeeAmount = currentQuote.feeAmount
@@ -104,9 +104,24 @@ export const getBridgeLimitsController = async (req, res) => {
       }
     }
 
+    const minQuoteOriginQueryTokenOutInfo = tokenAddressToToken(
+      fromChain,
+      getAddress(minBridgeFeeQuote.originQuery.tokenOut)
+    )
+
+    const minOriginValue = formatBNToString(
+      minBridgeFeeQuote.feeAmount,
+      minQuoteOriginQueryTokenOutInfo.decimals
+    )
+
+    const maxOriginAmount = formatBNToString(
+      maxOriginQuote.amount,
+      fromTokenInfo.decimals
+    )
+
     return res.json({
-      maxOriginAmount: maxOriginQuote.amount,
-      minOriginAmount: minBridgeFeeQuote.feeAmount,
+      maxOriginAmount,
+      minOriginValue,
     })
   } catch (err) {
     res.status(500).json({
