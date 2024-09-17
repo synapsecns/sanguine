@@ -9,6 +9,7 @@ import (
 
 	"github.com/shopspring/decimal"
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
 // Quote is the database model for a quote.
@@ -141,18 +142,35 @@ var _ dbcommon.Enum = (*ActiveQuoteResponseStatus)(nil)
 
 // ActiveQuoteRequest is the database model for an active quote request.
 type ActiveQuoteRequest struct {
-	RequestID        string                   `gorm:"column:request_id;primaryKey"`
-	UserAddress      string                   `gorm:"column:user_address"`
-	OriginChainID    uint64                   `gorm:"column:origin_chain_id"`
-	OriginTokenAddr  string                   `gorm:"column:origin_token"`
-	DestChainID      uint64                   `gorm:"column:dest_chain_id"`
-	DestTokenAddr    string                   `gorm:"column:dest_token"`
-	OriginAmount     decimal.Decimal          `gorm:"column:origin_amount"`
-	DestAmount       decimal.Decimal          `gorm:"column:dest_amount"`
-	ExpirationWindow time.Duration            `gorm:"column:expiration_window"`
-	CreatedAt        time.Time                `gorm:"column:created_at"`
-	Status           ActiveQuoteRequestStatus `gorm:"column:status"`
-	FulfilledAt      time.Time                `gorm:"column:fulfilled_at"`
+	RequestID         string                   `gorm:"column:request_id;primaryKey"`
+	UserAddress       string                   `gorm:"column:user_address"`
+	OriginChainID     uint64                   `gorm:"column:origin_chain_id"`
+	OriginTokenAddr   string                   `gorm:"column:origin_token"`
+	DestChainID       uint64                   `gorm:"column:dest_chain_id"`
+	DestTokenAddr     string                   `gorm:"column:dest_token"`
+	OriginAmount      decimal.Decimal          `gorm:"column:origin_amount"`
+	ExpirationWindow  time.Duration            `gorm:"column:expiration_window"`
+	CreatedAt         time.Time                `gorm:"column:created_at"`
+	Status            ActiveQuoteRequestStatus `gorm:"column:status"`
+	FulfilledAt       time.Time                `gorm:"column:fulfilled_at"`
+	FullfilledQuoteID string                   `gorm:"column:fullfilled_quote_id"`
+}
+
+// FromUserRequest converts a model.PutUserQuoteRequest to an ActiveQuoteRequest.
+func FromUserRequest(req *model.PutUserQuoteRequest, requestID string) *ActiveQuoteRequest {
+	originAmount, _ := decimal.NewFromString(req.Data.OriginAmount)
+	return &ActiveQuoteRequest{
+		RequestID:        requestID,
+		UserAddress:      req.UserAddress,
+		OriginChainID:    uint64(req.Data.OriginChainID),
+		OriginTokenAddr:  req.Data.OriginTokenAddr,
+		DestChainID:      uint64(req.Data.DestChainID),
+		DestTokenAddr:    req.Data.DestTokenAddr,
+		OriginAmount:     originAmount,
+		ExpirationWindow: time.Duration(req.Data.ExpirationWindow),
+		CreatedAt:        time.Now(),
+		Status:           Received,
+	}
 }
 
 // ActiveQuoteResponse is the database model for an active quote response.
@@ -168,6 +186,25 @@ type ActiveQuoteResponse struct {
 	RelayerAddr     string                    `gorm:"column:relayer_address"`
 	UpdatedAt       time.Time                 `gorm:"column:updated_at"`
 	Status          ActiveQuoteResponseStatus `gorm:"column:status"`
+}
+
+// FromRelayerResponse converts a model.RelayerWsQuoteResponse to an ActiveQuoteResponse.
+func FromRelayerResponse(resp *model.RelayerWsQuoteResponse) *ActiveQuoteResponse {
+	originAmount, _ := decimal.NewFromString(resp.Data.OriginAmount)
+	destAmount, _ := decimal.NewFromString(*resp.Data.DestAmount)
+	return &ActiveQuoteResponse{
+		RequestID:       resp.RequestID,
+		QuoteID:         resp.QuoteID,
+		OriginChainID:   uint64(resp.Data.OriginChainID),
+		OriginTokenAddr: resp.Data.OriginTokenAddr,
+		DestChainID:     uint64(resp.Data.DestChainID),
+		DestTokenAddr:   resp.Data.DestTokenAddr,
+		OriginAmount:    originAmount,
+		DestAmount:      destAmount,
+		RelayerAddr:     *resp.Data.RelayerAddress,
+		UpdatedAt:       resp.UpdatedAt,
+		Status:          Considered,
+	}
 }
 
 // APIDBReader is the interface for reading from the database.
@@ -191,11 +228,11 @@ type APIDBWriter interface {
 	// UpsertQuotes upserts multiple quotes in the database.
 	UpsertQuotes(ctx context.Context, quotes []*Quote) error
 	// InsertActiveQuoteRequest inserts an active quote request into the database.
-	InsertActiveQuoteRequest(ctx context.Context, req *ActiveQuoteRequest) error
+	InsertActiveQuoteRequest(ctx context.Context, req *model.PutUserQuoteRequest, requestID string) error
 	// UpdateActiveQuoteRequestStatus updates the status of an active quote request in the database.
 	UpdateActiveQuoteRequestStatus(ctx context.Context, requestID string, status ActiveQuoteRequestStatus) error
 	// InsertActiveQuoteResponse inserts an active quote response into the database.
-	InsertActiveQuoteResponse(ctx context.Context, resp *ActiveQuoteResponse) error
+	InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse) error
 	// UpdateActiveQuoteResponseStatus updates the status of an active quote response in the database.
 	UpdateActiveQuoteResponseStatus(ctx context.Context, requestID string, status ActiveQuoteResponseStatus) error
 }

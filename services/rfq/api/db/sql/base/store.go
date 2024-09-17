@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
+	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
 // GetQuotesByDestChainAndToken gets quotes from the database by destination chain and token.
@@ -79,8 +80,9 @@ func (s *Store) UpsertQuotes(ctx context.Context, quotes []*db.Quote) error {
 }
 
 // InsertActiveQuoteRequest inserts an active quote request into the database.
-func (s *Store) InsertActiveQuoteRequest(ctx context.Context, req *db.ActiveQuoteRequest) error {
-	result := s.db.WithContext(ctx).Create(req)
+func (s *Store) InsertActiveQuoteRequest(ctx context.Context, req *model.PutUserQuoteRequest, requestID string) error {
+	dbReq := db.FromUserRequest(req, requestID)
+	result := s.db.WithContext(ctx).Create(dbReq)
 	if result.Error != nil {
 		return fmt.Errorf("could not insert active quote request: %w", result.Error)
 	}
@@ -100,8 +102,9 @@ func (s *Store) UpdateActiveQuoteRequestStatus(ctx context.Context, requestID st
 }
 
 // InsertActiveQuoteResponse inserts an active quote response into the database.
-func (s *Store) InsertActiveQuoteResponse(ctx context.Context, resp *db.ActiveQuoteResponse) error {
-	result := s.db.WithContext(ctx).Create(resp)
+func (s *Store) InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse) error {
+	dbReq := db.FromRelayerResponse(resp)
+	result := s.db.WithContext(ctx).Create(dbReq)
 	if result.Error != nil {
 		return fmt.Errorf("could not insert active quote response: %w", result.Error)
 	}

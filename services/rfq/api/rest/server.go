@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ipfs/go-log"
 	"github.com/puzpuzpuz/xsync"
 	swaggerfiles "github.com/swaggo/files"
@@ -493,6 +494,12 @@ func (r *QuoterAPIServer) PutUserQuoteRequest(c *gin.Context) {
 		return
 	}
 
+	requestID := uuid.New().String()
+	err = r.db.InsertActiveQuoteRequest(c.Request.Context(), &req, requestID)
+	if err != nil {
+		logger.Warnf("Error inserting active quote request: %w", err)
+	}
+
 	var isActiveRFQ bool
 	for _, quoteType := range req.QuoteTypes {
 		if quoteType == quoteTypeActive {
@@ -504,7 +511,7 @@ func (r *QuoterAPIServer) PutUserQuoteRequest(c *gin.Context) {
 	// if specified, fetch the active quote. always consider passive quotes
 	var activeQuote *model.QuoteData
 	if isActiveRFQ {
-		activeQuote = r.handleActiveRFQ(c.Request.Context(), &req)
+		activeQuote = r.handleActiveRFQ(c.Request.Context(), &req, requestID)
 	}
 
 	passiveQuote, err := r.handlePassiveRFQ(c.Request.Context(), &req)

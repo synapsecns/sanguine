@@ -3,8 +3,6 @@ package model
 import (
 	"encoding/json"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // GetQuoteResponse contains the schema for a GET /quote response.
@@ -106,9 +104,9 @@ type SubscribeActiveRFQRequest struct {
 }
 
 // NewRelayerWsQuoteRequest creates a new RelayerWsQuoteRequest
-func NewRelayerWsQuoteRequest(data QuoteData) *RelayerWsQuoteRequest {
+func NewRelayerWsQuoteRequest(data QuoteData, requestID string) *RelayerWsQuoteRequest {
 	return &RelayerWsQuoteRequest{
-		RequestID: uuid.New().String(),
+		RequestID: requestID,
 		Data:      data,
 		CreatedAt: time.Now(),
 	}

@@ -162,6 +162,22 @@ func parseDBQuote(putRequest model.PutRelayerQuoteRequest, relayerAddr interface
 	}, nil
 }
 
+func quoteResponseFromDbQuote(dbQuote *db.Quote) *model.GetQuoteResponse {
+	return &model.GetQuoteResponse{
+		OriginChainID:           int(dbQuote.OriginChainID),
+		OriginTokenAddr:         dbQuote.OriginTokenAddr,
+		DestChainID:             int(dbQuote.DestChainID),
+		DestTokenAddr:           dbQuote.DestTokenAddr,
+		DestAmount:              dbQuote.DestAmount.String(),
+		MaxOriginAmount:         dbQuote.MaxOriginAmount.String(),
+		FixedFee:                dbQuote.FixedFee.String(),
+		RelayerAddr:             dbQuote.RelayerAddr,
+		OriginFastBridgeAddress: dbQuote.OriginFastBridgeAddress,
+		DestFastBridgeAddress:   dbQuote.DestFastBridgeAddress,
+		UpdatedAt:               dbQuote.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
 // GetQuotes retrieves all quotes from the database.
 // GET /quotes.
 // nolint: cyclop
@@ -229,7 +245,7 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 	// Convert quotes from db model to api model
 	quotes := make([]*model.GetQuoteResponse, len(dbQuotes))
 	for i, dbQuote := range dbQuotes {
-		quotes[i] = model.QuoteResponseFromDbQuote(dbQuote)
+		quotes[i] = quoteResponseFromDbQuote(dbQuote)
 	}
 	c.JSON(http.StatusOK, quotes)
 }

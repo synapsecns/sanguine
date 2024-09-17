@@ -28,11 +28,11 @@ func getBestQuote(a, b *model.QuoteData) *model.QuoteData {
 	return b
 }
 
-func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest) (quote *model.QuoteData) {
+func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest, requestID string) (quote *model.QuoteData) {
 	rfqCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond)
 
 	// publish the quote request to all connected clients
-	relayerReq := model.NewRelayerWsQuoteRequest(request.Data)
+	relayerReq := model.NewRelayerWsQuoteRequest(request.Data, requestID)
 	r.wsClients.Range(func(key string, client WsClient) bool {
 		client.SendQuoteRequest(rfqCtx, relayerReq)
 		return true
@@ -54,6 +54,10 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 			respMux.Lock()
 			responses[key] = resp
 			respMux.Unlock()
+			err = r.db.InsertActiveQuoteResponse(ctx, resp)
+			if err != nil {
+				logger.Errorf("Error inserting active quote response: %v", err)
+			}
 		}(client)
 		return true
 	})
