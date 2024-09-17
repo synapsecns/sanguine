@@ -40,51 +40,38 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 	respChan, err := relayerClient.SubscribeActiveQuotes(c.GetTestContext(), req, reqChan)
 	c.Require().NoError(err)
 
-	// Create a goroutine to handle incoming quote requests
-	userRequestAmount := big.NewInt(1_000_000)
-	originAmount := userRequestAmount.String()
-	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
-	respCtx, cancel := context.WithCancel(c.GetTestContext())
-	defer cancel()
-	go func() {
-		for {
-			select {
-			case <-respCtx.Done():
-				return
-			case msg := <-respChan:
-				if msg.Op == "request_quote" {
-					var quoteReq model.RelayerWsQuoteRequest
-					err := json.Unmarshal(msg.Content, &quoteReq)
-					if err != nil {
-						c.Error(fmt.Errorf("error unmarshalling quote request: %w", err))
-						continue
-					}
-					quoteResp := &model.RelayerWsQuoteResponse{
-						Data: model.QuoteData{
-							OriginChainID:   quoteReq.Data.OriginChainID,
-							OriginTokenAddr: quoteReq.Data.OriginTokenAddr,
-							DestChainID:     quoteReq.Data.DestChainID,
-							DestTokenAddr:   quoteReq.Data.DestTokenAddr,
-							DestAmount:      &destAmount,
-							OriginAmount:    originAmount,
-						},
-					}
-					rawRespData, err := json.Marshal(quoteResp)
-					if err != nil {
-						c.Error(fmt.Errorf("error marshalling quote response: %w", err))
-						continue
-					}
-					reqChan <- &model.ActiveRFQMessage{
-						Op:      "send_quote",
-						Content: json.RawMessage(rawRespData),
+	sendQuoteResponse := func(respCtx context.Context, quoteResp *model.RelayerWsQuoteResponse) {
+		go func() {
+			for {
+				select {
+				case <-respCtx.Done():
+					return
+				case msg := <-respChan:
+					if msg.Op == "request_quote" {
+						var quoteReq model.RelayerWsQuoteRequest
+						err := json.Unmarshal(msg.Content, &quoteReq)
+						if err != nil {
+							c.Error(fmt.Errorf("error unmarshalling quote request: %w", err))
+							continue
+						}
+						rawRespData, err := json.Marshal(quoteResp)
+						if err != nil {
+							c.Error(fmt.Errorf("error marshalling quote response: %w", err))
+							continue
+						}
+						reqChan <- &model.ActiveRFQMessage{
+							Op:      "send_quote",
+							Content: json.RawMessage(rawRespData),
+						}
 					}
 				}
 			}
-		}
-	}()
+		}()
+	}
 
-	c.Run("SingleRequest", func() {
+	c.Run("SingleRelayer", func() {
 		// Prepare a user quote request
+		userRequestAmount := big.NewInt(1_000_000)
 		userQuoteReq := &model.PutUserQuoteRequest{
 			Data: model.QuoteData{
 				OriginChainID:    1,
@@ -96,6 +83,23 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 			},
 			QuoteTypes: []string{"active"},
 		}
+
+		// Prepare the relayer quote response
+		originAmount := userRequestAmount.String()
+		destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
+		quoteResp := &model.RelayerWsQuoteResponse{
+			Data: model.QuoteData{
+				OriginChainID:   userQuoteReq.Data.OriginChainID,
+				OriginTokenAddr: userQuoteReq.Data.OriginTokenAddr,
+				DestChainID:     userQuoteReq.Data.DestChainID,
+				DestTokenAddr:   userQuoteReq.Data.DestTokenAddr,
+				DestAmount:      &destAmount,
+				OriginAmount:    originAmount,
+			},
+		}
+		respCtx, cancel := context.WithCancel(c.GetTestContext())
+		defer cancel()
+		sendQuoteResponse(respCtx, quoteResp)
 
 		// Submit the user quote request
 		userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
@@ -109,7 +113,8 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 	})
 
 	c.Run("ExpiredRequest", func() {
-		// Prepare a user quote request with 0 expiration window
+		// Prepare a user quote request
+		userRequestAmount := big.NewInt(1_000_000)
 		userQuoteReq := &model.PutUserQuoteRequest{
 			Data: model.QuoteData{
 				OriginChainID:    1,
@@ -122,6 +127,23 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 			QuoteTypes: []string{"active"},
 		}
 
+		// Prepare the relayer quote response
+		originAmount := userRequestAmount.String()
+		destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
+		quoteResp := &model.RelayerWsQuoteResponse{
+			Data: model.QuoteData{
+				OriginChainID:   userQuoteReq.Data.OriginChainID,
+				OriginTokenAddr: userQuoteReq.Data.OriginTokenAddr,
+				DestChainID:     userQuoteReq.Data.DestChainID,
+				DestTokenAddr:   userQuoteReq.Data.DestTokenAddr,
+				DestAmount:      &destAmount,
+				OriginAmount:    originAmount,
+			},
+		}
+		respCtx, cancel := context.WithCancel(c.GetTestContext())
+		defer cancel()
+		sendQuoteResponse(respCtx, quoteResp)
+
 		// Submit the user quote request
 		userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
 		c.Require().NoError(err)
@@ -129,5 +151,60 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		// Assert the response
 		c.Assert().False(userQuoteResp.Success)
 		c.Assert().Equal("no quotes found", userQuoteResp.Reason)
+	})
+
+	c.Run("MultipleRelayers", func() {
+		// Prepare a user quote request
+		userRequestAmount := big.NewInt(1_000_000)
+		userQuoteReq := &model.PutUserQuoteRequest{
+			Data: model.QuoteData{
+				OriginChainID:    1,
+				OriginTokenAddr:  "0x1111111111111111111111111111111111111111",
+				DestChainID:      2,
+				DestTokenAddr:    "0x2222222222222222222222222222222222222222",
+				OriginAmount:     userRequestAmount.String(),
+				ExpirationWindow: 5000,
+			},
+			QuoteTypes: []string{"active"},
+		}
+
+		// Prepare the relayer quote responses
+		originAmount := userRequestAmount.String()
+		destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000))
+		destAmountStr := destAmount.String()
+		quoteResp := model.RelayerWsQuoteResponse{
+			Data: model.QuoteData{
+				OriginChainID:   userQuoteReq.Data.OriginChainID,
+				OriginTokenAddr: userQuoteReq.Data.OriginTokenAddr,
+				DestChainID:     userQuoteReq.Data.DestChainID,
+				DestTokenAddr:   userQuoteReq.Data.DestTokenAddr,
+				DestAmount:      &destAmountStr,
+				OriginAmount:    originAmount,
+			},
+		}
+		respCtx, cancel := context.WithCancel(c.GetTestContext())
+		defer cancel()
+		sendQuoteResponse(respCtx, &quoteResp)
+
+		// Send additional responses with worse prices
+		quoteResp2 := quoteResp
+		destAmount2 := new(big.Int).Sub(destAmount, big.NewInt(1000)).String()
+		quoteResp2.Data.DestAmount = &destAmount2
+		sendQuoteResponse(respCtx, &quoteResp2)
+
+		quoteResp3 := quoteResp
+		destAmount3 := new(big.Int).Sub(destAmount, big.NewInt(2000)).String()
+		quoteResp3.Data.DestAmount = &destAmount3
+		sendQuoteResponse(respCtx, &quoteResp3)
+
+		// Submit the user quote request
+		userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
+		c.Require().NoError(err)
+
+		// Assert the response
+		c.Assert().True(userQuoteResp.Success)
+		c.Assert().Equal("active", userQuoteResp.QuoteType)
+		c.Assert().Equal(destAmountStr, *userQuoteResp.Data.DestAmount)
+		c.Assert().Equal(originAmount, userQuoteResp.Data.OriginAmount)
 	})
 }
