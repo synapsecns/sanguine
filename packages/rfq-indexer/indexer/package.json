@@ -12,7 +12,10 @@
     "lint": "eslint .",
     "ci:lint": "eslint .",
     "typecheck": "tsc",
-    "test:coverage": "echo 'No tests defined.'"
+    "test:coverage": "echo 'No tests defined.'",
+    "build:go": " ",
+    "build": " ",
+    "build:slither": " "
   },
   "author": "",
   "license": "ISC",
