@@ -31,7 +31,7 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 
 	runMockRelayer := func(respCtx context.Context, relayerWallet wallet.Wallet, quoteResp *model.RelayerWsQuoteResponse) {
 		// Create a relayer client
-		relayerSigner := localsigner.NewSigner(c.testWallet.PrivateKey())
+		relayerSigner := localsigner.NewSigner(relayerWallet.PrivateKey())
 		relayerClient, err := client.NewAuthenticatedClient(metrics.Get(), url, &wsURL, relayerSigner)
 		c.Require().NoError(err)
 
@@ -189,11 +189,13 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 
 		// Create additional responses with worse prices
 		quoteResp2 := quoteResp
-		destAmount2 := new(big.Int).Sub(destAmount, big.NewInt(1000)).String()
-		quoteResp2.Data.DestAmount = &destAmount2
+		destAmount2 := new(big.Int).Sub(userRequestAmount, big.NewInt(2000))
+		destAmount2Str := destAmount2.String()
+		quoteResp2.Data.DestAmount = &destAmount2Str
 		quoteResp3 := quoteResp
-		destAmount3 := new(big.Int).Sub(destAmount, big.NewInt(2000)).String()
-		quoteResp3.Data.DestAmount = &destAmount3
+		destAmount3 := new(big.Int).Sub(userRequestAmount, big.NewInt(3000))
+		destAmount3Str := destAmount3.String()
+		quoteResp3.Data.DestAmount = &destAmount3Str
 
 		runMockRelayer(respCtx, c.relayerWallets[0], &quoteResp)
 		runMockRelayer(respCtx, c.relayerWallets[1], &quoteResp2)
