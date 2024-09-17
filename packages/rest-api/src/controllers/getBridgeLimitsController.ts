@@ -1,5 +1,5 @@
-import { validationResult } from 'express-validator'
 import axios from 'axios'
+import { validationResult } from 'express-validator'
 import { BigNumber } from 'ethers'
 import { parseUnits } from '@ethersproject/units'
 import { getAddress } from '@ethersproject/address'
@@ -36,9 +36,9 @@ export const getBridgeLimitsController = async (req, res) => {
         .filter(
           (quote) =>
             Number(quote.origin_chain_id) === Number(fromChain) &&
+            Number(quote.dest_chain_id) === Number(toChain) &&
             getAddress(quote.origin_token_addr) ===
               getAddress(fromTokenInfo.address) &&
-            Number(quote.dest_chain_id) === Number(toChain) &&
             getAddress(quote.dest_token_addr) ===
               getAddress(toTokenInfo.address)
         )
@@ -59,13 +59,6 @@ export const getBridgeLimitsController = async (req, res) => {
       upperLimitAmount
     )
 
-    if (
-      !Array.isArray(upperLimitBridgeQuotes) ||
-      upperLimitBridgeQuotes.length === 0
-    ) {
-      return res.status(404).json({ error: 'No bridge quotes found' })
-    }
-
     const lowerLimitAmount = parseUnits('100', fromTokenInfo.decimals)
     const lowerLimitBridgeQuotes = await Synapse.allBridgeQuotes(
       Number(fromChain),
@@ -75,7 +68,7 @@ export const getBridgeLimitsController = async (req, res) => {
       lowerLimitAmount
     )
 
-    const bestSDKQuote = upperLimitBridgeQuotes[0]
+    const bestUpperLimitSDKQuote = upperLimitBridgeQuotes[0]
 
     let maxOriginQuote
 
@@ -95,25 +88,22 @@ export const getBridgeLimitsController = async (req, res) => {
       const bestRfqQuoteMaxAmountBN = BigNumber.from(
         bestRfqQuote.max_origin_amount
       )
-      maxOriginQuote = bestRfqQuoteMaxAmountBN.gt(bestSDKQuote.maxAmountOut)
+      maxOriginQuote = bestRfqQuoteMaxAmountBN.gt(
+        bestUpperLimitSDKQuote.maxAmountOut
+      )
         ? { source: 'RFQ', amount: bestRfqQuoteMaxAmountBN }
         : {
-            source: bestSDKQuote.bridgeModuleName,
-            amount: bestSDKQuote.maxAmountOut,
+            source: bestUpperLimitSDKQuote.bridgeModuleName,
+            amount: bestUpperLimitSDKQuote.maxAmountOut,
           }
     } else {
-      // If no RFQ quote, simply use the SDK quote
       maxOriginQuote = {
-        source: bestSDKQuote.bridgeModuleName,
-        amount: bestSDKQuote.maxAmountOut,
+        source: bestUpperLimitSDKQuote.bridgeModuleName,
+        amount: bestUpperLimitSDKQuote.maxAmountOut,
       }
     }
 
     return res.json({
-      rfqBestQuote: bestRfqQuote,
-      sdkBestQuote: bestSDKQuote,
-      maxOriginQuote,
-      minBridgeFeeQuote,
       maxOriginAmount: maxOriginQuote.amount,
       minOriginAmount: minBridgeFeeQuote.feeAmount,
     })
