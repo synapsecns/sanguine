@@ -39,7 +39,7 @@ export const swapTxInfoController = async (req, res) => {
     const txInfo = await Synapse.swap(
       Number(chain),
       address,
-      toToken,
+      fromToken,
       amountInWei,
       quote.query
     )
