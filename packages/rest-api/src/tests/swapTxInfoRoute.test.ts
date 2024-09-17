@@ -30,7 +30,10 @@ describe('Swap TX Info Route with Real Synapse Service', () => {
       address: 'invalid_address',
     })
     expect(response.status).toBe(400)
-    expect(response.body.error).toHaveProperty('message', 'Invalid Ethereum address')
+    expect(response.body.error).toHaveProperty(
+      'message',
+      'Invalid Ethereum address'
+    )
   }, 10_000)
 
   it('should return 400 for unsupported chain, with error message', async () => {

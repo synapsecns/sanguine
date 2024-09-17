@@ -12,7 +12,8 @@ export const bridgeTxInfoController = async (req, res) => {
   }
 
   try {
-    const { fromChain, toChain, amount, destAddress, fromToken, toToken } = req.query
+    const { fromChain, toChain, amount, destAddress, fromToken, toToken } =
+      req.query
 
     if (!isAddress(fromToken) || !isAddress(toToken)) {
       return res.status(400).json({ error: 'Invalid token address' })
