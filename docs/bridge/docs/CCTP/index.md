@@ -1,3 +1,5 @@
+# Overview
+
 Synapse CCTP is a custom module built on top of Circle's [Cross-Chain Transfer Protocol](https://www.circle.com/en/cross-chain-transfer-protocol) that allows for bridge requests to natively mint & burn USDC on [supported chains](https://developers.circle.com/stablecoins/docs/cctp-getting-started#supported-blockchains).
 
 Synapse's CCTP implementation consists of two main components:

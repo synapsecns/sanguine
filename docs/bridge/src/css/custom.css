@@ -6,25 +6,53 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-color-primary: hsl(285deg 100% 35%);
+  --ifm-color-primary-dark: hsl(285deg 100% 32%);
+  --ifm-color-primary-darker: hsl(285deg 100% 30%);
+  --ifm-color-primary-darkest: hsl(285deg 100% 25%);
+  --ifm-color-primary-light: hsl(285deg 100% 39%);
+  --ifm-color-primary-lighter: hsl(285deg 100% 40%);
+  --ifm-color-primary-lightest: hsl(285deg 100% 46%);
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+
+  --synapse-green: hsl(135deg 50% 90%);
+  --synapse-green-secondary: hsl(135deg 50% 80%);
+
+  letter-spacing: .0125em;
+  line-height: 1.7;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
+  --ifm-color-primary: hsl(285deg 100% 80%);
+  --ifm-color-primary-dark: hsl(285deg 100% 41%);
+  --ifm-color-primary-darker: hsl(285deg 100% 38%);
+  --ifm-color-primary-darkest: hsl(285deg 100% 32%);
+  --ifm-color-primary-light: hsl(285deg 100% 50%);
+  --ifm-color-primary-lighter: hsl(285deg 100% 52%);
+  --ifm-color-primary-lightest: hsl(285deg 100% 59%);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+
+  --synapse-green: hsl(165deg 50% 10%);
+  --synapse-green-secondary: hsl(165deg 50% 20%);
+
+  background: hsl(240deg 25% 7.5%);
+}
+
+h1 { font-weight: 400 }
+h2 {
+  font-weight: 600;
+  border-top: 1px solid hsl(285deg 20% 50% / 20%);
+  margin-top: 1.5em;
+  padding-top: 1em;
+}
+h3 { font-size: 1.2rem }
+
+ol, ul { margin-bottom: 1.5em }
+ol a, ul a { font-weight: 500 }
+
+.theme-admonition-tip {
+  background: var(--synapse-green);
+  border-color: var(--synapse-green-secondary);
 }
