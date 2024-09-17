@@ -441,13 +441,11 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 
 // GetActiveRFQWebsocket handles the WebSocket connection for active quote requests.
 func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Context) {
-	fmt.Printf("GetActiveRFQWebsocket\n")
 	ws, err := r.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		logger.Error("Failed to set websocket upgrade", "error", err)
 		return
 	}
-	fmt.Printf("GetActiveRFQWebsocket: after upgrader\n")
 
 	// use the relayer address as the ID for the connection
 	rawRelayerAddr, exists := c.Get("relayerAddr")

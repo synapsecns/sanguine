@@ -41,7 +41,6 @@ func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.Rel
 	case <-c.doneChan:
 		return fmt.Errorf("websocket client is closed")
 	}
-	fmt.Println("successfully sent quote request")
 	return nil
 }
 
@@ -89,7 +88,6 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			close(c.doneChan)
 			return nil
 		case data := <-c.requestChan:
-			fmt.Println("processing quote request")
 			rawData, err := json.Marshal(data)
 			if err != nil {
 				logger.Error("Error marshalling quote request: %s", err)
@@ -99,11 +97,8 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 				Op:      requestQuoteOp,
 				Content: json.RawMessage(rawData),
 			}
-			fmt.Println("writing quote request")
 			c.conn.WriteJSON(msg)
-			fmt.Println("wrote quote request")
 		case msg := <-messageChan:
-			fmt.Println("got msg from internal chan")
 			var rfqMsg model.ActiveRFQMessage
 			err = json.Unmarshal(msg, &rfqMsg)
 			if err != nil {
@@ -120,7 +115,6 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 					logger.Error("Unexpected websocket message content for send_quote", "content", rfqMsg.Content)
 					continue
 				}
-				fmt.Printf("sending quote response with dest amount: %s\n", *resp.Data.DestAmount)
 				c.responseChan <- &resp
 			case pongOp:
 				// TODO: keep connection alive
