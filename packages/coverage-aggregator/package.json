@@ -41,5 +41,10 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine",
+    "directory": "packages/coverage-aggregator"
   }
 }

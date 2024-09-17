@@ -34,7 +34,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/synapsecns/sanguine.git"
+    "url": "git+https://github.com/synapsecns/sanguine",
+    "directory": "packages/contracts-core"
   },
   "dependencies": {
     "@nodelib/fs.walk": "1.2.8",

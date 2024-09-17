@@ -16,6 +16,11 @@
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.6"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine",
+    "directory": "packages/contracts-rfq"
+  },
   "scripts": {
     "build": " ",
     "build:contracts": "forge build",

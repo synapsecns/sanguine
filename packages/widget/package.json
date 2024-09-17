@@ -14,7 +14,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/synapsecns/sanguine.git"
+    "url": "git+https://github.com/synapsecns/sanguine",
+    "directory": "packages/widget"
   },
   "homepage": "https://github.com/synapsecns/sanguine/blob/master/packages/widget/README.md",
   "scripts": {

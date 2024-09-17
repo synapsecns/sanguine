@@ -6,6 +6,11 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "typings": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine",
+    "directory": "packages/synapse-constants"
+  },
   "files": [
     "dist"
   ],

@@ -5,7 +5,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/synapsecns/sanguine.git"
+    "url": "git+https://github.com/synapsecns/sanguine",
+    "directory": "packages/solidity-devops"
   },
   "publishConfig": {
     "access": "public"
