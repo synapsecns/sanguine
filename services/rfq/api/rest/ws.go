@@ -76,7 +76,7 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			_, msg, err := c.conn.ReadMessage()
 			if err != nil {
 				logger.Error("Error reading websocket message: %s", err)
-				continue
+				return
 			}
 			messageChan <- msg
 		}
