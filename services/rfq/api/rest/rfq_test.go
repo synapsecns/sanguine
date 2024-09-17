@@ -29,6 +29,12 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
 	c.Require().NoError(err)
 
+	// Common variables
+	originChainID := 1
+	originTokenAddr := "0x1111111111111111111111111111111111111111"
+	destChainID := 2
+	destTokenAddr := "0x2222222222222222222222222222222222222222"
+
 	runMockRelayer := func(respCtx context.Context, relayerWallet wallet.Wallet, quoteResp *model.RelayerWsQuoteResponse) {
 		// Create a relayer client
 		relayerSigner := localsigner.NewSigner(relayerWallet.PrivateKey())
@@ -76,12 +82,12 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		userRequestAmount := big.NewInt(1_000_000)
 		userQuoteReq := &model.PutUserQuoteRequest{
 			Data: model.QuoteData{
-				OriginChainID:    1,
-				OriginTokenAddr:  "0x1111111111111111111111111111111111111111",
-				DestChainID:      2,
-				DestTokenAddr:    "0x2222222222222222222222222222222222222222",
+				OriginChainID:    originChainID,
+				OriginTokenAddr:  originTokenAddr,
+				DestChainID:      destChainID,
+				DestTokenAddr:    destTokenAddr,
 				OriginAmount:     userRequestAmount.String(),
-				ExpirationWindow: 5000,
+				ExpirationWindow: 10_000,
 			},
 			QuoteTypes: []string{"active"},
 		}
@@ -91,10 +97,10 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 		quoteResp := &model.RelayerWsQuoteResponse{
 			Data: model.QuoteData{
-				OriginChainID:   userQuoteReq.Data.OriginChainID,
-				OriginTokenAddr: userQuoteReq.Data.OriginTokenAddr,
-				DestChainID:     userQuoteReq.Data.DestChainID,
-				DestTokenAddr:   userQuoteReq.Data.DestTokenAddr,
+				OriginChainID:   originChainID,
+				OriginTokenAddr: originTokenAddr,
+				DestChainID:     destChainID,
+				DestTokenAddr:   destTokenAddr,
 				DestAmount:      &destAmount,
 				OriginAmount:    originAmount,
 			},
@@ -119,10 +125,10 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		userRequestAmount := big.NewInt(1_000_000)
 		userQuoteReq := &model.PutUserQuoteRequest{
 			Data: model.QuoteData{
-				OriginChainID:    1,
-				OriginTokenAddr:  "0x1111111111111111111111111111111111111111",
-				DestChainID:      2,
-				DestTokenAddr:    "0x2222222222222222222222222222222222222222",
+				OriginChainID:    originChainID,
+				OriginTokenAddr:  originTokenAddr,
+				DestChainID:      destChainID,
+				DestTokenAddr:    destTokenAddr,
 				OriginAmount:     userRequestAmount.String(),
 				ExpirationWindow: 0,
 			},
@@ -134,10 +140,10 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 		quoteResp := &model.RelayerWsQuoteResponse{
 			Data: model.QuoteData{
-				OriginChainID:   userQuoteReq.Data.OriginChainID,
-				OriginTokenAddr: userQuoteReq.Data.OriginTokenAddr,
-				DestChainID:     userQuoteReq.Data.DestChainID,
-				DestTokenAddr:   userQuoteReq.Data.DestTokenAddr,
+				OriginChainID:   originChainID,
+				OriginTokenAddr: originTokenAddr,
+				DestChainID:     destChainID,
+				DestTokenAddr:   destTokenAddr,
 				DestAmount:      &destAmount,
 				OriginAmount:    originAmount,
 			},
@@ -160,12 +166,12 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		userRequestAmount := big.NewInt(1_000_000)
 		userQuoteReq := &model.PutUserQuoteRequest{
 			Data: model.QuoteData{
-				OriginChainID:    1,
-				OriginTokenAddr:  "0x1111111111111111111111111111111111111111",
-				DestChainID:      2,
-				DestTokenAddr:    "0x2222222222222222222222222222222222222222",
+				OriginChainID:    originChainID,
+				OriginTokenAddr:  originTokenAddr,
+				DestChainID:      destChainID,
+				DestTokenAddr:    destTokenAddr,
 				OriginAmount:     userRequestAmount.String(),
-				ExpirationWindow: 5000,
+				ExpirationWindow: 10_000,
 			},
 			QuoteTypes: []string{"active"},
 		}
@@ -176,10 +182,10 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		destAmountStr := destAmount.String()
 		quoteResp := model.RelayerWsQuoteResponse{
 			Data: model.QuoteData{
-				OriginChainID:   userQuoteReq.Data.OriginChainID,
-				OriginTokenAddr: userQuoteReq.Data.OriginTokenAddr,
-				DestChainID:     userQuoteReq.Data.DestChainID,
-				DestTokenAddr:   userQuoteReq.Data.DestTokenAddr,
+				OriginChainID:   originChainID,
+				OriginTokenAddr: originTokenAddr,
+				DestChainID:     destChainID,
+				DestTokenAddr:   destTokenAddr,
 				DestAmount:      &destAmountStr,
 				OriginAmount:    originAmount,
 			},
@@ -219,10 +225,10 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		passiveQuotes := []db.Quote{
 			{
 				RelayerAddr:     c.relayerWallets[0].Address().Hex(),
-				OriginChainID:   1,
-				OriginTokenAddr: "0x1111111111111111111111111111111111111111",
-				DestChainID:     2,
-				DestTokenAddr:   "0x2222222222222222222222222222222222222222",
+				OriginChainID:   uint64(originChainID),
+				OriginTokenAddr: originTokenAddr,
+				DestChainID:     uint64(destChainID),
+				DestTokenAddr:   destTokenAddr,
 				DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(1000)), 0),
 				MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
 				FixedFee:        decimal.NewFromInt(1000),
@@ -237,10 +243,10 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		// Prepare user quote request with 0 expiration window
 		userQuoteReq := &model.PutUserQuoteRequest{
 			Data: model.QuoteData{
-				OriginChainID:    1,
-				OriginTokenAddr:  "0x1111111111111111111111111111111111111111",
-				DestChainID:      2,
-				DestTokenAddr:    "0x2222222222222222222222222222222222222222",
+				OriginChainID:    originChainID,
+				OriginTokenAddr:  originTokenAddr,
+				DestChainID:      destChainID,
+				DestTokenAddr:    destTokenAddr,
 				OriginAmount:     userRequestAmount.String(),
 				ExpirationWindow: 0,
 			},
@@ -251,10 +257,10 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 		quoteResp := &model.RelayerWsQuoteResponse{
 			Data: model.QuoteData{
-				OriginChainID:   userQuoteReq.Data.OriginChainID,
-				OriginTokenAddr: userQuoteReq.Data.OriginTokenAddr,
-				DestChainID:     userQuoteReq.Data.DestChainID,
-				DestTokenAddr:   userQuoteReq.Data.DestTokenAddr,
+				OriginChainID:   originChainID,
+				OriginTokenAddr: originTokenAddr,
+				DestChainID:     destChainID,
+				DestTokenAddr:   destTokenAddr,
 				DestAmount:      &destAmount,
 				OriginAmount:    userQuoteReq.Data.OriginAmount,
 			},
