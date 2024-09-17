@@ -15,8 +15,7 @@
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "test": "jest",
-    "test:coverage": "echo 'No tests defined.'",
-    "postinstall": "npm run build"
+    "test:coverage": "echo 'No tests defined.'"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
