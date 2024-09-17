@@ -77,3 +77,60 @@ func (s *Store) UpsertQuotes(ctx context.Context, quotes []*db.Quote) error {
 	}
 	return nil
 }
+
+// InsertActiveQuoteRequest inserts an active quote request into the database.
+func (s *Store) InsertActiveQuoteRequest(ctx context.Context, req *db.ActiveQuoteRequest) error {
+	result := s.db.WithContext(ctx).Create(req)
+	if result.Error != nil {
+		return fmt.Errorf("could not insert active quote request: %w", result.Error)
+	}
+	return nil
+}
+
+// UpdateActiveQuoteRequestStatus updates the status of an active quote request in the database.
+func (s *Store) UpdateActiveQuoteRequestStatus(ctx context.Context, requestID string, status db.ActiveQuoteRequestStatus) error {
+	result := s.db.WithContext(ctx).
+		Model(&db.ActiveQuoteRequest{}).
+		Where("request_id = ?", requestID).
+		Update("status", status)
+	if result.Error != nil {
+		return fmt.Errorf("could not update active quote request status: %w", result.Error)
+	}
+	return nil
+}
+
+// InsertActiveQuoteResponse inserts an active quote response into the database.
+func (s *Store) InsertActiveQuoteResponse(ctx context.Context, resp *db.ActiveQuoteResponse) error {
+	result := s.db.WithContext(ctx).Create(resp)
+	if result.Error != nil {
+		return fmt.Errorf("could not insert active quote response: %w", result.Error)
+	}
+	return nil
+}
+
+// UpdateActiveQuoteResponseStatus updates the status of an active quote response in the database.
+func (s *Store) UpdateActiveQuoteResponseStatus(ctx context.Context, requestID string, status db.ActiveQuoteResponseStatus) error {
+	result := s.db.WithContext(ctx).
+		Model(&db.ActiveQuoteResponse{}).
+		Where("request_id = ?", requestID).
+		Update("status", status)
+	if result.Error != nil {
+		return fmt.Errorf("could not update active quote response status: %w", result.Error)
+	}
+	return nil
+}
+
+// GetActiveQuoteRequests gets active quote requests from the database.
+func (s *Store) GetActiveQuoteRequests(ctx context.Context, matchStatuses ...db.ActiveQuoteRequestStatus) ([]*db.ActiveQuoteRequest, error) {
+	var requests []*db.ActiveQuoteRequest
+
+	query := s.db.WithContext(ctx).Model(&db.ActiveQuoteRequest{})
+	if len(matchStatuses) > 0 {
+		query = query.Where("status IN ?", matchStatuses)
+	}
+	result := query.Find(&requests)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return requests, nil
+}
