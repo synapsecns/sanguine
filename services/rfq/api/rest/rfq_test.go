@@ -42,19 +42,27 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		c.Require().NoError(err)
 
 		// Create channels for active quote requests and responses
-		reqChan := make(chan *model.ActiveRFQMessage)
+		reqChan := make(chan *model.ActiveRFQMessage, 1000)
 		req := &model.SubscribeActiveRFQRequest{
 			ChainIDs: []int{c.originChainID, c.destChainID},
 		}
+		fmt.Printf("subscribing to active quotes with addr: %s\n", relayerWallet.Address().Hex())
 		respChan, err := relayerClient.SubscribeActiveQuotes(c.GetTestContext(), req, reqChan)
 		c.Require().NoError(err)
+		fmt.Printf("subscribed to active quotes with addr: %s\n", relayerWallet.Address().Hex())
 
 		go func() {
 			for {
 				select {
 				case <-respCtx.Done():
+					fmt.Printf("respCtx done for addr: %s\n", relayerWallet.Address().Hex())
 					return
 				case msg := <-respChan:
+					if msg == nil {
+						fmt.Printf("got nil msg for addr: %s\n", relayerWallet.Address().Hex())
+						continue
+					}
+					fmt.Printf("got msg with addr: %s\n", relayerWallet.Address().Hex())
 					if msg.Op == "request_quote" {
 						var quoteReq model.RelayerWsQuoteRequest
 						err := json.Unmarshal(msg.Content, &quoteReq)
@@ -67,6 +75,7 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 							c.Error(fmt.Errorf("error marshalling quote response: %w", err))
 							continue
 						}
+						fmt.Printf("sending quote response with addr: %s\n", relayerWallet.Address().Hex())
 						reqChan <- &model.ActiveRFQMessage{
 							Op:      "send_quote",
 							Content: json.RawMessage(rawRespData),
@@ -191,7 +200,10 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 			},
 		}
 		respCtx, cancel := context.WithCancel(c.GetTestContext())
-		defer cancel()
+		defer func() {
+			fmt.Println("cancelling context")
+			cancel()
+		}()
 
 		// Create additional responses with worse prices
 		quoteResp2 := quoteResp

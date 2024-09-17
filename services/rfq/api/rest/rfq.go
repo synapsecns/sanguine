@@ -30,13 +30,13 @@ func getBestQuote(a, b *model.QuoteData) *model.QuoteData {
 
 func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest) (quote *model.QuoteData) {
 	rfqCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond)
-	fmt.Printf("started rfq ctx at %s\n", time.Now().Format("2006-01-02 15:04:05"))
+	fmt.Printf("started rfq ctx at %s with expiration window %d\n", time.Now().Format("2006-01-02 15:04:05"), request.Data.ExpirationWindow)
 
 	// publish the quote request to all connected clients
 	relayerReq := model.NewRelayerWsQuoteRequest(request.Data)
 	r.wsClients.Range(func(key string, client WsClient) bool {
 		client.SendQuoteRequest(rfqCtx, relayerReq)
-		fmt.Printf("sent quote request at %s\n", time.Now().Format("2006-01-02 15:04:05"))
+		fmt.Printf("sent quote request to %s at %s\n", key, time.Now().Format("2006-01-02 15:04:05"))
 		return true
 	})
 
@@ -49,7 +49,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 		go func(client WsClient) {
 			defer wg.Done()
 			resp, err := client.ReceiveQuoteResponse(rfqCtx)
-			fmt.Printf("got quote response at %s\n", time.Now().Format("2006-01-02 15:04:05"))
+			fmt.Printf("got quote response from %s at %s\n", key, time.Now().Format("2006-01-02 15:04:05"))
 			if err != nil {
 				logger.Errorf("Error receiving quote response: %v", err)
 				return
@@ -79,6 +79,15 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	// at this point, all responses should have been validated
 	for _, resp := range responses {
 		quote = getBestQuote(quote, &resp.Data)
+	}
+
+	fmt.Printf("num responses: %d\n", len(responses))
+	fmt.Printf("responses: %+v\n", responses)
+	for _, resp := range responses {
+		fmt.Printf("response dest amount: %s\n", *resp.Data.DestAmount)
+	}
+	if quote != nil {
+		fmt.Printf("best quote dest amount: %s\n", *quote.DestAmount)
 	}
 
 	return quote

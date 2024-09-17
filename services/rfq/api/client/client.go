@@ -206,13 +206,13 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
 	}
 
-	respChan = make(chan *model.ActiveRFQMessage)
+	respChan = make(chan *model.ActiveRFQMessage, 1000)
 
 	go func() {
 		defer close(respChan)
 		defer conn.Close()
 
-		readChan := make(chan []byte)
+		readChan := make(chan []byte, 1000)
 		go func() {
 			defer close(readChan)
 			for {
@@ -241,19 +241,26 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 					return
 				}
 			case msg, ok := <-readChan:
+				fmt.Printf("got msg from readChan: %s\n", msg)
 				if !ok {
+					fmt.Println("readChan closed")
 					return
 				}
+				fmt.Println("unmarshalling message")
 				var rfqMsg model.ActiveRFQMessage
 				err = json.Unmarshal(msg, &rfqMsg)
 				if err != nil {
+					fmt.Printf("error unmarshalling message: %v\n", err)
 					logger.Warn("error unmarshalling message: %v", err)
 					continue
 				}
 
+				fmt.Println("trying to send msg to respChan")
 				select {
 				case respChan <- &rfqMsg:
+					fmt.Printf("sent msg to respChan: %s\n", msg)
 				case <-ctx.Done():
+					fmt.Println("could not send msg: ctx done")
 					return
 				}
 			}
