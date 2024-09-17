@@ -2,6 +2,7 @@ package rest_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 
@@ -52,9 +53,10 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 				return
 			case msg := <-respChan:
 				if msg.Op == "request_quote" {
-					quoteReq, ok := msg.Content.(*model.RelayerWsQuoteRequest)
-					if !ok {
-						c.Error(fmt.Errorf("msg.Content is not a model.RelayerWsQuoteRequest"))
+					var quoteReq model.RelayerWsQuoteRequest
+					err := json.Unmarshal(msg.Content, &quoteReq)
+					if err != nil {
+						c.Error(fmt.Errorf("error unmarshalling quote request: %w", err))
 						continue
 					}
 					quoteResp := &model.RelayerWsQuoteResponse{
@@ -67,9 +69,14 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 							OriginAmount:    originAmount,
 						},
 					}
+					rawRespData, err := json.Marshal(quoteResp)
+					if err != nil {
+						c.Error(fmt.Errorf("error marshalling quote response: %w", err))
+						continue
+					}
 					reqChan <- &model.ActiveRFQMessage{
 						Op:      "send_quote",
-						Content: quoteResp,
+						Content: json.RawMessage(rawRespData),
 					}
 				}
 			}
@@ -84,7 +91,7 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 			DestChainID:      2,
 			DestTokenAddr:    "0x2222222222222222222222222222222222222222",
 			OriginAmount:     userRequestAmount.String(),
-			ExpirationWindow: 50_000,
+			ExpirationWindow: 5000,
 		},
 		QuoteTypes: []string{"active"},
 	}
@@ -96,6 +103,6 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 	// Assert the response
 	c.Assert().True(userQuoteResp.Success)
 	c.Assert().Equal("active", userQuoteResp.QuoteType)
-	c.Assert().Equal(destAmount, userQuoteResp.Data.DestAmount)
+	c.Assert().Equal(destAmount, *userQuoteResp.Data.DestAmount)
 	c.Assert().Equal(originAmount, userQuoteResp.Data.OriginAmount)
 }

@@ -212,6 +212,21 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 		defer close(respChan)
 		defer conn.Close()
 
+		readChan := make(chan []byte)
+		go func() {
+			defer close(readChan)
+			for {
+				_, message, err := conn.ReadMessage()
+				if err != nil {
+					if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+						logger.Warnf("websocket connection closed unexpectedly: %v", err)
+					}
+					return
+				}
+				readChan <- message
+			}
+		}()
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -225,17 +240,12 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 					logger.Warnf("error sending message to websocket: %v", err)
 					return
 				}
-			default:
-				_, message, err := conn.ReadMessage()
-				if err != nil {
-					if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-						logger.Warnf("websocket connection closed unexpectedly: %v", err)
-					}
+			case msg, ok := <-readChan:
+				if !ok {
 					return
 				}
-
 				var rfqMsg model.ActiveRFQMessage
-				err = json.Unmarshal(message, &rfqMsg)
+				err = json.Unmarshal(msg, &rfqMsg)
 				if err != nil {
 					logger.Warn("error unmarshalling message: %v", err)
 					continue

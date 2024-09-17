@@ -88,9 +88,14 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			close(c.doneChan)
 			return nil
 		case data := <-c.requestChan:
+			rawData, err := json.Marshal(data)
+			if err != nil {
+				logger.Error("Error marshalling quote request: %s", err)
+				continue
+			}
 			msg := model.ActiveRFQMessage{
 				Op:      requestQuoteOp,
-				Content: data,
+				Content: json.RawMessage(rawData),
 			}
 			c.conn.WriteJSON(msg)
 		case msg := <-messageChan:
@@ -104,8 +109,9 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			switch rfqMsg.Op {
 			case sendQuoteOp:
 				// forward the response to the server
-				resp, ok := rfqMsg.Content.(model.RelayerWsQuoteResponse)
-				if !ok {
+				var resp model.RelayerWsQuoteResponse
+				err = json.Unmarshal(rfqMsg.Content, &resp)
+				if err != nil {
 					logger.Error("Unexpected websocket message content for send_quote", "content", rfqMsg.Content)
 					continue
 				}

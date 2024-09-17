@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -50,9 +51,9 @@ type GetContractsResponse struct {
 
 // ActiveRFQMessage represents the general structure of WebSocket messages for Active RFQ
 type ActiveRFQMessage struct {
-	Op      string      `json:"op"`
-	Content interface{} `json:"content"`
-	Success bool        `json:"success"`
+	Op      string          `json:"op"`
+	Content json.RawMessage `json:"content"`
+	Success bool            `json:"success"`
 }
 
 // PutUserQuoteRequest represents a user request for quote.
