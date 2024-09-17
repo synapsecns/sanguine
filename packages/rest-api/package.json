@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc",
     "build:go": " ",
+    "build:slither": " ",
     "dev": "nodemon --watch src --exec ts-node src/app.ts",
     "start": "node dist/app.js",
     "lint:fix": "eslint src/**/*.ts --fix",
@@ -42,6 +43,6 @@
     "nodemon": "^3.0.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^4.8.3"
+    "typescript": "^5.1.6"
   }
 }
