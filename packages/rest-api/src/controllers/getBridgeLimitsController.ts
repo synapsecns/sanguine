@@ -50,23 +50,47 @@ export const getBridgeLimitsController = async (req, res) => {
       }, null)
     }
 
-    const amount = parseUnits('1000000', fromTokenInfo.decimals)
-
-    const bridgeQuotes = await Synapse.allBridgeQuotes(
+    const upperLimitAmount = parseUnits('1000000', fromTokenInfo.decimals)
+    const upperLimitBridgeQuotes = await Synapse.allBridgeQuotes(
       Number(fromChain),
       Number(toChain),
       fromTokenInfo.address,
       toTokenInfo.address,
-      amount
+      upperLimitAmount
     )
 
-    if (!Array.isArray(bridgeQuotes) || bridgeQuotes.length === 0) {
+    if (
+      !Array.isArray(upperLimitBridgeQuotes) ||
+      upperLimitBridgeQuotes.length === 0
+    ) {
       return res.status(404).json({ error: 'No bridge quotes found' })
     }
 
-    const bestSDKQuote = bridgeQuotes[0]
+    const lowerLimitAmount = parseUnits('100', fromTokenInfo.decimals)
+    const lowerLimitBridgeQuotes = await Synapse.allBridgeQuotes(
+      Number(fromChain),
+      Number(toChain),
+      fromTokenInfo.address,
+      toTokenInfo.address,
+      lowerLimitAmount
+    )
+
+    const bestSDKQuote = upperLimitBridgeQuotes[0]
 
     let maxOriginQuote
+
+    const minBridgeFeeQuote = lowerLimitBridgeQuotes.reduce(
+      (minQuote, currentQuote) => {
+        const currentFeeAmount = currentQuote.feeAmount
+        const minFeeAmount = minQuote ? minQuote.feeAmount : null
+
+        return !minFeeAmount || currentFeeAmount.lt(minFeeAmount)
+          ? currentQuote
+          : minQuote
+      },
+      null
+    )
+
     if (bestRfqQuote) {
       const bestRfqQuoteMaxAmountBN = BigNumber.from(
         bestRfqQuote.max_origin_amount
@@ -89,6 +113,9 @@ export const getBridgeLimitsController = async (req, res) => {
       rfqBestQuote: bestRfqQuote,
       sdkBestQuote: bestSDKQuote,
       maxOriginQuote,
+      minBridgeFeeQuote,
+      maxOriginAmount: maxOriginQuote.amount,
+      minOriginAmount: minBridgeFeeQuote.feeAmount,
     })
   } catch (err) {
     res.status(500).json({
