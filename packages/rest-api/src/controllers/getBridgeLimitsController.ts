@@ -19,12 +19,15 @@ export const getBridgeLimitsController = async (req, res) => {
     const fromTokenInfo = tokenAddressToToken(fromChain, fromToken)
     const toTokenInfo = tokenAddressToToken(toChain, toToken)
 
+    console.log('fromTokenInfo: ', fromTokenInfo)
+    console.log('toTokenInfo: ', toTokenInfo)
+
     const rfqResponse = await axios.get('https://rfq-api.omnirpc.io/quotes', {
       params: {
         originChainId: fromChain,
-        originTokenAddress: fromTokenInfo.address,
+        originTokenAddress: fromTokenInfo?.address,
         destChainId: toChain,
-        destTokenAddress: toTokenInfo.address,
+        destTokenAddress: toTokenInfo?.address,
       },
     })
 
@@ -40,9 +43,9 @@ export const getBridgeLimitsController = async (req, res) => {
             Number(quote.origin_chain_id) === Number(fromChain) &&
             Number(quote.dest_chain_id) === Number(toChain) &&
             getAddress(quote.origin_token_addr) ===
-              getAddress(fromTokenInfo.address) &&
+              getAddress(fromTokenInfo?.address) &&
             getAddress(quote.dest_token_addr) ===
-              getAddress(toTokenInfo.address)
+              getAddress(toTokenInfo?.address)
         )
 
       bestRfqQuote = filteredQuotes.reduce((maxQuote, currentQuote) => {
@@ -106,7 +109,7 @@ export const getBridgeLimitsController = async (req, res) => {
 
     const minQuoteOriginQueryTokenOutInfo = tokenAddressToToken(
       fromChain,
-      getAddress(minBridgeFeeQuote.originQuery.tokenOut)
+      minBridgeFeeQuote.originQuery.tokenOut
     )
 
     const minOriginValue = formatBNToString(
