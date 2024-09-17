@@ -31,5 +31,10 @@
     "eslint": "^8.53.0",
     "eslint-config-ponder": "^0.3.11",
     "typescript": "^5.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine",
+    "directory": "packages/rfq-indexer/indexer"
   }
 }

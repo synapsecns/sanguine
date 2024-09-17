@@ -42,5 +42,10 @@
   "devDependencies": {
     "@types/pg": "^8.11.9",
     "dotenv": "^16.4.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine",
+    "directory": "packages/rfq-indexer/api"
   }
 }
