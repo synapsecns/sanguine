@@ -35,7 +35,7 @@ describe('Get Bridge Limits Route', () => {
   }, 10_000)
 
   it('should return 400 for unsupported toChain', async () => {
-    const response = await request(app).get('/bridgeTxInfo').query({
+    const response = await request(app).get('/getBridgeLimits').query({
       fromChain: '137',
       toChain: '999',
       fromToken: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
@@ -45,8 +45,8 @@ describe('Get Bridge Limits Route', () => {
     expect(response.body.error).toHaveProperty('message', 'Unsupported toChain')
   }, 10_000)
 
-  it('should return 400 for missing fromToken', async () => {
-    const response = await request(app).get('/bridgeTxInfo').query({
+  it('should return 404 for missing fromToken', async () => {
+    const response = await request(app).get('/getBridgeLimits').query({
       fromChain: '1',
       toChain: '137',
       toToken: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
@@ -56,12 +56,12 @@ describe('Get Bridge Limits Route', () => {
   }, 10_000)
 
   it('should return 400 for missing toToken', async () => {
-    const response = await request(app).get('/bridgeTxInfo').query({
+    const response = await request(app).get('/getBridgeLimits').query({
       fromChain: '1',
       toChain: '137',
       fromToken: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     })
     expect(response.status).toBe(400)
-    expect(response.body.error).toHaveProperty('field', 'fromToken')
+    expect(response.body.error).toHaveProperty('field', 'toToken')
   }, 10_000)
 })
