@@ -2,12 +2,16 @@
 pragma solidity ^0.8.20;
 
 import {
+    AmountIncorrect,
+    ChainIncorrect,
     DisputePeriodNotPassed,
     DisputePeriodPassed,
     DeadlineNotExceeded,
+    DeadlineTooShort,
     MsgValueIncorrect,
     SenderIncorrect,
-    StatusIncorrect
+    StatusIncorrect,
+    ZeroAddress
 } from "../contracts/libs/Errors.sol";
 
 import {FastBridgeV2, FastBridgeV2Test, IFastBridge} from "./FastBridgeV2.t.sol";
@@ -36,6 +40,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
 
     event BridgeDepositRefunded(bytes32 indexed transactionId, address indexed to, address token, uint256 amount);
 
+    uint256 public constant MIN_DEADLINE = 30 minutes;
     uint256 public constant CLAIM_DELAY = 30 minutes;
     uint256 public constant PERMISSIONLESS_REFUND_DELAY = 7 days;
 
@@ -168,7 +173,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
 
     // ══════════════════════════════════════════════════ BRIDGE ═══════════════════════════════════════════════════════
 
-    function checkTokenBalancesAfterBridge(address caller) public {
+    function checkTokenBalancesAfterBridge(address caller) public view {
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
         assertEq(srcToken.balanceOf(caller), LEFTOVER_BALANCE);
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
@@ -191,7 +196,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         checkTokenBalancesAfterBridge(userB);
     }
 
-    function checkEthBalancesAfterBridge(address caller) public {
+    function checkEthBalancesAfterBridge(address caller) public view {
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
         assertEq(address(caller).balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
@@ -245,6 +250,56 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     function test_bridge_eth_revert_zeroMsgValue() public {
         vm.expectRevert(MsgValueIncorrect.selector);
         bridge({caller: userA, msgValue: 0, params: ethParams});
+    }
+
+    function test_bridge_revert_sameDestinationChain() public {
+        tokenParams.dstChainId = SRC_CHAIN_ID;
+        vm.expectRevert(ChainIncorrect.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_revert_zeroOriginAmount() public {
+        tokenParams.originAmount = 0;
+        vm.expectRevert(AmountIncorrect.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_revert_zeroDestAmount() public {
+        tokenParams.destAmount = 0;
+        vm.expectRevert(AmountIncorrect.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_revert_zeroOriginToken() public {
+        tokenParams.originToken = address(0);
+        vm.expectRevert(ZeroAddress.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_revert_zeroDestToken() public {
+        tokenParams.destToken = address(0);
+        vm.expectRevert(ZeroAddress.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_revert_zeroSender() public {
+        vm.skip(true); // TODO: unskip when fixed
+        tokenParams.sender = address(0);
+        vm.expectRevert(ZeroAddress.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_revert_zeroRecipient() public {
+        vm.skip(true); // TODO: unskip when fixed
+        tokenParams.to = address(0);
+        vm.expectRevert(ZeroAddress.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_revert_deadlineTooClose() public {
+        tokenParams.deadline = block.timestamp + MIN_DEADLINE - 1;
+        vm.expectRevert(DeadlineTooShort.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 
     // ═══════════════════════════════════════════════════ PROVE ═══════════════════════════════════════════════════════
@@ -313,7 +368,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
 
     // ═══════════════════════════════════════════════════ CLAIM ═══════════════════════════════════════════════════════
 
-    function checkTokenBalancesAfterClaim(address relayer) public {
+    function checkTokenBalancesAfterClaim(address relayer) public view {
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount);
         assertEq(srcToken.balanceOf(relayer), tokenTx.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount);
@@ -378,7 +433,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         checkTokenBalancesAfterClaim(relayerA);
     }
 
-    function checkEthBalancesAfterClaim(address relayer) public {
+    function checkEthBalancesAfterClaim(address relayer) public view {
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount);
         assertEq(address(relayer).balance, ethTx.originAmount);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount);
