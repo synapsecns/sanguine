@@ -83,26 +83,51 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 		}
 	}()
 
-	// Prepare a user quote request
-	userQuoteReq := &model.PutUserQuoteRequest{
-		Data: model.QuoteData{
-			OriginChainID:    1,
-			OriginTokenAddr:  "0x1111111111111111111111111111111111111111",
-			DestChainID:      2,
-			DestTokenAddr:    "0x2222222222222222222222222222222222222222",
-			OriginAmount:     userRequestAmount.String(),
-			ExpirationWindow: 5000,
-		},
-		QuoteTypes: []string{"active"},
-	}
+	c.Run("SingleRequest", func() {
+		// Prepare a user quote request
+		userQuoteReq := &model.PutUserQuoteRequest{
+			Data: model.QuoteData{
+				OriginChainID:    1,
+				OriginTokenAddr:  "0x1111111111111111111111111111111111111111",
+				DestChainID:      2,
+				DestTokenAddr:    "0x2222222222222222222222222222222222222222",
+				OriginAmount:     userRequestAmount.String(),
+				ExpirationWindow: 5000,
+			},
+			QuoteTypes: []string{"active"},
+		}
 
-	// Submit the user quote request
-	userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
-	c.Require().NoError(err)
+		// Submit the user quote request
+		userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
+		c.Require().NoError(err)
 
-	// Assert the response
-	c.Assert().True(userQuoteResp.Success)
-	c.Assert().Equal("active", userQuoteResp.QuoteType)
-	c.Assert().Equal(destAmount, *userQuoteResp.Data.DestAmount)
-	c.Assert().Equal(originAmount, userQuoteResp.Data.OriginAmount)
+		// Assert the response
+		c.Assert().True(userQuoteResp.Success)
+		c.Assert().Equal("active", userQuoteResp.QuoteType)
+		c.Assert().Equal(destAmount, *userQuoteResp.Data.DestAmount)
+		c.Assert().Equal(originAmount, userQuoteResp.Data.OriginAmount)
+	})
+
+	c.Run("ExpiredRequest", func() {
+		// Prepare a user quote request with 0 expiration window
+		userQuoteReq := &model.PutUserQuoteRequest{
+			Data: model.QuoteData{
+				OriginChainID:    1,
+				OriginTokenAddr:  "0x1111111111111111111111111111111111111111",
+				DestChainID:      2,
+				DestTokenAddr:    "0x2222222222222222222222222222222222222222",
+				OriginAmount:     userRequestAmount.String(),
+				ExpirationWindow: 0,
+			},
+			QuoteTypes: []string{"active"},
+		}
+
+		// Submit the user quote request
+		userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
+		c.Require().NoError(err)
+
+		// Assert the response
+		c.Assert().False(userQuoteResp.Success)
+		c.Assert().Equal("no quotes found", userQuoteResp.Reason)
+	})
 }
