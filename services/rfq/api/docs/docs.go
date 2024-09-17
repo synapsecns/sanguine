@@ -41,7 +41,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
                     }
                 }
             }
@@ -72,7 +78,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
                     }
                 }
             }
@@ -97,6 +109,12 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/model.GetContractsResponse"
+                            }
+                        },
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
                             }
                         }
                     }
@@ -156,6 +174,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/model.GetQuoteResponse"
                             }
+                        },
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
                         }
                     }
                 }
@@ -185,7 +209,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
                     }
                 }
             }

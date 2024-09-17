@@ -9,6 +9,7 @@ import (
 	"log"
 	"math/big"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -50,14 +51,16 @@ func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.Com
 // TODO: add trace middleware.
 func (b *Bot) traceCommand() *slacker.CommandDefinition {
 	return b.requiresSignoz(&slacker.CommandDefinition{
-		Command:     "trace <tags>",
+		Command:     "trace {tags} {order}",
 		Description: "find a transaction in signoz",
 		Examples: []string{
-			"trace transaction_id:0x1234 serviceName:rfq",
+			"trace transaction_id:0x1234@serviceName:rfq",
+			"trace transaction_id:0x1234@serviceName:rfq a",
+			"trace transaction_id:0x1234@serviceName:rfq asc",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
 			tags := stripLinks(ctx.Request().Param("tags"))
-			splitTags := strings.Split(tags, " ")
+			splitTags := strings.Split(tags, "@")
 			if len(splitTags) == 0 {
 				_, err := ctx.Response().Reply("please provide tags in a key:value format")
 				if err != nil {
@@ -82,6 +85,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 			// search for the transaction
 			res, err := b.signozClient.SearchTraces(ctx.Context(), signoz.Last3Hr, searchMap)
 			if err != nil {
+				b.logger.Errorf(ctx.Context(), "error searching for the transaction: %v", err)
 				_, err := ctx.Response().Reply("error searching for the transaction")
 				if err != nil {
 					log.Println(err)
@@ -104,6 +108,14 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 					log.Println(err)
 				}
 				return
+			}
+
+			order := strings.ToLower(ctx.Request().Param("order"))
+			isAscending := order == "a" || order == "asc"
+			if isAscending {
+				sort.Slice(traceList, func(i, j int) bool {
+					return traceList[i].Timestamp.Before(traceList[j].Timestamp)
+				})
 			}
 
 			slackBlocks := []slack.Block{slack.NewHeaderBlock(slack.NewTextBlockObject(slack.PlainTextType, fmt.Sprintf("Traces for %s", tags), false, false))}
@@ -290,6 +302,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				}
 			}
 			if err != nil {
+				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				_, err := ctx.Response().Reply("error fetching quote request")
 				if err != nil {
 					log.Println(err)
@@ -338,19 +351,23 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			err = retry.WithBackoff(
 				ctx.Context(),
 				func(ctx context.Context) error {
-					txHash, err = relClient.GetTxHashByNonce(ctx, &relapi.GetTxByNonceRequest{
-						ChainID: rawRequest.OriginChainID,
-						Nonce:   nonce,
-					})
+					txHash, err = relClient.GetTxHashByNonce(
+						ctx,
+						&relapi.GetTxByNonceRequest{
+							ChainID: rawRequest.OriginChainID,
+							Nonce:   nonce,
+						})
 					if err != nil {
+						b.logger.Errorf(ctx, "error fetching quote request: %v", err)
 						return fmt.Errorf("error fetching quote request: %w", err)
 					}
 					return nil
 				},
-				retry.WithMaxAttempts(3),
-				retry.WithMaxAttemptTime(15*time.Second),
+				retry.WithMaxAttempts(5),
+				retry.WithMaxAttemptTime(30*time.Second),
 			)
 			if err != nil {
+				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				_, err := ctx.Response().Reply(fmt.Sprintf("error fetching explorer link to refund, but nonce is %d", nonce))
 				log.Printf("error fetching quote request: %v\n", err)
 				return

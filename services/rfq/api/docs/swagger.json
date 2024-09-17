@@ -30,7 +30,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
                     }
                 }
             }
@@ -61,7 +67,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
                     }
                 }
             }
@@ -86,6 +98,12 @@
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/model.GetContractsResponse"
+                            }
+                        },
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
                             }
                         }
                     }
@@ -145,6 +163,12 @@
                             "items": {
                                 "$ref": "#/definitions/model.GetQuoteResponse"
                             }
+                        },
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
                         }
                     }
                 }
@@ -174,7 +198,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
                     }
                 }
             }

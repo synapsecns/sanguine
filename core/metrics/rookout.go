@@ -3,12 +3,13 @@
 package metrics
 
 import (
+	"os"
+
 	rookout "github.com/Rookout/GoSDK"
 	"github.com/Rookout/GoSDK/pkg/config"
 	"github.com/synapsecns/sanguine/core"
 	synconfig "github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
-	"os"
 )
 
 // DefaultGitRepo is the default git repo for sanguine.
