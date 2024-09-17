@@ -7,12 +7,12 @@ const app = express()
 app.use('/bridge', bridgeRoute)
 
 describe('Bridge Route with Real Synapse Service', () => {
-  it('should return bridge quotes for valid input, 1000 USDC from Ethereum to Polygon', async () => {
+  it('should return bridge quotes for valid input, 1000 USDC from Ethereum to Optimism', async () => {
     const response = await request(app).get('/bridge').query({
       fromChain: '1',
-      toChain: '137',
+      toChain: '10',
       fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC on Ethereum
-      toToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // USDC.e on Polygon
+      toToken: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85', // USDC on Optimism
       amount: '1000',
     })
     expect(response.status).toBe(200)
@@ -42,7 +42,7 @@ describe('Bridge Route with Real Synapse Service', () => {
       fromChain: '1',
       toChain: '999',
       fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      toToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+      toToken: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
       amount: '1000',
     })
     expect(response.status).toBe(400)
@@ -64,12 +64,27 @@ describe('Bridge Route with Real Synapse Service', () => {
     )
   }, 10000)
 
-  it('should return 400 for missing amount, with error message', async () => {
+  it('should return 400 for token not supported on specified chain, with error message', async () => {
     const response = await request(app).get('/bridge').query({
       fromChain: '1',
       toChain: '137',
-      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      fromToken: '0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F', // SNX on Ethereum (Not supported)
       toToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+      amount: '1000',
+    })
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      'Invalid fromToken address'
+    )
+  }, 10000)
+
+  it('should return 400 for missing amount, with error message', async () => {
+    const response = await request(app).get('/bridge').query({
+      fromChain: '1',
+      toChain: '10',
+      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      toToken: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'amount')

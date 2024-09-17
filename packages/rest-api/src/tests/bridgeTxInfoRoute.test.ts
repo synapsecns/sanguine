@@ -59,6 +59,22 @@ describe('Bridge TX Info Route', () => {
     )
   }, 10_000)
 
+  it('should return 400 for token not supported on specified chain', async () => {
+    const response = await request(app).get('/bridgeTxInfo').query({
+      fromChain: '1',
+      toChain: '137',
+      fromToken: '0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F', // SNX on Ethereum (Not supported)
+      toToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+      amount: '1000',
+      destAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    })
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      'Invalid fromToken address'
+    )
+  }, 10_000)
+
   it('should return 400 for missing amount', async () => {
     const response = await request(app).get('/bridgeTxInfo').query({
       fromChain: '1',

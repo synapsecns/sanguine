@@ -63,6 +63,21 @@ describe('Swap TX Info Route with Real Synapse Service', () => {
     )
   }, 10_000)
 
+  it('should return 400 for token not supported on specified chain', async () => {
+    const response = await request(app).get('/swapTxInfo').query({
+      chain: '1',
+      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      toToken: '0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F', // SNX on Ethereum (Not supported)
+      amount: '1000',
+      address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    })
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      'Invalid toToken address'
+    )
+  }, 10_000)
+
   it('should return 400 for missing amount, with error message', async () => {
     const response = await request(app).get('/swapTxInfo').query({
       chain: '1',

@@ -5,6 +5,8 @@ import { isAddress } from 'ethers/lib/utils'
 import { CHAINS_ARRAY } from '../constants/chains'
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { swapTxInfoController } from '../controllers/swapTxInfoController'
+import { isTokenAddress } from '../utils/isTokenAddress'
+import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 
 const router = express.Router()
 
@@ -20,13 +22,21 @@ router.get(
     check('fromToken')
       .exists()
       .withMessage('fromToken is required')
-      .custom((value) => isAddress(value))
-      .withMessage('Invalid fromToken address'),
+      .custom((value) => isTokenAddress(value))
+      .withMessage('Invalid fromToken address')
+      .custom((value, { req }) =>
+        isTokenSupportedOnChain(value, req.query.chain as string)
+      )
+      .withMessage('Token not supported on specified chain'),
     check('toToken')
       .exists()
       .withMessage('toToken is required')
-      .custom((value) => isAddress(value))
-      .withMessage('Invalid toToken address'),
+      .custom((value) => isTokenAddress(value))
+      .withMessage('Invalid toToken address')
+      .custom((value, { req }) =>
+        isTokenSupportedOnChain(value, req.query.chain as string)
+      )
+      .withMessage('Token not supported on specified chain'),
     check('amount').isNumeric().exists().withMessage('amount is required'),
     check('address')
       .exists()
