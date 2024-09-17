@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
@@ -60,12 +61,20 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 				logger.Errorf("Error receiving quote response: %v", err)
 				return
 			}
-			respMux.Lock()
-			responses[key] = resp
-			respMux.Unlock()
+
+			// validate the response
+			respStatus := db.Considered
+			err = validateRelayerQuoteResponse(key, resp)
+			if err != nil {
+				respStatus = db.Malformed
+				logger.Errorf("Error validating quote response: %v", err)
+			} else {
+				respMux.Lock()
+				responses[key] = resp
+				respMux.Unlock()
+			}
 
 			// record the response
-			respStatus := db.Considered
 			if expireCtx.Err() != nil {
 				respStatus = db.PastExpiration
 			}
@@ -117,6 +126,16 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	}
 
 	return quote
+}
+
+func validateRelayerQuoteResponse(relayerAddr string, resp *model.RelayerWsQuoteResponse) error {
+	if resp.Data.RelayerAddress == nil {
+		return fmt.Errorf("relayer address is nil")
+	}
+	// TODO: compute quote ID from request
+	resp.QuoteID = uuid.New().String()
+	resp.Data.RelayerAddress = &relayerAddr
+	return nil
 }
 
 func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest) (*model.QuoteData, error) {
