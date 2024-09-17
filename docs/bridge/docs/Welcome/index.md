@@ -38,10 +38,10 @@ Bolt-on services for reliability and ease-of-use:
 
 ## Community & Support
 Connect with other developers and the Synapse team
-* **[Discord](https://discord.gg/synapseprotocol)** – Bridge, Swap, and Stake via Synapse's cross-chain pools.
-* **[Twitter](https://twitter.com/SynapseProtocol)** – Bridge, Swap, and Stake via Synapse's cross-chain pools.
-* **[Telegram](https://t.me/synapseprotocol)** – Public explorer for Synapse Bridge transactions.
-* **[Forum](https://forum.synapseprotocol.com/)** – Public explorer for Synapse Bridge transactions.
+* **[Discord](https://discord.gg/synapseprotocol)**
+* **[Twitter](https://twitter.com/SynapseProtocol)**
+* **[Telegram](https://t.me/synapseprotocol)**
+* **[Forum](https://forum.synapseprotocol.com/)**
 
 ## Additional Links
 Synapse transactions can be observed confirmed via the following methods:
