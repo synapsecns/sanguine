@@ -40,6 +40,7 @@ type ServerSuite struct {
 	database             db.APIDB
 	cfg                  config.Config
 	testWallet           wallet.Wallet
+	relayerWallets       []wallet.Wallet
 	handler              metrics.Handler
 	QuoterAPIServer      *rest.QuoterAPIServer
 	port                 uint16
@@ -52,7 +53,8 @@ type ServerSuite struct {
 func NewServerSuite(tb testing.TB) *ServerSuite {
 	tb.Helper()
 	return &ServerSuite{
-		TestSuite: testsuite.NewTestSuite(tb),
+		TestSuite:      testsuite.NewTestSuite(tb),
+		relayerWallets: []wallet.Wallet{},
 	}
 }
 
@@ -141,8 +143,16 @@ func (c *ServerSuite) SetupSuite() {
 	testWallet, err := wallet.FromRandom()
 	c.Require().NoError(err)
 	c.testWallet = testWallet
+	c.relayerWallets = []wallet.Wallet{c.testWallet}
+	for i := 0; i < 2; i++ {
+		relayerWallet, err := wallet.FromRandom()
+		c.Require().NoError(err)
+		c.relayerWallets = append(c.relayerWallets, relayerWallet)
+	}
 	for _, backend := range c.testBackends {
-		backend.FundAccount(c.GetSuiteContext(), c.testWallet.Address(), *big.NewInt(params.Ether))
+		for _, relayerWallet := range c.relayerWallets {
+			backend.FundAccount(c.GetSuiteContext(), relayerWallet.Address(), *big.NewInt(params.Ether))
+		}
 	}
 
 	c.fastBridgeAddressMap = xsync.NewIntegerMapOf[uint64, common.Address]()
@@ -172,9 +182,12 @@ func (c *ServerSuite) SetupSuite() {
 			relayerRole, err := fastBridgeInstance.RELAYERROLE(&bind.CallOpts{Context: c.GetTestContext()})
 			c.NoError(err)
 
-			tx, err = fastBridgeInstance.GrantRole(auth, relayerRole, c.testWallet.Address())
-			c.Require().NoError(err)
-			backend.WaitForConfirmation(c.GetSuiteContext(), tx)
+			// Grant relayer role to all relayer wallets
+			for _, relayerWallet := range c.relayerWallets {
+				tx, err = fastBridgeInstance.GrantRole(auth, relayerRole, relayerWallet.Address())
+				c.Require().NoError(err)
+				backend.WaitForConfirmation(c.GetSuiteContext(), tx)
+			}
 
 			return nil
 		})
