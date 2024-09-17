@@ -157,8 +157,11 @@ type ActiveQuoteRequest struct {
 }
 
 // FromUserRequest converts a model.PutUserQuoteRequest to an ActiveQuoteRequest.
-func FromUserRequest(req *model.PutUserQuoteRequest, requestID string) *ActiveQuoteRequest {
-	originAmount, _ := decimal.NewFromString(req.Data.OriginAmount)
+func FromUserRequest(req *model.PutUserQuoteRequest, requestID string) (*ActiveQuoteRequest, error) {
+	originAmount, err := decimal.NewFromString(req.Data.OriginAmount)
+	if err != nil {
+		return nil, fmt.Errorf("invalid origin amount: %w", err)
+	}
 	return &ActiveQuoteRequest{
 		RequestID:        requestID,
 		UserAddress:      req.UserAddress,
@@ -170,7 +173,7 @@ func FromUserRequest(req *model.PutUserQuoteRequest, requestID string) *ActiveQu
 		ExpirationWindow: time.Duration(req.Data.ExpirationWindow),
 		CreatedAt:        time.Now(),
 		Status:           Received,
-	}
+	}, nil
 }
 
 // ActiveQuoteResponse is the database model for an active quote response.
@@ -189,9 +192,18 @@ type ActiveQuoteResponse struct {
 }
 
 // FromRelayerResponse converts a model.RelayerWsQuoteResponse to an ActiveQuoteResponse.
-func FromRelayerResponse(resp *model.RelayerWsQuoteResponse, status ActiveQuoteResponseStatus) *ActiveQuoteResponse {
-	originAmount, _ := decimal.NewFromString(resp.Data.OriginAmount)
-	destAmount, _ := decimal.NewFromString(*resp.Data.DestAmount)
+func FromRelayerResponse(resp *model.RelayerWsQuoteResponse, status ActiveQuoteResponseStatus) (*ActiveQuoteResponse, error) {
+	if resp.Data.RelayerAddress == nil {
+		return nil, fmt.Errorf("relayer address is nil")
+	}
+	originAmount, err := decimal.NewFromString(resp.Data.OriginAmount)
+	if err != nil {
+		return nil, fmt.Errorf("invalid origin amount: %w", err)
+	}
+	destAmount, err := decimal.NewFromString(*resp.Data.DestAmount)
+	if err != nil {
+		return nil, fmt.Errorf("invalid dest amount: %w", err)
+	}
 	return &ActiveQuoteResponse{
 		RequestID:       resp.RequestID,
 		QuoteID:         resp.QuoteID,
@@ -204,7 +216,7 @@ func FromRelayerResponse(resp *model.RelayerWsQuoteResponse, status ActiveQuoteR
 		RelayerAddr:     *resp.Data.RelayerAddress,
 		UpdatedAt:       resp.UpdatedAt,
 		Status:          status,
-	}
+	}, nil
 }
 
 // APIDBReader is the interface for reading from the database.

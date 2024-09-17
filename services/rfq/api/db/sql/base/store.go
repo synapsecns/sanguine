@@ -81,7 +81,10 @@ func (s *Store) UpsertQuotes(ctx context.Context, quotes []*db.Quote) error {
 
 // InsertActiveQuoteRequest inserts an active quote request into the database.
 func (s *Store) InsertActiveQuoteRequest(ctx context.Context, req *model.PutUserQuoteRequest, requestID string) error {
-	dbReq := db.FromUserRequest(req, requestID)
+	dbReq, err := db.FromUserRequest(req, requestID)
+	if err != nil {
+		return fmt.Errorf("could not convert user request to database request: %w", err)
+	}
 	result := s.db.WithContext(ctx).Create(dbReq)
 	if result.Error != nil {
 		return fmt.Errorf("could not insert active quote request: %w", result.Error)
@@ -103,7 +106,10 @@ func (s *Store) UpdateActiveQuoteRequestStatus(ctx context.Context, requestID st
 
 // InsertActiveQuoteResponse inserts an active quote response into the database.
 func (s *Store) InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse, status db.ActiveQuoteResponseStatus) error {
-	dbReq := db.FromRelayerResponse(resp, status)
+	dbReq, err := db.FromRelayerResponse(resp, status)
+	if err != nil {
+		return fmt.Errorf("could not convert relayer response to database response: %w", err)
+	}
 	result := s.db.WithContext(ctx).Create(dbReq)
 	if result.Error != nil {
 		return fmt.Errorf("could not insert active quote response: %w", result.Error)
