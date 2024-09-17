@@ -8,8 +8,8 @@
   "scripts": {
     "build": "tsc",
     "build:go": " ",
-    "start": "node dist/app.js",
     "dev": "nodemon --watch src --exec ts-node src/app.ts",
+    "start": "node dist/app.js",
     "lint:fix": "eslint src/**/*.ts --fix",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
