@@ -5,6 +5,7 @@ import { parseUnits } from '@ethersproject/units'
 import { getAddress } from '@ethersproject/address'
 
 import { Synapse } from '../services/synapseService'
+import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 
 export const getBridgeLimitsController = async (req, res) => {
   const errors = validationResult(req)
@@ -12,10 +13,10 @@ export const getBridgeLimitsController = async (req, res) => {
     return res.status(400).json({ errors: errors.array() })
   }
   try {
-    const { fromChain, toChain } = req.query
+    const { fromChain, fromToken, toChain, toToken } = req.query
 
-    const fromTokenInfo = res.locals.tokenInfo.fromToken
-    const toTokenInfo = res.locals.tokenInfo.toToken
+    const fromTokenInfo = tokenAddressToToken(fromChain, fromToken)
+    const toTokenInfo = tokenAddressToToken(toChain, toToken)
 
     const rfqResponse = await axios.get('https://rfq-api.omnirpc.io/quotes', {
       params: {
