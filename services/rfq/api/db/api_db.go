@@ -189,7 +189,7 @@ type ActiveQuoteResponse struct {
 }
 
 // FromRelayerResponse converts a model.RelayerWsQuoteResponse to an ActiveQuoteResponse.
-func FromRelayerResponse(resp *model.RelayerWsQuoteResponse) *ActiveQuoteResponse {
+func FromRelayerResponse(resp *model.RelayerWsQuoteResponse, status ActiveQuoteResponseStatus) *ActiveQuoteResponse {
 	originAmount, _ := decimal.NewFromString(resp.Data.OriginAmount)
 	destAmount, _ := decimal.NewFromString(*resp.Data.DestAmount)
 	return &ActiveQuoteResponse{
@@ -203,7 +203,7 @@ func FromRelayerResponse(resp *model.RelayerWsQuoteResponse) *ActiveQuoteRespons
 		DestAmount:      destAmount,
 		RelayerAddr:     *resp.Data.RelayerAddress,
 		UpdatedAt:       resp.UpdatedAt,
-		Status:          Considered,
+		Status:          status,
 	}
 }
 
@@ -232,9 +232,9 @@ type APIDBWriter interface {
 	// UpdateActiveQuoteRequestStatus updates the status of an active quote request in the database.
 	UpdateActiveQuoteRequestStatus(ctx context.Context, requestID string, status ActiveQuoteRequestStatus) error
 	// InsertActiveQuoteResponse inserts an active quote response into the database.
-	InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse) error
+	InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse, status ActiveQuoteResponseStatus) error
 	// UpdateActiveQuoteResponseStatus updates the status of an active quote response in the database.
-	UpdateActiveQuoteResponseStatus(ctx context.Context, requestID string, status ActiveQuoteResponseStatus) error
+	UpdateActiveQuoteResponseStatus(ctx context.Context, quoteID string, status ActiveQuoteResponseStatus) error
 }
 
 // APIDB is the interface for the database service.

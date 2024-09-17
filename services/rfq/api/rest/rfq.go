@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
@@ -28,15 +29,23 @@ func getBestQuote(a, b *model.QuoteData) *model.QuoteData {
 	return b
 }
 
+const collectionTimeout = 1 * time.Minute
+
 func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest, requestID string) (quote *model.QuoteData) {
-	rfqCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond)
+	expireCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond)
+	collectionCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond+collectionTimeout)
 
 	// publish the quote request to all connected clients
 	relayerReq := model.NewRelayerWsQuoteRequest(request.Data, requestID)
 	r.wsClients.Range(func(key string, client WsClient) bool {
-		client.SendQuoteRequest(rfqCtx, relayerReq)
+		client.SendQuoteRequest(expireCtx, relayerReq)
 		return true
 	})
+
+	err := r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, db.Pending)
+	if err != nil {
+		logger.Errorf("Error updating active quote request status: %v", err)
+	}
 
 	// collect responses from all clients until expiration window closes
 	wg := sync.WaitGroup{}
@@ -46,7 +55,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 		wg.Add(1)
 		go func(client WsClient) {
 			defer wg.Done()
-			resp, err := client.ReceiveQuoteResponse(rfqCtx)
+			resp, err := client.ReceiveQuoteResponse(collectionCtx)
 			if err != nil {
 				logger.Errorf("Error receiving quote response: %v", err)
 				return
@@ -54,7 +63,13 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 			respMux.Lock()
 			responses[key] = resp
 			respMux.Unlock()
-			err = r.db.InsertActiveQuoteResponse(ctx, resp)
+
+			// record the response
+			respStatus := db.Considered
+			if expireCtx.Err() != nil {
+				respStatus = db.PastExpiration
+			}
+			err = r.db.InsertActiveQuoteResponse(ctx, resp, respStatus)
 			if err != nil {
 				logger.Errorf("Error inserting active quote response: %v", err)
 			}
@@ -62,9 +77,10 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 		return true
 	})
 
+	// wait for all responses to be received, or expiration
 	select {
-	case <-rfqCtx.Done():
-		// Context expired before all responses were received
+	case <-expireCtx.Done():
+		// request expired before all responses were received
 	case <-func() chan struct{} {
 		ch := make(chan struct{})
 		go func() {
@@ -73,13 +89,31 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 		}()
 		return ch
 	}():
-		// All responses received
+		// all responses received
 	}
 
 	// construct the response
 	// at this point, all responses should have been validated
+	var bestQuoteID string
 	for _, resp := range responses {
 		quote = getBestQuote(quote, &resp.Data)
+		bestQuoteID = resp.QuoteID
+	}
+
+	if quote == nil {
+		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, db.Expired)
+		if err != nil {
+			logger.Errorf("Error updating active quote request status: %v", err)
+		}
+	} else {
+		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, db.Fulfilled)
+		if err != nil {
+			logger.Errorf("Error updating active quote request status: %v", err)
+		}
+		err = r.db.UpdateActiveQuoteResponseStatus(ctx, bestQuoteID, db.Returned)
+		if err != nil {
+			logger.Errorf("Error updating active quote response status: %v", err)
+		}
 	}
 
 	return quote

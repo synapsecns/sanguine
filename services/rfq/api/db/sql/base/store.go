@@ -102,8 +102,8 @@ func (s *Store) UpdateActiveQuoteRequestStatus(ctx context.Context, requestID st
 }
 
 // InsertActiveQuoteResponse inserts an active quote response into the database.
-func (s *Store) InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse) error {
-	dbReq := db.FromRelayerResponse(resp)
+func (s *Store) InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse, status db.ActiveQuoteResponseStatus) error {
+	dbReq := db.FromRelayerResponse(resp, status)
 	result := s.db.WithContext(ctx).Create(dbReq)
 	if result.Error != nil {
 		return fmt.Errorf("could not insert active quote response: %w", result.Error)
@@ -112,10 +112,10 @@ func (s *Store) InsertActiveQuoteResponse(ctx context.Context, resp *model.Relay
 }
 
 // UpdateActiveQuoteResponseStatus updates the status of an active quote response in the database.
-func (s *Store) UpdateActiveQuoteResponseStatus(ctx context.Context, requestID string, status db.ActiveQuoteResponseStatus) error {
+func (s *Store) UpdateActiveQuoteResponseStatus(ctx context.Context, quoteID string, status db.ActiveQuoteResponseStatus) error {
 	result := s.db.WithContext(ctx).
 		Model(&db.ActiveQuoteResponse{}).
-		Where("request_id = ?", requestID).
+		Where("quote_id = ?", quoteID).
 		Update("status", status)
 	if result.Error != nil {
 		return fmt.Errorf("could not update active quote response status: %w", result.Error)
