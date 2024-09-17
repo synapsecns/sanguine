@@ -235,7 +235,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 )
 
-// rawContracts are the json we use to dervive the processed contracts
+// rawContracts are the json we use to derive the processed contracts
 //
 //go:embed {{ .Name }}.contractinfo.json
 var rawContracts []byte
