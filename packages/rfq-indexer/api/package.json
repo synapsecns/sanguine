@@ -14,7 +14,8 @@
     "build:go": " ",
     "build": " ",
     "build:slither": " ",
-    "ci:lint": " "
+    "ci:lint": " ",
+    "test:coverage": "echo 'No tests defined.'"
   },
   "keywords": [],
   "author": "",
