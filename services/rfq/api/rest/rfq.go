@@ -30,11 +30,13 @@ func getBestQuote(a, b *model.QuoteData) *model.QuoteData {
 
 func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest) (quote *model.QuoteData) {
 	rfqCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond)
+	fmt.Printf("started rfq ctx at %s\n", time.Now().Format("2006-01-02 15:04:05"))
 
 	// publish the quote request to all connected clients
 	relayerReq := model.NewRelayerWsQuoteRequest(request.Data)
 	r.wsClients.Range(func(key string, client WsClient) bool {
 		client.SendQuoteRequest(rfqCtx, relayerReq)
+		fmt.Printf("sent quote request at %s\n", time.Now().Format("2006-01-02 15:04:05"))
 		return true
 	})
 
@@ -47,8 +49,9 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 		go func(client WsClient) {
 			defer wg.Done()
 			resp, err := client.ReceiveQuoteResponse(rfqCtx)
+			fmt.Printf("got quote response at %s\n", time.Now().Format("2006-01-02 15:04:05"))
 			if err != nil {
-				logger.Error("Error receiving quote response", "error", err)
+				logger.Errorf("Error receiving quote response: %v", err)
 				return
 			}
 			respMux.Lock()

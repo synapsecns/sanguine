@@ -1,6 +1,7 @@
 package rest_test
 
 import (
+	"context"
 	"fmt"
 	"math/big"
 
@@ -42,27 +43,34 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 	userRequestAmount := big.NewInt(1_000_000)
 	originAmount := userRequestAmount.String()
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
+	respCtx, cancel := context.WithCancel(c.GetTestContext())
+	defer cancel()
 	go func() {
-		for msg := range respChan {
-			if msg.Op == "request_quote" {
-				quoteReq, ok := msg.Content.(model.RelayerWsQuoteRequest)
-				if !ok {
-					c.Error(fmt.Errorf("msg.Content is not a model.RelayerWsQuoteRequest"))
-					continue
-				}
-				quoteResp := &model.RelayerWsQuoteResponse{
-					Data: model.QuoteData{
-						OriginChainID:   quoteReq.Data.OriginChainID,
-						OriginTokenAddr: quoteReq.Data.OriginTokenAddr,
-						DestChainID:     quoteReq.Data.DestChainID,
-						DestTokenAddr:   quoteReq.Data.DestTokenAddr,
-						DestAmount:      &destAmount,
-						OriginAmount:    originAmount,
-					},
-				}
-				reqChan <- &model.ActiveRFQMessage{
-					Op:      "send_quote",
-					Content: quoteResp,
+		for {
+			select {
+			case <-respCtx.Done():
+				return
+			case msg := <-respChan:
+				if msg.Op == "request_quote" {
+					quoteReq, ok := msg.Content.(*model.RelayerWsQuoteRequest)
+					if !ok {
+						c.Error(fmt.Errorf("msg.Content is not a model.RelayerWsQuoteRequest"))
+						continue
+					}
+					quoteResp := &model.RelayerWsQuoteResponse{
+						Data: model.QuoteData{
+							OriginChainID:   quoteReq.Data.OriginChainID,
+							OriginTokenAddr: quoteReq.Data.OriginTokenAddr,
+							DestChainID:     quoteReq.Data.DestChainID,
+							DestTokenAddr:   quoteReq.Data.DestTokenAddr,
+							DestAmount:      &destAmount,
+							OriginAmount:    originAmount,
+						},
+					}
+					reqChan <- &model.ActiveRFQMessage{
+						Op:      "send_quote",
+						Content: quoteResp,
+					}
 				}
 			}
 		}
@@ -76,7 +84,7 @@ func (c *ServerSuite) TestHandleActiveRFQ() {
 			DestChainID:      2,
 			DestTokenAddr:    "0x2222222222222222222222222222222222222222",
 			OriginAmount:     userRequestAmount.String(),
-			ExpirationWindow: 5000,
+			ExpirationWindow: 50_000,
 		},
 		QuoteTypes: []string{"active"},
 	}

@@ -66,6 +66,21 @@ const (
 )
 
 func (c *wsClient) Run(ctx context.Context) (err error) {
+	messageChan := make(chan []byte)
+
+	// Goroutine to read messages from WebSocket and send to channel
+	go func() {
+		defer close(messageChan)
+		for {
+			_, msg, err := c.conn.ReadMessage()
+			if err != nil {
+				logger.Error("Error reading websocket message: %s", err)
+				continue
+			}
+			messageChan <- msg
+		}
+	}()
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -74,18 +89,11 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			return nil
 		case data := <-c.requestChan:
 			msg := model.ActiveRFQMessage{
-				Op:      "send_quote",
+				Op:      requestQuoteOp,
 				Content: data,
 			}
 			c.conn.WriteJSON(msg)
-		default:
-			// Read message from WebSocket
-			_, msg, err := c.conn.ReadMessage()
-			if err != nil {
-				logger.Error("Error reading websocket message: %s", err)
-				continue
-			}
-
+		case msg := <-messageChan:
 			var rfqMsg model.ActiveRFQMessage
 			err = json.Unmarshal(msg, &rfqMsg)
 			if err != nil {
