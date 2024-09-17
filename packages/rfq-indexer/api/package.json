@@ -11,10 +11,12 @@
     "start": "tsx src/index.ts",
     "start:local": "dotenv -e .env -- tsx src/index.ts",
     "dev": "dotenv -e .env -- tsx watch src/index.ts",
+    "lint:check": " ",
+    "ci:lint": " ",
     "build:go": " ",
     "build": " ",
     "build:slither": " ",
-    "ci:lint": " "
+    "test:coverage": "echo 'No tests defined.'"
   },
   "keywords": [],
   "author": "",

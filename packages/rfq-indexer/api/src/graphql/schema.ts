@@ -16,7 +16,11 @@ const additionalTypes = `
   }
 `
 
-const typeDefs = mergeTypeDefs([...typesArray, ...queriesArray, additionalTypes])
+const typeDefs = mergeTypeDefs([
+  ...typesArray,
+  ...queriesArray,
+  additionalTypes,
+])
 
 export const schema = makeExecutableSchema({
   typeDefs,

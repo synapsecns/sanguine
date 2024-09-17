@@ -1,7 +1,13 @@
 import { Kysely, PostgresDialect } from 'kysely'
 import { Pool } from 'pg'
 
-import type { BridgeRequestEvents, BridgeRelayedEvents, BridgeProofProvidedEvents, BridgeDepositRefundedEvents, BridgeDepositClaimedEvents } from '../types'
+import type {
+  BridgeRequestEvents,
+  BridgeRelayedEvents,
+  BridgeProofProvidedEvents,
+  BridgeDepositRefundedEvents,
+  BridgeDepositClaimedEvents,
+} from '../types'
 
 const { DATABASE_URL } = process.env
 

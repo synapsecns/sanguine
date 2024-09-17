@@ -82,7 +82,12 @@ export interface BridgeDepositClaimedEvents {
 }
 
 // Add any other shared types used across the API
-export type EventType = 'REQUEST' | 'RELAYED' | 'PROOF_PROVIDED' | 'DEPOSIT_REFUNDED' | 'DEPOSIT_CLAIMED'
+export type EventType =
+  | 'REQUEST'
+  | 'RELAYED'
+  | 'PROOF_PROVIDED'
+  | 'DEPOSIT_REFUNDED'
+  | 'DEPOSIT_CLAIMED'
 
 export interface EventFilter {
   type?: EventType
