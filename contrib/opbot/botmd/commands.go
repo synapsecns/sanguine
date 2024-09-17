@@ -9,6 +9,7 @@ import (
 	"log"
 	"math/big"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -50,14 +51,16 @@ func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.Com
 // TODO: add trace middleware.
 func (b *Bot) traceCommand() *slacker.CommandDefinition {
 	return b.requiresSignoz(&slacker.CommandDefinition{
-		Command:     "trace <tags>",
+		Command:     "trace {tags} {order}",
 		Description: "find a transaction in signoz",
 		Examples: []string{
-			"trace transaction_id:0x1234 serviceName:rfq",
+			"trace transaction_id:0x1234@serviceName:rfq",
+			"trace transaction_id:0x1234@serviceName:rfq a",
+			"trace transaction_id:0x1234@serviceName:rfq asc",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
 			tags := stripLinks(ctx.Request().Param("tags"))
-			splitTags := strings.Split(tags, " ")
+			splitTags := strings.Split(tags, "@")
 			if len(splitTags) == 0 {
 				_, err := ctx.Response().Reply("please provide tags in a key:value format")
 				if err != nil {
@@ -105,6 +108,14 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 					log.Println(err)
 				}
 				return
+			}
+
+			order := strings.ToLower(ctx.Request().Param("order"))
+			isAscending := order == "a" || order == "asc"
+			if isAscending {
+				sort.Slice(traceList, func(i, j int) bool {
+					return traceList[i].Timestamp.Before(traceList[j].Timestamp)
+				})
 			}
 
 			slackBlocks := []slack.Block{slack.NewHeaderBlock(slack.NewTextBlockObject(slack.PlainTextType, fmt.Sprintf("Traces for %s", tags), false, false))}
