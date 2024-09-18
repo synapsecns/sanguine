@@ -33,26 +33,43 @@ func getBestQuote(a, b *model.QuoteData) *model.QuoteData {
 const collectionTimeout = 1 * time.Minute
 
 func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest, requestID string) (quote *model.QuoteData) {
-	expireCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond)
-	collectionCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond+collectionTimeout)
-
 	// publish the quote request to all connected clients
 	relayerReq := model.NewRelayerWsQuoteRequest(request.Data, requestID)
 	r.wsClients.Range(func(key string, client WsClient) bool {
-		client.SendQuoteRequest(expireCtx, relayerReq)
+		client.SendQuoteRequest(ctx, relayerReq)
 		return true
 	})
-
 	err := r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, db.Pending)
 	if err != nil {
 		logger.Errorf("Error updating active quote request status: %v", err)
 	}
 
-	// collect responses from all clients until expiration window closes
+	// collect the responses and determine the best quote
+	responses := r.collectRelayerResponses(ctx, request)
+	var quoteID string
+	for _, resp := range responses {
+		quote = getBestQuote(quote, &resp.Data)
+		quoteID = resp.QuoteID
+	}
+	err = r.recordActiveQuote(ctx, quote, requestID, quoteID)
+	if err != nil {
+		logger.Errorf("Error recording active quote: %v", err)
+	}
+
+	return quote
+}
+
+func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *model.PutUserQuoteRequest) (responses map[string]*model.RelayerWsQuoteResponse) {
+	expireCtx, expireCancel := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond)
+	defer expireCancel()
+
+	// don't cancel the collection context so that late responses can be collected in background
+	collectionCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond+collectionTimeout)
+
 	wg := sync.WaitGroup{}
 	respMux := sync.Mutex{}
-	responses := map[string]*model.RelayerWsQuoteResponse{}
-	r.wsClients.Range(func(key string, client WsClient) bool {
+	responses = map[string]*model.RelayerWsQuoteResponse{}
+	r.wsClients.Range(func(relayerAddr string, client WsClient) bool {
 		wg.Add(1)
 		go func(client WsClient) {
 			defer wg.Done()
@@ -63,21 +80,14 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 			}
 
 			// validate the response
-			respStatus := db.Considered
-			err = validateRelayerQuoteResponse(key, resp)
-			if err != nil {
-				respStatus = db.Malformed
-				logger.Errorf("Error validating quote response: %v", err)
-			} else {
+			respStatus := getQuoteResponseStatus(expireCtx, resp, relayerAddr)
+			if respStatus == db.Considered {
 				respMux.Lock()
-				responses[key] = resp
+				responses[relayerAddr] = resp
 				respMux.Unlock()
 			}
 
 			// record the response
-			if expireCtx.Err() != nil {
-				respStatus = db.PastExpiration
-			}
 			err = r.db.InsertActiveQuoteResponse(collectionCtx, resp, respStatus)
 			if err != nil {
 				logger.Errorf("Error inserting active quote response: %v", err)
@@ -101,14 +111,32 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 		// all responses received
 	}
 
-	// construct the response
-	// at this point, all responses should have been validated
-	var bestQuoteID string
-	for _, resp := range responses {
-		quote = getBestQuote(quote, &resp.Data)
-		bestQuoteID = resp.QuoteID
-	}
+	return responses
+}
 
+func getQuoteResponseStatus(ctx context.Context, resp *model.RelayerWsQuoteResponse, relayerAddr string) db.ActiveQuoteResponseStatus {
+	respStatus := db.Considered
+	err := validateRelayerQuoteResponse(relayerAddr, resp)
+	if err != nil {
+		respStatus = db.Malformed
+		logger.Errorf("Error validating quote response: %v", err)
+	} else if ctx.Err() != nil {
+		respStatus = db.PastExpiration
+	}
+	return respStatus
+}
+
+func validateRelayerQuoteResponse(relayerAddr string, resp *model.RelayerWsQuoteResponse) error {
+	if resp.Data.RelayerAddress == nil {
+		return fmt.Errorf("relayer address is nil")
+	}
+	// TODO: compute quote ID from request
+	resp.QuoteID = uuid.New().String()
+	resp.Data.RelayerAddress = &relayerAddr
+	return nil
+}
+
+func (r *QuoterAPIServer) recordActiveQuote(ctx context.Context, quote *model.QuoteData, requestID, quoteID string) (err error) {
 	if quote == nil {
 		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, db.Expired)
 		if err != nil {
@@ -119,22 +147,11 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 		if err != nil {
 			logger.Errorf("Error updating active quote request status: %v", err)
 		}
-		err = r.db.UpdateActiveQuoteResponseStatus(ctx, bestQuoteID, db.Returned)
+		err = r.db.UpdateActiveQuoteResponseStatus(ctx, quoteID, db.Returned)
 		if err != nil {
-			logger.Errorf("Error updating active quote response status: %v", err)
+			return fmt.Errorf("error updating active quote response status: %w", err)
 		}
 	}
-
-	return quote
-}
-
-func validateRelayerQuoteResponse(relayerAddr string, resp *model.RelayerWsQuoteResponse) error {
-	if resp.Data.RelayerAddress == nil {
-		return fmt.Errorf("relayer address is nil")
-	}
-	// TODO: compute quote ID from request
-	resp.QuoteID = uuid.New().String()
-	resp.Data.RelayerAddress = &relayerAddr
 	return nil
 }
 
