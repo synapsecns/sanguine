@@ -67,6 +67,42 @@ import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
 
+import axios from 'axios'
+
+const fetchBridgeLimits = async (
+  fromChainId,
+  toChainId,
+  fromToken,
+  toToken
+) => {
+  // Ensure that token addresses exist for the respective chains
+  if (!fromToken?.addresses[fromChainId] || !toToken?.addresses[toChainId]) {
+    console.error('Token addresses are not defined for the selected chains.')
+    return
+  }
+
+  // Construct the URL with parameters
+  const endpoint = `http://localhost:3000/getBridgeLimits`
+  const url = `${endpoint}?fromChain=${fromChainId}&fromToken=${fromToken.addresses[fromChainId]}&toChain=${toChainId}&toToken=${toToken.addresses[toChainId]}`
+
+  try {
+    // Make the GET request
+    const response = await axios.get(url)
+
+    // Handle the response data
+    if (response.status === 200) {
+      console.log('Bridge limits data:', response.data)
+      return response.data
+    } else {
+      console.error('Failed to fetch bridge limits:', response.statusText)
+      return null
+    }
+  } catch (error) {
+    console.error('Error fetching bridge limits:', error)
+    return null
+  }
+}
+
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
   const { address } = useAccount()
@@ -91,6 +127,12 @@ const StateManagedBridge = () => {
     debouncedFromValue,
     destinationAddress,
   }: BridgeState = useBridgeState()
+
+  useEffect(() => {
+    if (fromChainId && toChainId && fromToken && toToken) {
+      fetchBridgeLimits(fromChainId, toChainId, fromToken, toToken)
+    }
+  }, [fromChainId, toChainId, fromToken, toToken])
 
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
 
