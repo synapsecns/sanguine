@@ -95,7 +95,6 @@ export const getBridgeLimitsController = async (req, res) => {
     )
 
     return res.json({
-      lowerLimitBridgeQuotes,
       maxOriginAmount,
       minOriginAmount,
     })
