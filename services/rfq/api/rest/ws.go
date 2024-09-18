@@ -60,11 +60,16 @@ func (c *wsClient) ReceiveQuoteResponse(ctx context.Context) (resp *model.Relaye
 }
 
 const (
-	PingOp         = "ping"
-	PongOp         = "pong"
+	// PongOp is the operation for a pong message
+	PongOp = "pong"
+	// PingOp is the operation for a ping message
+	PingOp = "ping"
+	// RequestQuoteOp is the operation for a request quote message
 	RequestQuoteOp = "request_quote"
-	SendQuoteOp    = "send_quote"
-	PingPeriod     = 15 * time.Second
+	// SendQuoteOp is the operation for a send quote message
+	SendQuoteOp = "send_quote"
+	// PingPeriod is the period for a ping message
+	PingPeriod = 15 * time.Second
 )
 
 func (c *wsClient) Run(ctx context.Context) (err error) {

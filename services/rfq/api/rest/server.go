@@ -513,7 +513,6 @@ func (r *QuoterAPIServer) PutUserQuoteRequest(c *gin.Context) {
 	if isActiveRFQ {
 		activeQuote = r.handleActiveRFQ(c.Request.Context(), &req, requestID)
 	}
-
 	passiveQuote, err := r.handlePassiveRFQ(c.Request.Context(), &req)
 	if err != nil {
 		logger.Error("Error handling passive RFQ", "error", err)
