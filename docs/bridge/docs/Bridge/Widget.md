@@ -1,0 +1,3 @@
+# Bridge Widget
+
+Lorem ipsum

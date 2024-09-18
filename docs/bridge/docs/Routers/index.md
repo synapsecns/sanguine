@@ -1,7 +1,7 @@
-# Routers
+# Synapse Routers
 
-:::tip[TODO]
-* Move router pages into this folder
-* Move 'Observability' under 'Services'
-* Rename 'Services' to ' 'Essential Tools'
-:::
+Synapse offers several of routers for different transaction types.
+
+* **[Synapse Router](#)** – Executable quotes for arbitrary blockchain transactions.
+* **[CCTP](CCTP)** – Native router for USDC transactions.
+* **[RFQ](RFQ)** – Fast router that allows on-chain agents to bid on interchain delivery.

@@ -104,4 +104,4 @@ The CCTP Relayer is configured with a yaml file. The following is an example con
 
 ### Observability
 
-The CCTP relayer implements open telemetry for both tracing and metrics. Please see the [Observability](../Observability) page for more info. We'd also highly recommend setting up the [submitter dashboard](../Services/Submitter) as well.
+The CCTP relayer implements open telemetry for both tracing and metrics. Please see the [Observability](docs/Services/Observability) page for more info. We'd also highly recommend setting up the [submitter dashboard](../Services/Submitter) as well.
