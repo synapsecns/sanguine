@@ -11,8 +11,6 @@ import (
 )
 
 // WsClient is a client for the WebSocket API.
-//
-//go:generate go run github.com/vektra/mockery/v2 --name WsClient --output ./mocks --case=underscore
 type WsClient interface {
 	Run(ctx context.Context) error
 	SendQuoteRequest(ctx context.Context, quoteRequest *model.RelayerWsQuoteRequest) error
