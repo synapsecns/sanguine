@@ -1,4 +1,4 @@
-# Get Started
+# Developer Guides
 
 * **[Send and receive interchain data](#)**
 * **[On-chain swaps](#)**

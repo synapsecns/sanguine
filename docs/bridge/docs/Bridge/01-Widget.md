@@ -1,3 +1,3 @@
-# Client SDK
+# Widget
 
 Lorem ipsum

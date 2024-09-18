@@ -1,3 +1,0 @@
-# Interchain Swaps
-
-Lorem ipsum

@@ -1,3 +1,3 @@
-# Server SDK
+# SDK
 
 Lorem ipsum

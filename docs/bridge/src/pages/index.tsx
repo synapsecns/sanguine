@@ -36,7 +36,7 @@ export default () => {
       title={`Hello from ${siteConfig.title}`}
       description="Description will go into a meta tag in <head />"
     >
-      <Redirect to={'/docs/Welcome'} />
+      <Redirect to={'/docs/About'} />
       {/* <HomepageHeader />
       <main>
         <HomepageFeatures />
