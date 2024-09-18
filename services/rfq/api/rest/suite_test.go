@@ -61,6 +61,7 @@ func NewServerSuite(tb testing.TB) *ServerSuite {
 func (c *ServerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
+	c.setDB()
 	testOmnirpc := omnirpcHelper.NewOmnirpcServer(c.GetTestContext(), c.T(), c.omniRPCTestBackends...)
 	omniRPCClient := omniClient.NewOmnirpcClient(testOmnirpc, c.handler, omniClient.WithCaptureReqRes())
 	c.omniRPCClient = omniRPCClient
@@ -197,7 +198,10 @@ func (c *ServerSuite) SetupSuite() {
 	if err := g.Wait(); err != nil {
 		c.T().Fatal(err)
 	}
+	// setup config
+}
 
+func (c *ServerSuite) setDB() {
 	dbType, err := dbcommon.DBTypeFromString("sqlite")
 	c.Require().NoError(err)
 	metricsHandler := metrics.NewNullHandler()
@@ -205,7 +209,6 @@ func (c *ServerSuite) SetupSuite() {
 	// TODO use temp file / in memory sqlite3 to not create in directory files
 	testDB, _ := sql.Connect(c.GetSuiteContext(), dbType, filet.TmpDir(c.T(), ""), metricsHandler)
 	c.database = testDB
-	// setup config
 }
 
 // TestConfigSuite runs the integration test suite.

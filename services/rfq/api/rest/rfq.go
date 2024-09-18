@@ -78,7 +78,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 			if expireCtx.Err() != nil {
 				respStatus = db.PastExpiration
 			}
-			err = r.db.InsertActiveQuoteResponse(ctx, resp, respStatus)
+			err = r.db.InsertActiveQuoteResponse(collectionCtx, resp, respStatus)
 			if err != nil {
 				logger.Errorf("Error inserting active quote response: %v", err)
 			}

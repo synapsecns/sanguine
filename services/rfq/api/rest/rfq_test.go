@@ -62,6 +62,15 @@ func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet walle
 	}()
 }
 
+func verifyActiveQuoteRequest(c *ServerSuite, userReq *model.PutUserQuoteRequest, activeQuoteRequest *db.ActiveQuoteRequest, status db.ActiveQuoteRequestStatus) {
+	c.Assert().Equal(uint64(userReq.Data.OriginChainID), activeQuoteRequest.OriginChainID)
+	c.Assert().Equal(userReq.Data.OriginTokenAddr, activeQuoteRequest.OriginTokenAddr)
+	c.Assert().Equal(uint64(userReq.Data.DestChainID), activeQuoteRequest.DestChainID)
+	c.Assert().Equal(userReq.Data.DestTokenAddr, activeQuoteRequest.DestTokenAddr)
+	c.Assert().Equal(userReq.Data.OriginAmount, activeQuoteRequest.OriginAmount.String())
+	c.Assert().Equal(status, activeQuoteRequest.Status)
+}
+
 func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	// Start the API server
 	c.startQuoterAPIServer()
@@ -126,13 +135,7 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	// Verify ActiveQuoteRequest insertion
 	activeQuoteRequests, err := c.database.GetActiveQuoteRequests(c.GetTestContext())
 	c.Require().NoError(err)
-	c.Require().Len(activeQuoteRequests, 1)
-	c.Assert().Equal(uint64(userQuoteReq.Data.OriginChainID), activeQuoteRequests[0].OriginChainID)
-	c.Assert().Equal(userQuoteReq.Data.OriginTokenAddr, activeQuoteRequests[0].OriginTokenAddr)
-	c.Assert().Equal(uint64(userQuoteReq.Data.DestChainID), activeQuoteRequests[0].DestChainID)
-	c.Assert().Equal(userQuoteReq.Data.DestTokenAddr, activeQuoteRequests[0].DestTokenAddr)
-	c.Assert().Equal(userQuoteReq.Data.OriginAmount, activeQuoteRequests[0].OriginAmount.String())
-	c.Assert().Equal(db.Fulfilled, activeQuoteRequests[0].Status)
+	verifyActiveQuoteRequest(c, userQuoteReq, activeQuoteRequests[0], db.Fulfilled)
 }
 
 func (c *ServerSuite) TestActiveRFQExpiredRequest() {
@@ -193,6 +196,11 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 	// Assert the response
 	c.Assert().False(userQuoteResp.Success)
 	c.Assert().Equal("no quotes found", userQuoteResp.Reason)
+
+	// Verify ActiveQuoteRequest insertion
+	activeQuoteRequests, err := c.database.GetActiveQuoteRequests(c.GetTestContext())
+	c.Require().NoError(err)
+	verifyActiveQuoteRequest(c, userQuoteReq, activeQuoteRequests[0], db.Expired)
 }
 
 func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
@@ -269,6 +277,11 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	c.Assert().Equal("active", userQuoteResp.QuoteType)
 	c.Assert().Equal(destAmountStr, *userQuoteResp.Data.DestAmount)
 	c.Assert().Equal(originAmount, userQuoteResp.Data.OriginAmount)
+
+	// Verify ActiveQuoteRequest insertion
+	activeQuoteRequests, err := c.database.GetActiveQuoteRequests(c.GetTestContext())
+	c.Require().NoError(err)
+	verifyActiveQuoteRequest(c, userQuoteReq, activeQuoteRequests[0], db.Fulfilled)
 }
 
 func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
