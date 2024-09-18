@@ -59,6 +59,7 @@
     "next-intl": "^3.19.0",
     "numeral": "^2.0.6",
     "postcss": "^8.4.31",
+    "@popperjs/core": "^2.11.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-ga": "^3.3.1",
@@ -99,6 +100,7 @@
   "license": "ISC",
   "keywords": [],
   "devDependencies": {
+    "autoprefixer": "^10.4.7",
     "@depay/web3-mock": "^14.0.0",
     "@graphql-codegen/cli": "5.0.2",
     "@graphql-codegen/client-preset": "4.3.3",
