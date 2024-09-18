@@ -1,8 +1,6 @@
-import axios from 'axios'
 import { validationResult } from 'express-validator'
 import { BigNumber } from 'ethers'
 import { parseUnits } from '@ethersproject/units'
-import { getAddress } from '@ethersproject/address'
 
 import { Synapse } from '../services/synapseService'
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
@@ -18,37 +16,6 @@ export const getBridgeLimitsController = async (req, res) => {
 
     const fromTokenInfo = tokenAddressToToken(fromChain, fromToken)
     const toTokenInfo = tokenAddressToToken(toChain, toToken)
-
-    const rfqResponse = await axios.get('https://rfq-api.omnirpc.io/quotes', {
-      params: {
-        originChainId: fromChain,
-        originTokenAddress: fromTokenInfo?.address,
-        destChainId: toChain,
-        destTokenAddress: toTokenInfo?.address,
-      },
-    })
-
-    const rfqQuotes = rfqResponse.data
-
-    let bestRfqQuote = null
-
-    if (Array.isArray(rfqQuotes) && rfqQuotes.length > 0) {
-      const filteredQuotes = rfqQuotes
-        .slice(0, 20)
-        .filter(
-          (quote) =>
-            Number(quote.origin_chain_id) === Number(fromChain) &&
-            Number(quote.dest_chain_id) === Number(toChain) &&
-            getAddress(quote.origin_token_addr) === fromTokenInfo.address &&
-            getAddress(quote.dest_token_addr) === toTokenInfo?.address
-        )
-
-      bestRfqQuote = filteredQuotes.reduce((maxQuote, currentQuote) => {
-        const currentAmount = Number(currentQuote.max_origin_amount)
-        const maxAmount = maxQuote ? Number(maxQuote.max_origin_amount) : 0
-        return currentAmount > maxAmount ? currentQuote : maxQuote
-      }, null)
-    }
 
     const upperLimitAmount = parseUnits('1000000', fromTokenInfo.decimals)
     const upperLimitBridgeQuotes = await Synapse.allBridgeQuotes(
@@ -68,10 +35,17 @@ export const getBridgeLimitsController = async (req, res) => {
       lowerLimitAmount
     )
 
-    const bestUpperLimitSDKQuote = upperLimitBridgeQuotes[0]
+    const maxBridgeAmountQuote = upperLimitBridgeQuotes.reduce(
+      (maxQuote, currentQuote) => {
+        const currentMaxAmount = currentQuote.maxAmountOut
+        const maxAmount = maxQuote ? maxQuote.maxAmountOut : BigNumber.from(0)
 
-    let maxOriginQuote
-    const minBridgeFeeQuote = lowerLimitBridgeQuotes.reduce(
+        return currentMaxAmount.gt(maxAmount) ? currentQuote : maxQuote
+      },
+      null
+    )
+
+    const minBridgeAmountQuote = lowerLimitBridgeQuotes.reduce(
       (minQuote, currentQuote) => {
         const currentFeeAmount = currentQuote.feeAmount
         const minFeeAmount = minQuote ? minQuote.feeAmount : null
@@ -83,43 +57,29 @@ export const getBridgeLimitsController = async (req, res) => {
       null
     )
 
-    if (bestRfqQuote) {
-      const bestRfqQuoteMaxAmountBN = BigNumber.from(
-        bestRfqQuote.max_origin_amount
-      )
-      maxOriginQuote = bestRfqQuoteMaxAmountBN.gt(
-        bestUpperLimitSDKQuote.maxAmountOut
-      )
-        ? { source: 'RFQ', amount: bestRfqQuoteMaxAmountBN }
-        : {
-            source: bestUpperLimitSDKQuote.bridgeModuleName,
-            amount: bestUpperLimitSDKQuote.maxAmountOut,
-          }
-    } else {
-      maxOriginQuote = {
-        source: bestUpperLimitSDKQuote.bridgeModuleName,
-        amount: bestUpperLimitSDKQuote.maxAmountOut,
-      }
-    }
-
-    const minQuoteOriginQueryTokenOutInfo = tokenAddressToToken(
-      fromChain,
-      minBridgeFeeQuote.originQuery.tokenOut
+    const maxAmountOriginQueryTokenOutInfo = tokenAddressToToken(
+      toChain,
+      maxBridgeAmountQuote.destQuery.tokenOut
     )
 
-    const minOriginValue = formatBNToString(
-      minBridgeFeeQuote.feeAmount,
-      minQuoteOriginQueryTokenOutInfo.decimals
+    const minAmountOriginQueryTokenOutInfo = tokenAddressToToken(
+      fromChain,
+      minBridgeAmountQuote.originQuery.tokenOut
     )
 
     const maxOriginAmount = formatBNToString(
-      maxOriginQuote.amount,
-      fromTokenInfo.decimals
+      maxBridgeAmountQuote.maxAmountOut,
+      maxAmountOriginQueryTokenOutInfo.decimals
+    )
+
+    const minOriginAmount = formatBNToString(
+      minBridgeAmountQuote.feeAmount,
+      minAmountOriginQueryTokenOutInfo.decimals
     )
 
     return res.json({
       maxOriginAmount,
-      minOriginValue,
+      minOriginAmount,
     })
   } catch (err) {
     res.status(500).json({
