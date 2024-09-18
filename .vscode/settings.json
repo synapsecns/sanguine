@@ -16,11 +16,6 @@
   "eslint.format.enable": true,
   "editorconfig.generateAuto": false,
   "files.trimTrailingWhitespace": true,
-  "solidity.packageDefaultDependenciesContractsDirectory": "contracts",
-  "solidity.packageDefaultDependenciesDirectory": "lib",
-  "solidity.compileUsingRemoteVersion": "v0.8.17+commit.8df45f5f",
-  "solidity.formatter": "prettier",
-  "solidity.defaultCompiler": "remote",
   "tailwindCSS.classAttributes": [
     ".*class.*",
     ".*Class.*",
