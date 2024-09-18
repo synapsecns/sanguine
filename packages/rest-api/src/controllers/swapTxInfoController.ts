@@ -2,6 +2,7 @@ import { validationResult } from 'express-validator'
 import { parseUnits } from '@ethersproject/units'
 
 import { Synapse } from '../services/synapseService'
+import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 
 export const swapTxInfoController = async (req, res) => {
   const errors = validationResult(req)
@@ -10,23 +11,23 @@ export const swapTxInfoController = async (req, res) => {
   }
 
   try {
-    const { chain, amount } = req.query
-    const fromTokenInfo = res.locals.tokenInfo.fromToken
-    const toTokenInfo = res.locals.tokenInfo.toToken
+    const { chain, amount, address, fromToken, toToken } = req.query
+
+    const fromTokenInfo = tokenAddressToToken(chain.toString(), fromToken)
 
     const amountInWei = parseUnits(amount.toString(), fromTokenInfo.decimals)
 
     const quote = await Synapse.swapQuote(
       Number(chain),
-      fromTokenInfo.address,
-      toTokenInfo.address,
+      fromToken,
+      toToken,
       amountInWei
     )
 
     const txInfo = await Synapse.swap(
       Number(chain),
-      fromTokenInfo.address,
-      toTokenInfo.address,
+      address,
+      fromToken,
       amountInWei,
       quote.query
     )
