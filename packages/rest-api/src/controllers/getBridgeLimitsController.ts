@@ -17,16 +17,16 @@ export const getBridgeLimitsController = async (req, res) => {
     const fromTokenInfo = tokenAddressToToken(fromChain, fromToken)
     const toTokenInfo = tokenAddressToToken(toChain, toToken)
 
-    const upperLimitAmount = parseUnits('1000000', fromTokenInfo.decimals)
+    const upperLimitValue = parseUnits('1000000', fromTokenInfo.decimals)
     const upperLimitBridgeQuotes = await Synapse.allBridgeQuotes(
       Number(fromChain),
       Number(toChain),
       fromTokenInfo.address,
       toTokenInfo.address,
-      upperLimitAmount
+      upperLimitValue
     )
 
-    const lowerLimitValues = ['0.01', '0.1', '1', '10']
+    const lowerLimitValues = ['0.01', '10']
     let lowerLimitBridgeQuotes = null
 
     for (const limit of lowerLimitValues) {
@@ -66,6 +66,13 @@ export const getBridgeLimitsController = async (req, res) => {
       },
       null
     )
+
+    if (!maxBridgeAmountQuote || !minBridgeAmountQuote) {
+      return res.json({
+        maxOriginAmount: null,
+        minOriginAmount: null,
+      })
+    }
 
     const maxAmountOriginQueryTokenOutInfo = tokenAddressToToken(
       toChain,
