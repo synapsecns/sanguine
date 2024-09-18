@@ -122,6 +122,17 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	c.Assert().Equal("active", userQuoteResp.QuoteType)
 	c.Assert().Equal(destAmount, *userQuoteResp.Data.DestAmount)
 	c.Assert().Equal(originAmount, userQuoteResp.Data.OriginAmount)
+
+	// Verify ActiveQuoteRequest insertion
+	activeQuoteRequests, err := c.database.GetActiveQuoteRequests(c.GetTestContext())
+	c.Require().NoError(err)
+	c.Require().Len(activeQuoteRequests, 1)
+	c.Assert().Equal(uint64(userQuoteReq.Data.OriginChainID), activeQuoteRequests[0].OriginChainID)
+	c.Assert().Equal(userQuoteReq.Data.OriginTokenAddr, activeQuoteRequests[0].OriginTokenAddr)
+	c.Assert().Equal(uint64(userQuoteReq.Data.DestChainID), activeQuoteRequests[0].DestChainID)
+	c.Assert().Equal(userQuoteReq.Data.DestTokenAddr, activeQuoteRequests[0].DestTokenAddr)
+	c.Assert().Equal(userQuoteReq.Data.OriginAmount, activeQuoteRequests[0].OriginAmount.String())
+	c.Assert().Equal(db.Fulfilled, activeQuoteRequests[0].Status)
 }
 
 func (c *ServerSuite) TestActiveRFQExpiredRequest() {
