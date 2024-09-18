@@ -199,7 +199,6 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 	}
 	header.Set(rest.AuthorizationHeader, authHeader)
 
-	// Use the header when dialing
 	conn, _, err := websocket.DefaultDialer.Dial(reqURL, header)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
@@ -247,6 +246,14 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 				err = json.Unmarshal(msg, &rfqMsg)
 				if err != nil {
 					logger.Warn("error unmarshalling message: %v", err)
+					continue
+				}
+
+				// automatically send the pong
+				if rfqMsg.Op == rest.PingOp {
+					reqChan <- &model.ActiveRFQMessage{
+						Op: rest.PongOp,
+					}
 					continue
 				}
 

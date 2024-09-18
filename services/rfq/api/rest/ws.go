@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
@@ -59,14 +60,19 @@ func (c *wsClient) ReceiveQuoteResponse(ctx context.Context) (resp *model.Relaye
 }
 
 const (
-	pingOp         = "ping"
-	pongOp         = "pong"
-	requestQuoteOp = "request_quote"
-	sendQuoteOp    = "send_quote"
+	PingOp         = "ping"
+	PongOp         = "pong"
+	RequestQuoteOp = "request_quote"
+	SendQuoteOp    = "send_quote"
+	PingPeriod     = 15 * time.Second
 )
 
 func (c *wsClient) Run(ctx context.Context) (err error) {
 	messageChan := make(chan []byte, 1000)
+	pingTicker := time.NewTicker(PingPeriod)
+	defer pingTicker.Stop()
+
+	lastPong := time.Now()
 
 	// Goroutine to read messages from WebSocket and send to channel
 	go func() {
@@ -94,7 +100,7 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 				continue
 			}
 			msg := model.ActiveRFQMessage{
-				Op:      requestQuoteOp,
+				Op:      RequestQuoteOp,
 				Content: json.RawMessage(rawData),
 			}
 			c.conn.WriteJSON(msg)
@@ -107,7 +113,7 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			}
 
 			switch rfqMsg.Op {
-			case sendQuoteOp:
+			case SendQuoteOp:
 				// forward the response to the server
 				var resp model.RelayerWsQuoteResponse
 				err = json.Unmarshal(rfqMsg.Content, &resp)
@@ -116,10 +122,26 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 					continue
 				}
 				c.responseChan <- &resp
-			case pongOp:
-				// TODO: keep connection alive
+			case PongOp:
+				lastPong = time.Now()
 			default:
 				logger.Errorf("Received unexpected operation from relayer: %s", rfqMsg.Op)
+			}
+		case <-pingTicker.C:
+			if time.Since(lastPong) > PingPeriod {
+				c.conn.Close()
+				close(c.doneChan)
+				return fmt.Errorf("pong not received in time")
+			}
+			pingMsg := model.ActiveRFQMessage{
+				Op: PingOp,
+			}
+			err := c.conn.WriteJSON(pingMsg)
+			if err != nil {
+				logger.Error("Error sending ping message: %s", err)
+				c.conn.Close()
+				close(c.doneChan)
+				return err
 			}
 		}
 	}
