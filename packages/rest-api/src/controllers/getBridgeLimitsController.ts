@@ -26,7 +26,7 @@ export const getBridgeLimitsController = async (req, res) => {
       upperLimitAmount
     )
 
-    const lowerLimitValues = ['0.01', '0.1', '1', '10', '100', '20000']
+    const lowerLimitValues = ['0.01', '0.1', '1', '10', '100', '1000', '11000']
     let lowerLimitBridgeQuotes = null
 
     for (const limit of lowerLimitValues) {
