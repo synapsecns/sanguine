@@ -16,6 +16,7 @@
   "eslint.format.enable": true,
   "editorconfig.generateAuto": false,
   "files.trimTrailingWhitespace": true,
+  "solidity.monoRepoSupport": true,
   "tailwindCSS.classAttributes": [
     ".*class.*",
     ".*Class.*",
