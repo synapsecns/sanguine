@@ -32,7 +32,7 @@ type Proof {
   blockNumber: Int!
   blockTimestamp: Int!
   transactionHash: String!
-  
+
   relayer: String!
 }
 
@@ -40,7 +40,7 @@ type Claim {
   blockNumber: Int!
   blockTimestamp: Int!
   transactionHash: String!
-  
+
   relayer: String!
   to: String!
   amountFormatted: String!
@@ -50,7 +50,7 @@ type Refund {
   blockNumber: Int!
   blockTimestamp: Int!
   transactionHash: String!
-  
+
   to: String!
   amountFormatted: String!
 }
@@ -76,8 +76,26 @@ type PendingTransactionMissingClaim {
   BridgeProof: Proof!
 }
 
+type InvalidRelay {
+  transactionId: String!
+  blockNumber: Int!
+  blockTimestamp: Int!
+  transactionHash: String!
+  originChain: String!
+  destChain: String!
+  originChainId: Int!
+  destChainId: Int!
+  originToken: String!
+  destToken: String!
+  originAmountFormatted: String!
+  destAmountFormatted: String!
+  to: String!
+  relayer: String!
+}
+
 type Query {
   pendingTransactionsMissingRelay: [PendingTransactionMissingRelay!]!
   pendingTransactionsMissingProof: [PendingTransactionMissingProof!]!
   pendingTransactionsMissingClaim: [PendingTransactionMissingClaim!]!
+  recentInvalidRelays: [InvalidRelay!]!
 }

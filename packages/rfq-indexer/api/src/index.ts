@@ -23,7 +23,7 @@ app.get('/api/pending-transactions-missing-relay', async (req, res) => {
       await resolvers.Query.pendingTransactionsMissingRelay()
     res.json(pendingTransactions);
   } catch (error) {
-    console.error('Error fetching pending transactions:', error);
+    console.error('Error fetching pending transactions missing relay:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -50,6 +50,15 @@ app.get('/api/pending-transactions-missing-claim', async (req, res) => {
   }
 });
 
+app.get('/api/recent-invalid-relays', async (req, res) => {
+  try {
+    const queryResult = await resolvers.Query.recentInvalidRelays();
+    res.json(queryResult);
+  } catch (error) {
+    console.error('Error fetching recent invalid relays:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.listen(process.env.PORT, () => {
   console.info('API server runs on http://localhost:3001')

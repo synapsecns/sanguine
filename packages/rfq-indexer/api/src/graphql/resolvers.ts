@@ -129,14 +129,14 @@ function nest_results(sqlResults: any[]) {
         transactionFields[key] = value;
       }
     }
-    
+
     const result: { [key: string]: any } = { Bridge: transactionFields };
     if (Object.keys(bridgeRequest).length)  result.BridgeRequest  = bridgeRequest;
     if (Object.keys(bridgeRelay).length)    result.BridgeRelay    = bridgeRelay;
     if (Object.keys(bridgeProof).length)   result.BridgeProof   = bridgeProof;
     if (Object.keys(bridgeClaim).length)   result.BridgeClaim   = bridgeClaim;
     if (Object.keys(bridgeDispute).length) result.BridgeDispute = bridgeDispute;
-    
+
     return result;
   });
 }
@@ -201,7 +201,7 @@ const resolvers = {
       .with('deposits', () => qDeposits())
       .with('relays', () => qRelays())
       .with('refunds', () => qRefunds())
-      .with('combined', (qb) => 
+      .with('combined', (qb) =>
         qb.selectFrom('deposits')
           .selectAll('deposits')
           .leftJoin('relays', 'transactionId_deposit', 'transactionId_relay')
@@ -220,7 +220,7 @@ const resolvers = {
         .with('deposits', () => qDeposits())
         .with('relays', () => qRelays())
         .with('proofs', () => qProofs())
-        .with('combined', (qb) => 
+        .with('combined', (qb) =>
           qb.selectFrom('deposits')
             .innerJoin('relays', 'transactionId_deposit', 'transactionId_relay')
             .leftJoin('proofs', 'transactionId_deposit', 'transactionId_proof')
@@ -240,7 +240,7 @@ const resolvers = {
         .with('relays', () => qRelays())
         .with('proofs', () => qProofs())
         .with('claims', () => qClaims())
-        .with('combined', (qb) => 
+        .with('combined', (qb) =>
           qb.selectFrom('deposits')
             .innerJoin('relays', 'transactionId_deposit', 'transactionId_relay')
             .innerJoin('proofs', 'transactionId_deposit', 'transactionId_proof')
@@ -255,6 +255,35 @@ const resolvers = {
         .orderBy('blockTimestamp_proof', 'desc')
 
         return nest_results(await query.execute());
+    },
+    recentInvalidRelays: async () => {
+      const query = db.selectFrom('BridgeRelayedEvents')
+      .leftJoin('BridgeRequestEvents', 'BridgeRelayedEvents.transactionId', 'BridgeRequestEvents.transactionId')
+      .select([
+        'BridgeRelayedEvents.transactionId',
+        'BridgeRelayedEvents.blockNumber',
+        'BridgeRelayedEvents.blockTimestamp',
+        'BridgeRelayedEvents.transactionHash',
+
+        'BridgeRelayedEvents.originChain',
+        'BridgeRelayedEvents.destChain',
+        'BridgeRelayedEvents.originChainId',
+        'BridgeRelayedEvents.destChainId',
+        'BridgeRelayedEvents.originToken',
+        'BridgeRelayedEvents.destToken',
+        'BridgeRelayedEvents.originAmountFormatted',
+        'BridgeRelayedEvents.destAmountFormatted',
+
+        'BridgeRelayedEvents.to',
+        'BridgeRelayedEvents.relayer',
+      ])
+      // lookback approx 2 weeks
+      .where('BridgeRelayedEvents.blockTimestamp', '>', Math.floor(Date.now() / 1000) - 2 * 7 * 24 * 60 * 60)
+      .where('BridgeRequestEvents.transactionId', 'is', null)
+      ;
+
+      // intentionally do not nest - doesnt make sense w/ this dataset because the whole point is that no Deposit exists
+      return await query.execute();
     },
   },
   BridgeEvent: {
