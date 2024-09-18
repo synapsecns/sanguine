@@ -1,4 +1,5 @@
 import { validationResult } from 'express-validator'
+import { BigNumber } from 'ethers'
 import { parseUnits } from '@ethersproject/units'
 
 import { Synapse } from '../services/synapseService'
@@ -16,36 +17,45 @@ export const getBridgeLimitsController = async (req, res) => {
     const fromTokenInfo = tokenAddressToToken(fromChain, fromToken)
     const toTokenInfo = tokenAddressToToken(toChain, toToken)
 
-    const testValues = [
-      '0.01',
-      '0.1',
-      '1',
-      '10',
-      '100',
-      '1000',
-      '10000',
-      '100000',
-      '1000000',
-    ]
-    let smallestBridgeQuotes = null
+    const upperLimitValue = parseUnits('1000000', fromTokenInfo.decimals)
+    const upperLimitBridgeQuotes = await Synapse.allBridgeQuotes(
+      Number(fromChain),
+      Number(toChain),
+      fromTokenInfo.address,
+      toTokenInfo.address,
+      upperLimitValue
+    )
 
-    for (const value of testValues) {
-      const amount = parseUnits(value, fromTokenInfo.decimals)
+    const lowerLimitValues = ['0.01', '10']
+    let lowerLimitBridgeQuotes = null
 
-      smallestBridgeQuotes = await Synapse.allBridgeQuotes(
+    for (const limit of lowerLimitValues) {
+      const lowerLimitAmount = parseUnits(limit, fromTokenInfo.decimals)
+
+      lowerLimitBridgeQuotes = await Synapse.allBridgeQuotes(
         Number(fromChain),
         Number(toChain),
         fromTokenInfo.address,
         toTokenInfo.address,
-        amount
+        lowerLimitAmount
       )
 
-      if (smallestBridgeQuotes && smallestBridgeQuotes.length > 0) {
+      if (lowerLimitBridgeQuotes && lowerLimitBridgeQuotes.length > 0) {
         break
       }
     }
 
-    const minAmountQuote = smallestBridgeQuotes.reduce(
+    const maxBridgeAmountQuote = upperLimitBridgeQuotes.reduce(
+      (maxQuote, currentQuote) => {
+        const currentMaxAmount = currentQuote.maxAmountOut
+        const maxAmount = maxQuote ? maxQuote.maxAmountOut : BigNumber.from(0)
+
+        return currentMaxAmount.gt(maxAmount) ? currentQuote : maxQuote
+      },
+      null
+    )
+
+    const minBridgeAmountQuote = lowerLimitBridgeQuotes.reduce(
       (minQuote, currentQuote) => {
         const currentFeeAmount = currentQuote.feeAmount
         const minFeeAmount = minQuote ? minQuote.feeAmount : null
@@ -57,22 +67,35 @@ export const getBridgeLimitsController = async (req, res) => {
       null
     )
 
-    if (!minAmountQuote) {
-      return res.status(400).json({ errors: 'Route does not exist' })
+    if (!maxBridgeAmountQuote || !minBridgeAmountQuote) {
+      return res.json({
+        maxOriginAmount: null,
+        minOriginAmount: null,
+      })
     }
 
-    const minAmountQuoteOriginQueryTokenOutInfo = tokenAddressToToken(
+    const maxAmountOriginQueryTokenOutInfo = tokenAddressToToken(
+      toChain,
+      maxBridgeAmountQuote.destQuery.tokenOut
+    )
+
+    const minAmountOriginQueryTokenOutInfo = tokenAddressToToken(
       fromChain,
-      minAmountQuote.originQuery.tokenOut
+      minBridgeAmountQuote.originQuery.tokenOut
+    )
+
+    const maxOriginAmount = formatBNToString(
+      maxBridgeAmountQuote.maxAmountOut,
+      maxAmountOriginQueryTokenOutInfo.decimals
     )
 
     const minOriginAmount = formatBNToString(
-      minAmountQuote.feeAmount,
-      minAmountQuoteOriginQueryTokenOutInfo.decimals
+      minBridgeAmountQuote.feeAmount,
+      minAmountOriginQueryTokenOutInfo.decimals
     )
 
     return res.json({
-      maxOriginAmount: '1000000',
+      maxOriginAmount,
       minOriginAmount,
     })
   } catch (err) {
