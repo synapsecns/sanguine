@@ -143,7 +143,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	// now our friendly user is going to check the quote and send us some USDC on the origin chain.
 	i.Eventually(func() bool {
 		// first he's gonna check the quotes.
-		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
+		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, nil, localsigner.NewSigner(i.userWallet.PrivateKey()))
 		i.NoError(err)
 
 		allQuotes, err := userAPIClient.GetAllQuotes(i.GetTestContext())
@@ -205,7 +205,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	// since relayer started w/ 0 usdc, once they're offering the inventory up on origin chain we know the workflow completed
 	i.Eventually(func() bool {
 		// first he's gonna check the quotes.
-		relayerAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.relayerWallet.PrivateKey()))
+		relayerAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, nil, localsigner.NewSigner(i.relayerWallet.PrivateKey()))
 		i.NoError(err)
 
 		allQuotes, err := relayerAPIClient.GetAllQuotes(i.GetTestContext())
@@ -295,7 +295,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	// now our friendly user is going to check the quote and send us some ETH on the origin chain.
 	i.Eventually(func() bool {
 		// first he's gonna check the quotes.
-		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
+		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, nil, localsigner.NewSigner(i.userWallet.PrivateKey()))
 		i.NoError(err)
 
 		allQuotes, err := userAPIClient.GetAllQuotes(i.GetTestContext())
@@ -360,7 +360,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	// since relayer started w/ 0 ETH, once they're offering the inventory up on origin chain we know the workflow completed
 	i.Eventually(func() bool {
 		// first he's gonna check the quotes.
-		relayerAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.relayerWallet.PrivateKey()))
+		relayerAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, nil, localsigner.NewSigner(i.relayerWallet.PrivateKey()))
 		i.NoError(err)
 
 		allQuotes, err := relayerAPIClient.GetAllQuotes(i.GetTestContext())
@@ -530,7 +530,7 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 	// now our friendly user is going to check the quote and send us some USDC on the origin chain.
 	i.Eventually(func() bool {
 		// first he's gonna check the quotes.
-		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
+		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, nil, localsigner.NewSigner(i.userWallet.PrivateKey()))
 		i.NoError(err)
 
 		allQuotes, err := userAPIClient.GetAllQuotes(i.GetTestContext())

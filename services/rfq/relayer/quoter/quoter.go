@@ -81,7 +81,7 @@ type Manager struct {
 	// quoteAmountGauge stores a histogram of quote amounts.
 	quoteAmountGauge metric.Float64ObservableGauge
 	// currentQuotes is used for recording quote metrics.
-	currentQuotes []model.PutQuoteRequest
+	currentQuotes []model.PutRelayerQuoteRequest
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -123,7 +123,7 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		feePricer:        feePricer,
 		screener:         ss,
 		meter:            metricsHandler.Meter(meterName),
-		currentQuotes:    []model.PutQuoteRequest{},
+		currentQuotes:    []model.PutRelayerQuoteRequest{},
 	}
 
 	m.quoteAmountGauge, err = m.meter.Float64ObservableGauge("quote_amount")
@@ -274,7 +274,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	var allQuotes []model.PutQuoteRequest
+	var allQuotes []model.PutRelayerQuoteRequest
 
 	// First, generate all quotes
 	g, gctx := errgroup.WithContext(ctx)
@@ -343,7 +343,7 @@ const meterName = "github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
-func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address common.Address, balance *big.Int, inv map[int]map[common.Address]*big.Int) (quotes []model.PutQuoteRequest, err error) {
+func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address common.Address, balance *big.Int, inv map[int]map[common.Address]*big.Int) (quotes []model.PutRelayerQuoteRequest, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "generateQuotes", trace.WithAttributes(
 		attribute.Int(metrics.Origin, chainID),
 		attribute.String("address", address.String()),
@@ -362,7 +362,7 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 	// generate quotes in parallel
 	g, gctx := errgroup.WithContext(ctx)
 	quoteMtx := &sync.Mutex{}
-	quotes = []model.PutQuoteRequest{}
+	quotes = []model.PutRelayerQuoteRequest{}
 	for k, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			//nolint:nestif
@@ -433,7 +433,7 @@ type QuoteInput struct {
 	DestRFQAddr     string
 }
 
-func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *model.PutQuoteRequest, err error) {
+func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *model.PutRelayerQuoteRequest, err error) {
 	// Calculate the quote amount for this route
 	originAmount, err := m.getOriginAmount(ctx, input)
 	// don't quote if gas exceeds quote
@@ -467,7 +467,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 		logger.Error("Error getting dest amount", "error", err)
 		return nil, fmt.Errorf("error getting dest amount: %w", err)
 	}
-	quote = &model.PutQuoteRequest{
+	quote = &model.PutRelayerQuoteRequest{
 		OriginChainID:           input.OriginChainID,
 		OriginTokenAddr:         input.OriginTokenAddr.Hex(),
 		DestChainID:             input.DestChainID,
@@ -700,7 +700,7 @@ func (m *Manager) applyOffset(parentCtx context.Context, offsetBps float64, targ
 }
 
 // Submits a single quote.
-func (m *Manager) submitQuote(ctx context.Context, quote model.PutQuoteRequest) error {
+func (m *Manager) submitQuote(ctx context.Context, quote model.PutRelayerQuoteRequest) error {
 	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
 	defer quoteCancel()
 
@@ -712,7 +712,7 @@ func (m *Manager) submitQuote(ctx context.Context, quote model.PutQuoteRequest) 
 }
 
 // Submits multiple quotes.
-func (m *Manager) submitBulkQuotes(ctx context.Context, quotes []model.PutQuoteRequest) error {
+func (m *Manager) submitBulkQuotes(ctx context.Context, quotes []model.PutRelayerQuoteRequest) error {
 	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
 	defer quoteCancel()
 
