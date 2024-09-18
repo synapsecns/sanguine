@@ -71,6 +71,13 @@ func verifyActiveQuoteRequest(c *ServerSuite, userReq *model.PutUserQuoteRequest
 	c.Assert().Equal(status, activeQuoteRequest.Status)
 }
 
+const (
+	originChainID   = 1
+	originTokenAddr = "0x1111111111111111111111111111111111111111"
+	destChainID     = 2
+	destTokenAddr   = "0x2222222222222222222222222222222222222222"
+)
+
 func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	// Start the API server
 	c.startQuoterAPIServer()
@@ -84,12 +91,6 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	userSigner := localsigner.NewSigner(userWallet.PrivateKey())
 	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
 	c.Require().NoError(err)
-
-	// Common variables
-	originChainID := 1
-	originTokenAddr := "0x1111111111111111111111111111111111111111"
-	destChainID := 2
-	destTokenAddr := "0x2222222222222222222222222222222222222222"
 
 	// Prepare a user quote request
 	userRequestAmount := big.NewInt(1_000_000)
@@ -152,12 +153,6 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
 	c.Require().NoError(err)
 
-	// Common variables
-	originChainID := 1
-	originTokenAddr := "0x1111111111111111111111111111111111111111"
-	destChainID := 2
-	destTokenAddr := "0x2222222222222222222222222222222222222222"
-
 	// Prepare a user quote request
 	userRequestAmount := big.NewInt(1_000_000)
 	userQuoteReq := &model.PutUserQuoteRequest{
@@ -216,12 +211,6 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	userSigner := localsigner.NewSigner(userWallet.PrivateKey())
 	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
 	c.Require().NoError(err)
-
-	// Common variables
-	originChainID := 1
-	originTokenAddr := "0x1111111111111111111111111111111111111111"
-	destChainID := 2
-	destTokenAddr := "0x2222222222222222222222222222222222222222"
 
 	// Prepare a user quote request
 	userRequestAmount := big.NewInt(1_000_000)
@@ -297,12 +286,6 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	userSigner := localsigner.NewSigner(userWallet.PrivateKey())
 	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
 	c.Require().NoError(err)
-
-	// Common variables
-	originChainID := 1
-	originTokenAddr := "0x1111111111111111111111111111111111111111"
-	destChainID := 2
-	destTokenAddr := "0x2222222222222222222222222222222222222222"
 
 	userRequestAmount := big.NewInt(1_000_000)
 
@@ -382,12 +365,6 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	userSigner := localsigner.NewSigner(userWallet.PrivateKey())
 	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
 	c.Require().NoError(err)
-
-	// Common variables
-	originChainID := 1
-	originTokenAddr := "0x1111111111111111111111111111111111111111"
-	destChainID := 2
-	destTokenAddr := "0x2222222222222222222222222222222222222222"
 
 	userRequestAmount := big.NewInt(1_000_000)
 
