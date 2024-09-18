@@ -74,7 +74,8 @@
     "ts-mocha": "^10.0.0",
     "typedoc": "^0.23.24",
     "typedoc-plugin-markdown": "^3.14.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "wagmi": "^2.12.12"
   },
   "dependencies": {
     "@changesets/cli": "2.22.0",

@@ -77,7 +77,6 @@
     "use-persisted-state": "^0.3.3",
     "uuidv7": "^1.0.1",
     "viem": "^2.13.6",
-    "wagmi": "^2.12.12",
     "yarn": "^1.22.19"
   },
   "browserslist": {
