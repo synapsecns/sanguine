@@ -67,6 +67,10 @@ export const getBridgeLimitsController = async (req, res) => {
       null
     )
 
+    if (!maxBridgeAmountQuote || !minBridgeAmountQuote) {
+      return res.status(400).json({ errors: 'Route does not exist' })
+    }
+
     const maxAmountOriginQueryTokenOutInfo = tokenAddressToToken(
       toChain,
       maxBridgeAmountQuote.destQuery.tokenOut
