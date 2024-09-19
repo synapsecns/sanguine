@@ -21,6 +21,20 @@ describe('destinatonTokens Route', () => {
     expect(response.body[0]).toHaveProperty('chainId')
   })
 
+  it('should return destination tokens for valid gas Tokens', async () => {
+    const response = await request(app).get('/destinationTokens').query({
+      fromChain: '1',
+      fromToken: '0x0000000000000000000000000000000000000000',
+    })
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(response.body)).toBe(true)
+    expect(response.body.length).toBeGreaterThan(0)
+    expect(response.body[0]).toHaveProperty('symbol')
+    expect(response.body[0]).toHaveProperty('address')
+    expect(response.body[0]).toHaveProperty('chainId')
+  })
+
   it('should return 400 for unsupported fromChain', async () => {
     const response = await request(app).get('/destinationTokens').query({
       fromChain: '999',
