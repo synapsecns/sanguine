@@ -14,8 +14,8 @@ const router = express.Router()
  * @openapi
  * /bridge:
  *   get:
- *     summary: Get quotes for bridging tokens between chains.
- *     description: Retrieve list of detailed bridge quotes based on origin and destination chains based on tokens and amount.
+ *     summary: Get quotes for bridging tokens between chains
+ *     description: Retrieve list of detailed bridge quotes based on origin and destination chains based on tokens and amount
  *     parameters:
  *       - in: query
  *         name: fromChain
