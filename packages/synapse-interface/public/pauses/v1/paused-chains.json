@@ -35,7 +35,7 @@
   },
   {
     "id": "boba-chain-pause",
-    "pausedFromChains": [280],
+    "pausedFromChains": [],
     "pausedToChains": [280],
     "pauseBridge": true,
     "pauseSwap": true,
