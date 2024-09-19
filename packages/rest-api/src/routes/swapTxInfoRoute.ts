@@ -16,11 +16,11 @@ router.get(
   checksumAddresses(['fromToken', 'toToken']),
   [
     check('chain')
+      .exists()
+      .withMessage('chain is required')
       .isNumeric()
       .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
-      .withMessage('Unsupported chain')
-      .exists()
-      .withMessage('chain is required'),
+      .withMessage('Unsupported chain'),
     check('fromToken')
       .exists()
       .withMessage('fromToken is required')
