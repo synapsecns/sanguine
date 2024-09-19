@@ -2,7 +2,6 @@ import express from 'express'
 import swaggerUi from 'swagger-ui-express'
 
 import { specs } from './swagger'
-
 import routes from './routes'
 
 const app = express()

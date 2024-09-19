@@ -95,6 +95,7 @@ const router = express.Router()
  *                 details:
  *                   type: string
  */
+
 router.get(
   '/',
   checksumAddresses(['fromToken']),
