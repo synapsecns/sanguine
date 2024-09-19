@@ -13,7 +13,7 @@ const router = express.Router()
  * /getBridgeTxStatus:
  *   get:
  *     summary: Get Bridge Transaction Status
- *     description: Retrieve the status of a bridge transaction
+ *     description: Used to get the status of a bridge transaction, and the destination transaction information if the transaction is finalized
  *     parameters:
  *       - in: query
  *         name: destChainId
