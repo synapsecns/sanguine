@@ -32,5 +32,22 @@
     "disableBanner": false,
     "disableWarning": true,
     "disableCountdown": false
+  },
+  {
+    "id": "boba-chain-pause",
+    "pausedFromChains": [],
+    "pausedToChains": [288],
+    "pauseBridge": true,
+    "pauseSwap": true,
+    "startTimePauseChain": "2024-09-17T17:35:00Z",
+    "endTimePauseChain": "2024-10-10T17:35:00Z",
+    "startTimeBanner": "2024-09-17T17:35:00Z",
+    "endTimeBanner": "2024-10-10T17:35:00Z",
+    "inputWarningMessage": "Boba chain paused due to chain upgrades.",
+    "bannerMessage": "Boba chain currently paused due to chain upgrades.",
+    "progressBarMessage": "Boba chain paused due to chain upgrades.",
+    "disableBanner": false,
+    "disableWarning": true,
+    "disableCountdown": false
   }
 ]

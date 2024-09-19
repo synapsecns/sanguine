@@ -1,6 +1,6 @@
-import { ZeroAddress } from './index'
 import { BridgeableToken } from '../types'
 import { CHAINS } from './chains'
+import { ZeroAddress } from '.'
 
 export const GOHM: BridgeableToken = {
   addresses: {

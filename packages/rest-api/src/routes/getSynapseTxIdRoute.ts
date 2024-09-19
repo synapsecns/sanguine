@@ -11,19 +11,19 @@ router.get(
   '/',
   [
     check('originChainId')
-      .isNumeric()
       .exists()
-      .withMessage('originChainId is required'),
+      .withMessage('originChainId is required')
+      .isNumeric(),
     check('bridgeModule')
+      .exists()
+      .withMessage('bridgeModule is required')
       .isString()
       .isIn(VALID_BRIDGE_MODULES)
       .withMessage(
         'Invalid bridge module. Must be one of: ' +
           VALID_BRIDGE_MODULES.join(', ')
-      )
-      .exists()
-      .withMessage('bridgeModule is required'),
-    check('txHash').isString().exists().withMessage('txHash is required'),
+      ),
+    check('txHash').exists().withMessage('txHash is required').isString(),
   ],
   showFirstValidationError,
   getSynapseTxIdController

@@ -1,25 +1,20 @@
-import { getAddress } from '@ethersproject/address'
-
+import { NativeGasAddress, ZeroAddress } from '../constants'
 import { BRIDGE_MAP } from '../constants/bridgeMap'
-import { ZeroAddress } from '../constants'
 
 export const tokenAddressToToken = (chain: string, tokenAddress: string) => {
-  let address
-  if (tokenAddress === ZeroAddress) {
-    address = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-  } else {
-    address = getAddress(tokenAddress)
-  }
   const chainData = BRIDGE_MAP[chain]
   if (!chainData) {
     return null
   }
+
+  const address = tokenAddress === ZeroAddress ? NativeGasAddress : tokenAddress
+
   const tokenInfo = chainData[address]
   if (!tokenInfo) {
     return null
   }
   return {
-    address,
+    address: tokenAddress,
     symbol: tokenInfo.symbol,
     decimals: tokenInfo.decimals,
   }
