@@ -6,11 +6,13 @@ import { CHAINS_ARRAY } from '../constants/chains'
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { bridgeController } from '../controllers/bridgeController'
 import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
+import { checksumAddresses } from '../middleware/checksumAddresses'
 
 const router = express.Router()
 
 router.get(
   '/',
+  checksumAddresses(['fromToken', 'toToken']),
   [
     check('fromChain')
       .isNumeric()
