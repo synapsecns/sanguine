@@ -16,6 +16,7 @@ export const getSynapseTxIdController = async (req, res) => {
       bridgeModule,
       txHash
     )
+
     res.json({ synapseTxId })
   } catch (err) {
     res.status(500).json({
