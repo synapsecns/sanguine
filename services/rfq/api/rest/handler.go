@@ -44,7 +44,7 @@ func APIVersionMiddleware(serverVersion string) gin.HandlerFunc {
 // @Summary Upsert quote
 // @Schemes
 // @Description upsert a quote from relayer.
-// @Param request body model.PutQuoteRequest true "query params"
+// @Param request body model.PutRelayerQuoteRequest true "query params"
 // @Tags quotes
 // @Accept json
 // @Produce json

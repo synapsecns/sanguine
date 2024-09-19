@@ -391,7 +391,7 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 // @Summary Relay ack
 // @Schemes
 // @Description cache an ack request to synchronize relayer actions.
-// @Param request body model.PutQuoteRequest true "query params"
+// @Param request body model.PutRelayerQuoteRequest true "query params"
 // @Tags ack
 // @Accept json
 // @Produce json
@@ -441,6 +441,15 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 }
 
 // GetActiveRFQWebsocket handles the WebSocket connection for active quote requests.
+// GET /quote_requests.
+// @Summary Handle WebSocket connection for active quote requests
+// @Schemes
+// @Description Establish a WebSocket connection to receive active quote requests.
+// @Tags quotes
+// @Produce json
+// @Success 101 {string} string "Switching Protocols"
+// @Header 101 {string} X-Api-Version "API Version Number - See docs for more info"
+// @Router /quote_requests [get]
 func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Context) {
 	ws, err := r.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -486,6 +495,17 @@ const (
 )
 
 // PutUserQuoteRequest handles a user request for a quote.
+// PUT /quote_request.
+// @Summary Handle user quote request
+// @Schemes
+// @Description Handle user quote request and return the best quote available.
+// @Param request body model.PutUserQuoteRequest true "User quote request"
+// @Tags quotes
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.PutUserQuoteResponse
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
+// @Router /quote_request [put]
 func (r *QuoterAPIServer) PutUserQuoteRequest(c *gin.Context) {
 	var req model.PutUserQuoteRequest
 	err := c.BindJSON(&req)

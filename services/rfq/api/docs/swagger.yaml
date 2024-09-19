@@ -55,10 +55,10 @@ definitions:
     properties:
       quotes:
         items:
-          $ref: '#/definitions/model.PutQuoteRequest'
+          $ref: '#/definitions/model.PutRelayerQuoteRequest'
         type: array
     type: object
-  model.PutQuoteRequest:
+  model.PutRelayerQuoteRequest:
     properties:
       dest_amount:
         type: string
@@ -79,6 +79,49 @@ definitions:
       origin_token_addr:
         type: string
     type: object
+  model.PutUserQuoteRequest:
+    properties:
+      data:
+        $ref: '#/definitions/model.QuoteData'
+      quote_types:
+        items:
+          type: string
+        type: array
+      user_address:
+        type: string
+    type: object
+  model.PutUserQuoteResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.QuoteData'
+      quote_type:
+        type: string
+      reason:
+        type: string
+      success:
+        type: boolean
+      user_address:
+        type: string
+    type: object
+  model.QuoteData:
+    properties:
+      dest_amount:
+        type: string
+      dest_chain_id:
+        type: integer
+      dest_token_addr:
+        type: string
+      expiration_window:
+        type: integer
+      origin_amount:
+        type: string
+      origin_chain_id:
+        type: integer
+      origin_token_addr:
+        type: string
+      relayer_address:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -93,7 +136,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/model.PutQuoteRequest'
+          $ref: '#/definitions/model.PutRelayerQuoteRequest'
       produces:
       - application/json
       responses:
@@ -151,6 +194,49 @@ paths:
       summary: Get contract addresses
       tags:
       - quotes
+  /quote_request:
+    put:
+      consumes:
+      - application/json
+      description: Handle user quote request and return the best quote available.
+      parameters:
+      - description: User quote request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PutUserQuoteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Api-Version:
+              description: API Version Number - See docs for more info
+              type: string
+          schema:
+            $ref: '#/definitions/model.PutUserQuoteResponse'
+      summary: Handle user quote request
+      tags:
+      - quotes
+  /quote_requests:
+    get:
+      description: Establish a WebSocket connection to receive active quote requests.
+      produces:
+      - application/json
+      responses:
+        "101":
+          description: Switching Protocols
+          headers:
+            X-Api-Version:
+              description: API Version Number - See docs for more info
+              type: string
+          schema:
+            type: string
+      summary: Handle WebSocket connection for active quote requests
+      tags:
+      - quotes
   /quotes:
     get:
       consumes:
@@ -203,7 +289,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/model.PutQuoteRequest'
+          $ref: '#/definitions/model.PutRelayerQuoteRequest'
       produces:
       - application/json
       responses:

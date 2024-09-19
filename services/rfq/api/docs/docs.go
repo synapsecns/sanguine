@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.PutQuoteRequest"
+                            "$ref": "#/definitions/model.PutRelayerQuoteRequest"
                         }
                     }
                 ],
@@ -110,6 +110,72 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/model.GetContractsResponse"
                             }
+                        },
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/quote_request": {
+            "put": {
+                "description": "Handle user quote request and return the best quote available.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Handle user quote request",
+                "parameters": [
+                    {
+                        "description": "User quote request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PutUserQuoteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.PutUserQuoteResponse"
+                        },
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/quote_requests": {
+            "get": {
+                "description": "Establish a WebSocket connection to receive active quote requests.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Handle WebSocket connection for active quote requests",
+                "responses": {
+                    "101": {
+                        "description": "Switching Protocols",
+                        "schema": {
+                            "type": "string"
                         },
                         "headers": {
                             "X-Api-Version": {
@@ -203,7 +269,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.PutQuoteRequest"
+                            "$ref": "#/definitions/model.PutRelayerQuoteRequest"
                         }
                     }
                 ],
@@ -289,12 +355,12 @@ const docTemplate = `{
                 "quotes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.PutQuoteRequest"
+                        "$ref": "#/definitions/model.PutRelayerQuoteRequest"
                     }
                 }
             }
         },
-        "model.PutQuoteRequest": {
+        "model.PutRelayerQuoteRequest": {
             "type": "object",
             "properties": {
                 "dest_amount": {
@@ -322,6 +388,72 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "origin_token_addr": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PutUserQuoteRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.QuoteData"
+                },
+                "quote_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PutUserQuoteResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.QuoteData"
+                },
+                "quote_type": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "user_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.QuoteData": {
+            "type": "object",
+            "properties": {
+                "dest_amount": {
+                    "type": "string"
+                },
+                "dest_chain_id": {
+                    "type": "integer"
+                },
+                "dest_token_addr": {
+                    "type": "string"
+                },
+                "expiration_window": {
+                    "type": "integer"
+                },
+                "origin_amount": {
+                    "type": "string"
+                },
+                "origin_chain_id": {
+                    "type": "integer"
+                },
+                "origin_token_addr": {
+                    "type": "string"
+                },
+                "relayer_address": {
                     "type": "string"
                 }
             }
