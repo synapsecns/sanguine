@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.38.4",
+  "version": "0.38.5",
   "private": true,
   "engines": {
     "node": ">=18.18.0"
@@ -32,6 +32,7 @@
     "@ethersproject/units": "5.7.0",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "1.0.6",
+    "@popperjs/core": "^2.11.5",
     "@rainbow-me/rainbowkit": "^2.1.6",
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
@@ -59,7 +60,6 @@
     "next-intl": "^3.19.0",
     "numeral": "^2.0.6",
     "postcss": "^8.4.31",
-    "@popperjs/core": "^2.11.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-ga": "^3.3.1",
@@ -99,7 +99,6 @@
   "license": "ISC",
   "keywords": [],
   "devDependencies": {
-    "autoprefixer": "^10.4.7",
     "@depay/web3-mock": "^14.0.0",
     "@graphql-codegen/cli": "5.0.2",
     "@graphql-codegen/client-preset": "4.3.3",
@@ -109,6 +108,7 @@
     "@types/react": "^18.2.67",
     "@types/react-dom": "^18.2.22",
     "@types/redux-persist": "^4.3.1",
+    "autoprefixer": "^10.4.7",
     "dayjs": "^1.11.7",
     "eslint": "^8.37.0",
     "eslint-config-next": "^13.5.6",
