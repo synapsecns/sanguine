@@ -1,5 +1,14 @@
 import { createPublicClient, http } from 'viem'
-import { mainnet, arbitrum, optimism, base, scroll, linea, bsc, blast } from 'viem/chains'
+import {
+  mainnet,
+  arbitrum,
+  optimism,
+  base,
+  scroll,
+  linea,
+  bsc,
+  blast,
+} from 'viem/chains'
 
 import { FastBridgeV2Abi } from './abis/FastBridgeV2'
 
@@ -20,7 +29,7 @@ export const networkConfig: NetworkConfig = {
   1: {
     name: 'Ethereum',
     FastBridgeV2: {
-      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',  
+      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
       abi: FastBridgeV2Abi,
     },
     client: createPublicClient({
@@ -31,7 +40,7 @@ export const networkConfig: NetworkConfig = {
   42161: {
     name: 'Arbitrum',
     FastBridgeV2: {
-      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',  
+      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
       abi: FastBridgeV2Abi,
     },
     client: createPublicClient({
@@ -42,7 +51,7 @@ export const networkConfig: NetworkConfig = {
   10: {
     name: 'Optimism',
     FastBridgeV2: {
-      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',  
+      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
       abi: FastBridgeV2Abi,
     },
     client: createPublicClient({
@@ -53,7 +62,7 @@ export const networkConfig: NetworkConfig = {
   8453: {
     name: 'Base',
     FastBridgeV2: {
-      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',  
+      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
       abi: FastBridgeV2Abi,
     },
     client: createPublicClient({
@@ -64,7 +73,7 @@ export const networkConfig: NetworkConfig = {
   534352: {
     name: 'Scroll',
     FastBridgeV2: {
-      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',  
+      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
       abi: FastBridgeV2Abi,
     },
     client: createPublicClient({
@@ -75,7 +84,7 @@ export const networkConfig: NetworkConfig = {
   59144: {
     name: 'Linea',
     FastBridgeV2: {
-      address: '0x34F52752975222d5994C206cE08C1d5B329f24dD',  
+      address: '0x34F52752975222d5994C206cE08C1d5B329f24dD',
       abi: FastBridgeV2Abi,
     },
     client: createPublicClient({
@@ -86,7 +95,7 @@ export const networkConfig: NetworkConfig = {
   56: {
     name: 'BNB Chain',
     FastBridgeV2: {
-      address: '0x34F52752975222d5994C206cE08C1d5B329f24dD',  
+      address: '0x34F52752975222d5994C206cE08C1d5B329f24dD',
       abi: FastBridgeV2Abi,
     },
     client: createPublicClient({
@@ -97,7 +106,7 @@ export const networkConfig: NetworkConfig = {
   81457: {
     name: 'Blast',
     FastBridgeV2: {
-      address: '0x34F52752975222d5994C206cE08C1d5B329f24dD',  
+      address: '0x34F52752975222d5994C206cE08C1d5B329f24dD',
       abi: FastBridgeV2Abi,
     },
     client: createPublicClient({

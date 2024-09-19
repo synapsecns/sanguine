@@ -1,4 +1,3 @@
-
 type Transaction {
   transactionId: String!
   originChain: String!
@@ -55,9 +54,6 @@ type Refund {
   amountFormatted: String!
 }
 
-
-
-
 type PendingTransactionMissingRelay {
   Bridge: Transaction!
   BridgeRequest: Deposit!
@@ -93,9 +89,37 @@ type InvalidRelay {
   relayer: String!
 }
 
+type CompleteTransaction {
+  Bridge: Transaction!
+  BridgeRequest: Deposit
+  BridgeRelay: Relay
+  BridgeProof: Proof
+  BridgeClaim: Claim
+  BridgeRefund: Refund
+}
+
+type RefundedAndRelayedTransaction {
+  Bridge: Transaction!
+  BridgeRequest: Deposit!
+  BridgeRelay: Relay!
+  BridgeRefund: Refund!
+}
+
+type ConflictingProof {
+  Bridge: Transaction!
+  BridgeRequest: Deposit!
+  BridgeRelay: Relay!
+  BridgeProof: Proof!
+}
+
 type Query {
   pendingTransactionsMissingRelay: [PendingTransactionMissingRelay!]!
   pendingTransactionsMissingProof: [PendingTransactionMissingProof!]!
   pendingTransactionsMissingClaim: [PendingTransactionMissingClaim!]!
+  transactionById(transactionId: String!): [CompleteTransaction!]!
   recentInvalidRelays: [InvalidRelay!]!
+  refundedAndRelayedTransactions: [RefundedAndRelayedTransaction!]!
+  conflictingProofs: [ConflictingProof!]!
 }
+
+
