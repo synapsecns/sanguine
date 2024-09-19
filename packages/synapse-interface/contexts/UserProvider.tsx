@@ -21,12 +21,16 @@ export const UserProvider = ({ children }) => {
 
   useAccountEffect({
     onConnect() {
-      segmentAnalyticsEvent(`[Wallet Analytics] connects`, {
-        walletId: connector?.id,
-        chainId: chain?.id,
-        query,
-        pathname,
-      })
+      segmentAnalyticsEvent(
+        `[Wallet Analytics] connects`,
+        {
+          walletId: connector?.id,
+          chainId: chain?.id,
+          query,
+          pathname,
+        },
+        true
+      )
     },
     onDisconnect() {
       segmentAnalyticsEvent('[Wallet Analytics] disconnect', {})
