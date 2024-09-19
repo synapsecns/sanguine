@@ -5,6 +5,7 @@ import { parseUnits } from '@ethersproject/units'
 import { Synapse } from '../services/synapseService'
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 import { formatBNToString } from '../utils/formatBNToString'
+import { BRIDGE_LIMIT_MAPPING } from '../utils/bridgeLimitMapping'
 
 export const getBridgeLimitsController = async (req, res) => {
   const errors = validationResult(req)
@@ -95,6 +96,7 @@ export const getBridgeLimitsController = async (req, res) => {
     )
 
     return res.json({
+      BRIDGE_LIMIT_MAPPING,
       maxOriginAmount,
       minOriginAmount,
     })
