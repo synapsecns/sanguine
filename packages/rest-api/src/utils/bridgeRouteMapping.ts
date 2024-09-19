@@ -1,4 +1,4 @@
-import { EthAddress, ZeroAddress } from '../constants'
+import { NativeGasAddress, ZeroAddress } from '../constants'
 import { BRIDGE_MAP } from '../constants/bridgeMap'
 
 interface TokenInfo {
@@ -47,7 +47,7 @@ const constructJSON = (
             if (canBridge) {
               result[keyA].push({
                 symbol: tokenB.symbol,
-                address: addressB === EthAddress ? ZeroAddress : addressB,
+                address: addressB === NativeGasAddress ? ZeroAddress : addressB,
                 chainId: chainB,
               })
             }
