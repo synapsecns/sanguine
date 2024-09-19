@@ -32,7 +32,7 @@
     "@ethersproject/units": "5.7.0",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "1.0.6",
-    "@rainbow-me/rainbowkit": "^2.1.2",
+    "@rainbow-me/rainbowkit": "^2.1.6",
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
@@ -45,8 +45,8 @@
     "@types/web3": "^1.2.2",
     "@visx/chord": "^3.0.0",
     "@visx/shape": "^3.0.0",
-    "@wagmi/connectors": "^5.0.0",
-    "@wagmi/core": "^2.10.5",
+    "@wagmi/connectors": "^5.1.11",
+    "@wagmi/core": "^2.13.5",
     "babel-plugin-transform-bigint": "^1.0.32",
     "deepmerge": "^4.3.1",
     "ethers": "5.7.2",
@@ -59,6 +59,7 @@
     "next-intl": "^3.19.0",
     "numeral": "^2.0.6",
     "postcss": "^8.4.31",
+    "@popperjs/core": "^2.11.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-ga": "^3.3.1",
@@ -76,7 +77,6 @@
     "use-persisted-state": "^0.3.3",
     "uuidv7": "^1.0.1",
     "viem": "^2.13.6",
-    "wagmi": "^2.9.8",
     "yarn": "^1.22.19"
   },
   "browserslist": {
@@ -99,6 +99,7 @@
   "license": "ISC",
   "keywords": [],
   "devDependencies": {
+    "autoprefixer": "^10.4.7",
     "@depay/web3-mock": "^14.0.0",
     "@graphql-codegen/cli": "5.0.2",
     "@graphql-codegen/client-preset": "4.3.3",
