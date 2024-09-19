@@ -9,6 +9,7 @@ import getSynapseTxIdRoute from './getSynapseTxIdRoute'
 import getBridgeTxStatusRoute from './getBridgeTxStatusRoute'
 import getDestinationTxRoute from './getDestinationTxRoute'
 import tokenListRoute from './tokenListRoute'
+import destinationTokensRoute from './destinationTokensRoute'
 
 const router = express.Router()
 
@@ -21,5 +22,6 @@ router.use('/getSynapseTxId', getSynapseTxIdRoute)
 router.use('/getBridgeTxStatus', getBridgeTxStatusRoute)
 router.use('/getDestinationTx', getDestinationTxRoute)
 router.use('/tokenList', tokenListRoute)
+router.use('/destinationTokens', destinationTokensRoute)
 
 export default router
