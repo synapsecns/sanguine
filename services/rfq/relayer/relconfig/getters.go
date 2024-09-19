@@ -848,3 +848,11 @@ func (c Config) GetVolumeLimit(chainID int, addr common.Address) *big.Int {
 	volumeLimitScaled, _ := new(big.Float).Mul(volumeLimitFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return volumeLimitScaled
 }
+
+func (c Config) GetLimitConfirmations(chainid int) (uint64, error) {
+	chainCfg, ok := c.Chains[chainid]
+	if !ok {
+		return 0, fmt.Errorf("no chain config for chain %d", chainid)
+	}
+	return chainCfg.LimitConfirmations, nil
+}
