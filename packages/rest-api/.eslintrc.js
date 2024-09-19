@@ -5,11 +5,10 @@ module.exports = {
       files: ['jest.config.js'],
       rules: {
         'prettier/prettier': 'off',
-        'guard-for-in': 'off',
       },
     },
     {
-      files: ['**/*.ts', '**/*.tsx'],
+      files: ['**/*.ts'],
       rules: {
         'guard-for-in': 'off',
       },

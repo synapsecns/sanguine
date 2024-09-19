@@ -1,15 +1,12 @@
 import { Request, Response, NextFunction } from 'express'
-import { getAddress } from 'ethers/lib/utils'
+import { getAddress, isAddress } from 'ethers/lib/utils'
 
 export const checksumAddresses = (addressFields: string[]) => {
   return (req: Request, _res: Response, next: NextFunction) => {
     for (const field of addressFields) {
-      if (req.query[field] && typeof req.query[field] === 'string') {
-        try {
-          req.query[field] = getAddress(req.query[field] as string)
-        } catch (error) {
-          console.log(error)
-        }
+      const address = req.query[field]
+      if (typeof address === 'string' && isAddress(address)) {
+        req.query[field] = getAddress(address)
       }
     }
     next()

@@ -1,67 +1,85 @@
-import { NativeGasAddress, ZeroAddress } from '../constants'
 import { BRIDGE_MAP } from '../constants/bridgeMap'
+import * as ALL_TOKENS from '../constants/bridgeable'
 
-interface TokenInfo {
+type TokenData = {
   symbol: string
   address: string
-  chainId: string
+  chainId: number
 }
 
-interface BridgeRoutes {
-  [key: string]: TokenInfo[]
-}
+type StringifiedBridgeRoutes = Record<string, string[]>
+type TransformedBridgeRoutes = Record<string, TokenData[]>
 
 const constructJSON = (
-  swappableMap: typeof BRIDGE_MAP,
-  exclusionList: string[]
-): BridgeRoutes => {
-  const result: BridgeRoutes = {}
+  swappableMap,
+  exclusionList
+): TransformedBridgeRoutes => {
+  const result = {}
 
+  // Iterate through the chains
   for (const chainA in swappableMap) {
-    for (const addressA in swappableMap[chainA]) {
-      const tokenA = swappableMap[chainA][addressA]
-      const keyA = `${tokenA.symbol}-${chainA}`
+    for (const tokenA in swappableMap[chainA]) {
+      const symbolA = swappableMap[chainA][tokenA].symbol
+      const key = `${symbolA}-${chainA}`
 
-      if (exclusionList.includes(keyA)) {
+      if (exclusionList.includes(key)) {
         continue
       }
 
-      result[keyA] = []
-
+      // Iterate through other chains to compare
       for (const chainB in swappableMap) {
         if (chainA !== chainB) {
-          for (const addressB in swappableMap[chainB]) {
-            const tokenB = swappableMap[chainB][addressB]
-            const keyB = `${tokenB.symbol}-${chainB}`
+          for (const tokenB in swappableMap[chainB]) {
+            const symbolB = swappableMap[chainB][tokenB].symbol
+            const value = `${symbolB}-${chainB}`
 
-            if (exclusionList.includes(keyB)) {
+            if (exclusionList.includes(value)) {
               continue
             }
 
-            const canBridge = tokenA.origin.some(
-              (bridgeSymbol) =>
-                tokenB.destination.includes(bridgeSymbol) ||
-                tokenB.origin.includes(bridgeSymbol)
-            )
-
-            if (canBridge) {
-              result[keyA].push({
-                symbol: tokenB.symbol,
-                address: addressB === NativeGasAddress ? ZeroAddress : addressB,
-                chainId: chainB,
-              })
+            // Check if there's a bridge between the origins and destinations
+            for (const bridgeSymbol of swappableMap[chainA][tokenA].origin) {
+              if (
+                swappableMap[chainA][tokenA].origin.includes(bridgeSymbol) &&
+                swappableMap[chainB][tokenB].destination.includes(bridgeSymbol)
+              ) {
+                // Add to the result if the key exists, else create a new array
+                if (result[key]) {
+                  result[key].push(value)
+                } else {
+                  result[key] = [value]
+                }
+              }
             }
           }
         }
       }
-
-      if (result[keyA].length === 0) {
-        delete result[keyA]
-      }
     }
   }
 
-  return result
+  return transformBridgeRouteValues(result)
 }
 
-export const BRIDGE_ROUTE_MAPPING: BridgeRoutes = constructJSON(BRIDGE_MAP, [])
+const transformPair = (string: string): any => {
+  const [symbol, chainId] = string.split('-')
+  const token = Object.values(ALL_TOKENS).find((t) => t.routeSymbol === symbol)
+  const address = token?.addresses[chainId]
+  if (token && address) {
+    return {
+      symbol,
+      chainId,
+      address,
+    }
+  }
+}
+
+const transformBridgeRouteValues = (routes: StringifiedBridgeRoutes) => {
+  return Object.fromEntries(
+    Object.entries(routes).map(([key, values]) => [
+      key,
+      values.map(transformPair).filter((pair) => pair !== undefined),
+    ])
+  )
+}
+
+export const BRIDGE_ROUTE_MAPPING = constructJSON(BRIDGE_MAP, [])

@@ -35,6 +35,22 @@ describe('destinatonTokens Route', () => {
     expect(response.body[0]).toHaveProperty('chainId')
   })
 
+  it('should return precisely the number of destination tokens', async () => {
+    // 'USDC-534352': [ 'USDC-1', 'USDC-10', 'USDC-8453', 'USDC-42161', 'USDC-59144' ]
+
+    const response = await request(app).get('/destinationTokens').query({
+      fromChain: '534352',
+      fromToken: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+    })
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(response.body)).toBe(true)
+    expect(response.body.length).toBe(5)
+    expect(response.body[0]).toHaveProperty('symbol')
+    expect(response.body[0]).toHaveProperty('address')
+    expect(response.body[0]).toHaveProperty('chainId')
+  })
+
   it('should return destination tokens for non-checksummed address', async () => {
     const response = await request(app).get('/destinationTokens').query({
       fromChain: '43114',
