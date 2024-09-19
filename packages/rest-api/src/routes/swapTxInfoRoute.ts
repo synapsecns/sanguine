@@ -7,11 +7,13 @@ import { showFirstValidationError } from '../middleware/showFirstValidationError
 import { swapTxInfoController } from '../controllers/swapTxInfoController'
 import { isTokenAddress } from '../utils/isTokenAddress'
 import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
+import { checksumAddresses } from '../middleware/checksumAddresses'
 
 const router = express.Router()
 
 router.get(
   '/',
+  checksumAddresses(['fromToken', 'toToken']),
   [
     check('chain')
       .isNumeric()

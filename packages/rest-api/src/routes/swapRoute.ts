@@ -6,11 +6,13 @@ import { swapController } from '../controllers/swapController'
 import { CHAINS_ARRAY } from '../constants/chains'
 import { isTokenAddress } from '../utils/isTokenAddress'
 import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
+import { checksumAddresses } from '../middleware/checksumAddresses'
 
 const router = express.Router()
 
 router.get(
   '/',
+  checksumAddresses(['fromToken', 'toToken']),
   [
     check('chain')
       .isNumeric()

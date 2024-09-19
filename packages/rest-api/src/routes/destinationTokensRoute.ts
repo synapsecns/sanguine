@@ -7,11 +7,13 @@ import { showFirstValidationError } from '../middleware/showFirstValidationError
 import { destinationTokensController } from '../controllers/destinationTokensController'
 import { isTokenAddress } from '../utils/isTokenAddress'
 import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
+import { checksumAddresses } from '../middleware/checksumAddresses'
 
 const router = express.Router()
 
 router.get(
   '/',
+  checksumAddresses(['fromToken']),
   [
     check('fromChain')
       .exists()
