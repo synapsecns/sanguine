@@ -12,7 +12,6 @@ export const checksumAddresses = (addressFields: string[]) => {
         }
       }
     }
-    console.log(req.query)
     next()
   }
 }
