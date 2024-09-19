@@ -110,7 +110,7 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	originAmount := userRequestAmount.String()
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := &model.RelayerWsQuoteResponse{
-		Data: model.QuoteData{
+		Data: &model.QuoteData{
 			OriginChainID:   originChainID,
 			OriginTokenAddr: originTokenAddr,
 			DestChainID:     destChainID,
@@ -171,7 +171,7 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 	originAmount := userRequestAmount.String()
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := &model.RelayerWsQuoteResponse{
-		Data: model.QuoteData{
+		Data: &model.QuoteData{
 			OriginChainID:   originChainID,
 			OriginTokenAddr: originTokenAddr,
 			DestChainID:     destChainID,
@@ -228,31 +228,43 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 
 	// Prepare the relayer quote responses
 	originAmount := userRequestAmount.String()
-	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000))
-	destAmountStr := destAmount.String()
+	destAmount := "999000"
 	quoteResp := model.RelayerWsQuoteResponse{
-		Data: model.QuoteData{
+		Data: &model.QuoteData{
 			OriginChainID:   originChainID,
 			OriginTokenAddr: originTokenAddr,
 			DestChainID:     destChainID,
 			DestTokenAddr:   destTokenAddr,
-			DestAmount:      &destAmountStr,
+			DestAmount:      &destAmount,
+			OriginAmount:    originAmount,
+		},
+	}
+
+	// Create additional responses with worse prices
+	destAmount2 := "998000"
+	quoteResp2 := model.RelayerWsQuoteResponse{
+		Data: &model.QuoteData{
+			OriginChainID:   originChainID,
+			OriginTokenAddr: originTokenAddr,
+			DestChainID:     destChainID,
+			DestTokenAddr:   destTokenAddr,
+			DestAmount:      &destAmount2,
+			OriginAmount:    originAmount,
+		},
+	}
+	destAmount3 := "997000"
+	quoteResp3 := model.RelayerWsQuoteResponse{
+		Data: &model.QuoteData{
+			OriginChainID:   originChainID,
+			OriginTokenAddr: originTokenAddr,
+			DestChainID:     destChainID,
+			DestTokenAddr:   destTokenAddr,
+			DestAmount:      &destAmount3,
 			OriginAmount:    originAmount,
 		},
 	}
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
 	defer cancel()
-
-	// Create additional responses with worse prices
-	quoteResp2 := quoteResp
-	destAmount2 := new(big.Int).Sub(userRequestAmount, big.NewInt(2000))
-	destAmount2Str := destAmount2.String()
-	quoteResp2.Data.DestAmount = &destAmount2Str
-	quoteResp3 := quoteResp
-	destAmount3 := new(big.Int).Sub(userRequestAmount, big.NewInt(3000))
-	destAmount3Str := destAmount3.String()
-	quoteResp3.Data.DestAmount = &destAmount3Str
-
 	runMockRelayer(c, respCtx, c.relayerWallets[0], &quoteResp, url, wsURL)
 	runMockRelayer(c, respCtx, c.relayerWallets[1], &quoteResp2, url, wsURL)
 	runMockRelayer(c, respCtx, c.relayerWallets[2], &quoteResp3, url, wsURL)
@@ -264,7 +276,7 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	// Assert the response
 	c.Assert().True(userQuoteResp.Success)
 	c.Assert().Equal("active", userQuoteResp.QuoteType)
-	c.Assert().Equal(destAmountStr, *userQuoteResp.Data.DestAmount)
+	c.Assert().Equal(destAmount, *userQuoteResp.Data.DestAmount)
 	c.Assert().Equal(originAmount, userQuoteResp.Data.OriginAmount)
 
 	// Verify ActiveQuoteRequest insertion
@@ -324,7 +336,7 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	// Prepare mock relayer response (which should be ignored due to 0 expiration window)
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := &model.RelayerWsQuoteResponse{
-		Data: model.QuoteData{
+		Data: &model.QuoteData{
 			OriginChainID:   originChainID,
 			OriginTokenAddr: originTokenAddr,
 			DestChainID:     destChainID,
@@ -403,7 +415,7 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	// Prepare mock relayer response (which should be ignored due to 0 expiration window)
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := model.RelayerWsQuoteResponse{
-		Data: model.QuoteData{
+		Data: &model.QuoteData{
 			OriginChainID:   originChainID,
 			OriginTokenAddr: originTokenAddr,
 			DestChainID:     destChainID,

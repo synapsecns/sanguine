@@ -114,8 +114,8 @@ func NewRelayerWsQuoteRequest(data QuoteData, requestID string) *RelayerWsQuoteR
 
 // RelayerWsQuoteResponse represents a response to a quote request
 type RelayerWsQuoteResponse struct {
-	RequestID string    `json:"request_id"`
-	QuoteID   string    `json:"quote_id"`
-	Data      QuoteData `json:"data"`
-	UpdatedAt time.Time `json:"updated_at"`
+	RequestID string     `json:"request_id"`
+	QuoteID   string     `json:"quote_id"`
+	Data      *QuoteData `json:"data"`
+	UpdatedAt time.Time  `json:"updated_at"`
 }

@@ -12,24 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
-func getBestQuote(a, b *model.QuoteData) *model.QuoteData {
-	if a == nil && b == nil {
-		return nil
-	}
-	if a == nil {
-		return b
-	}
-	if b == nil {
-		return a
-	}
-	aAmount, _ := new(big.Int).SetString(*a.DestAmount, 10)
-	bAmount, _ := new(big.Int).SetString(*b.DestAmount, 10)
-	if aAmount.Cmp(bAmount) > 0 {
-		return a
-	}
-	return b
-}
-
 const collectionTimeout = 1 * time.Minute
 
 func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest, requestID string) (quote *model.QuoteData) {
@@ -47,9 +29,12 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	// collect the responses and determine the best quote
 	responses := r.collectRelayerResponses(ctx, request)
 	var quoteID string
+	var isUpdated bool
 	for _, resp := range responses {
-		quote = getBestQuote(quote, &resp.Data)
-		quoteID = resp.QuoteID
+		quote, isUpdated = getBestQuote(quote, resp.Data)
+		if isUpdated {
+			quoteID = resp.QuoteID
+		}
 	}
 	err = r.recordActiveQuote(ctx, quote, requestID, quoteID)
 	if err != nil {
@@ -112,6 +97,24 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	}
 
 	return responses
+}
+
+func getBestQuote(a, b *model.QuoteData) (*model.QuoteData, bool) {
+	if a == nil && b == nil {
+		return nil, false
+	}
+	if a == nil {
+		return b, true
+	}
+	if b == nil {
+		return a, false
+	}
+	aAmount, _ := new(big.Int).SetString(*a.DestAmount, 10)
+	bAmount, _ := new(big.Int).SetString(*b.DestAmount, 10)
+	if aAmount.Cmp(bAmount) > 0 {
+		return a, false
+	}
+	return b, true
 }
 
 func getQuoteResponseStatus(ctx context.Context, resp *model.RelayerWsQuoteResponse, relayerAddr string) db.ActiveQuoteResponseStatus {
@@ -196,7 +199,7 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 			DestAmount:      &destAmount,
 			RelayerAddress:  &quote.RelayerAddr,
 		}
-		bestQuote = getBestQuote(bestQuote, quoteData)
+		bestQuote, _ = getBestQuote(bestQuote, quoteData)
 	}
 
 	return bestQuote, nil

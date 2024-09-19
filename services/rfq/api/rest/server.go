@@ -517,7 +517,7 @@ func (r *QuoterAPIServer) PutUserQuoteRequest(c *gin.Context) {
 	if err != nil {
 		logger.Error("Error handling passive RFQ", "error", err)
 	}
-	quote := getBestQuote(activeQuote, passiveQuote)
+	quote, _ := getBestQuote(activeQuote, passiveQuote)
 
 	// construct the response
 	var resp model.PutUserQuoteResponse
