@@ -178,8 +178,8 @@ func FromUserRequest(req *model.PutUserQuoteRequest, requestID string) (*ActiveQ
 
 // ActiveQuoteResponse is the database model for an active quote response.
 type ActiveQuoteResponse struct {
-	RequestID       string                    `gorm:"column:request_id;primaryKey"`
-	QuoteID         string                    `gorm:"column:quote_id"`
+	RequestID       string                    `gorm:"column:request_id"`
+	QuoteID         string                    `gorm:"column:quote_id;primaryKey"`
 	OriginChainID   uint64                    `gorm:"column:origin_chain_id"`
 	OriginTokenAddr string                    `gorm:"column:origin_token"`
 	DestChainID     uint64                    `gorm:"column:dest_chain_id"`
