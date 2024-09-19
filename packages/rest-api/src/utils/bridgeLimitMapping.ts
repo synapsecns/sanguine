@@ -13,14 +13,16 @@ const constructJSON = (swappableMap, exclusionList) => {
         continue
       }
 
-      // Initialize origin chain if not existing
+      // Initialize origin chain and origin token with symbol if not existing
       if (!result[originChainId]) {
         result[originChainId] = {}
       }
 
-      // Initialize origin token if not existing
       if (!result[originChainId][originTokenAddress]) {
-        result[originChainId][originTokenAddress] = {}
+        result[originChainId][originTokenAddress] = {
+          symbol: originToken.symbol,
+          routes: {},
+        }
       }
 
       // Iterate through destination chains
@@ -46,18 +48,21 @@ const constructJSON = (swappableMap, exclusionList) => {
               originToken.origin.includes(bridgeSymbol) &&
               destinationToken.destination.includes(bridgeSymbol)
             ) {
-              // Initialize destination chain if not existing
+              // Initialize destination token with symbol, minValue, maxValue if not existing
               if (
-                !result[originChainId][originTokenAddress][destinationChainId]
+                !result[originChainId][originTokenAddress].routes[
+                  destinationChainId
+                ]
               ) {
-                result[originChainId][originTokenAddress][destinationChainId] =
-                  {}
+                result[originChainId][originTokenAddress].routes[
+                  destinationChainId
+                ] = {}
               }
 
-              // Add minValue and maxValue for the destination token address
-              result[originChainId][originTokenAddress][destinationChainId][
-                destinationTokenAddress
-              ] = {
+              result[originChainId][originTokenAddress].routes[
+                destinationChainId
+              ][destinationTokenAddress] = {
+                symbol: destinationToken.symbol,
                 minValue: null,
                 maxValue: null,
               }
