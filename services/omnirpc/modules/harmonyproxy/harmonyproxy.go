@@ -113,6 +113,8 @@ func (r *HarmonyProxy) ProxyRequest(c *gin.Context) (err error) {
 		return fmt.Errorf("could not read request body: %w", err)
 	}
 
+	span.SetAttributes(attribute.String("body", string(rawBody)))
+
 	// make sure it's not a batch
 	if rpc.IsBatch(rawBody) {
 		err = c.Error(errBatch)
@@ -157,6 +159,7 @@ func (r *HarmonyProxy) ProxyRequest(c *gin.Context) (err error) {
 	}
 
 	// TODO: cast to rpc response
+	span.SetAttributes(attribute.String("response", string(resp.Body())))
 
 	c.Data(resp.StatusCode(), gin.MIMEJSON, resp.Body())
 	return nil
