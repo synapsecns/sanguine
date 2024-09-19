@@ -1,3 +1,4 @@
+import { EthAddress, ZeroAddress } from '../constants'
 import { BRIDGE_MAP } from '../constants/bridgeMap'
 
 interface TokenInfo {
@@ -21,7 +22,9 @@ const constructJSON = (
       const tokenA = swappableMap[chainA][addressA]
       const keyA = `${tokenA.symbol}-${chainA}`
 
-      if (exclusionList.includes(keyA)) continue
+      if (exclusionList.includes(keyA)) {
+        continue
+      }
 
       result[keyA] = []
 
@@ -31,7 +34,9 @@ const constructJSON = (
             const tokenB = swappableMap[chainB][addressB]
             const keyB = `${tokenB.symbol}-${chainB}`
 
-            if (exclusionList.includes(keyB)) continue
+            if (exclusionList.includes(keyB)) {
+              continue
+            }
 
             const canBridge = tokenA.origin.some(
               (bridgeSymbol) =>
@@ -42,7 +47,7 @@ const constructJSON = (
             if (canBridge) {
               result[keyA].push({
                 symbol: tokenB.symbol,
-                address: addressB,
+                address: addressB === EthAddress ? ZeroAddress : addressB,
                 chainId: chainB,
               })
             }

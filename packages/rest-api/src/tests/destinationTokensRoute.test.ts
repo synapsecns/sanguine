@@ -1,5 +1,6 @@
 import request from 'supertest'
 import express from 'express'
+
 import destinationTokensRoute from '../routes/destinationTokensRoute'
 
 const app = express()

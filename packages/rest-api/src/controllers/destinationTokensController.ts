@@ -1,4 +1,5 @@
 import { validationResult } from 'express-validator'
+
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 import { BRIDGE_ROUTE_MAPPING } from '../utils/bridgeRouteMapping'
 
