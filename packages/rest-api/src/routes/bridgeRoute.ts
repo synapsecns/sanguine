@@ -15,17 +15,17 @@ router.get(
   checksumAddresses(['fromToken', 'toToken']),
   [
     check('fromChain')
+      .exists()
+      .withMessage('fromChain is required')
       .isNumeric()
       .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
-      .withMessage('Unsupported fromChain')
-      .exists()
-      .withMessage('fromChain is required'),
+      .withMessage('Unsupported fromChain'),
     check('toChain')
+      .exists()
+      .withMessage('toChain is required')
       .isNumeric()
       .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
-      .withMessage('Unsupported toChain')
-      .exists()
-      .withMessage('toChain is required'),
+      .withMessage('Unsupported toChain'),
     check('fromToken')
       .exists()
       .withMessage('fromToken is required')

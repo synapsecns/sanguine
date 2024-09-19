@@ -16,17 +16,17 @@ router.get(
   checksumAddresses(['fromToken', 'toToken']),
   [
     check('fromChain')
+      .exists()
+      .withMessage('fromChain is required')
       .isNumeric()
       .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
-      .withMessage('Unsupported fromChain')
-      .exists()
-      .withMessage('fromChain is required'),
+      .withMessage('Unsupported fromChain'),
     check('toChain')
+      .exists()
+      .withMessage('toChain is required')
       .isNumeric()
       .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
-      .withMessage('Unsupported toChain')
-      .exists()
-      .withMessage('toChain is required'),
+      .withMessage('Unsupported toChain'),
     check('fromToken')
       .exists()
       .withMessage('fromToken is required')
@@ -45,7 +45,7 @@ router.get(
         isTokenSupportedOnChain(value, req.query.toChain as string)
       )
       .withMessage('Token not supported on specified chain'),
-    check('amount').isNumeric().exists().withMessage('amount is required'),
+    check('amount').exists().withMessage('amount is required').isNumeric(),
     check('destAddress')
       .exists()
       .withMessage('destAddress is required')

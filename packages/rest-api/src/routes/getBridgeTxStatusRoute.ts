@@ -12,24 +12,24 @@ router.get(
   '/',
   [
     check('destChainId')
+      .exists()
+      .withMessage('destChainId is required')
       .isNumeric()
       .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
-      .withMessage('Unsupported destChainId')
-      .exists()
-      .withMessage('destChainId is required'),
+      .withMessage('Unsupported destChainId'),
     check('bridgeModule')
+      .exists()
+      .withMessage('bridgeModule is required')
       .isString()
       .isIn(VALID_BRIDGE_MODULES)
       .withMessage(
         'Invalid bridge module. Must be one of: ' +
           VALID_BRIDGE_MODULES.join(', ')
-      )
-      .exists()
-      .withMessage('bridgeModule is required'),
+      ),
     check('synapseTxId')
-      .isString()
       .exists()
-      .withMessage('synapseTxId is required'),
+      .withMessage('synapseTxId is required')
+      .isString(),
   ],
   showFirstValidationError,
   getBridgeTxStatusController
