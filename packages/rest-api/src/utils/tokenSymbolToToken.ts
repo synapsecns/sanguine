@@ -1,6 +1,6 @@
 import { BRIDGE_MAP } from '../constants/bridgeMap'
 
-export const findTokenInfo = (chain: string, tokenSymbol: string) => {
+export const tokenSymbolToToken = (chain: string, tokenSymbol: string) => {
   const chainData = BRIDGE_MAP[chain]
   if (!chainData) {
     return null

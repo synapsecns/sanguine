@@ -1,10 +1,11 @@
 import express from 'express'
 import { check } from 'express-validator'
 
-import { validateTokens } from '../validations/validateTokens'
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
 import { swapController } from '../controllers/swapController'
 import { CHAINS_ARRAY } from '../constants/chains'
+import { isTokenAddress } from '../utils/isTokenAddress'
+import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 
 const router = express.Router()
 
@@ -17,8 +18,24 @@ router.get(
       .withMessage('Unsupported chain')
       .exists()
       .withMessage('chain is required'),
-    validateTokens('chain', 'fromToken', 'fromToken'),
-    validateTokens('chain', 'toToken', 'toToken'),
+    check('fromToken')
+      .exists()
+      .withMessage('fromToken is required')
+      .custom((value) => isTokenAddress(value))
+      .withMessage('Invalid fromToken address')
+      .custom((value, { req }) =>
+        isTokenSupportedOnChain(value, req.query.chain as string)
+      )
+      .withMessage('Token not supported on specified chain'),
+    check('toToken')
+      .exists()
+      .withMessage('toToken is required')
+      .custom((value) => isTokenAddress(value))
+      .withMessage('Invalid toToken address')
+      .custom((value, { req }) =>
+        isTokenSupportedOnChain(value, req.query.chain as string)
+      )
+      .withMessage('Token not supported on specified chain'),
     check('amount').isNumeric().exists().withMessage('amount is required'),
   ],
   showFirstValidationError,
