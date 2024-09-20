@@ -7,5 +7,11 @@ module.exports = {
         'prettier/prettier': 'off',
       },
     },
+    {
+      files: ['**/*.ts'],
+      rules: {
+        'guard-for-in': 'off',
+      },
+    },
   ],
 }

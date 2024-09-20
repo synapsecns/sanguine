@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.38.4",
+  "version": "0.38.7",
   "private": true,
   "engines": {
     "node": ">=18.18.0"
@@ -32,7 +32,8 @@
     "@ethersproject/units": "5.7.0",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "1.0.6",
-    "@rainbow-me/rainbowkit": "^2.1.2",
+    "@popperjs/core": "^2.11.5",
+    "@rainbow-me/rainbowkit": "^2.1.6",
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
@@ -45,8 +46,8 @@
     "@types/web3": "^1.2.2",
     "@visx/chord": "^3.0.0",
     "@visx/shape": "^3.0.0",
-    "@wagmi/connectors": "^5.0.0",
-    "@wagmi/core": "^2.10.5",
+    "@wagmi/connectors": "^5.1.11",
+    "@wagmi/core": "^2.13.5",
     "babel-plugin-transform-bigint": "^1.0.32",
     "deepmerge": "^4.3.1",
     "ethers": "5.7.2",
@@ -76,7 +77,6 @@
     "use-persisted-state": "^0.3.3",
     "uuidv7": "^1.0.1",
     "viem": "^2.13.6",
-    "wagmi": "^2.9.8",
     "yarn": "^1.22.19"
   },
   "browserslist": {
@@ -108,6 +108,7 @@
     "@types/react": "^18.2.67",
     "@types/react-dom": "^18.2.22",
     "@types/redux-persist": "^4.3.1",
+    "autoprefixer": "^10.4.7",
     "dayjs": "^1.11.7",
     "eslint": "^8.37.0",
     "eslint-config-next": "^13.5.6",

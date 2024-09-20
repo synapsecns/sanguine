@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.77](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.76...@synapsecns/rest-api@1.0.77) (2024-09-19)
+
+
+### Bug Fixes
+
+* **synapse-interface:** Reorders validation to check existence first ([#3156](https://github.com/synapsecns/sanguine/issues/3156)) ([fd1540d](https://github.com/synapsecns/sanguine/commit/fd1540d21d142e38d16428d172cb182168a62b6e))
+
+
+
+
+
+## [1.0.76](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.75...@synapsecns/rest-api@1.0.76) (2024-09-19)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
 ## [1.0.75](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.74...@synapsecns/rest-api@1.0.75) (2024-09-18)
 
 **Note:** Version bump only for package @synapsecns/rest-api

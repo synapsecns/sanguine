@@ -10,10 +10,10 @@ router.get(
   '/',
   [
     check('originChainId')
-      .isNumeric()
       .exists()
-      .withMessage('originChainId is required'),
-    check('txHash').isString().exists().withMessage('txHash is required'),
+      .withMessage('originChainId is required')
+      .isNumeric(),
+    check('txHash').exists().withMessage('txHash is required').isString(),
   ],
   showFirstValidationError,
   getDestinationTxController
