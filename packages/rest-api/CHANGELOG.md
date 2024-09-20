@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.77...@synapsecns/rest-api@1.1.0) (2024-09-20)
+
+
+### Features
+
+* **rest-api:** Adds Swagger for api docs [SLT-205] ([#3159](https://github.com/synapsecns/sanguine/issues/3159)) ([01ec2d4](https://github.com/synapsecns/sanguine/commit/01ec2d47a91ba3e190216608ec626d85dbd19d3b))
+
+
+
+
+
 ## [1.0.77](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.0.76...@synapsecns/rest-api@1.0.77) (2024-09-19)
 
 
