@@ -24,7 +24,7 @@ describe('destinatonTokens Route', () => {
   it('should return destination tokens for valid gas Tokens', async () => {
     const response = await request(app).get('/destinationTokens').query({
       fromChain: '1',
-      fromToken: '0x0000000000000000000000000000000000000000',
+      fromToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
     })
 
     expect(response.status).toBe(200)
