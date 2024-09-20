@@ -45,10 +45,10 @@ func (s *LimiterSuite) SetupTest() {
 						Decimals: 18,
 					},
 				},
-				Confirmations: 1,
+				LimitConfirmations: 1,
+				VolumeLimit:        10000, // 10k usd
 			},
 		},
-		VolumeLimit: 10000, // 10k usd
 	}
 	s.metrics = metrics.NewNullHandler()
 }

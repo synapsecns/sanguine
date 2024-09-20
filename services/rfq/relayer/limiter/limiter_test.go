@@ -105,10 +105,6 @@ func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
 	l.False(allowed)
 }
 
-func (l *LimiterSuite) TestRateLimitOverWindow() {
-	l.T().Skip("TODO: implement the sliding window: queue up requests and process them in order if cumulative volume is above limit")
-}
-
 func buildMockQuoter(price float64) *mocks.Quoter {
 	mockQuoter := new(mocks.Quoter)
 	mockQuoter.On("GetPrice", mock.Anything, mock.Anything).Once().Return(price, nil)
