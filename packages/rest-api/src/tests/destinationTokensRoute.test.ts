@@ -2,6 +2,8 @@ import request from 'supertest'
 import express from 'express'
 
 import destinationTokensRoute from '../routes/destinationTokensRoute'
+import { NativeGasAddress, ZeroAddress } from '../constants'
+import { USDC, USDT } from '../constants/bridgeable'
 
 const app = express()
 app.use('/destinationTokens', destinationTokensRoute)
@@ -10,7 +12,7 @@ describe('destinatonTokens Route', () => {
   it('should return destination tokens for valid input', async () => {
     const response = await request(app).get('/destinationTokens').query({
       fromChain: '1',
-      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      fromToken: USDC.addresses[1],
     })
 
     expect(response.status).toBe(200)
@@ -24,7 +26,21 @@ describe('destinatonTokens Route', () => {
   it('should return destination tokens for valid gas Tokens', async () => {
     const response = await request(app).get('/destinationTokens').query({
       fromChain: '1',
-      fromToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      fromToken: NativeGasAddress,
+    })
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(response.body)).toBe(true)
+    expect(response.body.length).toBeGreaterThan(0)
+    expect(response.body[0]).toHaveProperty('symbol')
+    expect(response.body[0]).toHaveProperty('address')
+    expect(response.body[0]).toHaveProperty('chainId')
+  })
+
+  it('should return destination tokens for valid gas Tokens, ZeroAddress', async () => {
+    const response = await request(app).get('/destinationTokens').query({
+      fromChain: '1',
+      fromToken: ZeroAddress,
     })
 
     expect(response.status).toBe(200)
@@ -40,7 +56,7 @@ describe('destinatonTokens Route', () => {
 
     const response = await request(app).get('/destinationTokens').query({
       fromChain: '534352',
-      fromToken: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+      fromToken: USDC.addresses[534352],
     })
 
     expect(response.status).toBe(200)
@@ -54,7 +70,7 @@ describe('destinatonTokens Route', () => {
   it('should return destination tokens for non-checksummed address', async () => {
     const response = await request(app).get('/destinationTokens').query({
       fromChain: '43114',
-      fromToken: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
+      fromToken: USDT.addresses[43114].toLowerCase(),
     })
 
     expect(response.status).toBe(200)
@@ -107,7 +123,7 @@ describe('destinatonTokens Route', () => {
   it('should return 400 for token not supported on specified chain', async () => {
     const response = await request(app).get('/destinationTokens').query({
       fromChain: '10',
-      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      fromToken: USDC.addresses[1],
     })
 
     expect(response.status).toBe(400)
@@ -119,7 +135,7 @@ describe('destinatonTokens Route', () => {
 
   it('should return 400 for missing fromChain', async () => {
     const response = await request(app).get('/destinationTokens').query({
-      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      fromToken: USDC.addresses[1],
     })
 
     expect(response.status).toBe(400)

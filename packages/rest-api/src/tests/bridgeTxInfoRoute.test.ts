@@ -2,6 +2,7 @@ import request from 'supertest'
 import express from 'express'
 
 import bridgeTxInfoRoute from '../routes/bridgeTxInfoRoute'
+import { USDC } from '../constants/bridgeable'
 
 const app = express()
 app.use('/bridgeTxInfo', bridgeTxInfoRoute)
@@ -11,8 +12,8 @@ describe('Bridge TX Info Route', () => {
     const response = await request(app).get('/bridgeTxInfo').query({
       fromChain: '1',
       toChain: '137',
-      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC on Ethereum
-      toToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // USDC on Polygon
+      fromToken: USDC.addresses[1],
+      toToken: USDC.addresses[137],
       amount: '1000',
       destAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
     })
@@ -79,8 +80,8 @@ describe('Bridge TX Info Route', () => {
     const response = await request(app).get('/bridgeTxInfo').query({
       fromChain: '1',
       toChain: '137',
-      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      toToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+      fromToken: USDC.addresses[1],
+      toToken: USDC.addresses[137],
       destAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
     })
     expect(response.status).toBe(400)
@@ -91,8 +92,8 @@ describe('Bridge TX Info Route', () => {
     const response = await request(app).get('/bridgeTxInfo').query({
       fromChain: '1',
       toChain: '137',
-      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      toToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+      fromToken: USDC.addresses[1],
+      toToken: USDC.addresses[137],
       amount: '1000',
       destAddress: 'invalid_address',
     })
