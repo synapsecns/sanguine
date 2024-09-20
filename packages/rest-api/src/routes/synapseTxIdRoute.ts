@@ -2,14 +2,14 @@ import express from 'express'
 import { check } from 'express-validator'
 
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
-import { getSynapseTxIdController } from '../controllers/getSynapseTxIdController'
+import { synapseTxIdController } from '../controllers/synapseTxIdController'
 import { VALID_BRIDGE_MODULES } from '../constants'
 
 const router = express.Router()
 
 /**
  * @openapi
- * /getSynapseTxId:
+ * /synapseTxId:
  *   get:
  *     summary: Get Synapse Transaction ID
  *     description: Retrieve the Synapse transaction ID for a given origin chain transaction
@@ -101,7 +101,7 @@ router.get(
     check('txHash').exists().withMessage('txHash is required').isString(),
   ],
   showFirstValidationError,
-  getSynapseTxIdController
+  synapseTxIdController
 )
 
 export default router

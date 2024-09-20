@@ -5,9 +5,9 @@ import swapRoute from './swapRoute'
 import swapTxInfoRoute from './swapTxInfoRoute'
 import bridgeRoute from './bridgeRoute'
 import bridgeTxInfoRoute from './bridgeTxInfoRoute'
-import getSynapseTxIdRoute from './getSynapseTxIdRoute'
-import getBridgeTxStatusRoute from './getBridgeTxStatusRoute'
-import getDestinationTxRoute from './getDestinationTxRoute'
+import synapseTxIdRoute from './synapseTxIdRoute'
+import bridgeTxStatusRoute from './bridgeTxStatusRoute'
+import destinationTxRoute from './destinationTxRoute'
 import tokenListRoute from './tokenListRoute'
 import destinationTokensRoute from './destinationTokensRoute'
 
@@ -18,9 +18,9 @@ router.use('/swap', swapRoute)
 router.use('/swapTxInfo', swapTxInfoRoute)
 router.use('/bridge', bridgeRoute)
 router.use('/bridgeTxInfo', bridgeTxInfoRoute)
-router.use('/getSynapseTxId', getSynapseTxIdRoute)
-router.use('/getBridgeTxStatus', getBridgeTxStatusRoute)
-router.use('/getDestinationTx', getDestinationTxRoute)
+router.use('/synapseTxId', synapseTxIdRoute)
+router.use('/bridgeTxStatus', bridgeTxStatusRoute)
+router.use('/destinationTx', destinationTxRoute)
 router.use('/tokenList', tokenListRoute)
 router.use('/destinationTokens', destinationTokensRoute)
 

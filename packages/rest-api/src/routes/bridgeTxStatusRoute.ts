@@ -2,29 +2,38 @@ import express from 'express'
 import { check } from 'express-validator'
 
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
-import { getDestinationTxController } from '../controllers/getDestinationTxController'
+import { bridgeTxStatusController } from '../controllers/bridgeTxStatusController'
+import { CHAINS_ARRAY } from '../constants/chains'
+import { VALID_BRIDGE_MODULES } from '../constants'
 
 const router = express.Router()
 
 /**
  * @openapi
- * /getDestinationTx:
+ * /bridgeTxStatus:
  *   get:
- *     summary: Get Destination Transaction Information
+ *     summary: Get Bridge Transaction Status
  *     description: Used to get the status of a bridge transaction, and the destination transaction information if the transaction is finalized
  *     parameters:
  *       - in: query
- *         name: originChainId
+ *         name: destChainId
  *         required: true
  *         schema:
  *           type: string
- *         description: The ID of the origin chain where the transaction was initiated
+ *         description: The ID of the destination chain
  *       - in: query
- *         name: txHash
+ *         name: bridgeModule
  *         required: true
  *         schema:
  *           type: string
- *         description: The transaction hash on the origin chain
+ *           enum: [SynapseRFQ, SynapseBridge, SynapseCCTP]
+ *         description: The bridge module used for the transaction
+ *       - in: query
+ *         name: synapseTxId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The Synapse transaction ID
  *     responses:
  *       200:
  *         description: Successful response
@@ -63,13 +72,13 @@ const router = express.Router()
  *             example:
  *               status: true
  *               toInfo:
- *                 chainID: 8453
- *                 address: "0xABb4F79430002534df3F62E964D62659A010Ef3C"
- *                 txnHash: "0xc9284b2de9ba74ab618573884930e51575c1a3511216d9949da2955efb69afa8"
- *                 USDValue: 5999.98657
+ *                 chainID: 10
+ *                 address: "0xRL3Bab0e4c09Ff447863f507E16090A9F22792d2"
+ *                 txnHash: "0x4eff784e85df5265dcc8e3c30b9df4b5c8a0c940300f6d8ad7ed737e9beb6fab"
+ *                 USDValue: 1.79848
  *                 tokenSymbol: "USDC"
- *                 formattedTime: "2024-09-19 23:32:29 +0000 UTC"
- *                 formattedValue: "5999.986575"
+ *                 formattedTime: "2024-09-01 17:10:41 +0000 UTC"
+ *                 formattedValue: "1.797684"
  *       400:
  *         description: Invalid input
  *         content:
@@ -91,8 +100,8 @@ const router = express.Router()
  *             example:
  *               error:
  *                 value: "999"
- *                 message: "originChainId is required"
- *                 field: "originChainId"
+ *                 message: "Unsupported destChainId"
+ *                 field: "destChainId"
  *                 location: "query"
  *       500:
  *         description: Server error
@@ -109,14 +118,28 @@ const router = express.Router()
 router.get(
   '/',
   [
-    check('originChainId')
+    check('destChainId')
       .exists()
-      .withMessage('originChainId is required')
-      .isNumeric(),
-    check('txHash').exists().withMessage('txHash is required').isString(),
+      .withMessage('destChainId is required')
+      .isNumeric()
+      .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
+      .withMessage('Unsupported destChainId'),
+    check('bridgeModule')
+      .exists()
+      .withMessage('bridgeModule is required')
+      .isString()
+      .isIn(VALID_BRIDGE_MODULES)
+      .withMessage(
+        'Invalid bridge module. Must be one of: ' +
+          VALID_BRIDGE_MODULES.join(', ')
+      ),
+    check('synapseTxId')
+      .exists()
+      .withMessage('synapseTxId is required')
+      .isString(),
   ],
   showFirstValidationError,
-  getDestinationTxController
+  bridgeTxStatusController
 )
 
 export default router
