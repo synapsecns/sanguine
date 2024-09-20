@@ -73,12 +73,27 @@ const transformPair = (string: string): any => {
   }
 }
 
-const transformBridgeRouteValues = (routes: StringifiedBridgeRoutes) => {
+const transformBridgeRouteValues = (
+  routes: StringifiedBridgeRoutes
+): TransformedBridgeRoutes => {
   return Object.fromEntries(
-    Object.entries(routes).map(([key, values]) => [
-      key,
-      values.map(transformPair).filter((pair) => pair !== undefined),
-    ])
+    Object.entries(routes).map(([key, values]) => {
+      const uniquePairs: TokenData[] = []
+      values.forEach((pairStr) => {
+        const transformedPair = transformPair(pairStr)
+        if (
+          transformedPair &&
+          !uniquePairs.some(
+            (pair) =>
+              pair.symbol === transformedPair.symbol &&
+              pair.chainId === transformedPair.chainId
+          )
+        ) {
+          uniquePairs.push(transformedPair)
+        }
+      })
+      return [key, uniquePairs]
+    })
   )
 }
 

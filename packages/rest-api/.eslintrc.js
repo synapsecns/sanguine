@@ -11,6 +11,7 @@ module.exports = {
       files: ['**/*.ts'],
       rules: {
         'guard-for-in': 'off',
+        'jsdoc/check-indentation': 'off',
       },
     },
   ],
