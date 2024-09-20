@@ -226,67 +226,70 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 		return nil, fmt.Errorf("subscription failed")
 	}
 
+	go c.runWsListener(ctx, conn, reqChan, respChan)
+
+	return respChan, nil
+}
+
+func (c *clientImpl) runWsListener(ctx context.Context, conn *websocket.Conn, reqChan, respChan chan *model.ActiveRFQMessage) {
+	defer close(respChan)
+	defer conn.Close()
+
+	var err error
+	readChan := make(chan []byte, 1000)
 	go func() {
-		defer close(respChan)
-		defer conn.Close()
-
-		readChan := make(chan []byte, 1000)
-		go func() {
-			defer close(readChan)
-			for {
-				_, message, err := conn.ReadMessage()
-				if err != nil {
-					if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-						logger.Warnf("websocket connection closed unexpectedly: %v", err)
-					}
-					return
-				}
-				readChan <- message
-			}
-		}()
-
+		defer close(readChan)
 		for {
-			select {
-			case <-ctx.Done():
+			_, message, err := conn.ReadMessage()
+			if err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					logger.Warnf("websocket connection closed unexpectedly: %v", err)
+				}
 				return
-			case msg, ok := <-reqChan:
-				if !ok {
-					return
-				}
-				err := conn.WriteJSON(msg)
-				if err != nil {
-					logger.Warnf("error sending message to websocket: %v", err)
-					return
-				}
-			case msg, ok := <-readChan:
-				if !ok {
-					return
-				}
-				var rfqMsg model.ActiveRFQMessage
-				err = json.Unmarshal(msg, &rfqMsg)
-				if err != nil {
-					logger.Warn("error unmarshalling message: %v", err)
-					continue
-				}
-
-				// automatically send the pong
-				if rfqMsg.Op == rest.PingOp {
-					reqChan <- &model.ActiveRFQMessage{
-						Op: rest.PongOp,
-					}
-					continue
-				}
-
-				select {
-				case respChan <- &rfqMsg:
-				case <-ctx.Done():
-					return
-				}
 			}
+			readChan <- message
 		}
 	}()
 
-	return respChan, nil
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg, ok := <-reqChan:
+			if !ok {
+				return
+			}
+			err := conn.WriteJSON(msg)
+			if err != nil {
+				logger.Warnf("error sending message to websocket: %v", err)
+				return
+			}
+		case msg, ok := <-readChan:
+			if !ok {
+				return
+			}
+			var rfqMsg model.ActiveRFQMessage
+			err = json.Unmarshal(msg, &rfqMsg)
+			if err != nil {
+				logger.Warn("error unmarshalling message: %v", err)
+				continue
+			}
+
+			// automatically send the pong
+			if rfqMsg.Op == rest.PingOp {
+				reqChan <- &model.ActiveRFQMessage{
+					Op: rest.PongOp,
+				}
+				continue
+			}
+
+			select {
+			case respChan <- &rfqMsg:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}
 }
 
 // GetAllQuotes retrieves all quotes from the RFQ quoting API.
