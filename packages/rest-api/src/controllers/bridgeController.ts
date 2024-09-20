@@ -3,6 +3,7 @@ import { parseUnits } from '@ethersproject/units'
 
 import { formatBNToString } from '../utils/formatBNToString'
 import { Synapse } from '../services/synapseService'
+import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 
 export const bridgeController = async (req, res) => {
   const errors = validationResult(req)
@@ -10,17 +11,18 @@ export const bridgeController = async (req, res) => {
     return res.status(400).json({ errors: errors.array() })
   }
   try {
-    const { fromChain, toChain, amount } = req.query
-    const fromTokenInfo = res.locals.tokenInfo.fromToken
-    const toTokenInfo = res.locals.tokenInfo.toToken
+    const { fromChain, toChain, amount, fromToken, toToken } = req.query
+
+    const fromTokenInfo = tokenAddressToToken(fromChain.toString(), fromToken)
+    const toTokenInfo = tokenAddressToToken(toChain.toString(), toToken)
 
     const amountInWei = parseUnits(amount.toString(), fromTokenInfo.decimals)
 
     const resp = await Synapse.allBridgeQuotes(
       Number(fromChain),
       Number(toChain),
-      fromTokenInfo.address,
-      toTokenInfo.address,
+      fromToken,
+      toToken,
       amountInWei
     )
     const payload = resp.map((quote) => ({

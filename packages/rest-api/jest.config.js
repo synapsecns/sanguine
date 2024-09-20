@@ -6,5 +6,5 @@ module.exports = {
     '^.+\\.(ts|tsx)$': 'babel-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  moduleDirectories: ['node_modules', 'src'],
+  moduleDirectories: ['node_modules', '<rootDir>'],
 }

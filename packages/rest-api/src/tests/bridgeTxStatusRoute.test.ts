@@ -1,14 +1,14 @@
 import request from 'supertest'
 import express from 'express'
 
-import getBridgeTxStatusRoute from '../routes/getBridgeTxStatusRoute'
+import bridgeTxStatusRoute from '../routes/bridgeTxStatusRoute'
 
 const app = express()
-app.use('/getBridgeTxStatus', getBridgeTxStatusRoute)
+app.use('/bridgeTxStatus', bridgeTxStatusRoute)
 
 describe('Get Bridge TX Status Route', () => {
   it('should return bridge transaction status for valid input', async () => {
-    const response = await request(app).get('/getBridgeTxStatus').query({
+    const response = await request(app).get('/bridgeTxStatus').query({
       destChainId: '42161',
       bridgeModule: 'SynapseRFQ',
       synapseTxId:
@@ -28,7 +28,7 @@ describe('Get Bridge TX Status Route', () => {
   }, 10000)
 
   it('should return 400 for unsupported destChainId', async () => {
-    const response = await request(app).get('/getBridgeTxStatus').query({
+    const response = await request(app).get('/bridgeTxStatus').query({
       destChainId: '999',
       bridgeModule: 'bridge',
       synapseTxId:
@@ -42,7 +42,7 @@ describe('Get Bridge TX Status Route', () => {
   }, 10000)
 
   it('should return 400 for invalid bridgeModule', async () => {
-    const response = await request(app).get('/getBridgeTxStatus').query({
+    const response = await request(app).get('/bridgeTxStatus').query({
       destChainId: '1',
       bridgeModule: 'invalidModule',
       synapseTxId:
@@ -56,7 +56,7 @@ describe('Get Bridge TX Status Route', () => {
   }, 10000)
 
   it('should return 400 for missing synapseTxId', async () => {
-    const response = await request(app).get('/getBridgeTxStatus').query({
+    const response = await request(app).get('/bridgeTxStatus').query({
       destChainId: '1',
       bridgeModule: 'SynapseRFQ',
     })
@@ -65,7 +65,7 @@ describe('Get Bridge TX Status Route', () => {
   }, 10000)
 
   it('should return 400 for missing destChainId', async () => {
-    const response = await request(app).get('/getBridgeTxStatus').query({
+    const response = await request(app).get('/bridgeTxStatus').query({
       bridgeModule: 'bridge',
       synapseTxId:
         '0x9beb59b36ff4570d6b823b075dcd4fa9acd82dc4a28bf93a456ab8c93990604a',
@@ -75,7 +75,7 @@ describe('Get Bridge TX Status Route', () => {
   }, 10000)
 
   it('should return 400 for missing bridgeModule', async () => {
-    const response = await request(app).get('/getBridgeTxStatus').query({
+    const response = await request(app).get('/bridgeTxStatus').query({
       destChainId: '137',
       synapseTxId:
         '0x9beb59b36ff4570d6b823b075dcd4fa9acd82dc4a28bf93a456ab8c93990604a',
