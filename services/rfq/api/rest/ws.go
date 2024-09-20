@@ -18,15 +18,19 @@ type WsClient interface {
 }
 
 type wsClient struct {
+	relayerAddr  string
 	conn         *websocket.Conn
+	pubsub       PubSubManager
 	requestChan  chan *model.RelayerWsQuoteRequest
 	responseChan chan *model.RelayerWsQuoteResponse
 	doneChan     chan struct{}
 }
 
-func newWsClient(conn *websocket.Conn) *wsClient {
+func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager) *wsClient {
 	return &wsClient{
+		relayerAddr:  relayerAddr,
 		conn:         conn,
+		pubsub:       pubsub,
 		requestChan:  make(chan *model.RelayerWsQuoteRequest, 1000),
 		responseChan: make(chan *model.RelayerWsQuoteResponse, 1000),
 		doneChan:     make(chan struct{}),
@@ -120,6 +124,28 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			}
 
 			switch rfqMsg.Op {
+			case SubscribeOp:
+				var sub model.SubscriptionParams
+				err = json.Unmarshal(rfqMsg.Content, &sub)
+				if err != nil {
+					logger.Error("Error unmarshalling subscription params: %s", err)
+					continue
+				}
+				err = c.pubsub.AddSubscription(c.relayerAddr, sub)
+				if err != nil {
+					logger.Error("Error adding subscription: %s", err)
+				}
+			case UnsubscribeOp:
+				var sub model.SubscriptionParams
+				err = json.Unmarshal(rfqMsg.Content, &sub)
+				if err != nil {
+					logger.Error("Error unmarshalling subscription params: %s", err)
+					continue
+				}
+				err = c.pubsub.RemoveSubscription(c.relayerAddr, sub)
+				if err != nil {
+					logger.Error("Error removing subscription: %s", err)
+				}
 			case SendQuoteOp:
 				// forward the response to the server
 				var resp model.RelayerWsQuoteResponse

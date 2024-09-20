@@ -206,6 +206,19 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 
 	respChan = make(chan *model.ActiveRFQMessage, 1000)
 
+	// first, subscrbe to the given chains
+	sub := model.SubscriptionParams{
+		Chains: req.ChainIDs,
+	}
+	subJSON, err := json.Marshal(sub)
+	if err != nil {
+		return respChan, fmt.Errorf("error marshalling subscription params: %w", err)
+	}
+	conn.WriteJSON(model.ActiveRFQMessage{
+		Op:      rest.SubscribeOp,
+		Content: json.RawMessage(subJSON),
+	})
+
 	go func() {
 		defer close(respChan)
 		defer conn.Close()

@@ -72,9 +72,7 @@ func verifyActiveQuoteRequest(c *ServerSuite, userReq *model.PutUserQuoteRequest
 }
 
 const (
-	originChainID   = 1
 	originTokenAddr = "0x1111111111111111111111111111111111111111"
-	destChainID     = 2
 	destTokenAddr   = "0x2222222222222222222222222222222222222222"
 )
 
@@ -96,9 +94,9 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	userRequestAmount := big.NewInt(1_000_000)
 	userQuoteReq := &model.PutUserQuoteRequest{
 		Data: model.QuoteData{
-			OriginChainID:    originChainID,
+			OriginChainID:    c.originChainID,
 			OriginTokenAddr:  originTokenAddr,
-			DestChainID:      destChainID,
+			DestChainID:      c.destChainID,
 			DestTokenAddr:    destTokenAddr,
 			OriginAmount:     userRequestAmount.String(),
 			ExpirationWindow: 10_000,
@@ -111,9 +109,9 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := &model.RelayerWsQuoteResponse{
 		Data: &model.QuoteData{
-			OriginChainID:   originChainID,
+			OriginChainID:   c.originChainID,
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     destChainID,
+			DestChainID:     c.destChainID,
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      &destAmount,
 			OriginAmount:    originAmount,
@@ -157,9 +155,9 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 	userRequestAmount := big.NewInt(1_000_000)
 	userQuoteReq := &model.PutUserQuoteRequest{
 		Data: model.QuoteData{
-			OriginChainID:    originChainID,
+			OriginChainID:    c.originChainID,
 			OriginTokenAddr:  originTokenAddr,
-			DestChainID:      destChainID,
+			DestChainID:      c.destChainID,
 			DestTokenAddr:    destTokenAddr,
 			OriginAmount:     userRequestAmount.String(),
 			ExpirationWindow: 0,
@@ -172,9 +170,9 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := &model.RelayerWsQuoteResponse{
 		Data: &model.QuoteData{
-			OriginChainID:   originChainID,
+			OriginChainID:   c.originChainID,
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     destChainID,
+			DestChainID:     c.destChainID,
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      &destAmount,
 			OriginAmount:    originAmount,
@@ -216,9 +214,9 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	userRequestAmount := big.NewInt(1_000_000)
 	userQuoteReq := &model.PutUserQuoteRequest{
 		Data: model.QuoteData{
-			OriginChainID:    originChainID,
+			OriginChainID:    c.originChainID,
 			OriginTokenAddr:  originTokenAddr,
-			DestChainID:      destChainID,
+			DestChainID:      c.destChainID,
 			DestTokenAddr:    destTokenAddr,
 			OriginAmount:     userRequestAmount.String(),
 			ExpirationWindow: 10_000,
@@ -231,9 +229,9 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	destAmount := "999000"
 	quoteResp := model.RelayerWsQuoteResponse{
 		Data: &model.QuoteData{
-			OriginChainID:   originChainID,
+			OriginChainID:   c.originChainID,
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     destChainID,
+			DestChainID:     c.destChainID,
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      &destAmount,
 			OriginAmount:    originAmount,
@@ -244,9 +242,9 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	destAmount2 := "998000"
 	quoteResp2 := model.RelayerWsQuoteResponse{
 		Data: &model.QuoteData{
-			OriginChainID:   originChainID,
+			OriginChainID:   c.originChainID,
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     destChainID,
+			DestChainID:     c.destChainID,
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      &destAmount2,
 			OriginAmount:    originAmount,
@@ -255,9 +253,9 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	destAmount3 := "997000"
 	quoteResp3 := model.RelayerWsQuoteResponse{
 		Data: &model.QuoteData{
-			OriginChainID:   originChainID,
+			OriginChainID:   c.originChainID,
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     destChainID,
+			DestChainID:     c.destChainID,
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      &destAmount3,
 			OriginAmount:    originAmount,
@@ -305,9 +303,9 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	passiveQuotes := []db.Quote{
 		{
 			RelayerAddr:     c.relayerWallets[0].Address().Hex(),
-			OriginChainID:   uint64(originChainID),
+			OriginChainID:   uint64(c.originChainID),
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     uint64(destChainID),
+			DestChainID:     uint64(c.destChainID),
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(1000)), 0),
 			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
@@ -323,9 +321,9 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	// Prepare user quote request with 0 expiration window
 	userQuoteReq := &model.PutUserQuoteRequest{
 		Data: model.QuoteData{
-			OriginChainID:    originChainID,
+			OriginChainID:    c.originChainID,
 			OriginTokenAddr:  originTokenAddr,
-			DestChainID:      destChainID,
+			DestChainID:      c.destChainID,
 			DestTokenAddr:    destTokenAddr,
 			OriginAmount:     userRequestAmount.String(),
 			ExpirationWindow: 0,
@@ -337,9 +335,9 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := &model.RelayerWsQuoteResponse{
 		Data: &model.QuoteData{
-			OriginChainID:   originChainID,
+			OriginChainID:   c.originChainID,
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     destChainID,
+			DestChainID:     c.destChainID,
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      &destAmount,
 			OriginAmount:    userQuoteReq.Data.OriginAmount,
@@ -384,9 +382,9 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	passiveQuotes := []db.Quote{
 		{
 			RelayerAddr:     c.relayerWallets[0].Address().Hex(),
-			OriginChainID:   uint64(originChainID),
+			OriginChainID:   uint64(c.originChainID),
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     uint64(destChainID),
+			DestChainID:     uint64(c.destChainID),
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      decimal.NewFromBigInt(new(big.Int).Sub(userRequestAmount, big.NewInt(100)), 0),
 			MaxOriginAmount: decimal.NewFromBigInt(userRequestAmount, 0),
@@ -402,9 +400,9 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	// Prepare user quote request with 0 expiration window
 	userQuoteReq := &model.PutUserQuoteRequest{
 		Data: model.QuoteData{
-			OriginChainID:    originChainID,
+			OriginChainID:    c.originChainID,
 			OriginTokenAddr:  originTokenAddr,
-			DestChainID:      destChainID,
+			DestChainID:      c.destChainID,
 			DestTokenAddr:    destTokenAddr,
 			OriginAmount:     userRequestAmount.String(),
 			ExpirationWindow: 0,
@@ -416,9 +414,9 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := model.RelayerWsQuoteResponse{
 		Data: &model.QuoteData{
-			OriginChainID:   originChainID,
+			OriginChainID:   c.originChainID,
 			OriginTokenAddr: originTokenAddr,
-			DestChainID:     destChainID,
+			DestChainID:     c.destChainID,
 			DestTokenAddr:   destTokenAddr,
 			DestAmount:      &destAmount,
 			OriginAmount:    userQuoteReq.Data.OriginAmount,

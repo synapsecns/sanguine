@@ -18,7 +18,9 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	// publish the quote request to all connected clients
 	relayerReq := model.NewRelayerWsQuoteRequest(request.Data, requestID)
 	r.wsClients.Range(func(key string, client WsClient) bool {
-		client.SendQuoteRequest(ctx, relayerReq)
+		if r.pubSubManager.IsSubscribed(key, request.Data.OriginChainID, request.Data.DestChainID) {
+			client.SendQuoteRequest(ctx, relayerReq)
+		}
 		return true
 	})
 	err := r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, db.Pending)

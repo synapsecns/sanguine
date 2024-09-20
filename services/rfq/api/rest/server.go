@@ -483,7 +483,7 @@ func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Cont
 		r.wsClients.Delete(relayerAddr)
 	}()
 
-	client := newWsClient(ws)
+	client := newWsClient(relayerAddr, ws, r.pubSubManager)
 	r.wsClients.Store(relayerAddr, client)
 	err = client.Run(ctx)
 	if err != nil {

@@ -119,3 +119,8 @@ type RelayerWsQuoteResponse struct {
 	Data      *QuoteData `json:"data"`
 	UpdatedAt time.Time  `json:"updated_at"`
 }
+
+// SubscriptionParams are the parameters for a subscription.
+type SubscriptionParams struct {
+	Chains []int `json:"chains"`
+}
