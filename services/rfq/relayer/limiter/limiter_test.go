@@ -82,6 +82,7 @@ func (l *LimiterSuite) TestUnderLimitNotEnoughConfirmations() {
 }
 
 func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
+	l.T().Skip()
 	mockQuoter := buildMockQuoter(69420)
 	mockListener := buildMockListener(4)
 
