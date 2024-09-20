@@ -110,6 +110,38 @@
                 }
             }
         },
+        "/open_quote_requests": {
+            "get": {
+                "description": "Get all open quote requests that are currently in Received or Pending status.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Get open quote requests",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.GetOpenQuoteRequestsResponse"
+                            }
+                        },
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/quote_request": {
             "put": {
                 "description": "Handle user quote request and return the best quote available.",
@@ -286,6 +318,35 @@
                     "additionalProperties": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "model.GetOpenQuoteRequestsResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "dest_chain_id": {
+                    "type": "integer"
+                },
+                "dest_token": {
+                    "type": "string"
+                },
+                "expiration_window": {
+                    "type": "integer"
+                },
+                "origin_amount": {
+                    "type": "string"
+                },
+                "origin_chain_id": {
+                    "type": "integer"
+                },
+                "origin_token": {
+                    "type": "string"
+                },
+                "user_address": {
+                    "type": "string"
                 }
             }
         },

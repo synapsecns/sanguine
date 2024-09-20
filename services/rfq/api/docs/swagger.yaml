@@ -7,6 +7,25 @@ definitions:
         description: Contracts is a map of chain id to contract address
         type: object
     type: object
+  model.GetOpenQuoteRequestsResponse:
+    properties:
+      created_at:
+        type: string
+      dest_chain_id:
+        type: integer
+      dest_token:
+        type: string
+      expiration_window:
+        type: integer
+      origin_amount:
+        type: string
+      origin_chain_id:
+        type: integer
+      origin_token:
+        type: string
+      user_address:
+        type: string
+    type: object
   model.GetQuoteResponse:
     properties:
       dest_amount:
@@ -192,6 +211,28 @@ paths:
               $ref: '#/definitions/model.GetContractsResponse'
             type: array
       summary: Get contract addresses
+      tags:
+      - quotes
+  /open_quote_requests:
+    get:
+      consumes:
+      - application/json
+      description: Get all open quote requests that are currently in Received or Pending
+        status.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Api-Version:
+              description: API Version Number - See docs for more info
+              type: string
+          schema:
+            items:
+              $ref: '#/definitions/model.GetOpenQuoteRequestsResponse'
+            type: array
+      summary: Get open quote requests
       tags:
       - quotes
   /quote_request:
