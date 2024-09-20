@@ -3,6 +3,7 @@ package base
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm/clause"
 
@@ -93,11 +94,21 @@ func (s *Store) InsertActiveQuoteRequest(ctx context.Context, req *model.PutUser
 }
 
 // UpdateActiveQuoteRequestStatus updates the status of an active quote request in the database.
-func (s *Store) UpdateActiveQuoteRequestStatus(ctx context.Context, requestID string, status db.ActiveQuoteRequestStatus) error {
+func (s *Store) UpdateActiveQuoteRequestStatus(ctx context.Context, requestID string, quoteID *string, status db.ActiveQuoteRequestStatus) error {
+	updates := map[string]interface{}{
+		"status": status,
+	}
+	if status == db.Fulfilled {
+		if quoteID == nil {
+			return fmt.Errorf("quote id is required for fulfilled status")
+		}
+		updates["fulfilled_quote_id"] = quoteID
+		updates["fulfilled_at"] = time.Now().UTC()
+	}
 	result := s.db.WithContext(ctx).
 		Model(&db.ActiveQuoteRequest{}).
 		Where("request_id = ?", requestID).
-		Update("status", status)
+		Updates(updates)
 	if result.Error != nil {
 		return fmt.Errorf("could not update active quote request status: %w", result.Error)
 	}

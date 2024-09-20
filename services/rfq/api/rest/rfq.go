@@ -26,7 +26,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 		}
 		return true
 	})
-	err := r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, db.Pending)
+	err := r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, nil, db.Pending)
 	if err != nil {
 		logger.Errorf("Error updating active quote request status: %v", err)
 	}
@@ -147,12 +147,12 @@ func validateRelayerQuoteResponse(relayerAddr string, resp *model.RelayerWsQuote
 
 func (r *QuoterAPIServer) recordActiveQuote(ctx context.Context, quote *model.QuoteData, requestID, quoteID string) (err error) {
 	if quote == nil {
-		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, db.Expired)
+		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, nil, db.Expired)
 		if err != nil {
 			logger.Errorf("Error updating active quote request status: %v", err)
 		}
 	} else {
-		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, db.Fulfilled)
+		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, &quoteID, db.Fulfilled)
 		if err != nil {
 			logger.Errorf("Error updating active quote request status: %v", err)
 		}

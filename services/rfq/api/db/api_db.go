@@ -153,7 +153,7 @@ type ActiveQuoteRequest struct {
 	CreatedAt        time.Time                `gorm:"column:created_at"`
 	Status           ActiveQuoteRequestStatus `gorm:"column:status"`
 	FulfilledAt      time.Time                `gorm:"column:fulfilled_at"`
-	fulfilledQuoteID string                   `gorm:"column:fulfilled_quote_id"`
+	FulfilledQuoteID string                   `gorm:"column:fulfilled_quote_id"`
 }
 
 // FromUserRequest converts a model.PutUserQuoteRequest to an ActiveQuoteRequest.
@@ -242,7 +242,7 @@ type APIDBWriter interface {
 	// InsertActiveQuoteRequest inserts an active quote request into the database.
 	InsertActiveQuoteRequest(ctx context.Context, req *model.PutUserQuoteRequest, requestID string) error
 	// UpdateActiveQuoteRequestStatus updates the status of an active quote request in the database.
-	UpdateActiveQuoteRequestStatus(ctx context.Context, requestID string, status ActiveQuoteRequestStatus) error
+	UpdateActiveQuoteRequestStatus(ctx context.Context, requestID string, quoteID *string, status ActiveQuoteRequestStatus) error
 	// InsertActiveQuoteResponse inserts an active quote response into the database.
 	InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse, status ActiveQuoteResponseStatus) error
 	// UpdateActiveQuoteResponseStatus updates the status of an active quote response in the database.
