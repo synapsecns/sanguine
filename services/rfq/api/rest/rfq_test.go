@@ -22,7 +22,7 @@ func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet walle
 	c.Require().NoError(err)
 
 	// Create channels for active quote requests and responses
-	reqChan := make(chan *model.ActiveRFQMessage, 1000)
+	reqChan := make(chan *model.ActiveRFQMessage)
 	req := &model.SubscribeActiveRFQRequest{
 		ChainIDs: []int{c.originChainID, c.destChainID},
 	}

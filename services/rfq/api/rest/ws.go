@@ -31,8 +31,8 @@ func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager)
 		relayerAddr:  relayerAddr,
 		conn:         conn,
 		pubsub:       pubsub,
-		requestChan:  make(chan *model.RelayerWsQuoteRequest, 1000),
-		responseChan: make(chan *model.RelayerWsQuoteResponse, 1000),
+		requestChan:  make(chan *model.RelayerWsQuoteRequest),
+		responseChan: make(chan *model.RelayerWsQuoteResponse),
 		doneChan:     make(chan struct{}),
 	}
 }
@@ -79,7 +79,7 @@ const (
 )
 
 func (c *wsClient) Run(ctx context.Context) (err error) {
-	messageChan := make(chan []byte, 1000)
+	messageChan := make(chan []byte)
 	pingTicker := time.NewTicker(PingPeriod)
 	defer pingTicker.Stop()
 

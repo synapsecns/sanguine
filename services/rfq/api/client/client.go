@@ -204,7 +204,7 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
 	}
 
-	respChan = make(chan *model.ActiveRFQMessage, 1000)
+	respChan = make(chan *model.ActiveRFQMessage)
 
 	// first, subscrbe to the given chains
 	sub := model.SubscriptionParams{
@@ -236,7 +236,7 @@ func (c *clientImpl) runWsListener(ctx context.Context, conn *websocket.Conn, re
 	defer conn.Close()
 
 	var err error
-	readChan := make(chan []byte, 1000)
+	readChan := make(chan []byte)
 	go func() {
 		defer close(readChan)
 		for {
