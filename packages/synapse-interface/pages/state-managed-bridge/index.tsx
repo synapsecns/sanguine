@@ -110,11 +110,15 @@ const StateManagedBridge = () => {
   } = useMaintenance()
 
   useEffect(() => {
-    segmentAnalyticsEvent(`[Bridge page] arrives`, {
-      fromChainId,
-      query,
-      pathname,
-    })
+    segmentAnalyticsEvent(
+      `[Bridge page] arrives`,
+      {
+        fromChainId,
+        query,
+        pathname,
+      },
+      true
+    )
   }, [query])
 
   useEffect(() => {
