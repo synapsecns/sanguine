@@ -10,7 +10,7 @@ import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
 
-contract FastBridgeV2 is IFastBridge, IFastBridgeV2, Admin {
+contract FastBridgeV2 is Admin, IFastBridgeV2 {
     using SafeERC20 for IERC20;
     using UniversalTokenLib for address;
 
