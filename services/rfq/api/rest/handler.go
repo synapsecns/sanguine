@@ -133,6 +133,7 @@ func (h *Handler) ModifyBulkQuotes(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+//nolint:gosec
 func parseDBQuote(putRequest model.PutRelayerQuoteRequest, relayerAddr interface{}) (*db.Quote, error) {
 	destAmount, err := decimal.NewFromString(putRequest.DestAmount)
 	if err != nil {
@@ -162,7 +163,8 @@ func parseDBQuote(putRequest model.PutRelayerQuoteRequest, relayerAddr interface
 	}, nil
 }
 
-func quoteResponseFromDbQuote(dbQuote *db.Quote) *model.GetQuoteResponse {
+//nolint:gosec
+func quoteResponseFromDBQuote(dbQuote *db.Quote) *model.GetQuoteResponse {
 	return &model.GetQuoteResponse{
 		OriginChainID:           int(dbQuote.OriginChainID),
 		OriginTokenAddr:         dbQuote.OriginTokenAddr,
@@ -245,7 +247,7 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 	// Convert quotes from db model to api model
 	quotes := make([]*model.GetQuoteResponse, len(dbQuotes))
 	for i, dbQuote := range dbQuotes {
-		quotes[i] = quoteResponseFromDbQuote(dbQuote)
+		quotes[i] = quoteResponseFromDBQuote(dbQuote)
 	}
 	c.JSON(http.StatusOK, quotes)
 }

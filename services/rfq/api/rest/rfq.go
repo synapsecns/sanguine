@@ -17,9 +17,12 @@ const collectionTimeout = 1 * time.Minute
 func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest, requestID string) (quote *model.QuoteData) {
 	// publish the quote request to all connected clients
 	relayerReq := model.NewRelayerWsQuoteRequest(request.Data, requestID)
-	r.wsClients.Range(func(key string, client WsClient) bool {
-		if r.pubSubManager.IsSubscribed(key, request.Data.OriginChainID, request.Data.DestChainID) {
-			client.SendQuoteRequest(ctx, relayerReq)
+	r.wsClients.Range(func(relayerAddr string, client WsClient) bool {
+		if r.pubSubManager.IsSubscribed(relayerAddr, request.Data.OriginChainID, request.Data.DestChainID) {
+			err := client.SendQuoteRequest(ctx, relayerReq)
+			if err != nil {
+				logger.Errorf("Error sending quote request to %s: %v", relayerAddr, err)
+			}
 		}
 		return true
 	})
@@ -51,6 +54,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	defer expireCancel()
 
 	// don't cancel the collection context so that late responses can be collected in background
+	// nolint:govet
 	collectionCtx, _ := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond+collectionTimeout)
 
 	wg := sync.WaitGroup{}

@@ -199,10 +199,11 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 	}
 	header.Set(rest.AuthorizationHeader, authHeader)
 
-	conn, _, err := websocket.DefaultDialer.Dial(reqURL, header)
+	conn, httpResp, err := websocket.DefaultDialer.Dial(reqURL, header)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
 	}
+	defer httpResp.Body.Close()
 
 	respChan = make(chan *model.ActiveRFQMessage)
 
@@ -212,16 +213,22 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 	}
 	subJSON, err := json.Marshal(sub)
 	if err != nil {
-		return respChan, fmt.Errorf("error marshalling subscription params: %w", err)
+		return respChan, fmt.Errorf("error marshaling subscription params: %w", err)
 	}
-	conn.WriteJSON(model.ActiveRFQMessage{
+	err = conn.WriteJSON(model.ActiveRFQMessage{
 		Op:      rest.SubscribeOp,
 		Content: json.RawMessage(subJSON),
 	})
+	if err != nil {
+		return nil, fmt.Errorf("error sending subscribe message: %w", err)
+	}
 
 	// make sure subscription is successful
 	var resp model.ActiveRFQMessage
-	conn.ReadJSON(&resp)
+	err = conn.ReadJSON(&resp)
+	if err != nil {
+		return nil, fmt.Errorf("error reading subscribe response: %w", err)
+	}
 	if !resp.Success || resp.Op != rest.SubscribeOp {
 		return nil, fmt.Errorf("subscription failed")
 	}
@@ -232,8 +239,13 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 }
 
 func (c *clientImpl) runWsListener(ctx context.Context, conn *websocket.Conn, reqChan, respChan chan *model.ActiveRFQMessage) {
-	defer close(respChan)
-	defer conn.Close()
+	defer func() {
+		close(respChan)
+		err := conn.Close()
+		if err != nil {
+			logger.Warnf("error closing websocket connection: %v", err)
+		}
+	}()
 
 	var err error
 	readChan := make(chan []byte)
@@ -271,7 +283,7 @@ func (c *clientImpl) runWsListener(ctx context.Context, conn *websocket.Conn, re
 			var rfqMsg model.ActiveRFQMessage
 			err = json.Unmarshal(msg, &rfqMsg)
 			if err != nil {
-				logger.Warn("error unmarshalling message: %v", err)
+				logger.Warn("error unmarshaling message: %v", err)
 				continue
 			}
 

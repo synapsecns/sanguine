@@ -142,18 +142,18 @@ var _ dbcommon.Enum = (*ActiveQuoteResponseStatus)(nil)
 
 // ActiveQuoteRequest is the database model for an active quote request.
 type ActiveQuoteRequest struct {
-	RequestID         string                   `gorm:"column:request_id;primaryKey"`
-	UserAddress       string                   `gorm:"column:user_address"`
-	OriginChainID     uint64                   `gorm:"column:origin_chain_id"`
-	OriginTokenAddr   string                   `gorm:"column:origin_token"`
-	DestChainID       uint64                   `gorm:"column:dest_chain_id"`
-	DestTokenAddr     string                   `gorm:"column:dest_token"`
-	OriginAmount      decimal.Decimal          `gorm:"column:origin_amount"`
-	ExpirationWindow  time.Duration            `gorm:"column:expiration_window"`
-	CreatedAt         time.Time                `gorm:"column:created_at"`
-	Status            ActiveQuoteRequestStatus `gorm:"column:status"`
-	FulfilledAt       time.Time                `gorm:"column:fulfilled_at"`
-	FullfilledQuoteID string                   `gorm:"column:fullfilled_quote_id"`
+	RequestID        string                   `gorm:"column:request_id;primaryKey"`
+	UserAddress      string                   `gorm:"column:user_address"`
+	OriginChainID    uint64                   `gorm:"column:origin_chain_id"`
+	OriginTokenAddr  string                   `gorm:"column:origin_token"`
+	DestChainID      uint64                   `gorm:"column:dest_chain_id"`
+	DestTokenAddr    string                   `gorm:"column:dest_token"`
+	OriginAmount     decimal.Decimal          `gorm:"column:origin_amount"`
+	ExpirationWindow time.Duration            `gorm:"column:expiration_window"`
+	CreatedAt        time.Time                `gorm:"column:created_at"`
+	Status           ActiveQuoteRequestStatus `gorm:"column:status"`
+	FulfilledAt      time.Time                `gorm:"column:fulfilled_at"`
+	fulfilledQuoteID string                   `gorm:"column:fulfilled_quote_id"`
 }
 
 // FromUserRequest converts a model.PutUserQuoteRequest to an ActiveQuoteRequest.

@@ -43,6 +43,8 @@ func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.Rel
 		// successfully sent
 	case <-c.doneChan:
 		return fmt.Errorf("websocket client is closed")
+	case <-ctx.Done():
+		return nil
 	}
 	return nil
 }
@@ -51,7 +53,7 @@ func (c *wsClient) ReceiveQuoteResponse(ctx context.Context) (resp *model.Relaye
 	for {
 		select {
 		case resp = <-c.responseChan:
-			// successfuly received
+			// successfully received
 			return resp, nil
 		case <-c.doneChan:
 			return nil, fmt.Errorf("websocket client is closed")
@@ -101,33 +103,48 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 	for {
 		select {
 		case <-ctx.Done():
-			c.conn.Close()
+			err = c.conn.Close()
+			if err != nil {
+				return fmt.Errorf("error closing websocket connection: %w", err)
+			}
 			close(c.doneChan)
 			return nil
 		case data := <-c.requestChan:
 			rawData, err := json.Marshal(data)
 			if err != nil {
-				logger.Error("Error marshalling quote request: %s", err)
+				logger.Error("Error marshaling quote request: %s", err)
 				continue
 			}
 			msg := model.ActiveRFQMessage{
 				Op:      RequestQuoteOp,
 				Content: json.RawMessage(rawData),
 			}
-			c.conn.WriteJSON(msg)
+			err = c.conn.WriteJSON(msg)
+			if err != nil {
+				logger.Error("Error sending quote request: %s", err)
+				continue
+			}
 		case msg := <-messageChan:
 			var rfqMsg model.ActiveRFQMessage
 			err = json.Unmarshal(msg, &rfqMsg)
 			if err != nil {
-				logger.Error("Error unmarshalling websocket message: %s", err)
+				logger.Error("Error unmarshaling websocket message: %s", err)
 				continue
 			}
 
 			switch rfqMsg.Op {
 			case SubscribeOp:
-				c.conn.WriteJSON(c.handleSubscribe(rfqMsg.Content))
+				resp := c.handleSubscribe(rfqMsg.Content)
+				err = c.conn.WriteJSON(resp)
+				if err != nil {
+					logger.Error("Error sending subscribe response: %s", err)
+				}
 			case UnsubscribeOp:
-				c.conn.WriteJSON(c.handleUnsubscribe(rfqMsg.Content))
+				resp := c.handleUnsubscribe(rfqMsg.Content)
+				err = c.conn.WriteJSON(resp)
+				if err != nil {
+					logger.Error("Error sending unsubscribe response: %s", err)
+				}
 			case SendQuoteOp:
 				// forward the response to the server
 				var resp model.RelayerWsQuoteResponse
@@ -144,19 +161,25 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			}
 		case <-pingTicker.C:
 			if time.Since(lastPong) > PingPeriod {
-				c.conn.Close()
+				err = c.conn.Close()
+				if err != nil {
+					return fmt.Errorf("error closing websocket connection: %w", err)
+				}
 				close(c.doneChan)
 				return fmt.Errorf("pong not received in time")
 			}
 			pingMsg := model.ActiveRFQMessage{
 				Op: PingOp,
 			}
-			err := c.conn.WriteJSON(pingMsg)
+			err = c.conn.WriteJSON(pingMsg)
 			if err != nil {
 				logger.Error("Error sending ping message: %s", err)
-				c.conn.Close()
+				err = c.conn.Close()
+				if err != nil {
+					return fmt.Errorf("error closing websocket connection: %w", err)
+				}
 				close(c.doneChan)
-				return err
+				return fmt.Errorf("error closing websocket connection: %w", err)
 			}
 		}
 	}
@@ -166,11 +189,11 @@ func (c *wsClient) handleSubscribe(content json.RawMessage) (resp model.ActiveRF
 	var sub model.SubscriptionParams
 	err := json.Unmarshal(content, &sub)
 	if err != nil {
-		return getErrorResponse(SubscribeOp, fmt.Errorf("could not unmarshal subscription params: %v", err))
+		return getErrorResponse(SubscribeOp, fmt.Errorf("could not unmarshal subscription params: %w", err))
 	}
 	err = c.pubsub.AddSubscription(c.relayerAddr, sub)
 	if err != nil {
-		return getErrorResponse(SubscribeOp, fmt.Errorf("error adding subscription: %v", err))
+		return getErrorResponse(SubscribeOp, fmt.Errorf("error adding subscription: %w", err))
 	}
 	return getSuccessResponse(SubscribeOp)
 }
@@ -179,11 +202,11 @@ func (c *wsClient) handleUnsubscribe(content json.RawMessage) (resp model.Active
 	var sub model.SubscriptionParams
 	err := json.Unmarshal(content, &sub)
 	if err != nil {
-		return getErrorResponse(UnsubscribeOp, fmt.Errorf("could not unmarshal subscription params: %v", err))
+		return getErrorResponse(UnsubscribeOp, fmt.Errorf("could not unmarshal subscription params: %w", err))
 	}
 	err = c.pubsub.RemoveSubscription(c.relayerAddr, sub)
 	if err != nil {
-		return getErrorResponse(UnsubscribeOp, fmt.Errorf("error removing subscription: %v", err))
+		return getErrorResponse(UnsubscribeOp, fmt.Errorf("error removing subscription: %w", err))
 	}
 	return getSuccessResponse(UnsubscribeOp)
 }

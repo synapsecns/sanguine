@@ -145,7 +145,7 @@ func (c *ServerSuite) SetupSuite() {
 	c.Require().NoError(err)
 	c.testWallet = testWallet
 	c.relayerWallets = []wallet.Wallet{c.testWallet}
-	for i := 0; i < 2; i++ {
+	for range [2]int{} {
 		relayerWallet, err := wallet.FromRandom()
 		c.Require().NoError(err)
 		c.relayerWallets = append(c.relayerWallets, relayerWallet)

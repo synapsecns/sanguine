@@ -156,8 +156,9 @@ func NewAPI(
 
 		wsPort := *cfg.WebsocketPort
 		q.wsServer = &http.Server{
-			Addr:    ":" + wsPort,
-			Handler: wsEngine,
+			Addr:              ":" + wsPort,
+			Handler:           wsEngine,
+			ReadHeaderTimeout: 10 * time.Second,
 		}
 		q.pubSubManager = NewPubSubManager()
 	}
@@ -232,7 +233,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 
 	// WebSocket upgrader
 	r.upgrader = websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
+		CheckOrigin: func(_ *http.Request) bool {
 			return true // TODO: Implement a more secure check
 		},
 	}
