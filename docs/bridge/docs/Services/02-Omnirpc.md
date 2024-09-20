@@ -1,10 +1,12 @@
-Omnirpc is an rpc load balancer and verifier that allows users to query chain data from multiple chains. It is a service that should be run by Quoters and interfaces that allow Solvers to post quotes. Omnirpc takes in a yaml config that allows the user to specify which chains it should run on.
+# OmniRPC
 
-### Running OmniRPC
+OmniRPC is an RPC load balancer and verifier that allows users to query chain data from multiple chains. It is a service that should be run by Quoters and interfaces that allow Solvers to post quotes. OmniRPC takes in a yaml config that allows the user to specify which chains it should run on.
+
+## Running OmniRPC
 
 ### Building From Source
 
-To build omnirpc from source, you will need to have Go installed. You can install Go by following the instructions [here](https://golang.org/doc/install). Once you have Go installed, you can build the relayer by running the following commands:
+To build OmniRPC from source, you will need to have Go installed. You can install Go by following the instructions [here](https://golang.org/doc/install). Once you have Go installed, you can build the relayer by running the following commands:
 
 1. `git clone https://github.com/synapsecns/sanguine --recursive`
 2. `cd sanguine/services/omnirpc`
@@ -18,11 +20,11 @@ The relayer can also be run with docker. To do this, you will need to pull the [
 docker run ghcr.io/synapsecns/sanguine/omnirpc:latest --config /path/to/config
 ```
 
-There is also a helm chart available for omnirpc [here](https://artifacthub.io/packages/helm/synapse/omnirpc).
+There is also a helm chart available for OmniRPC [here](https://artifacthub.io/packages/helm/synapse/omnirpc).
 
 ### Configuration
 
-Omnirpc is configured with a yaml file. The following is an example configuration:
+OmniRPC is configured with a yaml file. The following is an example configuration:
 
 ```yaml
 chains:

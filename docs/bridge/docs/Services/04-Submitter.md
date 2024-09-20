@@ -1,6 +1,8 @@
-# Submitter
+:::note In-progress
 
-This section is still in progress, please see [here](https://pkg.go.dev/github.com/synapsecns/sanguine/ethergo/submitter#section-readme) for details.
+Please see the [Go Submitter documentation page](https://pkg.go.dev/github.com/synapsecns/sanguine/ethergo/submitter#section-readme) for more details.
+
+:::
 
 # Ethergo Submitter
 

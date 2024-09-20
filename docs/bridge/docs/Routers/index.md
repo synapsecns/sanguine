@@ -1,4 +1,8 @@
-# Synapse Routers
+---
+sidebar_position: 3
+---
+
+# Routers
 
 Synapse offers several of routers for different transaction types.
 

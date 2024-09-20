@@ -1,3 +1,8 @@
+---
+sidebar_position: 0
+title: About
+---
+
 # Use Synapse
 
 Synapse is an Interchain Programming Interface. Developers read and write interchain data with Synapse, which has settled $50B in transactions between 2M+ users, and generated $30M+ in fees [[source](https://explorer.synapseprotol.com)].
@@ -7,7 +12,7 @@ Synapse is an Interchain Programming Interface. Developers read and write interc
 _Description of top benefits Synapse brings to developers and users._
 
 
-## Get started
+## Developer Guide
 
 * **[Send and receive interchain data](#)**
 * **[On-chain swaps](#)**
@@ -36,7 +41,7 @@ Synapse offers several of routers for different transaction types.
 * **[CCTP](#)** – Native router for USDC transactions.
 * **[RFQ](#)** – Fast router that allows on-chain agents to bid on interchain delivery.
 
-## Essential Tools
+## Essential Services
 
 Bolt-on services for reliability and ease-of-use:
 

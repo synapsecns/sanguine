@@ -1,4 +1,8 @@
-# Essential Tools
+---
+sidebar_position: 5
+---
+
+# Services
 
 Synapse offers a number of bolt-on services for reliability and ease-of-use.
 

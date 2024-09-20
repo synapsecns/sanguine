@@ -1,8 +1,3 @@
----
-sidebar_position: 0
-sidebar_label: Scribe
----
-
 # Scribe
 
 Scribe is a multi-chain indexing service designed to store logs, receipts, and transactions for every event from specified contracts across multiple blockchains. It provides a powerful tool for analytics, event streaming, and monitoring on-chain activities.

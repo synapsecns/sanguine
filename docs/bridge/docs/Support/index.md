@@ -1,4 +1,4 @@
-# Community & Support
+# Support
 
 Connect with other developers and the Synapse team
 
@@ -6,3 +6,7 @@ Connect with other developers and the Synapse team
 * **[Twitter](https://twitter.com/SynapseProtocol)**
 * **[Telegram](https://t.me/synapseprotocol)**
 * **[Forum](https://forum.synapseprotocol.com/)**
+
+## Frequently Asked Questions
+
+* [Transaction Support FAQ](Transaction-Support)

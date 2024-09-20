@@ -1,3 +1,5 @@
+# Observability
+
 All off-chain systems are by default observable and configured through the [metrics](https://pkg.go.dev/github.com/synapsecns/sanguine/core/metrics#section-readme) package. The observability stack is built around [open telemetry](https://opentelemetry.io/) with metrics also being exported using this standard.
 
 "Metrics" themselves are divided into 3 different types of metrics:
