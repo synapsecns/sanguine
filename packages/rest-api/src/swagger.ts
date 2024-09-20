@@ -1,5 +1,6 @@
 import swaggerJsdoc from 'swagger-jsdoc'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require('../package.json')
 
 const isDevelopment = process.env.NODE_ENV === 'development'
