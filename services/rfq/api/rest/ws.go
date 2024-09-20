@@ -65,19 +65,19 @@ func (c *wsClient) ReceiveQuoteResponse(ctx context.Context) (resp *model.Relaye
 }
 
 const (
-	// PongOp is the operation for a pong message
+	// PongOp is the operation for a pong message.
 	PongOp = "pong"
-	// PingOp is the operation for a ping message
+	// PingOp is the operation for a ping message.
 	PingOp = "ping"
-	// SubscribeOp is the operation for a subscribe message
+	// SubscribeOp is the operation for a subscribe message.
 	SubscribeOp = "subscribe"
-	// UnsubscribeOp is the operation for an unsubscribe message
+	// UnsubscribeOp is the operation for an unsubscribe message.
 	UnsubscribeOp = "unsubscribe"
-	// RequestQuoteOp is the operation for a request quote message
+	// RequestQuoteOp is the operation for a request quote message.
 	RequestQuoteOp = "request_quote"
-	// SendQuoteOp is the operation for a send quote message
+	// SendQuoteOp is the operation for a send quote message.
 	SendQuoteOp = "send_quote"
-	// PingPeriod is the period for a ping message
+	// PingPeriod is the period for a ping message.
 	PingPeriod = 15 * time.Second
 )
 
