@@ -173,7 +173,7 @@ func (e *exporter) collectMetrics(parentCtx context.Context) (err error) {
 
 	if len(errs) > 0 {
 		span.AddEvent("could not collect metrics")
-		return fmt.Errorf("could not collect metrics: %v", combineErrors(errs))
+		return fmt.Errorf("could not collect metrics: %w", combineErrors(errs))
 	}
 
 	return nil
