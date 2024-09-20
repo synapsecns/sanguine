@@ -209,6 +209,94 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 	c.Assert().True(found, "Newly added quote not found")
 }
 
+func (c *ServerSuite) TestGetOpenQuoteRequests() {
+	// Start the API server
+	c.startQuoterAPIServer()
+
+	// Insert some test quote requests
+	testRequests := []*model.PutUserQuoteRequest{
+		{
+			Data: model.QuoteData{
+				OriginChainID:    1,
+				DestChainID:      42161,
+				OriginTokenAddr:  "0xOriginTokenAddr",
+				DestTokenAddr:    "0xDestTokenAddr",
+				OriginAmount:     "100.0",
+				ExpirationWindow: 100,
+			},
+		},
+		{
+			Data: model.QuoteData{
+				OriginChainID:    1,
+				DestChainID:      42161,
+				OriginTokenAddr:  "0xOriginTokenAddr",
+				DestTokenAddr:    "0xDestTokenAddr",
+				OriginAmount:     "100.0",
+				ExpirationWindow: 100,
+			},
+		},
+		{
+			Data: model.QuoteData{
+				OriginChainID:    1,
+				DestChainID:      42161,
+				OriginTokenAddr:  "0xOriginTokenAddr",
+				DestTokenAddr:    "0xDestTokenAddr",
+				OriginAmount:     "100.0",
+				ExpirationWindow: 100,
+			},
+		},
+	}
+
+	statuses := []db.ActiveQuoteRequestStatus{db.Received, db.Pending, db.Expired}
+	for i, req := range testRequests {
+		err := c.database.InsertActiveQuoteRequest(c.GetTestContext(), req, strconv.Itoa(i))
+		c.Require().NoError(err)
+		err = c.database.UpdateActiveQuoteRequestStatus(c.GetTestContext(), strconv.Itoa(i), nil, statuses[i])
+		c.Require().NoError(err)
+	}
+
+	// Prepare the authorization header
+	header, err := c.prepareAuthHeader(c.testWallet)
+	c.Require().NoError(err)
+
+	// Send GET request to fetch open quote requests
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d%s", c.port, rest.OpenQuoteRequestsRoute), nil)
+	c.Require().NoError(err)
+	req.Header.Add("Authorization", header)
+	chainIDsJSON, err := json.Marshal([]uint64{1, 42161})
+	c.Require().NoError(err)
+	req.Header.Add("Chains", string(chainIDsJSON))
+
+	resp, err := client.Do(req)
+	c.Require().NoError(err)
+	defer func() {
+		err = resp.Body.Close()
+		c.Require().NoError(err)
+	}()
+
+	// Check the response status code
+	c.Assert().Equal(http.StatusOK, resp.StatusCode)
+
+	// Check for X-Api-Version on the response
+	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
+	// Parse the response body
+	var openRequests []*db.ActiveQuoteRequest
+	err = json.NewDecoder(resp.Body).Decode(&openRequests)
+	c.Require().NoError(err)
+
+	// Verify the number of open requests (should be 2: Received and Pending)
+	c.Assert().Len(openRequests, 2)
+
+	// Verify the status of the returned requests
+	for _, req := range openRequests {
+		c.Assert().Equal(int(req.OriginChainID), testRequests[0].Data.OriginChainID)
+		c.Assert().Equal(int(req.DestChainID), testRequests[0].Data.DestChainID)
+		c.Assert().Contains([]db.ActiveQuoteRequestStatus{db.Received, db.Pending}, req.Status)
+	}
+}
+
 func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 	c.startQuoterAPIServer()
 

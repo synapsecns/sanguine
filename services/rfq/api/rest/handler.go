@@ -252,6 +252,16 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 	c.JSON(http.StatusOK, quotes)
 }
 
+func (h *Handler) GetOpenQuoteRequests(c *gin.Context) {
+	dbQuotes, err := h.db.GetActiveQuoteRequests(c, db.Received, db.Pending)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dbQuotes)
+}
+
 // GetContracts retrieves all contracts api is currently enabled on.
 // GET /contracts.
 // PingExample godoc

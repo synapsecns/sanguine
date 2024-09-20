@@ -189,6 +189,8 @@ const (
 	ContractsRoute = "/contracts"
 	// QuoteRequestsRoute is the API endpoint for handling active quote requests via websocket.
 	QuoteRequestsRoute = "/quote_requests"
+	// OpenQuoteRequestsRoute is the API endpoint for handling active quote requests via websocket.
+	OpenQuoteRequestsRoute = "/open_quote_requests"
 	// PutQuoteRequestRoute is the API endpoint for handling put quote requests.
 	PutQuoteRequestRoute = "/quote_request"
 	// ChainsHeader is the header for specifying chains during a websocket handshake.
@@ -213,7 +215,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	engine.Use(APIVersionMiddleware(versionNumber))
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	// Apply AuthMiddleware only to the PUT routes
+	// Authenticated routes
 	quotesPut := engine.Group(QuoteRoute)
 	quotesPut.Use(r.AuthMiddleware())
 	quotesPut.PUT("", h.ModifyQuote)
@@ -223,12 +225,13 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	ackPut := engine.Group(AckRoute)
 	ackPut.Use(r.AuthMiddleware())
 	ackPut.PUT("", r.PutRelayAck)
+	openQuoteRequestsGet := engine.Group(OpenQuoteRequestsRoute)
+	openQuoteRequestsGet.Use(r.AuthMiddleware())
+	openQuoteRequestsGet.GET("", h.GetOpenQuoteRequests)
 
-	// GET routes without the AuthMiddleware
+	// Unauthenticated routes
 	engine.GET(QuoteRoute, h.GetQuotes)
 	engine.GET(ContractsRoute, h.GetContracts)
-
-	// RFQ request without AuthMiddleware
 	engine.PUT(PutQuoteRequestRoute, r.PutUserQuoteRequest)
 
 	// WebSocket upgrader
@@ -296,7 +299,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 				destChainIDs = append(destChainIDs, uint32(req.DestChainID))
 				loggedRequest = &req
 			}
-		case QuoteRequestsRoute:
+		case QuoteRequestsRoute, OpenQuoteRequestsRoute:
 			chainsHeader := c.GetHeader(ChainsHeader)
 			if chainsHeader != "" {
 				var chainIDs []int
