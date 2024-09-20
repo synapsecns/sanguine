@@ -22,7 +22,7 @@ const router = express.Router()
  *         name: chain
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: The chain ID where the swap will occur
  *       - in: query
  *         name: fromToken
@@ -40,7 +40,7 @@ const router = express.Router()
  *         name: amount
  *         required: true
  *         schema:
- *           type: string
+ *           type: number
  *         description: The amount of tokens to swap
  *       - in: query
  *         name: address

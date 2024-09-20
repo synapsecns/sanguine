@@ -22,7 +22,7 @@ const router = express.Router()
  *         name: fromChain
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: The source chain ID
  *       - in: query
  *         name: fromToken

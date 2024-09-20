@@ -19,7 +19,7 @@ const router = express.Router()
  *         name: destChainId
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: The ID of the destination chain
  *       - in: query
  *         name: bridgeModule

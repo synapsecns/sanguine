@@ -21,13 +21,13 @@ const router = express.Router()
  *         name: fromChain
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: The source chain ID
  *       - in: query
  *         name: toChain
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: The destination chain ID
  *       - in: query
  *         name: fromToken
@@ -45,7 +45,7 @@ const router = express.Router()
  *         name: amount
  *         required: true
  *         schema:
- *           type: string
+ *           type: number
  *         description: The amount of tokens to bridge
  *     responses:
  *       200:

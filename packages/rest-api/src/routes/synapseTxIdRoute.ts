@@ -18,7 +18,7 @@ const router = express.Router()
  *         name: originChainId
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: The ID of the origin chain where the transaction was initiated
  *       - in: query
  *         name: bridgeModule
