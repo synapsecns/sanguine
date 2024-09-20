@@ -66,8 +66,9 @@ type QuoterAPIServer struct {
 	// latestQuoteAgeGauge is a gauge that records the age of the latest quote.
 	latestQuoteAgeGauge metric.Float64ObservableGauge
 	// wsClients maintains a mapping of connection ID to a channel for sending quote requests.
-	wsClients *xsync.MapOf[string, WsClient]
-	wsServer  *http.Server
+	wsClients     *xsync.MapOf[string, WsClient]
+	wsServer      *http.Server
+	pubSubManager PubSubManager
 }
 
 // NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -158,6 +159,7 @@ func NewAPI(
 			Addr:    ":" + wsPort,
 			Handler: wsEngine,
 		}
+		q.pubSubManager = NewPubSubManager()
 	}
 
 	// Prometheus metrics setup
