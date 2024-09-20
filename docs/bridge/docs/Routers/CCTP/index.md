@@ -18,11 +18,11 @@ As a modular component of [Synapse Router](../Synapse-Router), CCTP can be confi
 
 ### Relayer
 
-Go application which uses on-chain events with off-chain message state to process transactions. CCTP Relayer can be run by anyone, and is easily observable.
+A Golang application which pairs on-chain events with stored message states to process transactions. A CCTP Relayer can be run by anyone, and is easily observable.
 
 ## Behavior
 
-CCTP Relayer polls for new transactions and and [message state](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState) updates from CCTP contracts on-chain, which are stored in an off-chain database.
+CCTP Relayer polls for new transactions and and [message state](https://pkg.go.dev/github.com/synapsecns/sanguine/services/cctp-relayer@v0.10.0/types#MessageState) updates from CCTP contracts on-chain, to store in an off-chain database.
 
 Successful attestations fetched from the [Circle API](https://developers.circle.com/stablecoin/reference) are submitted to the destination CCTP contract, and marked as `Complete` once a transaction receipt is received.
 

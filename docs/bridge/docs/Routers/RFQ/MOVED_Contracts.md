@@ -4,14 +4,14 @@ The Synapse RFQ contract source code can be found [here](https://github.com/syna
 
 | Chain    | Address                                                                                                                          |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Arbitrum | [0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E](https://arbiscan.io/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)             |
-| Base     | [0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E](https://basescan.org/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)            |
-| Ethereum | [0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E](https://etherscan.io/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)            |
-| Optimism | [0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E](https://optimistic.etherscan.io/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E) |
-| Scroll   | [0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E](https://scrollscan.com/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)          |
-| Linea    | [0x34F52752975222d5994C206cE08C1d5B329f24dD](https://lineascan.build/address/0x34F52752975222d5994C206cE08C1d5B329f24dD)         |
-| BNB Chain| [0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E](https://bscscan.com/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)             |
-| Blast    | [0x34F52752975222d5994C206cE08C1d5B329f24dD](https://blastscan.io/address/0x34F52752975222d5994C206cE08C1d5B329f24dD)            |
+| Arbitrum | `0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E` [↗](https://arbiscan.io/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)             |
+| Base     | `0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E` [↗](https://basescan.org/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)            |
+| Ethereum | `0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E` [↗](https://etherscan.io/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)            |
+| Optimism | `0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E` [↗](https://optimistic.etherscan.io/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E) |
+| Scroll   | `0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E` [↗](https://scrollscan.com/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)          |
+| Linea    | `0x34F52752975222d5994C206cE08C1d5B329f24dD` [↗](https://lineascan.build/address/0x34F52752975222d5994C206cE08C1d5B329f24dD)         |
+| BNB Chain| `0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E` [↗](https://bscscan.com/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)             |
+| Blast    | `0x34F52752975222d5994C206cE08C1d5B329f24dD` [↗](https://blastscan.io/address/0x34F52752975222d5994C206cE08C1d5B329f24dD)            |
 
 ### On-Chain Architecture & Transaction Flow
 
