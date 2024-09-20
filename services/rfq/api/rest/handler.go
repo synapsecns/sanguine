@@ -252,6 +252,16 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 	c.JSON(http.StatusOK, quotes)
 }
 
+// GetOpenQuoteRequests retrieves all open quote requests.
+// GET /open_quote_requests
+// @Summary Get open quote requests
+// @Description Get all open quote requests that are currently in Received or Pending status.
+// @Tags quotes
+// @Accept json
+// @Produce json
+// @Success 200 {array} model.GetOpenQuoteRequestsResponse
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
+// @Router /open_quote_requests [get].
 func (h *Handler) GetOpenQuoteRequests(c *gin.Context) {
 	dbQuotes, err := h.db.GetActiveQuoteRequests(c, db.Received, db.Pending)
 	if err != nil {
@@ -259,7 +269,24 @@ func (h *Handler) GetOpenQuoteRequests(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dbQuotes)
+	quotes := make([]*model.GetOpenQuoteRequestsResponse, len(dbQuotes))
+	for i, dbQuote := range dbQuotes {
+		quotes[i] = dbActiveQuoteRequestToModel(dbQuote)
+	}
+	c.JSON(http.StatusOK, quotes)
+}
+
+func dbActiveQuoteRequestToModel(dbQuote *db.ActiveQuoteRequest) *model.GetOpenQuoteRequestsResponse {
+	return &model.GetOpenQuoteRequestsResponse{
+		UserAddress:      dbQuote.UserAddress,
+		OriginChainID:    dbQuote.OriginChainID,
+		OriginTokenAddr:  dbQuote.OriginTokenAddr,
+		DestChainID:      dbQuote.DestChainID,
+		DestTokenAddr:    dbQuote.DestTokenAddr,
+		OriginAmount:     dbQuote.OriginAmount.String(),
+		ExpirationWindow: int(dbQuote.ExpirationWindow.Milliseconds()),
+		CreatedAt:        dbQuote.CreatedAt,
+	}
 }
 
 // GetContracts retrieves all contracts api is currently enabled on.

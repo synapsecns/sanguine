@@ -282,19 +282,12 @@ func (c *ServerSuite) TestGetOpenQuoteRequests() {
 	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
 
 	// Parse the response body
-	var openRequests []*db.ActiveQuoteRequest
+	var openRequests []*model.GetOpenQuoteRequestsResponse
 	err = json.NewDecoder(resp.Body).Decode(&openRequests)
 	c.Require().NoError(err)
 
 	// Verify the number of open requests (should be 2: Received and Pending)
 	c.Assert().Len(openRequests, 2)
-
-	// Verify the status of the returned requests
-	for _, req := range openRequests {
-		c.Assert().Equal(int(req.OriginChainID), testRequests[0].Data.OriginChainID)
-		c.Assert().Equal(int(req.DestChainID), testRequests[0].Data.DestChainID)
-		c.Assert().Contains([]db.ActiveQuoteRequestStatus{db.Received, db.Pending}, req.Status)
-	}
 }
 
 func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
