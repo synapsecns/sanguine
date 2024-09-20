@@ -18,7 +18,7 @@
   "files.trimTrailingWhitespace": true,
   "solidity.packageDefaultDependenciesContractsDirectory": "contracts",
   "solidity.packageDefaultDependenciesDirectory": "lib",
-  "solidity.compileUsingRemoteVersion": "v0.8.24+commit.e11b9ed9",
+  "solidity.compileUsingRemoteVersion": "v0.8.17+commit.8df45f5f",
   "solidity.formatter": "prettier",
   "solidity.defaultCompiler": "remote",
   "tailwindCSS.classAttributes": [
