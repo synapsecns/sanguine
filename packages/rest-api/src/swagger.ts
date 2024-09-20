@@ -1,5 +1,10 @@
 import swaggerJsdoc from 'swagger-jsdoc'
 
+const isDevelopment = process.env.NODE_ENV === 'development'
+const serverUrl = isDevelopment
+  ? 'http://localhost:3000'
+  : 'https://api.synapseprotocol.com'
+
 const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
@@ -10,7 +15,7 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: serverUrl,
       },
     ],
   },
