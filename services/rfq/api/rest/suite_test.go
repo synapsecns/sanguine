@@ -58,6 +58,7 @@ func NewServerSuite(tb testing.TB) *ServerSuite {
 	}
 }
 
+//nolint:gosec
 func (c *ServerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 

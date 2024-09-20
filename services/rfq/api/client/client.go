@@ -178,29 +178,10 @@ func (c *clientImpl) PutRelayAck(ctx context.Context, req *model.PutAckRequest) 
 }
 
 func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.SubscribeActiveRFQRequest, reqChan chan *model.ActiveRFQMessage) (respChan chan *model.ActiveRFQMessage, err error) {
-	if c.wsURL == nil {
-		return nil, fmt.Errorf("websocket URL is not set")
-	}
-	if len(req.ChainIDs) == 0 {
-		return nil, fmt.Errorf("chain IDs are required")
-	}
-
-	reqURL := *c.wsURL + rest.QuoteRequestsRoute
-
-	header, err := c.getWsHeaders(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get auth header: %w", err)
-	}
-	conn, httpResp, err := websocket.DefaultDialer.Dial(reqURL, header)
+	conn, err := c.connectWebsocket(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
 	}
-	defer func() {
-		err := httpResp.Body.Close()
-		if err != nil {
-			logger.Warnf("error closing websocket connection: %v", err)
-		}
-	}()
 
 	// first, subscrbe to the given chains
 	sub := model.SubscriptionParams{
@@ -239,6 +220,32 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 	return respChan, nil
 }
 
+func (c *clientImpl) connectWebsocket(ctx context.Context, req *model.SubscribeActiveRFQRequest) (conn *websocket.Conn, err error) {
+	if c.wsURL == nil {
+		return nil, fmt.Errorf("websocket URL is not set")
+	}
+	if len(req.ChainIDs) == 0 {
+		return nil, fmt.Errorf("chain IDs are required")
+	}
+
+	header, err := c.getWsHeaders(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get auth header: %w", err)
+	}
+
+	reqURL := *c.wsURL + rest.QuoteRequestsRoute
+	conn, httpResp, err := websocket.DefaultDialer.Dial(reqURL, header)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
+	}
+	err = httpResp.Body.Close()
+	if err != nil {
+		logger.Warnf("error closing websocket connection: %v", err)
+	}
+
+	return conn, nil
+}
+
 func (c *clientImpl) getWsHeaders(ctx context.Context, req *model.SubscribeActiveRFQRequest) (header http.Header, err error) {
 	header = http.Header{}
 	chainIDsJSON, err := json.Marshal(req.ChainIDs)
@@ -272,7 +279,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 			return
 		case msg, ok := <-reqChan:
 			if !ok {
-				return
+				return nil
 			}
 			err := conn.WriteJSON(msg)
 			if err != nil {
@@ -280,7 +287,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 			}
 		case msg, ok := <-readChan:
 			if !ok {
-				return
+				return nil
 			}
 			err = c.handleWsMessage(ctx, msg, reqChan, respChan)
 			if err != nil {

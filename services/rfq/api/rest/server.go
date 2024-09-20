@@ -191,9 +191,9 @@ const (
 	QuoteRequestsRoute = "/quote_requests"
 	// PutQuoteRequestRoute is the API endpoint for handling put quote requests.
 	PutQuoteRequestRoute = "/quote_request"
-	// ChainsHeader is the header for specifying chains during a websocket handshake
+	// ChainsHeader is the header for specifying chains during a websocket handshake.
 	ChainsHeader = "Chains"
-	// AuthorizationHeader is the header for specifying the authorization
+	// AuthorizationHeader is the header for specifying the authorization.
 	AuthorizationHeader = "Authorization"
 	cacheInterval       = time.Minute
 )
