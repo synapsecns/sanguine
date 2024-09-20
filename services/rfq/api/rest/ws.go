@@ -125,27 +125,9 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 
 			switch rfqMsg.Op {
 			case SubscribeOp:
-				var sub model.SubscriptionParams
-				err = json.Unmarshal(rfqMsg.Content, &sub)
-				if err != nil {
-					logger.Error("Error unmarshalling subscription params: %s", err)
-					continue
-				}
-				err = c.pubsub.AddSubscription(c.relayerAddr, sub)
-				if err != nil {
-					logger.Error("Error adding subscription: %s", err)
-				}
+				c.conn.WriteJSON(c.handleSubscribe(rfqMsg.Content))
 			case UnsubscribeOp:
-				var sub model.SubscriptionParams
-				err = json.Unmarshal(rfqMsg.Content, &sub)
-				if err != nil {
-					logger.Error("Error unmarshalling subscription params: %s", err)
-					continue
-				}
-				err = c.pubsub.RemoveSubscription(c.relayerAddr, sub)
-				if err != nil {
-					logger.Error("Error removing subscription: %s", err)
-				}
+				c.conn.WriteJSON(c.handleUnsubscribe(rfqMsg.Content))
 			case SendQuoteOp:
 				// forward the response to the server
 				var resp model.RelayerWsQuoteResponse
@@ -177,5 +159,46 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 				return err
 			}
 		}
+	}
+}
+
+func (c *wsClient) handleSubscribe(content json.RawMessage) (resp model.ActiveRFQMessage) {
+	var sub model.SubscriptionParams
+	err := json.Unmarshal(content, &sub)
+	if err != nil {
+		return getErrorResponse(SubscribeOp, fmt.Errorf("could not unmarshal subscription params: %v", err))
+	}
+	err = c.pubsub.AddSubscription(c.relayerAddr, sub)
+	if err != nil {
+		return getErrorResponse(SubscribeOp, fmt.Errorf("error adding subscription: %v", err))
+	}
+	return getSuccessResponse(SubscribeOp)
+}
+
+func (c *wsClient) handleUnsubscribe(content json.RawMessage) (resp model.ActiveRFQMessage) {
+	var sub model.SubscriptionParams
+	err := json.Unmarshal(content, &sub)
+	if err != nil {
+		return getErrorResponse(UnsubscribeOp, fmt.Errorf("could not unmarshal subscription params: %v", err))
+	}
+	err = c.pubsub.RemoveSubscription(c.relayerAddr, sub)
+	if err != nil {
+		return getErrorResponse(UnsubscribeOp, fmt.Errorf("error removing subscription: %v", err))
+	}
+	return getSuccessResponse(UnsubscribeOp)
+}
+
+func getSuccessResponse(op string) model.ActiveRFQMessage {
+	return model.ActiveRFQMessage{
+		Op:      op,
+		Success: true,
+	}
+}
+
+func getErrorResponse(op string, err error) model.ActiveRFQMessage {
+	return model.ActiveRFQMessage{
+		Op:      op,
+		Success: false,
+		Content: json.RawMessage(fmt.Sprintf("{\"reason\": \"%s\"}", err.Error())),
 	}
 }

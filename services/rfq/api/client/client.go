@@ -219,6 +219,13 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 		Content: json.RawMessage(subJSON),
 	})
 
+	// make sure subscription is successful
+	var resp model.ActiveRFQMessage
+	conn.ReadJSON(&resp)
+	if !resp.Success || resp.Op != rest.SubscribeOp {
+		return nil, fmt.Errorf("subscription failed")
+	}
+
 	go func() {
 		defer close(respChan)
 		defer conn.Close()
