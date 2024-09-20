@@ -62,6 +62,10 @@ const (
 	PongOp = "pong"
 	// PingOp is the operation for a ping message
 	PingOp = "ping"
+	// SubscribeOp is the operation for a subscribe message
+	SubscribeOp = "subscribe"
+	// UnsubscribeOp is the operation for an unsubscribe message
+	UnsubscribeOp = "unsubscribe"
 	// RequestQuoteOp is the operation for a request quote message
 	RequestQuoteOp = "request_quote"
 	// SendQuoteOp is the operation for a send quote message
