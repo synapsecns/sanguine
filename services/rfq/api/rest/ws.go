@@ -24,6 +24,7 @@ type wsClient struct {
 	requestChan  chan *model.RelayerWsQuoteRequest
 	responseChan chan *model.RelayerWsQuoteResponse
 	doneChan     chan struct{}
+	lastPong     time.Time
 }
 
 func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager) *wsClient {
@@ -81,13 +82,12 @@ const (
 )
 
 func (c *wsClient) Run(ctx context.Context) (err error) {
+	c.lastPong = time.Now()
 	messageChan := make(chan []byte)
 	pingTicker := time.NewTicker(PingPeriod)
 	defer pingTicker.Stop()
 
-	lastPong := time.Now()
-
-	// Goroutine to read messages from WebSocket and send to channel
+	// poll messages from websocket in background
 	go func() {
 		defer close(messageChan)
 		for {
@@ -109,80 +109,77 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			}
 			close(c.doneChan)
 			return nil
-		case data := <-c.requestChan:
-			rawData, err := json.Marshal(data)
-			if err != nil {
-				logger.Error("Error marshaling quote request: %s", err)
-				continue
-			}
-			msg := model.ActiveRFQMessage{
-				Op:      RequestQuoteOp,
-				Content: json.RawMessage(rawData),
-			}
-			err = c.conn.WriteJSON(msg)
+		case req := <-c.requestChan:
+			err = c.sendRelayerRequest(req)
 			if err != nil {
 				logger.Error("Error sending quote request: %s", err)
-				continue
 			}
 		case msg := <-messageChan:
-			var rfqMsg model.ActiveRFQMessage
-			err = json.Unmarshal(msg, &rfqMsg)
+			err = c.handleRelayerMessage(msg)
 			if err != nil {
-				logger.Error("Error unmarshaling websocket message: %s", err)
-				continue
-			}
-
-			switch rfqMsg.Op {
-			case SubscribeOp:
-				resp := c.handleSubscribe(rfqMsg.Content)
-				err = c.conn.WriteJSON(resp)
-				if err != nil {
-					logger.Error("Error sending subscribe response: %s", err)
-				}
-			case UnsubscribeOp:
-				resp := c.handleUnsubscribe(rfqMsg.Content)
-				err = c.conn.WriteJSON(resp)
-				if err != nil {
-					logger.Error("Error sending unsubscribe response: %s", err)
-				}
-			case SendQuoteOp:
-				// forward the response to the server
-				var resp model.RelayerWsQuoteResponse
-				err = json.Unmarshal(rfqMsg.Content, &resp)
-				if err != nil {
-					logger.Error("Unexpected websocket message content for send_quote", "content", rfqMsg.Content)
-					continue
-				}
-				c.responseChan <- &resp
-			case PongOp:
-				lastPong = time.Now()
-			default:
-				logger.Errorf("Received unexpected operation from relayer: %s", rfqMsg.Op)
+				logger.Error("Error handling relayer message: %s", err)
 			}
 		case <-pingTicker.C:
-			if time.Since(lastPong) > PingPeriod {
-				err = c.conn.Close()
-				if err != nil {
-					return fmt.Errorf("error closing websocket connection: %w", err)
-				}
-				close(c.doneChan)
-				return fmt.Errorf("pong not received in time")
-			}
-			pingMsg := model.ActiveRFQMessage{
-				Op: PingOp,
-			}
-			err = c.conn.WriteJSON(pingMsg)
+			err = c.trySendPing(c.lastPong)
 			if err != nil {
 				logger.Error("Error sending ping message: %s", err)
-				err = c.conn.Close()
-				if err != nil {
-					return fmt.Errorf("error closing websocket connection: %w", err)
-				}
-				close(c.doneChan)
-				return fmt.Errorf("error closing websocket connection: %w", err)
 			}
 		}
 	}
+}
+
+func (c *wsClient) sendRelayerRequest(req *model.RelayerWsQuoteRequest) (err error) {
+	rawData, err := json.Marshal(req)
+	if err != nil {
+		return fmt.Errorf("error marshaling quote request: %w", err)
+	}
+	msg := model.ActiveRFQMessage{
+		Op:      RequestQuoteOp,
+		Content: json.RawMessage(rawData),
+	}
+	err = c.conn.WriteJSON(msg)
+	if err != nil {
+		return fmt.Errorf("error sending quote request: %w", err)
+	}
+
+	return nil
+}
+
+func (c *wsClient) handleRelayerMessage(msg []byte) (err error) {
+	var rfqMsg model.ActiveRFQMessage
+	err = json.Unmarshal(msg, &rfqMsg)
+	if err != nil {
+		return fmt.Errorf("error unmarshaling websocket message: %w", err)
+	}
+
+	switch rfqMsg.Op {
+	case SubscribeOp:
+		resp := c.handleSubscribe(rfqMsg.Content)
+		err = c.conn.WriteJSON(resp)
+		if err != nil {
+			logger.Error("Error sending subscribe response: %s", err)
+		}
+	case UnsubscribeOp:
+		resp := c.handleUnsubscribe(rfqMsg.Content)
+		err = c.conn.WriteJSON(resp)
+		if err != nil {
+			return fmt.Errorf("error sending unsubscribe response: %w", err)
+		}
+	case SendQuoteOp:
+		// forward the response to the server
+		var resp model.RelayerWsQuoteResponse
+		err = json.Unmarshal(rfqMsg.Content, &resp)
+		if err != nil {
+			return fmt.Errorf("error unmarshaling websocket message: %w", err)
+		}
+		c.responseChan <- &resp
+	case PongOp:
+		lastPong = time.Now()
+	default:
+		return fmt.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
+	}
+
+	return nil
 }
 
 func (c *wsClient) handleSubscribe(content json.RawMessage) (resp model.ActiveRFQMessage) {
@@ -209,6 +206,26 @@ func (c *wsClient) handleUnsubscribe(content json.RawMessage) (resp model.Active
 		return getErrorResponse(UnsubscribeOp, fmt.Errorf("error removing subscription: %w", err))
 	}
 	return getSuccessResponse(UnsubscribeOp)
+}
+
+func (c *wsClient) trySendPing(lastPong time.Time) (err error) {
+	if time.Since(lastPong) > PingPeriod {
+		err = c.conn.Close()
+		if err != nil {
+			return fmt.Errorf("error closing websocket connection: %w", err)
+		}
+		close(c.doneChan)
+		return fmt.Errorf("pong not received in time")
+	}
+	pingMsg := model.ActiveRFQMessage{
+		Op: PingOp,
+	}
+	err = c.conn.WriteJSON(pingMsg)
+	if err != nil {
+		return fmt.Errorf("error sending ping message: %w", err)
+	}
+
+	return nil
 }
 
 func getSuccessResponse(op string) model.ActiveRFQMessage {
