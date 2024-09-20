@@ -187,18 +187,10 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 
 	reqURL := *c.wsURL + rest.QuoteRequestsRoute
 
-	header := http.Header{}
-	chainIDsJSON, err := json.Marshal(req.ChainIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal chain IDs: %w", err)
-	}
-	header.Set(rest.ChainsHeader, string(chainIDsJSON))
-	authHeader, err := getAuthHeader(ctx, c.reqSigner)
+	header, err := c.getWsHeaders(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get auth header: %w", err)
 	}
-	header.Set(rest.AuthorizationHeader, authHeader)
-
 	conn, httpResp, err := websocket.DefaultDialer.Dial(reqURL, header)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
@@ -209,8 +201,6 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 			logger.Warnf("error closing websocket connection: %v", err)
 		}
 	}()
-
-	respChan = make(chan *model.ActiveRFQMessage)
 
 	// first, subscrbe to the given chains
 	sub := model.SubscriptionParams{
@@ -238,6 +228,7 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 		return nil, fmt.Errorf("subscription failed")
 	}
 
+	respChan = make(chan *model.ActiveRFQMessage)
 	go func() {
 		err = c.processWebsocket(ctx, conn, reqChan, respChan)
 		if err != nil {
@@ -246,6 +237,20 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 	}()
 
 	return respChan, nil
+}
+
+func (c *clientImpl) getWsHeaders(ctx context.Context, req *model.SubscribeActiveRFQRequest) (header http.Header, err error) {
+	chainIDsJSON, err := json.Marshal(req.ChainIDs)
+	if err != nil {
+		return header, fmt.Errorf("failed to marshal chain IDs: %w", err)
+	}
+	header.Set(rest.ChainsHeader, string(chainIDsJSON))
+	authHeader, err := getAuthHeader(ctx, c.reqSigner)
+	if err != nil {
+		return header, fmt.Errorf("failed to get auth header: %w", err)
+	}
+	header.Set(rest.AuthorizationHeader, authHeader)
+	return header, nil
 }
 
 func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn, reqChan, respChan chan *model.ActiveRFQMessage) (err error) {

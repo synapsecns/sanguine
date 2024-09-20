@@ -42,14 +42,14 @@ func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet walle
 					var quoteReq model.RelayerWsQuoteRequest
 					err := json.Unmarshal(msg.Content, &quoteReq)
 					if err != nil {
-						c.Error(fmt.Errorf("error unmarshalling quote request: %w", err))
+						c.Error(fmt.Errorf("error unmarshaling quote request: %w", err))
 						continue
 					}
 					relayerAddr := relayerWallet.Address().Hex()
 					quoteResp.Data.RelayerAddress = &relayerAddr
 					rawRespData, err := json.Marshal(quoteResp)
 					if err != nil {
-						c.Error(fmt.Errorf("error marshalling quote response: %w", err))
+						c.Error(fmt.Errorf("error marshaling quote response: %w", err))
 						continue
 					}
 					reqChan <- &model.ActiveRFQMessage{

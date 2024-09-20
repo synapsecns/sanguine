@@ -196,6 +196,7 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 
 		rawDestAmountInt, _ := rawDestAmount.Int(nil)
 		destAmount := new(big.Int).Sub(rawDestAmountInt, quote.FixedFee.BigInt()).String()
+		//nolint:gosec
 		quoteData := &model.QuoteData{
 			OriginChainID:   int(quote.OriginChainID),
 			DestChainID:     int(quote.DestChainID),

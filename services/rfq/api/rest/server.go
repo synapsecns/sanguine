@@ -263,6 +263,8 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 }
 
 // AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.
+//
+//nolint:gosec
 func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var loggedRequest interface{}
