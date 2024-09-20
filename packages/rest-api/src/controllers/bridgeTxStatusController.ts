@@ -4,7 +4,7 @@ import { ethers } from 'ethers'
 import { Synapse } from '../services/synapseService'
 import { getTokenDecimals } from '../utils/getTokenDecimals'
 
-export const getBridgeTxStatusController = async (req, res) => {
+export const bridgeTxStatusController = async (req, res) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() })
@@ -72,7 +72,7 @@ export const getBridgeTxStatusController = async (req, res) => {
   } catch (err) {
     res.status(500).json({
       error:
-        'An unexpected error occurred in /getBridgeTxStatus. Please try again later.',
+        'An unexpected error occurred in /bridgeTxStatus. Please try again later.',
       details: err.message,
     })
   }
