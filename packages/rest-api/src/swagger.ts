@@ -1,6 +1,7 @@
 import swaggerJsdoc from 'swagger-jsdoc'
 
-import { version } from '../package.json'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const packageJson = require('../package.json')
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 const serverUrl = isDevelopment
@@ -12,7 +13,7 @@ const options: swaggerJsdoc.Options = {
     openapi: '3.0.0',
     info: {
       title: 'Syanpse Protocol REST API',
-      version,
+      version: packageJson.version,
       description: 'API documentation for the Synapse Protocol REST API',
     },
     servers: [
