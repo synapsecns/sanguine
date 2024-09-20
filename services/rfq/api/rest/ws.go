@@ -174,7 +174,7 @@ func (c *wsClient) handleRelayerMessage(msg []byte) (err error) {
 		}
 		c.responseChan <- &resp
 	case PongOp:
-		lastPong = time.Now()
+		c.lastPong = time.Now()
 	default:
 		return fmt.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
 	}

@@ -240,6 +240,7 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 }
 
 func (c *clientImpl) getWsHeaders(ctx context.Context, req *model.SubscribeActiveRFQRequest) (header http.Header, err error) {
+	header = http.Header{}
 	chainIDsJSON, err := json.Marshal(req.ChainIDs)
 	if err != nil {
 		return header, fmt.Errorf("failed to marshal chain IDs: %w", err)
