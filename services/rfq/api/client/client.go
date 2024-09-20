@@ -276,7 +276,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return nil
 		case msg, ok := <-reqChan:
 			if !ok {
 				return nil

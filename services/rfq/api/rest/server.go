@@ -454,7 +454,7 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 // @Produce json
 // @Success 101 {string} string "Switching Protocols"
 // @Header 101 {string} X-Api-Version "API Version Number - See docs for more info"
-// @Router /quote_requests [get]
+// @Router /quote_requests [get].
 func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Context) {
 	ws, err := r.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -510,7 +510,7 @@ const (
 // @Produce json
 // @Success 200 {object} model.PutUserQuoteResponse
 // @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
-// @Router /quote_request [put]
+// @Router /quote_request [put].
 func (r *QuoterAPIServer) PutUserQuoteRequest(c *gin.Context) {
 	var req model.PutUserQuoteRequest
 	err := c.BindJSON(&req)
@@ -594,7 +594,7 @@ func (r *QuoterAPIServer) recordLatestQuoteAge(ctx context.Context, observer met
 	return nil
 }
 
-// Shutdown gracefully shuts down the WebSocket server
+// Shutdown gracefully shuts down the WebSocket server.
 func (r *QuoterAPIServer) Shutdown(ctx context.Context) error {
 	if r.wsServer != nil {
 		if err := r.wsServer.Shutdown(ctx); err != nil {

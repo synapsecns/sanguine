@@ -81,6 +81,7 @@ const (
 	PingPeriod = 15 * time.Second
 )
 
+// Run runs the WebSocket client.
 func (c *wsClient) Run(ctx context.Context) (err error) {
 	c.lastPong = time.Now()
 	messageChan := make(chan []byte)
@@ -88,17 +89,7 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 	defer pingTicker.Stop()
 
 	// poll messages from websocket in background
-	go func() {
-		defer close(messageChan)
-		for {
-			_, msg, err := c.conn.ReadMessage()
-			if err != nil {
-				logger.Error("Error reading websocket message: %s", err)
-				return
-			}
-			messageChan <- msg
-		}
-	}()
+	go pollWsMessages(c.conn, messageChan)
 
 	for {
 		select {
@@ -125,6 +116,18 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 				logger.Error("Error sending ping message: %s", err)
 			}
 		}
+	}
+}
+
+func pollWsMessages(conn *websocket.Conn, messageChan chan []byte) {
+	defer close(messageChan)
+	for {
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			logger.Error("Error reading websocket message: %s", err)
+			return
+		}
+		messageChan <- msg
 	}
 }
 
