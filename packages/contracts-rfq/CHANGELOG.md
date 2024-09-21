@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/synapsecns/sanguine/compare/FastBridge@0.3.0...FastBridge@0.4.0) (2024-09-20)
+
+
+### Features
+
+* **contracts-rfq:** relay/prove/claim with different address [SLT-130] ([#3138](https://github.com/synapsecns/sanguine/issues/3138)) ([23f6c4c](https://github.com/synapsecns/sanguine/commit/23f6c4c652743c5ca7a184ad730ce19af3600a9c))
+
+
+
+
+
 # [0.3.0](https://github.com/synapsecns/sanguine/compare/FastBridge@0.2.14...FastBridge@0.3.0) (2024-09-10)
 
 

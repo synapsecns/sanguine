@@ -1,14 +1,14 @@
 import request from 'supertest'
 import express from 'express'
 
-import getDestinationTxRoute from '../routes/getDestinationTxRoute'
+import destinationTxRoute from '../routes/destinationTxRoute'
 
 const app = express()
-app.use('/getDestinationTx', getDestinationTxRoute)
+app.use('/destinationTx', destinationTxRoute)
 
 describe('Get Destination TX Route', () => {
   it('should return destination transaction info for valid input', async () => {
-    const response = await request(app).get('/getDestinationTx').query({
+    const response = await request(app).get('/destinationTx').query({
       originChainId: '8453',
       txHash:
         '0x13486d9eaefd68de6a20b704d70deb8436effbac1f77fddfc0c7ef14f08e96c3',
@@ -30,7 +30,7 @@ describe('Get Destination TX Route', () => {
   }, 10000)
 
   it('should return 400 for missing originChainId', async () => {
-    const response = await request(app).get('/getDestinationTx').query({
+    const response = await request(app).get('/destinationTx').query({
       txHash:
         '0x13486d9eaefd68de6a20b704d70deb8436effbac1f77fddfc0c7ef14f08e96c3',
     })
@@ -39,7 +39,7 @@ describe('Get Destination TX Route', () => {
   }, 10000)
 
   it('should return 400 for missing txHash', async () => {
-    const response = await request(app).get('/getDestinationTx').query({
+    const response = await request(app).get('/destinationTx').query({
       originChainId: '1',
     })
     expect(response.status).toBe(400)
@@ -47,7 +47,7 @@ describe('Get Destination TX Route', () => {
   }, 10000)
 
   it('should return 400 for non-numeric originChainId', async () => {
-    const response = await request(app).get('/getDestinationTx').query({
+    const response = await request(app).get('/destinationTx').query({
       originChainId: 'not-a-number',
       txHash:
         '0x13486d9eaefd68de6a20b704d70deb8436effbac1f77fddfc0c7ef14f08e96c3',
