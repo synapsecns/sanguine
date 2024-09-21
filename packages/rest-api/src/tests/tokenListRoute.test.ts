@@ -16,7 +16,7 @@ describe('Index Route', () => {
 
     expect(keys.length).toBe(62)
     expect(response.body['ETH']['addresses']['1']).toBe(
-      '0x0000000000000000000000000000000000000000'
+      '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
     )
     expect(response.body['SYN']['addresses']['1']).toBe(
       '0x0f2d719407fdbeff09d87557abb7232601fd9f29'

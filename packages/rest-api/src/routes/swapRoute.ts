@@ -7,6 +7,7 @@ import { CHAINS_ARRAY } from '../constants/chains'
 import { isTokenAddress } from '../utils/isTokenAddress'
 import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 import { checksumAddresses } from '../middleware/checksumAddresses'
+import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
 
 const router = express.Router()
 
@@ -133,6 +134,7 @@ const router = express.Router()
  */
 router.get(
   '/',
+  normalizeNativeTokenAddress(['fromToken', 'toToken']),
   checksumAddresses(['fromToken', 'toToken']),
   [
     check('chain')

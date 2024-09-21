@@ -1,6 +1,7 @@
 import { BridgeableToken } from '../types'
 import { CHAINS } from './chains'
-import { ZeroAddress } from '.'
+
+const NativeTokenAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
 export const GOHM: BridgeableToken = {
   addresses: {
@@ -796,16 +797,16 @@ export const NETH: BridgeableToken = {
 
 export const ETH: BridgeableToken = {
   addresses: {
-    [CHAINS.ETHEREUM.id]: ZeroAddress,
-    [CHAINS.OPTIMISM.id]: ZeroAddress,
-    [CHAINS.BOBA.id]: ZeroAddress,
+    [CHAINS.ETHEREUM.id]: NativeTokenAddress,
+    [CHAINS.OPTIMISM.id]: NativeTokenAddress,
+    [CHAINS.BOBA.id]: NativeTokenAddress,
     [CHAINS.CANTO.id]: '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687',
-    [CHAINS.BASE.id]: ZeroAddress,
-    [CHAINS.ARBITRUM.id]: ZeroAddress,
+    [CHAINS.BASE.id]: NativeTokenAddress,
+    [CHAINS.ARBITRUM.id]: NativeTokenAddress,
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
-    [CHAINS.BLAST.id]: ZeroAddress,
-    [CHAINS.SCROLL.id]: ZeroAddress,
-    [CHAINS.LINEA.id]: ZeroAddress,
+    [CHAINS.BLAST.id]: NativeTokenAddress,
+    [CHAINS.SCROLL.id]: NativeTokenAddress,
+    [CHAINS.LINEA.id]: NativeTokenAddress,
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 18,
@@ -832,7 +833,7 @@ export const ETH: BridgeableToken = {
 export const MOVR: BridgeableToken = {
   addresses: {
     [CHAINS.MOONBEAM.id]: '0x1d4C2a246311bB9f827F4C768e277FF5787B7D7E',
-    [CHAINS.MOONRIVER.id]: ZeroAddress,
+    [CHAINS.MOONRIVER.id]: NativeTokenAddress,
   },
   decimals: {
     [CHAINS.MOONBEAM.id]: 18,
@@ -852,7 +853,7 @@ export const AVAX: BridgeableToken = {
   addresses: {
     [CHAINS.MOONBEAM.id]: '0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3',
     [CHAINS.KLAYTN.id]: '0xCd8fE44A29Db9159dB36f96570d7A4d91986f528',
-    [CHAINS.AVALANCHE.id]: ZeroAddress,
+    [CHAINS.AVALANCHE.id]: NativeTokenAddress,
     [CHAINS.DFK.id]: '0xB57B60DeBDB0b8172bb6316a9164bd3C695F133a',
     [CHAINS.HARMONY.id]: '0xb12c13e66AdE1F72f71834f2FC5082Db8C091358',
   },
@@ -909,7 +910,7 @@ export const WAVAX: BridgeableToken = {
 
 export const JEWEL: BridgeableToken = {
   addresses: {
-    [CHAINS.DFK.id]: ZeroAddress,
+    [CHAINS.DFK.id]: NativeTokenAddress,
     [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f',
     [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
     [CHAINS.AVALANCHE.id]: '0x997Ddaa07d716995DE90577C123Db411584E5E46',
@@ -1158,7 +1159,7 @@ export const DAIe: BridgeableToken = {
 
 export const KLAY: BridgeableToken = {
   addresses: {
-    [CHAINS.KLAYTN.id]: ZeroAddress,
+    [CHAINS.KLAYTN.id]: NativeTokenAddress,
     [CHAINS.DFK.id]: '0x97855Ba65aa7ed2F65Ed832a776537268158B78a',
   },
   decimals: {
@@ -1194,7 +1195,7 @@ export const WKLAY: BridgeableToken = {
 
 export const MATIC: BridgeableToken = {
   addresses: {
-    [CHAINS.POLYGON.id]: ZeroAddress,
+    [CHAINS.POLYGON.id]: NativeTokenAddress,
     [CHAINS.DFK.id]: '0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e',
   },
   decimals: {
@@ -1230,7 +1231,7 @@ export const WMATIC: BridgeableToken = {
 
 export const FTM: BridgeableToken = {
   addresses: {
-    [CHAINS.FANTOM.id]: ZeroAddress,
+    [CHAINS.FANTOM.id]: NativeTokenAddress,
     [CHAINS.DFK.id]: '0x2Df041186C844F8a2e2b63F16145Bc6Ff7d23E25',
   },
   decimals: {
