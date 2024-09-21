@@ -1,5 +1,3 @@
-const fs = require('fs')
-
 const { ethers } = require('ethers')
 
 const { fetchBridgeQuote } = require('./utils/fetchBridgeQuote')
@@ -15,20 +13,7 @@ Object.keys(providers).forEach((chainId) => {
 
 // Constants
 const lowerLimitValues = ['0.01', '0.1', '1', '10']
-const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-
-// Function to get token decimals
-const getTokenDecimals = async (chainId, token) => {
-  if (token === ETH) {
-    return 18
-  }
-  const decimals = await new ethers.Contract(
-    token,
-    ERC20ABI,
-    providers[chainId]
-  ).decimals()
-  return decimals
-}
+const upperLimitValues = ['20000000', '1000000']
 
 // Main function to generate limits
 const generateLimits = async () => {
@@ -42,16 +27,10 @@ const generateLimits = async () => {
         originTokenInfo.swappableType !== 'ETH'
       ) {
         console.log(
-          `Skipping ${originTokenInfo.symbol} (${originTokenInfo.swappableType})`
+          `Skipping originChainId ${originChainId} ${originTokenInfo.symbol} swapableType: (${originTokenInfo.swappableType})`
         )
         continue
       }
-
-      // Get token decimals for origin token
-      const originTokenDecimals = await getTokenDecimals(
-        originChainId,
-        originTokenAddress
-      )
 
       for (const destinationChainId in originTokenInfo.routes) {
         const destinationTokens = originTokenInfo.routes[destinationChainId]
@@ -73,20 +52,68 @@ const generateLimits = async () => {
                 limitValue
               )
 
-              if (bridgeQuotes.length > 0) {
-                const bridgeQuote = bridgeQuotes[0]
+              if (bridgeQuotes && bridgeQuotes.length > 0) {
+                const minBridgeAmountQuote = bridgeQuotes.reduce(
+                  (minQuote, currentQuote) => {
+                    const currentFee = currentQuote.bridgeFeeFormatted
+                    const minFee = minQuote ? minQuote.bridgeFeeFormatted : null
 
-                console.log('bridgeQuote: ', bridgeQuote)
-                // Save the minOriginValue as the feeAmount of the first bridgeQuote
-                minOriginValue = ethers.utils.formatUnits(
-                  bridgeQuote.feeAmount,
-                  originTokenDecimals
+                    return !minFee ||
+                      parseFloat(currentFee) < parseFloat(minFee)
+                      ? currentQuote
+                      : minQuote
+                  },
+                  null
                 )
-                break // Stop querying if a valid bridge quote is found
+
+                minOriginValue = minBridgeAmountQuote.bridgeFeeFormatted
+
+                break
               }
             } catch (error) {
               console.error(
-                `Failed to fetch bridge quote for ${originTokenAddress} to ${destinationTokenAddress}:`,
+                `Failed to fetch bridge quote for ${originChainId} ${originTokenAddress} to ${destinationChainId} ${destinationTokenAddress}:`,
+                error
+              )
+            }
+          }
+
+          let maxOriginValue
+
+          for (const limitValue of upperLimitValues) {
+            try {
+              const bridgeQuotes = await fetchBridgeQuote(
+                originChainId,
+                destinationChainId,
+                originTokenAddress,
+                destinationTokenAddress,
+                limitValue
+              )
+
+              if (bridgeQuotes && bridgeQuotes.length > 0) {
+                const maxAmountOutQuote = bridgeQuotes.reduce(
+                  (maxQuote, currentQuote) => {
+                    const currentMaxAmountOut = currentQuote.maxAmountOutStr
+                    const bestMaxAmountOut = maxQuote
+                      ? maxQuote.maxAmountOutStr
+                      : null
+
+                    return !bestMaxAmountOut ||
+                      parseFloat(currentMaxAmountOut) <
+                        parseFloat(bestMaxAmountOut)
+                      ? currentQuote
+                      : maxQuote
+                  },
+                  null
+                )
+
+                maxOriginValue = maxAmountOutQuote.maxAmountOutStr
+
+                break
+              }
+            } catch (error) {
+              console.error(
+                `Failed to fetch bridge quote for ${originChainId} ${originTokenAddress} to ${destinationChainId} ${destinationTokenAddress}:`,
                 error
               )
             }
@@ -98,8 +125,12 @@ const generateLimits = async () => {
               `OriginChainId: ${originChainId} OriginToken: ${originTokenInfo.symbol} ${originTokenAddress} DestinationChainId:${destinationChainId} DestinationToken: ${destinationTokenData.symbol} ${destinationTokenAddress} minOriginValue ${minOriginValue}`
             )
             destinationTokenData.minOriginValue = minOriginValue
-          } else {
-            destinationTokenData.minOriginValue = null
+          }
+          if (maxOriginValue) {
+            console.log(
+              `OriginChainId: ${originChainId} OriginToken: ${originTokenInfo.symbol} ${originTokenAddress} DestinationChainId:${destinationChainId} DestinationToken: ${destinationTokenData.symbol} ${destinationTokenAddress} maxOriginValue ${maxOriginValue}`
+            )
+            destinationTokenData.maxOriginValue = maxOriginValue
           }
         }
       }
