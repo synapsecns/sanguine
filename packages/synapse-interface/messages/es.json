@@ -58,8 +58,7 @@
     "All receivable tokens": "Todos los tokens recibibles",
     "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Ruta encontrada para el puente de {debouncedFromValue} {fromToken} en {fromChainId} a {toToken} en {toChainId}",
     "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "No se encontró ruta para el puente de {debouncedFromValue} {fromToken} en {fromChainId} a {toToken} en {toChainId}",
-    "Confirm quote": "Confirmar cotización",
-    "Updating quote": "Actualizando cotización"
+    "Confirm new quote": "Confirmar nueva cotización"
   },
   "Completed": {
     "to": "a",

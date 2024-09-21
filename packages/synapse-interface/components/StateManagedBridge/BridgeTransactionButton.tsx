@@ -110,7 +110,7 @@ export const BridgeTransactionButton = ({
   } else if (isLoading && hasValidQuote) {
     buttonProperties = {
       label: isPendingConfirmChange
-        ? t('Confirm quote')
+        ? t('Confirm new quote')
         : t('Bridge {symbol}', { symbol: fromToken?.symbol }),
       pendingLabel: t('Bridge {symbol}', { symbol: fromToken?.symbol }),
       onClick: null,
@@ -189,7 +189,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (isApproved && hasValidQuote && isPendingConfirmChange) {
     buttonProperties = {
-      label: t('Confirm quote'),
+      label: t('Confirm new quote'),
       onClick: () => onUserAcceptChange(),
       className:
         '!outline !outline-1 !outline-synapsePurple !outline-offset-[-1px] !from-bgLight !to-bgLight',
