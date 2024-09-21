@@ -1,7 +1,7 @@
 import request from 'supertest'
 import express from 'express'
 
-import getBridgeLimitsRoute from '../routes/getBridgeLimitsRoute'
+import getBridgeLimitsRoute from '../routes/bridgeLimitsRoute'
 
 const app = express()
 app.use('/getBridgeLimits', getBridgeLimitsRoute)
