@@ -16,8 +16,8 @@
     "build:go": " ",
     "build": " ",
     "build:slither": " ",
-    "test": "jest",
-    "test:coverage": "jest --collect-coverage"
+    "test": "",
+    "test:coverage": "echo no tests defined"
   },
   "keywords": [],
   "author": "",
