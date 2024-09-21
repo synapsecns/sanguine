@@ -25,17 +25,24 @@ export const bridgeController = async (req, res) => {
       toToken,
       amountInWei
     )
-    const payload = resp.map((quote) => ({
-      ...quote,
-      maxAmountOutStr: formatBNToString(
-        quote.maxAmountOut,
-        toTokenInfo.decimals
-      ),
-      bridgeFeeFormatted: formatBNToString(
-        quote.feeAmount,
-        toTokenInfo.decimals
-      ),
-    }))
+
+    const payload = resp.map((quote) => {
+      const originQueryTokenOutInfo = tokenAddressToToken(
+        fromChain.toString(),
+        quote.originQuery.tokenOut
+      )
+      return {
+        ...quote,
+        maxAmountOutStr: formatBNToString(
+          quote.maxAmountOut,
+          toTokenInfo.decimals
+        ),
+        bridgeFeeFormatted: formatBNToString(
+          quote.feeAmount,
+          originQueryTokenOutInfo.decimals
+        ),
+      }
+    })
     res.json(payload)
   } catch (err) {
     res.status(500).json({
