@@ -12,14 +12,15 @@ The RFQ (Request for Quote) Indexer is a system designed to index and track brid
    - API: Used by front-end applications, other services, or developers to query the indexed data.
 
 ## Directory Structure
-rfq-indexer/
-├── api/ # API service
-│ ├── src/ # API source code
-│ ├── package.json # API dependencies and scripts
-│ └── README.md # API documentation
-├── indexer/ # Indexer service
-│ ├── src/ # Indexer source code
-│ ├── abis/ # Contract ABIs
-│ ├── package.json # Indexer dependencies and scripts
-│ └── README.md # Indexer documentation
-└── README.md # This file
+<pre>
+rfq-indexer
+├── <a href="./api">api</a>: API service
+│   ├── src/ : API source code
+│   ├── package.json : API dependencies and scripts
+│   ├── README.md : API documentation
+├── <a href="./indexer">indexer</a>: Indexer service
+│   ├── src/ : Indexer source code
+│   ├── abis/ : Contract ABIs
+│   ├── package.json : Indexer dependencies and scripts
+│   ├── README.md : Indexer documentation
+</pre>

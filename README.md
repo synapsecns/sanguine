@@ -74,6 +74,7 @@ root
 │   ├── <a href="./services/cctp-relayer">CCTP Relayer</a>: CCTP message relayer
 │   ├── <a href="./services/explorer">explorer</a>: Bridge/messaging explorer ba
 │   ├── <a href="./services/rfq">rfq</a>: RFQ contracts
+│   ├── <a href="./services/rfq-indexer">rfq-indexer</a>: RFQ indexer
 │   ├── <a href="./services/scribe">scribe</a>: Generalized ethereum event logger
 │   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once
 ├── <a href="./tools">tools</a>
