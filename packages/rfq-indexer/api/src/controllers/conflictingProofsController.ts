@@ -3,7 +3,7 @@ import { sql } from 'kysely'
 
 import { db } from '../db'
 import { qDeposits, qRelays, qProofs } from '../queries'
-import { nest_results } from '../utils/nestResulsts'
+import { nest_results } from '../utils/nestResults'
 
 export const conflictingProofsController = async (
   req: Request,

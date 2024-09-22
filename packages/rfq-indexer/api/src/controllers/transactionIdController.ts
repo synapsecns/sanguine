@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 
 import { db } from '../db'
 import { qDeposits, qRelays, qProofs, qClaims, qRefunds } from '../queries'
-import { nest_results } from '../utils/nestResulsts'
+import { nest_results } from '../utils/nestResults'
 
 export const getTransactionById = async (req: Request, res: Response) => {
   const { transactionId } = req.params

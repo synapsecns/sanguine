@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 
 import { db } from '../db'
 import { qDeposits, qRelays, qRefunds } from '../queries'
-import { nest_results } from '../utils/nestResulsts'
+import { nest_results } from '../utils/nestResults'
 
 export const refundedAndRelayedTransactionsController = async (
   req: Request,

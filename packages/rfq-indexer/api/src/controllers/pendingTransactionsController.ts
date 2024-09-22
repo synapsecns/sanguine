@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 
 import { db } from '../db'
 import { qDeposits, qRelays, qProofs, qClaims, qRefunds } from '../queries'
-import { nest_results } from '../utils/nestResulsts'
+import { nest_results } from '../utils/nestResults'
 
 export const pendingTransactionsMissingClaimController = async (
   req: Request,
@@ -36,7 +36,7 @@ export const pendingTransactionsMissingClaimController = async (
       res.json(nestedResults)
     } else {
       res
-        .status(200)
+        .status(404)
         .json({ message: 'No pending transactions missing claim found' })
     }
   } catch (error) {
@@ -118,7 +118,9 @@ export const pendingTransactionsMissingRelayController = async (
     if (nestedResults && nestedResults.length > 0) {
       res.json(nestedResults)
     } else {
-      res.status(404).json({ message: 'No pending transactions missing relay found' })
+      res
+        .status(404)
+        .json({ message: 'No pending transactions missing relay found' })
     }
   } catch (error) {
     console.error('Error fetching pending transactions missing relay:', error)
