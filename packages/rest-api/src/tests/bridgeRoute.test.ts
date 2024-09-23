@@ -2,6 +2,8 @@ import request from 'supertest'
 import express from 'express'
 
 import bridgeRoute from '../routes/bridgeRoute'
+import { NativeGasAddress, ZeroAddress } from '../constants'
+import { USDC } from '../constants/bridgeable'
 
 const app = express()
 app.use('/bridge', bridgeRoute)
@@ -11,10 +13,41 @@ describe('Bridge Route with Real Synapse Service', () => {
     const response = await request(app).get('/bridge').query({
       fromChain: '1',
       toChain: '10',
-      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC on Ethereum
-      toToken: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85', // USDC on Optimism
+      fromToken: USDC.addresses[1],
+      toToken: USDC.addresses[10],
       amount: '1000',
     })
+    expect(response.status).toBe(200)
+    expect(Array.isArray(response.body)).toBe(true)
+    expect(response.body.length).toBeGreaterThan(0)
+    expect(response.body[0]).toHaveProperty('maxAmountOutStr')
+    expect(response.body[0]).toHaveProperty('bridgeFeeFormatted')
+  }, 15000)
+
+  it('should return bridge quotes for ZeroAddress', async () => {
+    const response = await request(app).get('/bridge').query({
+      fromChain: '1',
+      toChain: '10',
+      fromToken: ZeroAddress,
+      toToken: ZeroAddress,
+      amount: '10',
+    })
+    expect(response.status).toBe(200)
+    expect(Array.isArray(response.body)).toBe(true)
+    expect(response.body.length).toBeGreaterThan(0)
+    expect(response.body[0]).toHaveProperty('maxAmountOutStr')
+    expect(response.body[0]).toHaveProperty('bridgeFeeFormatted')
+  }, 15000)
+
+  it('should return bridge quotes for NativeGasAddress', async () => {
+    const response = await request(app).get('/bridge').query({
+      fromChain: '1',
+      toChain: '10',
+      fromToken: NativeGasAddress,
+      toToken: NativeGasAddress,
+      amount: '10',
+    })
+
     expect(response.status).toBe(200)
     expect(Array.isArray(response.body)).toBe(true)
     expect(response.body.length).toBeGreaterThan(0)
@@ -83,8 +116,8 @@ describe('Bridge Route with Real Synapse Service', () => {
     const response = await request(app).get('/bridge').query({
       fromChain: '1',
       toChain: '10',
-      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      toToken: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+      fromToken: USDC.addresses[1],
+      toToken: USDC.addresses[10],
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'amount')

@@ -5,10 +5,13 @@ export const tokenAddressToToken = (chain: string, tokenAddress: string) => {
   if (!chainData) {
     return null
   }
+
   const tokenInfo = chainData[tokenAddress]
+
   if (!tokenInfo) {
     return null
   }
+
   return {
     address: tokenAddress,
     symbol: tokenInfo.symbol,

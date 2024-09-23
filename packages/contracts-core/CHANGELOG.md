@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.32](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.31...@synapsecns/contracts-core@1.0.32) (2024-09-23)
+
+**Note:** Version bump only for package @synapsecns/contracts-core
+
+
+
+
+
 ## [1.0.31](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-core@1.0.30...@synapsecns/contracts-core@1.0.31) (2024-04-03)
 
 **Note:** Version bump only for package @synapsecns/contracts-core
