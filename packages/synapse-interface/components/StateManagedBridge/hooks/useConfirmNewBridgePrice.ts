@@ -81,7 +81,6 @@ export const useConfirmNewBridgePrice = () => {
     bridgeQuote,
     previousBridgeQuote,
     hasSameSelectionsAsPreviousQuote,
-    isPendingConfirmChange,
   ])
 
   const requestUserConfirmChange = (previousQuote: BridgeQuote) => {
@@ -120,7 +119,7 @@ const calculateOutputRelativeDifference = (
   }
 
   const currentOutput = parseFloat(currentQuote.outputAmountString)
-  const previousOutput = parseFloat(currentQuote.outputAmountString)
+  const previousOutput = parseFloat(previousQuote.outputAmountString)
 
   if (previousOutput === 0) {
     return null
