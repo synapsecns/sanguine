@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.38.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.38.8...@synapsecns/synapse-interface@0.38.9) (2024-09-23)
+
+
+### Bug Fixes
+
+* **synapse-interface:** Additional checks on screen [SLT-166] ([#3152](https://github.com/synapsecns/sanguine/issues/3152)) ([9418b40](https://github.com/synapsecns/sanguine/commit/9418b40aa25a441d6a4460695962f7fbf41c4221))
+
+
+
+
+
 ## [0.38.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.38.7...@synapsecns/synapse-interface@0.38.8) (2024-09-20)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
