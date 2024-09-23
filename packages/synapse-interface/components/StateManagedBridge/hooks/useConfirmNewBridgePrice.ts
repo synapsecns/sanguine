@@ -71,19 +71,18 @@ export const useConfirmNewBridgePrice = () => {
     if (
       validQuotes &&
       hasSameSelectionsAsPreviousQuote &&
-      hasBridgeModuleChanged
-    ) {
-      requestUserConfirmChange(previousBridgeQuote)
-    } else if (
-      validQuotes &&
-      hasSameSelectionsAsPreviousQuote &&
-      outputAmountDiffMoreThanThreshold
+      (outputAmountDiffMoreThanThreshold || hasBridgeModuleChanged)
     ) {
       requestUserConfirmChange(previousBridgeQuote)
     } else {
       resetConfirm()
     }
-  }, [bridgeQuote, previousBridgeQuote, hasSameSelectionsAsPreviousQuote])
+  }, [
+    bridgeQuote,
+    previousBridgeQuote,
+    hasSameSelectionsAsPreviousQuote,
+    isPendingConfirmChange,
+  ])
 
   const requestUserConfirmChange = (previousQuote: BridgeQuote) => {
     if (!hasQuoteOutputChanged && !hasUserConfirmedChange) {
@@ -123,5 +122,5 @@ const calculateOutputRelativeDifference = (
   const currentOutput = parseFloat(currentQuote.outputAmountString)
   const previousOutput = parseFloat(currentQuote.outputAmountString)
 
-  return previousOutput - currentOutput / previousOutput
+  return (previousOutput - currentOutput) / previousOutput
 }
