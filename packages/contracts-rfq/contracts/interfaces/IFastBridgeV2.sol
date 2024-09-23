@@ -48,5 +48,5 @@ interface IFastBridgeV2 is IFastBridge {
     /// @notice Returns the timestamp and relayer of a bridge proof
     /// @param transactionId The ID of the bridge transaction
     /// @return The timestamp and relayer address of the bridge proof
-    function bridgeProofs(bytes32 transactionId) external view returns (uint96, address);
+    function bridgeProofs(bytes32 transactionId) external view returns (BridgeProof memory);
 }
