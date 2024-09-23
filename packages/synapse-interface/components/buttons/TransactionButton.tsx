@@ -12,6 +12,7 @@ const baseClassNames = {
   disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
   background: 'bg-zinc-400 dark:bg-bgLight',
   gradient: 'enabled:bg-gradient-to-r',
+  transition: 'transition',
 }
 
 export const TransactionButton = ({
@@ -42,8 +43,8 @@ export const TransactionButton = ({
       style={style}
       disabled={disabled}
       className={`
-        ${className}
         ${joinClassNames(baseClassNames)}
+        ${className}
         ${
           isPending
             ? 'from-fuchsia-400 dark:from-fuchsia-900 to-purple-400 dark:to-purple-900'
