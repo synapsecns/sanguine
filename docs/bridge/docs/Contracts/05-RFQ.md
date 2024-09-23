@@ -4,6 +4,12 @@
 
 RFQ contract source code can be found [here](https://github.com/synapsecns/sanguine/tree/master/packages/contracts-rfq), along with generated documentation [here](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html).
 
+:::note This list may be incomplete
+
+The canonical list is hosted within the SynapseCNS on [Github](https://github.com/synapsecns/synapse-contracts).
+
+:::
+
 | Chain    | Address |
 | -------- | ------- |
 | Arbitrum | `0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E` [↗](https://arbiscan.io/address/0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E)             |

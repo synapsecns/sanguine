@@ -1,10 +1,10 @@
 # RFQ
 
-A [Synapse Router](../Synapse-Router) bridge module which matches on-chain user requests against posted bridge quotes.
+A [Synapse Router](../Synapse-Router) bridge module which matches on-chain user requests against bridge quotes posted by decentralized [Relayers](#Relayer).
 
-## Agents
+## Architecture
 
-[Synapse Fast Bridge contracts](/docs/Contracts/RFQ) coordinate decentralized agents to match user requests with the best quote for a given route, and secure user funds until their transaction is fulfilled.
+[Synapse Fast Bridge contracts](/docs/Contracts/RFQ) coordinate decentralized Solvers to match user requests against the best quote for a given route, and secure user funds while their transaction is fulfilled.
 
 <!-- https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html -->
 
@@ -15,25 +15,19 @@ A [Synapse Router](../Synapse-Router) bridge module which matches on-chain user 
 | Users   | Uses a route quote to form a bridge request which is matched on-chain by the solver who posted the quote.
 | Guards  | Raises a dispute if errors or fraudulent activity are detected
 
-## Transaction Flow
+## Behavior
 
-### Status
+After receiving a [`BridgeRequest`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeparams) (broadcast as a [`BridgeRequested`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested) event), a Solver executes the transaction by calling [`relay`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#relay) on the Bridge contract.
 
-| Code | Status          | Description |
-|------|-----------------|-------------|
-| 0    | Null      | Bridge transaction does not exist yet on origin chain |
-| 1    | Requested | Bridge requested. Waiting for Relayer |
-| 2    | Proved    | Relayer called [`prove`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#prove), and is waiting for the optimistic period to end. |
-| 3    | Claimed   | Relayer called [`claim`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#claim) and received their funds. |
-| 4    | Refunded  | Relayer did not claim within the optimistic period, or a dispute was decided in favor of the user. |
+The Bridge relays the requested funds ([`msg.value`](https://ethereum.stackexchange.com/questions/43362/what-is-msg-value) in the case of ETH) from Solver to User, allowing the Solver that accepted the bridge to call [`prove`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#prove) on the Bridge contract, and receive their funds at the end of the optimistic period
 
-### Behavior
-
-1. **User requests bridge**: A user signs a [`BridgeRequest`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeparams) with a received quote and required [`BridgeParams`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgeparams), broadcast as a [`BridgeRequested`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested) event.
-3. **Solver accepts bridge**: A solver calls [`relay`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#relay) on the Bridge contract.
-3. **Bridge relays funds**: The Bridge contract sends the requested funds ([`msg.value`](https://ethereum.stackexchange.com/questions/43362/what-is-msg-value) in the case of ETH) from solver to user, on the destination chain.
-4. **Solver submits proof**: The solver that accepted the bridge calls [`prove`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#prove) on the Bridge contract.
-5. **Solver receives payment**: The Solver receives their funds from the Bridge contract at the end of the optimistic period
+| `#` | State       | Description
+|-----|-------------|-
+| `0` | `Null`      | Bridge transaction does not exist yet on origin chain
+| `1` | `Requested` | [`BridgeRequested`](https://vercel-rfq-docs.vercel.app/contracts/interfaces/IFastBridge.sol/interface.IFastBridge.html#bridgerequested) event broadcast. Waiting for Relayer
+| `2` | `Proved`    | Relayer called [`relay`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#relay), and [`prove`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#prove), and is waiting for the optimistic period to end.
+| `3` | `Claimed`   | Relayer called [`claim`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#claim) and received their funds.
+| `4` | `Refunded`  | Relayer did not claim within the optimistic period, or a dispute was decided in favor of the user.
 
 <!-- :::note Signing quotes
 
@@ -70,9 +64,3 @@ In a successful dispute the relayer loses their claimable funds. This design is 
 ## Unfulfilled requests
 
 If a request is not fulfilled, users can reclaim their funds by using the [`claim`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#claim) function once the optimistic window has passed.
-
-## Other Functionality
-
-<!-- #### ChainGas
-
-`sendChainGas` is a field that is populated by the bridge user, and it's a simple bool flag. If `sendChainGas=true` the amount is specified in the FastBridge contract on the destination chain as `chainGasAmount`. This is currently set to zero in all the contracts, and can thus be ignored by filling orders with either no `sendChainGas` option (or to chains with `chainGasAmount==0`) -->

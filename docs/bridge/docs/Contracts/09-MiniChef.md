@@ -1,5 +1,11 @@
 # MiniChef
 
+:::note This list may be incomplete
+
+The canonical list is hosted within the SynapseCNS on [Github](https://github.com/synapsecns/synapse-contracts).
+
+:::
+
 | Chain     | Address                                      |
 |-----------|----------------------------------------------|
 | Arbitrum  | `0x73186f2Cf2493f20836b17b21ae79fc12934E207` [↗](https://arbiscan.io/address/0x73186f2Cf2493f20836b17b21ae79fc12934E207) |

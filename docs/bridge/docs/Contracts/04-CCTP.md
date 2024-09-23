@@ -5,6 +5,12 @@ Synapse CCTP contracts interact with [Circle CCTP contracts](https://developers.
 **Address**: `0xd5a597d6e7ddf373a92c8f477daaa673b0902f48`\
 **Contract**: [SynapseCCTP.sol](https://github.com/synapsecns/synapse-contracts/blob/master/contracts/cctp/SynapseCCTP.sol)
 
+:::note This list may be incomplete
+
+The canonical list is hosted within the SynapseCNS on [Github](https://github.com/synapsecns/synapse-contracts).
+
+:::
+
 | Chain     | Address                                      |
 | --------- | ---------------------------------------------|
 | Arbitrum  | `0x12715a66773bd9c54534a01abf01d05f6b4bd35e` [↗](https://arbiscan.io/address/0x12715a66773bd9c54534a01abf01d05f6b4bd35e)             |

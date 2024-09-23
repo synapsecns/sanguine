@@ -1,5 +1,11 @@
 # Bridge Zaps
 
+:::note This list may be incomplete
+
+The canonical list is hosted within the SynapseCNS on [Github](https://github.com/synapsecns/synapse-contracts).
+
+:::
+
 | Chain     | Address                                      |
 |-----------|----------------------------------------------|
 | Arbitrum  | `0x37f9aE2e0Ea6742b9CAD5AbCfB6bBC3475b3862B` [↗](https://arbiscan.io/address/0x37f9aE2e0Ea6742b9CAD5AbCfB6bBC3475b3862B) |

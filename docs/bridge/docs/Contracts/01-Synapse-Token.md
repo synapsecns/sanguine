@@ -1,5 +1,11 @@
 # Synapse Token
 
+:::note This list may be incomplete
+
+The canonical list is hosted within the SynapseCNS on [Github](https://github.com/synapsecns/synapse-contracts).
+
+:::
+
 | Chain     | Address                                      |
 |-----------|----------------------------------------------|
 | Arbitrum  | `0x080f6aed32fc474dd5717105dba5ea57268f46eb` [↗](https://arbiscan.io/token/0x080f6aed32fc474dd5717105dba5ea57268f46eb)|

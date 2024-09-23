@@ -72,7 +72,7 @@ Yaml settings:
  - `database` - The database settings for the API backend. A database is required to store quotes and other information. Using SQLite with a dsn set to a `/tmp/` directory is recommended for development.
    -  `type` - the database driver to use, can be `mysql` or `sqlite`.
    -  `dsn` - the dsn of your database. If using sqlite, this can be a path, if using mysql please see [here](https://dev.mysql.com/doc/connector-odbc/en/connector-odbc-configuration.html) for more information.
- - `omnirpc_url` - The omnirpc url to use for querying chain data (no trailing slash). For more information on omnirpc, see [here](docs/Services/Omnirpc.md).
+ - `omnirpc_url` - The omnirpc url to use for querying chain data (no trailing slash). For more information on omnirpc, see [here](/docs/Services/Omnirpc).
  - `bridges` - A key value map of chain id to FastBridge contract address. The API will only allow quotes to be posted on these chains.
  - `port` - The port to run the http server on.
 

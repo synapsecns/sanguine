@@ -1,5 +1,11 @@
 # Synapse Router
 
+:::note This list may be incomplete
+
+The canonical list is hosted within the SynapseCNS on [Github](https://github.com/synapsecns/synapse-contracts).
+
+:::
+
 **Address**: `0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a`
 
 | Chain     | Address                                      |

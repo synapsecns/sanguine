@@ -1,5 +1,11 @@
 # Liquidity Pools
 
+:::note This list may be incomplete
+
+The canonical list is hosted within the SynapseCNS on [Github](https://github.com/synapsecns/synapse-contracts).
+
+:::
+
 ## ETH Pools
 
 | Chain     | Address                                      |

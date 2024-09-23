@@ -84,7 +84,7 @@ chains:
 
 Key configuration parameters include:
 
-- `rpc_url`: The omnirpc url to use for querying chain data (no trailing slash). For more information on omnirpc, see [here](Services//Omnirpc.md).
+- `rpc_url`: The omnirpc url to use for querying chain data (no trailing slash). For more information on omnirpc, see [here](Omnirpc).
 - `chains`: List of chains to index, including chain-specific parameters:
   - `chain_id`: The ID of the chain.
   - `get_logs_range`: The number of blocks to request in a single `getLogs` request.
@@ -112,4 +112,4 @@ For a full list of available queries, refer to the GraphQL schema.
 
 ## Observability
 
-Scribe implements open telemetry for both tracing and metrics. Please see the [Observability](./Observability) page for more info.
+Scribe implements open telemetry for both tracing and metrics. Please see the [Observability](Observability) page for more info.
