@@ -1,6 +1,6 @@
 # RFQ
 
-A [Synapse Router](../Synapse-Router) bridge module which matches on-chain user requests against bridge quotes posted by decentralized [Relayers](#Relayer).
+A [Synapse Router](../Synapse-Router) bridge module which matches on-chain user requests against bridge quotes posted by decentralized [Relayers](Relayer).
 
 ## Architecture
 

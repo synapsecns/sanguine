@@ -17,7 +17,7 @@ The canonical RFQ Relayer handles **three event loops**: quoting routes, approvi
 
 ## Quote
 
-Continuously track and update route quotes based on changes to available and in-flight balances via [API](../API). The quote should update each time the available balance or other parameters change.
+Continuously track and update route quotes based on changes to available and in-flight balances via [API](API). The quote should update each time the available balance or other parameters change.
 
 | Param   | Description
 |---------|-
@@ -98,12 +98,12 @@ RFQ Relayer requires a YAML configuration file path to be provided at run time.
 
 :::
 
-* `submitter_config`: Covered [here](/docs/Services/Submitter#Observability). Controls gas parameters for on-chain transactions.
+* `submitter_config`: Covered [here](/docs/Services/Submitter#observability). Controls gas parameters for on-chain transactions.
 * `database`: Database settings for API backend. Required to store quotes and other information. SQLite with `DSN` set to a `/tmp/` directory is recommended for development.
   *  `type`: Database driver to use, can be `mysql` or `sqlite`.
   *  `dsn`: 'Data Source Name'. If using SQLite, this can be a path. For MySQL see [here](https://dev.mysql.com/doc/connector-odbc/en/connector-odbc-configuration.html) for more information.
 * `screener_api_url` (optional): [Screener API](https://github.com/synapsecns/sanguine/tree/master/contrib/screener-api#screening-api)
-* `rfq_url`: [Mainnet & Testnet addresses](../API#api-urls)
+* `rfq_url`: [Mainnet & Testnet addresses](API/#api-urls)
 * `omnirpc_url`: [Running an OmniRPC instance](/docs/Services/Omnirpc)
 * `rebalance_interval`: How often to rebalance. Can use `s` (seconds), `m` (minutes), or `h` (hours)
 * `relayer_api_port`: Controls the relayer. Should be private or secured. <!--TODO: more info here-->
@@ -300,7 +300,7 @@ Be sure to sub in your respective `to` address!
 
 ## Observability
 
-The RFQ relayer implements open telemetry for both tracing and metrics. Please see the [Observability](docs/Services/Observability) page for more info. There is also a custom [grafana dashboard](https://github.com/synapsecns/sanguine/tree/master/services/rfq/relayer/dashboards/dashboard.json) available for the relayer. We'd also highly recommend setting up the [submitter dashboard](/docs/Services/Submitter) as well.
+The RFQ relayer implements open telemetry for both tracing and metrics. Please see the [Observability](/docs/Services/Observability) page for more info. There is also a custom [grafana dashboard](https://github.com/synapsecns/sanguine/tree/master/services/rfq/relayer/dashboards/dashboard.json) available for the relayer. We'd also highly recommend setting up the [submitter dashboard](/docs/Services/Submitter) as well.
 
 ![Relayer Grafana Dashboard](dashboard.png)
 

@@ -42,7 +42,7 @@ CCTP Relayer requires a YAML configuration file path to be provided at run time.
 
 :::note cctp_type
 
-* **`synapse`** (recommended): Uses events & metadata from [Synapse CCTP contracts](docs/Contracts/CCTP), and `synapse_cctp_address` when configuring `chains`.
+* **`synapse`** (recommended): Uses events & metadata from [Synapse CCTP contracts](/docs/Contracts/CCTP), and `synapse_cctp_address` when configuring `chains`.
 
 * **`circle`** (USDC to USDC only): Uses raw [TokenMessenger](https://github.com/circlefin/evm-cctp-contracts/blob/817397db0a12963accc08ff86065491577bbc0e5/src/TokenMessenger.sol) events, and `token_messenger_address` when configuring `chains`.
 
