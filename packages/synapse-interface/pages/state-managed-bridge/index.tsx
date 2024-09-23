@@ -495,7 +495,7 @@ const StateManagedBridge = () => {
                   isBridgePaused={isBridgePaused}
                   isQuoteStale={isQuoteStale}
                 />
-                <div className="absolute flex items-center !right-10">
+                <div className="absolute flex items-center !right-10 pointer-events-none">
                   <BridgeQuoteResetTimer
                     bridgeQuote={bridgeQuote}
                     isLoading={isLoading}
