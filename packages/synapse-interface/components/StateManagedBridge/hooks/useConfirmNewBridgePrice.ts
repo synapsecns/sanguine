@@ -113,13 +113,15 @@ export const useConfirmNewBridgePrice = () => {
 }
 
 const calculateOutputRelativeDifference = (
-  quoteA?: BridgeQuote,
-  quoteB?: BridgeQuote
+  currentQuote?: BridgeQuote,
+  previousQuote?: BridgeQuote
 ) => {
-  if (!quoteA?.outputAmountString || !quoteB?.outputAmountString) return null
+  if (!currentQuote?.outputAmountString || !previousQuote?.outputAmountString) {
+    return null
+  }
 
-  const outputA = parseFloat(quoteA.outputAmountString)
-  const outputB = parseFloat(quoteB.outputAmountString)
+  const currentOutput = parseFloat(currentQuote.outputAmountString)
+  const previousOutput = parseFloat(currentQuote.outputAmountString)
 
-  return Math.abs(outputA - outputB) / outputB
+  return previousOutput - currentOutput / previousOutput
 }
