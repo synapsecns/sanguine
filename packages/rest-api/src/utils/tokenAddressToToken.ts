@@ -1,4 +1,3 @@
-import { NativeGasAddress, ZeroAddress } from '../constants'
 import { BRIDGE_MAP } from '../constants/bridgeMap'
 
 export const tokenAddressToToken = (chain: string, tokenAddress: string) => {
@@ -7,12 +6,12 @@ export const tokenAddressToToken = (chain: string, tokenAddress: string) => {
     return null
   }
 
-  const address = tokenAddress === ZeroAddress ? NativeGasAddress : tokenAddress
+  const tokenInfo = chainData[tokenAddress]
 
-  const tokenInfo = chainData[address]
   if (!tokenInfo) {
     return null
   }
+
   return {
     address: tokenAddress,
     symbol: tokenInfo.symbol,

@@ -51,3 +51,7 @@ export const isTimestampToday = (unixTimestamp: number): boolean => {
     dateFromTimestamp.getFullYear() === currentDate.getFullYear()
   )
 }
+
+export const convertMsToSeconds = (ms: number) => {
+  return Math.ceil(ms / 1000)
+}
