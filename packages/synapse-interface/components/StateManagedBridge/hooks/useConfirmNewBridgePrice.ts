@@ -77,11 +77,7 @@ export const useConfirmNewBridgePrice = () => {
     } else {
       resetConfirm()
     }
-  }, [
-    bridgeQuote,
-    previousBridgeQuote,
-    hasSameSelectionsAsPreviousQuote,
-  ])
+  }, [bridgeQuote, previousBridgeQuote, hasSameSelectionsAsPreviousQuote])
 
   const requestUserConfirmChange = (previousQuote: BridgeQuote) => {
     if (!hasQuoteOutputChanged && !hasUserConfirmedChange) {
