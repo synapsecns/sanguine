@@ -20,4 +20,33 @@ interface IFastBridgeV2 is IFastBridge {
     /// @param request The encoded bridge transaction to claim on origin chain
     function claim(bytes memory request) external;
 
+
+
+
+
+
+
+    enum BridgeStatus {
+        NULL, // doesn't exist yet
+        REQUESTED,
+        RELAYER_PROVED,
+        RELAYER_CLAIMED,
+        REFUNDED
+    }
+
+    struct BridgeTxDetails {
+        BridgeStatus status;
+        BridgeProof proof;
+    }
+
+
+    /// @notice Returns the status of a bridge transaction
+    /// @param transactionId The ID of the bridge transaction
+    /// @return The status of the bridge transaction
+    function bridgeStatuses(bytes32 transactionId) external view returns (BridgeStatus);
+
+    /// @notice Returns the timestamp and relayer of a bridge proof
+    /// @param transactionId The ID of the bridge transaction
+    /// @return The timestamp and relayer address of the bridge proof
+    function bridgeProofs(bytes32 transactionId) external view returns (uint96, address);
 }

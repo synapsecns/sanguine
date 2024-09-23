@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
+import {IFastBridgeV2} from "../contracts/interfaces/IFastBridgeV2.sol";
 import {FastBridgeV2} from "../contracts/FastBridgeV2.sol";
 
 import {MockERC20} from "./MockERC20.sol";
