@@ -27,7 +27,7 @@
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
+:root[data-theme='dark'] {
   --ifm-color-primary: hsl(285deg 100% 80%);
   --ifm-color-primary-dark: hsl(285deg 100% 41%);
   --ifm-color-primary-darker: hsl(285deg 100% 38%);
@@ -50,7 +50,7 @@
   /* --ifm-color-gray-0: hsl(285deg 100% 100%); */
 
   --ifm-background-surface-color: hsl(240deg 25% 15%);
-  --ifm-table-stripe-background: hsl(240deg 25% 10%) !important;
+  --ifm-table-stripe-background: hsl(240deg 25% 10%);
 
   --synapse-neutral: hsl(285deg 40% 12.5%);
   --synapse-neutral-secondary: hsl(285deg 40% 25%);
