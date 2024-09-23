@@ -1,7 +1,7 @@
 {
   "name": "FastBridge",
   "license": "UNLICENSED",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "FastBridge contracts.",
   "private": true,
   "files": [
@@ -11,7 +11,7 @@
     "@openzeppelin/contracts": "5.0.1"
   },
   "devDependencies": {
-    "@synapsecns/solidity-devops": "^0.4.4",
+    "@synapsecns/solidity-devops": "^0.4.5",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.6"
