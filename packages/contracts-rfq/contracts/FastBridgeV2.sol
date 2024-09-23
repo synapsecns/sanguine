@@ -35,8 +35,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     mapping(bytes32 => BridgeStatus) public bridgeStatuses;
     /// @notice Proof of relayed bridge tx on origin chain
     mapping(bytes32 => BridgeProof) public bridgeProofs;
-    /// @notice Whether bridge has been relayed on destination chain
-    mapping(bytes32 => bool) public bridgeRelays;
+    /// @notice Relay details on destination chain
+    mapping(bytes32 => BridgeRelay) public bridgeRelayDetails;
 
     /// @dev to prevent replays
     uint256 public nonce;
@@ -139,8 +139,13 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
 
         // mark bridge transaction as relayed
-        if (bridgeRelays[transactionId]) revert TransactionRelayed();
-        bridgeRelays[transactionId] = true;
+        if (bridgeRelayDetails[transactionId].blockNumber != 0) revert TransactionRelayed();
+        
+        bridgeRelayDetails[transactionId] = BridgeRelay({
+            blockNumber: uint48(block.number),
+            blockTimestamp: uint48(block.timestamp),
+            relayer: relayer
+        });
 
         // transfer tokens to recipient on destination chain and gas rebate if requested
         address to = transaction.destRecipient;
@@ -172,6 +177,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
             transaction.destAmount,
             rebate
         );
+    }
+    
+    /// @inheritdoc IFastBridgeV2
+    function bridgeRelays(bytes32 transactionId) external view returns (bool) {
+        // has this transactionId been relayed?
+        return bridgeRelayDetails[transactionId].blockNumber != 0;
     }
 
     /// @inheritdoc IFastBridge

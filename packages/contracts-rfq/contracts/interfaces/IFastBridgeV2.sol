@@ -20,4 +20,15 @@ interface IFastBridgeV2 is IFastBridge {
     /// @param request The encoded bridge transaction to claim on origin chain
     function claim(bytes memory request) external;
 
+    /// @notice Checks if a transaction has been relayed
+    /// @param transactionId The ID of the transaction to check
+    /// @return True if the transaction has been relayed, false otherwise
+    function bridgeRelays(bytes32 transactionId) external view returns (bool);
+
+    struct BridgeRelay {
+        uint48 blockNumber;
+        uint48 blockTimestamp;
+        address relayer;
+    }
+
 }
