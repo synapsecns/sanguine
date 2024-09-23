@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"sync"
@@ -172,7 +173,7 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 
 	originAmount, ok := new(big.Int).SetString(request.Data.OriginAmount, 10)
 	if !ok {
-		return nil, fmt.Errorf("invalid origin amount")
+		return nil, errors.New("invalid origin amount")
 	}
 
 	var bestQuote *model.QuoteData
