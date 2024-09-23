@@ -1,6 +1,5 @@
 import synapseLogo from '../assets/icons/syn.svg'
 import { Token } from '../types'
-
 import * as CHAINS from '../chains/master'
 import {
   BUSD,

@@ -51,7 +51,7 @@ export const findChainIdsWithPausedToken = (routeSymbol: string) => {
     PAUSED_TOKENS_BY_CHAIN,
     (result, tokens, chainId) => {
       if (_.includes(tokens, routeSymbol)) {
-        result.push(chainId)
+        result.push(chainId as never)
       }
       return result
     },

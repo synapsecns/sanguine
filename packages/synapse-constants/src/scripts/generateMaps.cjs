@@ -1,7 +1,7 @@
 const { ethers } = require('ethers')
 
-const { prettyPrintTS } = require('./utils/prettyPrintTs')
-const { fetchRfqData } = require('./utils/fetchRfqData')
+const { prettyPrintTS } = require('./utils/prettyPrintTs.cjs')
+const { fetchRfqData } = require('./utils/fetchRfqData.cjs')
 // Provider URLs
 const providers = require('./data/providers.json')
 // List of ignored bridge symbols

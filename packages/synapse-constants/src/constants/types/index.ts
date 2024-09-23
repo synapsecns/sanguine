@@ -1,6 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import * as CHAINS from '../chains/master'
 import { getAddress } from '@ethersproject/address'
+
+import * as CHAINS from '../chains/master'
 
 export type Chain = {
   id: number
