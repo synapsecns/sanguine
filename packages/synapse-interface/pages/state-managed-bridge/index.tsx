@@ -434,7 +434,7 @@ const StateManagedBridge = () => {
         )
       }
 
-      if (isTransactionUserRejectedError) {
+      if (isTransactionUserRejectedError(error)) {
         getAndSetBridgeQuote()
       }
 

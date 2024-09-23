@@ -6,7 +6,7 @@ import { constructStringifiedBridgeSelections } from './useBridgeValidations'
 import { BridgeQuote } from '@/utils/types'
 
 export const useConfirmNewBridgePrice = () => {
-  const triggerQuoteRef = useRef<any>(null)
+  const triggerQuoteRef = useRef<BridgeQuote | null>(null)
   const bpsThreshold = 0.0001 // 1bps
 
   const [hasQuoteOutputChanged, setHasQuoteOutputChanged] =
@@ -121,6 +121,10 @@ const calculateOutputRelativeDifference = (
 
   const currentOutput = parseFloat(currentQuote.outputAmountString)
   const previousOutput = parseFloat(currentQuote.outputAmountString)
+
+  if (previousOutput === 0) {
+    return null
+  }
 
   return (previousOutput - currentOutput) / previousOutput
 }
