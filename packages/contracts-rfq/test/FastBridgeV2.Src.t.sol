@@ -800,13 +800,11 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     }
 
     function test_refund_revert_statusNull() public {
-        vm.skip(true); // TODO: unskip when fixed
         vm.expectRevert(StatusIncorrect.selector);
         refund({caller: refunder, bridgeTx: ethTx});
     }
 
     function test_refund_revert_statusProven() public {
-        vm.skip(true); // TODO: unskip when fixed
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
         vm.expectRevert(StatusIncorrect.selector);
@@ -814,7 +812,6 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     }
 
     function test_refund_revert_statusClaimed() public {
-        vm.skip(true); // TODO: unskip when fixed
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
         skip(CLAIM_DELAY + 1);
