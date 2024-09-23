@@ -4,7 +4,9 @@
 // import Layout from '@theme/Layout'
 // import HomepageFeatures from '@site/src/components/HomepageFeatures'
 // import Heading from '@theme/Heading'
-import { Redirect } from 'react-router-dom'
+// import { Redirect } from 'react-router-dom'
+
+import { Redirect } from '@docusaurus/router'
 
 // import styles from './index.module.css'
 
