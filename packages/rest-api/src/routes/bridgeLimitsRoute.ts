@@ -4,7 +4,7 @@ import { isAddress } from '@ethersproject/address'
 
 import { CHAINS_ARRAY } from '../constants/chains'
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
-import { getBridgeLimitsController } from '../controllers/getBridgeLimitsController'
+import { getBridgeLimitsController } from '../controllers/bridgeLimitsController'
 
 const router = express.Router()
 
