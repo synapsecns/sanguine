@@ -1,5 +1,5 @@
 {
-  "name": "FastBridge",
+  "name": "@synapsecns/contracts-rfq",
   "license": "MIT",
   "version": "0.4.1",
   "description": "FastBridge contracts.",
