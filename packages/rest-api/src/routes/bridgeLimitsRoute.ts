@@ -104,10 +104,10 @@ router.get(
       .withMessage('Unsupported fromChain'),
     check('toChain')
       .exists()
-      .withMessage('Unsupported toChain')
+      .withMessage('toChain is required')
       .isNumeric()
       .custom((value) => CHAINS_ARRAY.some((c) => c.id === Number(value)))
-      .withMessage('toChain is required'),
+      .withMessage('Unsupported toChain'),
     check('fromToken')
       .exists()
       .withMessage('fromToken is required')
