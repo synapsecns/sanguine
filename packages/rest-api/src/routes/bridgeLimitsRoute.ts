@@ -14,7 +14,7 @@ const router = express.Router()
  * /bridgeLimits:
  *   get:
  *     summary: Get min/max origin values for bridge quote
- *     description: Retrieve minimum and maximum bridgeable amounts to bridge from source chain to destination chain.
+ *     description: Retrieve min/max bridgeable amounts to bridge from source chain to destination chain. Returns null for min/max amounts if limits are unavailable.
  *     parameters:
  *       - in: query
  *         name: fromChain
