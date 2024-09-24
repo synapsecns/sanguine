@@ -4,6 +4,7 @@ package db
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"time"
 
@@ -194,7 +195,7 @@ type ActiveQuoteResponse struct {
 // FromRelayerResponse converts a model.RelayerWsQuoteResponse to an ActiveQuoteResponse.
 func FromRelayerResponse(resp *model.RelayerWsQuoteResponse, status ActiveQuoteResponseStatus) (*ActiveQuoteResponse, error) {
 	if resp.Data.RelayerAddress == nil {
-		return nil, fmt.Errorf("relayer address is nil")
+		return nil, errors.New("relayer address is nil")
 	}
 	originAmount, err := decimal.NewFromString(resp.Data.OriginAmount)
 	if err != nil {
