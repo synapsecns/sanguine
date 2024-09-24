@@ -15,7 +15,6 @@ Object.keys(providers).forEach((chainId) => {
 const lowerLimitValues = ['0.01', '0.1', '1', '10']
 const upperLimitValues = ['20000000', '1000000']
 
-// Main function to generate limits
 const generateLimits = async () => {
   for (const originChainId in bridgeLimitMap) {
     for (const originTokenAddress in bridgeLimitMap[originChainId]) {
@@ -27,7 +26,7 @@ const generateLimits = async () => {
         originTokenInfo.swappableType !== 'ETH'
       ) {
         console.log(
-          `Skipping originChainId ${originChainId} ${originTokenInfo.symbol} swapableType: (${originTokenInfo.swappableType})`
+          `Skipping originChainId ${originChainId} ${originTokenInfo.symbol} swappableType: (${originTokenInfo.swappableType})`
         )
         continue
       }
@@ -44,7 +43,7 @@ const generateLimits = async () => {
           // Iterate through the lower limit values
           for (const limitValue of lowerLimitValues) {
             try {
-              const bridgeQuotes = await fetchBridgeQuote(
+              const bridgeQuotes = await retryFetchBridgeQuote(
                 originChainId,
                 destinationChainId,
                 originTokenAddress,
@@ -82,7 +81,7 @@ const generateLimits = async () => {
 
           for (const limitValue of upperLimitValues) {
             try {
-              const bridgeQuotes = await fetchBridgeQuote(
+              const bridgeQuotes = await retryFetchBridgeQuote(
                 originChainId,
                 destinationChainId,
                 originTokenAddress,
@@ -138,7 +137,45 @@ const generateLimits = async () => {
   }
 
   // Save the result to 'limitsMap.ts'
-  prettyPrintTS(bridgeLimitMap, 'LIMITS_MAP', './constants/limitsMap.ts')
+  prettyPrintTS(
+    bridgeLimitMap,
+    'BRIDGE_LIMITS_MAP',
+    './constants/bridgeLimitsMap.ts'
+  )
+}
+
+const retryFetchBridgeQuote = async (
+  originChainId,
+  destinationChainId,
+  originTokenAddress,
+  destinationTokenAddress,
+  limitValue,
+  maxRetries = 3
+) => {
+  let attempt = 0
+  while (attempt < maxRetries) {
+    try {
+      const bridgeQuotes = await fetchBridgeQuote(
+        originChainId,
+        destinationChainId,
+        originTokenAddress,
+        destinationTokenAddress,
+        limitValue
+      )
+      return bridgeQuotes
+    } catch (error) {
+      attempt++
+      console.error(
+        `Attempt ${attempt} failed for ${originChainId} ${originTokenAddress} to ${destinationChainId} ${destinationTokenAddress}:`,
+        error
+      )
+      if (attempt === maxRetries) {
+        throw new Error(
+          `Failed after ${maxRetries} attempts for ${originChainId} ${originTokenAddress} to ${destinationChainId} ${destinationTokenAddress}`
+        )
+      }
+    }
+  }
 }
 
 // Run the generateLimits function
