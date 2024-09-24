@@ -173,7 +173,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
             rebate
         );
     }
-    
+
     /// @inheritdoc IFastBridge
     function prove(bytes memory request, bytes32 destTxHash) external {
         bytes32 transactionId = keccak256(request);

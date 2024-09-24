@@ -88,6 +88,11 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         fastBridge.bridge{value: msgValue}(params);
     }
 
+    function prove(address caller, bytes32 transactionId, bytes32 destTxHash, address relayer) public {
+        vm.prank(caller);
+        fastBridge.prove(transactionId, destTxHash, relayer);
+    }
+
     function prove(address caller, IFastBridge.BridgeTransaction memory bridgeTx, bytes32 destTxHash) public {
         vm.prank(caller);
         fastBridge.prove(abi.encode(bridgeTx), destTxHash);
@@ -364,6 +369,131 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         expectUnauthorized(caller, fastBridge.RELAYER_ROLE());
         prove({caller: caller, bridgeTx: tokenTx, destTxHash: hex"01"});
+    }
+
+    // ═══════════════════════════════════════════════════ PROVE OTHER RELAYER ═══════════════════════════════════════════════════════
+
+    function test_proveOther_token() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, relayerA);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    function test_proveOther_eth() public {
+        // bridge token first to match the nonce
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, relayerA);
+        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
+    }
+
+    // relayer self-proving using tx id, which is capable of proving for another & most tests focus on that angle.
+    function test_proveOther_self() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
+        prove({caller: relayerA, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, relayerA);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+    
+    // arbitrary non-privileged address can be asserted as the relayer
+    function test_proveOther_permless() public {
+        bytes32 txId = getTxId(tokenTx);
+
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        expectBridgeProofProvided({txId: txId, relayer: address(0x1234), destTxHash: hex"01"});
+        prove({caller: relayerA, transactionId: txId, destTxHash: hex"01", relayer: address(0x1234)});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, address(0x1234));
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    function test_proveOther_reProveAfterDispute() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        expectBridgeProofDisputed(txId, guard);
+        dispute(guard, txId);
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"02"});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"02", relayer: relayerA});
+        expectBridgeProofDisputed(txId, guard);
+        dispute(guard, txId);
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"03"});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"03", relayer: relayerA});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, relayerA);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    // can prove long after relaying as long as status is still good
+    function test_proveOther_longDelay() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(10 days);
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
+        prove({caller: relayerA, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, relayerA);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    function test_proveOther_revert_statusProved() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        vm.expectRevert(StatusIncorrect.selector);
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"02", relayer: relayerA});
+    }
+
+    function test_proveOther_revert_statusClaimed() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        skip(CLAIM_DELAY + 1);
+        claim({caller: relayerA, bridgeTx: tokenTx, to: relayerA});
+        vm.expectRevert(StatusIncorrect.selector);
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"02", relayer: relayerA});
+    }
+
+    function test_proveOther_revert_statusRefunded() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(DEADLINE + 1);
+        refund({caller: refunder, bridgeTx: tokenTx});
+        vm.expectRevert(StatusIncorrect.selector);
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+    }
+
+    function test_proveOther_revert_callerNotAuthed(address caller) public {
+        bytes32 txId = getTxId(tokenTx);
+        vm.assume(caller != relayerA && caller != relayerB);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        expectUnauthorized(caller, fastBridge.RELAYER_ROLE());
+        prove({caller: caller, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
     }
 
     // ═══════════════════════════════════════════════════ CLAIM ═══════════════════════════════════════════════════════
