@@ -220,7 +220,12 @@ jobs:
       - name: Run Foundry Tests
         if: ${{ matrix.package != 'solidity-devops' }}
         working-directory: './packages/${{matrix.package}}'
-        run: forge coverage -vvv --report lcov --report summary >> $GITHUB_STEP_SUMMARY
+        run: forge test -vvv
+
+      - name: Run Foundry Coverage
+        if: ${{ matrix.package != 'solidity-devops' }}
+        working-directory: './packages/${{matrix.package}}'
+        run: forge coverage --report lcov --report summary >> $GITHUB_STEP_SUMMARY
 
       - name: Send Coverage (Codecov)
         if: ${{ matrix.package != 'solidity-devops' }}
