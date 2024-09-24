@@ -1,11 +1,12 @@
 import { validationResult } from 'express-validator'
-import { BigNumber } from 'ethers'
-import { parseUnits } from '@ethersproject/units'
+// import { BigNumber } from 'ethers'
+// import { parseUnits } from '@ethersproject/units'
 
-import { Synapse } from '../services/synapseService'
-import { tokenAddressToToken } from '../utils/tokenAddressToToken'
-import { formatBNToString } from '../utils/formatBNToString'
-import BRIDGE_LIMITS_MAP from '../constants/limitsMap.ts'
+// import { Synapse } from '../services/synapseService'
+// import { tokenAddressToToken } from '../utils/tokenAddressToToken'
+// import { formatBNToString } from '../utils/formatBNToString'
+import { BRIDGE_LIMITS_MAP } from '../constants/bridgeLimitsMap'
+// import { BRIDGE_LIMIT_MAPPING } from '../utils/bridgeLimitMapping'
 
 export const bridgeLimitsController = async (req, res) => {
   const errors = validationResult(req)
@@ -15,25 +16,19 @@ export const bridgeLimitsController = async (req, res) => {
   try {
     const { fromChain, fromToken, toChain, toToken } = req.query
 
-    const fromTokenInfo = tokenAddressToToken(fromChain, fromToken)
-    const toTokenInfo = tokenAddressToToken(toChain, toToken)
+    // const fromTokenInfo = tokenAddressToToken(fromChain, fromToken)
+    // const toTokenInfo = tokenAddressToToken(toChain, toToken)
 
     let maxOriginAmount = null
     let minOriginAmount = null
 
-    if (
-      BRIDGE_LIMITS_MAP[fromChain][fromTokenInfo.address].routes[toChain][
-        toTokenInfo.address
-      ]
-    ) {
+    if (BRIDGE_LIMITS_MAP[fromChain][fromToken].routes[toChain][toToken]) {
       minOriginAmount =
-        BRIDGE_LIMITS_MAP[fromChain][fromTokenInfo.address].routes[toChain][
-          toTokenInfo.address
-        ].minOriginValue
+        BRIDGE_LIMITS_MAP[fromChain][fromToken].routes[toChain][toToken]
+          .minOriginValue
       maxOriginAmount =
-        BRIDGE_LIMITS_MAP[fromChain][fromTokenInfo.address].routes[toChain][
-          toTokenInfo.address
-        ].maxOriginValue
+        BRIDGE_LIMITS_MAP[fromChain][fromToken].routes[toChain][toToken]
+          .maxOriginValue
     }
 
     // const upperLimitValue = parseUnits('1000000', fromTokenInfo.decimals)

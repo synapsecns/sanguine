@@ -1,3 +1,5 @@
+import { getAddress } from '@ethersproject/address'
+
 import { BRIDGE_MAP } from '../constants/bridgeMap'
 import * as ALL_TOKENS from '../constants/bridgeable'
 
@@ -95,7 +97,7 @@ export const transformPair = (string: string): any => {
     return {
       symbol,
       chainId,
-      address,
+      address: getAddress(address),
       swapableType: token.swapableType,
     }
   }
