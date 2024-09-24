@@ -6,6 +6,10 @@ The canonical list is hosted within the SynapseCNS on [Github](https://github.co
 
 :::
 
+For event indexing, see the [SynapseBridge](https://github.com/synapsecns/synapse-contracts/blob/ed93453430635e2d43704d5599d3318c43a23033/contracts/bridge/SynapseBridge.sol#L63-L118) contract. 
+
+Events that start with `TokenMint` or `TokenWithdraw` are emitted when the bridge transaction is complete on the destination chain. The contracts that emit these events are in the deployments folder of each chain‘s `SynapseBridge.json` file.
+
 **Address**: `0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a`
 
 | Chain     | Address                                      |

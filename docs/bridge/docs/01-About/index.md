@@ -1,5 +1,4 @@
 ---
-sidebar_position: 0
 title: About
 ---
 
@@ -29,27 +28,26 @@ Synapse supports every chain and token that can be found on the [Synapse Bridge]
 
 Embed the Synapse Widget or build your own custom instance.
 
-* **[Widget](#)** – Embed a customized Synapse Bridge in your application.
-* **[Client SDK](#)** – Call Synapse Router functions from your client application.
-* **[Server SDK](#)** – Call Synapse Router functions from your remote application.
+* **[Widget](Bridge/Widget)** – Embed a customized Synapse Bridge in your application.
+* **[SDK](Bridge/SDK)** – Call Synapse Router functions from your frontend or backend application.
 
 ## Routers
 
 Synapse offers several of routers for different transaction types.
 
-* **[Synapse Router](#)** – Executable quotes for arbitrary blockchain transactions.
-* **[CCTP](#)** – Native router for USDC transactions.
-* **[RFQ](#)** – Fast router that allows on-chain agents to bid on interchain delivery.
+* **[Synapse Router](Routers/Synapse-Router)** – Executable quotes for arbitrary blockchain transactions.
+* **[CCTP](Routers/CCTP)** – Native router for USDC transactions.
+* **[RFQ](Routers/RFQ)** – Fast router that allows on-chain agents to bid on interchain delivery.
 
 ## Essential Services
 
 Bolt-on services for reliability and ease-of-use:
 
-* **[Scribe](/docs/Services/Scribe)** – Index logs, receipts and transactions across multiple chains
-* **[Omnirpc](/docs/Services/Omnirpc)** – Interchain RPC load balancer and verifier
-* **[Key management](/docs/Services/Signer)** – Support for the AWS Key Management System (KMS)
-* **[Ethergo](/docs/Services/Submitter)** – Gas management service to ensure transaction confirmation
-* **[Telemetry](/docs/Services/Observability)** – Open telemetry system for Synapse SDK
+* **[Scribe](Services/Scribe)** – Index logs, receipts and transactions across multiple chains
+* **[Omnirpc](Services/Omnirpc)** – Interchain RPC load balancer and verifier
+* **[Key management](Services/Signer)** – Support for the AWS Key Management System (KMS)
+* **[Ethergo](Services/Submitter)** – Gas management service to ensure transaction confirmation
+* **[Telemetry](Services/Observability)** – Open telemetry system for Synapse SDK
 
 
 ## Community & Support

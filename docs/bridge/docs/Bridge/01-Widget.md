@@ -1,3 +1,0 @@
-# Widget
-
-Lorem ipsum

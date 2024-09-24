@@ -1,9 +1,8 @@
 ---
-sidebar_position: 2
 sidebar_label: CCTP
 ---
 
-# CCTP
+# CCTP Router
 
 A [Synapse Router](../Synapse-Router) bridge module which uses Circle's [Cross-Chain Transfer Protocol](https://www.circle.com/en/cross-chain-transfer-protocol) to natively mint & burn USDC.
 
