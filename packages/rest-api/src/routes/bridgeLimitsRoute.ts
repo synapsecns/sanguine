@@ -4,7 +4,7 @@ import { isAddress } from '@ethersproject/address'
 
 import { CHAINS_ARRAY } from '../constants/chains'
 import { showFirstValidationError } from '../middleware/showFirstValidationError'
-import { getBridgeLimitsController } from '../controllers/bridgeLimitsController'
+import { bridgeLimitsController } from '../controllers/bridgeLimitsController'
 
 const router = express.Router()
 
@@ -35,7 +35,7 @@ router.get(
       .withMessage('Invalid toToken address'),
   ],
   showFirstValidationError,
-  getBridgeLimitsController
+  bridgeLimitsController
 )
 
 export default router

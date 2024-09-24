@@ -2,6 +2,7 @@ import request from 'supertest'
 import express from 'express'
 
 import bridgeLimitsRoute from '../routes/bridgeLimitsRoute'
+import { USDC } from '../constants/bridgeable'
 
 const app = express()
 app.use('/bridgeLimits', bridgeLimitsRoute)
@@ -10,9 +11,9 @@ describe('Get Bridge Limits Route', () => {
   it('should return min/max origin amounts for valid input', async () => {
     const response = await request(app).get('/bridgeLimits').query({
       fromChain: 1,
-      fromToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      fromToken: USDC.addresses[1],
       toChain: 10,
-      toToken: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+      toToken: USDC.addresses[10],
     })
 
     expect(response.status).toBe(200)
@@ -25,21 +26,7 @@ describe('Get Bridge Limits Route', () => {
       fromChain: '999',
       toChain: '137',
       fromToken: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
-      toToken: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
-    })
-    expect(response.status).toBe(400)
-    expect(response.body.error).toHaveProperty(
-      'message',
-      'Unsupported fromChain'
-    )
-  }, 10_000)
-
-  it('should return 400 for unsupported ', async () => {
-    const response = await request(app).get('/bridgeLimits').query({
-      fromChain: '999',
-      toChain: '137',
-      fromToken: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
-      toToken: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+      toToken: USDC.addresses[137],
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty(
@@ -52,7 +39,7 @@ describe('Get Bridge Limits Route', () => {
     const response = await request(app).get('/bridgeLimits').query({
       fromChain: '137',
       toChain: '999',
-      fromToken: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+      fromToken: USDC.addresses[137],
       toToken: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
     })
     expect(response.status).toBe(400)
@@ -63,7 +50,7 @@ describe('Get Bridge Limits Route', () => {
     const response = await request(app).get('/bridgeLimits').query({
       fromChain: '1',
       toChain: '137',
-      toToken: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
+      toToken: USDC.addresses[137],
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'fromToken')
