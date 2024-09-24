@@ -98,7 +98,7 @@ func (s *Store) UpdateActiveQuoteRequestStatus(ctx context.Context, requestID st
 	updates := map[string]interface{}{
 		"status": status,
 	}
-	if status == db.Fulfilled {
+	if status == db.Closed {
 		if quoteID == nil {
 			return fmt.Errorf("quote id is required for fulfilled status")
 		}

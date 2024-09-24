@@ -55,8 +55,8 @@ const (
 	Pending
 	// Expired means the quote request has expired without any valid responses.
 	Expired
-	// Fulfilled means the quote request has been fulfilled.
-	Fulfilled
+	// Closed means the quote request has been fulfilled.
+	Closed
 )
 
 // Int returns the int value of the quote request status.
@@ -152,8 +152,8 @@ type ActiveQuoteRequest struct {
 	ExpirationWindow time.Duration            `gorm:"column:expiration_window"`
 	CreatedAt        time.Time                `gorm:"column:created_at"`
 	Status           ActiveQuoteRequestStatus `gorm:"column:status"`
-	FulfilledAt      time.Time                `gorm:"column:fulfilled_at"`
-	FulfilledQuoteID string                   `gorm:"column:fulfilled_quote_id"`
+	ClosedAt         time.Time                `gorm:"column:fulfilled_at"`
+	ClosedQuoteID    string                   `gorm:"column:fulfilled_quote_id"`
 }
 
 // FromUserRequest converts a model.PutUserQuoteRequest to an ActiveQuoteRequest.

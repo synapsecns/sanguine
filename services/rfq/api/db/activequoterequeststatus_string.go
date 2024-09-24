@@ -11,10 +11,10 @@ func _() {
 	_ = x[Received-1]
 	_ = x[Pending-2]
 	_ = x[Expired-3]
-	_ = x[Fulfilled-4]
+	_ = x[Closed-4]
 }
 
-const _ActiveQuoteRequestStatus_name = "ReceivedPendingExpiredFulfilled"
+const _ActiveQuoteRequestStatus_name = "ReceivedPendingExpiredClosed"
 
 var _ActiveQuoteRequestStatus_index = [...]uint8{0, 8, 15, 22, 31}
 

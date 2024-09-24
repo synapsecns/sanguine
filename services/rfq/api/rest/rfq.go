@@ -153,7 +153,7 @@ func (r *QuoterAPIServer) recordActiveQuote(ctx context.Context, quote *model.Qu
 			logger.Errorf("Error updating active quote request status: %v", err)
 		}
 	} else {
-		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, &quoteID, db.Fulfilled)
+		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, &quoteID, db.Closed)
 		if err != nil {
 			logger.Errorf("Error updating active quote request status: %v", err)
 		}

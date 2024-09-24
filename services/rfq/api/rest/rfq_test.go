@@ -134,7 +134,7 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	// Verify ActiveQuoteRequest insertion
 	activeQuoteRequests, err := c.database.GetActiveQuoteRequests(c.GetTestContext())
 	c.Require().NoError(err)
-	verifyActiveQuoteRequest(c, userQuoteReq, activeQuoteRequests[0], db.Fulfilled)
+	verifyActiveQuoteRequest(c, userQuoteReq, activeQuoteRequests[0], db.Closed)
 }
 
 func (c *ServerSuite) TestActiveRFQExpiredRequest() {
@@ -280,7 +280,7 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	// Verify ActiveQuoteRequest insertion
 	activeQuoteRequests, err := c.database.GetActiveQuoteRequests(c.GetTestContext())
 	c.Require().NoError(err)
-	verifyActiveQuoteRequest(c, userQuoteReq, activeQuoteRequests[0], db.Fulfilled)
+	verifyActiveQuoteRequest(c, userQuoteReq, activeQuoteRequests[0], db.Closed)
 }
 
 func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
