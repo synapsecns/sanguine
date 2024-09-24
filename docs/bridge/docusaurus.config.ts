@@ -6,6 +6,23 @@ import type { Config } from '@docusaurus/types'
 import type * as Preset from '@docusaurus/preset-classic'
 import { codecovWebpackPlugin } from '@codecov/webpack-plugin'
 
+const options = {
+  id: 'api', // plugin id
+  docsPluginId: 'classic', // id of plugin-content-docs or preset for rendering docs
+  config: {
+    rfqapi: {
+      // the <id> referenced when running CLI commands
+      specPath: '../../services/rfq/api/docs/swagger.yaml', // path to OpenAPI spec, URLs supported
+      baseUrl: 'https://rfq-api.omnirpc.io/',
+      outputDir: 'docs/rfq/API', // output directory for generated files
+      sidebarOptions: {
+        // optional, instructs plugin to generate sidebar.js
+        groupPathsBy: 'tag', // group sidebar items by operation "tag"
+      },
+    },
+  },
+}
+
 const config: Config = {
   title: 'Synapse Bridge Docs',
   tagline: 'The future is cross-chain.',
@@ -43,8 +60,9 @@ const config: Config = {
           // Remove this to remove the "edit this page" links.
           editUrl:
             'https://github.com/synapsecns/sanguine/tree/master/docs/bridge/',
-          // docLayoutComponent: "@theme/DocPage",
+          docRootComponent: '@theme/DocRoot',
           docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
+          // docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -124,25 +142,7 @@ const config: Config = {
   } satisfies Preset.ThemeConfig,
   themes: ['docusaurus-theme-openapi-docs'], // export theme components
   plugins: [
-    [
-      'docusaurus-plugin-openapi-docs',
-      {
-        id: 'api', // plugin id
-        docsPluginId: 'classic', // id of plugin-content-docs or preset for rendering docs
-        config: {
-          rfqapi: {
-            // the <id> referenced when running CLI commands
-            specPath: '../../services/rfq/api/docs/swagger.yaml', // path to OpenAPI spec, URLs supported
-            baseUrl: 'https://rfq-api.omnirpc.io/',
-            outputDir: 'docs/rfq/API', // output directory for generated files
-            sidebarOptions: {
-              // optional, instructs plugin to generate sidebar.js
-              groupPathsBy: 'tag', // group sidebar items by operation "tag"
-            },
-          },
-        },
-      },
-    ],
+    ['docusaurus-plugin-openapi-docs', options],
     // please see: https://github.com/facebook/docusaurus/issues/8091#issuecomment-1269112001 for an explanation.
     function () {
       return {
@@ -178,4 +178,4 @@ const config: Config = {
   ],
 }
 
-export default config
+export default config satisfies Config
