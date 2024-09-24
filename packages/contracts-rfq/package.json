@@ -1,11 +1,11 @@
 {
   "name": "FastBridge",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "version": "0.4.1",
   "description": "FastBridge contracts.",
   "private": true,
   "files": [
-    "src/*.sol"
+    "contracts/**/*.sol"
   ],
   "dependencies": {
     "@openzeppelin/contracts": "5.0.1"
