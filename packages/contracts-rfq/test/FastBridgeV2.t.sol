@@ -10,7 +10,7 @@ import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol"
 import {Test} from "forge-std/Test.sol";
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
 
-// solhint-disable no-empty-blocks
+// solhint-disable no-empty-blocks, ordering
 abstract contract FastBridgeV2Test is Test {
     using stdStorage for StdStorage;
 
