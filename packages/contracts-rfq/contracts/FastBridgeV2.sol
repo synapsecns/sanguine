@@ -42,6 +42,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     uint256 public nonce;
     // @dev the block the contract was deployed at
     uint256 public immutable deployBlock;
+    // TODO: remove this
+    uint256 public IncorrectlyNamedVariable;
 
     constructor(address _owner) Admin(_owner) {
         deployBlock = block.number;
