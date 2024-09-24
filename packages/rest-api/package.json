@@ -18,6 +18,7 @@
     "test:coverage": "jest --collect-coverage"
   },
   "dependencies": {
+    "@ethersproject/address": "^5.7.0",
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/units": "5.7.0",
