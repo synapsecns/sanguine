@@ -6,6 +6,8 @@ import { showFirstValidationError } from '../middleware/showFirstValidationError
 import { bridgeLimitsController } from '../controllers/bridgeLimitsController'
 import { isTokenSupportedOnChain } from './../utils/isTokenSupportedOnChain'
 import { isTokenAddress } from '../utils/isTokenAddress'
+import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
+import { checksumAddresses } from '../middleware/checksumAddresses'
 
 const router = express.Router()
 
@@ -95,6 +97,8 @@ const router = express.Router()
  */
 router.get(
   '/',
+  normalizeNativeTokenAddress(['fromToken', 'toToken']),
+  checksumAddresses(['fromToken', 'toToken']),
   [
     check('fromChain')
       .exists()
