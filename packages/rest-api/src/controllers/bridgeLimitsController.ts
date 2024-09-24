@@ -1,12 +1,6 @@
 import { validationResult } from 'express-validator'
-// import { BigNumber } from 'ethers'
-// import { parseUnits } from '@ethersproject/units'
 
-// import { Synapse } from '../services/synapseService'
-// import { tokenAddressToToken } from '../utils/tokenAddressToToken'
-// import { formatBNToString } from '../utils/formatBNToString'
 import { BRIDGE_LIMITS_MAP } from '../constants/bridgeLimitsMap'
-// import { BRIDGE_LIMIT_MAPPING } from '../utils/bridgeLimitMapping'
 
 export const bridgeLimitsController = async (req, res) => {
   const errors = validationResult(req)
@@ -16,13 +10,10 @@ export const bridgeLimitsController = async (req, res) => {
   try {
     const { fromChain, fromToken, toChain, toToken } = req.query
 
-    // const fromTokenInfo = tokenAddressToToken(fromChain, fromToken)
-    // const toTokenInfo = tokenAddressToToken(toChain, toToken)
-
     let maxOriginAmount = null
     let minOriginAmount = null
 
-    if (BRIDGE_LIMITS_MAP[fromChain][fromToken].routes[toChain][toToken]) {
+    if (BRIDGE_LIMITS_MAP[fromChain][fromToken]) {
       minOriginAmount =
         BRIDGE_LIMITS_MAP[fromChain][fromToken].routes[toChain][toToken]
           .minOriginValue
@@ -30,83 +21,6 @@ export const bridgeLimitsController = async (req, res) => {
         BRIDGE_LIMITS_MAP[fromChain][fromToken].routes[toChain][toToken]
           .maxOriginValue
     }
-
-    // const upperLimitValue = parseUnits('1000000', fromTokenInfo.decimals)
-    // const upperLimitBridgeQuotes = await Synapse.allBridgeQuotes(
-    //   Number(fromChain),
-    //   Number(toChain),
-    //   fromTokenInfo.address,
-    //   toTokenInfo.address,
-    //   upperLimitValue
-    // )
-
-    // const lowerLimitValues = ['0.01', '10']
-    // let lowerLimitBridgeQuotes = null
-
-    // for (const limit of lowerLimitValues) {
-    //   const lowerLimitAmount = parseUnits(limit, fromTokenInfo.decimals)
-
-    //   lowerLimitBridgeQuotes = await Synapse.allBridgeQuotes(
-    //     Number(fromChain),
-    //     Number(toChain),
-    //     fromTokenInfo.address,
-    //     toTokenInfo.address,
-    //     lowerLimitAmount
-    //   )
-
-    //   if (lowerLimitBridgeQuotes && lowerLimitBridgeQuotes.length > 0) {
-    //     break
-    //   }
-    // }
-
-    // const maxBridgeAmountQuote = upperLimitBridgeQuotes.reduce(
-    //   (maxQuote, currentQuote) => {
-    //     const currentMaxAmount = currentQuote.maxAmountOut
-    //     const maxAmount = maxQuote ? maxQuote.maxAmountOut : BigNumber.from(0)
-
-    //     return currentMaxAmount.gt(maxAmount) ? currentQuote : maxQuote
-    //   },
-    //   null
-    // )
-
-    // const minBridgeAmountQuote = lowerLimitBridgeQuotes.reduce(
-    //   (minQuote, currentQuote) => {
-    //     const currentFeeAmount = currentQuote.feeAmount
-    //     const minFeeAmount = minQuote ? minQuote.feeAmount : null
-
-    //     return !minFeeAmount || currentFeeAmount.lt(minFeeAmount)
-    //       ? currentQuote
-    //       : minQuote
-    //   },
-    //   null
-    // )
-
-    // if (!maxBridgeAmountQuote || !minBridgeAmountQuote) {
-    //   return res.json({
-    //     maxOriginAmount: null,
-    //     minOriginAmount: null,
-    //   })
-    // }
-
-    // const maxAmountOriginQueryTokenOutInfo = tokenAddressToToken(
-    //   toChain,
-    //   maxBridgeAmountQuote.destQuery.tokenOut
-    // )
-
-    // const minAmountOriginQueryTokenOutInfo = tokenAddressToToken(
-    //   fromChain,
-    //   minBridgeAmountQuote.originQuery.tokenOut
-    // )
-
-    // maxOriginAmount = formatBNToString(
-    //   maxBridgeAmountQuote.maxAmountOut,
-    //   maxAmountOriginQueryTokenOutInfo.decimals
-    // )
-
-    // minOriginAmount = formatBNToString(
-    //   minBridgeAmountQuote.feeAmount,
-    //   minAmountOriginQueryTokenOutInfo.decimals
-    // )
 
     return res.json({
       maxOriginAmount: processAmount(maxOriginAmount),
