@@ -12,8 +12,6 @@
   },
   "devDependencies": {
     "@synapsecns/solidity-devops": "^0.4.5",
-    "prettier": "^2.5.1",
-    "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "5.0.3"
   },
   "scripts": {
@@ -23,14 +21,11 @@
     "test:coverage": "echo 'Please use foundry'",
     "test": "forge test",
     "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{contracts,script,test}/**/*.sol'",
-    "lint": "forge fmt && npm run prettier && npm run solhint",
+    "lint": "forge fmt && npm run solhint",
     "ci:lint": "yarn lint",
     "build:go": "./flatten.sh contracts/*.sol test/*.sol",
-    "prettier": "prettier --write **.sol",
-    "prettier:list": "prettier --list-different **.sol",
-    "prettier:check": "prettier --check **.sol",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
     "solhint:check": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "lint:check": "npm run prettier:check && npm run solhint:check"
+    "lint:check": "npm run solhint:check"
   }
 }
