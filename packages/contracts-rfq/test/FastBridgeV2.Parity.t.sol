@@ -32,8 +32,8 @@ contract FastBridgeV2ParityTest is FastBridgeTest {
         vm.warp(block.timestamp + 31 minutes);
         vm.prank(relayer);
         fastBridge.prove(request, bytes32("0x04"));
-        // TODO: uncomment
-        // vm.expectRevert(abi.encodeWithSelector(SenderIncorrect.selector));
+
+        vm.expectRevert(abi.encodeWithSelector(SenderIncorrect.selector));
         vm.prank(anotherRelayer);
         fastBridge.claim(request, relayer);
     }
