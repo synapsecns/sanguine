@@ -28,26 +28,26 @@ Synapse supports every chain and token that can be found on the [Synapse Bridge]
 
 Embed the Synapse Widget or build your own custom instance.
 
-* **[Widget](Bridge/Widget)** – Embed a customized Synapse Bridge in your application.
-* **[SDK](Bridge/SDK)** – Call Synapse Router functions from your frontend or backend application.
+* **[Widget](/docs/Bridge/Widget)** – Embed a customized Synapse Bridge in your application.
+* **[SDK](/docs/Bridge/SDK)** – Call Synapse Router functions from your frontend or backend application.
 
 ## Routers
 
 Synapse offers several of routers for different transaction types.
 
-* **[Synapse Router](Routers/Synapse-Router)** – Executable quotes for arbitrary blockchain transactions.
-* **[CCTP](Routers/CCTP)** – Native router for USDC transactions.
-* **[RFQ](Routers/RFQ)** – Fast router that allows on-chain agents to bid on interchain delivery.
+* **[Synapse Router](/docs/Routers/Synapse-Router)** – Executable quotes for arbitrary blockchain transactions.
+* **[CCTP](/docs/Routers/CCTP)** – Native router for USDC transactions.
+* **[RFQ](/docs/Routers/RFQ)** – Fast router that allows on-chain agents to bid on interchain delivery.
 
 ## Essential Services
 
 Bolt-on services for reliability and ease-of-use:
 
-* **[Scribe](Services/Scribe)** – Index logs, receipts and transactions across multiple chains
-* **[Omnirpc](Services/Omnirpc)** – Interchain RPC load balancer and verifier
-* **[Key management](Services/Signer)** – Support for the AWS Key Management System (KMS)
-* **[Ethergo](Services/Submitter)** – Gas management service to ensure transaction confirmation
-* **[Telemetry](Services/Observability)** – Open telemetry system for Synapse SDK
+* **[Scribe](/docs/Services/Scribe)** – Index logs, receipts and transactions across multiple chains
+* **[Omnirpc](/docs/Services/Omnirpc)** – Interchain RPC load balancer and verifier
+* **[Key management](/docs/Services/Signer)** – Support for the AWS Key Management System (KMS)
+* **[Ethergo](/docs/Services/Submitter)** – Gas management service to ensure transaction confirmation
+* **[Telemetry](/docs/Services/Observability)** – Open telemetry system for Synapse SDK
 
 
 ## Community & Support

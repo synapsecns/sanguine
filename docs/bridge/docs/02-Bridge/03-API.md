@@ -4,7 +4,7 @@ title: API
 
 :::warning
 
-The [previous version](synapse-rest-api-v2.herokuapp.com/) is no longer maintained and will be fully deprecated by October 2024.
+The [previous version](https://synapse-rest-api-v2.herokuapp.com/) is no longer maintained and will be fully deprecated by October 2024.
 
 :::
 
@@ -21,7 +21,7 @@ Get read-only data from on-chain Synapse contracts, and generate Bridge and Swap
 
 ## Base URL
 
-[`https://api.synapseprotocol.com/`](https://api.synapseprotocol.com/)
+[`api.synapseprotocol.com/`](https://api.synapseprotocol.com/)
 
 ## GET Endpoints
 
@@ -31,10 +31,10 @@ Get a token swap quote.
 
 #### Parameters
 
-* `chain` (int): `chainId` of the desired chain
-* `fromToken` (string): Address of token to swap from
-* `toToken` (string): Address of token to swap to 
-* `amount` (int): Amount of `fromToken` to swap
+* `chain` (int): `chainId` of the desired chain.
+* `fromToken` (string): Address of token to swap from.
+* `toToken` (string): Address of token to swap to.
+* `amount` (int): Amount of `fromToken` to swap.
 
 #### Returns
 
@@ -57,7 +57,7 @@ Get a token swap quote.
 
 #### Example
 
-[`api.synapseprotocol.com/swap?chain=1&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=100`](https://api.synapseprotocol.com/swap?chain=1&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=100)
+[`https://api.synapseprotocol.com/swap?chain=1&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=100`](https://api.synapseprotocol.com/swap?chain=1&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=100)
 
 ### `/bridge`
 
@@ -95,7 +95,7 @@ Get a token bridge quote.
 
 #### Example
 
-[`/bridge?fromChain=1&toChain=10&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=1000000`](api.synapseprotol.com/bridge?fromChain=1&toChain=10&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=1000000)
+[`/bridge?fromChain=1&toChain=10&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=1000000`](https://api.synapseprotol.com/bridge?fromChain=1&toChain=10&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=1000000)
 
 ### `/swapTxInfo`
 
@@ -103,8 +103,8 @@ Get transaction data for executing a swap.
 
 #### Parameters
 
-* [`/swap`](#get-swap) parameters plus:
-  * `address`: Address attempting to swap assets.
+* [`/swap`](#swap) parameters plus:
+* `address`: Address attempting to swap assets.
 
 #### Returns
 
@@ -120,7 +120,7 @@ Used to get transaction data for executing a bridge.
 
 #### Parameters
 
-* [`/bridge`](#get-bridge) parameters plus:
+* [`/bridge`](#bridge) parameters plus:
   * `destAddress`: Address attempting to receive assets.
 
 #### Returns
