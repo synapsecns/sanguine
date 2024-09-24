@@ -14,7 +14,7 @@
     "@synapsecns/solidity-devops": "^0.4.5",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
-    "solhint": "^3.3.6"
+    "solhint": "5.0.3"
   },
   "scripts": {
     "build": " ",
