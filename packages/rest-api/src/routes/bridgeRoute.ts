@@ -8,6 +8,7 @@ import { bridgeController } from '../controllers/bridgeController'
 import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 import { checksumAddresses } from '../middleware/checksumAddresses'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
+import { validateRouteExists } from '../validations/validateRouteExists'
 
 const router = express.Router()
 
@@ -222,6 +223,13 @@ router.get(
       )
       .withMessage('Token not supported on specified chain'),
     check('amount').isNumeric().exists().withMessage('amount is required'),
+    check()
+      .custom((_value, { req }) => {
+        const { fromChain, toChain, fromToken, toToken } = req.query
+
+        return validateRouteExists(fromChain, fromToken, toChain, toToken)
+      })
+      .withMessage('No valid route exists for the chain/token combination'),
   ],
   showFirstValidationError,
   bridgeController
