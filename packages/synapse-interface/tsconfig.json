@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -18,129 +14,47 @@
     "isolatedModules": true,
     "incremental": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@actions": [
-        "./actions"
-      ],
-      "@actions/*": [
-        "./actions/*"
-      ],
-      "@assets/": [
-        "./assets"
-      ],
-      "@assets/icons/": [
-        "./assets/icons"
-      ],
-      "@assets/networks/": [
-        "./assets/networks"
-      ],
-      "@assets/*": [
-        "./assets/*"
-      ],
-      "@components": [
-        "./components"
-      ],
-      "@components/*": [
-        "./components/*"
-      ],
-      "@contexts": [
-        "./contexts"
-      ],
-      "@contexts/*": [
-        "./contexts/*"
-      ],
-      "@tw": [
-        "./components/ui/tailwind"
-      ],
-      "@tw/*": [
-        "./components/ui/tailwind/*"
-      ],
-      "@layouts": [
-        "./components/layouts"
-      ],
-      "@layouts/*": [
-        "./components/layouts/*"
-      ],
-      "@icons": [
-        "./components/icons"
-      ],
-      "@icons/*": [
-        "./components/icons/*"
-      ],
-      "@urls": [
-        "./constants/urls"
-      ],
-      "@urls/*": [
-        "./constants/urls/*"
-      ],
-      "@utils": [
-        "./utils"
-      ],
-      "@utils/*": [
-        "./utils/*"
-      ],
-      "@constants": [
-        "./constants"
-      ],
-      "@constants/*": [
-        "./constants/*"
-      ],
-      "@graphql": [
-        "./graphql"
-      ],
-      "@graphql/*": [
-        "./graphql/*"
-      ],
-      "@abis": [
-        "./constants/abis"
-      ],
-      "@abis/*": [
-        "./constants/abis/*"
-      ],
-      "@styles": [
-        "./styles"
-      ],
-      "@styles/*": [
-        "./styles/*"
-      ],
-      "@pages": [
-        "./pages"
-      ],
-      "@pages/*": [
-        "./pages/*"
-      ],
-      "@hooks": [
-        "./utils/hooks"
-      ],
-      "@hooks/*": [
-        "./utils/hooks/*"
-      ],
-      "@bignumber": [
-        "./utils/bignumber"
-      ],
-      "@bignumber/*": [
-        "./utils/bignumber/*"
-      ],
-      "@slices": [
-        "./slices"
-      ],
-      "@slices/*": [
-        "./slices/*"
-      ],
-      "@store": [
-        "./store"
-      ],
-      "@store/*": [
-        "./store/*"
-      ],
-      "@types": [
-        "./utils/types"
-      ],
-      "@types/*": [
-        "./utils/types/*"
-      ]
+      "@/*": ["./*"],
+      "@actions": ["./actions"],
+      "@actions/*": ["./actions/*"],
+      "@assets/": ["./assets"],
+      "@assets/icons/": ["./assets/icons"],
+      "@assets/networks/": ["./assets/networks"],
+      "@assets/*": ["./assets/*"],
+      "@components": ["./components"],
+      "@components/*": ["./components/*"],
+      "@contexts": ["./contexts"],
+      "@contexts/*": ["./contexts/*"],
+      "@tw": ["./components/ui/tailwind"],
+      "@tw/*": ["./components/ui/tailwind/*"],
+      "@layouts": ["./components/layouts"],
+      "@layouts/*": ["./components/layouts/*"],
+      "@icons": ["./components/icons"],
+      "@icons/*": ["./components/icons/*"],
+      "@urls": ["./constants/urls"],
+      "@urls/*": ["./constants/urls/*"],
+      "@utils": ["./utils"],
+      "@utils/*": ["./utils/*"],
+      "@constants": ["./constants"],
+      "@constants/*": ["./constants/*"],
+      "@graphql": ["./graphql"],
+      "@graphql/*": ["./graphql/*"],
+      "@abis": ["./constants/abis"],
+      "@abis/*": ["./constants/abis/*"],
+      "@styles": ["./styles"],
+      "@styles/*": ["./styles/*"],
+      "@pages": ["./pages"],
+      "@pages/*": ["./pages/*"],
+      "@hooks": ["./utils/hooks"],
+      "@hooks/*": ["./utils/hooks/*"],
+      "@bignumber": ["./utils/bignumber"],
+      "@bignumber/*": ["./utils/bignumber/*"],
+      "@slices": ["./slices"],
+      "@slices/*": ["./slices/*"],
+      "@store": ["./store"],
+      "@store/*": ["./store/*"],
+      "@types": ["./utils/types"],
+      "@types/*": ["./utils/types/*"]
     },
     "jsx": "preserve"
   },
@@ -150,7 +64,5 @@
     "**/*.tsx",
     "scripts/utils/fetchBridgeQuote.js"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
