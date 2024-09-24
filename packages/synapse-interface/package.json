@@ -22,7 +22,6 @@
     "build:slither": " ",
     "graphql:generate": "graphql-codegen --config codegen.ts",
     "maps:generate": "node scripts/generateMaps.js",
-    "limits:generate": "node scripts/generateLimits.js",
     "test": "echo 'No jest tests defined.'"
   },
   "dependencies": {
