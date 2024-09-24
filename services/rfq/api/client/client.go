@@ -271,7 +271,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 	}()
 
 	readChan := make(chan []byte)
-	go c.listenWsMessages(conn, readChan)
+	go c.listenWsMessages(ctx, conn, readChan)
 
 	for {
 		select {
@@ -297,7 +297,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 	}
 }
 
-func (c *clientImpl) listenWsMessages(conn *websocket.Conn, readChan chan []byte) {
+func (c *clientImpl) listenWsMessages(ctx context.Context, conn *websocket.Conn, readChan chan []byte) {
 	defer close(readChan)
 	for {
 		_, message, err := conn.ReadMessage()
@@ -307,7 +307,11 @@ func (c *clientImpl) listenWsMessages(conn *websocket.Conn, readChan chan []byte
 			}
 			return
 		}
-		readChan <- message
+		select {
+		case readChan <- message:
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
@@ -320,8 +324,13 @@ func (c *clientImpl) handleWsMessage(ctx context.Context, msg []byte, reqChan, r
 
 	// automatically send the pong
 	if rfqMsg.Op == rest.PingOp {
-		reqChan <- &model.ActiveRFQMessage{
+		pongMsg := model.ActiveRFQMessage{
 			Op: rest.PongOp,
+		}
+		select {
+		case reqChan <- &pongMsg:
+		case <-ctx.Done():
+			return nil
 		}
 		return nil
 	}
