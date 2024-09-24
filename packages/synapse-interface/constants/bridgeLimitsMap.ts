@@ -329,7 +329,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '1001167.707844',
+            maxOriginValue: '1001143.918647',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
@@ -339,7 +339,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755732.802476',
+            maxOriginValue: '755661.937159',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
@@ -366,7 +366,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880475',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -378,29 +378,29 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '955289.4122466501',
+            maxOriginValue: '913511.8796884354',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '984275.4633844519',
+            maxOriginValue: '962051.2100293178',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '541989.7042859381',
+            maxOriginValue: '558272.8236606829',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '313657.253667',
+            maxOriginValue: '344505.552112',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.5459809404',
+            maxOriginValue: '339153.6834935281',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -410,14 +410,14 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300918.314212',
+            maxOriginValue: '334342.015032',
           },
         },
         '250': {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '1003290.7393366966',
+            maxOriginValue: '1003267.301148833',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
@@ -456,55 +456,55 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372601',
+            maxOriginValue: '504541.896941',
           },
         },
         '1284': {
           '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '1002989.7220131633',
+            maxOriginValue: '1002966.2908574592',
           },
         },
         '1285': {
           '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '1003290.7393366966',
+            maxOriginValue: '1003267.301148833',
           },
         },
         '2000': {
           '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6': {
             symbol: 'FRAX',
             minOriginValue: '1',
-            maxOriginValue: '1003290.7393366966',
+            maxOriginValue: '1003267.301148833',
           },
           '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A': {
             symbol: 'USDT',
             minOriginValue: '0.3',
-            maxOriginValue: '999994.45518',
+            maxOriginValue: '1000083.159436',
           },
           '0x85C2D3bEBffD83025910985389aB8aD655aBC946': {
             symbol: 'USDC',
             minOriginValue: '0.3',
-            maxOriginValue: '1000170.822296',
+            maxOriginValue: '1000150.686935',
           },
           '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC': {
             symbol: 'DAI',
             minOriginValue: '0.2',
-            maxOriginValue: '1000095.753088326',
+            maxOriginValue: '1000094.4199303052',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '75285.3192455807',
+            maxOriginValue: '82519.82576640401',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57267.25773',
+            maxOriginValue: '58463.254238',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -514,24 +514,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9381.409072',
+            maxOriginValue: '9252.540984',
           },
         },
         '8217': {
           '0x078dB7827a5531359f6CB63f62CFA20183c4F10c': {
             symbol: 'DAI',
             minOriginValue: '1',
-            maxOriginValue: '1000696.4111982889',
+            maxOriginValue: '1000695.0772395727',
           },
           '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '1000771.525493',
+            maxOriginValue: '1000751.378038',
           },
           '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '1000595.05245',
+            maxOriginValue: '1000683.809982',
           },
         },
         '8453': {
@@ -575,12 +575,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1765770.328364',
+            maxOriginValue: '1758013.018583',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741294.573115',
+            maxOriginValue: '1772179.656052',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
@@ -592,7 +592,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '223625.269118',
+            maxOriginValue: '226278.26094',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
@@ -602,7 +602,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '252262.941791',
+            maxOriginValue: '248208.654114',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -630,7 +630,7 @@ export const BRIDGE_LIMITS_MAP = {
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '4.083943',
+            minOriginValue: '7.265655',
             maxOriginValue: null,
           },
         },
@@ -643,13 +643,13 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428536.61470818834',
+            maxOriginValue: '429572.1654418392',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '4.036006',
+            minOriginValue: '6.44139',
             maxOriginValue: null,
           },
         },
@@ -674,7 +674,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '1003290.7393366966',
+            maxOriginValue: '1003267.301148833',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
@@ -725,100 +725,100 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '445521.809608',
+            maxOriginValue: '449993.327619',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '181125.26339218713',
+            maxOriginValue: '449218.6019769143',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '181222.604582',
+            maxOriginValue: '448715.764528',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '177693.60610302558',
+            maxOriginValue: '210222.559947816',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '445402.399228',
+            maxOriginValue: '446112.322173',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '143089.244249545',
+            maxOriginValue: '137006.94025891664',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '444742.4652189085',
+            maxOriginValue: '449038.8426323857',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880406',
+            maxOriginValue: '3626.261689',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '444742.4652189085',
+            maxOriginValue: '449038.8426323857',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '444588.7011313107',
+            maxOriginValue: '448765.6308042676',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '444628.2806431263',
+            maxOriginValue: '448842.0983021353',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '441593.69891817565',
+            maxOriginValue: '446231.33094206464',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '313140.763159',
+            maxOriginValue: '449780.518038',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '357697.26211754425',
+            maxOriginValue: '338545.2471747869',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '302307.46105395234',
+            maxOriginValue: '449038.8426323857',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300466.193607',
+            maxOriginValue: '449675.128212',
           },
         },
         '250': {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '446666.88970213034',
+            maxOriginValue: '450976.06213761977',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '444742.4652189085',
+            maxOriginValue: '449038.8426323857',
           },
         },
         '288': {
@@ -835,133 +835,133 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '444920.5046365302',
+            maxOriginValue: '449218.6019769143',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339948033133',
+            maxOriginValue: '846.3339948229485',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '444920.5046365302',
+            maxOriginValue: '449218.6019769143',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '444061.034665',
+            maxOriginValue: '448389.896599',
           },
         },
         '1284': {
           '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '446532.8762338729',
+            maxOriginValue: '450840.75578834355',
           },
         },
         '1285': {
           '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '446666.88970213034',
+            maxOriginValue: '450976.06213761977',
           },
         },
         '2000': {
           '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6': {
             symbol: 'FRAX',
             minOriginValue: '1',
-            maxOriginValue: '446666.88970213034',
+            maxOriginValue: '450976.06213761977',
           },
           '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A': {
             symbol: 'USDT',
             minOriginValue: '0.3',
-            maxOriginValue: '445182.954128',
+            maxOriginValue: '449523.805067',
           },
           '0x85C2D3bEBffD83025910985389aB8aD655aBC946': {
             symbol: 'USDC',
             minOriginValue: '0.3',
-            maxOriginValue: '445254.389554',
+            maxOriginValue: '449549.742263',
           },
           '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC': {
             symbol: 'DAI',
             minOriginValue: '0.2',
-            maxOriginValue: '445151.08176165115',
+            maxOriginValue: '449450.68250671605',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '75238.64979268338',
+            maxOriginValue: '82472.52325926775',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57262.672986',
+            maxOriginValue: '58474.656757',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '444742.4652189085',
+            maxOriginValue: '449038.8426323857',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9381.383416',
+            maxOriginValue: '9252.522557',
           },
         },
         '8217': {
           '0x078dB7827a5531359f6CB63f62CFA20183c4F10c': {
             symbol: 'DAI',
             minOriginValue: '1',
-            maxOriginValue: '445418.43976871524',
+            maxOriginValue: '449720.62285656994',
           },
           '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '445521.809608',
+            maxOriginValue: '449819.742109',
           },
           '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '445450.331277',
+            maxOriginValue: '449793.789334',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197463.31466135726',
+            maxOriginValue: '195703.98529416916',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '3.78838',
-            maxOriginValue: '445521.809608',
+            minOriginValue: '4',
+            maxOriginValue: '449819.742109',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '103987.143551',
+            maxOriginValue: '103866.189957',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '445521.809608',
+            maxOriginValue: '449819.742109',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '444912.3204793033',
+            maxOriginValue: '449218.6019769143',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -971,62 +971,62 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '444892.363645',
+            maxOriginValue: '449729.77816',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '444881.208773',
+            maxOriginValue: '449760.694821',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '3.770487',
-            maxOriginValue: '445521.809608',
+            minOriginValue: '4',
+            maxOriginValue: '449819.742109',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '223489.549756',
+            maxOriginValue: '449600.019016',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.505932',
+            maxOriginValue: '69500.246224',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '252127.966944',
+            maxOriginValue: '449819.742109',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '169939.42058310975',
+            maxOriginValue: '449038.8426323857',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.063528',
+            maxOriginValue: '63349.97558',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63894.87797040453',
+            maxOriginValue: '63895.13339571072',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '445055.4011184002',
+            maxOriginValue: '449353.4214853107',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '3.797335',
+            minOriginValue: '6.349416',
             maxOriginValue: null,
           },
         },
@@ -1034,18 +1034,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '445055.4011184002',
+            maxOriginValue: '449353.4214853107',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '424652.28000022564',
+            maxOriginValue: '426162.44668481493',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '3.796365',
+            minOriginValue: '6.355396',
             maxOriginValue: null,
           },
         },
@@ -1053,7 +1053,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '444921.8711450674',
+            maxOriginValue: '449218.6019769143',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -1070,12 +1070,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '446666.88970213034',
+            maxOriginValue: '450976.06213761977',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '444743.83118062356',
+            maxOriginValue: '449038.8426323857',
           },
         },
       },
@@ -1100,101 +1100,101 @@ export const BRIDGE_LIMITS_MAP = {
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '3.783287',
-            maxOriginValue: '999366.729869',
+            minOriginValue: '4',
+            maxOriginValue: '999743.664171',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '19947726.878169008',
+            maxOriginValue: '19947864.367728118',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755732.797052',
+            maxOriginValue: '755661.931752',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '177693.60610302558',
+            maxOriginValue: '164080.37136422665',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '508255.004009',
+            maxOriginValue: '417314.09938',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '143088.9413238188',
+            maxOriginValue: '135772.7880178798',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '19939744.594504274',
+            maxOriginValue: '19939882.029045556',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880475',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '19939744.594504274',
+            maxOriginValue: '19939882.029045556',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '955236.0816162192',
+            maxOriginValue: '913511.8701385867',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '984275.453451578',
+            maxOriginValue: '962051.1999329586',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '542042.9572665126',
+            maxOriginValue: '558272.8179858624',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '313657.253098',
+            maxOriginValue: '344148.795365',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.5453288202',
+            maxOriginValue: '339153.68296412815',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '19939744.594504274',
+            maxOriginValue: '19939882.029045556',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300918.313667',
+            maxOriginValue: '334698.754159',
           },
         },
         '250': {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '2984161.0566875376',
+            maxOriginValue: '2918011.0340807936',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '19939744.594504274',
+            maxOriginValue: '19939882.029045556',
           },
         },
         '288': {
@@ -1211,7 +1211,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '19947726.878169008',
+            maxOriginValue: '19947864.367728118',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
@@ -1223,43 +1223,43 @@ export const BRIDGE_LIMITS_MAP = {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '19947726.878169008',
+            maxOriginValue: '19947864.367728118',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372073',
+            maxOriginValue: '504541.896413',
           },
         },
         '1284': {
           '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '2983265.718836746',
+            maxOriginValue: '2917135.5432214835',
           },
         },
         '1285': {
           '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '2984161.0566875376',
+            maxOriginValue: '2918011.0340807936',
           },
         },
         '2000': {
           '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6': {
             symbol: 'FRAX',
             minOriginValue: '1',
-            maxOriginValue: '2984161.0566875376',
+            maxOriginValue: '2918011.0340807936',
           },
           '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A': {
             symbol: 'USDT',
             minOriginValue: '0.3',
-            maxOriginValue: '2974756.429592',
+            maxOriginValue: '2909160.670385',
           },
           '0x85C2D3bEBffD83025910985389aB8aD655aBC946': {
             symbol: 'USDC',
             minOriginValue: '0.3',
-            maxOriginValue: '2975440.295941',
+            maxOriginValue: '2909474.731943',
           },
           '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC': {
             symbol: 'DAI',
@@ -1271,22 +1271,22 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '75285.31914107488',
+            maxOriginValue: '82519.82566211022',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57304.871892',
+            maxOriginValue: '58454.241979',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '19939744.594504274',
+            maxOriginValue: '19939882.029045556',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9381.409072',
+            maxOriginValue: '9279.536864',
           },
         },
         '8217': {
@@ -1298,46 +1298,46 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '2977227.34717',
+            maxOriginValue: '2911222.164215',
           },
           '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '2976543.07009',
+            maxOriginValue: '2910907.812738',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197453.37784622872',
+            maxOriginValue: '195401.815404853',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '3.916714',
-            maxOriginValue: '999366.729869',
+            minOriginValue: '4',
+            maxOriginValue: '999350.186754',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104031.891688',
+            maxOriginValue: '104125.802286',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '999366.729869',
+            maxOriginValue: '999350.186754',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '19947726.878169008',
+            maxOriginValue: '19947864.367728118',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -1347,62 +1347,62 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1765770.265912',
+            maxOriginValue: '1758012.95733',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741294.511619',
+            maxOriginValue: '1772179.594231',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '3.843091',
-            maxOriginValue: '999366.729869',
+            minOriginValue: '4',
+            maxOriginValue: '999350.186754',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '223625.268959',
+            maxOriginValue: '226278.260779',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.521351',
+            maxOriginValue: '69500.261325',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '252262.941612',
+            maxOriginValue: '248208.653937',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '19939744.594504274',
+            maxOriginValue: '19939882.029045556',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.077199',
+            maxOriginValue: '63349.988058',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63894.89138401501',
+            maxOriginValue: '63895.146087799934',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '19953713.590917557',
+            maxOriginValue: '19953851.121740043',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '4.129195',
+            minOriginValue: '7.368607',
             maxOriginValue: null,
           },
         },
@@ -1410,18 +1410,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '19953713.590917557',
+            maxOriginValue: '19953851.121740043',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428536.614156941',
+            maxOriginValue: '429572.1648922236',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '4.127614',
+            minOriginValue: '7.549439',
             maxOriginValue: null,
           },
         },
@@ -1429,7 +1429,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '19947726.878169008',
+            maxOriginValue: '19947864.367728118',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -1446,12 +1446,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '2984161.0566875376',
+            maxOriginValue: '2918011.0340807936',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '19939744.594504274',
+            maxOriginValue: '19939882.029045556',
           },
         },
       },
@@ -1894,100 +1894,100 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999600',
+            maxOriginValue: '999992.614387',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '19945636.995136674',
+            maxOriginValue: '19946256.79817611',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755732.796795',
+            maxOriginValue: '755661.931554',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '181337.14923032426',
+            maxOriginValue: '164024.36586452965',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '508255.004023',
+            maxOriginValue: '417925.802122',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '143104.0234202249',
+            maxOriginValue: '135872.08481362034',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '19937655.54775967',
+            maxOriginValue: '19938275.10277868',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880475',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '19937655.54775967',
+            maxOriginValue: '19938275.10277868',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '955236.08115629',
+            maxOriginValue: '913511.8697895413',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '984275.4529765629',
+            maxOriginValue: '962051.1995639366',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '542042.9570139158',
+            maxOriginValue: '558272.8177784557',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '313657.253071',
+            maxOriginValue: '344148.795345',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.5452979297',
+            maxOriginValue: '339153.682944646',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '19937655.54775967',
+            maxOriginValue: '19938275.10277868',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300918.313641',
+            maxOriginValue: '334698.75414',
           },
         },
         '250': {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '20006201.229943715',
+            maxOriginValue: '20006136.641710963',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '19937655.54775967',
+            maxOriginValue: '19938275.10277868',
           },
         },
         '288': {
@@ -2004,7 +2004,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '19945636.995136674',
+            maxOriginValue: '19946256.79817611',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
@@ -2016,38 +2016,38 @@ export const BRIDGE_LIMITS_MAP = {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '19945636.995136674',
+            maxOriginValue: '19946256.79817611',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372047',
+            maxOriginValue: '504541.896394',
           },
         },
         '1284': {
           '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '20000198.769328672',
+            maxOriginValue: '20000134.20047433',
           },
         },
         '1285': {
           '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '20006201.229943715',
+            maxOriginValue: '20006136.641710963',
           },
         },
         '2000': {
           '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6': {
             symbol: 'FRAX',
             minOriginValue: '1',
-            maxOriginValue: '20006201.229943715',
+            maxOriginValue: '20006136.641710963',
           },
           '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A': {
             symbol: 'USDT',
             minOriginValue: '0.3',
-            maxOriginValue: '9005272.157005',
+            maxOriginValue: '12112569.854875',
           },
           '0x85C2D3bEBffD83025910985389aB8aD655aBC946': {
             symbol: 'USDC',
@@ -2057,36 +2057,36 @@ export const BRIDGE_LIMITS_MAP = {
           '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC': {
             symbol: 'DAI',
             minOriginValue: '0.2',
-            maxOriginValue: '2691533.336019992',
+            maxOriginValue: '2690467.9416614124',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '75285.31913612457',
+            maxOriginValue: '82519.82565829842',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57263.231907',
+            maxOriginValue: '58357.881386',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '19937655.54775967',
+            maxOriginValue: '19938275.10277868',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9381.409072',
+            maxOriginValue: '9253.505012',
           },
         },
         '8217': {
           '0x078dB7827a5531359f6CB63f62CFA20183c4F10c': {
             symbol: 'DAI',
             minOriginValue: '1',
-            maxOriginValue: '2693149.872558142',
+            maxOriginValue: '2692083.8383230707',
           },
           '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C': {
             symbol: 'USDC',
@@ -2096,29 +2096,29 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9010680.728871',
+            maxOriginValue: '12119844.671605',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197453.38244692876',
+            maxOriginValue: '195401.7395501586',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '3.817778',
+            minOriginValue: '4',
             maxOriginValue: '999600',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104031.893728',
+            maxOriginValue: '104125.807991',
           },
         },
         '42161': {
@@ -2130,7 +2130,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '19945636.995136674',
+            maxOriginValue: '19946256.79817611',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -2140,16 +2140,16 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1765770.262952',
+            maxOriginValue: '1758012.955091',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741294.508707',
+            maxOriginValue: '1772179.591971',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '3.820288',
+            minOriginValue: '4',
             maxOriginValue: '999600',
           },
         },
@@ -2157,45 +2157,45 @@ export const BRIDGE_LIMITS_MAP = {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '223625.268951',
+            maxOriginValue: '226278.260773',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.521352',
+            maxOriginValue: '69500.261327',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '252262.941604',
+            maxOriginValue: '248208.653931',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '19937655.54775967',
+            maxOriginValue: '19938275.10277868',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.0772',
+            maxOriginValue: '63349.98806',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63894.891385440795',
+            maxOriginValue: '63895.1460892764',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '19951623.08066943',
+            maxOriginValue: '19952243.06972418',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '3.698068',
+            minOriginValue: '8.074313',
             maxOriginValue: null,
           },
         },
@@ -2203,18 +2203,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '19951623.08066943',
+            maxOriginValue: '19952243.06972418',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428536.6141308283',
+            maxOriginValue: '429572.1648721353',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '3.696413',
+            minOriginValue: '8.083921',
             maxOriginValue: null,
           },
         },
@@ -2222,7 +2222,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '19945636.995136674',
+            maxOriginValue: '19946256.79817611',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -2239,12 +2239,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '20006201.229943715',
+            maxOriginValue: '20006136.641710963',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '19937655.54775967',
+            maxOriginValue: '19938275.10277868',
           },
         },
       },
@@ -2303,7 +2303,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.3424390720479',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -2313,7 +2313,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.3424390720479',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -2344,7 +2344,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.92641487577436',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -2384,12 +2384,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '406.39370961428784',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '406.39370961428784',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -2406,12 +2406,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '974.1586377762364',
+            maxOriginValue: '993.1431705533487',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '974.1586377762364',
+            maxOriginValue: '993.1431705533487',
           },
         },
         '43114': {
@@ -2423,7 +2423,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -2436,7 +2436,7 @@ export const BRIDGE_LIMITS_MAP = {
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00137375076922377',
+            minOriginValue: '0.0032854203867522',
             maxOriginValue: null,
           },
         },
@@ -2444,12 +2444,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.46335346059453',
+            maxOriginValue: '396.0074514454232',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.000015',
-            maxOriginValue: '410.46335346059453',
+            maxOriginValue: '396.0074514454232',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -2460,7 +2460,7 @@ export const BRIDGE_LIMITS_MAP = {
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00137289878751627',
+            minOriginValue: '0.0032891070651597',
             maxOriginValue: null,
           },
         },
@@ -2481,7 +2481,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.3424390720479',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -2491,7 +2491,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.3424390720479',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -2522,7 +2522,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.92641487577436',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -2562,12 +2562,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '406.39370961428784',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '406.39370961428784',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -2584,12 +2584,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '974.1518602808673',
+            maxOriginValue: '993.1431705533487',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '974.1518602808673',
+            maxOriginValue: '993.1431705533487',
           },
         },
         '43114': {
@@ -2601,7 +2601,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -2614,7 +2614,7 @@ export const BRIDGE_LIMITS_MAP = {
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00142084461998988',
+            minOriginValue: '0.0032848574560047',
             maxOriginValue: null,
           },
         },
@@ -2622,12 +2622,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.46335346059453',
+            maxOriginValue: '396.0074514454232',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.000015',
-            maxOriginValue: '410.46335346059453',
+            maxOriginValue: '396.0074514454232',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -2638,7 +2638,7 @@ export const BRIDGE_LIMITS_MAP = {
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00142025136917238',
+            minOriginValue: '0.0032902957824972',
             maxOriginValue: null,
           },
         },
@@ -2671,101 +2671,101 @@ export const BRIDGE_LIMITS_MAP = {
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '3.678533',
-            maxOriginValue: '999528.986949',
+            minOriginValue: '4',
+            maxOriginValue: '999833.318269',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '19949813.73524939',
+            maxOriginValue: '19949385.61680048',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755732.797308',
+            maxOriginValue: '755661.931939',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '182234.6546246364',
+            maxOriginValue: '164032.56470496938',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '508939.259544',
+            maxOriginValue: '418424.303025',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '143107.28102969413',
+            maxOriginValue: '135872.1366862275',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '19941830.61650779',
+            maxOriginValue: '19941402.66937479',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880475',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '19941830.61650779',
+            maxOriginValue: '19941402.66937479',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '954196.2493344028',
+            maxOriginValue: '914511.7681215836',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '984275.45577375',
+            maxOriginValue: '961051.2260437526',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '543081.5736037731',
+            maxOriginValue: '558272.8182516508',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '312488.229485',
+            maxOriginValue: '344148.795377',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.54481778905',
+            maxOriginValue: '340233.9371843886',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '19941830.61650779',
+            maxOriginValue: '19941402.66937479',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300918.313239',
+            maxOriginValue: '333618.52869',
           },
         },
         '250': {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '12132955.964896124',
+            maxOriginValue: '10028893.083449911',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '19941830.61650779',
+            maxOriginValue: '19941402.66937479',
           },
         },
         '288': {
@@ -2782,7 +2782,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '19949813.73524939',
+            maxOriginValue: '19949385.61680048',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
@@ -2794,33 +2794,33 @@ export const BRIDGE_LIMITS_MAP = {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '19949813.73524939',
+            maxOriginValue: '19949385.61680048',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372098',
+            maxOriginValue: '504521.850223',
           },
         },
         '1284': {
           '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '12129315.714081572',
+            maxOriginValue: '10025884.114627995',
           },
         },
         '1285': {
           '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '12101896.609224692',
+            maxOriginValue: '10028893.083449911',
           },
         },
         '2000': {
           '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6': {
             symbol: 'FRAX',
             minOriginValue: '1',
-            maxOriginValue: '12101896.609224692',
+            maxOriginValue: '10028893.083449911',
           },
           '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A': {
             symbol: 'USDT',
@@ -2830,46 +2830,46 @@ export const BRIDGE_LIMITS_MAP = {
           '0x85C2D3bEBffD83025910985389aB8aD655aBC946': {
             symbol: 'USDC',
             minOriginValue: '0.3',
-            maxOriginValue: '12076976.822112',
+            maxOriginValue: '10006304.793941',
           },
           '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC': {
             symbol: 'DAI',
             minOriginValue: '0.2',
-            maxOriginValue: '2691537.9500192497',
+            maxOriginValue: '2690471.4041382093',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '75602.52483840112',
+            maxOriginValue: '82519.8256657165',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57302.081404',
+            maxOriginValue: '58426.471522',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '19941830.61650779',
+            maxOriginValue: '19941402.66937479',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9381.581915',
+            maxOriginValue: '9253.505012',
           },
         },
         '8217': {
           '0x078dB7827a5531359f6CB63f62CFA20183c4F10c': {
             symbol: 'DAI',
             minOriginValue: '1',
-            maxOriginValue: '2693154.4893285707',
+            maxOriginValue: '2692087.3028794336',
           },
           '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '12084230.261644',
+            maxOriginValue: '10012314.58661',
           },
           '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3': {
             symbol: 'USDT',
@@ -2881,34 +2881,34 @@ export const BRIDGE_LIMITS_MAP = {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197453.37854995887',
+            maxOriginValue: '195502.81168194427',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '3.856049',
-            maxOriginValue: '999527.96773',
+            minOriginValue: '4',
+            maxOriginValue: '999445.408376',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104052.857675',
+            maxOriginValue: '104125.849894',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '999527.96773',
+            maxOriginValue: '999445.408376',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '19949813.73524939',
+            maxOriginValue: '19949385.61680048',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -2918,62 +2918,62 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1765455.707753',
+            maxOriginValue: '1758012.953774',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741294.512296',
+            maxOriginValue: '1771375.429457',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999527.96773',
+            maxOriginValue: '999445.408376',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '223625.268966',
+            maxOriginValue: '226278.260785',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.521352',
+            maxOriginValue: '69500.261326',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '252262.941621',
+            maxOriginValue: '248208.653943',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '19941830.61650779',
+            maxOriginValue: '19941402.66937479',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.0772',
+            maxOriginValue: '63349.988059',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63894.89138500063',
+            maxOriginValue: '63895.14608836285',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '19955801.074305587',
+            maxOriginValue: '19955372.827369746',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '4.238763',
+            minOriginValue: '7.394337',
             maxOriginValue: null,
           },
         },
@@ -2981,18 +2981,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '19955801.074305587',
+            maxOriginValue: '19955372.827369746',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428536.6141830076',
+            maxOriginValue: '429572.1649112287',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '4.239057',
+            minOriginValue: '7.406289',
             maxOriginValue: null,
           },
         },
@@ -3000,7 +3000,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '19949813.73524939',
+            maxOriginValue: '19949385.61680048',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -3017,12 +3017,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '12101896.609224692',
+            maxOriginValue: '10028893.083449911',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '19941830.61650779',
+            maxOriginValue: '19941402.66937479',
           },
         },
       },
@@ -3069,100 +3069,100 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999183.875016',
+            maxOriginValue: '999822.687731',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '6308180.869011336',
+            maxOriginValue: '6686209.981838284',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755721.572248',
+            maxOriginValue: '755652.096752',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '181252.4132621051',
+            maxOriginValue: '164032.66488649033',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '507842.858731',
+            maxOriginValue: '438442.372601',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '143103.67039171173',
+            maxOriginValue: '135872.1356056947',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '6305656.5869509075',
+            maxOriginValue: '6683534.427623862',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880475',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '6305656.5869509075',
+            maxOriginValue: '6683534.427623862',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '953631.636886863',
+            maxOriginValue: '919493.3877994489',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '984253.9820944108',
+            maxOriginValue: '956032.6962490171',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '543613.9869433824',
+            maxOriginValue: '558262.6624877023',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '312487.070009',
+            maxOriginValue: '360942.890538',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358597.20313896245',
+            maxOriginValue: '343523.84749946225',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '6305656.5869509075',
+            maxOriginValue: '6683534.427623862',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300917.199009',
+            maxOriginValue: '333617.637997',
           },
         },
         '250': {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '6330913.886504459',
+            maxOriginValue: '6710063.705429206',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '6305656.5869509075',
+            maxOriginValue: '6683534.427623862',
           },
         },
         '288': {
@@ -3179,133 +3179,133 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '6308180.869011336',
+            maxOriginValue: '6686209.981838284',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339958282892',
+            maxOriginValue: '846.3339958288512',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '6308180.869011336',
+            maxOriginValue: '6686209.981838284',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499335.2587',
+            maxOriginValue: '504520.874203',
           },
         },
         '1284': {
           '0xDd47A348AB60c61Ad6B60cA8C31ea5e00eBfAB4F': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '6329014.422392096',
+            maxOriginValue: '6708050.484995534',
           },
         },
         '1285': {
           '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '6330913.886504459',
+            maxOriginValue: '6710063.705429206',
           },
         },
         '2000': {
           '0x10D70831f9C3c11c5fe683b2f1Be334503880DB6': {
             symbol: 'FRAX',
             minOriginValue: '1',
-            maxOriginValue: '6330913.886504459',
+            maxOriginValue: '6710063.705429206',
           },
           '0x7f8e71DD5A7e445725F0EF94c7F01806299e877A': {
             symbol: 'USDT',
             minOriginValue: '0.3',
-            maxOriginValue: '6311943.485667',
+            maxOriginValue: '6691410.334671',
           },
           '0x85C2D3bEBffD83025910985389aB8aD655aBC946': {
             symbol: 'USDC',
             minOriginValue: '0.3',
-            maxOriginValue: '6314417.547938',
+            maxOriginValue: '6692841.867307',
           },
           '0xB3306f03595490e5cC3a1b1704a5a158D3436ffC': {
             symbol: 'DAI',
             minOriginValue: '0.2',
-            maxOriginValue: '2691236.840022862',
+            maxOriginValue: '2690218.5851093973',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '78169.09727782207',
+            maxOriginValue: '82519.63896880625',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57642.058212',
+            maxOriginValue: '58343.514852',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '6305656.5869509075',
+            maxOriginValue: '6683534.427623862',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9346.012269',
+            maxOriginValue: '9236.141999',
           },
         },
         '8217': {
           '0x078dB7827a5531359f6CB63f62CFA20183c4F10c': {
             symbol: 'DAI',
             minOriginValue: '1',
-            maxOriginValue: '2692853.198485338',
+            maxOriginValue: '2691834.332007361',
           },
           '0x6270B58BE569a7c0b8f47594F191631Ae5b2C86C': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '6318209.99091',
+            maxOriginValue: '6694560.620215',
           },
           '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '6315734.442716',
+            maxOriginValue: '6693129.340916',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197537.2430201536',
+            maxOriginValue: '195101.66956494315',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999183.875016',
+            maxOriginValue: '999428.655621',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '103969.126604',
+            maxOriginValue: '104388.046753',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '999183.875016',
+            maxOriginValue: '999428.655621',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '6308180.869011336',
+            maxOriginValue: '6683913.313711246',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -3315,62 +3315,62 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1761166.618635',
+            maxOriginValue: '1757892.203488',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741155.699519',
+            maxOriginValue: '1771253.4033',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999183.875016',
+            maxOriginValue: '999428.655621',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '223624.944284',
+            maxOriginValue: '226277.970959',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.521349',
+            maxOriginValue: '69500.261326',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '252262.573494',
+            maxOriginValue: '248208.334853',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '6305656.5869509075',
+            maxOriginValue: '6681238.67853169',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.077198',
+            maxOriginValue: '63349.988059',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63894.89138289666',
+            maxOriginValue: '63895.146088263835',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '6310074.080556657',
+            maxOriginValue: '6685919.290095913',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '4.467594',
+            minOriginValue: '7.02964',
             maxOriginValue: null,
           },
         },
@@ -3378,18 +3378,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '6310074.080556657',
+            maxOriginValue: '6685919.290095913',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428535.4600008526',
+            maxOriginValue: '429571.1531673949',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '4.465588',
+            minOriginValue: '7.038043',
             maxOriginValue: null,
           },
         },
@@ -3397,7 +3397,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '6308180.869011336',
+            maxOriginValue: '6683913.313711246',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -3414,12 +3414,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1852F70512298d56e9c8FDd905e02581E04ddb2a': {
             symbol: 'synFRAX',
             minOriginValue: '1',
-            maxOriginValue: '6330913.886504459',
+            maxOriginValue: '6707759.664065771',
           },
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '6305656.5869509075',
+            maxOriginValue: '6681238.67853169',
           },
         },
       },
@@ -3434,178 +3434,178 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '184880.1885356431',
+            maxOriginValue: '166031.8699932089',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340654.48790257564',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '185096.19797627543',
+            maxOriginValue: '166225.85756414398',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '1001815.749526174',
+            maxOriginValue: '1001812.5122883567',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '3.798287',
-            maxOriginValue: '185106.00962',
+            minOriginValue: '6.17705',
+            maxOriginValue: '166232.752863',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '185084.380088',
+            maxOriginValue: '166218.35246',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '999168.0709088973',
+            maxOriginValue: '998907.9925036595',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '184954.22940727987',
+            maxOriginValue: '166098.36253225306',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880071',
+            maxOriginValue: '3626.261254',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '184954.22940727987',
+            maxOriginValue: '166098.36253225306',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '185011.81837366807',
+            maxOriginValue: '166107.13662878147',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '185022.56580881952',
+            maxOriginValue: '166125.4037117791',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '184704.96549196626',
+            maxOriginValue: '165885.4816531359',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '184656.151777',
+            maxOriginValue: '166028.882027',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '184783.85128845362',
+            maxOriginValue: '166003.96144755444',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '184954.22940727987',
+            maxOriginValue: '166098.36253225306',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '184608.833604',
+            maxOriginValue: '165988.979172',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '184954.22940727987',
+            maxOriginValue: '166098.36253225306',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244126',
+            maxOriginValue: '430.244125',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '520.809887',
+            maxOriginValue: '520.809886',
           },
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '185028.27033178238',
+            maxOriginValue: '166164.85507129718',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339898618715',
+            maxOriginValue: '846.3339884253877',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '185028.27033178238',
+            maxOriginValue: '166164.85507129718',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '185145.096909',
+            maxOriginValue: '166296.626604',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '78795.82129538324',
+            maxOriginValue: '82171.20233799046',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57997.773398',
+            maxOriginValue: '58207.800345',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '184954.22940727987',
+            maxOriginValue: '166098.36253225306',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.88177',
+            maxOriginValue: '9252.951061',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197671.97534842681',
+            maxOriginValue: '195683.24255097398',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.005339',
+            minOriginValue: '0.003309',
             maxOriginValue: '999600',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104303.990959',
+            maxOriginValue: '104388.027393',
           },
         },
         '42161': {
@@ -3617,7 +3617,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '185043.14353195904',
+            maxOriginValue: '166168.7495483872',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -3627,16 +3627,16 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '185077.555754',
+            maxOriginValue: '166208.254162',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '185074.453413',
+            maxOriginValue: '166210.069088',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.008392',
+            minOriginValue: '0.006283',
             maxOriginValue: '999600',
           },
         },
@@ -3644,45 +3644,45 @@ export const BRIDGE_LIMITS_MAP = {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '184303.899617',
+            maxOriginValue: '165751.337041',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.879412',
+            maxOriginValue: '69500.261327',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '184642.557931',
+            maxOriginValue: '165887.986031',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '184969.0966557958',
+            maxOriginValue: '166102.25545092885',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.394821',
+            maxOriginValue: '63349.98806',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.20306511714',
+            maxOriginValue: '63895.1460892764',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '185098.67868908148',
+            maxOriginValue: '166218.62012148096',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.024875',
+            minOriginValue: '0.021272',
             maxOriginValue: null,
           },
         },
@@ -3690,18 +3690,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '185098.67868908148',
+            maxOriginValue: '166218.62012148096',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '185182.3179803489',
+            maxOriginValue: '166323.44887549328',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.024756',
+            minOriginValue: '0.02884',
             maxOriginValue: null,
           },
         },
@@ -3709,24 +3709,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '185043.14353195904',
+            maxOriginValue: '166168.7495483872',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.498396',
+            maxOriginValue: '1455.498391',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651545',
+            maxOriginValue: '1454.651541',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '184969.0966557958',
+            maxOriginValue: '166102.25545092885',
           },
         },
       },
@@ -3829,135 +3829,135 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
             symbol: 'WETH',
             minOriginValue: '0.015',
-            maxOriginValue: '295.24339581653936',
+            maxOriginValue: '295.2464007815101',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.001537950723679455',
-            maxOriginValue: '295.24339581653936',
+            minOriginValue: '0.002398050339261645',
+            maxOriginValue: '295.2464007815101',
           },
         },
         '250': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.3616113904399',
+            maxOriginValue: '295.3646175585998',
           },
         },
         '288': {
           '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
             symbol: 'nETH',
             minOriginValue: '0.007',
-            maxOriginValue: '295.42071917739014',
+            maxOriginValue: '295.4237259471446',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475932980582',
+            maxOriginValue: '0.174274759329806',
           },
           '0xd203De32170130082896b4111eDF825a4774c18E': {
             symbol: 'WETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475932980582',
+            maxOriginValue: '0.174274759329806',
           },
         },
         '1088': {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92295548142559',
+            maxOriginValue: '53.924844552545984',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '295.42071917739014',
+            maxOriginValue: '295.4237259471446',
           },
         },
         '1284': {
           '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.39116528391503',
+            maxOriginValue: '295.3941717528722',
           },
         },
         '2000': {
           '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB': {
             symbol: 'WETH',
             minOriginValue: '0.0001',
-            maxOriginValue: '295.24339581653936',
+            maxOriginValue: '295.2464007815101',
           },
         },
         '7700': {
           '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.3616113904399',
+            maxOriginValue: '295.3646175585998',
           },
         },
         '8217': {
           '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.42071917739014',
+            maxOriginValue: '295.4237259471446',
           },
         },
         '8453': {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '294.0203743115781',
+            maxOriginValue: '293.98969595827964',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001966057521682',
-            maxOriginValue: '294.0203743115781',
+            minOriginValue: '0.000001275837861217',
+            maxOriginValue: '293.98969595827964',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.50938085781553',
+            maxOriginValue: '295.51238852996187',
           },
         },
         '42161': {
           '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.42071917739014',
+            maxOriginValue: '295.4237259471446',
           },
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.3513548522713',
+            maxOriginValue: '295.3628317602303',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000003019588538092',
-            maxOriginValue: '295.3513548522713',
+            minOriginValue: '0.000002515423812007',
+            maxOriginValue: '295.3628317602303',
           },
         },
         '43114': {
           '0x19E1ae0eE35c0404f835521146206595d37981ae': {
             symbol: 'nETH',
             minOriginValue: '0.002',
-            maxOriginValue: '295.3616113904399',
+            maxOriginValue: '295.3646175585998',
           },
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686429368025543',
+            maxOriginValue: '7.775931798906903',
           },
         },
         '53935': {
           '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.3616113904399',
+            maxOriginValue: '295.3646175585998',
           },
         },
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000009642314571682',
+            minOriginValue: '0.000008959271751217',
             maxOriginValue: null,
           },
         },
@@ -3965,23 +3965,23 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.0337066744234',
+            maxOriginValue: '294.8888089457055',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000003025029195475',
-            maxOriginValue: '295.0337066744234',
+            minOriginValue: '0.000001937775172862',
+            maxOriginValue: '294.8888089457055',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.50938085781553',
+            maxOriginValue: '295.51238852996187',
           },
         },
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000009500679066682',
+            minOriginValue: '0.000011055246267585',
             maxOriginValue: null,
           },
         },
@@ -3989,7 +3989,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.3616113904399',
+            maxOriginValue: '295.3646175585998',
           },
         },
       },
@@ -4161,37 +4161,37 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '339925.91719503026',
+            maxOriginValue: '19976000',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '339701.2293640309',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '340311.4609122154',
+            maxOriginValue: '359101.48817764444',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '341212.6013674036',
+            maxOriginValue: '360015.86288307945',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '3.570212',
-            maxOriginValue: '340426.34624',
+            minOriginValue: '6.485912',
+            maxOriginValue: '360443.92317',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '340332.521775',
+            maxOriginValue: '360241.6134',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '340309.1925170239',
+            maxOriginValue: '360102.4844557494',
           },
         },
         '25': {
@@ -4203,7 +4203,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880475',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -4215,39 +4215,39 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '952616.3181745759',
+            maxOriginValue: '905807.5756404351',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '984275.4680916861',
+            maxOriginValue: '951051.4657026025',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '544659.6859781531',
+            maxOriginValue: '557000.0987552693',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '312399.852533',
+            maxOriginValue: '360269.563729',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '336868.00897209655',
+            maxOriginValue: '343524.77339206927',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '302033.2688931096',
+            maxOriginValue: '19984000',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300918.313726',
+            maxOriginValue: '360211.149742',
           },
         },
         '250': {
@@ -4288,19 +4288,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372601',
+            maxOriginValue: '504521.850732',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '78935.77887657979',
+            maxOriginValue: '82902.019738267',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57992.464752',
+            maxOriginValue: '58434.838358',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -4310,41 +4310,41 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.946433',
+            maxOriginValue: '9253.21734',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197553.86948139517',
+            maxOriginValue: '195383.94719970901',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.004734',
-            maxOriginValue: '340626.246248',
+            minOriginValue: '0.00363',
+            maxOriginValue: '360730.288777',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104268.105936',
+            maxOriginValue: '104355.647856',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '342425.848479',
+            maxOriginValue: '360730.288777',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '342031.18455638096',
+            maxOriginValue: '19992000',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -4354,49 +4354,49 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '342357.363309',
+            maxOriginValue: '1758013.012933',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '342386.19139',
+            maxOriginValue: '1771375.489133',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.007063',
-            maxOriginValue: '342425.848479',
+            minOriginValue: '0.007327',
+            maxOriginValue: '360730.288777',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226076.772074',
+            maxOriginValue: '360636.384365',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.848061',
+            maxOriginValue: '69500.233479',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '248206.654279',
+            maxOriginValue: '360721.759184',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '171467.71587907212',
+            maxOriginValue: '19984000',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.366998',
+            maxOriginValue: '63349.965049',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.1757609893',
+            maxOriginValue: '63895.12268379567',
           },
         },
         '53935': {
@@ -4409,7 +4409,7 @@ export const BRIDGE_LIMITS_MAP = {
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.025643',
+            minOriginValue: '0.023386',
             maxOriginValue: null,
           },
         },
@@ -4422,13 +4422,13 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428553.92292995437',
+            maxOriginValue: '429572.1654418392',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.022193',
+            minOriginValue: '0.03514',
             maxOriginValue: null,
           },
         },
@@ -4466,100 +4466,100 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '340594.3565570483',
+            maxOriginValue: '701740.5083484416',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340360.55245381227',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '340980.6265459809',
+            maxOriginValue: '702531.0177446553',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '341883.3374834561',
+            maxOriginValue: '361530.64699629927',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '3.291292',
-            maxOriginValue: '341095.426839',
+            minOriginValue: '6.832039',
+            maxOriginValue: '702565.47917',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '341000.988841',
+            maxOriginValue: '702491.794661',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '340966.0283506502',
+            maxOriginValue: '360517.93691037176',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '701950.2595500011',
+            maxOriginValue: '702021.5417919131',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880447',
+            maxOriginValue: '3626.261729',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '701950.2595500011',
+            maxOriginValue: '702021.5417919131',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '700784.3988615894',
+            maxOriginValue: '700363.6408175451',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '700993.8883300223',
+            maxOriginValue: '700727.5039096599',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '542361.2844807194',
+            maxOriginValue: '554429.9297759802',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '312270.005001',
+            maxOriginValue: '360698.82814',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '337261.87797997374',
+            maxOriginValue: '343389.59764895274',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '302057.2044401952',
+            maxOriginValue: '702021.5417919131',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300796.814945',
+            maxOriginValue: '360640.375991',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '701950.2595500011',
+            maxOriginValue: '702021.5417919131',
           },
         },
         '288': {
@@ -4576,80 +4576,80 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '702231.2644577473',
+            maxOriginValue: '702302.5752353846',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339954201781',
+            maxOriginValue: '846.3339954202621',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '702231.2644577473',
+            maxOriginValue: '702302.5752353846',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499074.911047',
+            maxOriginValue: '504252.094708',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '78916.89284166407',
+            maxOriginValue: '82882.92109875401',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57987.326819',
+            maxOriginValue: '58392.117204',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '701950.2595500011',
+            maxOriginValue: '702021.5417919131',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.937732',
+            maxOriginValue: '9253.210031',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197554.41872154266',
+            maxOriginValue: '195485.02141508646',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.00445',
-            maxOriginValue: '341095.426839',
+            minOriginValue: '0.00365',
+            maxOriginValue: '360729.774768',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104267.75859',
+            maxOriginValue: '104355.62828',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '341095.426839',
+            maxOriginValue: '360729.774768',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '340703.10935944703',
+            maxOriginValue: '702302.5752353846',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -4659,62 +4659,62 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '341027.207753',
+            maxOriginValue: '702065.00326',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '341055.958684',
+            maxOriginValue: '702077.398751',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.006843',
-            maxOriginValue: '341095.426839',
+            minOriginValue: '0.007078',
+            maxOriginValue: '360729.774768',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226042.123653',
+            maxOriginValue: '360635.870743',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.848061',
+            maxOriginValue: '69500.233479',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '248166.758903',
+            maxOriginValue: '360729.774768',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '171467.71587907212',
+            maxOriginValue: '702021.5417919131',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.366998',
+            maxOriginValue: '63349.965051',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.1757609893',
+            maxOriginValue: '63895.12268525623',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '702442.018138557',
+            maxOriginValue: '702513.3503179883',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.024668',
+            minOriginValue: '0.02289',
             maxOriginValue: null,
           },
         },
@@ -4722,18 +4722,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '702442.018138557',
+            maxOriginValue: '702513.3503179883',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428346.8048514949',
+            maxOriginValue: '429364.1030168506',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.021094',
+            minOriginValue: '0.032818',
             maxOriginValue: null,
           },
         },
@@ -4741,7 +4741,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '702231.2644577473',
+            maxOriginValue: '702302.5752353846',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -4758,7 +4758,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '701950.2595500011',
+            maxOriginValue: '702021.5417919131',
           },
         },
       },
@@ -4775,7 +4775,7 @@ export const BRIDGE_LIMITS_MAP = {
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00114052007340981',
+            minOriginValue: '0.00239143728927279',
             maxOriginValue: '19980000',
           },
         },
@@ -4807,7 +4807,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.92641487577436',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -4847,12 +4847,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '406.39370961428784',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000165713650938',
-            maxOriginValue: '408.62191581756196',
+            minOriginValue: '0.000001322221538107',
+            maxOriginValue: '406.39370961428784',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -4869,12 +4869,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.4339548417227',
+            maxOriginValue: '993.1431705533487',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000256486912272',
-            maxOriginValue: '971.4339548417227',
+            minOriginValue: '0.000002431474456417',
+            maxOriginValue: '993.1431705533487',
           },
         },
         '43114': {
@@ -4886,7 +4886,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -4899,7 +4899,7 @@ export const BRIDGE_LIMITS_MAP = {
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000971274448188',
+            minOriginValue: '0.000008852003963107',
             maxOriginValue: null,
           },
         },
@@ -4907,12 +4907,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '396.0074514454232',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000002540295372475',
-            maxOriginValue: '410.6282874605945',
+            minOriginValue: '0.000001900989426012',
+            maxOriginValue: '396.0074514454232',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -4923,7 +4923,7 @@ export const BRIDGE_LIMITS_MAP = {
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000809785788438',
+            minOriginValue: '0.000012016593495607',
             maxOriginValue: null,
           },
         },
@@ -4944,100 +4944,100 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '340594.3565570483',
+            maxOriginValue: '377873.1041069965',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340360.55245381227',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '340980.6265459809',
+            maxOriginValue: '378308.9225515728',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '341880.3894957337',
+            maxOriginValue: '361538.6815827928',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '3.029987',
-            maxOriginValue: '341095.426839',
+            minOriginValue: '5.84529',
+            maxOriginValue: '378325.531145',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '341000.993357',
+            maxOriginValue: '378290.569456',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '340966.0283506502',
+            maxOriginValue: '360525.9509407475',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '379222.1010330097',
+            maxOriginValue: '378024.4349456457',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.88038',
+            maxOriginValue: '3626.261661',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '379222.1010330097',
+            maxOriginValue: '378024.4349456457',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '379158.2792011101',
+            maxOriginValue: '377855.87649792986',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '379189.4698307994',
+            maxOriginValue: '377900.0800578685',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '377710.9767119898',
+            maxOriginValue: '376616.44207108556',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '311308.652497',
+            maxOriginValue: '360624.116518',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '337140.9654197617',
+            maxOriginValue: '341522.15685685055',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '302049.89670109254',
+            maxOriginValue: '378024.4349456457',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300016.153286',
+            maxOriginValue: '360565.554026',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '379222.1010330097',
+            maxOriginValue: '378024.4349456457',
           },
         },
         '288': {
@@ -5054,80 +5054,80 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '379373.9113216538',
+            maxOriginValue: '378175.76578429487',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339944161645',
+            maxOriginValue: '846.3339944071603',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '379373.9113216538',
+            maxOriginValue: '378175.76578429487',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '379184.472571',
+            maxOriginValue: '378025.668442',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '78841.92528896694',
+            maxOriginValue: '82860.61402791474',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57923.143649',
+            maxOriginValue: '58290.275544',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '379222.1010330097',
+            maxOriginValue: '378024.4349456457',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.903118',
+            maxOriginValue: '9253.201486',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197554.22837836572',
+            maxOriginValue: '195484.98187925288',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.004105',
-            maxOriginValue: '340951.259627',
+            minOriginValue: '0.003663',
+            maxOriginValue: '360705.012717',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104267.713572',
+            maxOriginValue: '104355.620846',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '340951.259627',
+            maxOriginValue: '360705.012717',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '340559.233930385',
+            maxOriginValue: '378175.76578429487',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -5137,62 +5137,62 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '340883.069375',
+            maxOriginValue: '378182.906417',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '340911.850048',
+            maxOriginValue: '378187.604995',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.006458',
-            maxOriginValue: '441.468305',
+            minOriginValue: '0.006769',
+            maxOriginValue: '360705.012717',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '225906.330432',
+            maxOriginValue: '360611.127305',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.848023',
+            maxOriginValue: '69500.233474',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '247988.11571',
+            maxOriginValue: '360705.012717',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '171467.54305747038',
+            maxOriginValue: '378024.4349456457',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.366965',
+            maxOriginValue: '63349.965046',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.17572786862',
+            maxOriginValue: '63895.122680743785',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '379487.7690381369',
+            maxOriginValue: '378289.2639132817',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.024265',
+            minOriginValue: '0.024137',
             maxOriginValue: null,
           },
         },
@@ -5200,18 +5200,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '379487.7690381369',
+            maxOriginValue: '378289.2639132817',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '378266.9431475872',
+            maxOriginValue: '377139.41652112606',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.020936',
+            minOriginValue: '0.031989',
             maxOriginValue: null,
           },
         },
@@ -5219,7 +5219,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '379373.9113216538',
+            maxOriginValue: '378175.76578429487',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -5236,7 +5236,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '379222.1010330097',
+            maxOriginValue: '378024.4349456457',
           },
         },
       },
@@ -5249,190 +5249,190 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '184262.34719994763',
+            maxOriginValue: '448642.1354073554',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340654.48790257564',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '184477.6425719869',
+            maxOriginValue: '449143.56292338885',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '382960.27352296846',
+            maxOriginValue: '450280.16279987234',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '3.154508',
-            maxOriginValue: '184487.419988',
+            minOriginValue: '5.937802',
+            maxOriginValue: '449436.277414',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '184465.866555',
+            maxOriginValue: '449225.771653',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '381947.39095322916',
+            maxOriginValue: '449039.30966607115',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '184336.1406910169',
+            maxOriginValue: '164609.79515103676',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880068',
+            maxOriginValue: '3626.261246',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '184336.1406910169',
+            maxOriginValue: '164776.82344209866',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '184393.8146812522',
+            maxOriginValue: '164789.16191084657',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '184404.51777684173',
+            maxOriginValue: '164801.75486173632',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '184088.51267693035',
+            maxOriginValue: '164565.30092405947',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '184043.444735',
+            maxOriginValue: '449242.317688',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '184169.83034369943',
+            maxOriginValue: '343009.830844439',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '184338.58708025794',
+            maxOriginValue: '238391.3709957392',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '183996.692722',
+            maxOriginValue: '449117.035768',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '184338.58708025794',
+            maxOriginValue: '164776.82344209866',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244126',
+            maxOriginValue: '430.244125',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '520.809887',
+            maxOriginValue: '520.809886',
           },
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '184412.38155066638',
+            maxOriginValue: '164842.78694227565',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339898218294',
+            maxOriginValue: '846.3339883057862',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '184412.38155066638',
+            maxOriginValue: '164842.78694227565',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '184529.357536',
+            maxOriginValue: '164974.636541',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '78592.99779021245',
+            maxOriginValue: '82544.60495677724',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57913.364734',
+            maxOriginValue: '58180.943805',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '184338.58708025794',
+            maxOriginValue: '164776.82344209866',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.787307',
+            maxOriginValue: '9228.042957',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197590.84899690503',
+            maxOriginValue: '195533.3387086879',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.003926',
-            maxOriginValue: '382075.744654',
+            minOriginValue: '0.003581',
+            maxOriginValue: '449242.729471',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104276.664732',
+            maxOriginValue: '104382.705746',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '382075.744654',
+            maxOriginValue: '449242.729471',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '184412.38155066638',
+            maxOriginValue: '448560.470114637',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -5442,62 +5442,62 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '184446.795185',
+            maxOriginValue: '447898.7763',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '184443.704585',
+            maxOriginValue: '447928.156101',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.006121',
-            maxOriginValue: '441.468811',
+            minOriginValue: '0.006306',
+            maxOriginValue: '447988.373975',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '183734.705666',
+            maxOriginValue: '441479.674099',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.856636',
+            maxOriginValue: '69500.245435',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '183998.912764',
+            maxOriginValue: '441657.625485',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '171506.70152306306',
+            maxOriginValue: '171337.72230376684',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.374609',
+            maxOriginValue: '63349.974929',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.183229307266',
+            maxOriginValue: '63895.132733285864',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '184467.7274034727',
+            maxOriginValue: '164344.09312216513',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.023378',
+            minOriginValue: '0.022063',
             maxOriginValue: null,
           },
         },
@@ -5505,18 +5505,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '184467.7274034727',
+            maxOriginValue: '164344.09312216513',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '184552.1053489906',
+            maxOriginValue: '164450.3356918668',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.02038',
+            minOriginValue: '0.029898',
             maxOriginValue: null,
           },
         },
@@ -5524,24 +5524,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '184412.38155066638',
+            maxOriginValue: '164294.78496341262',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.498396',
+            maxOriginValue: '1455.498391',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651545',
+            maxOriginValue: '1454.651541',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '184338.58708025794',
+            maxOriginValue: '164229.04075174258',
           },
         },
       },
@@ -5567,107 +5567,107 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '157255.83193083544',
+            maxOriginValue: '154368.13413894686',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '157329.04637626596',
+            maxOriginValue: '154296.86732101758',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '157438.01479617768',
+            maxOriginValue: '154548.614860276',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '157881.365380779',
+            maxOriginValue: '154843.08270077134',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.849079',
-            maxOriginValue: '157535.67225',
+            minOriginValue: '5.507294',
+            maxOriginValue: '154610.171728',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '157442.354853',
+            maxOriginValue: '154541.661906',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '157400.04014569885',
+            maxOriginValue: '154374.23472772771',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '157457.15535656374',
+            maxOriginValue: '154429.9555783297',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.879916',
+            maxOriginValue: '3626.261175',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '157457.15535656374',
+            maxOriginValue: '154429.9555783297',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '157516.812067102',
+            maxOriginValue: '154444.99529680333',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '157525.6627952735',
+            maxOriginValue: '154456.68173455333',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '157273.87608388552',
+            maxOriginValue: '154240.8666575653',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '157265.947185',
+            maxOriginValue: '154541.720862',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '157347.99683817237',
+            maxOriginValue: '154226.590555286',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '157355.1806327298',
+            maxOriginValue: '154130.6615261244',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '157237.425729',
+            maxOriginValue: '154231.3605',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '157457.1553585605',
+            maxOriginValue: '154130.6615261244',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244125',
+            maxOriginValue: '430.244124',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
@@ -5677,80 +5677,80 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '157520.18864733496',
+            maxOriginValue: '154192.36315203557',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339875877447',
+            maxOriginValue: '846.3339872270167',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '157520.18864733496',
+            maxOriginValue: '154192.36315203557',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '157640.898663',
+            maxOriginValue: '154319.335547',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '78391.70665097632',
+            maxOriginValue: '82458.8700293739',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57877.550543',
+            maxOriginValue: '58198.637244',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '157457.15464771297',
+            maxOriginValue: '154130.6615261244',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.692664',
+            maxOriginValue: '9228.009604',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '157186.33028691486',
+            maxOriginValue: '153863.35868605608',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.003628',
-            maxOriginValue: '157582.769214',
+            minOriginValue: '0.003398',
+            maxOriginValue: '154315.936946',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104003.202154',
+            maxOriginValue: '104851.593015',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '157582.769214',
+            maxOriginValue: '154254.213957',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '157447.2517628892',
+            maxOriginValue: '154192.36315203557',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -5760,62 +5760,62 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '157553.927269',
+            maxOriginValue: '154238.93194',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '157551.328258',
+            maxOriginValue: '154235.724203',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.005945',
-            maxOriginValue: '157582.769214',
+            minOriginValue: '0.005923',
+            maxOriginValue: '154315.93441',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '157176.901451',
+            maxOriginValue: '154240.168338',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68346.592709',
+            maxOriginValue: '69494.808434',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '157283.833547',
+            maxOriginValue: '154254.213957',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '155515.73154977895',
+            maxOriginValue: '154130.6615261244',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64495.612993',
+            maxOriginValue: '63345.534585',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63891.49500840514',
+            maxOriginValue: '63890.61181544065',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '157567.46290257026',
+            maxOriginValue: '154238.63937146895',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.023656',
+            minOriginValue: '0.022425',
             maxOriginValue: null,
           },
         },
@@ -5823,43 +5823,43 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '157567.46290257026',
+            maxOriginValue: '154238.63937146895',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '157674.8357783365',
+            maxOriginValue: '154351.64141576207',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.019665',
-            maxOriginValue: '157645.80788',
+            minOriginValue: '0.02851',
+            maxOriginValue: '154315.911823',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '157520.18793620283',
+            maxOriginValue: '154192.36315203557',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.498389',
+            maxOriginValue: '1455.498388',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651539',
+            maxOriginValue: '1454.651538',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '157459.84562399925',
+            maxOriginValue: '154336.6738523145',
           },
         },
       },
@@ -5927,135 +5927,135 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
             symbol: 'WETH',
             minOriginValue: '0.015',
-            maxOriginValue: '295.24339581653936',
+            maxOriginValue: '295.2464007815101',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00110863009975047',
-            maxOriginValue: '295.24339581653936',
+            minOriginValue: '0.00225133809934404',
+            maxOriginValue: '295.2464007815101',
           },
         },
         '250': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.3616113904399',
+            maxOriginValue: '295.3646175585998',
           },
         },
         '288': {
           '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
             symbol: 'nETH',
             minOriginValue: '0.007',
-            maxOriginValue: '295.42071917739014',
+            maxOriginValue: '295.4237259471446',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475932980582',
+            maxOriginValue: '0.174274759329806',
           },
           '0xd203De32170130082896b4111eDF825a4774c18E': {
             symbol: 'WETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475932980582',
+            maxOriginValue: '0.174274759329806',
           },
         },
         '1088': {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92295548142559',
+            maxOriginValue: '53.924844552545984',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '295.42071917739014',
+            maxOriginValue: '295.4237259471446',
           },
         },
         '1284': {
           '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.39116528391503',
+            maxOriginValue: '295.3941717528722',
           },
         },
         '2000': {
           '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB': {
             symbol: 'WETH',
             minOriginValue: '0.0001',
-            maxOriginValue: '295.24339581653936',
+            maxOriginValue: '295.2464007815101',
           },
         },
         '7700': {
           '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.3616113904399',
+            maxOriginValue: '295.3646175585998',
           },
         },
         '8217': {
           '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.42071917739014',
+            maxOriginValue: '295.4237259471446',
           },
         },
         '8453': {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '294.0203743115781',
+            maxOriginValue: '293.98969595827964',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001363695743205',
-            maxOriginValue: '294.0203743115781',
+            minOriginValue: '0.000001332267058687',
+            maxOriginValue: '293.98969595827964',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.50938085781553',
+            maxOriginValue: '295.51238852996187',
           },
         },
         '42161': {
           '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.42071917739014',
+            maxOriginValue: '295.4237259471446',
           },
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.3500511443074',
+            maxOriginValue: '295.36371243192593',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000002257223714145',
-            maxOriginValue: '295.3500511443074',
+            minOriginValue: '0.000002350240731937',
+            maxOriginValue: '295.36371243192593',
           },
         },
         '43114': {
           '0x19E1ae0eE35c0404f835521146206595d37981ae': {
             symbol: 'nETH',
             minOriginValue: '0.002',
-            maxOriginValue: '295.3616113904399',
+            maxOriginValue: '295.3646175585998',
           },
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686429368025543',
+            maxOriginValue: '7.775931798906903',
           },
         },
         '53935': {
           '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.3616113904399',
+            maxOriginValue: '295.3646175585998',
           },
         },
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000009057529665705',
+            minOriginValue: '0.000008735727381187',
             maxOriginValue: null,
           },
         },
@@ -6063,23 +6063,23 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.0337066744234',
+            maxOriginValue: '294.8888089457055',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000002071540906425',
-            maxOriginValue: '295.0337066744234',
+            minOriginValue: '0.000001892479247812',
+            maxOriginValue: '294.8888089457055',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.50938085781553',
+            maxOriginValue: '295.51238852996187',
           },
         },
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000007691887118205',
+            minOriginValue: '0.000011347653456187',
             maxOriginValue: null,
           },
         },
@@ -6087,7 +6087,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '295.3616113904399',
+            maxOriginValue: '295.3646175585998',
           },
         },
       },
@@ -6120,17 +6120,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '999895.3945889063',
+            maxOriginValue: '999894.304716431',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '999966.284904',
+            maxOriginValue: '999950.63713',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '999800.383549',
+            maxOriginValue: '999827.877783',
           },
         },
         '10': {
@@ -6142,7 +6142,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.931741',
           },
         },
         '56': {
@@ -6154,24 +6154,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '946610.2403525194',
+            maxOriginValue: '908547.2409494835',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978269.0901183076',
+            maxOriginValue: '948141.5624753817',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '556658.4701426638',
+            maxOriginValue: '557000.0987080054',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.54540038644',
+            maxOriginValue: '345025.9070454108',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -6181,7 +6181,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300918.313726',
+            maxOriginValue: '337122.348828',
           },
         },
         '250': {
@@ -6222,19 +6222,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372601',
+            maxOriginValue: '502232.784836',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '78855.44026445133',
+            maxOriginValue: '83053.7639028015',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57953.993572',
+            maxOriginValue: '58300.717237',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -6244,7 +6244,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.909367',
+            maxOriginValue: '9228.238418',
           },
         },
         '42161': {
@@ -6256,24 +6256,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1761307.719705',
+            maxOriginValue: '1758239.304926',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741294.541504',
+            maxOriginValue: '1771375.485177',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226076.772074',
+            maxOriginValue: '226278.26094',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248206.654279',
+            maxOriginValue: '248208.654114',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -6297,7 +6297,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428553.92292995437',
+            maxOriginValue: '429572.1654418392',
           },
         },
         '1313161554': {
@@ -6549,213 +6549,213 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '784.2382444001659',
+            maxOriginValue: '690.2318572073283',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '785.1639331425212',
+            maxOriginValue: '691.0456836962429',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '785.203973',
+            maxOriginValue: '691.073354',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '785.116509',
+            maxOriginValue: '691.015927',
           },
         },
         '10': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '900.2382444001659',
+            maxOriginValue: '806.2318572073283',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '900.229072',
+            maxOriginValue: '806.223547',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '902.2382444001659',
+            maxOriginValue: '808.2318572073283',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '902.9447888658418',
+            maxOriginValue: '808.6024588662502',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '902.9941887192964',
+            maxOriginValue: '808.6548483524649',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '901.9886972397638',
+            maxOriginValue: '807.8110176933147',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '903.6601869884078',
+            maxOriginValue: '810.0801559472213',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '903.5148538046457',
+            maxOriginValue: '809.5836717215624',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '903.400581',
+            maxOriginValue: '810.052927',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '903.5148538046457',
+            maxOriginValue: '809.5836717215624',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.005874',
+            maxOriginValue: '429.913495',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '520.454356',
+            maxOriginValue: '520.286954',
           },
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '892.2382444001659',
+            maxOriginValue: '798.2318572073283',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '842.9384463596746',
+            maxOriginValue: '808.4506512843718',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '903.2382444001659',
+            maxOriginValue: '809.2318572073283',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '905.114114',
+            maxOriginValue: '810.986402',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '900.5880324796312',
+            maxOriginValue: '808.0061802136289',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '908.178806',
+            maxOriginValue: '812.866812',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '903.2382444001659',
+            maxOriginValue: '809.2318572073283',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '903.760956',
+            maxOriginValue: '810.174645',
           },
         },
         '42161': {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '900.2382444001659',
+            maxOriginValue: '806.2318572073283',
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '900.582538',
+            maxOriginValue: '806.571764',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '900.56873',
+            maxOriginValue: '806.579803',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '902.10945',
+            maxOriginValue: '808.068508',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '902.241861',
+            maxOriginValue: '808.185943',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '901.7382444001659',
+            maxOriginValue: '807.7318572073283',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '903.7382444001659',
+            maxOriginValue: '809.7318572073283',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '900.2382444001659',
+            maxOriginValue: '806.2318572073283',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '902.7657521086628',
+            maxOriginValue: '808.5391981887649',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '903.7382444001659',
+            maxOriginValue: '809.7318572073283',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '906.076649',
+            maxOriginValue: '812.139554',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '905.552882',
+            maxOriginValue: '811.6706',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '903.2382444001659',
+            maxOriginValue: '809.2318572073283',
           },
         },
       },
@@ -6877,17 +6877,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '999895.3945889063',
+            maxOriginValue: '999894.304716431',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '999966.284904',
+            maxOriginValue: '999950.63713',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '999800.383549',
+            maxOriginValue: '999827.877783',
           },
         },
         '10': {
@@ -6899,7 +6899,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.931741',
           },
         },
         '25': {
@@ -6911,14 +6911,14 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880475',
+            maxOriginValue: '3626.261757',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.54519042186',
+            maxOriginValue: '345025.9069090982',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -6928,7 +6928,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300618.289649',
+            maxOriginValue: '337999.598957',
           },
         },
         '250': {
@@ -6969,26 +6969,26 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372601',
+            maxOriginValue: '502232.784836',
           },
         },
         '2000': {
           '0x1555C68Be3b22cdcCa934Ae88Cb929Db40aB311d': {
             symbol: 'BUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '559098.5098601507',
+            maxOriginValue: '556443.1006941859',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '78810.98625341276',
+            maxOriginValue: '83082.7827977026',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57996.689893',
+            maxOriginValue: '58307.548587',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -6998,7 +6998,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.888797',
+            maxOriginValue: '9228.249425',
           },
         },
         '42161': {
@@ -7010,24 +7010,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1761307.719705',
+            maxOriginValue: '1758239.304926',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741294.541504',
+            maxOriginValue: '1771375.485177',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226076.772074',
+            maxOriginValue: '226278.26094',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248206.654279',
+            maxOriginValue: '248208.654114',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -7051,7 +7051,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428553.92292995437',
+            maxOriginValue: '429572.1654418392',
           },
         },
         '1313161554': {
@@ -7088,77 +7088,77 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '598758.5595331885',
+            maxOriginValue: '666474.8691433353',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '599439.2288270511',
+            maxOriginValue: '667227.7683589064',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '599475.105861',
+            maxOriginValue: '667260.116043',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '599394.133353',
+            maxOriginValue: '667191.15752',
           },
         },
         '10': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '599238.1418796307',
+            maxOriginValue: '667008.6896232258',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '597734.977985',
+            maxOriginValue: '663994.453754',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '598998.3507064095',
+            maxOriginValue: '666741.7793832805',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880437',
+            maxOriginValue: '3626.261726',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358329.55073556653',
+            maxOriginValue: '344868.45938029845',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '598998.3507064095',
+            maxOriginValue: '666741.7793832805',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300408.616609',
+            maxOriginValue: '338647.700133',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '598998.3507064095',
+            maxOriginValue: '666741.7793832805',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244128',
+            maxOriginValue: '430.244129',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
@@ -7168,113 +7168,113 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '599238.1418796307',
+            maxOriginValue: '667008.6896232258',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339952658125',
+            maxOriginValue: '846.3339953753554',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '599238.1418796307',
+            maxOriginValue: '667008.6896232258',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '498738.216715',
+            maxOriginValue: '501896.508417',
           },
         },
         '2000': {
           '0x1555C68Be3b22cdcCa934Ae88Cb929Db40aB311d': {
             symbol: 'BUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '559097.8405462888',
+            maxOriginValue: '538588.6389312735',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '78740.55001402221',
+            maxOriginValue: '83061.5757198963',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57981.149374',
+            maxOriginValue: '58302.570733',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '598998.3507064095',
+            maxOriginValue: '666741.7793832805',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.833359',
+            maxOriginValue: '9228.241383',
           },
         },
         '42161': {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '599238.1418796307',
+            maxOriginValue: '667008.6896232258',
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '599094.730127',
+            maxOriginValue: '666811.706954',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '599080.245749',
+            maxOriginValue: '666822.938728',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226026.64875',
+            maxOriginValue: '226239.244194',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248148.155487',
+            maxOriginValue: '248163.613857',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '598998.3507064095',
+            maxOriginValue: '666741.7793832805',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '599417.9852595465',
+            maxOriginValue: '667208.8723031847',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '599417.9852595465',
+            maxOriginValue: '667208.8723031847',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428177.2441786958',
+            maxOriginValue: '429322.9896465857',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '599238.1418796307',
+            maxOriginValue: '667008.6896232258',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -7291,7 +7291,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '598998.3507064095',
+            maxOriginValue: '666741.7793832805',
           },
         },
       },
@@ -7407,77 +7407,77 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '598758.4884937248',
+            maxOriginValue: '666474.7401254978',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '599439.1577104888',
+            maxOriginValue: '667227.639203048',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '599475.034739',
+            maxOriginValue: '667259.98688',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '599394.062244',
+            maxOriginValue: '667191.028373',
           },
         },
         '10': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '599238.0707832674',
+            maxOriginValue: '667008.56050205',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '597734.907813',
+            maxOriginValue: '663994.329515',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '598998.2796384961',
+            maxOriginValue: '666741.6503137739',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880437',
+            maxOriginValue: '3626.261726',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358329.55063519924',
+            maxOriginValue: '344868.45929481165',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '598998.2796384961',
+            maxOriginValue: '666741.6503137739',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300408.616551',
+            maxOriginValue: '338647.700051',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '598998.2796384961',
+            maxOriginValue: '666741.6503137739',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244128',
+            maxOriginValue: '430.244129',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
@@ -7487,113 +7487,113 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '599238.0707832674',
+            maxOriginValue: '667008.56050205',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339952658124',
+            maxOriginValue: '846.3339953753552',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '599238.0707832674',
+            maxOriginValue: '667008.56050205',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '498738.216241',
+            maxOriginValue: '501896.508103',
           },
         },
         '2000': {
           '0x1555C68Be3b22cdcCa934Ae88Cb929Db40aB311d': {
             symbol: 'BUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '559097.7743482331',
+            maxOriginValue: '538588.5353565353',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77750.97600928678',
+            maxOriginValue: '83061.57571159514',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57617.127699',
+            maxOriginValue: '58279.590795',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '598998.2796384961',
+            maxOriginValue: '666741.6503137739',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.385362',
+            maxOriginValue: '9228.241383',
           },
         },
         '42161': {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '599238.0707832674',
+            maxOriginValue: '667008.56050205',
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '599094.659095',
+            maxOriginValue: '666811.577974',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '599080.17472',
+            maxOriginValue: '666822.809744',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226026.648736',
+            maxOriginValue: '226239.244176',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248148.15547',
+            maxOriginValue: '248163.613836',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '598998.2796384961',
+            maxOriginValue: '666741.6503137739',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '599417.9141418458',
+            maxOriginValue: '667208.7431432571',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '599417.9141418458',
+            maxOriginValue: '667208.7431432571',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428177.24398742977',
+            maxOriginValue: '429322.9894723241',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '599238.0707832674',
+            maxOriginValue: '667008.56050205',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -7610,7 +7610,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '598998.2796384961',
+            maxOriginValue: '666741.6503137739',
           },
         },
       },
@@ -8081,200 +8081,200 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '304175.6788386767',
+            maxOriginValue: '238852.0672888236',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340654.48790257564',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '304545.26577134716',
+            maxOriginValue: '239129.93846234342',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '1001632.0748582936',
+            maxOriginValue: '1001650.8340862182',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '304561.929293',
+            maxOriginValue: '239140.061663',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '304525.003054',
+            maxOriginValue: '239118.887647',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '998710.883925258',
+            maxOriginValue: '998748.3274751618',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999416.72321',
+            maxOriginValue: '999438.663541',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '304436.05583969085',
+            maxOriginValue: '239043.3785161274',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '304252.424937',
+            maxOriginValue: '238936.248182',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '178755.79178339022',
+            maxOriginValue: '163612.06631724813',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '524082.584921',
+            maxOriginValue: '468986.152832',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '142802.21342223487',
+            maxOriginValue: '136057.16925159906',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '304314.2326880943',
+            maxOriginValue: '238947.7229024755',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880327',
+            maxOriginValue: '3626.261515',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '304314.2326880943',
+            maxOriginValue: '238947.7229024755',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '304314.3407786405',
+            maxOriginValue: '238925.19239029614',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '304337.97842016467',
+            maxOriginValue: '238954.77173006395',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '303627.50350081106',
+            maxOriginValue: '238465.47799834888',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '304314.2326880943',
+            maxOriginValue: '238947.7229024755',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244128',
+            maxOriginValue: '430.244127',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '520.809889',
+            maxOriginValue: '520.809888',
           },
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '304436.05583969085',
+            maxOriginValue: '239043.3785161274',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339936314087',
+            maxOriginValue: '846.3339922592411',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '304436.05583969085',
+            maxOriginValue: '239043.3785161274',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '304455.452684',
+            maxOriginValue: '239143.266971',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77673.80390945327',
+            maxOriginValue: '82901.46186628622',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57736.765223',
+            maxOriginValue: '58272.574261',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '304314.2326880943',
+            maxOriginValue: '238947.7229024755',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.347717',
+            maxOriginValue: '9228.180416',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197672.0501240928',
+            maxOriginValue: '195582.47911711852',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999417.098729',
+            maxOriginValue: '999438.252411',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104425.708116',
+            maxOriginValue: '105184.169727',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '999417.109376',
+            maxOriginValue: '999438.270264',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '304436.05583969085',
+            maxOriginValue: '239043.3785161274',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -8284,92 +8284,92 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '304456.076294',
+            maxOriginValue: '239082.0343',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '304450.543677',
+            maxOriginValue: '239084.714976',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999417.11831',
+            maxOriginValue: '999438.178393',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '225692.875989',
+            maxOriginValue: '223982.289482',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.879441',
+            maxOriginValue: '69500.261326',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '247623.098845',
+            maxOriginValue: '236108.44764',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '304314.2326880943',
+            maxOriginValue: '238947.7229024755',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.394847',
+            maxOriginValue: '63349.988059',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.203090336356',
+            maxOriginValue: '63895.14608832144',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '304527.4232033882',
+            maxOriginValue: '239115.12022636636',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '304527.4232033882',
+            maxOriginValue: '239115.12022636636',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '304299.1488456649',
+            maxOriginValue: '239118.957409232',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '304436.05583969085',
+            maxOriginValue: '239043.3785161274',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.498407',
+            maxOriginValue: '1455.498403',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651557',
+            maxOriginValue: '1454.651553',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '304314.2326880943',
+            maxOriginValue: '238947.7229024755',
           },
         },
       },
@@ -8382,200 +8382,200 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '304192.39080400445',
+            maxOriginValue: '352007.5809014049',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '311120.52993996354',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '304545.24701753637',
+            maxOriginValue: '352405.9353080464',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '312440.45369971154',
+            maxOriginValue: '353317.45490495',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '304561.910538',
+            maxOriginValue: '352515.916236',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '304524.984302',
+            maxOriginValue: '352448.530308',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '311529.2694556602',
+            maxOriginValue: '352314.1821546838',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '311728.742801',
+            maxOriginValue: '352516.002861',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '182220.15661060347',
+            maxOriginValue: '239043.38101859513',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '182318.533844',
+            maxOriginValue: '238936.250682',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '178755.79178339022',
+            maxOriginValue: '162266.3001628972',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '311667.41388',
+            maxOriginValue: '352432.424982',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '142802.09921362347',
+            maxOriginValue: '136046.29265706887',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '304314.21394809894',
+            maxOriginValue: '238947.72540394185',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880327',
+            maxOriginValue: '3626.261515',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '304314.21394809894',
+            maxOriginValue: '238947.72540394185',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '304314.32205274084',
+            maxOriginValue: '238925.19489012207',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '304337.9596919532',
+            maxOriginValue: '238954.77423032964',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '303627.48487271613',
+            maxOriginValue: '238465.48048912955',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '304314.21394809894',
+            maxOriginValue: '238947.72540394185',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244128',
+            maxOriginValue: '430.244127',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '520.809889',
+            maxOriginValue: '520.809888',
           },
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '304436.03709219344',
+            maxOriginValue: '239043.38101859513',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339936314085',
+            maxOriginValue: '846.3339922592412',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '304436.03709219344',
+            maxOriginValue: '239043.38101859513',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '304455.433967',
+            maxOriginValue: '239143.269472',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77673.80389616106',
+            maxOriginValue: '82901.4618705406',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57707.999671',
+            maxOriginValue: '58272.574262',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '304314.21394809894',
+            maxOriginValue: '238947.72540394185',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.347717',
+            maxOriginValue: '9228.180416',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197510.35948620236',
+            maxOriginValue: '195477.33761896307',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '311728.70268',
+            maxOriginValue: '352516.035253',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104035.86173',
+            maxOriginValue: '105149.557716',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '311728.70268',
+            maxOriginValue: '352516.007278',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '304436.03709219344',
+            maxOriginValue: '352067.6107864366',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -8585,92 +8585,92 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '304456.057551',
+            maxOriginValue: '352445.470567',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '304450.524935',
+            maxOriginValue: '352470.424206',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '311728.70268',
+            maxOriginValue: '352515.973419',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '225692.875883',
+            maxOriginValue: '352424.430086',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.838595',
+            maxOriginValue: '69500.231611',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '247623.098633',
+            maxOriginValue: '352515.973419',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '171424.7208815762',
+            maxOriginValue: '238947.72540394185',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.358598',
+            maxOriginValue: '63349.963508',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.16751733578',
+            maxOriginValue: '63895.12111584899',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '304527.40445026435',
+            maxOriginValue: '239115.1227295851',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '304527.40445026435',
+            maxOriginValue: '239115.1227295851',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '304299.13019351836',
+            maxOriginValue: '239118.95990707233',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '304436.03709219344',
+            maxOriginValue: '239043.38101859513',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.498407',
+            maxOriginValue: '1455.498403',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651557',
+            maxOriginValue: '1454.651553',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '304314.21394809894',
+            maxOriginValue: '238947.72540394185',
           },
         },
       },
@@ -8683,69 +8683,69 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '311255.74152413517',
+            maxOriginValue: '19976000',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '311120.5139499865',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '311609.9954886008',
+            maxOriginValue: '352406.04137256776',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '312440.43455719535',
+            maxOriginValue: '353317.5612119932',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '311728.721207',
+            maxOriginValue: '352516.021863',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '311627.668532',
+            maxOriginValue: '352448.767435',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '311529.24775897025',
+            maxOriginValue: '352314.2015624157',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '311728.721101',
+            maxOriginValue: '352516.022272',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '182220.15661060347',
+            maxOriginValue: '19992000',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '182318.533844',
+            maxOriginValue: '755640.931741',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '178755.79178339022',
+            maxOriginValue: '161700.55965473314',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '311672.967073',
+            maxOriginValue: '352433.840756',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '142801.91143121241',
+            maxOriginValue: '136041.64807702397',
           },
         },
         '25': {
@@ -8757,7 +8757,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880475',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -8769,17 +8769,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '943607.343918215',
+            maxOriginValue: '908626.6386835022',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978269.0949278249',
+            maxOriginValue: '965953.740417475',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559658.1660706991',
+            maxOriginValue: '539128.2074534623',
           },
         },
         '250': {
@@ -8820,19 +8820,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372601',
+            maxOriginValue: '502232.784836',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77776.85347746',
+            maxOriginValue: '83082.7827977026',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57779.89469',
+            maxOriginValue: '58284.610323',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -8842,41 +8842,41 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.397954',
+            maxOriginValue: '9228.249425',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197510.35953241558',
+            maxOriginValue: '195477.23571726913',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '311728.726978',
+            maxOriginValue: '352516.037426',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104035.861739',
+            maxOriginValue: '105149.522305',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '311728.726929',
+            maxOriginValue: '352516.037426',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '311386.79300798214',
+            maxOriginValue: '19992000',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -8886,49 +8886,49 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '311666.381183',
+            maxOriginValue: '1758239.304926',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '311693.974275',
+            maxOriginValue: '1771375.485177',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '311728.734354',
+            maxOriginValue: '352516.035096',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226076.772074',
+            maxOriginValue: '352424.677968',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.838595',
+            maxOriginValue: '69500.231611',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '248206.654279',
+            maxOriginValue: '352516.035096',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '171424.7209429326',
+            maxOriginValue: '19984000',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.358598',
+            maxOriginValue: '63349.963508',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.16751734745',
+            maxOriginValue: '63895.121115861344',
           },
         },
         '53935': {
@@ -8947,7 +8947,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428553.92292995437',
+            maxOriginValue: '429572.1654418392',
           },
         },
         '1313161554': {
@@ -8997,200 +8997,200 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '304192.41408724984',
+            maxOriginValue: '834869.9737123614',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340654.48790257564',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '304545.27032727795',
+            maxOriginValue: '835746.6663082136',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '1001252.9713697709',
+            maxOriginValue: '837865.650166265',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '304561.933849',
+            maxOriginValue: '836002.217326',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '304525.00761',
+            maxOriginValue: '835927.931481',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '998332.9842161917',
+            maxOriginValue: '835475.2445232552',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999037.928278',
+            maxOriginValue: '836002.217326',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '304436.06039408786',
+            maxOriginValue: '239043.3830489701',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '304252.429485',
+            maxOriginValue: '238936.25271',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '178871.8072783019',
+            maxOriginValue: '173465.1508746701',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '537874.530809',
+            maxOriginValue: '474209.054674',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '142802.44960553196',
+            maxOriginValue: '137269.97065265675',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '304314.23724066885',
+            maxOriginValue: '238947.72743350433',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3531.880327',
+            maxOriginValue: '3626.261515',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '304314.23724066885',
+            maxOriginValue: '238947.72743350433',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '304314.34532779065',
+            maxOriginValue: '238924.5097346815',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '304337.98296987655',
+            maxOriginValue: '238954.74794730768',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '303627.5080262012',
+            maxOriginValue: '238469.25940463005',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '304314.23724066885',
+            maxOriginValue: '238947.72743350433',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244128',
+            maxOriginValue: '430.244127',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '520.809889',
+            maxOriginValue: '520.809888',
           },
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '304436.06039408786',
+            maxOriginValue: '239043.3830489701',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339936314088',
+            maxOriginValue: '846.3339922592413',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '304436.06039408786',
+            maxOriginValue: '239043.3830489701',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '304455.457231',
+            maxOriginValue: '239143.271501',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77673.80391268239',
+            maxOriginValue: '83180.33117347224',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57750.75061',
+            maxOriginValue: '58469.684242',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '304314.23724066885',
+            maxOriginValue: '238947.72743350433',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.347717',
+            maxOriginValue: '9228.286321',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197672.01529075755',
+            maxOriginValue: '195578.0549405994',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999037.388562',
+            maxOriginValue: '836015.565735',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104081.071661',
+            maxOriginValue: '105172.953284',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '999037.388562',
+            maxOriginValue: '836015.656969',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '304436.06039408786',
+            maxOriginValue: '833461.513610731',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -9200,92 +9200,92 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '304456.080848',
+            maxOriginValue: '835848.483651',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '304450.548231',
+            maxOriginValue: '835884.577332',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '999037.390536',
+            maxOriginValue: '836015.79536',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '225692.876014',
+            maxOriginValue: '226246.711453',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.879438',
+            maxOriginValue: '69500.259808',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '247623.098897',
+            maxOriginValue: '836015.798216',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '304314.23724066885',
+            maxOriginValue: '238947.72743350433',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.394845',
+            maxOriginValue: '63349.986804',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.20308810022',
+            maxOriginValue: '63895.14481249349',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '304527.42775915214',
+            maxOriginValue: '239115.12476056945',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '304527.42775915214',
+            maxOriginValue: '239115.12476056945',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '304299.1533768981',
+            maxOriginValue: '239118.96193369286',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '304436.06039408786',
+            maxOriginValue: '239043.3830489701',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.498407',
+            maxOriginValue: '1455.498403',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651557',
+            maxOriginValue: '1454.651553',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '304314.23724066885',
+            maxOriginValue: '238947.72743350433',
           },
         },
       },
@@ -9635,7 +9635,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -9645,7 +9645,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
         },
         '288': {
@@ -9669,7 +9669,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.92641487577436',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -9709,12 +9709,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '406.39370961428784',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '406.39370961428784',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -9731,12 +9731,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
         },
         '43114': {
@@ -9748,7 +9748,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -9762,12 +9762,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '396.0074514454232',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '396.0074514454232',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -10066,17 +10066,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '999895.3945889063',
+            maxOriginValue: '999894.304716431',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '999966.284904',
+            maxOriginValue: '999950.63713',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '999800.383549',
+            maxOriginValue: '999827.877783',
           },
         },
         '10': {
@@ -10088,7 +10088,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.931741',
           },
         },
         '25': {
@@ -10100,7 +10100,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611158',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -10112,24 +10112,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '943607.3438840208',
+            maxOriginValue: '907402.9248342346',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978252.4171821385',
+            maxOriginValue: '965953.7425700405',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559658.1660508192',
+            maxOriginValue: '540350.6130721241',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.54518213856',
+            maxOriginValue: '345025.90692048497',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -10139,7 +10139,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300590.404627',
+            maxOriginValue: '338799.377171',
           },
         },
         '288': {
@@ -10173,19 +10173,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372601',
+            maxOriginValue: '502232.784836',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77776.85347746',
+            maxOriginValue: '83362.128802395',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57747.136669',
+            maxOriginValue: '58450.99227',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -10195,7 +10195,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.397954',
+            maxOriginValue: '9228.354658',
           },
         },
         '42161': {
@@ -10207,24 +10207,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1761307.719705',
+            maxOriginValue: '1758239.304926',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741294.541504',
+            maxOriginValue: '1771375.485177',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226076.772074',
+            maxOriginValue: '226278.26094',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248206.654279',
+            maxOriginValue: '248208.654114',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -10248,7 +10248,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428553.92292995437',
+            maxOriginValue: '429572.1654418392',
           },
         },
         '1313161554': {
@@ -10327,19 +10327,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: null,
-            maxOriginValue: '10.2182',
+            maxOriginValue: '10.218197',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '12.218288808674387',
+            maxOriginValue: '12.218288705507186',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '12.261226',
+            maxOriginValue: '12.270447',
           },
         },
         '56': {
@@ -10351,24 +10351,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '12.227889857154649',
+            maxOriginValue: '12.22260216389099',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '12.228558275532965',
+            maxOriginValue: '12.223082376319288',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '12.21495595964469',
+            maxOriginValue: '12.209740661346649',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '13.720554952831693',
+            maxOriginValue: '13.726715707953405',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -10378,7 +10378,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '13.716597',
+            maxOriginValue: '13.726308',
           },
         },
         '250': {
@@ -10397,19 +10397,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '13.245919',
+            maxOriginValue: '13.247116',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '13.17662327173674',
+            maxOriginValue: '13.201324793737994',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '13.299197',
+            maxOriginValue: '13.29426',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -10419,7 +10419,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '13.300873',
+            maxOriginValue: '13.294757',
           },
         },
         '42161': {
@@ -10431,24 +10431,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: null,
-            maxOriginValue: '10.222207',
+            maxOriginValue: '10.222606',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '10.22205',
+            maxOriginValue: '10.222708',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '11.723219',
+            maxOriginValue: '11.723268',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '11.724936',
+            maxOriginValue: '11.724968',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -10472,7 +10472,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: null,
-            maxOriginValue: '10.247208370798845',
+            maxOriginValue: '10.247742793256721',
           },
         },
         '1313161554': {
@@ -10536,7 +10536,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: null,
-            maxOriginValue: '10.2182',
+            maxOriginValue: '10.218197',
           },
         },
         '25': {
@@ -10548,7 +10548,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '12.261226',
+            maxOriginValue: '12.270447',
           },
         },
         '56': {
@@ -10560,24 +10560,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '12.227889857100157',
+            maxOriginValue: '12.222602163836523',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '12.22855827547847',
+            maxOriginValue: '12.223082376264818',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '12.214955959590258',
+            maxOriginValue: '12.209740661292237',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '13.720554952777235',
+            maxOriginValue: '13.726715707898922',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -10587,7 +10587,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '13.716597',
+            maxOriginValue: '13.726308',
           },
         },
         '250': {
@@ -10606,19 +10606,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '13.245919',
+            maxOriginValue: '13.247116',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '13.176623271682464',
+            maxOriginValue: '13.201324793683614',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '13.298831',
+            maxOriginValue: '13.294873',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -10628,7 +10628,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '13.300873',
+            maxOriginValue: '13.294757',
           },
         },
         '42161': {
@@ -10640,24 +10640,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: null,
-            maxOriginValue: '10.222207',
+            maxOriginValue: '10.222606',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '10.22205',
+            maxOriginValue: '10.222708',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '11.723219',
+            maxOriginValue: '11.723268',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '11.724936',
+            maxOriginValue: '11.724968',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -10681,7 +10681,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: null,
-            maxOriginValue: '10.247208370744243',
+            maxOriginValue: '10.247742793202116',
           },
         },
         '1313161554': {
@@ -10723,17 +10723,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '999895.3945889063',
+            maxOriginValue: '999894.304716431',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '999966.284904',
+            maxOriginValue: '999950.63713',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '999800.383549',
+            maxOriginValue: '999827.877783',
           },
         },
         '10': {
@@ -10745,7 +10745,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.931741',
           },
         },
         '25': {
@@ -10757,7 +10757,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611158',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -10769,24 +10769,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '943607.3438840208',
+            maxOriginValue: '907402.8461653633',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978252.4171821385',
+            maxOriginValue: '930989.6256919835',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559658.1660508192',
+            maxOriginValue: '540350.567109901',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.54518213856',
+            maxOriginValue: '345025.90692048497',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -10796,7 +10796,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '300590.404627',
+            maxOriginValue: '338799.377171',
           },
         },
         '250': {
@@ -10815,19 +10815,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372601',
+            maxOriginValue: '502232.784836',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77776.85347746',
+            maxOriginValue: '83362.128802395',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57635.948137',
+            maxOriginValue: '58458.72051',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -10837,7 +10837,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.397954',
+            maxOriginValue: '9228.354658',
           },
         },
         '42161': {
@@ -10849,24 +10849,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1761307.719705',
+            maxOriginValue: '1758239.304926',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741294.541504',
+            maxOriginValue: '1771375.485177',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226076.772074',
+            maxOriginValue: '226278.26094',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248206.654279',
+            maxOriginValue: '248208.654114',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -10890,7 +10890,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428553.92292995437',
+            maxOriginValue: '429572.1654418392',
           },
         },
         '1313161554': {
@@ -10939,7 +10939,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -10949,7 +10949,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -10963,7 +10963,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.925933359487196',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -11003,12 +11003,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -11025,12 +11025,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
         },
         '43114': {
@@ -11042,7 +11042,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -11056,12 +11056,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '394.0068205730762',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '394.0068205730762',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -11122,7 +11122,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '0.000031209888222801',
+            maxOriginValue: '0.000031209890935681',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -11406,7 +11406,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '0.000031209888222801',
+            maxOriginValue: '0.000031209890935681',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -11646,7 +11646,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: null,
-            maxOriginValue: '10.2182',
+            maxOriginValue: '10.218197',
           },
         },
         '25': {
@@ -11658,7 +11658,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '12.261226',
+            maxOriginValue: '12.270447',
           },
         },
         '56': {
@@ -11670,24 +11670,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '12.227889856904302',
+            maxOriginValue: '12.222602163640751',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '12.228558275282603',
+            maxOriginValue: '12.22308237606904',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '12.214955959394608',
+            maxOriginValue: '12.209740661096673',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '13.7205549525815',
+            maxOriginValue: '13.726897308812585',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -11697,7 +11697,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '13.716597',
+            maxOriginValue: '13.726121',
           },
         },
         '250': {
@@ -11716,19 +11716,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '13.245919',
+            maxOriginValue: '13.247116',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '13.17662327148738',
+            maxOriginValue: '13.201324793488165',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '13.29737',
+            maxOriginValue: '13.293957',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -11738,7 +11738,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '13.300873',
+            maxOriginValue: '13.294757',
           },
         },
         '42161': {
@@ -11750,24 +11750,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: null,
-            maxOriginValue: '10.222207',
+            maxOriginValue: '10.222606',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '10.22205',
+            maxOriginValue: '10.222708',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '11.723219',
+            maxOriginValue: '11.723268',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '11.724936',
+            maxOriginValue: '11.724968',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -11791,7 +11791,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: null,
-            maxOriginValue: '10.247208370547986',
+            maxOriginValue: '10.24774279300585',
           },
         },
         '1313161554': {
@@ -11881,158 +11881,158 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
             symbol: 'WETH',
             minOriginValue: '0.015',
-            maxOriginValue: '39.35640267948501',
+            maxOriginValue: '39.354997118691045',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.015',
-            maxOriginValue: '39.35640267948501',
+            maxOriginValue: '39.354997118691045',
           },
         },
         '10': {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.374339717779385',
+            maxOriginValue: '39.37293363066352',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.38004015857179',
+            maxOriginValue: '39.378633753597164',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.374339717779385',
+            maxOriginValue: '39.37293363066352',
           },
         },
         '250': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.3721609988762',
+            maxOriginValue: '39.37075487529512',
           },
         },
         '288': {
           '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
             symbol: 'nETH',
             minOriginValue: '0.007',
-            maxOriginValue: '39.38004015857179',
+            maxOriginValue: '39.378633753597164',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.1742747588664473',
+            maxOriginValue: '0.17427475886641355',
           },
           '0xd203De32170130082896b4111eDF825a4774c18E': {
             symbol: 'WETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.1742747588664473',
+            maxOriginValue: '0.17427475886641355',
           },
         },
         '1284': {
           '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.37610057872399',
+            maxOriginValue: '39.374694314446145',
           },
         },
         '2000': {
           '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB': {
             symbol: 'WETH',
             minOriginValue: '0.0001',
-            maxOriginValue: '39.35640267948501',
+            maxOriginValue: '39.354997118691045',
           },
         },
         '7700': {
           '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.3721609988762',
+            maxOriginValue: '39.37075487529512',
           },
         },
         '8217': {
           '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.38004015857179',
+            maxOriginValue: '39.378633753597164',
           },
         },
         '8453': {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.31889264368703',
+            maxOriginValue: '39.308364452932395',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.31889264368703',
+            maxOriginValue: '39.308364452932395',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.391858898115174',
+            maxOriginValue: '39.39045207105023',
           },
         },
         '42161': {
           '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.38004015857179',
+            maxOriginValue: '39.378633753597164',
           },
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.37787936310895',
+            maxOriginValue: '39.377771951394465',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.37787936310895',
+            maxOriginValue: '39.377771951394465',
           },
         },
         '43114': {
           '0x19E1ae0eE35c0404f835521146206595d37981ae': {
             symbol: 'nETH',
             minOriginValue: '0.002',
-            maxOriginValue: '39.3721609988762',
+            maxOriginValue: '39.37075487529512',
           },
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.685820000438471',
+            maxOriginValue: '7.775319631711732',
           },
         },
         '53935': {
           '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.3721609988762',
+            maxOriginValue: '39.37075487529512',
           },
         },
         '81457': {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.42924102176359',
+            maxOriginValue: '39.418495376676816',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.42924102176359',
+            maxOriginValue: '39.418495376676816',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.391858898115174',
+            maxOriginValue: '39.39045207105023',
           },
         },
         '1666600000': {
           '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '39.3721609988762',
+            maxOriginValue: '39.37075487529512',
           },
         },
       },
@@ -12182,7 +12182,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -12192,7 +12192,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -12251,12 +12251,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -12273,12 +12273,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
         },
         '43114': {
@@ -12290,7 +12290,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -12304,12 +12304,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -12339,17 +12339,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '999895.3945889063',
+            maxOriginValue: '999894.304716431',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '999966.284904',
+            maxOriginValue: '999950.63713',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '999800.383549',
+            maxOriginValue: '999827.877783',
           },
         },
         '10': {
@@ -12361,7 +12361,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.931741',
           },
         },
         '25': {
@@ -12373,7 +12373,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611158',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -12385,24 +12385,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '943607.3438840208',
+            maxOriginValue: '907402.8461653633',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978252.4171821385',
+            maxOriginValue: '930989.6256919835',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559658.1660508192',
+            maxOriginValue: '540350.567109901',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.5451611531',
+            maxOriginValue: '349193.72866058565',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -12412,7 +12412,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '299510.76762',
+            maxOriginValue: '335981.652753',
           },
         },
         '250': {
@@ -12448,12 +12448,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77776.85347746',
+            maxOriginValue: '83362.128802395',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57736.903223',
+            maxOriginValue: '58383.434267',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -12463,7 +12463,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.397954',
+            maxOriginValue: '9228.354658',
           },
         },
         '42161': {
@@ -12475,24 +12475,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1761307.719705',
+            maxOriginValue: '1758239.304926',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741294.541504',
+            maxOriginValue: '1771375.485177',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226076.772074',
+            maxOriginValue: '226278.26094',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248206.654279',
+            maxOriginValue: '248208.654114',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -12516,7 +12516,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428553.92292995437',
+            maxOriginValue: '429572.1654418392',
           },
         },
         '1313161554': {
@@ -12573,92 +12573,92 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '167439.66088204837',
+            maxOriginValue: '164553.1775802634',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '167635.48601063198',
+            maxOriginValue: '164745.44901533023',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '167644.350579',
+            maxOriginValue: '164752.294425',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '167624.842471',
+            maxOriginValue: '164738.01362',
           },
         },
         '10': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '167573.7735459507',
+            maxOriginValue: '164684.9782831711',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '167522.906817',
+            maxOriginValue: '164635.836752',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '167506.71721399954',
+            maxOriginValue: '164619.07793171727',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.610664',
+            maxOriginValue: '3626.261245',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '167506.71721399954',
+            maxOriginValue: '164619.07793171727',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '167562.32473828667',
+            maxOriginValue: '164617.20879311586',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '167572.82694949443',
+            maxOriginValue: '164624.98194126776',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '167322.2678403073',
+            maxOriginValue: '164371.11030304225',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '167377.23756552165',
+            maxOriginValue: '164535.98693118032',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '167506.71721399954',
+            maxOriginValue: '164619.07793171727',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '167242.421167',
+            maxOriginValue: '164513.053468',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '167506.71721399954',
+            maxOriginValue: '164619.07793171727',
           },
         },
         '288': {
@@ -12675,111 +12675,111 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '167573.7735459507',
+            maxOriginValue: '164684.9782831711',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339885497355',
+            maxOriginValue: '846.3339882913168',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77386.44982433144',
+            maxOriginValue: '82917.7379243938',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57626.145782',
+            maxOriginValue: '58340.053131',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '167506.71721399954',
+            maxOriginValue: '164619.07793171727',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.206326',
+            maxOriginValue: '9231.308057',
           },
         },
         '42161': {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '167573.7735459507',
+            maxOriginValue: '164684.9782831711',
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '167607.93327',
+            maxOriginValue: '164724.423258',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '167605.15249',
+            maxOriginValue: '164726.189929',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '167139.930002',
+            maxOriginValue: '164282.003292',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '167284.589034',
+            maxOriginValue: '164412.516771',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '167506.71721399954',
+            maxOriginValue: '164619.07793171727',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '167624.06579491406',
+            maxOriginValue: '164734.4035467615',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '167624.06579491406',
+            maxOriginValue: '164734.4035467615',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '167724.09316595862',
+            maxOriginValue: '164840.35590643832',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '167573.7735459507',
+            maxOriginValue: '164684.9782831711',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.498392',
+            maxOriginValue: '1455.498391',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651542',
+            maxOriginValue: '1454.651541',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '167506.71721399954',
+            maxOriginValue: '164619.07793171727',
           },
         },
       },
@@ -12927,7 +12927,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -12937,7 +12937,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -12968,7 +12968,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.925933359487196',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -13001,12 +13001,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -13023,12 +13023,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
         },
         '43114': {
@@ -13040,7 +13040,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -13054,12 +13054,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -13921,7 +13921,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -13931,7 +13931,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -13962,7 +13962,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.925933359487196',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -13995,12 +13995,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -14017,12 +14017,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
         },
         '43114': {
@@ -14034,7 +14034,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -14048,12 +14048,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -14257,7 +14257,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -14267,7 +14267,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -14298,7 +14298,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.925933359487196',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -14331,12 +14331,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -14353,12 +14353,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
         },
         '43114': {
@@ -14370,7 +14370,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -14384,12 +14384,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -14414,203 +14414,203 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '96115.76500438852',
+            maxOriginValue: '90518.69338343921',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '96228.63028791214',
+            maxOriginValue: '90624.90240560543',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '96233.637102',
+            maxOriginValue: '90628.603101',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '96222.655016',
+            maxOriginValue: '90620.901571',
           },
         },
         '10': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '96197.27069838677',
+            maxOriginValue: '90602.43790608583',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '96180.500994',
+            maxOriginValue: '90587.502758',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '96158.776392385',
+            maxOriginValue: '90566.18242873246',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.609641',
+            maxOriginValue: '3626.260042',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '96158.776392385',
+            maxOriginValue: '90566.18242873246',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '96208.05202766275',
+            maxOriginValue: '90579.67675798526',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '96213.64869310986',
+            maxOriginValue: '90583.55547268278',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '96090.2059700563',
+            maxOriginValue: '90467.08108273242',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '96128.53019258082',
+            maxOriginValue: '90568.76529757852',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '96158.776392385',
+            maxOriginValue: '90566.18242873246',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '96085.228567',
+            maxOriginValue: '90561.040215',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '96158.776392385',
+            maxOriginValue: '90566.18242873246',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244118',
+            maxOriginValue: '430.244116',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '520.809877',
+            maxOriginValue: '520.809875',
           },
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '96197.27069838677',
+            maxOriginValue: '90602.43790608583',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339736506499',
+            maxOriginValue: '846.3339708132163',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '96197.27069838677',
+            maxOriginValue: '90602.43790608583',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '96305.406502',
+            maxOriginValue: '90712.403766',
           },
         },
         '42161': {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '96197.27069838677',
+            maxOriginValue: '90602.43790608583',
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '96224.039116',
+            maxOriginValue: '90631.387144',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '96222.502211',
+            maxOriginValue: '90632.323568',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '96106.446467',
+            maxOriginValue: '90523.406164',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '96132.021941',
+            maxOriginValue: '90545.922328',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '96158.776392385',
+            maxOriginValue: '90566.18242873246',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '96226.14142788808',
+            maxOriginValue: '90629.62951410086',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '96226.14142788808',
+            maxOriginValue: '90629.62951410086',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '96347.59809247339',
+            maxOriginValue: '90752.21602780529',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '96197.27069838677',
+            maxOriginValue: '90602.43790608583',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.498347',
+            maxOriginValue: '1455.498338',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651497',
+            maxOriginValue: '1454.651488',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '96158.776392385',
+            maxOriginValue: '90566.18242873246',
           },
         },
       },
@@ -14748,203 +14748,203 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '49481.00323748689',
+            maxOriginValue: '50339.33141254017',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '49539.25626314378',
+            maxOriginValue: '50398.52673450458',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '49541.808058',
+            maxOriginValue: '50400.566408',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '49536.222369',
+            maxOriginValue: '50396.326994',
           },
         },
         '10': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '49581.16283619189',
+            maxOriginValue: '50464.575442129964',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '49576.514822',
+            maxOriginValue: '50459.753965',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '49561.322434896894',
+            maxOriginValue: '50444.38153439001',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.605286',
+            maxOriginValue: '3626.256086',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '49561.322434896894',
+            maxOriginValue: '50224.410208138484',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '49592.9997470942',
+            maxOriginValue: '50236.36397569406',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '49595.78360257194',
+            maxOriginValue: '50238.42500262756',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '49536.90577336871',
+            maxOriginValue: '50178.805677891585',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '49557.454901162186',
+            maxOriginValue: '50238.77963011555',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '49561.322434896894',
+            maxOriginValue: '50224.410208138484',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '49539.985299',
+            maxOriginValue: '50235.150252',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '49561.322434896894',
+            maxOriginValue: '50291.752908720744',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244086',
+            maxOriginValue: '430.244088',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '520.809839',
+            maxOriginValue: '520.80984',
           },
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '49581.16283619189',
+            maxOriginValue: '50340.75411234829',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339116525366',
+            maxOriginValue: '846.3339141943861',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '49581.16283619189',
+            maxOriginValue: '50340.75411234829',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '49655.36113',
+            maxOriginValue: '50418.900497',
           },
         },
         '42161': {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '49581.16283619189',
+            maxOriginValue: '50340.75411234829',
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '49597.445419',
+            maxOriginValue: '50359.101883',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '49596.670013',
+            maxOriginValue: '50359.613235',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '49558.67158',
+            maxOriginValue: '50317.750868',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '49567.679678',
+            maxOriginValue: '50326.846871',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '49561.322434896894',
+            maxOriginValue: '50320.60975295959',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '49625.106694671565',
+            maxOriginValue: '50355.86238188981',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '49625.106694671565',
+            maxOriginValue: '50355.86238188981',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '49717.30238203351',
+            maxOriginValue: '50450.64340263711',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '49639.28987757156',
+            maxOriginValue: '50340.75411234829',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.49816',
+            maxOriginValue: '1455.498167',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651309',
+            maxOriginValue: '1454.651317',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '49619.42621615597',
+            maxOriginValue: '50320.60975295959',
           },
         },
       },
@@ -14962,17 +14962,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '999895.3945889063',
+            maxOriginValue: '999894.304716431',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '999966.284904',
+            maxOriginValue: '999950.63713',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '999800.383549',
+            maxOriginValue: '999827.877783',
           },
         },
         '10': {
@@ -14984,7 +14984,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.931741',
           },
         },
         '25': {
@@ -14996,7 +14996,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611158',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -15008,24 +15008,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '943607.3438840208',
+            maxOriginValue: '907402.8461535849',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978252.4171821385',
+            maxOriginValue: '930989.6256798839',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559658.1660508192',
+            maxOriginValue: '540347.6955086315',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.5451611531',
+            maxOriginValue: '349405.4436703883',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -15035,7 +15035,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '299510.76762',
+            maxOriginValue: '335981.652753',
           },
         },
         '250': {
@@ -15076,7 +15076,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372601',
+            maxOriginValue: '502232.784836',
           },
         },
         '42161': {
@@ -15088,24 +15088,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1761307.719705',
+            maxOriginValue: '1758239.304926',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1741294.541504',
+            maxOriginValue: '1771375.485177',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226076.772074',
+            maxOriginValue: '226278.26094',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248206.654279',
+            maxOriginValue: '248208.654114',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -15129,7 +15129,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428553.92292995437',
+            maxOriginValue: '429572.1654418392',
           },
         },
         '1313161554': {
@@ -15166,203 +15166,203 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '6557.751998807879',
+            maxOriginValue: '6637.84610936145',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '6565.4901732972185',
+            maxOriginValue: '6645.670073438167',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '6565.825376',
+            maxOriginValue: '6645.936515',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '6565.092977',
+            maxOriginValue: '6645.383456',
           },
         },
         '10': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '6673.751998807879',
+            maxOriginValue: '6753.84610936145',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '6673.617602',
+            maxOriginValue: '6753.707271',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '6672.409797208833',
+            maxOriginValue: '6752.43983247396',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.034354',
+            maxOriginValue: '3625.693166',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '6672.409797208833',
+            maxOriginValue: '6779.623338325685',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '6677.515585304421',
+            maxOriginValue: '6781.9090957358385',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '6677.8816519978545',
+            maxOriginValue: '6782.176936015179',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '6670.395872234426',
+            maxOriginValue: '6774.697500054246',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '6673.289678984067',
+            maxOriginValue: '6783.581478152376',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '6672.409797208833',
+            maxOriginValue: '6779.623338325685',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '6671.282719',
+            maxOriginValue: '6783.144351',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '6672.409797208833',
+            maxOriginValue: '6779.623338325685',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.241651',
+            maxOriginValue: '430.241732',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '520.806847',
+            maxOriginValue: '520.806947',
           },
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '6665.751998807879',
+            maxOriginValue: '6773.051379429228',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3287750530312',
+            maxOriginValue: '846.3289503488921',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '6675.080898008357',
+            maxOriginValue: '6782.337358877457',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '6688.379566',
+            maxOriginValue: '6796.41953',
           },
         },
         '42161': {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '6673.751998807879',
+            maxOriginValue: '6781.051379429228',
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '6676.2609',
+            maxOriginValue: '6783.862731',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '6676.158315',
+            maxOriginValue: '6783.930486',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '6674.767513',
+            maxOriginValue: '6782.039316',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '6675.763697',
+            maxOriginValue: '6783.042031',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '6672.409797208833',
+            maxOriginValue: '6779.623338325685',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '6677.084223607999',
+            maxOriginValue: '6784.372874291285',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '6673.751998807879',
+            maxOriginValue: '6781.051379429228',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '6691.5507345335',
+            maxOriginValue: '6799.452515715853',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '6675.080898008357',
+            maxOriginValue: '6782.337358877457',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.481249',
+            maxOriginValue: '1455.481856',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.634409',
+            maxOriginValue: '1454.635015',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '6672.409797208833',
+            maxOriginValue: '6779.623338325685',
           },
         },
       },
@@ -15493,7 +15493,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -15503,7 +15503,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -15534,7 +15534,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.925933359487196',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -15567,12 +15567,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -15589,12 +15589,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
         },
         '43114': {
@@ -15606,7 +15606,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -15620,12 +15620,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -15777,103 +15777,103 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '100841.25522770314',
+            maxOriginValue: '104690.30336217412',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '100920.5247813011',
+            maxOriginValue: '104764.24080823724',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '100958.7916515428',
+            maxOriginValue: '104812.19930959638',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '101243.15107538113',
+            maxOriginValue: '105108.47097622415',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.857867',
-            maxOriginValue: '101045.53319',
+            minOriginValue: '3.136162',
+            maxOriginValue: '105005.455078',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '100960.961483',
+            maxOriginValue: '104820.549769',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '100935.58373292771',
+            maxOriginValue: '104788.72631002756',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.002796',
-            maxOriginValue: '101115.070977',
+            minOriginValue: '0.002905',
+            maxOriginValue: '105008.588335',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '101058.40280203722',
+            maxOriginValue: '104905.80835762947',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '101096.093681',
+            maxOriginValue: '104945.673772',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '100889.43058908853',
+            maxOriginValue: '104506.16626693192',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '101113.151126',
+            maxOriginValue: '104958.821935',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '100993.37467969385',
+            maxOriginValue: '104807.38382822664',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '101109.373322',
+            maxOriginValue: '104958.054846',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '1',
-            maxOriginValue: '101115.19286093385',
+            maxOriginValue: '104952.55748260974',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '101028.89229715847',
+            maxOriginValue: '104741.2544664392',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '101091.18505',
+            maxOriginValue: '104952.065241',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '101115.070977',
+            maxOriginValue: '104966.587804',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '101027.4585287022',
+            maxOriginValue: '104878.14335621933',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -15883,63 +15883,63 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '101104.68779',
+            maxOriginValue: '104957.05118',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '101104.829356',
+            maxOriginValue: '104955.409067',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.004999',
-            maxOriginValue: '101115.071031',
+            minOriginValue: '0.005675',
+            maxOriginValue: '105008.585565',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '3.2',
-            maxOriginValue: '101096.022964',
+            maxOriginValue: '104958.190476',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '101094.848016',
+            maxOriginValue: '104945.594486',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '101115.071031',
+            maxOriginValue: '104966.587804',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '3.2',
-            maxOriginValue: '100836.22107365113',
+            maxOriginValue: '104656.85920545587',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64452.636747',
+            maxOriginValue: '63312.364969',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63849.784245232964',
+            maxOriginValue: '63856.580350195654',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.018846',
-            maxOriginValue: '101155.514398',
+            minOriginValue: '0.023615',
+            maxOriginValue: '105118.64266',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.017907',
-            maxOriginValue: '101155.515337',
+            minOriginValue: '0.020235',
+            maxOriginValue: '105118.64604',
           },
         },
       },
@@ -15952,135 +15952,135 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
             symbol: 'WETH',
             minOriginValue: '0.015',
-            maxOriginValue: '756.5936393043295',
+            maxOriginValue: '782.674743311421',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00100659015664167',
-            maxOriginValue: '756.5936393043295',
+            minOriginValue: '0.001149748521412845',
+            maxOriginValue: '782.674743311421',
           },
         },
         '10': {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.3007109540221',
+            maxOriginValue: '313.3027407441668',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '757.0480498985062',
+            maxOriginValue: '783.1448182323288',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001042646417505',
-            maxOriginValue: '313.3007109540221',
+            minOriginValue: '0.000001083391091767',
+            maxOriginValue: '313.3027407441668',
           },
         },
         '250': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.8965797004473',
+            maxOriginValue: '782.9881265920262',
           },
         },
         '288': {
           '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
             symbol: 'nETH',
             minOriginValue: '0.007',
-            maxOriginValue: '757.0480498985062',
+            maxOriginValue: '783.1448182323288',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475933688588',
+            maxOriginValue: '0.1742747593369692',
           },
           '0xd203De32170130082896b4111eDF825a4774c18E': {
             symbol: 'WETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475933688588',
+            maxOriginValue: '0.1742747593369692',
           },
         },
         '1088': {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92429904344248',
+            maxOriginValue: '53.92572163733806',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '757.0480498985062',
+            maxOriginValue: '783.1448182323288',
           },
         },
         '1284': {
           '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.9723147994767',
+            maxOriginValue: '783.0664724121775',
           },
         },
         '2000': {
           '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB': {
             symbol: 'WETH',
             minOriginValue: '0.0001',
-            maxOriginValue: '756.5936393043295',
+            maxOriginValue: '782.674743311421',
           },
         },
         '7700': {
           '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.8965797004473',
+            maxOriginValue: '782.9881265920262',
           },
         },
         '8217': {
           '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '757.0480498985062',
+            maxOriginValue: '783.1448182323288',
           },
         },
         '42161': {
           '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '757.0480498985062',
+            maxOriginValue: '783.1448182323288',
           },
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.1608256407574',
+            maxOriginValue: '782.2446260509586',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001846422010845',
-            maxOriginValue: '756.1608256407574',
+            minOriginValue: '0.000002141005659682',
+            maxOriginValue: '782.2446260509586',
           },
         },
         '43114': {
           '0x19E1ae0eE35c0404f835521146206595d37981ae': {
             symbol: 'nETH',
             minOriginValue: '0.002',
-            maxOriginValue: '756.8965797004473',
+            maxOriginValue: '782.9881265920262',
           },
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686439732329795',
+            maxOriginValue: '7.775942293674845',
           },
         },
         '53935': {
           '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.8965797004473',
+            maxOriginValue: '782.9881265920262',
           },
         },
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000007416811412505',
+            minOriginValue: '0.000009061033701292',
             maxOriginValue: null,
           },
         },
@@ -16088,23 +16088,23 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.43378207233525',
+            maxOriginValue: '398.8359448254735',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001447555069825',
-            maxOriginValue: '410.43378207233525',
+            minOriginValue: '0.000002034037518937',
+            maxOriginValue: '398.8359448254735',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '757.2752551955946',
+            maxOriginValue: '783.3798556927827',
           },
         },
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000007048079807505',
+            minOriginValue: '0.000007771345686292',
             maxOriginValue: null,
           },
         },
@@ -16112,7 +16112,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.8965797004473',
+            maxOriginValue: '782.9881265920262',
           },
         },
       },
@@ -16250,103 +16250,103 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '36772.721481267334',
+            maxOriginValue: '37096.531704166046',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '36814.32755667426',
+            maxOriginValue: '37136.306582079815',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '36815.870700411324',
+            maxOriginValue: '37140.03394723912',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '36923.15644858431',
+            maxOriginValue: '37247.878570331406',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.640252',
-            maxOriginValue: '36892.512465',
+            minOriginValue: '2.940751',
+            maxOriginValue: '37322.459764',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '36817.231115',
+            maxOriginValue: '37142.595565',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '36808.71479382635',
+            maxOriginValue: '37132.519256736785',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.002712',
-            maxOriginValue: '36987.711461',
+            minOriginValue: '0.002755',
+            maxOriginValue: '37325.39776',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '36972.13071744044',
+            maxOriginValue: '37294.47057977153',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '36981.590526',
+            maxOriginValue: '37304.023465',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '36970.50000532298',
+            maxOriginValue: '37285.48101376343',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '36988.065114',
+            maxOriginValue: '37308.401437',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '36970.33966436924',
+            maxOriginValue: '37290.041352965774',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '36986.210234',
+            maxOriginValue: '37307.557007',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '1',
-            maxOriginValue: '36990.7535626462',
+            maxOriginValue: '37308.37256516546',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '36972.89933489386',
+            maxOriginValue: '37264.58215508024',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '36980.974635',
+            maxOriginValue: '37306.314263',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '36988.218408',
+            maxOriginValue: '37310.730604',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '36959.854777944034',
+            maxOriginValue: '37282.67465895264',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -16356,63 +16356,63 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '36985.094837',
+            maxOriginValue: '37307.552669',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '36984.94578',
+            maxOriginValue: '37306.877527',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.004818',
-            maxOriginValue: '36988.527263',
+            minOriginValue: '0.005552',
+            maxOriginValue: '37325.655316',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '3.2',
-            maxOriginValue: '36983.728223',
+            maxOriginValue: '37307.676285',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '36981.129557',
+            maxOriginValue: '37303.268457',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '36988.527263',
+            maxOriginValue: '37310.730604',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '3.2',
-            maxOriginValue: '36944.27838209459',
+            maxOriginValue: '37265.78098391235',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '36922.731309',
+            maxOriginValue: '37238.31337',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '36920.687496320024',
+            maxOriginValue: '37240.30864660778',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.018919',
-            maxOriginValue: '37003.309675',
+            minOriginValue: '0.026134',
+            maxOriginValue: '37325.634734',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.019305',
-            maxOriginValue: '37003.296305',
+            minOriginValue: '0.020511',
+            maxOriginValue: '37325.640357',
           },
         },
       },
@@ -16459,91 +16459,91 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '998228.9332096095',
+            maxOriginValue: '998238.9773183854',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340654.48790257564',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '999240.7564893273',
+            maxOriginValue: '999250.6088085078',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '1001815.749526174',
+            maxOriginValue: '1001812.5122883567',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.859431',
+            minOriginValue: '3.042389',
             maxOriginValue: '999600',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '999440.959387',
+            maxOriginValue: '999507.423633',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '998891.0742097059',
+            maxOriginValue: '998922.2594018971',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.002737',
-            maxOriginValue: '999600',
+            minOriginValue: '0.002816',
+            maxOriginValue: '999999.997184',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '188803.31671147535',
+            maxOriginValue: '177197.03638365265',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '188908.061705',
+            maxOriginValue: '177290.657626',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '184720.77440004784',
+            maxOriginValue: '166291.63615661778',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '544029.657149',
+            maxOriginValue: '513817.821689',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '141611.29172183108',
+            maxOriginValue: '139946.26731402415',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '999509.507707',
+            maxOriginValue: '999484.711122',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '1',
-            maxOriginValue: '358527.09327219345',
+            maxOriginValue: '349327.6852833084',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '304501.9212061182',
+            maxOriginValue: '239093.5737783289',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '781701.503591',
+            maxOriginValue: '960502.122657',
           },
         },
         '42161': {
@@ -16555,7 +16555,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '994424.2973118533',
+            maxOriginValue: '994659.2807988224',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -16570,11 +16570,11 @@ export const BRIDGE_LIMITS_MAP = {
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '999399.891694',
+            maxOriginValue: '999452.253921',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.004893',
+            minOriginValue: '0.005845',
             maxOriginValue: '999600',
           },
         },
@@ -16582,12 +16582,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '3.2',
-            maxOriginValue: '226055.19697',
+            maxOriginValue: '226256.654599',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.879442',
+            maxOriginValue: '69500.261327',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
@@ -16597,30 +16597,30 @@ export const BRIDGE_LIMITS_MAP = {
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '3.2',
-            maxOriginValue: '171610.54406105194',
+            maxOriginValue: '171407.17972325548',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.394848',
+            maxOriginValue: '63349.98806',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.20309141238',
+            maxOriginValue: '63895.1460892764',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.018797',
+            minOriginValue: '0.024569',
             maxOriginValue: null,
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.019301',
+            minOriginValue: '0.02093',
             maxOriginValue: null,
           },
         },
@@ -16647,135 +16647,135 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
             symbol: 'WETH',
             minOriginValue: '0.015',
-            maxOriginValue: '756.5936393043295',
+            maxOriginValue: '782.674743311421',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.001066815129555285',
-            maxOriginValue: '756.5936393043295',
+            minOriginValue: '0.0011908855118265',
+            maxOriginValue: '782.674743311421',
           },
         },
         '10': {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.3007109540221',
+            maxOriginValue: '313.3027407441668',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '757.0480498985062',
+            maxOriginValue: '783.1448182323288',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001041643991677',
-            maxOriginValue: '313.3007109540221',
+            minOriginValue: '0.000001056534771',
+            maxOriginValue: '313.3027407441668',
           },
         },
         '250': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.8965797004473',
+            maxOriginValue: '782.9881265920262',
           },
         },
         '288': {
           '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
             symbol: 'nETH',
             minOriginValue: '0.007',
-            maxOriginValue: '757.0480498985062',
+            maxOriginValue: '783.1448182323288',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475933688588',
+            maxOriginValue: '0.1742747593369692',
           },
           '0xd203De32170130082896b4111eDF825a4774c18E': {
             symbol: 'WETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475933688588',
+            maxOriginValue: '0.1742747593369692',
           },
         },
         '1088': {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92429904344248',
+            maxOriginValue: '53.92572163733806',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '757.0480498985062',
+            maxOriginValue: '783.1448182323288',
           },
         },
         '1284': {
           '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.9723147994767',
+            maxOriginValue: '783.0664724121775',
           },
         },
         '2000': {
           '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB': {
             symbol: 'WETH',
             minOriginValue: '0.0001',
-            maxOriginValue: '756.5936393043295',
+            maxOriginValue: '782.674743311421',
           },
         },
         '7700': {
           '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.8965797004473',
+            maxOriginValue: '782.9881265920262',
           },
         },
         '8217': {
           '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '757.0480498985062',
+            maxOriginValue: '783.1448182323288',
           },
         },
         '42161': {
           '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '757.0480498985062',
+            maxOriginValue: '783.1448182323288',
           },
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.1608256407574',
+            maxOriginValue: '782.2446260509586',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001884593869747',
-            maxOriginValue: '756.1608256407574',
+            minOriginValue: '0.000002172087294',
+            maxOriginValue: '782.2446260509586',
           },
         },
         '43114': {
           '0x19E1ae0eE35c0404f835521146206595d37981ae': {
             symbol: 'nETH',
             minOriginValue: '0.002',
-            maxOriginValue: '756.8965797004473',
+            maxOriginValue: '782.9881265920262',
           },
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686439732329795',
+            maxOriginValue: '7.775942293674845',
           },
         },
         '53935': {
           '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.8965797004473',
+            maxOriginValue: '782.9881265920262',
           },
         },
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000007230250646677',
+            minOriginValue: '0.0000092632829085',
             maxOriginValue: null,
           },
         },
@@ -16783,23 +16783,23 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.43378207233525',
+            maxOriginValue: '398.8359448254735',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001432590868512',
-            maxOriginValue: '410.43378207233525',
+            minOriginValue: '0.0000019995249975',
+            maxOriginValue: '398.8359448254735',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '757.2752551955946',
+            maxOriginValue: '783.3798556927827',
           },
         },
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000007155299314177',
+            minOriginValue: '0.0000079949934135',
             maxOriginValue: null,
           },
         },
@@ -16807,7 +16807,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '756.8965797004473',
+            maxOriginValue: '782.9881265920262',
           },
         },
       },
@@ -16824,7 +16824,7 @@ export const BRIDGE_LIMITS_MAP = {
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.001066815129555285',
+            minOriginValue: '0.0011908813984965',
             maxOriginValue: '19980000',
           },
         },
@@ -16832,7 +16832,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -16841,8 +16841,8 @@ export const BRIDGE_LIMITS_MAP = {
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001041643991677',
-            maxOriginValue: '313.33846046338596',
+            minOriginValue: '0.000001056534771',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -16873,7 +16873,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.925933359487196',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -16918,12 +16918,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000185235363507',
-            maxOriginValue: '971.2703215858688',
+            minOriginValue: '0.000002172087294',
+            maxOriginValue: '995.1429705533486',
           },
         },
         '43114': {
@@ -16935,7 +16935,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -16948,7 +16948,7 @@ export const BRIDGE_LIMITS_MAP = {
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000760450041003',
+            minOriginValue: '0.000008850844701',
             maxOriginValue: null,
           },
         },
@@ -16956,12 +16956,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001435558868512',
-            maxOriginValue: '410.6282874605945',
+            minOriginValue: '0.0000019949437725',
+            maxOriginValue: '399.00482057307624',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -16972,7 +16972,7 @@ export const BRIDGE_LIMITS_MAP = {
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000714169768503',
+            minOriginValue: '0.00000797277533805',
             maxOriginValue: null,
           },
         },
@@ -16993,103 +16993,103 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '101492.48732080826',
+            maxOriginValue: '105139.006764022',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '101571.90239601645',
+            maxOriginValue: '105212.99668343947',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '101610.7745980333',
+            maxOriginValue: '105261.41927147219',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '101896.89873994526',
+            maxOriginValue: '105532.67731602004',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.640428',
-            maxOriginValue: '101697.635822',
+            minOriginValue: '2.933729',
+            maxOriginValue: '105454.956091',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '101612.80121',
+            maxOriginValue: '105269.793177',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '101587.5366044407',
+            maxOriginValue: '105239.05434063805',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.002604',
-            maxOriginValue: '101767.04269',
+            minOriginValue: '0.002731',
+            maxOriginValue: '105457.887089',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '101709.8727774595',
+            maxOriginValue: '105353.84923370849',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '101747.932897',
+            maxOriginValue: '105393.975376',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '101534.72088640854',
+            maxOriginValue: '104946.1524105988',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '101765.810485',
+            maxOriginValue: '105407.921948',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '101642.94258890777',
+            maxOriginValue: '105252.0988586841',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '101761.245516',
+            maxOriginValue: '105407.189521',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '1',
-            maxOriginValue: '101767.09971384979',
+            maxOriginValue: '105401.56166778372',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '101679.70923486359',
+            maxOriginValue: '105006.18828838195',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '101744.234965',
+            maxOriginValue: '105217.694981',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '101767.04269',
+            maxOriginValue: '105232.118076',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '101678.76989719317',
+            maxOriginValue: '105143.45784270752',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -17099,63 +17099,63 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '101756.584275',
+            maxOriginValue: '105222.601672',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '101756.731784',
+            maxOriginValue: '105220.908284',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.004701',
-            maxOriginValue: '101767.04269',
+            minOriginValue: '0.005778',
+            maxOriginValue: '105274.22199',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '3.2',
-            maxOriginValue: '101748.638759',
+            maxOriginValue: '105223.585587',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '101746.689281',
+            maxOriginValue: '105211.071653',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '101767.04269',
+            maxOriginValue: '105232.118077',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '3.2',
-            maxOriginValue: '101483.4211843136',
+            maxOriginValue: '104920.2112087493',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64453.95199',
+            maxOriginValue: '63312.776015',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63851.049662181074',
+            maxOriginValue: '63857.004798712835',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.019833',
-            maxOriginValue: '101807.745963',
+            minOriginValue: '0.024253',
+            maxOriginValue: '105274.203515',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.017719',
-            maxOriginValue: '101807.748077',
+            minOriginValue: '0.019974',
+            maxOriginValue: '105274.207794',
           },
         },
       },
@@ -17659,39 +17659,39 @@ export const BRIDGE_LIMITS_MAP = {
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340654.48790257564',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '998322.5777648599',
+            maxOriginValue: '999894.304716431',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '1000895.0258353173',
+            maxOriginValue: '1000818.8756715754',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.356948',
-            maxOriginValue: '998681.225499',
+            minOriginValue: '3.006071',
+            maxOriginValue: '999950.63713',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '998520.689109',
+            maxOriginValue: '999827.877783',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '997973.2991133607',
+            maxOriginValue: '997932.6728484635',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.006876',
-            maxOriginValue: '998681.225499',
+            minOriginValue: '0.007273',
+            maxOriginValue: '999020.645299',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
@@ -17701,22 +17701,22 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.931741',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '184686.55741096928',
+            maxOriginValue: '166291.63615661778',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '552347.249635',
+            maxOriginValue: '515298.662371',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '140237.4327486919',
+            maxOriginValue: '139946.1720617371',
           },
         },
         '25': {
@@ -17728,7 +17728,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611158',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -17740,29 +17740,29 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '943607.3438840208',
+            maxOriginValue: '903306.8819807749',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978252.4171821385',
+            maxOriginValue: '930995.6587946512',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559658.1660508192',
+            maxOriginValue: '540347.6897518191',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '312981.905206',
+            maxOriginValue: '349997.407285',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358598.5451611531',
+            maxOriginValue: '349405.44358164555',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -17772,7 +17772,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '299510.76762',
+            maxOriginValue: '336822.342677',
           },
         },
         '250': {
@@ -17813,19 +17813,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372601',
+            maxOriginValue: '502533.814461',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77776.85347746',
+            maxOriginValue: '83619.32840507614',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57635.984215',
+            maxOriginValue: '58395.947539',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -17835,46 +17835,46 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.397954',
+            maxOriginValue: '9217.363361',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197195.0354566655',
+            maxOriginValue: '195618.1142251377',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.007163',
-            maxOriginValue: '998681.265459',
+            minOriginValue: '0.008197',
+            maxOriginValue: '998620.514638',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '104081.039718',
+            maxOriginValue: '105497.236596',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226076.772074',
+            maxOriginValue: '226278.26094',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.879436',
+            maxOriginValue: '69500.26132',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '248206.654279',
+            maxOriginValue: '248208.654114',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -17884,12 +17884,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.394842',
+            maxOriginValue: '63349.988054',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.203086000845',
+            maxOriginValue: '63895.14608348089',
           },
         },
         '53935': {
@@ -17902,7 +17902,7 @@ export const BRIDGE_LIMITS_MAP = {
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.024221',
+            minOriginValue: '0.028983',
             maxOriginValue: null,
           },
         },
@@ -17915,13 +17915,13 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428553.92292995437',
+            maxOriginValue: '429572.1654418392',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.022919',
+            minOriginValue: '0.025178',
             maxOriginValue: null,
           },
         },
@@ -17976,7 +17976,7 @@ export const BRIDGE_LIMITS_MAP = {
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000997169899366612',
+            minOriginValue: '0.001264195161851137',
             maxOriginValue: '19980000',
           },
         },
@@ -17984,7 +17984,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -17993,8 +17993,8 @@ export const BRIDGE_LIMITS_MAP = {
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000002778382914719',
-            maxOriginValue: '313.33846046338596',
+            minOriginValue: '0.000002953699483379',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -18025,7 +18025,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.925933359487196',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -18065,12 +18065,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.0000028312246779',
-            maxOriginValue: '408.62191581756196',
+            minOriginValue: '0.000003321492403379',
+            maxOriginValue: '382.543773042588',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -18087,7 +18087,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '7.775944068879047',
           },
         },
         '53935': {
@@ -18100,7 +18100,7 @@ export const BRIDGE_LIMITS_MAP = {
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.0000093069786054',
+            minOriginValue: '0.000011218428480539',
             maxOriginValue: null,
           },
         },
@@ -18108,12 +18108,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000004517049253799',
-            maxOriginValue: '410.6282874605945',
+            minOriginValue: '0.000005154237752999',
+            maxOriginValue: '399.00482057307624',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -18124,7 +18124,7 @@ export const BRIDGE_LIMITS_MAP = {
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.0000091505831904',
+            minOriginValue: '0.000009521352413039',
             maxOriginValue: null,
           },
         },
@@ -18192,135 +18192,135 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
             symbol: 'WETH',
             minOriginValue: '0.015',
-            maxOriginValue: '864.8902327060074',
+            maxOriginValue: '841.0335696537404',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.001067244307594125',
-            maxOriginValue: '864.8902327060074',
+            minOriginValue: '0.001134983554381912',
+            maxOriginValue: '841.0335696537404',
           },
         },
         '10': {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.3109494137314',
+            maxOriginValue: '313.30817440058945',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.4096862992242',
+            maxOriginValue: '841.5386949207997',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.0000028900857054',
-            maxOriginValue: '313.3109494137314',
+            minOriginValue: '0.000002765142870539',
+            maxOriginValue: '313.30817440058945',
           },
         },
         '250': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.2365351014853',
+            maxOriginValue: '841.37031983178',
           },
         },
         '288': {
           '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
             symbol: 'nETH',
             minOriginValue: '0.007',
-            maxOriginValue: '865.4096862992242',
+            maxOriginValue: '841.5386949207997',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475933718434',
+            maxOriginValue: '0.17427475933712835',
           },
           '0xd203De32170130082896b4111eDF825a4774c18E': {
             symbol: 'WETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475933718434',
+            maxOriginValue: '0.17427475933712835',
           },
         },
         '1088': {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92435285604048',
+            maxOriginValue: '53.92575032719919',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '865.4096862992242',
+            maxOriginValue: '841.5386949207997',
           },
         },
         '1284': {
           '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.3231107003547',
+            maxOriginValue: '841.4545073762898',
           },
         },
         '2000': {
           '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB': {
             symbol: 'WETH',
             minOriginValue: '0.0001',
-            maxOriginValue: '864.8902327060074',
+            maxOriginValue: '841.0335696537404',
           },
         },
         '7700': {
           '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.2365351014853',
+            maxOriginValue: '841.37031983178',
           },
         },
         '8217': {
           '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.4096862992242',
+            maxOriginValue: '841.5386949207997',
           },
         },
         '8453': {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.2882694252785',
+            maxOriginValue: '382.2122114484629',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000002909538538259',
-            maxOriginValue: '408.2882694252785',
+            minOriginValue: '0.000003130345373039',
+            maxOriginValue: '382.2122114484629',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.6694130958326',
+            maxOriginValue: '841.7912575543294',
           },
         },
         '43114': {
           '0x19E1ae0eE35c0404f835521146206595d37981ae': {
             symbol: 'nETH',
             minOriginValue: '0.002',
-            maxOriginValue: '865.2365351014853',
+            maxOriginValue: '841.37031983178',
           },
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686440176003359',
+            maxOriginValue: '7.7759425303697896',
           },
         },
         '53935': {
           '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.2365351014853',
+            maxOriginValue: '841.37031983178',
           },
         },
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000008986336078259',
+            minOriginValue: '0.000010710392573039',
             maxOriginValue: null,
           },
         },
@@ -18328,23 +18328,23 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.49497882265865',
+            maxOriginValue: '398.8662425047755',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.0000044838936276',
-            maxOriginValue: '410.49497882265865',
+            minOriginValue: '0.000005161756802999',
+            maxOriginValue: '398.8662425047755',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.6694130958326',
+            maxOriginValue: '841.7912575543294',
           },
         },
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000009230824910759',
+            minOriginValue: '0.00000973713435732',
             maxOriginValue: null,
           },
         },
@@ -18352,7 +18352,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.2365351014853',
+            maxOriginValue: '841.37031983178',
           },
         },
       },
@@ -18523,132 +18523,132 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '993425.6891976347',
+            maxOriginValue: '998039.3382704257',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340654.48790257564',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '994515.8194836723',
+            maxOriginValue: '999050.8162180659',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '1001615.4054075142',
+            maxOriginValue: '1001612.168817052',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.938476',
-            maxOriginValue: '994586.13531',
+            minOriginValue: '3.337193',
+            maxOriginValue: '999400.08',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '994421.679161',
+            maxOriginValue: '999304.142314',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '998691.3717351502',
+            maxOriginValue: '998723.5688963635',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.007678',
-            maxOriginValue: '999400.08',
+            minOriginValue: '0.007747',
+            maxOriginValue: '999799.992253',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '183042.07528247513',
+            maxOriginValue: '994363.6361774465',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '183141.234331',
+            maxOriginValue: '754456.004718',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '179274.0025682756',
+            maxOriginValue: '166291.63615661778',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '564450.514096',
+            maxOriginValue: '521512.700271',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '140219.5449703575',
+            maxOriginValue: '139939.64761364766',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '993823.5390468958',
+            maxOriginValue: '993965.7315611289',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611144',
+            maxOriginValue: '3626.261743',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '993823.5390468958',
+            maxOriginValue: '993965.7315611289',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '935003.4881254229',
+            maxOriginValue: '897885.7213217161',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '962049.7549766297',
+            maxOriginValue: '923421.769742707',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '558955.24067373',
+            maxOriginValue: '539655.571920764',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '312924.164744',
+            maxOriginValue: '999287.170463',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358527.06006815913',
+            maxOriginValue: '349346.9483807644',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '304501.89654550527',
+            maxOriginValue: '993965.7315611289',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '299456.585702',
+            maxOriginValue: '963510.746827',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '993823.5390468958',
+            maxOriginValue: '993965.7315611289',
           },
         },
         '288': {
@@ -18665,113 +18665,113 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '994221.3867406696',
+            maxOriginValue: '994363.6361774465',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339956273255',
+            maxOriginValue: '846.3339956273845',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '994221.3867406696',
+            maxOriginValue: '994363.6361774465',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499255.990546',
+            maxOriginValue: '502452.72115',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77767.4674573199',
+            maxOriginValue: '83609.83354489808',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57676.652077',
+            maxOriginValue: '58409.195582',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '993823.5390468958',
+            maxOriginValue: '993965.7315611289',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.393388',
+            maxOriginValue: '9217.359848',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '197195.14721558706',
+            maxOriginValue: '195618.12263904922',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.007376',
+            minOriginValue: '0.008539',
             maxOriginValue: '999400.08',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '103425.389052',
+            maxOriginValue: '105454.818993',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226055.187922',
+            maxOriginValue: '226262.175255',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.87944',
+            maxOriginValue: '69500.261326',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '248188.471199',
+            maxOriginValue: '999400.08',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '171610.5379042203',
+            maxOriginValue: '993965.7318293983',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.394847',
+            maxOriginValue: '63349.988058',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.20309023608',
+            maxOriginValue: '63895.14608809491',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '994519.7725109999',
+            maxOriginValue: '994662.064908142',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.023942',
+            minOriginValue: '0.029804',
             maxOriginValue: null,
           },
         },
@@ -18779,18 +18779,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '994519.7725109999',
+            maxOriginValue: '994662.064908142',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428479.2063087645',
+            maxOriginValue: '429497.2761770809',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.022938',
+            minOriginValue: '0.024782',
             maxOriginValue: null,
           },
         },
@@ -18798,7 +18798,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '994221.3867406696',
+            maxOriginValue: '994363.6364458232',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -18815,7 +18815,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '993823.5390468958',
+            maxOriginValue: '993965.7318293983',
           },
         },
       },
@@ -18828,135 +18828,135 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
             symbol: 'WETH',
             minOriginValue: '0.015',
-            maxOriginValue: '864.8902327060074',
+            maxOriginValue: '841.0335696537404',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.001043679149054362',
-            maxOriginValue: '864.8902327060074',
+            minOriginValue: '0.001144986704227725',
+            maxOriginValue: '841.0335696537404',
           },
         },
         '10': {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.3109494137314',
+            maxOriginValue: '313.30817440058945',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.4096862992242',
+            maxOriginValue: '841.5386949207997',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000002827603745819',
-            maxOriginValue: '313.3109494137314',
+            minOriginValue: '0.00000277772774274',
+            maxOriginValue: '313.30817440058945',
           },
         },
         '250': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.2365351014853',
+            maxOriginValue: '841.37031983178',
           },
         },
         '288': {
           '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
             symbol: 'nETH',
             minOriginValue: '0.007',
-            maxOriginValue: '865.4096862992242',
+            maxOriginValue: '841.5386949207997',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475933718434',
+            maxOriginValue: '0.17427475933712835',
           },
           '0xd203De32170130082896b4111eDF825a4774c18E': {
             symbol: 'WETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475933718434',
+            maxOriginValue: '0.17427475933712835',
           },
         },
         '1088': {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92435285604048',
+            maxOriginValue: '53.92575032719919',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '865.4096862992242',
+            maxOriginValue: '841.5386949207997',
           },
         },
         '1284': {
           '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.3231107003547',
+            maxOriginValue: '841.4545073762898',
           },
         },
         '2000': {
           '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB': {
             symbol: 'WETH',
             minOriginValue: '0.0001',
-            maxOriginValue: '864.8902327060074',
+            maxOriginValue: '841.0335696537404',
           },
         },
         '7700': {
           '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.2365351014853',
+            maxOriginValue: '841.37031983178',
           },
         },
         '8217': {
           '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.4096862992242',
+            maxOriginValue: '841.5386949207997',
           },
         },
         '8453': {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.2882694252785',
+            maxOriginValue: '382.2122114484629',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000266674824804',
-            maxOriginValue: '408.2882694252785',
+            minOriginValue: '0.00000313528860024',
+            maxOriginValue: '382.2122114484629',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.6694130958326',
+            maxOriginValue: '841.7912575543294',
           },
         },
         '43114': {
           '0x19E1ae0eE35c0404f835521146206595d37981ae': {
             symbol: 'nETH',
             minOriginValue: '0.002',
-            maxOriginValue: '865.2365351014853',
+            maxOriginValue: '841.37031983178',
           },
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686440176003359',
+            maxOriginValue: '7.7759425303697896',
           },
         },
         '53935': {
           '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.2365351014853',
+            maxOriginValue: '841.37031983178',
           },
         },
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000929365727304',
+            minOriginValue: '0.00001097507244774',
             maxOriginValue: null,
           },
         },
@@ -18964,23 +18964,23 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.49497882265865',
+            maxOriginValue: '398.8662425047755',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000004372417140499',
-            maxOriginValue: '410.49497882265865',
+            minOriginValue: '0.000004958834240799',
+            maxOriginValue: '398.8662425047755',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.6694130958326',
+            maxOriginValue: '841.7912575543294',
           },
         },
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000864299355054',
+            minOriginValue: '0.00000924443946564',
             maxOriginValue: null,
           },
         },
@@ -18988,7 +18988,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '865.2365351014853',
+            maxOriginValue: '841.37031983178',
           },
         },
       },
@@ -19001,132 +19001,132 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '1256162.9743444703',
+            maxOriginValue: '1260262.9741214789',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340654.48790257564',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '1257497.1475676517',
+            maxOriginValue: '1261599.405292509',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '1001615.4054075142',
+            maxOriginValue: '1001612.168817052',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.498788',
-            maxOriginValue: '1257600.811788',
+            minOriginValue: '3.169554',
+            maxOriginValue: '1261682.733278',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '1257349.475808',
+            maxOriginValue: '1261496.519344',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '998691.3717351502',
+            maxOriginValue: '998723.5688963635',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.006855',
-            maxOriginValue: '999400.08',
+            minOriginValue: '0.007461',
+            maxOriginValue: '999799.992539',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '1257169.1120892395',
+            maxOriginValue: '1261272.3958067985',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755242.647856',
+            maxOriginValue: '755155.420172',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '179274.0025682756',
+            maxOriginValue: '166291.63615661778',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '564446.997559',
+            maxOriginValue: '521512.700271',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '140219.5449703575',
+            maxOriginValue: '139939.5867273079',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '994235.317453025',
+            maxOriginValue: '1260767.6849641388',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611149',
+            maxOriginValue: '3626.261748',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '1256666.0432168548',
+            maxOriginValue: '1260767.6849641388',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '942201.693526727',
+            maxOriginValue: '915593.4088262158',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '976616.6618357712',
+            maxOriginValue: '916036.4356480081',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559282.021396629',
+            maxOriginValue: '539970.8997777823',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '313080.838905',
+            maxOriginValue: '348702.638548',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358556.8791722985',
+            maxOriginValue: '349371.46903643844',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '1256666.0432168548',
+            maxOriginValue: '1260767.6849641388',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '299344.594425',
+            maxOriginValue: '338044.306716',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '1256666.0432168548',
+            maxOriginValue: '1260767.6849641388',
           },
         },
         '288': {
@@ -19143,113 +19143,113 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '1257169.1120892395',
+            maxOriginValue: '1261272.3958067985',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339957045387',
+            maxOriginValue: '846.3339957053761',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '1257169.1120892395',
+            maxOriginValue: '1261272.3958067985',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499293.603616',
+            maxOriginValue: '502491.12448',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77770.9840670773',
+            maxOriginValue: '83799.76612765815',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57782.261775',
+            maxOriginValue: '58369.718272',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '1256666.0432168548',
+            maxOriginValue: '1260767.6849641388',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.395099',
+            maxOriginValue: '9217.42985',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '196996.66578712047',
+            maxOriginValue: '195618.12166927516',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.007053',
+            minOriginValue: '0.008375',
             maxOriginValue: '999400.08',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '103426.312627',
+            maxOriginValue: '105454.818523',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226067.008236',
+            maxOriginValue: '226268.56069',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.87944',
+            maxOriginValue: '69500.261326',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '248195.698703',
+            maxOriginValue: '248197.782537',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '1256666.0432168548',
+            maxOriginValue: '1260767.6849641388',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.394847',
+            maxOriginValue: '63349.988058',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.20309023608',
+            maxOriginValue: '63895.14608809491',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '1257546.413743528',
+            maxOriginValue: '1261650.9289387933',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.023729',
+            minOriginValue: '0.028793',
             maxOriginValue: null,
           },
         },
@@ -19257,18 +19257,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '1257546.413743528',
+            maxOriginValue: '1261650.9289387933',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428512.47829139023',
+            maxOriginValue: '429530.96566083294',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.021294',
+            minOriginValue: '0.024598',
             maxOriginValue: null,
           },
         },
@@ -19276,7 +19276,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '1257169.1120892395',
+            maxOriginValue: '1261272.3958067985',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -19293,7 +19293,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '1256666.0432168548',
+            maxOriginValue: '1260767.6849641388',
           },
         },
       },
@@ -19306,132 +19306,132 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '1256162.8739178472',
+            maxOriginValue: '1260262.8582451278',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '340654.48790257564',
+            maxOriginValue: '336352.7742845383',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '1257497.0470538079',
+            maxOriginValue: '1261599.2893158596',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '1001644.207319685',
+            maxOriginValue: '1001612.168817052',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.252387',
-            maxOriginValue: '1257600.711259',
+            minOriginValue: '3.028288',
+            maxOriginValue: '1261682.617287',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '1257349.37532',
+            maxOriginValue: '1261496.403388',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '998720.081405294',
+            maxOriginValue: '998723.5688963635',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.006658',
-            maxOriginValue: '999428.82094',
+            minOriginValue: '0.007241',
+            maxOriginValue: '999799.992759',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '1257169.0115821785',
+            maxOriginValue: '1261272.2798376349',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755242.647733',
+            maxOriginValue: '755155.420032',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '179274.51408796688',
+            maxOriginValue: '166353.04277009724',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '496613.36787',
+            maxOriginValue: '521512.700271',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '140219.87801282064',
+            maxOriginValue: '140171.45433652116',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '1256665.9427500127',
+            maxOriginValue: '1260767.5690413814',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611149',
+            maxOriginValue: '3626.261748',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '1256665.9427500127',
+            maxOriginValue: '1260767.5690413814',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '942201.6930050439',
+            maxOriginValue: '915593.4083020146',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '976616.6611662512',
+            maxOriginValue: '916036.4351223153',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559282.0213219889',
+            maxOriginValue: '539970.8996948446',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '313080.838899',
+            maxOriginValue: '348702.638541',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358556.8791649333',
+            maxOriginValue: '349371.4690294707',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '1256665.9427500127',
+            maxOriginValue: '1260767.5690413814',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '299344.594419',
+            maxOriginValue: '338044.306709',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '1256665.9427500127',
+            maxOriginValue: '1260767.5690413814',
           },
         },
         '288': {
@@ -19448,113 +19448,113 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '1257169.0115821785',
+            maxOriginValue: '1261272.2798376349',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339957045387',
+            maxOriginValue: '846.3339957053761',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '1257169.0115821785',
+            maxOriginValue: '1261272.2798376349',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499293.603607',
+            maxOriginValue: '502491.12447',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77770.98406613803',
+            maxOriginValue: '84605.83197452308',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57775.079248',
+            maxOriginValue: '58537.808121',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '1256665.9427500127',
+            maxOriginValue: '1260767.5690413814',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.395099',
+            maxOriginValue: '9227.856946',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '196996.6663499398',
+            maxOriginValue: '195618.13031762574',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.006705',
-            maxOriginValue: '999428.400135',
+            minOriginValue: '0.008282',
+            maxOriginValue: '999400.08',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '103426.312876',
+            maxOriginValue: '105526.289707',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226067.008235',
+            maxOriginValue: '226268.560688',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.879441',
+            maxOriginValue: '69500.261326',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '248195.698702',
+            maxOriginValue: '248197.782535',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '1256665.9427500127',
+            maxOriginValue: '1260767.5690413814',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.394847',
+            maxOriginValue: '63349.988058',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.203090402756',
+            maxOriginValue: '63895.14608809491',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '1257546.313206303',
+            maxOriginValue: '1261650.8129348252',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.02324',
+            minOriginValue: '0.029135',
             maxOriginValue: null,
           },
         },
@@ -19562,18 +19562,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '1257546.313206303',
+            maxOriginValue: '1261650.8129348252',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428512.4782833856',
+            maxOriginValue: '429530.96565168013',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.021016',
+            minOriginValue: '0.024291',
             maxOriginValue: null,
           },
         },
@@ -19581,7 +19581,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '1257169.0115821785',
+            maxOriginValue: '1261272.2798376349',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -19598,7 +19598,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '1256665.9427500127',
+            maxOriginValue: '1260767.5690413814',
           },
         },
       },
@@ -19624,7 +19624,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '1248352.4822191335',
+            maxOriginValue: '1257559.3242396102',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
@@ -19634,122 +19634,122 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '1249679.8557919473',
+            maxOriginValue: '1258893.4132673263',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '1001815.749526174',
+            maxOriginValue: '1001812.5122883567',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.433213',
-            maxOriginValue: '1249782.340726',
+            minOriginValue: '2.90275',
+            maxOriginValue: '1258982.113776',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '1249534.182312',
+            maxOriginValue: '1258788.169865',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '998891.0742097059',
+            maxOriginValue: '998923.2788582908',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.006893',
-            maxOriginValue: '999600',
+            minOriginValue: '0.0071',
+            maxOriginValue: '999999.9929',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '1249352.3640631216',
+            maxOriginValue: '1258563.751388534',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755232.889085',
+            maxOriginValue: '755152.132983',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '178620.4934095629',
+            maxOriginValue: '166297.06641382884',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '482353.132967',
+            maxOriginValue: '521512.700284',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '140217.42987576907',
+            maxOriginValue: '140170.82750304227',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '1248852.4231411275',
+            maxOriginValue: '1258060.1232956126',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611149',
+            maxOriginValue: '3626.261748',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '1248852.4231411275',
+            maxOriginValue: '1258060.1232956126',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '942160.076087538',
+            maxOriginValue: '915581.0671114717',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '976563.0935846143',
+            maxOriginValue: '916024.0586959126',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559276.1440607166',
+            maxOriginValue: '539968.9546364768',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '313080.372658',
+            maxOriginValue: '347941.579411',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '358556.3002738697',
+            maxOriginValue: '349371.3078803404',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '1248852.4231411275',
+            maxOriginValue: '1258060.1232956126',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '299344.158999',
+            maxOriginValue: '338805.019036',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '1248852.4231411275',
+            maxOriginValue: '1258060.1232956126',
           },
         },
         '288': {
@@ -19766,113 +19766,113 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '1249352.3640631216',
+            maxOriginValue: '1258563.7502464915',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339957029206',
+            maxOriginValue: '846.3339957048242',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '1249352.3640631216',
+            maxOriginValue: '1258563.7502464915',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499292.917965',
+            maxOriginValue: '502490.889463',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77770.91033071824',
+            maxOriginValue: '84605.80641321004',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57789.459786',
+            maxOriginValue: '58503.486576',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '1248852.4231411275',
+            maxOriginValue: '1258060.1232956126',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.395063',
+            maxOriginValue: '9202.029196',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '196996.66976074196',
+            maxOriginValue: '195518.76047928675',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.00704',
+            minOriginValue: '0.007512',
             maxOriginValue: '999600',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '103426.514427',
+            maxOriginValue: '105526.28988',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226066.879077',
+            maxOriginValue: '226268.516656',
           },
           '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664': {
             symbol: 'USDC.e',
             minOriginValue: '3.2',
-            maxOriginValue: '68350.879442',
+            maxOriginValue: '69500.261327',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.3',
-            maxOriginValue: '248195.551924',
+            maxOriginValue: '248197.732568',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '1248852.4231411275',
+            maxOriginValue: '1258059.9685103726',
           },
           '0xc7198437980c041c805a1edcba50c1ce5db95118': {
             symbol: 'USDT.e',
             minOriginValue: '3.2',
-            maxOriginValue: '64499.394848',
+            maxOriginValue: '63349.98806',
           },
           '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70': {
             symbol: 'DAI.e',
             minOriginValue: '3.2',
-            maxOriginValue: '63895.20309141238',
+            maxOriginValue: '63895.1460892764',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '1249727.319754617',
+            maxOriginValue: '1258941.3155659745',
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.024065',
+            minOriginValue: '0.028517',
             maxOriginValue: null,
           },
         },
@@ -19880,18 +19880,18 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '1249727.319754617',
+            maxOriginValue: '1258941.3155659745',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428511.8485194439',
+            maxOriginValue: '429530.7514732839',
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.021983',
+            minOriginValue: '0.024668',
             maxOriginValue: null,
           },
         },
@@ -19899,7 +19899,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '1249352.3640631216',
+            maxOriginValue: '1258569.312799907',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -19916,7 +19916,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '1248852.7975718738',
+            maxOriginValue: '1258065.6836231165',
           },
         },
       },
@@ -19976,7 +19976,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -19986,7 +19986,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '313.337531537437',
           },
         },
         '250': {
@@ -20017,7 +20017,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.925933359487196',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -20057,12 +20057,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '408.62191581756196',
+            maxOriginValue: '382.543773042588',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -20079,12 +20079,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '971.2703215858688',
+            maxOriginValue: '995.1429705533486',
           },
         },
         '53935': {
@@ -20098,12 +20098,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '410.6282874605945',
+            maxOriginValue: '399.00482057307624',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -20343,158 +20343,158 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
             symbol: 'WETH',
             minOriginValue: '0.015',
-            maxOriginValue: '16.444314632051572',
+            maxOriginValue: '16.35484869956984',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.015',
-            maxOriginValue: '16.444314632051572',
+            maxOriginValue: '16.35484869956984',
           },
         },
         '10': {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.45259107724305',
+            maxOriginValue: '16.363083126672013',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.454191097296047',
+            maxOriginValue: '16.364671431521533',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.45259107724305',
+            maxOriginValue: '16.363083126672013',
           },
         },
         '250': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.450898942214554',
+            maxOriginValue: '16.361397187537634',
           },
         },
         '288': {
           '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
             symbol: 'nETH',
             minOriginValue: '0.007',
-            maxOriginValue: '16.45377540745903',
+            maxOriginValue: '16.36421991948933',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.1742747566200674',
+            maxOriginValue: '0.17427475659008254',
           },
           '0xd203De32170130082896b4111eDF825a4774c18E': {
             symbol: 'WETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.1742747566200674',
+            maxOriginValue: '0.17427475659008254',
           },
         },
         '1088': {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '16.45164313105481',
+            maxOriginValue: '16.362181071422285',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '16.454191097296047',
+            maxOriginValue: '16.364671431521533',
           },
         },
         '1284': {
           '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.452545019755302',
+            maxOriginValue: '16.363034309529585',
           },
         },
         '2000': {
           '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB': {
             symbol: 'WETH',
             minOriginValue: '0.0001',
-            maxOriginValue: '16.444314632051572',
+            maxOriginValue: '16.35484869956984',
           },
         },
         '7700': {
           '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.450898942214554',
+            maxOriginValue: '16.361397187537634',
           },
         },
         '8217': {
           '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.454191097296047',
+            maxOriginValue: '16.364671431521533',
           },
         },
         '8453': {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.430159141644534',
+            maxOriginValue: '16.33727719787177',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.430159141644534',
+            maxOriginValue: '16.33727719787177',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.459129329918284',
+            maxOriginValue: '16.36958279749738',
           },
         },
         '42161': {
           '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.454191097296047',
+            maxOriginValue: '16.364671431521533',
           },
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.45354699269226',
+            maxOriginValue: '16.364575696553793',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.45354699269226',
+            maxOriginValue: '16.364575696553793',
           },
         },
         '53935': {
           '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.450898942214554',
+            maxOriginValue: '16.361397187537634',
           },
         },
         '81457': {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.4788328427595',
+            maxOriginValue: '16.384900681174283',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.4788328427595',
+            maxOriginValue: '16.384900681174283',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.459129329918284',
+            maxOriginValue: '16.36958279749738',
           },
         },
         '1666600000': {
           '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '16.450898942214554',
+            maxOriginValue: '16.361397187537634',
           },
         },
       },
@@ -20540,132 +20540,132 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '171419.88485268148',
+            maxOriginValue: '247699.626087944',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '247667.5001972101',
+            maxOriginValue: '247669.4941141983',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '171620.31884506764',
+            maxOriginValue: '247983.47576845097',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '248598.53251216878',
+            maxOriginValue: '248595.38473946237',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '171629.402621',
+            maxOriginValue: '248098.641607',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '171609.408304',
+            maxOriginValue: '248007.971452',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '247916.48888120946',
+            maxOriginValue: '247925.77861211906',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '248107.359212',
+            maxOriginValue: '248109.358151',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '171557.18552136605',
+            maxOriginValue: '171353.8851030519',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '171503.813098',
+            maxOriginValue: '171300.590238',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '178600.6460301107',
+            maxOriginValue: '166265.9421285687',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '248072.104138',
+            maxOriginValue: '248076.162756',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '140254.22300330506',
+            maxOriginValue: '140275.29461040688',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '171488.53518702378',
+            maxOriginValue: '171285.31612141803',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.610687',
+            maxOriginValue: '3626.261285',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '171488.53518702378',
+            maxOriginValue: '171285.31612141803',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '171543.79154085845',
+            maxOriginValue: '171282.65271399284',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '171554.59590873786',
+            maxOriginValue: '171282.80772731898',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '171295.53363059156',
+            maxOriginValue: '171018.3866451549',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '171249.909638',
+            maxOriginValue: '248088.824982',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '171350.41894196725',
+            maxOriginValue: '247505.66343697393',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '171488.53518702378',
+            maxOriginValue: '234089.47950918594',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '171206.100877',
+            maxOriginValue: '248064.672637',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '171488.53518702378',
+            maxOriginValue: '171285.31612141803',
           },
         },
         '288': {
@@ -20682,80 +20682,80 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '171557.18552136605',
+            maxOriginValue: '171353.8851030519',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339888848388',
+            maxOriginValue: '846.3339888683015',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '171557.18552136605',
+            maxOriginValue: '171353.8851030519',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '171676.624109',
+            maxOriginValue: '171480.594949',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77408.23369718094',
+            maxOriginValue: '84203.07585669793',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57679.21537',
+            maxOriginValue: '58415.365886',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '171488.53518702378',
+            maxOriginValue: '171285.31612141803',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.217112',
+            maxOriginValue: '9201.885364',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '196798.87579245612',
+            maxOriginValue: '195090.94403175876',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '248107.359212',
+            maxOriginValue: '248109.358151',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '103711.408263',
+            maxOriginValue: '105442.761',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '248107.359212',
+            maxOriginValue: '248109.358151',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '171557.18552136605',
+            maxOriginValue: '247838.97581584792',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
@@ -20765,17 +20765,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '171599.361306',
+            maxOriginValue: '248059.736279',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '171601.45967',
+            maxOriginValue: '248081.362728',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '248107.359212',
+            maxOriginValue: '248109.358151',
           },
         },
         '53935': {
@@ -20789,19 +20789,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '171608.67327212277',
+            maxOriginValue: '171405.3118392773',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '171705.38480224297',
+            maxOriginValue: '171505.9626874391',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '171557.18552136605',
+            maxOriginValue: '171353.8851030519',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -20818,7 +20818,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '171488.53518702378',
+            maxOriginValue: '171285.31612141803',
           },
         },
       },
@@ -20882,132 +20882,132 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '48357.760675327394',
+            maxOriginValue: '48475.38086607762',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '48407.20073725201',
+            maxOriginValue: '48407.29883064422',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '48414.42522228131',
+            maxOriginValue: '48532.37528227193',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '48544.22850337217',
+            maxOriginValue: '48542.44473007747',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '48492.005345',
+            maxOriginValue: '48534.381244',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '48415.226772',
+            maxOriginValue: '48530.256596',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '48403.67846905811',
+            maxOriginValue: '48405.17950389354',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '48582.564543',
+            maxOriginValue: '48582.662653',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '48560.73051053359',
+            maxOriginValue: '48575.94271373119',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '48571.472701',
+            maxOriginValue: '48573.815601',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '48554.2589782501',
+            maxOriginValue: '48545.23799468899',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '48579.873548',
+            maxOriginValue: '48579.993076',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '48554.95833954057',
+            maxOriginValue: '48552.34315176477',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '48556.50457723927',
+            maxOriginValue: '48556.504561384754',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.605033',
+            maxOriginValue: '3626.255613',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '48556.50457723927',
+            maxOriginValue: '48556.504561384754',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '48587.67439995188',
+            maxOriginValue: '48568.12014132192',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '48590.39134042708',
+            maxOriginValue: '48568.499921100665',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '48532.83447486308',
+            maxOriginValue: '48513.45498743704',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '48540.490732',
+            maxOriginValue: '48578.957651',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '48552.953905900424',
+            maxOriginValue: '48579.02813035336',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '48556.50457723927',
+            maxOriginValue: '48556.504561384754',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '48535.887041',
+            maxOriginValue: '48576.839645',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '48556.50457723927',
+            maxOriginValue: '48556.504561384754',
           },
         },
         '288': {
@@ -21024,100 +21024,100 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '48575.94272959205',
+            maxOriginValue: '48575.94271373119',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.333908102076',
+            maxOriginValue: '846.3339081020758',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '48575.94272959205',
+            maxOriginValue: '48575.94271373119',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '48649.100448',
+            maxOriginValue: '48652.523215',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '47651.73755328824',
+            maxOriginValue: '47935.98103461701',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '44057.457688',
+            maxOriginValue: '43807.022793',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '48556.50457723927',
+            maxOriginValue: '48556.504561384754',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9310.655592',
+            maxOriginValue: '9162.594591',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '48612.552158718565',
+            maxOriginValue: '48608.47595057764',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '48582.564543',
+            maxOriginValue: '48582.662653',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '48462.039882',
+            maxOriginValue: '48459.452063',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '48582.564543',
+            maxOriginValue: '48582.662653',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '48544.14954733676',
+            maxOriginValue: '48575.94271373119',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
-            minOriginValue: '4',
+            minOriginValue: null,
             maxOriginValue: null,
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '48577.997066',
+            maxOriginValue: '48594.046425',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '48577.830389',
+            maxOriginValue: '48594.692387',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '48582.564543',
+            maxOriginValue: '48582.662653',
           },
         },
         '53935': {
@@ -21131,19 +21131,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '48590.52134385663',
+            maxOriginValue: '48590.52132799101',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '48681.562580273414',
+            maxOriginValue: '48683.3047217302',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '48575.94272959205',
+            maxOriginValue: '48575.94271373119',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -21160,7 +21160,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '48556.50457723927',
+            maxOriginValue: '48556.504561384754',
           },
         },
       },
@@ -21207,7 +21207,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '171210.2642578641',
+            maxOriginValue: '171216.74369950144',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
@@ -21217,27 +21217,27 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '171410.41228553175',
+            maxOriginValue: '171416.67090914925',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '1001815.749526174',
+            maxOriginValue: '1001812.5122883567',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '171419.458867',
+            maxOriginValue: '171423.959649',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '171399.696495',
+            maxOriginValue: '171408.912704',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '998908.3605509611',
+            maxOriginValue: '998923.2788582908',
           },
         },
         '10': {
@@ -21249,90 +21249,90 @@ export const BRIDGE_LIMITS_MAP = {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '171347.39702859527',
+            maxOriginValue: '171353.88166001366',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '171294.15827',
+            maxOriginValue: '171300.586797',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '181671.1091962908',
+            maxOriginValue: '163128.91933517318',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '509484.351096',
+            maxOriginValue: '519969.131819',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '140273.91509532073',
+            maxOriginValue: '142041.39393923598',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '171278.83064322968',
+            maxOriginValue: '171285.31267975757',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.610686',
+            maxOriginValue: '3626.261285',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '171278.83064322968',
+            maxOriginValue: '171285.31267975757',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '171333.9178206736',
+            maxOriginValue: '171281.194871056',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '171344.7391217288',
+            maxOriginValue: '171282.75905876828',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '171086.34022139767',
+            maxOriginValue: '171024.75211982374',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '171041.008038',
+            maxOriginValue: '171171.940544',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '171141.1801721576',
+            maxOriginValue: '171185.2311533276',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '171278.83064322968',
+            maxOriginValue: '171285.31267975757',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '170997.368181',
+            maxOriginValue: '171162.00861',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '171278.83064322968',
+            maxOriginValue: '171285.31267975757',
           },
         },
         '288': {
@@ -21349,58 +21349,58 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '171347.39702859527',
+            maxOriginValue: '171353.88166001366',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339888677727',
+            maxOriginValue: '846.3339888683013',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '171347.39702859527',
+            maxOriginValue: '171353.88166001366',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '171466.865484',
+            maxOriginValue: '171480.591507',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77407.13563535623',
+            maxOriginValue: '84203.07583547493',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57599.929585',
+            maxOriginValue: '58399.954092',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '171278.83064322968',
+            maxOriginValue: '171285.31267975757',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.216569',
+            maxOriginValue: '9201.885364',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '196997.2460784434',
+            maxOriginValue: '195466.7160460181',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
@@ -21410,7 +21410,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '103791.827101',
+            maxOriginValue: '103771.403922',
           },
         },
         '42161': {
@@ -21422,22 +21422,22 @@ export const BRIDGE_LIMITS_MAP = {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '171347.39702859527',
+            maxOriginValue: '171353.88166001366',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
-            minOriginValue: '4',
+            minOriginValue: null,
             maxOriginValue: null,
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '171389.707239',
+            maxOriginValue: '171394.659705',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '171391.509427',
+            maxOriginValue: '171397.075719',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
@@ -21456,19 +21456,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '171398.82181761944',
+            maxOriginValue: '171327.54164560945',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '171495.71382336566',
+            maxOriginValue: '171428.25805031505',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '171347.39702859527',
+            maxOriginValue: '171276.1382427755',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -21478,14 +21478,14 @@ export const BRIDGE_LIMITS_MAP = {
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651543',
+            maxOriginValue: '1454.651542',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '171278.83064322968',
+            maxOriginValue: '171207.6003723302',
           },
         },
       },
@@ -21587,69 +21587,69 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '247695.09058965236',
+            maxOriginValue: '19976000',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '247667.51267204157',
+            maxOriginValue: '247747.10682555396',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '247979.07187359652',
+            maxOriginValue: '248061.05806266612',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '248598.73566767175',
+            maxOriginValue: '248673.40012557147',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '248096.654379',
+            maxOriginValue: '248176.480971',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '247997.192999',
+            maxOriginValue: '248085.612618',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '247921.4974961181',
+            maxOriginValue: '248003.7613937585',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '248107.371718',
+            maxOriginValue: '248187.166379',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '185883.15632764477',
+            maxOriginValue: '19992000',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '185985.046739',
+            maxOriginValue: '755640.931741',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '181778.93872329596',
+            maxOriginValue: '163313.6706921143',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '248072.302528',
+            maxOriginValue: '248139.478284',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '140274.50438654784',
+            maxOriginValue: '144250.606358576',
           },
         },
         '25': {
@@ -21661,7 +21661,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611158',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -21673,39 +21673,39 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '943399.3116978917',
+            maxOriginValue: '934398.9480718593',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978140.7000227713',
+            maxOriginValue: '905826.1970231186',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559769.758572378',
+            maxOriginValue: '544378.4587663307',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '248090.846485',
+            maxOriginValue: '339783.886128',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '247633.08888197294',
+            maxOriginValue: '353582.3552265784',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '246970.8885946632',
+            maxOriginValue: '19984000',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '248030.723315',
+            maxOriginValue: '337877.278318',
           },
         },
         '250': {
@@ -21746,19 +21746,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '499336.372601',
+            maxOriginValue: '502533.814461',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '77776.85347746',
+            maxOriginValue: '84611.72713560767',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57711.910683',
+            maxOriginValue: '58654.110293',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -21768,61 +21768,61 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9348.397954',
+            maxOriginValue: '9202.031292',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '196556.48878658342',
+            maxOriginValue: '195113.14398745226',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '248107.371718',
+            maxOriginValue: '248187.166379',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '103733.452543',
+            maxOriginValue: '103797.239485',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '248107.371718',
+            maxOriginValue: '248187.166379',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '247836.37381570536',
+            maxOriginValue: '19992000',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
-            minOriginValue: '4',
+            minOriginValue: null,
             maxOriginValue: null,
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '248057.750243',
+            maxOriginValue: '1758239.333685',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '248079.528527',
+            maxOriginValue: '1775475.518711',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '248107.371718',
+            maxOriginValue: '248187.166379',
           },
         },
         '53935': {
@@ -21841,7 +21841,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428553.92292995437',
+            maxOriginValue: '419555.75588287687',
           },
         },
         '1313161554': {
@@ -21925,132 +21925,132 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '48357.86115310175',
+            maxOriginValue: '48475.38094487551',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '48407.30129247838',
+            maxOriginValue: '48407.36401025352',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '48414.52581768888',
+            maxOriginValue: '48532.695701205135',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '48544.32936357233',
+            maxOriginValue: '48542.510105454654',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '48492.105957',
+            maxOriginValue: '48534.770371',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '48416.44254',
+            maxOriginValue: '48529.428844',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '48404.74018889975',
+            maxOriginValue: '48405.27974354917',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '48582.665115',
+            maxOriginValue: '48582.727844',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '48560.91271138429',
+            maxOriginValue: '48575.94279249756',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '48571.47275',
+            maxOriginValue: '48574.735901',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '48553.8678540616',
+            maxOriginValue: '48547.02168622308',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '48580.054927',
+            maxOriginValue: '48578.398376',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '48555.62704076874',
+            maxOriginValue: '48555.53390362025',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '48556.50462648109',
+            maxOriginValue: '48556.504640119616',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.605033',
+            maxOriginValue: '3626.255613',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '48556.50462648109',
+            maxOriginValue: '48556.504640119616',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '48587.61603835916',
+            maxOriginValue: '48571.250209764556',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '48590.349704261935',
+            maxOriginValue: '48568.84779369471',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '48532.798644951945',
+            maxOriginValue: '48514.64451606254',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '48541.360833',
+            maxOriginValue: '48578.992121',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '48553.42379576177',
+            maxOriginValue: '48579.57828470755',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '48556.50462648109',
+            maxOriginValue: '48556.504640119616',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '48536.621956',
+            maxOriginValue: '48577.07846',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '48556.50462648109',
+            maxOriginValue: '48556.504640119616',
           },
         },
         '288': {
@@ -22067,126 +22067,126 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '48575.942778853576',
+            maxOriginValue: '48575.94279249756',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339081020761',
+            maxOriginValue: '846.3339081020762',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
-            minOriginValue: '1',
-            maxOriginValue: '48575.942778853576',
+            minOriginValue: null,
+            maxOriginValue: null,
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
-            minOriginValue: '1',
-            maxOriginValue: '48649.100497',
+            minOriginValue: null,
+            maxOriginValue: '48652.20171',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '47649.506428983696',
+            maxOriginValue: '47935.98111055523',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '44042.064937',
+            maxOriginValue: '43875.231889',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '48556.50462648109',
+            maxOriginValue: '48556.504640119616',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9323.542474',
+            maxOriginValue: '9193.020725',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '48611.87653204989',
+            maxOriginValue: '48609.13387699157',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '48582.665115',
+            maxOriginValue: '48582.727844',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '48461.101832',
+            maxOriginValue: '48460.389257',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '48582.665115',
+            maxOriginValue: '48582.727844',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '48544.722512600296',
+            maxOriginValue: '48575.94279249756',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
-            minOriginValue: '4',
+            minOriginValue: null,
             maxOriginValue: null,
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '48578.448338',
+            maxOriginValue: '48594.046504',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '48577.950531',
+            maxOriginValue: '48594.692465',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '48582.665115',
+            maxOriginValue: '48582.727844',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: null,
+            maxOriginValue: '48590.20007705525',
           },
         },
         '81457': {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '48590.52139313295',
+            maxOriginValue: '48590.52140678103',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '48681.56262960532',
+            maxOriginValue: '48667.291617648516',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '48575.942778853576',
+            maxOriginValue: '48575.94279249756',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -22203,7 +22203,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '48556.50462648109',
+            maxOriginValue: '48556.504640119616',
           },
         },
       },
@@ -22216,132 +22216,132 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '48357.86116009269',
+            maxOriginValue: '48475.38093788908',
           },
           '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0': {
             symbol: 'LUSD',
             minOriginValue: null,
-            maxOriginValue: '48407.30129947791',
+            maxOriginValue: '48407.36400325399',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '48414.52582468773',
+            maxOriginValue: '48532.69569421046',
           },
           '0x853d955acef822db058eb8505911ed77f175b99e': {
             symbol: 'FRAX',
             minOriginValue: null,
-            maxOriginValue: '48548.05733150002',
+            maxOriginValue: '48542.510098437655',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '48492.105964',
+            maxOriginValue: '48534.770364',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '48416.413576',
+            maxOriginValue: '48529.428837',
           },
           '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E': {
             symbol: 'crvUSD',
             minOriginValue: null,
-            maxOriginValue: '48403.61716336805',
+            maxOriginValue: '48405.35995966015',
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '48582.665122',
+            maxOriginValue: '48582.727837',
           },
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '48560.93399265796',
+            maxOriginValue: '48575.94278551392',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '48571.472758',
+            maxOriginValue: '48574.593434',
           },
           '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9': {
             symbol: 'sUSD',
             minOriginValue: '4',
-            maxOriginValue: '48555.061925921094',
+            maxOriginValue: '48546.85519642774',
           },
           '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '48580.333072',
+            maxOriginValue: '48578.268701',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '48555.736270758294',
+            maxOriginValue: '48556.4167326481',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '48556.50463420737',
+            maxOriginValue: '48556.504633138764',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.605033',
+            maxOriginValue: '3626.255613',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '48556.50463420737',
+            maxOriginValue: '48556.504633138764',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '48587.616046089344',
+            maxOriginValue: '48571.250202782336',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '48590.34971199256',
+            maxOriginValue: '48568.84778671285',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '48532.798652672755',
+            maxOriginValue: '48514.64450908917',
           },
         },
         '137': {
           '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '48540.8198',
+            maxOriginValue: '48579.065308',
           },
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '48553.55194356997',
+            maxOriginValue: '48579.577782564804',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '48556.50463420737',
+            maxOriginValue: '48556.504633138764',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '48537.023335',
+            maxOriginValue: '48577.11794',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '48556.50463420737',
+            maxOriginValue: '48556.504633138764',
           },
         },
         '288': {
@@ -22358,7 +22358,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '48575.94278658296',
+            maxOriginValue: '48575.94278551392',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
@@ -22370,88 +22370,88 @@ export const BRIDGE_LIMITS_MAP = {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '48575.94278658296',
+            maxOriginValue: '48575.94278551392',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '48649.100505',
+            maxOriginValue: '48652.523287',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '47643.68417866006',
+            maxOriginValue: '47935.981103822334',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '44087.75062',
+            maxOriginValue: '43906.882631',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '48556.50463420737',
+            maxOriginValue: '48556.504633138764',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9327.144112',
+            maxOriginValue: '9193.020725',
           },
         },
         '8453': {
           '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93': {
             symbol: 'crvUSD',
             minOriginValue: '4',
-            maxOriginValue: '48611.818037344645',
+            maxOriginValue: '48609.1382041587',
           },
           '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb': {
             symbol: 'DAI',
             minOriginValue: '4',
-            maxOriginValue: '17908.024769936233',
+            maxOriginValue: '17592.14679853084',
           },
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '48582.665122',
+            maxOriginValue: '48582.727837',
           },
           '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA': {
             symbol: 'USDbC',
             minOriginValue: '4',
-            maxOriginValue: '48461.38361',
+            maxOriginValue: '48460.368031',
           },
         },
         '42161': {
           '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F': {
             symbol: 'FRAX',
             minOriginValue: '4',
-            maxOriginValue: '48582.665122',
+            maxOriginValue: '48582.727837',
           },
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '48544.72239169158',
+            maxOriginValue: '48575.94278551392',
           },
           '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1': {
             symbol: 'DAI',
-            minOriginValue: '4',
+            minOriginValue: null,
             maxOriginValue: null,
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '48578.448217',
+            maxOriginValue: '48594.492991',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '48578.036109',
+            maxOriginValue: '48597.696003',
           },
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
             minOriginValue: '4',
-            maxOriginValue: '48582.665122',
+            maxOriginValue: '48582.727837',
           },
         },
         '53935': {
@@ -22465,19 +22465,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '48590.52140086464',
+            maxOriginValue: '48590.52139979529',
           },
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '48681.56263734575',
+            maxOriginValue: '48641.303482359785',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '48575.94278658296',
+            maxOriginValue: '48575.94278551392',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
@@ -22494,7 +22494,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '48556.50463420737',
+            maxOriginValue: '48556.504633138764',
           },
         },
       },
@@ -22576,24 +22576,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '19992000',
+            maxOriginValue: '999600',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.931741',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '999200',
+            maxOriginValue: '19984000',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611158',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -22605,24 +22605,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '945233.3097067005',
+            maxOriginValue: '943069.2617443647',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978284.7222556049',
+            maxOriginValue: '907063.6283598642',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559769.7610110583',
+            maxOriginValue: '544378.4721391964',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '340868.4266474348',
+            maxOriginValue: '351496.7992210683',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -22632,7 +22632,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '320079.284675',
+            maxOriginValue: '334084.962656',
           },
         },
         '250': {
@@ -22673,19 +22673,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '503588.804175',
+            maxOriginValue: '502533.811425',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '75981.43858159955',
+            maxOriginValue: '87283.14005116245',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57246.588469',
+            maxOriginValue: '58777.157269',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -22695,7 +22695,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9366.046449',
+            maxOriginValue: '9149.044043',
           },
         },
         '42161': {
@@ -22707,24 +22707,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1758013.011456',
+            maxOriginValue: '1760186.467447',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1771165.356915',
+            maxOriginValue: '1843021.605141',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226286.751074',
+            maxOriginValue: '226278.26096',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248206.654315',
+            maxOriginValue: '248346.474907',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -22741,7 +22741,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428761.70977953356',
+            maxOriginValue: '399554.70785574615',
           },
         },
         '1313161554': {
@@ -22990,7 +22990,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '312.9292285712116',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -23000,7 +23000,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '312.9292285712116',
           },
         },
         '250': {
@@ -23031,7 +23031,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.921434841100464',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -23071,12 +23071,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '406.39370961428784',
+            maxOriginValue: '381.69525396569094',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '406.39370961428784',
+            maxOriginValue: '381.69525396569094',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -23093,12 +23093,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '995.1679315858688',
+            maxOriginValue: '1014.1394761499845',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '995.1679315858688',
+            maxOriginValue: '1014.1394761499845',
           },
         },
         '43114': {
@@ -23110,19 +23110,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '8.62665824923071',
           },
         },
         '81457': {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '396.09609935134637',
+            maxOriginValue: '388.99482948530755',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '396.09609935134637',
+            maxOriginValue: '388.99482948530755',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -23148,35 +23148,35 @@ export const BRIDGE_LIMITS_MAP = {
         '1': {
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.994808',
+            minOriginValue: '5.392976',
             maxOriginValue: null,
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.019921',
-            maxOriginValue: null,
+            minOriginValue: '0.021451',
+            maxOriginValue: '999999.978549',
           },
         },
         '8453': {
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.020343',
+            minOriginValue: '0.023088',
             maxOriginValue: null,
           },
         },
         '42161': {
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.022744',
+            minOriginValue: '0.025915',
             maxOriginValue: null,
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.036989',
+            minOriginValue: '0.047523',
             maxOriginValue: null,
           },
         },
@@ -23189,35 +23189,35 @@ export const BRIDGE_LIMITS_MAP = {
         '1': {
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.994808',
+            minOriginValue: '4.965787',
             maxOriginValue: null,
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.019921',
-            maxOriginValue: '974493.10314',
+            minOriginValue: '0.022398',
+            maxOriginValue: '943971.191709',
           },
         },
         '8453': {
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.020343',
+            minOriginValue: '0.024036',
             maxOriginValue: null,
           },
         },
         '42161': {
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.022744',
+            minOriginValue: '0.025915',
             maxOriginValue: null,
           },
         },
         '534352': {
           '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
             symbol: 'USDC',
-            minOriginValue: '0.036989',
+            minOriginValue: '0.046306',
             maxOriginValue: null,
           },
         },
@@ -23230,28 +23230,28 @@ export const BRIDGE_LIMITS_MAP = {
         '1': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00113483547457107',
+            minOriginValue: '0.001880923574262285',
             maxOriginValue: null,
           },
         },
         '10': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000007559181895635',
+            minOriginValue: '0.000008484900040927',
             maxOriginValue: null,
           },
         },
         '8453': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000007719099648135',
+            minOriginValue: '0.000009112400650927',
             maxOriginValue: null,
           },
         },
         '42161': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000008641778847315',
+            minOriginValue: '0.000009816771725497',
             maxOriginValue: null,
           },
         },
@@ -23265,7 +23265,7 @@ export const BRIDGE_LIMITS_MAP = {
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000014026769560635',
+            minOriginValue: '0.000017540691730927',
             maxOriginValue: null,
           },
         },
@@ -23286,17 +23286,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '999895.0469639028',
+            maxOriginValue: '999898.3309384832',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '999965.835436',
+            maxOriginValue: '999914.48972',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '999801.66385',
+            maxOriginValue: '999868.936158',
           },
         },
         '10': {
@@ -23308,7 +23308,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.703969',
           },
         },
         '25': {
@@ -23320,7 +23320,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611158',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -23332,24 +23332,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '945233.3097067005',
+            maxOriginValue: '942416.7901418366',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978284.7222556049',
+            maxOriginValue: '907063.6268851501',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559769.7610110583',
+            maxOriginValue: '544378.4712706533',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '336066.26615866704',
+            maxOriginValue: '352747.3533594021',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -23359,7 +23359,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '324881.070545',
+            maxOriginValue: '332834.516505',
           },
         },
         '250': {
@@ -23400,19 +23400,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '503588.804175',
+            maxOriginValue: '502533.811425',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '75981.43858159955',
+            maxOriginValue: '87982.12029994461',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57239.561701',
+            maxOriginValue: '58805.905934',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -23422,7 +23422,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9366.046449',
+            maxOriginValue: '9133.545118',
           },
         },
         '42161': {
@@ -23434,24 +23434,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1758013.011456',
+            maxOriginValue: '1760186.467447',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1771165.356915',
+            maxOriginValue: '1843021.605141',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226286.751074',
+            maxOriginValue: '226278.26096',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248206.654315',
+            maxOriginValue: '248346.474907',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -23500,213 +23500,213 @@ export const BRIDGE_LIMITS_MAP = {
           '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '150221.9469372191',
+            maxOriginValue: '178916.83826044624',
           },
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '150397.76911025614',
+            maxOriginValue: '179126.23089525953',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '150405.675002',
+            maxOriginValue: '179128.323407',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '150388.429398',
+            maxOriginValue: '179122.53895',
           },
         },
         '10': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '150342.2688811015',
+            maxOriginValue: '179060.14369757916',
           },
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '150301.472292',
+            maxOriginValue: '179001.810049',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '150282.1079091603',
+            maxOriginValue: '178988.4909790127',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.610543',
+            maxOriginValue: '3626.261325',
           },
         },
         '56': {
           '0x23b891e5c62e0955ae2bd185990103928ab817b3': {
             symbol: 'nUSD',
             minOriginValue: '2',
-            maxOriginValue: '150282.1079091603',
+            maxOriginValue: '178988.4909790127',
           },
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '150339.72889850647',
+            maxOriginValue: '178999.73224671674',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '150348.52341831234',
+            maxOriginValue: '178986.99514034743',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '150132.78068892338',
+            maxOriginValue: '178714.731089246',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '150154.661943291',
+            maxOriginValue: '178858.08072042564',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '150282.1079091603',
+            maxOriginValue: '178988.4909790127',
           },
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '150138.039395',
+            maxOriginValue: '178815.194551',
           },
         },
         '250': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '0.6',
-            maxOriginValue: '150282.1079091603',
+            maxOriginValue: '178988.4909790127',
           },
         },
         '288': {
           '0x5DE1677344D3Cb0D7D465c10b72A8f60699C062d': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '430.244124',
+            maxOriginValue: '430.244126',
           },
           '0x66a2A913e447d6b4BF33EFbec43aAeF87890FBbc': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '520.809885',
+            maxOriginValue: '520.809886',
           },
           '0x6B4712AE9797C199edd44F897cA09BC57628a1CF': {
             symbol: 'nUSD',
             minOriginValue: null,
-            maxOriginValue: '150342.2688811015',
+            maxOriginValue: '179060.14369757916',
           },
           '0xf74195Bb8a5cf652411867c5C2C5b8C2a402be35': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '846.3339867793402',
+            maxOriginValue: '846.3339894562309',
           },
         },
         '1088': {
           '0x961318Fc85475E125B99Cc9215f62679aE5200aB': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '150342.2688811015',
+            maxOriginValue: '179060.14369757916',
           },
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '150472.072683',
+            maxOriginValue: '179185.917592',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '75483.28269976142',
+            maxOriginValue: '89374.40614906664',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57111.617693',
+            maxOriginValue: '58950.655246',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '150282.1079091603',
+            maxOriginValue: '178988.4909790127',
           },
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9365.778988',
+            maxOriginValue: '9106.125493',
           },
         },
         '42161': {
           '0x2913E812Cf0dcCA30FB28E6Cac3d2DCFF4497688': {
             symbol: 'nUSD',
             minOriginValue: '4',
-            maxOriginValue: '150342.2688811015',
+            maxOriginValue: '179060.14369757916',
           },
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '150380.498357',
+            maxOriginValue: '179102.6098',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '150382.100976',
+            maxOriginValue: '179114.512799',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '150050.716253',
+            maxOriginValue: '178481.302951',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '150137.392441',
+            maxOriginValue: '178693.927721',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
             minOriginValue: '2.5',
-            maxOriginValue: '150282.1079091603',
+            maxOriginValue: '178988.4909790127',
           },
         },
         '53935': {
           '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a': {
             symbol: 'USDC',
             minOriginValue: '0.5',
-            maxOriginValue: '150387.38961005743',
+            maxOriginValue: '179113.883236504',
           },
         },
         '1313161554': {
           '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c': {
             symbol: 'nUSD',
             minOriginValue: '0.5',
-            maxOriginValue: '150342.2688811015',
+            maxOriginValue: '179060.14369757916',
           },
           '0x4988a896b1227218e4A686fdE5EabdcAbd91571f': {
             symbol: 'USDT.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1455.498386',
+            maxOriginValue: '1455.498395',
           },
           '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802': {
             symbol: 'USDC.e',
             minOriginValue: '0.5',
-            maxOriginValue: '1454.651536',
+            maxOriginValue: '1454.651544',
           },
         },
         '1666600000': {
           '0xED2a7edd7413021d440b09D654f3b87712abAB66': {
             symbol: 'nUSD',
             minOriginValue: '1',
-            maxOriginValue: '150282.1079091603',
+            maxOriginValue: '178988.4909790127',
           },
         },
       },
@@ -23719,159 +23719,159 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
             symbol: 'WETH',
             minOriginValue: '0.015',
-            maxOriginValue: '222.52783755272566',
+            maxOriginValue: '246.23496707108396',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.015',
-            maxOriginValue: '222.52783755272566',
+            maxOriginValue: '246.23496707108396',
           },
         },
         '10': {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.45518598353843',
+            maxOriginValue: '246.0623160389818',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.66148790561016',
+            maxOriginValue: '246.38285594019572',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000146783701765',
-            maxOriginValue: '222.45518598353843',
+            minOriginValue: '0.000001808310526475',
+            maxOriginValue: '246.0623160389818',
           },
         },
         '250': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.61693778798198',
+            maxOriginValue: '246.3335596504918',
           },
         },
         '288': {
           '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
             symbol: 'nETH',
             minOriginValue: '0.007',
-            maxOriginValue: '222.66148790561016',
+            maxOriginValue: '246.38285594019572',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475932345343',
+            maxOriginValue: '0.1742747593261493',
           },
           '0xd203De32170130082896b4111eDF825a4774c18E': {
             symbol: 'WETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475932345343',
+            maxOriginValue: '0.1742747593261493',
           },
         },
         '1088': {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92165467253027',
+            maxOriginValue: '53.9191264821685',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '222.66148790561016',
+            maxOriginValue: '246.38285594019572',
           },
         },
         '1284': {
           '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.63921284679608',
+            maxOriginValue: '246.35820779534376',
           },
         },
         '2000': {
           '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB': {
             symbol: 'WETH',
             minOriginValue: '0.0001',
-            maxOriginValue: '222.52783755272566',
+            maxOriginValue: '246.23496707108396',
           },
         },
         '7700': {
           '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.61693778798198',
+            maxOriginValue: '246.3335596504918',
           },
         },
         '8217': {
           '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.66148790561016',
+            maxOriginValue: '246.38285594019572',
           },
         },
         '8453': {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '221.9850589976021',
+            maxOriginValue: '245.32480000778017',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000177144389265',
-            maxOriginValue: '221.9850589976021',
+            minOriginValue: '0.0000028896756124',
+            maxOriginValue: '245.32480000778017',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.7283130820524',
+            maxOriginValue: '246.4568003747516',
           },
         },
         '42161': {
           '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.66148790561016',
+            maxOriginValue: '246.38285594019572',
           },
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.6283789610955',
+            maxOriginValue: '246.3487982118432',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00000328192632035',
-            maxOriginValue: '222.6283789610955',
+            minOriginValue: '0.0000041599489706',
+            maxOriginValue: '246.3487982118432',
           },
         },
         '43114': {
           '0x19E1ae0eE35c0404f835521146206595d37981ae': {
             symbol: 'nETH',
             minOriginValue: '0.002',
-            maxOriginValue: '222.61693778798198',
+            maxOriginValue: '246.3335596504918',
           },
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686420223690468',
+            maxOriginValue: '8.626640576656557',
           },
         },
         '53935': {
           '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.61693778798198',
+            maxOriginValue: '246.3335596504918',
           },
         },
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: null,
+            minOriginValue: '0.004007020487478',
             maxOriginValue: null,
           },
         },
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00001282141606765',
+            minOriginValue: '0.0000184287487124',
             maxOriginValue: null,
           },
         },
@@ -23879,7 +23879,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.61693778798198',
+            maxOriginValue: '246.3335596504918',
           },
         },
       },
@@ -24017,159 +24017,159 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
             symbol: 'WETH',
             minOriginValue: '0.015',
-            maxOriginValue: '222.52783755272566',
+            maxOriginValue: '246.23496707108396',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.015',
-            maxOriginValue: '222.52783755272566',
+            maxOriginValue: '246.23496707108396',
           },
         },
         '10': {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.45518598353843',
+            maxOriginValue: '246.0623160389818',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.66148790561016',
+            maxOriginValue: '246.38285594019572',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001475993927175',
-            maxOriginValue: '222.45518598353843',
+            minOriginValue: '0.0000018119017624',
+            maxOriginValue: '246.0623160389818',
           },
         },
         '250': {
           '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.61693778798198',
+            maxOriginValue: '246.3335596504918',
           },
         },
         '288': {
           '0x96419929d7949D6A801A6909c145C8EEf6A40431': {
             symbol: 'nETH',
             minOriginValue: '0.007',
-            maxOriginValue: '222.66148790561016',
+            maxOriginValue: '246.38285594019572',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475932345343',
+            maxOriginValue: '0.1742747593261493',
           },
           '0xd203De32170130082896b4111eDF825a4774c18E': {
             symbol: 'WETH',
             minOriginValue: '0.007',
-            maxOriginValue: '0.17427475932345343',
+            maxOriginValue: '0.1742747593261493',
           },
         },
         '1088': {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92165467253027',
+            maxOriginValue: '53.9191264821685',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '222.66148790561016',
+            maxOriginValue: '246.38285594019572',
           },
         },
         '1284': {
           '0x3192Ae73315c3634Ffa217f71CF6CBc30FeE349A': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.63921284679608',
+            maxOriginValue: '246.35820779534376',
           },
         },
         '2000': {
           '0x9F4614E4Ea4A0D7c4B1F946057eC030beE416cbB': {
             symbol: 'WETH',
             minOriginValue: '0.0001',
-            maxOriginValue: '222.52783755272566',
+            maxOriginValue: '246.23496707108396',
           },
         },
         '7700': {
           '0x09fEC30669d63A13c666d2129230dD5588E2e240': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.61693778798198',
+            maxOriginValue: '246.3335596504918',
           },
         },
         '8217': {
           '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.66148790561016',
+            maxOriginValue: '246.38285594019572',
           },
         },
         '8453': {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '221.9850589976021',
+            maxOriginValue: '245.32480000778017',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001785190727175',
-            maxOriginValue: '221.9850589976021',
+            minOriginValue: '0.0000028864605499',
+            maxOriginValue: '245.32480000778017',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.7283130820524',
+            maxOriginValue: '246.4568003747516',
           },
         },
         '42161': {
           '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.66148790561016',
+            maxOriginValue: '246.38285594019572',
           },
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.6283789610955',
+            maxOriginValue: '246.3487982118432',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000003287152367575',
-            maxOriginValue: '222.6283789610955',
+            minOriginValue: '0.0000041567339081',
+            maxOriginValue: '246.3487982118432',
           },
         },
         '43114': {
           '0x19E1ae0eE35c0404f835521146206595d37981ae': {
             symbol: 'nETH',
             minOriginValue: '0.002',
-            maxOriginValue: '222.61693778798198',
+            maxOriginValue: '246.3335596504918',
           },
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686420223690468',
+            maxOriginValue: '8.626640576656557',
           },
         },
         '53935': {
           '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.61693778798198',
+            maxOriginValue: '246.3335596504918',
           },
         },
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: null,
+            minOriginValue: '0.004006708188322',
             maxOriginValue: null,
           },
         },
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000012126313277175',
+            minOriginValue: '0.0000184287487124',
             maxOriginValue: null,
           },
         },
@@ -24177,7 +24177,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB': {
             symbol: 'nETH',
             minOriginValue: '0.001',
-            maxOriginValue: '222.61693778798198',
+            maxOriginValue: '246.3335596504918',
           },
         },
       },
@@ -24202,7 +24202,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.33846046338596',
+            maxOriginValue: '312.9292285712116',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -24211,8 +24211,8 @@ export const BRIDGE_LIMITS_MAP = {
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001480811814675',
-            maxOriginValue: '313.33846046338596',
+            minOriginValue: '0.0000018288027655',
+            maxOriginValue: '312.9292285712116',
           },
         },
         '250': {
@@ -24243,7 +24243,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92452581716875',
+            maxOriginValue: '53.921434841100464',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -24283,12 +24283,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '406.39370961428784',
+            maxOriginValue: '381.69525396569094',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000001790969877175',
-            maxOriginValue: '406.39370961428784',
+            minOriginValue: '0.000002901773978',
+            maxOriginValue: '381.69525396569094',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -24305,12 +24305,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '995.1679315858688',
+            maxOriginValue: '1014.1394761499845',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000003292931517575',
-            maxOriginValue: '995.1679315858688',
+            minOriginValue: '0.0000041875446195',
+            maxOriginValue: '1014.1394761499845',
           },
         },
         '43114': {
@@ -24322,7 +24322,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '8.62665824923071',
           },
         },
         '53935': {
@@ -24335,14 +24335,14 @@ export const BRIDGE_LIMITS_MAP = {
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: null,
+            minOriginValue: '0.004007566598684',
             maxOriginValue: null,
           },
         },
         '534352': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00001209095677285',
+            minOriginValue: '0.0000184420363405',
             maxOriginValue: null,
           },
         },
@@ -24364,35 +24364,35 @@ export const BRIDGE_LIMITS_MAP = {
         '1': {
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
-            minOriginValue: '2.946435',
+            minOriginValue: '5.868817',
             maxOriginValue: null,
           },
         },
         '10': {
           '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
             symbol: 'USDC',
-            minOriginValue: '0.022621',
-            maxOriginValue: '999999.977379',
+            minOriginValue: '0.033693',
+            maxOriginValue: '999999.966307',
           },
         },
         '8453': {
           '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
             symbol: 'USDC',
-            minOriginValue: '0.02312',
+            minOriginValue: '0.035391',
             maxOriginValue: null,
           },
         },
         '42161': {
           '0xaf88d065e77c8cc2239327c5edb3a432268e5831': {
             symbol: 'USDC',
-            minOriginValue: '0.025425',
+            minOriginValue: '0.037524',
             maxOriginValue: null,
           },
         },
         '59144': {
           '0x176211869cA2b568f2A7D4EE941E073a821EE1ff': {
             symbol: 'USDC',
-            minOriginValue: '0.036186',
+            minOriginValue: '0.051116',
             maxOriginValue: null,
           },
         },
@@ -24405,42 +24405,42 @@ export const BRIDGE_LIMITS_MAP = {
         '1': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.001117069018724175',
+            minOriginValue: '0.002224174404826965',
             maxOriginValue: null,
           },
         },
         '10': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000008578260321262',
+            minOriginValue: '0.000012769645915447',
             maxOriginValue: null,
           },
         },
         '8453': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000008766543718762',
+            minOriginValue: '0.000013413297220447',
             maxOriginValue: null,
           },
         },
         '42161': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000009639914209612',
+            minOriginValue: '0.000014221824899377',
             maxOriginValue: null,
           },
         },
         '59144': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.000013720102521262',
+            minOriginValue: '0.000019372593392947',
             maxOriginValue: null,
           },
         },
         '81457': {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
-            minOriginValue: '0.00001410833841035',
+            minOriginValue: '0.000015',
             maxOriginValue: null,
           },
         },
@@ -24461,17 +24461,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '999895.0469639028',
+            maxOriginValue: '999898.3255301834',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '999965.835436',
+            maxOriginValue: '999914.502506',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '999801.66385',
+            maxOriginValue: '999868.930364',
           },
         },
         '10': {
@@ -24483,19 +24483,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.703969',
           },
         },
         '25': {
           '0x396c9c192dd323995346632581BEF92a31AC623b': {
             symbol: 'nUSD',
-            minOriginValue: null,
+            minOriginValue: '2',
             maxOriginValue: '19984000',
           },
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611158',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -24507,24 +24507,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '945233.3097067005',
+            maxOriginValue: '942416.7901418366',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '978284.7222556049',
+            maxOriginValue: '907063.6268851501',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559769.7610110583',
+            maxOriginValue: '544378.4712706533',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '334956.3230382782',
+            maxOriginValue: '352747.3533594021',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -24534,7 +24534,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '324881.071397',
+            maxOriginValue: '332834.516505',
           },
         },
         '250': {
@@ -24575,19 +24575,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '503588.804175',
+            maxOriginValue: '502533.811425',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '75981.43858159955',
+            maxOriginValue: '92208.46232184368',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57275.234719',
+            maxOriginValue: '58909.777598',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -24597,7 +24597,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9366.046449',
+            maxOriginValue: '9041.061609',
           },
         },
         '42161': {
@@ -24609,24 +24609,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1758013.018473',
+            maxOriginValue: '1762807.642146',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1772164.038168',
+            maxOriginValue: '1840400.276282',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226286.751074',
+            maxOriginValue: '226278.26096',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248206.654315',
+            maxOriginValue: '248346.474907',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -24650,7 +24650,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428761.70977953356',
+            maxOriginValue: '399957.3680781893',
           },
         },
         '1666600000': {
@@ -24675,17 +24675,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '0.8995272474558974',
+            maxOriginValue: '0.8995287379533219',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '0.899573',
+            maxOriginValue: '0.899538',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '0.899473',
+            maxOriginValue: '0.899511',
           },
         },
         '10': {
@@ -24697,7 +24697,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '116.897433',
+            maxOriginValue: '116.8974',
           },
         },
         '25': {
@@ -24709,7 +24709,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '119.266707',
+            maxOriginValue: '119.342392',
           },
         },
         '56': {
@@ -24721,24 +24721,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '118.99165046820649',
+            maxOriginValue: '118.9526747903343',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '118.99823251694174',
+            maxOriginValue: '118.94573246765107',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '118.86593462369227',
+            maxOriginValue: '118.82259820709614',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '120.40833421567969',
+            maxOriginValue: '120.44865929274376',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -24748,7 +24748,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '120.402397',
+            maxOriginValue: '120.440097',
           },
         },
         '250': {
@@ -24789,19 +24789,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '120.165011',
+            maxOriginValue: '120.161269',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '119.44298870955318',
+            maxOriginValue: '120.14039347443048',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '120.604616',
+            maxOriginValue: '120.534611',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -24811,7 +24811,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '120.485563',
+            maxOriginValue: '120.536524',
           },
         },
         '42161': {
@@ -24823,24 +24823,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '116.947968',
+            maxOriginValue: '116.950528',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '116.949224',
+            maxOriginValue: '116.956485',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '118.448671',
+            maxOriginValue: '118.448875',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '118.465845',
+            maxOriginValue: '118.46616',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -24864,7 +24864,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '117.23022925084257',
+            maxOriginValue: '117.09500948513373',
           },
         },
         '1666600000': {
@@ -24889,17 +24889,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '0.8995272475227527',
+            maxOriginValue: '0.8995287380201773',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '0.899573',
+            maxOriginValue: '0.899538',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '0.899473',
+            maxOriginValue: '0.899511',
           },
         },
         '10': {
@@ -24911,7 +24911,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '116.897433',
+            maxOriginValue: '116.8974',
           },
         },
         '25': {
@@ -24923,7 +24923,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '119.266707',
+            maxOriginValue: '119.342392',
           },
         },
         '56': {
@@ -24935,24 +24935,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '118.99280672903383',
+            maxOriginValue: '118.9526747904011',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '118.99710372229751',
+            maxOriginValue: '118.94573246771787',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '118.86593854730872',
+            maxOriginValue: '118.82259820716287',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '120.40833421574646',
+            maxOriginValue: '120.44859271077276',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -24962,7 +24962,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '120.402397',
+            maxOriginValue: '120.440031',
           },
         },
         '250': {
@@ -25003,19 +25003,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '120.165038',
+            maxOriginValue: '120.161269',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '119.4429887096197',
+            maxOriginValue: '120.18190916372063',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '120.594358',
+            maxOriginValue: '120.560013',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -25025,7 +25025,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '120.485563',
+            maxOriginValue: '120.522713',
           },
         },
         '42161': {
@@ -25037,24 +25037,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '116.947968',
+            maxOriginValue: '116.950528',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '116.949224',
+            maxOriginValue: '116.956485',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '118.448671',
+            maxOriginValue: '118.448875',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '118.465845',
+            maxOriginValue: '118.46616',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -25078,7 +25078,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '117.23022925090953',
+            maxOriginValue: '117.09500948520062',
           },
         },
         '1666600000': {
@@ -25237,7 +25237,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x121ab82b49B2BC4c7901CA46B8277962b4350204': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.3385604508135',
+            maxOriginValue: '312.9292285712116',
           },
           '0x809DC529f07651bD43A172e8dB6f4a7a0d771036': {
             symbol: 'nETH',
@@ -25247,7 +25247,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '313.3385604508135',
+            maxOriginValue: '312.9292285712116',
           },
         },
         '250': {
@@ -25278,7 +25278,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x420000000000000000000000000000000000000A': {
             symbol: 'WETH',
             minOriginValue: '0.0005',
-            maxOriginValue: '53.92641487577436',
+            maxOriginValue: '53.921434841100464',
           },
           '0x931B8f17764362A3325D30681009f0eDd6211231': {
             symbol: 'nETH',
@@ -25318,12 +25318,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4200000000000000000000000000000000000006': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '406.39370961428784',
+            maxOriginValue: '381.69525396569094',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '406.39370961428784',
+            maxOriginValue: '381.69525396569094',
           },
           '0xb554A55358fF0382Fb21F0a478C3546d1106Be8c': {
             symbol: 'nETH',
@@ -25340,12 +25340,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '995.1680247649228',
+            maxOriginValue: '1014.1394761499845',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '995.1680247649228',
+            maxOriginValue: '1014.1394761499845',
           },
         },
         '43114': {
@@ -25357,7 +25357,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': {
             symbol: 'WETH.e',
             minOriginValue: '0.002',
-            maxOriginValue: '7.686441630900931',
+            maxOriginValue: '8.62665824923071',
           },
         },
         '53935': {
@@ -25371,12 +25371,12 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000004': {
             symbol: 'WETH',
             minOriginValue: '0.001',
-            maxOriginValue: '396.09609935134637',
+            maxOriginValue: '372.33684090973827',
           },
           '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
             symbol: 'ETH',
             minOriginValue: '0.001',
-            maxOriginValue: '396.09609935134637',
+            maxOriginValue: '372.33684090973827',
           },
           '0xce971282fAAc9faBcF121944956da7142cccC855': {
             symbol: 'nETH',
@@ -25833,17 +25833,17 @@ export const BRIDGE_LIMITS_MAP = {
           '0x6b175474e89094c44da98b954eedeac495271d0f': {
             symbol: 'DAI',
             minOriginValue: null,
-            maxOriginValue: '999895.0469639028',
+            maxOriginValue: '999898.3255301834',
           },
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
             symbol: 'USDC',
             minOriginValue: null,
-            maxOriginValue: '999965.835436',
+            maxOriginValue: '999914.502506',
           },
           '0xdac17f958d2ee523a2206206994597c13d831ec7': {
             symbol: 'USDT',
             minOriginValue: null,
-            maxOriginValue: '999801.66385',
+            maxOriginValue: '999868.930364',
           },
         },
         '10': {
@@ -25855,7 +25855,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '755733.28293',
+            maxOriginValue: '755640.703969',
           },
         },
         '25': {
@@ -25867,7 +25867,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc21223249ca28397b4b6541dffaecc539bff0c59': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '3550.611158',
+            maxOriginValue: '3626.261757',
           },
         },
         '56': {
@@ -25879,24 +25879,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0x55d398326f99059ff775485246999027b3197955': {
             symbol: 'USDT',
             minOriginValue: '2',
-            maxOriginValue: '949313.0154835065',
+            maxOriginValue: '942428.1437752298',
           },
           '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': {
             symbol: 'USDC',
             minOriginValue: '2',
-            maxOriginValue: '972204.6040429175',
+            maxOriginValue: '907063.626910829',
           },
           '0xe9e7cea3dedca5984780bafc599bd69add087d56': {
             symbol: 'BUSD',
             minOriginValue: '2',
-            maxOriginValue: '559769.7587716667',
+            maxOriginValue: '544378.471285777',
           },
         },
         '137': {
           '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': {
             symbol: 'DAI',
             minOriginValue: '0.5',
-            maxOriginValue: '334956.3229539564',
+            maxOriginValue: '350470.4185900208',
           },
           '0xb6c473756050de474286bed418b77aeac39b02af': {
             symbol: 'nUSD',
@@ -25906,7 +25906,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': {
             symbol: 'USDT',
             minOriginValue: '0.5',
-            maxOriginValue: '324674.448342',
+            maxOriginValue: '335111.265442',
           },
         },
         '250': {
@@ -25947,19 +25947,19 @@ export const BRIDGE_LIMITS_MAP = {
           '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21': {
             symbol: 'm.USDC',
             minOriginValue: '1',
-            maxOriginValue: '503595.697394',
+            maxOriginValue: '502533.811425',
           },
         },
         '7700': {
           '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503': {
             symbol: 'NOTE',
             minOriginValue: '1',
-            maxOriginValue: '75981.43858159955',
+            maxOriginValue: '94556.28029730012',
           },
           '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
             symbol: 'USDC',
             minOriginValue: '1',
-            maxOriginValue: '57358.967675',
+            maxOriginValue: '58932.773197',
           },
           '0xD8836aF2e565D3Befce7D906Af63ee45a57E8f80': {
             symbol: 'nUSD',
@@ -25969,7 +25969,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75': {
             symbol: 'USDT',
             minOriginValue: '1',
-            maxOriginValue: '9366.046449',
+            maxOriginValue: '8963.319199',
           },
         },
         '42161': {
@@ -25981,24 +25981,24 @@ export const BRIDGE_LIMITS_MAP = {
           '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
             symbol: 'USDC.e',
             minOriginValue: '4',
-            maxOriginValue: '1758013.018473',
+            maxOriginValue: '1767312.787241',
           },
           '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
             symbol: 'USDT',
             minOriginValue: '4',
-            maxOriginValue: '1772164.038168',
+            maxOriginValue: '1835894.889793',
           },
         },
         '43114': {
           '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': {
             symbol: 'USDT',
             minOriginValue: '2.5',
-            maxOriginValue: '226286.751074',
+            maxOriginValue: '226278.26096',
           },
           '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': {
             symbol: 'USDC',
             minOriginValue: '2.5',
-            maxOriginValue: '248206.654315',
+            maxOriginValue: '248346.474907',
           },
           '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46': {
             symbol: 'nUSD',
@@ -26022,7 +26022,7 @@ export const BRIDGE_LIMITS_MAP = {
           '0x4300000000000000000000000000000000000003': {
             symbol: 'USDB',
             minOriginValue: '4',
-            maxOriginValue: '428761.70977953356',
+            maxOriginValue: '399957.3680781893',
           },
         },
         '1313161554': {

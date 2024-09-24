@@ -98,10 +98,10 @@ const generateLimits = async () => {
                       : null
 
                     return !bestMaxAmountOut ||
-                      parseFloat(currentMaxAmountOut) <
+                      parseFloat(currentMaxAmountOut) >
                         parseFloat(bestMaxAmountOut)
-                      ? maxQuote
-                      : currentQuote
+                      ? currentQuote
+                      : maxQuote
                   },
                   null
                 )
