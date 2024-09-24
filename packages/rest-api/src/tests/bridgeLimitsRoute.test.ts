@@ -2,18 +2,31 @@ import request from 'supertest'
 import express from 'express'
 
 import bridgeLimitsRoute from '../routes/bridgeLimitsRoute'
-import { USDC } from '../constants/bridgeable'
+import { USDC, ETH } from '../constants/bridgeable'
 
 const app = express()
 app.use('/bridgeLimits', bridgeLimitsRoute)
 
 describe('Get Bridge Limits Route', () => {
-  it('should return min/max origin amounts for valid input', async () => {
+  it('should return min/max origin amounts bridging USDC', async () => {
     const response = await request(app).get('/bridgeLimits').query({
       fromChain: 1,
       fromToken: USDC.addresses[1],
       toChain: 10,
       toToken: USDC.addresses[10],
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveProperty('maxOriginAmount')
+    expect(response.body).toHaveProperty('minOriginAmount')
+  }, 10_000)
+
+  it('should return min/max origin amounts bridging ETH', async () => {
+    const response = await request(app).get('/bridgeLimits').query({
+      fromChain: 1,
+      fromToken: ETH.addresses[1],
+      toChain: 10,
+      toToken: ETH.addresses[10],
     })
 
     expect(response.status).toBe(200)
@@ -60,7 +73,7 @@ describe('Get Bridge Limits Route', () => {
     const response = await request(app).get('/bridgeLimits').query({
       fromChain: '1',
       toChain: '137',
-      fromToken: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      fromToken: USDC.addresses[1],
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'toToken')
