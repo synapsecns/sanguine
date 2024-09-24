@@ -106,6 +106,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 			r.quoter,
 			r.metrics,
 			originTokens,
+			r.client,
 		),
 		tokenNames: originTokens,
 		balanceMtx: r.balanceMtx,

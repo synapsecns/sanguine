@@ -67,6 +67,9 @@ type Config struct {
 	SubmitSingleQuotes bool `yaml:"submit_single_quotes"`
 	// VolumeLimit is the maximum dollar value of relayed transactions in the BlockWindow.
 	VolumeLimit float64 `yaml:"volume_limit"`
+	// RPCConfirmations is the amount of confirmations required from extenral RPCs
+	// before processing a RFQ possibly impacted by a reorg.
+	RPCConfirmations uint64 `yaml:"rpc_confirmations"`
 }
 
 // ChainConfig represents the configuration for a chain.

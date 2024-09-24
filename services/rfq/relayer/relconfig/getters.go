@@ -848,3 +848,13 @@ func (c Config) GetVolumeLimit(chainID int, addr common.Address) *big.Int {
 	volumeLimitScaled, _ := new(big.Float).Mul(volumeLimitFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return volumeLimitScaled
 }
+
+const defaultRPCConfirmations = 1
+
+func (c Config) GetRPCConfirmations() uint64 {
+	rpcConfirmations := c.RPCConfirmations
+	if rpcConfirmations == 0 {
+		return defaultRPCConfirmations
+	}
+	return rpcConfirmations
+}

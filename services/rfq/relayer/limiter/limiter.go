@@ -7,7 +7,10 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/core/metrics"
+	omnirpc "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -29,11 +32,12 @@ type Limiter interface {
 }
 
 type limiterImpl struct {
-	listener   LatestBlockFetcher
-	metrics    metrics.Handler
-	quoter     quoter.Quoter
-	cfg        relconfig.Config
-	tokenNames map[string]relconfig.TokenConfig
+	listener      LatestBlockFetcher
+	metrics       metrics.Handler
+	quoter        quoter.Quoter
+	cfg           relconfig.Config
+	tokenNames    map[string]relconfig.TokenConfig
+	omnirpcClient omnirpc.RPCClient
 }
 
 // NewRateLimiter creates a new Limiter.
@@ -44,13 +48,15 @@ func NewRateLimiter(
 	q quoter.Quoter,
 	metricHandler metrics.Handler,
 	tokens map[string]relconfig.TokenConfig,
+	omnirpcClient omnirpc.RPCClient,
 ) Limiter {
 	return &limiterImpl{
-		listener:   l,
-		metrics:    metricHandler,
-		quoter:     q,
-		cfg:        cfg,
-		tokenNames: tokens,
+		listener:      l,
+		metrics:       metricHandler,
+		quoter:        q,
+		cfg:           cfg,
+		tokenNames:    tokens,
+		omnirpcClient: omnirpcClient,
 	}
 }
 
@@ -84,7 +90,12 @@ func (l *limiterImpl) IsAllowed(ctx context.Context, request *reldb.QuoteRequest
 		attribute.Bool("within_size_limit", withinSize),
 	)
 
-	return withinSize, nil
+	receiptFieldsMatch, err := l.checkReceipt(ctx, request)
+	if err != nil {
+		return false, fmt.Errorf("could not check receipt: %w", err)
+	}
+
+	return withinSize && receiptFieldsMatch, nil
 }
 
 func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request *reldb.QuoteRequest) (_ bool, err error) {
@@ -182,4 +193,57 @@ func (l *limiterImpl) getRequestVolumeOfToken(
 	)
 
 	return product, nil
+}
+
+func (l *limiterImpl) checkReceipt(ctx context.Context, request *reldb.QuoteRequest) (bool, error) {
+	confirmationsClient, err := l.omnirpcClient.GetConfirmationsClient(
+		ctx,
+		int(request.Transaction.OriginChainId),
+		int(l.cfg.GetRPCConfirmations()),
+	)
+	if err != nil {
+		return false, fmt.Errorf("could not get confirmations client: %w", err)
+	}
+
+	// make sure receipt exists and has the correct fields in case of a reorg
+	receipt, err := confirmationsClient.TransactionReceipt(ctx, request.OriginTxHash)
+	if err != nil {
+		return false, fmt.Errorf("could not check for receipt: %w", err)
+	}
+
+	// not sure if this is needed.
+	if receipt.Logs[0] == nil {
+		return false, fmt.Errorf("no logs in receipt")
+	}
+	log := receipt.Logs[0]
+
+	// nonce check
+	if log.Topics[1] != request.TransactionID {
+		return false, fmt.Errorf("incorrect transactionID got %s expected %s", log.Topics[1].String(), hexutil.Encode((request.TransactionID[:])))
+	}
+
+	parser, err := fastbridge.NewParser(common.HexToAddress(""))
+	if err != nil {
+		return false, fmt.Errorf("could not create parser: %w", err)
+	}
+
+	_, parsedEvent, ok := parser.ParseEvent(*log)
+	if !ok {
+		return false, fmt.Errorf("could not parse event")
+	}
+
+	switch event := parsedEvent.(type) {
+	case *fastbridge.FastBridgeBridgeRequested:
+		return rfqFieldsMatch(request, event), nil
+	default:
+		return false, fmt.Errorf("failed to decode event: unknown event")
+	}
+}
+
+func rfqFieldsMatch(request *reldb.QuoteRequest, event *fastbridge.FastBridgeBridgeRequested) bool {
+	return request.TransactionID == event.TransactionId &&
+		request.Sender.String() == event.Sender.String() &&
+		request.Transaction.OriginAmount.String() == event.OriginAmount.String() &&
+		request.Transaction.DestAmount.String() == event.DestAmount.String() &&
+		request.Transaction.OriginToken.String() == event.OriginToken.String()
 }
