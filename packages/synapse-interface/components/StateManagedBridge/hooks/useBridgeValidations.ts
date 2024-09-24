@@ -111,7 +111,7 @@ export const useBridgeValidations = () => {
   }
 }
 
-const constructStringifiedBridgeSelections = (
+export const constructStringifiedBridgeSelections = (
   originAmount,
   originChainId,
   originToken,
