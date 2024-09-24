@@ -15,8 +15,7 @@
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "test": "jest",
-    "test:coverage": "jest --collect-coverage",
-    "generate:limits-map": "node src/scripts/generateBridgeLimitMapping.js"
+    "test:coverage": "jest --collect-coverage"
   },
   "dependencies": {
     "@ethersproject/address": "^5.7.0",
