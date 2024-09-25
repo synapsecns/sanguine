@@ -283,6 +283,8 @@ jobs:
       - name: Compare gas reports
         uses: Rubilmax/foundry-gas-diff@v3.18
         # TODO: define some options?
+        with:
+          report: './packages/${{matrix.package}}/gas-report.ansi'
         id: gas_diff
 
       - name: Add gas diff to sticky comment
