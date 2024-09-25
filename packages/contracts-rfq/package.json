@@ -24,7 +24,7 @@
     "lint:check": "forge fmt --check && npm run solhint:check",
     "ci:lint": "npm run lint:check",
     "build:go": "./flatten.sh contracts/*.sol test/*.sol",
-    "solhint": "solhint '{contracts,script,test}/**/*.sol' --fix --noPrompt",
-    "solhint:check": "solhint '{contracts,script,test}/**/*.sol'"
+    "solhint": "solhint '{contracts,script,test}/**/*.sol' --fix --noPrompt --max-warnings 3",
+    "solhint:check": "solhint '{contracts,script,test}/**/*.sol' --max-warnings 3"
   }
 }
