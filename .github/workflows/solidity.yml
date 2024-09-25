@@ -129,6 +129,7 @@ jobs:
       fail-fast: false
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
+        # Slither is irrelevant for solidity-devops, as it only contains devops scripts rather than deployed contracts
         exclude:
           - package: solidity-devops
     permissions:
@@ -194,29 +195,25 @@ jobs:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
     steps:
       - uses: actions/checkout@v4
-        if: ${{ matrix.package != 'solidity-devops' }}
         with:
           submodules: recursive
 
       - name: Setup Node JS
-        if: ${{ matrix.package != 'solidity-devops' }}
         uses: ./.github/actions/setup-nodejs
 
       - name: Installing dependencies
-        if: ${{ matrix.package != 'solidity-devops' }}
         run: yarn install --immutable
 
       - name: Install Foundry
-        if: ${{ matrix.package != 'solidity-devops' }}
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
 
       - name: Run Foundry Tests
-        if: ${{ matrix.package != 'solidity-devops' }}
         working-directory: './packages/${{matrix.package}}'
         run: forge test -vvv
 
+      # We skip only the coverage steps for solidity-devops before we establish a good coverage there
       - name: Run Foundry Coverage
         if: ${{ matrix.package != 'solidity-devops' }}
         working-directory: './packages/${{matrix.package}}'
@@ -245,6 +242,7 @@ jobs:
       fail-fast: false
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
+        # Gas diff is irrelevant for solidity-devops, as it only contains devops scripts rather than deployed contracts
         exclude:
           - package: solidity-devops
     steps:
@@ -297,6 +295,7 @@ jobs:
       fail-fast: false
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
+        # Size check is irrelevant for solidity-devops, as it only contains devops scripts rather than deployed contracts
         exclude:
           - package: solidity-devops
     steps:
