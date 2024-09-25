@@ -162,7 +162,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.PutUserQuoteRequest"
+                            "$ref": "#/definitions/model.PutRFQRequest"
                         }
                     }
                 ],
@@ -410,6 +410,26 @@
                 }
             }
         },
+        "model.PutRFQRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.QuoteData"
+                },
+                "integrator_id": {
+                    "type": "string"
+                },
+                "quote_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_address": {
+                    "type": "string"
+                }
+            }
+        },
         "model.PutRelayerQuoteRequest": {
             "type": "object",
             "properties": {
@@ -438,23 +458,6 @@
                     "type": "string"
                 },
                 "origin_token_addr": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.PutUserQuoteRequest": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/model.QuoteData"
-                },
-                "quote_types": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "user_address": {
                     "type": "string"
                 }
             }

@@ -421,6 +421,26 @@ const docTemplate = `{
                 }
             }
         },
+        "model.PutRFQRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.QuoteData"
+                },
+                "integrator_id": {
+                    "type": "string"
+                },
+                "quote_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_address": {
+                    "type": "string"
+                }
+            }
+        },
         "model.PutRelayerQuoteRequest": {
             "type": "object",
             "properties": {
@@ -449,23 +469,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "origin_token_addr": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.PutRFQRequest": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/model.QuoteData"
-                },
-                "quote_types": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "user_address": {
                     "type": "string"
                 }
             }

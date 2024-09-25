@@ -77,6 +77,19 @@ definitions:
           $ref: '#/definitions/model.PutRelayerQuoteRequest'
         type: array
     type: object
+  model.PutRFQRequest:
+    properties:
+      data:
+        $ref: '#/definitions/model.QuoteData'
+      integrator_id:
+        type: string
+      quote_types:
+        items:
+          type: string
+        type: array
+      user_address:
+        type: string
+    type: object
   model.PutRelayerQuoteRequest:
     properties:
       dest_amount:
@@ -96,17 +109,6 @@ definitions:
       origin_fast_bridge_address:
         type: string
       origin_token_addr:
-        type: string
-    type: object
-  model.PutRFQRequest:
-    properties:
-      data:
-        $ref: '#/definitions/model.QuoteData'
-      quote_types:
-        items:
-          type: string
-        type: array
-      user_address:
         type: string
     type: object
   model.PutUserQuoteResponse:
