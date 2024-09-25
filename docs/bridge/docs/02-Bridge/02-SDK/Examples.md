@@ -1,4 +1,8 @@
-# Example Code
+---
+sidebar_label: Examples
+---
+
+# SDK Examples
 
 Implemented Bridge SDK examples
 
