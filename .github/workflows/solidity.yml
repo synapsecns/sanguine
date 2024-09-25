@@ -275,7 +275,7 @@ jobs:
         if: ${{ matrix.package != 'solidity-devops' }}
         working-directory: './packages/${{matrix.package}}'
         # Excluding tests with reverts to get accurate average gas cost estimates
-        run: forge test --nmt "(fail|revert)" --gas-report > gas-report.ansi
+        run: forge test --nmt "(fail|revert)" --gas-report > "../../gas-report-${{ matrix.package }}.ansi"
         env:
           # make fuzzing semi-deterministic to avoid noisy gas cost estimation
           # due to non-deterministic fuzzing (but still use pseudo-random fuzzing seeds)
@@ -285,7 +285,7 @@ jobs:
         uses: Rubilmax/foundry-gas-diff@v3.18
         # TODO: define some options?
         with:
-          report: './packages/${{matrix.package}}/gas-report.ansi'
+          report: 'gas-report-${{ matrix.package }}.ansi'
         id: gas_diff
 
       - name: Add gas diff to sticky comment
