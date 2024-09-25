@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.0...@synapsecns/contracts-rfq@0.5.1) (2024-09-25)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** limit the amount of solhint warnings [SLT-245] ([#3182](https://github.com/synapsecns/sanguine/issues/3182)) ([c15ec86](https://github.com/synapsecns/sanguine/commit/c15ec8691902817f096589553bac360b53ba40cf))
+
+
+
+
+
 # 0.5.0 (2024-09-24)
 
 

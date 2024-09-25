@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.1.5...@synapsecns/rest-api@1.2.0) (2024-09-24)
+
+
+### Features
+
+* **api:** bridge limits [SLT-165]  ([#3179](https://github.com/synapsecns/sanguine/issues/3179)) ([98362bb](https://github.com/synapsecns/sanguine/commit/98362bb7cd8972d83d7a628b2db4fb06831871c0))
+
+
+
+
+
 ## [1.1.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.1.4...@synapsecns/rest-api@1.1.5) (2024-09-23)
 
 
