@@ -243,8 +243,7 @@ jobs:
   gas-diff:
     runs-on: ubuntu-latest
     name: Foundry Gas Diff
-    # This action needs to be triggered on Pull Requests only, assuming there are changes to the package in question.
-    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && needs.changes.outputs.package_count > 0 }}
+    if: ${{ needs.changes.outputs.package_count > 0 }}
     needs: changes
     strategy:
       fail-fast: false
@@ -289,7 +288,7 @@ jobs:
         id: gas_diff
 
       - name: Add gas diff to sticky comment
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
+        if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           # delete the comment in case changes no longer impact gas costs
