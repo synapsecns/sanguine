@@ -10,6 +10,7 @@ import {IFastBridge} from "./interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
 import {IFastBridgeV2Errors} from "./interfaces/IFastBridgeV2Errors.sol";
 
+/// @notice FastBridgeV2 is a contract for bridging tokens across chains.
 contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     using SafeERC20 for IERC20;
     using UniversalTokenLib for address;
