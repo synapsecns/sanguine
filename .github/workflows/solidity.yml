@@ -129,6 +129,8 @@ jobs:
       fail-fast: false
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
+        exclude:
+          - package: solidity-devops
     permissions:
       # always required
       security-events: write
@@ -137,32 +139,27 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        if: ${{ matrix.package != 'solidity-devops' }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
           submodules: 'recursive'
 
       - name: Setup NodeJS
-        if: ${{ matrix.package != 'solidity-devops' }}
         uses: ./.github/actions/setup-nodejs
 
       - name: Install Foundry
-        if: ${{ matrix.package != 'solidity-devops' }}
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
 
       # TODO: find a flag for this
       - name: Delete Untested Files
-        if: ${{ matrix.package != 'solidity-devops' }}
         working-directory: './packages/${{matrix.package}}'
         run: |
           rm -rf test/ || true
           rm -rf script/ || true
 
       - name: Build Contracts
-        if: ${{ matrix.package != 'solidity-devops' }}
         # TODO: unforunately, as of now concurrency needs to be 1 since if multiple instances of forge try to install the same version
         # of solc at the same time, we get "text file busy" errors. See https://github.com/synapsecns/sanguine/actions/runs/8457116792/job/23168392860?pr=2234
         # for an example.
@@ -170,7 +167,6 @@ jobs:
           npx lerna exec npm run build:slither --concurrency=1
 
       - name: Run Slither
-        if: ${{ matrix.package != 'solidity-devops' }}
         uses: crytic/slither-action@v0.3.0
         continue-on-error: true
         id: slither
@@ -182,7 +178,7 @@ jobs:
           solc-version: 0.8.17
 
       - name: Upload SARIF file
-        if: ${{!github.event.repository.private && matrix.package != 'solidity-devops'}}
+        if: ${{!github.event.repository.private}}
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ./results.sarif
@@ -249,29 +245,26 @@ jobs:
       fail-fast: false
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
+        exclude:
+          - package: solidity-devops
     steps:
       - uses: actions/checkout@v4
-        if: ${{ matrix.package != 'solidity-devops' }}
         with:
           submodules: recursive
 
       - name: Setup Node JS
-        if: ${{ matrix.package != 'solidity-devops' }}
         uses: ./.github/actions/setup-nodejs
 
       - name: Installing dependencies
-        if: ${{ matrix.package != 'solidity-devops' }}
         run: yarn install --immutable
 
       - name: Install Foundry
-        if: ${{ matrix.package != 'solidity-devops' }}
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
 
       # TODO: consider defining a package-specific script for this
       - name: Run tests and generate gas report
-        if: ${{ matrix.package != 'solidity-devops' }}
         working-directory: './packages/${{matrix.package}}'
         # Excluding tests with reverts to get accurate average gas cost estimates
         run: forge test --nmt "(fail|revert)" --gas-report > "../../gas-report-${{ matrix.package }}.ansi"
@@ -304,25 +297,23 @@ jobs:
       fail-fast: false
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
+        exclude:
+          - package: solidity-devops
     steps:
       - uses: actions/checkout@v4
-        if: ${{ matrix.package != 'solidity-devops' }}
         with:
           submodules: recursive
 
       - name: Setup Node JS
-        if: ${{ matrix.package != 'solidity-devops' }}
         uses: ./.github/actions/setup-nodejs
 
       - name: Install Foundry
-        if: ${{ matrix.package != 'solidity-devops' }}
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
 
       # This will run https://book.getfoundry.sh/reference/forge/forge-build#build-options
       - name: Run forge build --sizes
-        if: ${{ matrix.package != 'solidity-devops' }}
         run: |
           forge build --sizes
         working-directory: './packages/${{matrix.package}}'
