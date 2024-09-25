@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 import {IFastBridge} from "./IFastBridge.sol";
 
 interface IFastBridgeV2 is IFastBridge {
-
     /// @notice Relays destination side of bridge transaction by off-chain relayer
     /// @param request The encoded bridge transaction to relay on destination chain
     /// @param relayer The address of the relaying entity which should have control of the origin funds when claimed
@@ -30,5 +29,4 @@ interface IFastBridgeV2 is IFastBridge {
         uint48 blockTimestamp;
         address relayer;
     }
-
 }

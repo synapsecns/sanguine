@@ -131,6 +131,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
     /// @inheritdoc IFastBridgeV2
     function relay(bytes memory request, address relayer) public payable {
+        if (relayer == address(0)) revert ZeroAddress();
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
         if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
@@ -138,14 +139,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         // check haven't exceeded deadline for relay to happen
         if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
 
+        if (bridgeRelayDetails[transactionId].relayer != address(0)) revert TransactionRelayed();
+
         // mark bridge transaction as relayed
-        if (bridgeRelayDetails[transactionId].blockNumber != 0) revert TransactionRelayed();
-        
-        bridgeRelayDetails[transactionId] = BridgeRelay({
-            blockNumber: uint48(block.number),
-            blockTimestamp: uint48(block.timestamp),
-            relayer: relayer
-        });
+        bridgeRelayDetails[transactionId] =
+            BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
         // transfer tokens to recipient on destination chain and gas rebate if requested
         address to = transaction.destRecipient;
@@ -178,11 +176,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
             rebate
         );
     }
-    
+
     /// @inheritdoc IFastBridgeV2
-    function bridgeRelays(bytes32 transactionId) external view returns (bool) {
+    function bridgeRelays(bytes32 transactionId) public view returns (bool) {
         // has this transactionId been relayed?
-        return bridgeRelayDetails[transactionId].blockNumber != 0;
+        return bridgeRelayDetails[transactionId].relayer != address(0);
     }
 
     /// @inheritdoc IFastBridge
