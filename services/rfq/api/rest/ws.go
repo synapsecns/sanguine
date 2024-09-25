@@ -14,16 +14,16 @@ import (
 // WsClient is a client for the WebSocket API.
 type WsClient interface {
 	Run(ctx context.Context) error
-	SendQuoteRequest(ctx context.Context, quoteRequest *model.RelayerWsQuoteRequest) error
-	ReceiveQuoteResponse(ctx context.Context, requestID string) (*model.RelayerWsQuoteResponse, error)
+	SendQuoteRequest(ctx context.Context, quoteRequest *model.WsRFQRequest) error
+	ReceiveQuoteResponse(ctx context.Context, requestID string) (*model.WsRFQResponse, error)
 }
 
 type wsClient struct {
 	relayerAddr   string
 	conn          *websocket.Conn
 	pubsub        PubSubManager
-	requestChan   chan *model.RelayerWsQuoteRequest
-	responseChans *xsync.MapOf[string, chan *model.RelayerWsQuoteResponse]
+	requestChan   chan *model.WsRFQRequest
+	responseChans *xsync.MapOf[string, chan *model.WsRFQResponse]
 	doneChan      chan struct{}
 	lastPong      time.Time
 }
@@ -33,17 +33,17 @@ func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager)
 		relayerAddr:   relayerAddr,
 		conn:          conn,
 		pubsub:        pubsub,
-		requestChan:   make(chan *model.RelayerWsQuoteRequest),
-		responseChans: xsync.NewMapOf[chan *model.RelayerWsQuoteResponse](),
+		requestChan:   make(chan *model.WsRFQRequest),
+		responseChans: xsync.NewMapOf[chan *model.WsRFQResponse](),
 		doneChan:      make(chan struct{}),
 	}
 }
 
-func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.RelayerWsQuoteRequest) error {
+func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.WsRFQRequest) error {
 	select {
 	case c.requestChan <- quoteRequest:
 		// successfully sent, register a response channel
-		c.responseChans.Store(quoteRequest.RequestID, make(chan *model.RelayerWsQuoteResponse))
+		c.responseChans.Store(quoteRequest.RequestID, make(chan *model.WsRFQResponse))
 	case <-c.doneChan:
 		return fmt.Errorf("websocket client is closed")
 	case <-ctx.Done():
@@ -52,7 +52,7 @@ func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.Rel
 	return nil
 }
 
-func (c *wsClient) ReceiveQuoteResponse(ctx context.Context, requestID string) (resp *model.RelayerWsQuoteResponse, err error) {
+func (c *wsClient) ReceiveQuoteResponse(ctx context.Context, requestID string) (resp *model.WsRFQResponse, err error) {
 	responseChan, ok := c.responseChans.Load(requestID)
 	if !ok {
 		return nil, fmt.Errorf("no response channel for request %s", requestID)
@@ -139,7 +139,7 @@ func pollWsMessages(conn *websocket.Conn, messageChan chan []byte) {
 	}
 }
 
-func (c *wsClient) sendRelayerRequest(req *model.RelayerWsQuoteRequest) (err error) {
+func (c *wsClient) sendRelayerRequest(req *model.WsRFQRequest) (err error) {
 	rawData, err := json.Marshal(req)
 	if err != nil {
 		return fmt.Errorf("error marshaling quote request: %w", err)
@@ -178,7 +178,7 @@ func (c *wsClient) handleRelayerMessage(msg []byte) (err error) {
 		}
 	case SendQuoteOp:
 		// forward the response to the server
-		var resp model.RelayerWsQuoteResponse
+		var resp model.WsRFQResponse
 		err = json.Unmarshal(rfqMsg.Content, &resp)
 		if err != nil {
 			return fmt.Errorf("error unmarshaling websocket message: %w", err)

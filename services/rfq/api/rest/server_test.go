@@ -206,7 +206,7 @@ func (c *ServerSuite) TestGetOpenQuoteRequests() {
 	c.startQuoterAPIServer()
 
 	// Insert some test quote requests
-	testRequests := []*model.PutUserQuoteRequest{
+	testRequests := []*model.PutRFQRequest{
 		{
 			Data: model.QuoteData{
 				OriginChainID:    1,

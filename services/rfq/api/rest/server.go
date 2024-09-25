@@ -230,7 +230,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// Unauthenticated routes
 	engine.GET(QuoteRoute, h.GetQuotes)
 	engine.GET(ContractsRoute, h.GetContracts)
-	engine.PUT(RFQRoute, r.PutUserQuoteRequest)
+	engine.PUT(RFQRoute, r.PutRFQRequest)
 
 	// WebSocket upgrader
 	r.upgrader = websocket.Upgrader{
@@ -500,20 +500,20 @@ const (
 	quoteTypePassive = "passive"
 )
 
-// PutUserQuoteRequest handles a user request for a quote.
+// PutRFQRequest handles a user request for a quote.
 // PUT /quote_request.
 // @Summary Handle user quote request
 // @Schemes
 // @Description Handle user quote request and return the best quote available.
-// @Param request body model.PutUserQuoteRequest true "User quote request"
+// @Param request body model.PutRFQRequest true "User quote request"
 // @Tags quotes
 // @Accept json
 // @Produce json
 // @Success 200 {object} model.PutUserQuoteResponse
 // @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /quote_request [put].
-func (r *QuoterAPIServer) PutUserQuoteRequest(c *gin.Context) {
-	var req model.PutUserQuoteRequest
+func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
+	var req model.PutRFQRequest
 	err := c.BindJSON(&req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

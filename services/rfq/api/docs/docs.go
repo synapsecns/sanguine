@@ -173,7 +173,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.PutUserQuoteRequest"
+                            "$ref": "#/definitions/model.PutRFQRequest"
                         }
                     }
                 ],
@@ -453,7 +453,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.PutUserQuoteRequest": {
+        "model.PutRFQRequest": {
             "type": "object",
             "properties": {
                 "data": {

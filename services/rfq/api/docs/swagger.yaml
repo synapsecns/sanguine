@@ -98,7 +98,7 @@ definitions:
       origin_token_addr:
         type: string
     type: object
-  model.PutUserQuoteRequest:
+  model.PutRFQRequest:
     properties:
       data:
         $ref: '#/definitions/model.QuoteData'
@@ -246,7 +246,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/model.PutUserQuoteRequest'
+          $ref: '#/definitions/model.PutRFQRequest'
       produces:
       - application/json
       responses:

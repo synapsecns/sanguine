@@ -157,8 +157,8 @@ type ActiveQuoteRequest struct {
 	ClosedQuoteID    string                   `gorm:"column:fulfilled_quote_id"`
 }
 
-// FromUserRequest converts a model.PutUserQuoteRequest to an ActiveQuoteRequest.
-func FromUserRequest(req *model.PutUserQuoteRequest, requestID string) (*ActiveQuoteRequest, error) {
+// FromUserRequest converts a model.PutRFQRequest to an ActiveQuoteRequest.
+func FromUserRequest(req *model.PutRFQRequest, requestID string) (*ActiveQuoteRequest, error) {
 	originAmount, err := decimal.NewFromString(req.Data.OriginAmount)
 	if err != nil {
 		return nil, fmt.Errorf("invalid origin amount: %w", err)
@@ -188,8 +188,8 @@ type ActiveQuoteResponse struct {
 	Status      ActiveQuoteResponseStatus `gorm:"column:status"`
 }
 
-// FromRelayerResponse converts a model.RelayerWsQuoteResponse to an ActiveQuoteResponse.
-func FromRelayerResponse(resp *model.RelayerWsQuoteResponse, relayerAddr string, status ActiveQuoteResponseStatus) (*ActiveQuoteResponse, error) {
+// FromRelayerResponse converts a model.WsRFQResponse to an ActiveQuoteResponse.
+func FromRelayerResponse(resp *model.WsRFQResponse, relayerAddr string, status ActiveQuoteResponseStatus) (*ActiveQuoteResponse, error) {
 	destAmount, err := decimal.NewFromString(resp.DestAmount)
 	if err != nil {
 		return nil, fmt.Errorf("invalid dest amount: %w", err)
@@ -225,11 +225,11 @@ type APIDBWriter interface {
 	// UpsertQuotes upserts multiple quotes in the database.
 	UpsertQuotes(ctx context.Context, quotes []*Quote) error
 	// InsertActiveQuoteRequest inserts an active quote request into the database.
-	InsertActiveQuoteRequest(ctx context.Context, req *model.PutUserQuoteRequest, requestID string) error
+	InsertActiveQuoteRequest(ctx context.Context, req *model.PutRFQRequest, requestID string) error
 	// UpdateActiveQuoteRequestStatus updates the status of an active quote request in the database.
 	UpdateActiveQuoteRequestStatus(ctx context.Context, requestID string, quoteID *string, status ActiveQuoteRequestStatus) error
 	// InsertActiveQuoteResponse inserts an active quote response into the database.
-	InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse, relayerAddr string, status ActiveQuoteResponseStatus) error
+	InsertActiveQuoteResponse(ctx context.Context, resp *model.WsRFQResponse, relayerAddr string, status ActiveQuoteResponseStatus) error
 	// UpdateActiveQuoteResponseStatus updates the status of an active quote response in the database.
 	UpdateActiveQuoteResponseStatus(ctx context.Context, quoteID string, status ActiveQuoteResponseStatus) error
 }

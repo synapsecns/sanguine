@@ -63,8 +63,8 @@ type PutUserQuoteResponse struct {
 	Data        QuoteData `json:"data"`
 }
 
-// RelayerWsQuoteResponse represents a response to a quote request.
-type RelayerWsQuoteResponse struct {
+// WsRFQResponse represents a response to a quote request.
+type WsRFQResponse struct {
 	RequestID  string    `json:"request_id"`
 	QuoteID    string    `json:"quote_id"`
 	DestAmount string    `json:"dest_amount"`

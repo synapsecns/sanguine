@@ -18,7 +18,7 @@ import (
 
 const collectionTimeout = 1 * time.Minute
 
-func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest, requestID string) (quote *model.QuoteData) {
+func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutRFQRequest, requestID string) (quote *model.QuoteData) {
 	ctx, span := r.handler.Tracer().Start(ctx, "handleActiveRFQ", trace.WithAttributes(
 		attribute.String("user_address", request.UserAddress),
 		attribute.String("request_id", requestID),
@@ -28,7 +28,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	}()
 
 	// publish the quote request to all connected clients
-	relayerReq := model.NewRelayerWsQuoteRequest(request.Data, requestID)
+	relayerReq := model.NewWsRFQRequest(request.Data, requestID)
 	r.wsClients.Range(func(relayerAddr string, client WsClient) bool {
 		sendCtx, sendSpan := r.handler.Tracer().Start(ctx, "sendQuoteRequest", trace.WithAttributes(
 			attribute.String("relayer_address", relayerAddr),
@@ -69,7 +69,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	return quote
 }
 
-func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *model.PutUserQuoteRequest, requestID string) (responses map[string]*model.RelayerWsQuoteResponse) {
+func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *model.PutRFQRequest, requestID string) (responses map[string]*model.WsRFQResponse) {
 	ctx, span := r.handler.Tracer().Start(ctx, "collectRelayerResponses", trace.WithAttributes(
 		attribute.String("user_address", request.UserAddress),
 		attribute.String("request_id", requestID),
@@ -85,7 +85,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 
 	wg := sync.WaitGroup{}
 	respMux := sync.Mutex{}
-	responses = map[string]*model.RelayerWsQuoteResponse{}
+	responses = map[string]*model.WsRFQResponse{}
 	r.wsClients.Range(func(relayerAddr string, client WsClient) bool {
 		wg.Add(1)
 		go func(client WsClient) {
@@ -141,7 +141,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	return responses
 }
 
-func getRelayerQuoteData(request *model.PutUserQuoteRequest, resp *model.RelayerWsQuoteResponse) *model.QuoteData {
+func getRelayerQuoteData(request *model.PutRFQRequest, resp *model.WsRFQResponse) *model.QuoteData {
 	return &model.QuoteData{
 		OriginChainID:   int(request.Data.OriginChainID),
 		DestChainID:     int(request.Data.DestChainID),
@@ -170,7 +170,7 @@ func getBestQuote(a, b *model.QuoteData) (*model.QuoteData, bool) {
 	return b, true
 }
 
-func getQuoteResponseStatus(ctx context.Context, resp *model.RelayerWsQuoteResponse) db.ActiveQuoteResponseStatus {
+func getQuoteResponseStatus(ctx context.Context, resp *model.WsRFQResponse) db.ActiveQuoteResponseStatus {
 	respStatus := db.Considered
 	err := validateRelayerQuoteResponse(resp)
 	if err != nil {
@@ -182,7 +182,7 @@ func getQuoteResponseStatus(ctx context.Context, resp *model.RelayerWsQuoteRespo
 	return respStatus
 }
 
-func validateRelayerQuoteResponse(resp *model.RelayerWsQuoteResponse) error {
+func validateRelayerQuoteResponse(resp *model.WsRFQResponse) error {
 	_, ok := new(big.Int).SetString(resp.DestAmount, 10)
 	if !ok {
 		return fmt.Errorf("dest amount is invalid")
@@ -211,7 +211,7 @@ func (r *QuoterAPIServer) recordActiveQuote(ctx context.Context, quote *model.Qu
 	return nil
 }
 
-func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest) (*model.QuoteData, error) {
+func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.PutRFQRequest) (*model.QuoteData, error) {
 	ctx, span := r.handler.Tracer().Start(ctx, "handlePassiveRFQ", trace.WithAttributes(
 		attribute.String("user_address", request.UserAddress),
 	))

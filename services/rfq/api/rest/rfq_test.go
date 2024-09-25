@@ -15,7 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
-func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet wallet.Wallet, quoteResp *model.RelayerWsQuoteResponse, url, wsURL string) {
+func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet wallet.Wallet, quoteResp *model.WsRFQResponse, url, wsURL string) {
 	// Create a relayer client
 	relayerSigner := localsigner.NewSigner(relayerWallet.PrivateKey())
 	relayerClient, err := client.NewAuthenticatedClient(metrics.Get(), url, &wsURL, relayerSigner)
@@ -39,7 +39,7 @@ func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet walle
 					continue
 				}
 				if msg.Op == "request_quote" {
-					var quoteReq model.RelayerWsQuoteRequest
+					var quoteReq model.WsRFQRequest
 					err := json.Unmarshal(msg.Content, &quoteReq)
 					if err != nil {
 						c.Error(fmt.Errorf("error unmarshaling quote request: %w", err))
@@ -61,7 +61,7 @@ func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet walle
 	}()
 }
 
-func verifyActiveQuoteRequest(c *ServerSuite, userReq *model.PutUserQuoteRequest, activeQuoteRequest *db.ActiveQuoteRequest, status db.ActiveQuoteRequestStatus) {
+func verifyActiveQuoteRequest(c *ServerSuite, userReq *model.PutRFQRequest, activeQuoteRequest *db.ActiveQuoteRequest, status db.ActiveQuoteRequestStatus) {
 	c.Assert().Equal(uint64(userReq.Data.OriginChainID), activeQuoteRequest.OriginChainID)
 	c.Assert().Equal(userReq.Data.OriginTokenAddr, activeQuoteRequest.OriginTokenAddr)
 	c.Assert().Equal(uint64(userReq.Data.DestChainID), activeQuoteRequest.DestChainID)
@@ -91,7 +91,7 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 
 	// Prepare a user quote request
 	userRequestAmount := big.NewInt(1_000_000)
-	userQuoteReq := &model.PutUserQuoteRequest{
+	userQuoteReq := &model.PutRFQRequest{
 		Data: model.QuoteData{
 			OriginChainID:    c.originChainID,
 			OriginTokenAddr:  originTokenAddr,
@@ -106,7 +106,7 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	// Prepare the relayer quote response
 	originAmount := userRequestAmount.String()
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
-	quoteResp := &model.RelayerWsQuoteResponse{
+	quoteResp := &model.WsRFQResponse{
 		DestAmount: destAmount,
 	}
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
@@ -114,7 +114,7 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	runMockRelayer(c, respCtx, c.relayerWallets[0], quoteResp, url, wsURL)
 
 	// Submit the user quote request
-	userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
+	userQuoteResp, err := userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
 	c.Require().NoError(err)
 
 	// Assert the response
@@ -145,7 +145,7 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 
 	// Prepare a user quote request
 	userRequestAmount := big.NewInt(1_000_000)
-	userQuoteReq := &model.PutUserQuoteRequest{
+	userQuoteReq := &model.PutRFQRequest{
 		Data: model.QuoteData{
 			OriginChainID:    c.originChainID,
 			OriginTokenAddr:  originTokenAddr,
@@ -159,7 +159,7 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 
 	// Prepare the relayer quote response
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
-	quoteResp := &model.RelayerWsQuoteResponse{
+	quoteResp := &model.WsRFQResponse{
 		DestAmount: destAmount,
 	}
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
@@ -167,7 +167,7 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 	runMockRelayer(c, respCtx, c.relayerWallets[0], quoteResp, url, wsURL)
 
 	// Submit the user quote request
-	userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
+	userQuoteResp, err := userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
 	c.Require().NoError(err)
 
 	// Assert the response
@@ -196,7 +196,7 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 
 	// Prepare a user quote request
 	userRequestAmount := big.NewInt(1_000_000)
-	userQuoteReq := &model.PutUserQuoteRequest{
+	userQuoteReq := &model.PutRFQRequest{
 		Data: model.QuoteData{
 			OriginChainID:    c.originChainID,
 			OriginTokenAddr:  originTokenAddr,
@@ -211,17 +211,17 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	// Prepare the relayer quote responses
 	originAmount := userRequestAmount.String()
 	destAmount := "999000"
-	quoteResp := model.RelayerWsQuoteResponse{
+	quoteResp := model.WsRFQResponse{
 		DestAmount: destAmount,
 	}
 
 	// Create additional responses with worse prices
 	destAmount2 := "998000"
-	quoteResp2 := model.RelayerWsQuoteResponse{
+	quoteResp2 := model.WsRFQResponse{
 		DestAmount: destAmount2,
 	}
 	destAmount3 := "997000"
-	quoteResp3 := model.RelayerWsQuoteResponse{
+	quoteResp3 := model.WsRFQResponse{
 		DestAmount: destAmount3,
 	}
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
@@ -231,7 +231,7 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	runMockRelayer(c, respCtx, c.relayerWallets[2], &quoteResp3, url, wsURL)
 
 	// Submit the user quote request
-	userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
+	userQuoteResp, err := userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
 	c.Require().NoError(err)
 
 	// Assert the response
@@ -282,7 +282,7 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	}
 
 	// Prepare user quote request with 0 expiration window
-	userQuoteReq := &model.PutUserQuoteRequest{
+	userQuoteReq := &model.PutRFQRequest{
 		Data: model.QuoteData{
 			OriginChainID:    c.originChainID,
 			OriginTokenAddr:  originTokenAddr,
@@ -296,7 +296,7 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 
 	// Prepare mock relayer response (which should be ignored due to 0 expiration window)
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
-	quoteResp := &model.RelayerWsQuoteResponse{
+	quoteResp := &model.WsRFQResponse{
 		DestAmount: destAmount,
 	}
 
@@ -307,7 +307,7 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	runMockRelayer(c, respCtx, c.relayerWallets[0], quoteResp, url, wsURL)
 
 	// Submit the user quote request
-	userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
+	userQuoteResp, err := userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
 	c.Require().NoError(err)
 
 	// Assert the response
@@ -354,7 +354,7 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	}
 
 	// Prepare user quote request with 0 expiration window
-	userQuoteReq := &model.PutUserQuoteRequest{
+	userQuoteReq := &model.PutRFQRequest{
 		Data: model.QuoteData{
 			OriginChainID:    c.originChainID,
 			OriginTokenAddr:  originTokenAddr,
@@ -368,7 +368,7 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 
 	// Prepare mock relayer response (which should be ignored due to 0 expiration window)
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
-	quoteResp := model.RelayerWsQuoteResponse{
+	quoteResp := model.WsRFQResponse{
 		DestAmount: destAmount,
 	}
 
@@ -388,7 +388,7 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	runMockRelayer(c, respCtx, c.relayerWallets[2], &quoteResp3, url, wsURL)
 
 	// Submit the user quote request
-	userQuoteResp, err := userClient.PutUserQuoteRequest(c.GetTestContext(), userQuoteReq)
+	userQuoteResp, err := userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
 	c.Require().NoError(err)
 
 	// Assert the response
