@@ -6,6 +6,8 @@ src = "contracts"
 out = "artifacts"
 libs = ["../../node_modules", "node_modules", "lib"]
 fs_permissions = [{ access = "read", path = "./artifacts"}, { access = "read-write", path = "./deployments"}, {access = "read-write", path = "./script"}]
+# https://book.getfoundry.sh/reference/config/testing#gas_limit
+gas_limit = "18446744073709551615"
 
 [profile.ci]
 verbosity = 4
