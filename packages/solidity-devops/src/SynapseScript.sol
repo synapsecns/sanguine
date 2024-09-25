@@ -9,7 +9,6 @@ import {SynapseBaseScript} from "./base/SynapseBaseScript.sol";
 import {StringUtils} from "./libs/StringUtils.sol";
 import {stdJson} from "forge-std/Script.sol";
 
-/// @notice This script is used to run various tasks related to the Synapse project.
 abstract contract SynapseScript is SynapseBaseScript {
     /// @notice Should return "💬"
     function getInfoEmoji() internal pure virtual override returns (string memory) {
