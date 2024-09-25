@@ -398,7 +398,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
     }
-    
+
     // arbitrary non-privileged address can be asserted as the relayer
     function test_proveOther_permless() public {
         bytes32 txId = getTxId(tokenTx);
