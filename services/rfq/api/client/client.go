@@ -233,7 +233,7 @@ func (c *clientImpl) connectWebsocket(ctx context.Context, req *model.SubscribeA
 		return nil, fmt.Errorf("failed to get auth header: %w", err)
 	}
 
-	reqURL := *c.wsURL + rest.QuoteRequestsRoute
+	reqURL := *c.wsURL + rest.RFQStreamRoute
 	conn, httpResp, err := websocket.DefaultDialer.Dial(reqURL, header)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
@@ -432,7 +432,7 @@ func (c unauthenticatedClient) PutUserQuoteRequest(ctx context.Context, q *model
 		SetContext(ctx).
 		SetBody(q).
 		SetResult(&response).
-		Put(rest.PutQuoteRequestRoute)
+		Put(rest.RFQRoute)
 
 	if err != nil {
 		return nil, fmt.Errorf("error from server: %s: %w", getStatus(resp), err)

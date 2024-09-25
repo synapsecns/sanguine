@@ -253,7 +253,7 @@ func (c *ServerSuite) TestGetOpenQuoteRequests() {
 
 	// Send GET request to fetch open quote requests
 	client := &http.Client{}
-	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d%s", c.port, rest.OpenQuoteRequestsRoute), nil)
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d%s", c.port, rest.RFQRoute), nil)
 	c.Require().NoError(err)
 	req.Header.Add("Authorization", header)
 	chainIDsJSON, err := json.Marshal([]uint64{1, 42161})

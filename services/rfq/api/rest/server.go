@@ -147,7 +147,7 @@ func NewAPI(
 	if cfg.WebsocketPort != nil {
 		wsEngine := gin.New()
 		wsEngine.Use(q.AuthMiddleware())
-		wsEngine.GET(QuoteRequestsRoute, func(c *gin.Context) {
+		wsEngine.GET(RFQStreamRoute, func(c *gin.Context) {
 			q.GetActiveRFQWebsocket(ctx, c)
 		})
 		wsEngine.GET("", func(c *gin.Context) {
@@ -187,12 +187,10 @@ const (
 	AckRoute = "/ack"
 	// ContractsRoute is the API endpoint for returning a list fo contracts.
 	ContractsRoute = "/contracts"
-	// QuoteRequestsRoute is the API endpoint for handling active quote requests via websocket.
-	QuoteRequestsRoute = "/quote_requests"
-	// OpenQuoteRequestsRoute is the API endpoint for handling active quote requests via websocket.
-	OpenQuoteRequestsRoute = "/open_quote_requests"
-	// PutQuoteRequestRoute is the API endpoint for handling put quote requests.
-	PutQuoteRequestRoute = "/quote_request"
+	// RFQStreamRoute is the API endpoint for handling active quote requests via websocket.
+	RFQStreamRoute = "/rfq_stream"
+	// RFQRoute is the API endpoint for handling RFQ requests.
+	RFQRoute = "/rfq"
 	// ChainsHeader is the header for specifying chains during a websocket handshake.
 	ChainsHeader = "Chains"
 	// AuthorizationHeader is the header for specifying the authorization.
@@ -225,14 +223,14 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	ackPut := engine.Group(AckRoute)
 	ackPut.Use(r.AuthMiddleware())
 	ackPut.PUT("", r.PutRelayAck)
-	openQuoteRequestsGet := engine.Group(OpenQuoteRequestsRoute)
+	openQuoteRequestsGet := engine.Group(RFQRoute)
 	openQuoteRequestsGet.Use(r.AuthMiddleware())
 	openQuoteRequestsGet.GET("", h.GetOpenQuoteRequests)
 
 	// Unauthenticated routes
 	engine.GET(QuoteRoute, h.GetQuotes)
 	engine.GET(ContractsRoute, h.GetContracts)
-	engine.PUT(PutQuoteRequestRoute, r.PutUserQuoteRequest)
+	engine.PUT(RFQRoute, r.PutUserQuoteRequest)
 
 	// WebSocket upgrader
 	r.upgrader = websocket.Upgrader{
@@ -299,7 +297,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 				destChainIDs = append(destChainIDs, uint32(req.DestChainID))
 				loggedRequest = &req
 			}
-		case QuoteRequestsRoute, OpenQuoteRequestsRoute:
+		case RFQRoute, RFQStreamRoute:
 			chainsHeader := c.GetHeader(ChainsHeader)
 			if chainsHeader != "" {
 				var chainIDs []int
