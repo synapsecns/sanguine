@@ -12,6 +12,7 @@ import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { useConfirmNewBridgePrice } from './hooks/useConfirmNewBridgePrice'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -19,6 +20,7 @@ export const BridgeTransactionButton = ({
   isApproved,
   isBridgePaused,
   isTyping,
+  isQuoteStale,
 }) => {
   const dispatch = useAppDispatch()
   const { openConnectModal } = useConnectModal()
@@ -48,6 +50,8 @@ export const BridgeTransactionButton = ({
     debouncedFromValue,
   } = useBridgeState()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
+  const { isPendingConfirmChange, onUserAcceptChange } =
+    useConfirmNewBridgePrice()
 
   const { isWalletPending } = useWalletState()
   const { showDestinationWarning, isDestinationWarningAccepted } =
@@ -73,6 +77,7 @@ export const BridgeTransactionButton = ({
     isBridgeQuoteAmountGreaterThanInputForRfq ||
     (isConnected && !hasValidQuote) ||
     (isConnected && !hasSufficientBalance) ||
+    (isConnected && isQuoteStale) ||
     (destinationAddress && !isAddress(destinationAddress))
 
   let buttonProperties
@@ -96,6 +101,26 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: t('Please select an Origin token'),
       onClick: null,
+    }
+  } else if (isConnected && !hasSufficientBalance) {
+    buttonProperties = {
+      label: t('Insufficient balance'),
+      onClick: null,
+    }
+  } else if (isLoading && hasValidQuote) {
+    buttonProperties = {
+      label: isPendingConfirmChange
+        ? t('Confirm new quote')
+        : t('Bridge {symbol}', { symbol: fromToken?.symbol }),
+      pendingLabel: t('Bridge {symbol}', { symbol: fromToken?.symbol }),
+      onClick: null,
+      className: `
+      ${
+        isPendingConfirmChange
+          ? '!outline !outline-1 !outline-synapsePurple !outline-offset-[-1px] !from-bgLight !to-bgLight'
+          : '!bg-gradient-to-r !from-fuchsia-500 !to-purple-500 dark:!to-purple-600'
+      }
+      !opacity-100`,
     }
   } else if (isLoading) {
     buttonProperties = {
@@ -144,11 +169,6 @@ export const BridgeTransactionButton = ({
       label: t('Invalid bridge quote'),
       onClick: null,
     }
-  } else if (!isLoading && isConnected && !hasSufficientBalance) {
-    buttonProperties = {
-      label: t('Insufficient balance'),
-      onClick: null,
-    }
   } else if (destinationAddress && !isAddress(destinationAddress)) {
     buttonProperties = {
       label: t('Invalid Destination address'),
@@ -166,6 +186,13 @@ export const BridgeTransactionButton = ({
       }),
       onClick: () => switchChain({ chainId: fromChainId }),
       pendingLabel: t('Switching chains'),
+    }
+  } else if (isApproved && hasValidQuote && isPendingConfirmChange) {
+    buttonProperties = {
+      label: t('Confirm new quote'),
+      onClick: () => onUserAcceptChange(),
+      className:
+        '!outline !outline-1 !outline-synapsePurple !outline-offset-[-1px] !from-bgLight !to-bgLight',
     }
   } else if (!isApproved && hasValidInput && hasValidQuote) {
     buttonProperties = {

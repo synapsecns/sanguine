@@ -3,6 +3,7 @@
   "useWorkspaces": true,
   "packages": [
     "packages/*",
+    "packages/rfq-indexer/*",
     "docs/*"
   ],
   "version": "independent"

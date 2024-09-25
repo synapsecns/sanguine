@@ -12,15 +12,18 @@ const createRiskDetectedEvent = (address: Address | string) => {
   })
 }
 
+const dispatchRiskDetectedEvent = (address: Address | string) => {
+  const event = createRiskDetectedEvent(address)
+  GlobalEventEmitter.dispatchEvent(event)
+}
+
 export const screenAddress = async (
   address: Address | string
 ): Promise<boolean> => {
   const url = `https://screener.omnirpc.io/fe/address/${address}`
 
   if (isBlacklisted(address)) {
-    const event = createRiskDetectedEvent(address)
-
-    GlobalEventEmitter.dispatchEvent(event)
+    dispatchRiskDetectedEvent(address)
     return true
   }
 
@@ -29,14 +32,13 @@ export const screenAddress = async (
     const { risk } = await response.json()
 
     if (risk) {
-      const event = createRiskDetectedEvent(address)
-
-      GlobalEventEmitter.dispatchEvent(event)
+      dispatchRiskDetectedEvent(address)
       return true
+    } else {
+      return false
     }
-    return false
   } catch (error) {
-    console.error('Error:', error)
-    return false
+    dispatchRiskDetectedEvent(address)
+    return true
   }
 }

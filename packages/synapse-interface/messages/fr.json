@@ -57,7 +57,8 @@
     "ReceiveWithEllipsis": "Recevoir…",
     "All receivable tokens": "Tous les jetons recevables",
     "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Route trouvée pour le transfert de {debouncedFromValue} {fromToken} sur {fromChainId} vers {toToken} sur {toChainId}",
-    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Aucune route trouvée pour le transfert de {debouncedFromValue} {fromToken} sur {fromChainId} vers {toToken} sur {toChainId}"
+    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "Aucune route trouvée pour le transfert de {debouncedFromValue} {fromToken} sur {fromChainId} vers {toToken} sur {toChainId}",
+    "Confirm new quote": "Confirmer la nouvelle offre"
   },
   "Completed": {
     "to": "vers",

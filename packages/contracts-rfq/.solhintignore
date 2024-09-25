@@ -1,0 +1,5 @@
+contracts/FastBridge.sol
+contracts/interfaces/IFastBridge.sol
+script/FastBridge.s.sol
+test/FastBridge.t.sol
+test/FastBridgeMock.sol

@@ -1,6 +1,6 @@
 import { check } from 'express-validator'
 
-import { findTokenInfo } from '../utils/findTokenInfo'
+import { tokenSymbolToToken } from '../utils/tokenSymbolToToken'
 
 export const validateTokens = (chainParam, tokenParam, paramName) => {
   return check(tokenParam)
@@ -9,7 +9,7 @@ export const validateTokens = (chainParam, tokenParam, paramName) => {
     .withMessage(`${paramName} is required`)
     .custom((value, { req }) => {
       const chain = req.query[chainParam]
-      const tokenInfo = findTokenInfo(chain, value)
+      const tokenInfo = tokenSymbolToToken(chain, value)
       if (!tokenInfo) {
         throw new Error(`Invalid ${paramName} symbol`)
       }
