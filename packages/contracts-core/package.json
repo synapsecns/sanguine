@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/contracts-core",
-  "version": "1.0.33",
+  "version": "1.1.0",
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
@@ -39,7 +39,7 @@
   "dependencies": {
     "@nodelib/fs.walk": "1.2.8",
     "@openzeppelin/contracts": "4.9.3",
-    "@openzeppelin/contracts-upgradeable": "4.9.3",
+    "@openzeppelin/contracts-upgradeable": "4.9.5",
     "dotenv": "16.0.1",
     "solidity-coverage": "0.7.21",
     "ts-node": "10.8.1"
