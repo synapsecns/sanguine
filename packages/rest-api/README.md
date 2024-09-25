@@ -1,15 +1,16 @@
 # Synapse REST API
 To make requests, use https://api.synapseprotocol.com/
 
+
 To run locally:
 ```bash
 yarn dev
 ```
 
 # Documentation
-Swagger Documentation: [Link](https://api.synapseprotocol.com/api-docs/)
+[Swagger Documentation](https://api.synapseprotocol.com/api-docs/)
 
-GitBook Documentation: [Link](https://docs.synapseprotocol.com/developers/rest-api)
+[GitBook Documentation](https://docs.synapseprotocol.com/developers/rest-api)
 
 ## REST API
 The Synapse REST API provides a set of endpoints for quoting and executing cross-chain token swaps and bridges. It supports various functions including swap quotes, bridge quotes, transaction information retrieval, and token list management.
