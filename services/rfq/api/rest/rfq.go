@@ -9,18 +9,37 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/api/db"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const collectionTimeout = 1 * time.Minute
 
 func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest, requestID string) (quote *model.QuoteData) {
+	ctx, span := r.handler.Tracer().Start(ctx, "handleActiveRFQ", trace.WithAttributes(
+		attribute.String("user_address", request.UserAddress),
+		attribute.String("request_id", requestID),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
 	// publish the quote request to all connected clients
 	relayerReq := model.NewRelayerWsQuoteRequest(request.Data, requestID)
 	r.wsClients.Range(func(relayerAddr string, client WsClient) bool {
-		if r.pubSubManager.IsSubscribed(relayerAddr, request.Data.OriginChainID, request.Data.DestChainID) {
-			err := client.SendQuoteRequest(ctx, relayerReq)
+		sendCtx, sendSpan := r.handler.Tracer().Start(ctx, "sendQuoteRequest", trace.WithAttributes(
+			attribute.String("relayer_address", relayerAddr),
+			attribute.String("request_id", requestID),
+		))
+		defer metrics.EndSpan(sendSpan)
+
+		subscribed := r.pubSubManager.IsSubscribed(relayerAddr, request.Data.OriginChainID, request.Data.DestChainID)
+		span.SetAttributes(attribute.Bool("subscribed", subscribed))
+		if subscribed {
+			err := client.SendQuoteRequest(sendCtx, relayerReq)
 			if err != nil {
 				logger.Errorf("Error sending quote request to %s: %v", relayerAddr, err)
 			}
@@ -51,6 +70,12 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 }
 
 func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *model.PutUserQuoteRequest, requestID string) (responses map[string]*model.RelayerWsQuoteResponse) {
+	ctx, span := r.handler.Tracer().Start(ctx, "collectRelayerResponses", trace.WithAttributes(
+		attribute.String("user_address", request.UserAddress),
+		attribute.String("request_id", requestID),
+	))
+	defer metrics.EndSpan(span)
+
 	expireCtx, expireCancel := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond)
 	defer expireCancel()
 
@@ -64,6 +89,16 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	r.wsClients.Range(func(relayerAddr string, client WsClient) bool {
 		wg.Add(1)
 		go func(client WsClient) {
+			var respStatus db.ActiveQuoteResponseStatus
+			_, clientSpan := r.handler.Tracer().Start(collectionCtx, "collectRelayerResponses", trace.WithAttributes(
+				attribute.String("relayer_address", relayerAddr),
+				attribute.String("request_id", requestID),
+			))
+			defer func() {
+				clientSpan.SetAttributes(attribute.String("status", respStatus.String()))
+				metrics.EndSpan(clientSpan)
+			}()
+
 			defer wg.Done()
 			resp, err := client.ReceiveQuoteResponse(collectionCtx, requestID)
 			if err != nil {
@@ -72,7 +107,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 			}
 
 			// validate the response
-			respStatus := getQuoteResponseStatus(expireCtx, resp, relayerAddr)
+			respStatus = getQuoteResponseStatus(expireCtx, resp, relayerAddr)
 			if respStatus == db.Considered {
 				respMux.Lock()
 				responses[relayerAddr] = resp
@@ -166,6 +201,11 @@ func (r *QuoterAPIServer) recordActiveQuote(ctx context.Context, quote *model.Qu
 }
 
 func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.PutUserQuoteRequest) (*model.QuoteData, error) {
+	ctx, span := r.handler.Tracer().Start(ctx, "handlePassiveRFQ", trace.WithAttributes(
+		attribute.String("user_address", request.UserAddress),
+	))
+	defer metrics.EndSpan(span)
+
 	quotes, err := r.db.GetQuotesByOriginAndDestination(ctx, uint64(request.Data.OriginChainID), request.Data.OriginTokenAddr, uint64(request.Data.DestChainID), request.Data.DestTokenAddr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get quotes: %w", err)
