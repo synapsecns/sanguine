@@ -1,14 +1,14 @@
 # Synapse REST API
+To make requests, use https://api.synapseprotocol.com/
 
 To run locally:
 ```bash
 yarn dev
 ```
 
-To make requests, use https://api.synapseprotocol.com/
-
 # Documentation
 Swagger Documentation: [Link](https://api.synapseprotocol.com/api-docs/)
+
 GitBook Documentation: [Link](https://docs.synapseprotocol.com/developers/rest-api)
 
 ## REST API
