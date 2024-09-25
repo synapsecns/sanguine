@@ -12,6 +12,21 @@ contract FastBridgeV2ParityTest is FastBridgeTest {
         return deployCode({what: "FastBridgeV2", args: abi.encode(owner)});
     }
 
+    /// @notice We use uint40 for the timestamps in FastBridgeV2
+    function assertCorrectProof(
+        bytes32 transactionId,
+        uint256 expectedTimestamp,
+        address expectedRelayer
+    )
+        internal
+        virtual
+        override
+    {
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(transactionId);
+        assertEq(timestamp, uint40(expectedTimestamp));
+        assertEq(relayer, expectedRelayer);
+    }
+
     /// @notice Relay function is no longer permissioned, so we skip this test
     function test_failedRelayNotRelayer() public virtual override {
         vm.skip(true);
