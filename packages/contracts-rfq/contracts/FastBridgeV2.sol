@@ -79,12 +79,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         // check bridge params
         if (params.dstChainId == block.chainid) revert ChainIncorrect();
         if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
-        if (
-            params.originToken == address(0) || 
-            params.destToken == address(0) || 
-            params.sender == address(0) || 
-            params.to == address(0)
-        ) revert ZeroAddress();
+        if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
+        if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
 
         // transfer tokens to bridge contract
