@@ -144,6 +144,7 @@ var _ dbcommon.Enum = (*ActiveQuoteResponseStatus)(nil)
 // ActiveQuoteRequest is the database model for an active quote request.
 type ActiveQuoteRequest struct {
 	RequestID        string                   `gorm:"column:request_id;primaryKey"`
+	IntegratorID     string                   `gorm:"column:integrator_id"`
 	UserAddress      string                   `gorm:"column:user_address"`
 	OriginChainID    uint64                   `gorm:"column:origin_chain_id"`
 	OriginTokenAddr  string                   `gorm:"column:origin_token"`
@@ -165,6 +166,7 @@ func FromUserRequest(req *model.PutUserQuoteRequest, requestID string) (*ActiveQ
 	}
 	return &ActiveQuoteRequest{
 		RequestID:        requestID,
+		IntegratorID:     req.IntegratorID,
 		UserAddress:      req.UserAddress,
 		OriginChainID:    uint64(req.Data.OriginChainID),
 		OriginTokenAddr:  req.Data.OriginTokenAddr,

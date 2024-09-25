@@ -56,9 +56,10 @@ type ActiveRFQMessage struct {
 
 // PutUserQuoteRequest represents a user request for quote.
 type PutUserQuoteRequest struct {
-	UserAddress string    `json:"user_address"`
-	QuoteTypes  []string  `json:"quote_types"`
-	Data        QuoteData `json:"data"`
+	UserAddress  string    `json:"user_address"`
+	IntegratorID string    `json:"integrator_id"`
+	QuoteTypes   []string  `json:"quote_types"`
+	Data         QuoteData `json:"data"`
 }
 
 // PutUserQuoteResponse represents a response to a user quote request.
