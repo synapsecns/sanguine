@@ -2,18 +2,11 @@
 title: SDK
 ---
 
-import { BridgeFlow } from '@site/src/components/BridgeFlow'
-
 # Bridge SDK
 
 The Synapse Bridge SDK is the easiest way to integrate cross-chain token & liquidity transfers into your application. It is fully isomorphic and can be used on both client and server sides.
 
 The Synapse Bridge SDK is built on top of the [Synapse Router](/docs/Routers/Synapse-Router) contract.
-
-<figure>
-<BridgeFlow />
-<caption>The SDK sends user assets to a bridge contract, which are moved to the destination chain, and then returned to the user.</caption>
-</figure>
 
 :::note requires Node v16+
 

@@ -2,9 +2,18 @@
 title: Bridge
 ---
 
+import { BridgeFlow } from '@site/src/components/BridgeFlow'
+
 # Synapse Bridge
 
 The [Synapse Bridge](https://synapseprotocol.com) and [Solana Bridge](https://solana.synapseprotocol.com/) seamlessly swap on-chain assets between 20+ EVM and non-EVM blockchains in a safe and secure manner.
+
+<br />
+
+<figure>
+    <BridgeFlow />
+    <caption>User assets are sent to a bridge contract, moved to the destination chain, and returned to the user.</caption>
+</figure>
 
 ## Developers
 
