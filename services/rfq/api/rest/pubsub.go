@@ -76,8 +76,5 @@ func (p *pubSubManagerImpl) IsSubscribed(relayerAddr string, origin, dest int) b
 		return false
 	}
 	_, ok = sub[dest]
-	if !ok {
-		return false
-	}
-	return true
+	return ok
 }

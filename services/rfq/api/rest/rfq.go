@@ -143,8 +143,8 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 
 func getRelayerQuoteData(request *model.PutRFQRequest, resp *model.WsRFQResponse) *model.QuoteData {
 	return &model.QuoteData{
-		OriginChainID:   int(request.Data.OriginChainID),
-		DestChainID:     int(request.Data.DestChainID),
+		OriginChainID:   request.Data.OriginChainID,
+		DestChainID:     request.Data.DestChainID,
 		OriginTokenAddr: request.Data.OriginTokenAddr,
 		DestTokenAddr:   request.Data.DestTokenAddr,
 		OriginAmount:    request.Data.OriginAmount,

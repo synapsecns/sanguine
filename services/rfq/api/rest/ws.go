@@ -177,17 +177,10 @@ func (c *wsClient) handleRelayerMessage(msg []byte) (err error) {
 			return fmt.Errorf("error sending unsubscribe response: %w", err)
 		}
 	case SendQuoteOp:
-		// forward the response to the server
-		var resp model.WsRFQResponse
-		err = json.Unmarshal(rfqMsg.Content, &resp)
+		err = c.handleSendQuote(rfqMsg.Content)
 		if err != nil {
-			return fmt.Errorf("error unmarshaling websocket message: %w", err)
+			return fmt.Errorf("error handling send quote: %w", err)
 		}
-		responseChan, ok := c.responseChans.Load(resp.RequestID)
-		if !ok {
-			return fmt.Errorf("no response channel for request %s", resp.RequestID)
-		}
-		responseChan <- &resp
 	case PongOp:
 		c.lastPong = time.Now()
 	default:
@@ -221,6 +214,22 @@ func (c *wsClient) handleUnsubscribe(content json.RawMessage) (resp model.Active
 		return getErrorResponse(UnsubscribeOp, fmt.Errorf("error removing subscription: %w", err))
 	}
 	return getSuccessResponse(UnsubscribeOp)
+}
+
+func (c *wsClient) handleSendQuote(content json.RawMessage) (err error) {
+	// forward the response to the server
+	var resp model.WsRFQResponse
+	err = json.Unmarshal(content, &resp)
+	if err != nil {
+		return fmt.Errorf("error unmarshaling websocket message: %w", err)
+	}
+	responseChan, ok := c.responseChans.Load(resp.RequestID)
+	if !ok {
+		return fmt.Errorf("no response channel for request %s", resp.RequestID)
+	}
+	responseChan <- &resp
+
+	return nil
 }
 
 func (c *wsClient) trySendPing(lastPong time.Time) (err error) {
