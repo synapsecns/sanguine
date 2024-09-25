@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
+import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.sol";
 import {FastBridgeV2} from "../contracts/FastBridgeV2.sol";
 
 import {MockERC20} from "./MockERC20.sol";
@@ -11,7 +12,7 @@ import {Test} from "forge-std/Test.sol";
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
 
 // solhint-disable no-empty-blocks, ordering
-abstract contract FastBridgeV2Test is Test {
+abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     using stdStorage for StdStorage;
 
     uint32 public constant SRC_CHAIN_ID = 1337;
