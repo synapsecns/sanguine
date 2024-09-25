@@ -309,7 +309,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
-        (uint96 timestamp, address relayer) = (fastBridge.bridgeProofs(txId).timestamp, fastBridge.bridgeProofs(txId).relayer);
+        (uint96 timestamp, address relayer) =
+            (fastBridge.bridgeProofs(txId).timestamp, fastBridge.bridgeProofs(txId).relayer);
         assertEq(timestamp, block.timestamp);
         assertEq(relayer, relayerA);
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
@@ -323,7 +324,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
         expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
         prove({caller: relayerA, bridgeTx: ethTx, destTxHash: hex"01"});
-        (uint96 timestamp, address relayer) = (fastBridge.bridgeProofs(txId).timestamp, fastBridge.bridgeProofs(txId).relayer);
+        (uint96 timestamp, address relayer) =
+            (fastBridge.bridgeProofs(txId).timestamp, fastBridge.bridgeProofs(txId).relayer);
         assertEq(timestamp, block.timestamp);
         assertEq(relayer, relayerA);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);

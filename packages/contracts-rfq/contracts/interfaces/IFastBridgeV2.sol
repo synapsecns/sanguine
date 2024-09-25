@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 import {IFastBridge} from "./IFastBridge.sol";
 
 interface IFastBridgeV2 is IFastBridge {
-
     /// @notice Relays destination side of bridge transaction by off-chain relayer
     /// @param request The encoded bridge transaction to relay on destination chain
     /// @param relayer The address of the relaying entity which should have control of the origin funds when claimed
@@ -20,12 +19,6 @@ interface IFastBridgeV2 is IFastBridge {
     /// @param request The encoded bridge transaction to claim on origin chain
     function claim(bytes memory request) external;
 
-
-
-
-
-
-
     enum BridgeStatus {
         NULL, // doesn't exist yet
         REQUESTED,
@@ -34,11 +27,16 @@ interface IFastBridgeV2 is IFastBridge {
         REFUNDED
     }
 
-    struct BridgeTxDetails {
-        BridgeStatus status;
-        BridgeProof proof;
+    struct ProofDetail {
+        uint40 blockTimestamp;
+        uint48 blockNumber;
+        address relayer;
     }
 
+    struct BridgeTxDetails {
+        BridgeStatus status;
+        ProofDetail proof;
+    }
 
     /// @notice Returns the status of a bridge transaction
     /// @param transactionId The ID of the bridge transaction

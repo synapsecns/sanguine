@@ -23,7 +23,6 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     /// @notice Minimum deadline period to relay a requested bridge transaction
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
 
-
     /// @notice Status of the bridge tx on origin chain
     mapping(bytes32 => BridgeTxDetails) public bridgeTxDetails;
     /// @notice Whether bridge has been relayed on destination chain
@@ -34,16 +33,17 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     // @dev the block the contract was deployed at
     uint256 public immutable deployBlock;
 
-    function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status)
-    {
+    function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status) {
         return bridgeTxDetails[transactionId].status;
     }
-    
-    function bridgeProofs(bytes32 transactionId) public view returns (BridgeProof memory proof)
-    {
-        return bridgeTxDetails[transactionId].proof;
+
+    function bridgeProofs(bytes32 transactionId) public view returns (BridgeProof memory proof) {
+        return BridgeProof({
+            timestamp: bridgeTxDetails[transactionId].proof.blockTimestamp,
+            relayer: bridgeTxDetails[transactionId].proof.relayer
+        });
     }
-    
+
     constructor(address _owner) Admin(_owner) {
         deployBlock = block.number;
     }
@@ -186,7 +186,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         // update bridge tx status given proof provided
         if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
         bridgeTxDetails[transactionId].status = BridgeStatus.RELAYER_PROVED;
-        bridgeTxDetails[transactionId].proof = BridgeProof({timestamp: uint96(block.timestamp), relayer: relayer}); // overflow ok
+        bridgeTxDetails[transactionId].proof =
+            ProofDetail({blockTimestamp: uint40(block.timestamp), blockNumber: uint48(block.number), relayer: relayer}); // overflow ok
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
     }
@@ -197,16 +198,16 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     ///      proof.timestamp < type(uint96).max via unchecked statement
     /// @param proof The bridge proof
     /// @return delta Time delta since proof submitted
-    function _timeSince(BridgeProof memory proof) internal view returns (uint256 delta) {
+    function _timeSince(ProofDetail memory proof) internal view returns (uint256 delta) {
         unchecked {
-            delta = uint96(block.timestamp) - proof.timestamp;
+            delta = uint40(block.timestamp) - proof.blockTimestamp;
         }
     }
 
     /// @inheritdoc IFastBridge
     function canClaim(bytes32 transactionId, address relayer) external view returns (bool) {
         if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
-        BridgeProof memory proof = bridgeTxDetails[transactionId].proof;
+        ProofDetail memory proof = bridgeTxDetails[transactionId].proof;
         if (proof.relayer != relayer) revert SenderIncorrect();
         return _timeSince(proof) > DISPUTE_PERIOD;
     }
@@ -224,7 +225,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         // update bridge tx status if able to claim origin collateral
         if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
 
-        BridgeProof memory proof = bridgeTxDetails[transactionId].proof;
+        ProofDetail memory proof = bridgeTxDetails[transactionId].proof;
 
         // if "to" is zero addr, permissionlessly send funds to proven relayer
         if (to == address(0)) {
