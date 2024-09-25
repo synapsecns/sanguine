@@ -32,7 +32,7 @@ func (s *LimiterSuite) SetupTest() {
 	// Setup
 	s.cfg = relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
-			1: {
+			10: {
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -45,10 +45,30 @@ func (s *LimiterSuite) SetupTest() {
 						Decimals: 18,
 					},
 				},
-				Confirmations: 1,
+				RPCConfirmations:   1,
+				LimitConfirmations: 1,
+				VolumeLimit:        1000, // 1k usd
+				RFQAddress:         "0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E",
+			},
+			81457: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+						PriceUSD: 1,
+						Decimals: 6,
+					},
+					"ETH": {
+						Address:  util.EthAddress.String(),
+						PriceUSD: 2000,
+						Decimals: 18,
+					},
+				},
+				RPCConfirmations:   1,
+				LimitConfirmations: 1,
+				VolumeLimit:        10000, // 10k usd
+				RFQAddress:         "0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E",
 			},
 		},
-		VolumeLimit: 10000, // 10k usd
 	}
 	s.metrics = metrics.NewNullHandler()
 }

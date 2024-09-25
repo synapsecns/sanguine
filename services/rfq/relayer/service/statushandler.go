@@ -87,6 +87,15 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		return nil, fmt.Errorf("could not get tokens: %w", err)
 	}
 
+	confirmationsClient, err := r.client.GetConfirmationsClient(
+		ctx,
+		int(req.Transaction.OriginChainId),
+		r.cfg.GetRPCConfirmations(int(req.Transaction.OriginChainId)),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("could not get confirmations client: %w", err)
+	}
+
 	qr := &QuoteRequestHandler{
 		Origin:              *origin,
 		Dest:                *dest,
@@ -106,7 +115,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 			r.quoter,
 			r.metrics,
 			originTokens,
-			r.client,
+			confirmationsClient,
 		),
 		tokenNames: originTokens,
 		balanceMtx: r.balanceMtx,

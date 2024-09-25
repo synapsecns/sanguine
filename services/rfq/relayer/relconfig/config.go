@@ -65,11 +65,6 @@ type Config struct {
 	UseEmbeddedGuard bool `yaml:"enable_guard"`
 	// SubmitSingleQuotes enables submitting single quotes.
 	SubmitSingleQuotes bool `yaml:"submit_single_quotes"`
-	// VolumeLimit is the maximum dollar value of relayed transactions in the BlockWindow.
-	VolumeLimit float64 `yaml:"volume_limit"`
-	// RPCConfirmations is the amount of confirmations required from extenral RPCs
-	// before processing a RFQ possibly impacted by a reorg.
-	RPCConfirmations uint64 `yaml:"rpc_confirmations"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -113,6 +108,11 @@ type ChainConfig struct {
 	RebalanceConfigs RebalanceConfigs `yaml:"rebalance_configs"`
 	// LimitConfirmations is the number of confirmations to wait for before processing a quote.
 	LimitConfirmations uint64 `yaml:"limit_confirmations"`
+	// VolumeLimit is the maximum dollar value of relayed transactions in the BlockWindow.
+	VolumeLimit float64 `yaml:"volume_limit"`
+	// RPCConfirmations is the amount of confirmations required from extenral RPCs
+	// before processing a RFQ possibly impacted by a reorg.
+	RPCConfirmations int `yaml:"rpc_confirmations"`
 }
 
 // TokenConfig represents the configuration for a token.
