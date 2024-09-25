@@ -186,7 +186,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // update bridge tx status given proof provided
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
         bridgeStatuses[transactionId] = BridgeStatus.RELAYER_PROVED;
-        bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: relayer}); // overflow ok
+         // overflow ok
+        bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: relayer});
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
     }
