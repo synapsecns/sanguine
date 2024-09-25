@@ -57,7 +57,8 @@
     "ReceiveWithEllipsis": "受取…",
     "All receivable tokens": "すべての受取可能トークン",
     "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "{fromChainId}の{debouncedFromValue} {fromToken}から{toChainId}の{toToken}へのブリッジのルートが見つかりました",
-    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "{fromChainId}の{debouncedFromValue} {fromToken}から{toChainId}の{toToken}へのブリッジのルートが見つかりませんでした"
+    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "{fromChainId}の{debouncedFromValue} {fromToken}から{toChainId}の{toToken}へのブリッジのルートが見つかりませんでした",
+    "Confirm new quote": "新しい見積もりを確認"
   },
   "Completed": {
     "to": "へ",

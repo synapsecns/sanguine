@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import {UniversalTokenLib} from "../contracts/libs/UniversalToken.sol";
 
+// solhint-disable ordering
 contract UniversalTokenLibHarness {
     function universalTransfer(address token, address to, uint256 value) public {
         UniversalTokenLib.universalTransfer(token, to, value);

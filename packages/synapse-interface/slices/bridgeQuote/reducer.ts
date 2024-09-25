@@ -6,11 +6,13 @@ import { fetchBridgeQuote } from './thunks'
 
 export interface BridgeQuoteState {
   bridgeQuote: BridgeQuote
+  previousBridgeQuote: BridgeQuote | null
   isLoading: boolean
 }
 
 export const initialState: BridgeQuoteState = {
   bridgeQuote: EMPTY_BRIDGE_QUOTE,
+  previousBridgeQuote: null,
   isLoading: false,
 }
 
@@ -23,6 +25,9 @@ export const bridgeQuoteSlice = createSlice({
     },
     resetBridgeQuote: (state) => {
       state.bridgeQuote = initialState.bridgeQuote
+    },
+    setPreviousBridgeQuote: (state, action: PayloadAction<any>) => {
+      state.previousBridgeQuote = action.payload
     },
   },
   extraReducers: (builder) => {
@@ -44,6 +49,7 @@ export const bridgeQuoteSlice = createSlice({
   },
 })
 
-export const { resetBridgeQuote, setIsLoading } = bridgeQuoteSlice.actions
+export const { resetBridgeQuote, setIsLoading, setPreviousBridgeQuote } =
+  bridgeQuoteSlice.actions
 
 export default bridgeQuoteSlice.reducer

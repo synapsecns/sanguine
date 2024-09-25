@@ -1,19 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {
-    AmountIncorrect,
-    ChainIncorrect,
-    DisputePeriodNotPassed,
-    DisputePeriodPassed,
-    DeadlineNotExceeded,
-    DeadlineTooShort,
-    MsgValueIncorrect,
-    SenderIncorrect,
-    StatusIncorrect,
-    ZeroAddress
-} from "../contracts/libs/Errors.sol";
-
 import {FastBridgeV2, FastBridgeV2Test, IFastBridge} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
