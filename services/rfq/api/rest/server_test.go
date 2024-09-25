@@ -125,9 +125,6 @@ func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
 		err = resp.Body.Close()
 		c.Require().NoError(err)
 	}()
-	// Log the response body for debugging.
-	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
 
 	// Assert that the response status code is HTTP 400 Bad Request.
 	c.Equal(http.StatusBadRequest, resp.StatusCode)
@@ -151,11 +148,6 @@ func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
 
 	// Check for X-Api-Version on the response
 	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
-
-	// Log the response body for debugging.
-	body, err := io.ReadAll(resp.Body)
-	c.Require().NoError(err)
-	fmt.Println(string(body))
 
 	// Assert that the response status code is HTTP 200 OK.
 	c.Assert().Equal(http.StatusOK, resp.StatusCode)
@@ -365,9 +357,6 @@ func (c *ServerSuite) TestMultiplePutRequestsWithIncorrectAuth() {
 
 		// Check for X-Api-Version on the response
 		c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
-
-		// Log the response body for debugging
-		fmt.Printf("Request %d response: Status: %d, Body: %s\n", i+1, resp.StatusCode, string(body))
 
 		switch resp.StatusCode {
 		case http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden:
