@@ -37,11 +37,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         return bridgeTxDetails[transactionId].status;
     }
 
-    function bridgeProofs(bytes32 transactionId) public view returns (BridgeProof memory proof) {
-        return BridgeProof({
-            timestamp: bridgeTxDetails[transactionId].proof.blockTimestamp,
-            relayer: bridgeTxDetails[transactionId].proof.relayer
-        });
+    function bridgeProofs(bytes32 transactionId) public view returns (BridgeProof memory) {
+        BridgeTxDetails storage _thisBridgeTxDetails = bridgeTxDetails[transactionId];
+        return BridgeProof(_thisBridgeTxDetails.proofBlockTimestamp, _thisBridgeTxDetails.proofRelayer);
     }
 
     constructor(address _owner) Admin(_owner) {
@@ -185,31 +183,33 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         bytes32 transactionId = keccak256(request);
         // update bridge tx status given proof provided
         if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
-        bridgeTxDetails[transactionId].status = BridgeStatus.RELAYER_PROVED;
-        bridgeTxDetails[transactionId].proof =
-            ProofDetail({blockTimestamp: uint40(block.timestamp), blockNumber: uint48(block.number), relayer: relayer}); // overflow ok
+        BridgeTxDetails storage _thisBridgeTxDetails = bridgeTxDetails[transactionId];
+        _thisBridgeTxDetails.status = BridgeStatus.RELAYER_PROVED;
+        _thisBridgeTxDetails.proofBlockTimestamp = uint40(block.timestamp);
+        _thisBridgeTxDetails.proofBlockNumber = uint48(block.number);
+        _thisBridgeTxDetails.proofRelayer = relayer;
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
     }
 
     /// @notice Calculates time since proof submitted
-    /// @dev proof.timestamp stores casted uint96(block.timestamp) block timestamps for gas optimization
-    ///      _timeSince(proof) can accomodate rollover case when block.timestamp > type(uint96).max but
-    ///      proof.timestamp < type(uint96).max via unchecked statement
-    /// @param proof The bridge proof
+    /// @dev proof.timestamp stores casted uint40(block.timestamp) block timestamps for gas optimization
+    ///      _timeSince(proof) can accomodate rollover case when block.timestamp > type(uint40).max but
+    ///      proof.timestamp < type(uint40).max via unchecked statement
+    /// @param proofBlockTimestamp The bridge proof block timestamp
     /// @return delta Time delta since proof submitted
-    function _timeSince(ProofDetail memory proof) internal view returns (uint256 delta) {
+    function _timeSince(uint40 proofBlockTimestamp) internal view returns (uint256 delta) {
         unchecked {
-            delta = uint40(block.timestamp) - proof.blockTimestamp;
+            delta = uint40(block.timestamp) - proofBlockTimestamp;
         }
     }
 
     /// @inheritdoc IFastBridge
     function canClaim(bytes32 transactionId, address relayer) external view returns (bool) {
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
-        ProofDetail memory proof = bridgeTxDetails[transactionId].proof;
-        if (proof.relayer != relayer) revert SenderIncorrect();
-        return _timeSince(proof) > DISPUTE_PERIOD;
+        BridgeTxDetails storage _thisBridgeTxDetails = bridgeTxDetails[transactionId];
+        if (_thisBridgeTxDetails.status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        if (_thisBridgeTxDetails.proofRelayer != relayer) revert SenderIncorrect();
+        return _timeSince(_thisBridgeTxDetails.proofBlockTimestamp) > DISPUTE_PERIOD;
     }
 
     /// @inheritdoc IFastBridgeV2
@@ -222,21 +222,21 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
 
-        // update bridge tx status if able to claim origin collateral
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        BridgeTxDetails storage _thisBridgeTxDetails = bridgeTxDetails[transactionId];
 
-        ProofDetail memory proof = bridgeTxDetails[transactionId].proof;
+        // update bridge tx status if able to claim origin collateral
+        if (_thisBridgeTxDetails.status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
 
         // if "to" is zero addr, permissionlessly send funds to proven relayer
         if (to == address(0)) {
-            to = proof.relayer;
-        } else if (proof.relayer != msg.sender) {
+            to = _thisBridgeTxDetails.proofRelayer;
+        } else if (_thisBridgeTxDetails.proofRelayer != msg.sender) {
             revert SenderIncorrect();
         }
 
-        if (_timeSince(proof) <= DISPUTE_PERIOD) revert DisputePeriodNotPassed();
+        if (_timeSince(_thisBridgeTxDetails.proofBlockTimestamp) <= DISPUTE_PERIOD) revert DisputePeriodNotPassed();
 
-        bridgeTxDetails[transactionId].status = BridgeStatus.RELAYER_CLAIMED;
+        _thisBridgeTxDetails.status = BridgeStatus.RELAYER_CLAIMED;
 
         // update protocol fees if origin fee amount exists
         if (transaction.originFeeAmount > 0) protocolFees[transaction.originToken] += transaction.originFeeAmount;
@@ -246,17 +246,21 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         uint256 amount = transaction.originAmount;
         token.universalTransfer(to, amount);
 
-        emit BridgeDepositClaimed(transactionId, proof.relayer, to, token, amount);
+        emit BridgeDepositClaimed(transactionId, _thisBridgeTxDetails.proofRelayer, to, token, amount);
     }
 
     /// @inheritdoc IFastBridge
     function dispute(bytes32 transactionId) external onlyRole(GUARD_ROLE) {
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
-        if (_timeSince(bridgeTxDetails[transactionId].proof) > DISPUTE_PERIOD) revert DisputePeriodPassed();
+        BridgeTxDetails storage _thisBridgeTxDetails = bridgeTxDetails[transactionId];
+
+        if (_thisBridgeTxDetails.status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        if (_timeSince(_thisBridgeTxDetails.proofBlockTimestamp) > DISPUTE_PERIOD) revert DisputePeriodPassed();
 
         // @dev relayer gets slashed effectively if dest relay has gone thru
-        bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
-        delete bridgeTxDetails[transactionId].proof;
+        _thisBridgeTxDetails.status = BridgeStatus.REQUESTED;
+        _thisBridgeTxDetails.proofRelayer = address(0);
+        _thisBridgeTxDetails.proofBlockTimestamp = 0;
+        _thisBridgeTxDetails.proofBlockNumber = 0;
 
         emit BridgeProofDisputed(transactionId, msg.sender);
     }
@@ -265,6 +269,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
+
+        BridgeTxDetails storage _thisBridgeTxDetails = bridgeTxDetails[transactionId];
 
         if (hasRole(REFUNDER_ROLE, msg.sender)) {
             // Refunder can refund if deadline has passed
@@ -275,7 +281,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         }
 
         // set status to refunded if still in requested state
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
+        if (_thisBridgeTxDetails.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
         bridgeTxDetails[transactionId].status = BridgeStatus.REFUNDED;
 
         // transfer origin collateral back to original sender

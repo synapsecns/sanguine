@@ -27,15 +27,11 @@ interface IFastBridgeV2 is IFastBridge {
         REFUNDED
     }
 
-    struct ProofDetail {
-        uint40 blockTimestamp;
-        uint48 blockNumber;
-        address relayer;
-    }
-
     struct BridgeTxDetails {
         BridgeStatus status;
-        ProofDetail proof;
+        uint40 proofBlockTimestamp;
+        uint48 proofBlockNumber;
+        address proofRelayer;
     }
 
     /// @notice Returns the status of a bridge transaction
