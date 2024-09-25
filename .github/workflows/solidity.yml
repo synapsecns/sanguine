@@ -218,6 +218,9 @@ jobs:
         if: ${{ matrix.package != 'solidity-devops' }}
         working-directory: './packages/${{matrix.package}}'
         run: forge coverage --report lcov --report summary >> $GITHUB_STEP_SUMMARY
+        # Limit the number of fuzz runs to speed up the coverage
+        env:
+          FOUNDRY_FUZZ_RUNS: 10
 
       - name: Send Coverage (Codecov)
         if: ${{ matrix.package != 'solidity-devops' }}
