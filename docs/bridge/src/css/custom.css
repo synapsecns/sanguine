@@ -92,3 +92,23 @@ table thead tr {
   text-align: left;
   border: none;
 }
+
+svg text {
+  font-family: monospace;
+}
+
+figure {
+  margin: 2rem 0;
+  text-align: center;
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+
+  & caption {
+    text-align: center;
+    width: 100%;
+    font-style: italic;
+    opacity: .67;
+
+  }
+}

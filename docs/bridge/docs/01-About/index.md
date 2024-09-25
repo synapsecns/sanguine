@@ -1,6 +1,9 @@
 ---
 title: About
 ---
+<br />
+
+![Synapse mark](/img/synapse-mark.svg)
 
 # Use Synapse
 
