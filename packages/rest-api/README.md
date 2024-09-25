@@ -1,13 +1,15 @@
 # Synapse REST API
 
 To run locally:
-\`yarn dev\`
+```bash
+yarn dev
+```
 
 To make requests, use https://api.synapseprotocol.com/
 
 # Documentation
-Swagger Documentation: [https://api.synapseprotocol.com/api-docs/]
-GitBook Documentation: [https://docs.synapseprotocol.com/developers/rest-api]
+Swagger Documentation: [Link](https://api.synapseprotocol.com/api-docs/)
+GitBook Documentation: [Link](https://docs.synapseprotocol.com/developers/rest-api)
 
 ## REST API
 The Synapse REST API provides a set of endpoints for quoting and executing cross-chain token swaps and bridges. It supports various functions including swap quotes, bridge quotes, transaction information retrieval, and token list management.
@@ -57,14 +59,14 @@ const receipt = await transaction.wait();
 ```
 
 ## Other Functions:
-1. /destinationTokens: This endpoint provides information about possible destination tokens for a given source chain and token. It's useful for showing users their options when initiating a cross-chain transfer.
+1. `/destinationTokens`: This endpoint provides information about possible destination tokens for a given source chain and token. It's useful for showing users their options when initiating a cross-chain transfer.
 
 ```javascript
 const response = await fetch('https://api.synapseprotocol.com/destinationTokens?fromChain=1&fromToken=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48');
 const destinationTokens = await response.json();
 ```
 
-2. /bridgeLimits: This endpoint returns the minimum and maximum amounts that can be bridged for a specific token pair. It's helpful for validating user input and displaying available limits.
+2. `/bridgeLimits`: This endpoint returns the minimum and maximum amounts that can be bridged for a specific token pair. It's helpful for validating user input and displaying available limits.
 
 ```javascript
 const limitsResponse = await fetch('https://api.synapseprotocol.com/bridgeLimits?fromChain=1&toChain=42161&fromToken=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&toToken=0xaf88d065e77c8cC2239327C5EDb3A432268e5831');
