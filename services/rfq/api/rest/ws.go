@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/puzpuzpuz/xsync"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
@@ -14,34 +15,35 @@ import (
 type WsClient interface {
 	Run(ctx context.Context) error
 	SendQuoteRequest(ctx context.Context, quoteRequest *model.RelayerWsQuoteRequest) error
-	ReceiveQuoteResponse(ctx context.Context) (*model.RelayerWsQuoteResponse, error)
+	ReceiveQuoteResponse(ctx context.Context, requestID string) (*model.RelayerWsQuoteResponse, error)
 }
 
 type wsClient struct {
-	relayerAddr  string
-	conn         *websocket.Conn
-	pubsub       PubSubManager
-	requestChan  chan *model.RelayerWsQuoteRequest
-	responseChan chan *model.RelayerWsQuoteResponse
-	doneChan     chan struct{}
-	lastPong     time.Time
+	relayerAddr   string
+	conn          *websocket.Conn
+	pubsub        PubSubManager
+	requestChan   chan *model.RelayerWsQuoteRequest
+	responseChans *xsync.MapOf[string, chan *model.RelayerWsQuoteResponse]
+	doneChan      chan struct{}
+	lastPong      time.Time
 }
 
 func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager) *wsClient {
 	return &wsClient{
-		relayerAddr:  relayerAddr,
-		conn:         conn,
-		pubsub:       pubsub,
-		requestChan:  make(chan *model.RelayerWsQuoteRequest),
-		responseChan: make(chan *model.RelayerWsQuoteResponse),
-		doneChan:     make(chan struct{}),
+		relayerAddr:   relayerAddr,
+		conn:          conn,
+		pubsub:        pubsub,
+		requestChan:   make(chan *model.RelayerWsQuoteRequest),
+		responseChans: xsync.NewMapOf[chan *model.RelayerWsQuoteResponse](),
+		doneChan:      make(chan struct{}),
 	}
 }
 
 func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.RelayerWsQuoteRequest) error {
 	select {
 	case c.requestChan <- quoteRequest:
-		// successfully sent
+		// successfully sent, register a response channel
+		c.responseChans.Store(quoteRequest.RequestID, make(chan *model.RelayerWsQuoteResponse))
 	case <-c.doneChan:
 		return fmt.Errorf("websocket client is closed")
 	case <-ctx.Done():
@@ -50,10 +52,16 @@ func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.Rel
 	return nil
 }
 
-func (c *wsClient) ReceiveQuoteResponse(ctx context.Context) (resp *model.RelayerWsQuoteResponse, err error) {
+func (c *wsClient) ReceiveQuoteResponse(ctx context.Context, requestID string) (resp *model.RelayerWsQuoteResponse, err error) {
+	responseChan, ok := c.responseChans.Load(requestID)
+	if !ok {
+		return nil, fmt.Errorf("no response channel for request %s", requestID)
+	}
+	defer c.responseChans.Delete(requestID)
+
 	for {
 		select {
-		case resp = <-c.responseChan:
+		case resp = <-responseChan:
 			// successfully received
 			return resp, nil
 		case <-c.doneChan:
@@ -160,7 +168,7 @@ func (c *wsClient) handleRelayerMessage(msg []byte) (err error) {
 		resp := c.handleSubscribe(rfqMsg.Content)
 		err = c.conn.WriteJSON(resp)
 		if err != nil {
-			logger.Error("Error sending subscribe response: %s", err)
+			return fmt.Errorf("error sending subscribe response: %w", err)
 		}
 	case UnsubscribeOp:
 		resp := c.handleUnsubscribe(rfqMsg.Content)
@@ -175,7 +183,11 @@ func (c *wsClient) handleRelayerMessage(msg []byte) (err error) {
 		if err != nil {
 			return fmt.Errorf("error unmarshaling websocket message: %w", err)
 		}
-		c.responseChan <- &resp
+		responseChan, ok := c.responseChans.Load(resp.RequestID)
+		if !ok {
+			return fmt.Errorf("no response channel for request %s", resp.RequestID)
+		}
+		responseChan <- &resp
 	case PongOp:
 		c.lastPong = time.Now()
 	default:

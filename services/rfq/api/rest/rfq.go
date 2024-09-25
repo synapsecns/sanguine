@@ -33,7 +33,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	}
 
 	// collect the responses and determine the best quote
-	responses := r.collectRelayerResponses(ctx, request)
+	responses := r.collectRelayerResponses(ctx, request, requestID)
 	var quoteID string
 	var isUpdated bool
 	for _, resp := range responses {
@@ -50,7 +50,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	return quote
 }
 
-func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *model.PutUserQuoteRequest) (responses map[string]*model.RelayerWsQuoteResponse) {
+func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *model.PutUserQuoteRequest, requestID string) (responses map[string]*model.RelayerWsQuoteResponse) {
 	expireCtx, expireCancel := context.WithTimeout(ctx, time.Duration(request.Data.ExpirationWindow)*time.Millisecond)
 	defer expireCancel()
 
@@ -65,7 +65,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 		wg.Add(1)
 		go func(client WsClient) {
 			defer wg.Done()
-			resp, err := client.ReceiveQuoteResponse(collectionCtx)
+			resp, err := client.ReceiveQuoteResponse(collectionCtx, requestID)
 			if err != nil {
 				logger.Errorf("Error receiving quote response: %v", err)
 				return

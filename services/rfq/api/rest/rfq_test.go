@@ -46,6 +46,7 @@ func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet walle
 						continue
 					}
 					relayerAddr := relayerWallet.Address().Hex()
+					quoteResp.RequestID = quoteReq.RequestID
 					quoteResp.Data.RelayerAddress = &relayerAddr
 					rawRespData, err := json.Marshal(quoteResp)
 					if err != nil {
