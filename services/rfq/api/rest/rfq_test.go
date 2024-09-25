@@ -45,9 +45,7 @@ func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet walle
 						c.Error(fmt.Errorf("error unmarshaling quote request: %w", err))
 						continue
 					}
-					relayerAddr := relayerWallet.Address().Hex()
 					quoteResp.RequestID = quoteReq.RequestID
-					quoteResp.Data.RelayerAddress = &relayerAddr
 					rawRespData, err := json.Marshal(quoteResp)
 					if err != nil {
 						c.Error(fmt.Errorf("error marshaling quote response: %w", err))
@@ -109,14 +107,7 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	originAmount := userRequestAmount.String()
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := &model.RelayerWsQuoteResponse{
-		Data: &model.QuoteData{
-			OriginChainID:   c.originChainID,
-			OriginTokenAddr: originTokenAddr,
-			DestChainID:     c.destChainID,
-			DestTokenAddr:   destTokenAddr,
-			DestAmount:      &destAmount,
-			OriginAmount:    originAmount,
-		},
+		DestAmount: destAmount,
 	}
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
 	defer cancel()
@@ -167,17 +158,9 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 	}
 
 	// Prepare the relayer quote response
-	originAmount := userRequestAmount.String()
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := &model.RelayerWsQuoteResponse{
-		Data: &model.QuoteData{
-			OriginChainID:   c.originChainID,
-			OriginTokenAddr: originTokenAddr,
-			DestChainID:     c.destChainID,
-			DestTokenAddr:   destTokenAddr,
-			DestAmount:      &destAmount,
-			OriginAmount:    originAmount,
-		},
+		DestAmount: destAmount,
 	}
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
 	defer cancel()
@@ -229,38 +212,17 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	originAmount := userRequestAmount.String()
 	destAmount := "999000"
 	quoteResp := model.RelayerWsQuoteResponse{
-		Data: &model.QuoteData{
-			OriginChainID:   c.originChainID,
-			OriginTokenAddr: originTokenAddr,
-			DestChainID:     c.destChainID,
-			DestTokenAddr:   destTokenAddr,
-			DestAmount:      &destAmount,
-			OriginAmount:    originAmount,
-		},
+		DestAmount: destAmount,
 	}
 
 	// Create additional responses with worse prices
 	destAmount2 := "998000"
 	quoteResp2 := model.RelayerWsQuoteResponse{
-		Data: &model.QuoteData{
-			OriginChainID:   c.originChainID,
-			OriginTokenAddr: originTokenAddr,
-			DestChainID:     c.destChainID,
-			DestTokenAddr:   destTokenAddr,
-			DestAmount:      &destAmount2,
-			OriginAmount:    originAmount,
-		},
+		DestAmount: destAmount2,
 	}
 	destAmount3 := "997000"
 	quoteResp3 := model.RelayerWsQuoteResponse{
-		Data: &model.QuoteData{
-			OriginChainID:   c.originChainID,
-			OriginTokenAddr: originTokenAddr,
-			DestChainID:     c.destChainID,
-			DestTokenAddr:   destTokenAddr,
-			DestAmount:      &destAmount3,
-			OriginAmount:    originAmount,
-		},
+		DestAmount: destAmount3,
 	}
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
 	defer cancel()
@@ -335,14 +297,7 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	// Prepare mock relayer response (which should be ignored due to 0 expiration window)
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := &model.RelayerWsQuoteResponse{
-		Data: &model.QuoteData{
-			OriginChainID:   c.originChainID,
-			OriginTokenAddr: originTokenAddr,
-			DestChainID:     c.destChainID,
-			DestTokenAddr:   destTokenAddr,
-			DestAmount:      &destAmount,
-			OriginAmount:    userQuoteReq.Data.OriginAmount,
-		},
+		DestAmount: destAmount,
 	}
 
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
@@ -414,14 +369,7 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	// Prepare mock relayer response (which should be ignored due to 0 expiration window)
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := model.RelayerWsQuoteResponse{
-		Data: &model.QuoteData{
-			OriginChainID:   c.originChainID,
-			OriginTokenAddr: originTokenAddr,
-			DestChainID:     c.destChainID,
-			DestTokenAddr:   destTokenAddr,
-			DestAmount:      &destAmount,
-			OriginAmount:    userQuoteReq.Data.OriginAmount,
-		},
+		DestAmount: destAmount,
 	}
 
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
@@ -430,12 +378,10 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	// Create additional responses with worse prices
 	quoteResp2 := quoteResp
 	destAmount2 := new(big.Int).Sub(userRequestAmount, big.NewInt(2000))
-	destAmount2Str := destAmount2.String()
-	quoteResp2.Data.DestAmount = &destAmount2Str
+	quoteResp2.DestAmount = destAmount2.String()
 	quoteResp3 := quoteResp
 	destAmount3 := new(big.Int).Sub(userRequestAmount, big.NewInt(3000))
-	destAmount3Str := destAmount3.String()
-	quoteResp3.Data.DestAmount = &destAmount3Str
+	quoteResp3.DestAmount = destAmount3.String()
 
 	runMockRelayer(c, respCtx, c.relayerWallets[0], &quoteResp, url, wsURL)
 	runMockRelayer(c, respCtx, c.relayerWallets[1], &quoteResp2, url, wsURL)

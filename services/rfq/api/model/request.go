@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 // PutRelayerQuoteRequest contains the schema for a PUT /quote request.
 type PutRelayerQuoteRequest struct {
 	OriginChainID           int    `json:"origin_chain_id"`
@@ -30,4 +32,54 @@ type GetQuoteSpecificRequest struct {
 	OriginTokenAddr string `json:"originTokenAddr"`
 	DestChainID     int    `json:"destChainId"`
 	DestTokenAddr   string `json:"destTokenAddr"`
+}
+
+// PutUserQuoteRequest represents a user request for quote.
+type PutUserQuoteRequest struct {
+	UserAddress  string    `json:"user_address"`
+	IntegratorID string    `json:"integrator_id"`
+	QuoteTypes   []string  `json:"quote_types"`
+	Data         QuoteData `json:"data"`
+}
+
+// QuoteRequest represents a request for a quote.
+type QuoteRequest struct {
+	RequestID string    `json:"request_id"`
+	Data      QuoteData `json:"data"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// QuoteData represents the data within a quote request.
+type QuoteData struct {
+	OriginChainID    int     `json:"origin_chain_id"`
+	DestChainID      int     `json:"dest_chain_id"`
+	OriginTokenAddr  string  `json:"origin_token_addr"`
+	DestTokenAddr    string  `json:"dest_token_addr"`
+	OriginAmount     string  `json:"origin_amount"`
+	ExpirationWindow int64   `json:"expiration_window"`
+	DestAmount       *string `json:"dest_amount"`
+	RelayerAddress   *string `json:"relayer_address"`
+}
+
+// RelayerWsQuoteRequest represents a request for a quote to a relayer.
+type RelayerWsQuoteRequest struct {
+	RequestID string    `json:"request_id"`
+	Data      QuoteData `json:"data"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// SubscribeActiveRFQRequest represents a request to subscribe to active quotes.
+// Note that this request is not actually bound to the request body, but rather the chain IDs
+// are encoded under the ChainsHeader.
+type SubscribeActiveRFQRequest struct {
+	ChainIDs []int `json:"chain_ids"`
+}
+
+// NewRelayerWsQuoteRequest creates a new RelayerWsQuoteRequest.
+func NewRelayerWsQuoteRequest(data QuoteData, requestID string) *RelayerWsQuoteRequest {
+	return &RelayerWsQuoteRequest{
+		RequestID: requestID,
+		Data:      data,
+		CreatedAt: time.Now(),
+	}
 }

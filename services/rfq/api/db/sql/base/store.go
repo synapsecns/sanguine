@@ -116,8 +116,8 @@ func (s *Store) UpdateActiveQuoteRequestStatus(ctx context.Context, requestID st
 }
 
 // InsertActiveQuoteResponse inserts an active quote response into the database.
-func (s *Store) InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse, status db.ActiveQuoteResponseStatus) error {
-	dbReq, err := db.FromRelayerResponse(resp, status)
+func (s *Store) InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse, relayerAddr string, status db.ActiveQuoteResponseStatus) error {
+	dbReq, err := db.FromRelayerResponse(resp, relayerAddr, status)
 	if err != nil {
 		return fmt.Errorf("could not convert relayer response to database response: %w", err)
 	}

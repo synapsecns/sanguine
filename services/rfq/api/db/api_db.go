@@ -4,7 +4,6 @@ package db
 import (
 	"context"
 	"database/sql/driver"
-	"errors"
 	"fmt"
 	"time"
 
@@ -181,44 +180,27 @@ func FromUserRequest(req *model.PutUserQuoteRequest, requestID string) (*ActiveQ
 
 // ActiveQuoteResponse is the database model for an active quote response.
 type ActiveQuoteResponse struct {
-	RequestID       string                    `gorm:"column:request_id"`
-	QuoteID         string                    `gorm:"column:quote_id;primaryKey"`
-	OriginChainID   uint64                    `gorm:"column:origin_chain_id"`
-	OriginTokenAddr string                    `gorm:"column:origin_token"`
-	DestChainID     uint64                    `gorm:"column:dest_chain_id"`
-	DestTokenAddr   string                    `gorm:"column:dest_token"`
-	OriginAmount    decimal.Decimal           `gorm:"column:origin_amount"`
-	DestAmount      decimal.Decimal           `gorm:"column:dest_amount"`
-	RelayerAddr     string                    `gorm:"column:relayer_address"`
-	UpdatedAt       time.Time                 `gorm:"column:updated_at"`
-	Status          ActiveQuoteResponseStatus `gorm:"column:status"`
+	RequestID   string                    `gorm:"column:request_id"`
+	QuoteID     string                    `gorm:"column:quote_id;primaryKey"`
+	DestAmount  decimal.Decimal           `gorm:"column:dest_amount"`
+	RelayerAddr string                    `gorm:"column:relayer_address"`
+	UpdatedAt   time.Time                 `gorm:"column:updated_at"`
+	Status      ActiveQuoteResponseStatus `gorm:"column:status"`
 }
 
 // FromRelayerResponse converts a model.RelayerWsQuoteResponse to an ActiveQuoteResponse.
-func FromRelayerResponse(resp *model.RelayerWsQuoteResponse, status ActiveQuoteResponseStatus) (*ActiveQuoteResponse, error) {
-	if resp.Data.RelayerAddress == nil {
-		return nil, errors.New("relayer address is nil")
-	}
-	originAmount, err := decimal.NewFromString(resp.Data.OriginAmount)
-	if err != nil {
-		return nil, fmt.Errorf("invalid origin amount: %w", err)
-	}
-	destAmount, err := decimal.NewFromString(*resp.Data.DestAmount)
+func FromRelayerResponse(resp *model.RelayerWsQuoteResponse, relayerAddr string, status ActiveQuoteResponseStatus) (*ActiveQuoteResponse, error) {
+	destAmount, err := decimal.NewFromString(resp.DestAmount)
 	if err != nil {
 		return nil, fmt.Errorf("invalid dest amount: %w", err)
 	}
 	return &ActiveQuoteResponse{
-		RequestID:       resp.RequestID,
-		QuoteID:         resp.QuoteID,
-		OriginChainID:   uint64(resp.Data.OriginChainID),
-		OriginTokenAddr: resp.Data.OriginTokenAddr,
-		DestChainID:     uint64(resp.Data.DestChainID),
-		DestTokenAddr:   resp.Data.DestTokenAddr,
-		OriginAmount:    originAmount,
-		DestAmount:      destAmount,
-		RelayerAddr:     *resp.Data.RelayerAddress,
-		UpdatedAt:       resp.UpdatedAt,
-		Status:          status,
+		RequestID:   resp.RequestID,
+		QuoteID:     resp.QuoteID,
+		DestAmount:  destAmount,
+		RelayerAddr: relayerAddr,
+		UpdatedAt:   resp.UpdatedAt,
+		Status:      status,
 	}, nil
 }
 
@@ -247,7 +229,7 @@ type APIDBWriter interface {
 	// UpdateActiveQuoteRequestStatus updates the status of an active quote request in the database.
 	UpdateActiveQuoteRequestStatus(ctx context.Context, requestID string, quoteID *string, status ActiveQuoteRequestStatus) error
 	// InsertActiveQuoteResponse inserts an active quote response into the database.
-	InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse, status ActiveQuoteResponseStatus) error
+	InsertActiveQuoteResponse(ctx context.Context, resp *model.RelayerWsQuoteResponse, relayerAddr string, status ActiveQuoteResponseStatus) error
 	// UpdateActiveQuoteResponseStatus updates the status of an active quote response in the database.
 	UpdateActiveQuoteResponseStatus(ctx context.Context, quoteID string, status ActiveQuoteResponseStatus) error
 }

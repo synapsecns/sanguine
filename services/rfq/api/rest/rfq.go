@@ -56,7 +56,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	var quoteID string
 	var isUpdated bool
 	for _, resp := range responses {
-		quote, isUpdated = getBestQuote(quote, resp.Data)
+		quote, isUpdated = getBestQuote(quote, getRelayerQuoteData(request, resp))
 		if isUpdated {
 			quoteID = resp.QuoteID
 		}
@@ -107,7 +107,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 			}
 
 			// validate the response
-			respStatus = getQuoteResponseStatus(expireCtx, resp, relayerAddr)
+			respStatus = getQuoteResponseStatus(expireCtx, resp)
 			if respStatus == db.Considered {
 				respMux.Lock()
 				responses[relayerAddr] = resp
@@ -115,7 +115,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 			}
 
 			// record the response
-			err = r.db.InsertActiveQuoteResponse(collectionCtx, resp, respStatus)
+			err = r.db.InsertActiveQuoteResponse(collectionCtx, resp, relayerAddr, respStatus)
 			if err != nil {
 				logger.Errorf("Error inserting active quote response: %v", err)
 			}
@@ -141,6 +141,17 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 	return responses
 }
 
+func getRelayerQuoteData(request *model.PutUserQuoteRequest, resp *model.RelayerWsQuoteResponse) *model.QuoteData {
+	return &model.QuoteData{
+		OriginChainID:   int(request.Data.OriginChainID),
+		DestChainID:     int(request.Data.DestChainID),
+		OriginTokenAddr: request.Data.OriginTokenAddr,
+		DestTokenAddr:   request.Data.DestTokenAddr,
+		OriginAmount:    request.Data.OriginAmount,
+		DestAmount:      &resp.DestAmount,
+	}
+}
+
 func getBestQuote(a, b *model.QuoteData) (*model.QuoteData, bool) {
 	if a == nil && b == nil {
 		return nil, false
@@ -159,9 +170,9 @@ func getBestQuote(a, b *model.QuoteData) (*model.QuoteData, bool) {
 	return b, true
 }
 
-func getQuoteResponseStatus(ctx context.Context, resp *model.RelayerWsQuoteResponse, relayerAddr string) db.ActiveQuoteResponseStatus {
+func getQuoteResponseStatus(ctx context.Context, resp *model.RelayerWsQuoteResponse) db.ActiveQuoteResponseStatus {
 	respStatus := db.Considered
-	err := validateRelayerQuoteResponse(relayerAddr, resp)
+	err := validateRelayerQuoteResponse(resp)
 	if err != nil {
 		respStatus = db.Malformed
 		logger.Errorf("Error validating quote response: %v", err)
@@ -171,13 +182,13 @@ func getQuoteResponseStatus(ctx context.Context, resp *model.RelayerWsQuoteRespo
 	return respStatus
 }
 
-func validateRelayerQuoteResponse(relayerAddr string, resp *model.RelayerWsQuoteResponse) error {
-	if resp.Data.RelayerAddress == nil {
-		return fmt.Errorf("relayer address is nil")
+func validateRelayerQuoteResponse(resp *model.RelayerWsQuoteResponse) error {
+	_, ok := new(big.Int).SetString(resp.DestAmount, 10)
+	if !ok {
+		return fmt.Errorf("dest amount is invalid")
 	}
 	// TODO: compute quote ID from request
 	resp.QuoteID = uuid.New().String()
-	resp.Data.RelayerAddress = &relayerAddr
 	return nil
 }
 
