@@ -10,7 +10,7 @@ The Synapse Router overhauls current Synapse Bridge contracts to abstract much o
 
 <figure>
     <BridgeFlow />
-    <caption>User assets are sent to a bridge contract, moved to the destination chain, and returned to the user.</caption>
+    <figcaption>User assets are sent to a Bridge contract, moved to the `destChain`, and returned to the user.</figcaption>
 </figure>
 
 ## Queries

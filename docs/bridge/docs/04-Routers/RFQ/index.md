@@ -2,7 +2,6 @@
 sidebar_label: RFQ
 ---
 
-import { BridgeFlow } from '@site/src/components/BridgeFlow'
 import { RFQFlow } from '@site/src/components/RFQFlow'
 
 # RFQ Router
@@ -11,12 +10,7 @@ A [Synapse Router](../Synapse-Router) bridge module which matches on-chain user 
 
 <figure>
     <RFQFlow />
-    <caption>User assets are sent to a bridge contract, moved to the destination chain, and returned to the user.</caption>
-</figure>
-
-<figure>
-    <BridgeFlow />
-    <caption>User assets are sent to a bridge contract, and held until a Solver completes their quote on the destination chain.</caption>
+    <figcaption>User assets are sent to a Bridge contract, and held until a Solver executes their quote on the `destChain`.</figcaption>
 </figure>
 
 ## Architecture

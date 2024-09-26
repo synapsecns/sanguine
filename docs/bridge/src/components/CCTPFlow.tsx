@@ -1,8 +1,8 @@
-export const RFQFlow = () => {
+export const CCTPFlow = () => {
   return (
     <svg
       width="100%"
-      viewBox="-240 0 480 220"
+      viewBox="-240 0 480 164"
       xmlns="http://www.w3.org/2000/svg"
     >
       <set
@@ -14,7 +14,6 @@ export const RFQFlow = () => {
         <rect x="-50%" rx="4" y="0" width="100%" height="48" />
         <rect x="-50%" rx="4" y="56" width="100%" height="48" />
         <rect x="-50%" rx="4" y="112" width="100%" height="48" />
-        <rect x="-50%" rx="4" y="168" width="100%" height="48" />
         <rect x="-50%" rx="4" y="0%" width="33.3%" height="100%" />
         <rect x="16.7%" rx="4" y="0%" width="33.3%" height="100%" />
       </g>
@@ -33,7 +32,7 @@ export const RFQFlow = () => {
           attributeName="x2"
           values="-50%; 50%"
           begin="bridgeFlowSend.begin"
-          dur="1.85s"
+          dur="4s"
           calcMode="linear"
           keyTimes="0; 1"
           keySplines=".5 0 1 1"
@@ -43,7 +42,7 @@ export const RFQFlow = () => {
           id="bridgeFlowTimerOut"
           attributeName="x1"
           values="-50%; 50%"
-          begin="bridgeFlowRepay.end + 1s"
+          begin="bridgeFlowReceive.end + 1s"
           dur=".75s"
           calcMode="spline"
           keyTimes="0; 1"
@@ -59,9 +58,8 @@ export const RFQFlow = () => {
           destChain
         </text>
         <text y="24">App / SDK</text>
-        <text y="80">User</text>
-        <text y="136">Relayer</text>
-        <text y="192">Bridge</text>
+        <text y="80">Wallet</text>
+        <text y="136">Circle</text>
       </g>
       <circle
         cx="-33%"
@@ -70,11 +68,13 @@ export const RFQFlow = () => {
         fill="hsl(211deg 67% 50%)"
         stroke="hsl(211deg 67% 50%)"
       >
+        <set attributeName="opacity" to="1" begin="bridgeFlowTimer.begin" />
         <set attributeName="cy" to="80" begin="bridgeFlowTimer.begin" />
+        <set attributeName="cx" to="-33%" begin="bridgeFlowTimer.begin" />
         <animate
           id="bridgeFlowSign"
           attributeName="opacity"
-          values="0; 1"
+          values=".5; 1"
           dur=".1s"
           repeatCount="3"
           begin="bridgeFlowTimer.begin + 1s"
@@ -83,7 +83,7 @@ export const RFQFlow = () => {
         <animate
           id="bridgeFlowSend"
           attributeName="cy"
-          to="192"
+          to="136"
           dur=".5s"
           begin="bridgeFlowSign.end + 2s"
           calcMode="spline"
@@ -92,31 +92,52 @@ export const RFQFlow = () => {
           fill="freeze"
         />
         <animate
-          id="bridgeFlowRepay"
-          attributeName="cy"
-          to="136"
+          id="bridgeFlowBurn"
+          attributeName="cx"
+          to="-31.5%"
           dur=".5s"
-          begin="bridgeFlowReceive.end + .25s"
+          begin="bridgeFlowSend.begin + 2s"
           calcMode="spline"
           keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
+        <animate
+          attributeName="opacity"
+          values="1; 0"
+          dur=".1s"
+          begin="bridgeFlowBurn.begin"
+          repeatCount="3"
+          fill="freeze"
+        />
       </circle>
       <circle
         r="12"
-        cx="33%"
+        cx="31.5%"
         cy="136"
-        fill="hsl(164deg 37% 50%)"
-        stroke="hsl(164deg 37% 50%)"
+        fill="hsl(211deg 67% 50%)"
+        stroke="hsl(211deg 67% 50%)"
       >
         <set attributeName="cy" to="136" begin="bridgeFlowTimer.begin" />
+        <set attributeName="cx" to="31.5%" begin="bridgeFlowTimer.begin" />
+        <animate
+          id="bridgeFlowMint"
+          attributeName="cx"
+          to="33%"
+          dur=".5s"
+          begin="bridgeFlowBurn.begin + .1s"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines=".5 0 .2 1"
+          fill="freeze"
+        />
+        <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
         <animate
           attributeName="opacity"
           values="0; 1"
+          begin="bridgeFlowMint.begin"
           dur=".1s"
-          repeatCount="3"
-          begin="bridgeFlowSign.begin"
+          repeatCount="5"
           fill="freeze"
         />
         <animate
@@ -124,7 +145,7 @@ export const RFQFlow = () => {
           attributeName="cy"
           to="80"
           dur=".5s"
-          begin="bridgeFlowSend.end + .25s"
+          begin="bridgeFlowMint.end + 1s"
           calcMode="spline"
           keyTimes="0; 1"
           keySplines=".5 0 .2 1"
@@ -135,7 +156,7 @@ export const RFQFlow = () => {
         r="11"
         cx="33%"
         cy="80"
-        stroke="hsl(164deg 37% 50%)"
+        stroke="hsl(211deg 67% 50%)"
         fill="none"
         opacity="0"
         strokeDasharray="2.5"

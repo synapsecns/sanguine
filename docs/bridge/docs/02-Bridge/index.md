@@ -12,7 +12,7 @@ The [Synapse Bridge](https://synapseprotocol.com) and [Solana Bridge](https://so
 
 <figure>
     <BridgeFlow />
-    <caption>User assets are sent to a bridge contract, moved to the destination chain, and returned to the user.</caption>
+    <figcaption>User assets are sent to a bridge contract, moved to the `destChain`, and returned to the user.</figcaption>
 </figure>
 
 ## Developers

@@ -111,7 +111,7 @@ export const BridgeFlow = () => {
           attributeName="cx"
           to="-24.5%"
           dur=".5s"
-          begin="bridgeFlowSend.begin + .5s"
+          begin="bridgeFlowSend.begin + .4s"
           calcMode="spline"
           keyTimes="0; 1"
           keySplines=".5 0 .2 1"

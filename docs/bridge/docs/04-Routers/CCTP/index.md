@@ -2,9 +2,16 @@
 sidebar_label: CCTP
 ---
 
+import { CCTPFlow } from '@site/src/components/CCTPFlow'
+
 # CCTP Router
 
 A [Synapse Router](../Synapse-Router) bridge module which uses Circle's [Cross-Chain Transfer Protocol](https://www.circle.com/en/cross-chain-transfer-protocol) to natively mint & burn USDC.
+
+<figure>
+    <CCTPFlow />
+    <figcaption>User assets are sent to a Circle contract, moved to the `destChain`, and returned to the user.</figcaption>
+</figure>
 
 ## Architecture
 
