@@ -61,7 +61,13 @@ export const BridgeFlow = () => {
         <text y="80">Wallet</text>
         <text y="136">Bridge</text>
       </g>
-      <circle r="12" cx="-21%" cy="136" fill="hsl(285deg 100% 50%)">
+      <circle
+        r="12"
+        cx="-21%"
+        cy="136"
+        fill="hsl(285deg 100% 50% / 25%)"
+        stroke="hsl(285deg 100% 50% / 85%)"
+      >
         <set attributeName="opacity" to="1" begin="bridgeFlowTimer.begin" />
         <animate
           attributeName="opacity"
@@ -72,7 +78,13 @@ export const BridgeFlow = () => {
           fill="freeze"
         />
       </circle>
-      <circle cx="-33%" cy="80" r="12" fill="hsl(211deg 67% 50%)">
+      <circle
+        cx="-33%"
+        cy="80"
+        r="12"
+        fill="hsl(211deg 67% 50%)"
+        stroke="hsl(211deg 67% 50%)"
+      >
         <set attributeName="cy" to="80" begin="bridgeFlowTimer.begin" />
         <set attributeName="cx" to="-33%" begin="bridgeFlowTimer.begin" />
         <animate
@@ -117,18 +129,31 @@ export const BridgeFlow = () => {
           fill="freeze"
         />
       </circle>
-      <circle r="12" cx="21%" cy="136" fill="hsl(285deg 100% 50%)" opacity="0">
+      <circle
+        r="12"
+        cx="21%"
+        cy="136"
+        fill="hsl(285deg 100% 50% / 25%)"
+        stroke="hsl(285deg 100% 50% / 85%)"
+        opacity="0"
+      >
         <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
         <animate
           attributeName="opacity"
           values="0; 1"
+          begin="bridgeFlowMint.begin"
           dur=".1s"
-          begin="bridgeFlowBurn.begin"
-          repeatCount="3"
+          repeatCount="5"
           fill="freeze"
         />
       </circle>
-      <circle r="12" cx="21%" cy="136" fill="hsl(164deg 37% 50%)">
+      <circle
+        r="12"
+        cx="21%"
+        cy="136"
+        fill="hsl(164deg 37% 50%)"
+        stroke="hsl(164deg 37% 50%)"
+      >
         <set attributeName="cy" to="136" begin="bridgeFlowTimer.begin" />
         <set attributeName="cx" to="21%" begin="bridgeFlowTimer.begin" />
         <animate
@@ -171,7 +196,7 @@ export const BridgeFlow = () => {
         stroke="hsl(164deg 37% 50%)"
         fill="none"
         opacity="0"
-        strokeDasharray="2 3"
+        strokeDasharray="2.5"
       >
         <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
         <animate
