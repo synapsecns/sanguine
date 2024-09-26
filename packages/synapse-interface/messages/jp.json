@@ -306,6 +306,7 @@
     "Began": "開始",
     "Complete": "完了",
     "Reverted": "取り消し",
+    "Refunded": "返金済み",
     "Transaction reverted, funds returned": "取引が取り消されました。資金が返還されました",
     "Transaction refunded, funds returned": "取引が返金され、資金が戻されました",
     "What's taking so long?": "なぜ時間がかかっているのですか？",

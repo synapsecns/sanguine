@@ -306,6 +306,7 @@
     "Began": "Began",
     "Complete": "Complete",
     "Reverted": "Reverted",
+    "Refunded": "Refunded",
     "Transaction reverted, funds returned": "Transaction reverted, funds returned",
     "Transaction refunded, funds returned": "Transaction refunded, funds returned",
     "What's taking so long?": "What's taking so long?",

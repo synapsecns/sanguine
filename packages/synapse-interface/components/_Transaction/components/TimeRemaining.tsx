@@ -39,7 +39,7 @@ export const TimeRemaining = ({
   if (status === 'refunded') {
     return (
       <span className="flex items-center space-x-1 text-sm">
-        <ExclamationIcon className="w-4 h-4" /> <span>Refunded</span>
+        <ExclamationIcon className="w-4 h-4" /> <span>{t('Refunded')}</span>
       </span>
     )
   }

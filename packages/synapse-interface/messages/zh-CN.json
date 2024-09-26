@@ -306,6 +306,7 @@
     "Began": "已开始",
     "Complete": "已完成",
     "Reverted": "已回退",
+    "Refunded": "已退款",
     "Transaction reverted, funds returned": "交易已回退，资金已退还",
     "Transaction refunded, funds returned": "交易已退款，资金已退还",
     "What's taking so long?": "为什么这么久？",
