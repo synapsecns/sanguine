@@ -90,6 +90,10 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
         if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
+        // quoteRelayer and quoteExclusivitySeconds must be both set or both not set
+        if ((paramsV2.quoteRelayer == address(0)) != (paramsV2.quoteExclusivitySeconds == 0)) {
+            revert ExclusivityParamsIncorrect();
+        }
 
         // transfer tokens to bridge contract
         // @dev use returned originAmount in request in case of transfer fees
@@ -100,21 +104,28 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
         originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
 
+        // Calculate exclusivity end time only if exclusivity params are set
+        uint256 exclusivityEndTime =
+            paramsV2.quoteExclusivitySeconds == 0 ? 0 : block.timestamp + paramsV2.quoteExclusivitySeconds;
         // set status to requested
         bytes memory request = abi.encode(
-            BridgeTransaction({
-                originChainId: uint32(block.chainid),
-                destChainId: params.dstChainId,
-                originSender: params.sender,
-                destRecipient: params.to,
-                originToken: params.originToken,
-                destToken: params.destToken,
-                originAmount: originAmount,
-                destAmount: params.destAmount,
-                originFeeAmount: originFeeAmount,
-                sendChainGas: params.sendChainGas,
-                deadline: params.deadline,
-                nonce: nonce++ // increment nonce on every bridge
+            BridgeTransactionV2({
+                txV1: BridgeTransaction({
+                    originChainId: uint32(block.chainid),
+                    destChainId: params.dstChainId,
+                    originSender: params.sender,
+                    destRecipient: params.to,
+                    originToken: params.originToken,
+                    destToken: params.destToken,
+                    originAmount: originAmount,
+                    destAmount: params.destAmount,
+                    originFeeAmount: originFeeAmount,
+                    sendChainGas: params.sendChainGas,
+                    deadline: params.deadline,
+                    nonce: nonce++ // increment nonce on every bridge
+                }),
+                exclusivityRelayer: paramsV2.quoteRelayer,
+                exclusivityEndTime: exclusivityEndTime
             })
         );
         bytes32 transactionId = keccak256(request);
