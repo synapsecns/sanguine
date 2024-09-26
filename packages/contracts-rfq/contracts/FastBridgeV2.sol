@@ -71,7 +71,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridge
-    function getBridgeTransaction(bytes calldata request) public pure returns (BridgeTransaction memory) {
+    function getBridgeTransaction(bytes memory request) public pure returns (BridgeTransaction memory) {
         return abi.decode(request, (BridgeTransaction));
     }
 
@@ -126,12 +126,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridge
-    function relay(bytes calldata request) external payable {
+    function relay(bytes memory request) external payable {
         relay(request, msg.sender);
     }
 
     /// @inheritdoc IFastBridgeV2
-    function relay(bytes calldata request, address relayer) public payable {
+    function relay(bytes memory request, address relayer) public payable {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
         if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
@@ -213,12 +213,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridgeV2
-    function claim(bytes calldata request) external {
+    function claim(bytes memory request) external {
         claim(request, address(0));
     }
 
     /// @inheritdoc IFastBridge
-    function claim(bytes calldata request, address to) public {
+    function claim(bytes memory request, address to) public {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
 
@@ -262,7 +262,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridge
-    function refund(bytes calldata request) external {
+    function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
 
