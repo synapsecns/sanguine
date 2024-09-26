@@ -88,6 +88,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridgeV2
+    // TODO: reduce cyclomatic complexity alongside arbitrary call
+    // solhint-disable-next-line code-complexity
     function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
         // check bridge params
         if (params.dstChainId == block.chainid) revert ChainIncorrect();
@@ -156,6 +158,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridgeV2
+    // TODO: reduce cyclomatic complexity alongside arbitrary call
+    // solhint-disable-next-line code-complexity
     function relay(bytes memory request, address relayer) public payable {
         if (relayer == address(0)) revert ZeroAddress();
         bytes32 transactionId = keccak256(request);
