@@ -93,21 +93,18 @@ table thead tr {
   border: none;
 }
 
-svg text {
+svg.flowAnimation text {
   font-family: monospace;
 }
 
 figure {
   margin: 0;
-  text-align: center;
-  display: grid;
-  gap: 1rem;
-  justify-items: center;
+  width: fit-content;
 }
 
 figcaption {
   text-align: center;
-  width: 100%;
   font-style: italic;
   opacity: .67;
+  margin: 1rem 0;
 }

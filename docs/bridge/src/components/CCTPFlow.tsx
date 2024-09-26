@@ -4,6 +4,7 @@ export const CCTPFlow = () => {
       width="100%"
       viewBox="-240 0 480 164"
       xmlns="http://www.w3.org/2000/svg"
+      className="flowAnimation"
     >
       <set
         id="bridgeFlowTimer"

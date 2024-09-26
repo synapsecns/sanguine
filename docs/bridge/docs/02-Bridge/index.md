@@ -3,6 +3,7 @@ title: Bridge
 ---
 
 import { BridgeFlow } from '@site/src/components/BridgeFlow'
+import SVGBridge from '@site/src/components/SVGBridge'
 
 # Synapse Bridge
 
@@ -34,7 +35,12 @@ Synapse liquidity pools use the nexus USD (nUSD) and nexus ETH (nETH) interchain
 
 When a token is bridged using a Synapse Liquidity Pool, it is converted to a nexus token on the source chain, which is then bridged to the destination chain, before being converted back into a native token.
 
-## Using the Bridge
+## How to Bridge
+
+<figure>
+<SVGBridge />
+<figcaption>Synapse Bridge</figcaption>
+</figure>
 
 To use the [Synapse Bridge](https://synapseprotocol.com):
 

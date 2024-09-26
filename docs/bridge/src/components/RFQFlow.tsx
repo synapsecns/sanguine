@@ -4,6 +4,7 @@ export const RFQFlow = () => {
       width="100%"
       viewBox="-240 0 480 220"
       xmlns="http://www.w3.org/2000/svg"
+      className="flowAnimation"
     >
       <set
         id="bridgeFlowTimer"
