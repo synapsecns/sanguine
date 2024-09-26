@@ -1,4 +1,4 @@
-export function SynapseLogoSvg() {
+export const SynapseLogoSvg = () => {
   return (
     <svg
       width="39"

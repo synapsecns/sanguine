@@ -3,6 +3,7 @@ package commandline
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"os"
 	"os/signal"
 	"os/user"
@@ -90,11 +91,18 @@ func GenerateShellCommand(shellCommands []*cli.Command) *cli.Command {
 // pruneShellCommands gets a list of commands including the shell command.
 func pruneShellCommands(commands []*cli.Command) (prunedCommands []*cli.Command) {
 	// initialize shell commands
+	nameSet := sets.NewString()
 	for _, command := range commands {
 		if command.Name != shellCommandName {
 			prunedCommands = append(prunedCommands, command)
 		}
+		if !nameSet.Has(command.Name) {
+			fmt.Printf("Command %s already exists, skipping\n", command.Name)
+		}
+
+		nameSet.Insert(command.Name)
 	}
+
 	return prunedCommands
 }
 

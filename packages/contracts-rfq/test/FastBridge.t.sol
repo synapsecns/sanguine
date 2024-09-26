@@ -28,15 +28,19 @@ contract FastBridgeTest is Test {
     MockERC20 arbUSDC;
     MockERC20 ethUSDC;
 
-    function setUp() public {
+    function setUp() public virtual {
         vm.chainId(42_161);
-        fastBridge = new FastBridge(owner);
+        fastBridge = FastBridge(deployFastBridge());
         arbUSDC = new MockERC20("arbUSDC", 6);
         ethUSDC = new MockERC20("ethUSDC", 6);
         _mintTokensToActors();
     }
 
-    function _mintTokensToActors() internal {
+    function deployFastBridge() internal virtual returns (address) {
+        return address(new FastBridge(owner));
+    }
+
+    function _mintTokensToActors() internal virtual {
         arbUSDC.mint(relayer, 100 * 10 ** 6);
         arbUSDC.mint(guard, 100 * 10 ** 6);
         arbUSDC.mint(user, 100 * 10 ** 6);
@@ -1297,7 +1301,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    function test_failedRelayNotRelayer() public {
+    function test_failedRelayNotRelayer() public virtual {
         // Set up the roles for the test
         setUpRoles();
 
@@ -1642,7 +1646,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    function test_failedClaimNotOldRelayer() public {
+    function test_failedClaimNotOldRelayer() public virtual {
         setUpRoles();
         test_successfulBridge();
 
@@ -1679,7 +1683,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    function test_failedClaimNotRelayer() public {
+    function test_failedClaimNotRelayer() public virtual {
         setUpRoles();
         test_successfulRelayProof();
 

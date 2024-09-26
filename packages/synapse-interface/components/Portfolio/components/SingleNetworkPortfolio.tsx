@@ -2,6 +2,8 @@ import React, { useEffect } from 'react'
 import { Address } from 'viem'
 import { useDispatch } from 'react-redux'
 import _, { isArray } from 'lodash'
+import { useTranslations } from 'next-intl'
+
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
   TokenAndBalance,
@@ -41,6 +43,8 @@ export const SingleNetworkPortfolio = ({
   fetchState,
 }: SingleNetworkPortfolioProps) => {
   const dispatch = useDispatch()
+
+  const t = useTranslations('Portfolio')
 
   const isLoading = fetchState === FetchState.LOADING
 
@@ -87,7 +91,10 @@ export const SingleNetworkPortfolio = ({
           />
         }
         collapsedProps={
-          <PortfolioTokenVisualizer portfolioTokens={sortedTokens} />
+          <PortfolioTokenVisualizer
+            portfolioTokens={sortedTokens}
+            portfolioChainId={portfolioChainId}
+          />
         }
       >
         {isUnsupportedChain && (
@@ -95,14 +102,15 @@ export const SingleNetworkPortfolio = ({
             twClassName="!p-2 !mt-0"
             message={
               <p className="leading-6">
-                This chain is not yet supported. New chain or token support can
-                be discussed on{' '}
+                {t(
+                  'This chain is not yet supported; New chain or token support can be discussed on'
+                )}{' '}
                 <a target="_blank" className="underline" href={TWITTER_URL}>
-                  Twitter
+                  {t('Twitter')}
                 </a>{' '}
-                or{' '}
+                {t('or')}{' '}
                 <a target="_blank" className="underline" href={DISCORD_URL}>
-                  Discord
+                  {t('Discord')}
                 </a>
                 .
               </p>

@@ -1,9 +1,12 @@
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import Button from '@/components/ui/tailwind/Button'
 import { SYNAPSE_DOCS_URL, BRIDGE_PATH } from '@/constants/urls'
-import { SectionContainer } from '../../../components/landing/shared'
+import { SectionContainer } from '@/components/landing/shared'
 
 export default function HeroSection() {
+  const t = useTranslations('Landing.HeroSection')
+
   return (
     <SectionContainer dataTestId="landing-hero-section">
       <h1
@@ -11,23 +14,13 @@ export default function HeroSection() {
           text-center text-4xl
           font-medium text-white
           md:text-[46px]
+          max-w-lg  mx-auto
         `}
       >
-        Secure cross-chain
-        <br />
-        communication
+        {t('title')}
       </h1>
-      <p className="hidden text-center text-secondaryTextColor sm:block">
-        Synapse is the most widely used, extensible, and secure cross-
-        <br />
-        chain communications network. Build truly cross-chain
-        <br />
-        applications using the Synapse Protocol.
-      </p>
-      <p className="text-center text-secondaryTextColor sm:hidden">
-        Synapse is the most widely used, extensible, secure cross-chain
-        communications network. Build truly cross-chain applications using the
-        Synapse Protocol.
+      <p className="max-w-lg px-4 mx-auto text-center text-secondaryTextColor">
+        {t('description')}
       </p>
       <div className="flex justify-center py-4 space-x-2 ">
         <Link
@@ -44,7 +37,7 @@ export default function HeroSection() {
             className="flex items-center justify-center font-medium"
             onClick={() => null}
           >
-            Build on Synapse
+            {t('buildButton')}
           </Button>
         </Link>
         <Link
@@ -61,7 +54,7 @@ export default function HeroSection() {
           }}
         >
           <Button className="font-medium" onClick={() => null}>
-            Enter Bridge
+            {t('enterBridgeButton')}
           </Button>
         </Link>
       </div>

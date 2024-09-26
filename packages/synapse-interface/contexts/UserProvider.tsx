@@ -8,7 +8,6 @@ import { setSwapChainId } from '@/slices/swap/reducer'
 import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useAppDispatch } from '@/store/hooks'
 import { resetPortfolioState } from '@/slices/portfolio/actions'
-import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
 
 const WalletStatusContext = createContext(undefined)
@@ -22,12 +21,16 @@ export const UserProvider = ({ children }) => {
 
   useAccountEffect({
     onConnect() {
-      segmentAnalyticsEvent(`[Wallet Analytics] connects`, {
-        walletId: connector?.id,
-        chainId: chain?.id,
-        query,
-        pathname,
-      })
+      segmentAnalyticsEvent(
+        `[Wallet Analytics] connects`,
+        {
+          walletId: connector?.id,
+          chainId: chain?.id,
+          query,
+          pathname,
+        },
+        true
+      )
     },
     onDisconnect() {
       segmentAnalyticsEvent('[Wallet Analytics] disconnect', {})
@@ -85,11 +88,12 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     if (address) {
-      if (!isBlacklisted(address)) {
-        screenAddress(address)
-      } else {
-        document.body = document.createElement('body')
-      }
+      ;(async () => {
+        const isRisky = await screenAddress(address)
+        if (isRisky) {
+          return
+        }
+      })()
     }
   }, [address])
 

@@ -1,4 +1,6 @@
 import { isNull } from 'lodash'
+import { useTranslations } from 'next-intl'
+
 import { LinearAnimatedProgressBar } from './LinearAnimatedProgressBar'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
@@ -13,7 +15,8 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 export const useEventCountdownProgressBar = (
   eventLabel: string,
   startDate: Date,
-  endDate: Date | null
+  endDate: Date | null,
+  hideProgress?: boolean
 ): {
   isPending: boolean
   isComplete: boolean
@@ -21,13 +24,20 @@ export const useEventCountdownProgressBar = (
 } => {
   let status: 'idle' | 'pending' | 'complete'
 
-  const { totalTimeRemainingInMinutes, hoursRemaining, isComplete, isPending } =
-    getCountdownTimeStatus(startDate, endDate)
+  const {
+    totalTimeRemainingInMinutes,
+    daysRemaining,
+    hoursRemaining,
+    isComplete,
+    isPending,
+  } = getCountdownTimeStatus(startDate, endDate)
 
   useIntervalTimer(60000, isComplete)
 
   const timeRemaining: string =
-    totalTimeRemainingInMinutes > 90
+    daysRemaining > 0
+      ? `${daysRemaining}d`
+      : totalTimeRemainingInMinutes > 90
       ? `${hoursRemaining}h`
       : `${totalTimeRemainingInMinutes}m`
 
@@ -42,7 +52,7 @@ export const useEventCountdownProgressBar = (
   return {
     isPending,
     isComplete,
-    EventCountdownProgressBar: (
+    EventCountdownProgressBar: !hideProgress && (
       <EventCountdownProgressBar
         eventLabel={eventLabel}
         startDate={startDate}
@@ -68,6 +78,7 @@ export const EventCountdownProgressBar = ({
   status: 'idle' | 'pending' | 'complete'
 }) => {
   const isIndefinite = isNull(endDate)
+  const t = useTranslations('Activity')
 
   if (status === 'pending') {
     return (
@@ -78,9 +89,13 @@ export const EventCountdownProgressBar = ({
            text-primary text-xs md:text-base
         `}
       >
-        <div className="flex justify-between px-3 py-2">
-          <div className="text-sm">{eventLabel}</div>
-          {isIndefinite ? null : <div>{timeRemaining} remaining</div>}
+        <div className="flex justify-between px-3 py-2 text-sm">
+          <div>{eventLabel}</div>
+          {isIndefinite ? null : (
+            <div>
+              {timeRemaining} {t('remaining')}
+            </div>
+          )}
         </div>
         <div className="px-1">
           <LinearAnimatedProgressBar
@@ -100,8 +115,27 @@ export const getCountdownTimeStatus = (
   startDate: Date,
   endDate: Date | null
 ) => {
-  const currentDate = new Date()
+  if (!startDate && !endDate) {
+    return {
+      currentDate: null,
+      currentTimeInSeconds: null,
+      startTimeInSeconds: null,
+      endTimeInSeconds: null,
+      totalTimeInSeconds: null,
+      totalTimeElapsedInSeconds: null,
+      totalTimeRemainingInSeconds: null,
+      totalTimeRemainingInMinutes: null,
+      daysRemaining: null,
+      hoursRemaining: null,
+      minutesRemaining: null,
+      secondsRemaining: null,
+      isStarted: false,
+      isComplete: false,
+      isPending: false,
+    }
+  }
 
+  const currentDate = new Date()
   const currentTimeInSeconds = Math.floor(currentDate.getTime() / 1000)
   const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
 
@@ -164,9 +198,7 @@ export const getCountdownTimeStatus = (
 
 const calculateTimeUntilTarget = (targetDate: Date) => {
   const currentDate = new Date()
-
   const timeDifference = targetDate.getTime() - currentDate.getTime()
-
   const isComplete = timeDifference <= 0
 
   const daysRemaining = Math.floor(timeDifference / (1000 * 60 * 60 * 24))

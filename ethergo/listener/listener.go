@@ -22,6 +22,8 @@ import (
 )
 
 // ContractListener listens for chain events and calls HandleLog.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name ContractListener --output ./mocks --case=underscore
 type ContractListener interface {
 	// Listen starts the listener and call HandleLog for each event
 	Listen(ctx context.Context, handler HandleLog) error
@@ -51,6 +53,9 @@ type chainListener struct {
 	newBlockHandler NewBlockHandler
 	finalityMode    rpc.BlockNumber
 	blockWait       uint64
+	// otelRecorder is the recorder for the otel metrics.
+	otelRecorder iOtelRecorder
+	name         string
 }
 
 var (
@@ -89,6 +94,13 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 	c.startBlock, c.chainID, err = c.getMetadata(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get metadata: %w", err)
+	}
+
+	if c.otelRecorder == nil {
+		c.otelRecorder, err = newOtelRecorder(c.handler, int(c.chainID), c.name)
+		if err != nil {
+			return fmt.Errorf("could not create otel recorder: %w", err)
+		}
 	}
 
 	c.pollInterval = time.Duration(0)
@@ -143,7 +155,12 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	}
 
 	// Check if latest block is the same as start block (for chains with slow block times)
+	didPoll := true
+	defer func() {
+		span.SetAttributes(attribute.Bool("did_poll", didPoll))
+	}()
 	if c.latestBlock == c.startBlock {
+		didPoll = false
 		return nil
 	}
 
@@ -183,6 +200,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	if err != nil {
 		return fmt.Errorf("could not put latest block: %w", err)
 	}
+	c.otelRecorder.RecordLastBlock(endBlock)
 
 	c.startBlock = lastUnconfirmedBlock
 	return nil

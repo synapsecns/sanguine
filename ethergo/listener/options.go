@@ -39,7 +39,7 @@ func WithFinalityMode(mode string) Option {
 		case "finalized":
 			c.finalityMode = rpc.FinalizedBlockNumber
 		default:
-			c.finalityMode = rpc.SafeBlockNumber
+			c.finalityMode = rpc.LatestBlockNumber
 		}
 	}
 }
@@ -48,5 +48,13 @@ func WithFinalityMode(mode string) Option {
 func WithBlockWait(wait uint64) Option {
 	return func(c *chainListener) {
 		c.blockWait = wait
+	}
+}
+
+// WithName sets the listener name.
+func WithName(name string) Option {
+	return func(c *chainListener) {
+		c.name = name
+		c.store.SetListenerName(name)
 	}
 }

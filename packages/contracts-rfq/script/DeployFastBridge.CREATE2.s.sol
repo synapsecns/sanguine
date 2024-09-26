@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity ^0.8.20;
 
 import {FastBridge} from "../contracts/FastBridge.sol";
 
@@ -19,7 +19,15 @@ contract DeployFastBridgeCREATE2 is SynapseScript {
     function testDeployFastBridgeCREATE2() external {}
 
     function run() external broadcastWithHooks {
-        loadConfig();
+        deployWithChecks(ENVIRONMENT_PROD);
+    }
+
+    function runTestnet() external broadcastWithHooks {
+        deployWithChecks("testnet");
+    }
+
+    function deployWithChecks(string memory environment) internal {
+        loadConfig(environment);
         bytes memory constructorArgs = abi.encode(admin);
         // Use CREATE2 Factory to deploy the contract
         fastBridge = FastBridge(
@@ -34,8 +42,9 @@ contract DeployFastBridgeCREATE2 is SynapseScript {
         super.afterExecution();
     }
 
-    function loadConfig() internal {
-        string memory config = readGlobalDeployConfig({contractName: NAME, environment: "", revertIfNotFound: true});
+    function loadConfig(string memory environment) internal {
+        string memory config =
+            readGlobalDeployConfig({contractName: NAME, environment: environment, revertIfNotFound: true});
         admin = config.readAddress(".accounts.admin");
     }
 

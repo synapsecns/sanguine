@@ -1,12 +1,14 @@
 package e2e_test
 
 import (
+	"context"
 	"fmt"
 	"math/big"
 	"net/http"
 	"slices"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -17,11 +19,11 @@ import (
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
-	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
@@ -32,11 +34,14 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/db/sql"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
+	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
+	guardConnect "github.com/synapsecns/sanguine/services/rfq/guard/guarddb/connect"
+	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 )
 
 func (i *IntegrationSuite) setupQuoterAPI() {
@@ -78,10 +83,7 @@ func (i *IntegrationSuite) setupQuoterAPI() {
 
 		//nolint: bodyclose
 		_, err = http.DefaultClient.Do(req)
-		if err == nil {
-			return true
-		}
-		return false
+		return err == nil
 	})
 }
 
@@ -94,6 +96,9 @@ func (i *IntegrationSuite) setupBackends() {
 	i.relayerWallet, err = wallet.FromRandom()
 	i.NoError(err)
 
+	i.guardWallet, err = wallet.FromRandom()
+	i.NoError(err)
+
 	i.userWallet, err = wallet.FromRandom()
 	i.NoError(err)
 
@@ -103,12 +108,28 @@ func (i *IntegrationSuite) setupBackends() {
 		defer wg.Done()
 		options := anvil.NewAnvilOptionBuilder()
 		options.SetChainID(1)
-		i.originBackend = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			i.originBackend, err = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+			if err != nil {
+				return fmt.Errorf("failed to create anvil backend: %w", err)
+			}
+			return nil
+		}, retry.WithMaxTotalTime(5*time.Minute))
+		i.Nil(err)
 		i.setupBE(i.originBackend)
 	}()
 	go func() {
 		defer wg.Done()
-		i.destBackend = geth.NewEmbeddedBackendForChainID(i.GetTestContext(), i.T(), big.NewInt(destBackendChainID))
+		options := anvil.NewAnvilOptionBuilder()
+		options.SetChainID(destBackendChainID)
+		err = retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+			i.destBackend, err = anvil.NewAnvilBackend(i.GetTestContext(), i.T(), options)
+			if err != nil {
+				return fmt.Errorf("failed to create anvil backend: %w", err)
+			}
+			return nil
+		}, retry.WithMaxTotalTime(5*time.Minute))
+		i.Nil(err)
 		i.setupBE(i.destBackend)
 	}()
 	wg.Wait()
@@ -132,62 +153,72 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 
 	// store the keys
 	backend.Store(base.WalletToKey(i.T(), i.relayerWallet))
+	backend.Store(base.WalletToKey(i.T(), i.guardWallet))
 	backend.Store(base.WalletToKey(i.T(), i.userWallet))
 
 	// fund each of the wallets
 	backend.FundAccount(i.GetTestContext(), i.relayerWallet.Address(), ethAmount)
+	backend.FundAccount(i.GetTestContext(), i.guardWallet.Address(), ethAmount)
 	backend.FundAccount(i.GetTestContext(), i.userWallet.Address(), ethAmount)
 
-	go func() {
-		i.manager.BulkDeploy(i.GetTestContext(), core.ToSlice(backend), predeploys...)
-	}()
+	var wg sync.WaitGroup
 
 	// TODO: in the case of relayer this not finishing before the test starts can lead to race conditions since
 	// nonce may be shared between submitter and relayer. Think about how to deal w/ this.
-	for _, user := range []wallet.Wallet{i.relayerWallet, i.userWallet} {
+	for _, user := range []wallet.Wallet{i.relayerWallet, i.guardWallet, i.userWallet} {
+		wg.Add(1)
 		go func(userWallet wallet.Wallet) {
+			defer wg.Done()
 			for _, token := range predeployTokens {
 				i.Approve(backend, i.manager.Get(i.GetTestContext(), backend, token), userWallet)
 			}
 		}(user)
 	}
-
+	wg.Wait()
 }
 
 func (i *IntegrationSuite) setupCCTP() {
 	// deploy the contract to all backends
 	testBackends := core.ToSlice(i.originBackend, i.destBackend)
-	i.cctpDeployManager.BulkDeploy(i.GetTestContext(), testBackends, cctpTest.SynapseCCTPType, cctpTest.MockMintBurnTokenType)
 
 	// register remote deployments and tokens
-	for _, backend := range testBackends {
-		cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
-		_, tokenMessengeHandle := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backend)
+	for _, b := range testBackends {
+		backend := b
+		err := retry.WithBackoff(i.GetTestContext(), func(_ context.Context) (err error) {
+			cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
+			_, tokenMessengeHandle := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backend)
 
-		// on the above contract, set the remote for each backend
-		for _, backendToSetFrom := range core.ToSlice(i.originBackend, i.destBackend) {
-			// we don't need to set the backends own remote!
-			if backendToSetFrom.GetChainID() == backend.GetChainID() {
-				continue
+			// on the above contract, set the remote for each backend
+			for _, backendToSetFrom := range core.ToSlice(i.originBackend, i.destBackend) {
+				// we don't need to set the backends own remote!
+				if backendToSetFrom.GetChainID() == backend.GetChainID() {
+					continue
+				}
+
+				remoteCCTP, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backendToSetFrom)
+				remoteMessenger, _ := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backendToSetFrom)
+
+				txOpts := backend.GetTxContext(i.GetTestContext(), cctpContract.OwnerPtr())
+				// set the remote cctp contract on this cctp contract
+				// TODO: verify chainID / domain are correct
+				remoteDomain := cctpTest.ChainIDDomainMap[uint32(remoteCCTP.ChainID().Int64())]
+
+				tx, err := cctpHandle.SetRemoteDomainConfig(txOpts.TransactOpts,
+					big.NewInt(remoteCCTP.ChainID().Int64()), remoteDomain, remoteCCTP.Address())
+				if err != nil {
+					return fmt.Errorf("could not set remote domain config: %w", err)
+				}
+				backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+				// register the remote token messenger on the tokenMessenger contract
+				_, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
+				if err != nil {
+					return fmt.Errorf("could not set remote token messenger: %w", err)
+				}
 			}
-
-			remoteCCTP, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backendToSetFrom)
-			remoteMessenger, _ := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backendToSetFrom)
-
-			txOpts := backend.GetTxContext(i.GetTestContext(), cctpContract.OwnerPtr())
-			// set the remote cctp contract on this cctp contract
-			// TODO: verify chainID / domain are correct
-			remoteDomain := cctpTest.ChainIDDomainMap[uint32(remoteCCTP.ChainID().Int64())]
-
-			tx, err := cctpHandle.SetRemoteDomainConfig(txOpts.TransactOpts,
-				big.NewInt(remoteCCTP.ChainID().Int64()), remoteDomain, remoteCCTP.Address())
-			i.Require().NoError(err)
-			backend.WaitForConfirmation(i.GetTestContext(), tx)
-
-			// register the remote token messenger on the tokenMessenger contract
-			_, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
-			i.Nil(err)
-		}
+			return nil
+		}, retry.WithMaxTotalTime(30*time.Second))
+		i.NoError(err)
 	}
 }
 
@@ -198,64 +229,59 @@ func addressToBytes32(addr common.Address) [32]byte {
 	return buf
 }
 
-// Approve checks if the token is approved and approves it if not.
+func (i *IntegrationSuite) waitForContractDeployment(ctx context.Context, backend backends.SimulatedTestBackend, address common.Address) error {
+	// nolint: wrapcheck
+	return retry.WithBackoff(ctx, func(_ context.Context) error {
+		code, err := backend.CodeAt(ctx, address, nil)
+		if err != nil {
+			return fmt.Errorf("could not get code: %w", err)
+		}
+		if len(code) == 0 {
+			return fmt.Errorf("contract not deployed at %s", address.Hex())
+		}
+		return nil
+	}, retry.WithMaxTotalTime(30*time.Second))
+}
+
 func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token contracts.DeployedContract, user wallet.Wallet) {
+	err := i.waitForContractDeployment(i.GetTestContext(), backend, token.Address())
+	i.Require().NoError(err, "Failed to wait for contract deployment")
+
 	erc20, err := ierc20.NewIERC20(token.Address(), backend)
-	i.NoError(err)
-
+	i.Require().NoError(err, "Failed to get erc20")
 	_, fastBridge := i.manager.GetFastBridge(i.GetTestContext(), backend)
-
 	allowance, err := erc20.Allowance(&bind.CallOpts{Context: i.GetTestContext()}, user.Address(), fastBridge.Address())
-	i.NoError(err)
+	i.Require().NoError(err, "Failed to get allowance")
 
-	// TODO: can also use in mem cache
 	if allowance.Cmp(big.NewInt(0)) == 0 {
 		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
 		tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
-		i.NoError(err)
+		i.Require().NoError(err, "Failed to approve")
 		backend.WaitForConfirmation(i.GetTestContext(), tx)
 	}
 }
 
-func (i *IntegrationSuite) setupRelayer() {
-	// add myself as a filler
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	for _, backend := range core.ToSlice(i.originBackend, i.destBackend) {
-		go func(backend backends.SimulatedTestBackend) {
-			defer wg.Done()
-
-			metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
-
-			txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
-			relayerRole, err := rfqContract.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
-			i.NoError(err)
-
-			tx, err := rfqContract.GrantRole(txContext.TransactOpts, relayerRole, i.relayerWallet.Address())
-			i.NoError(err)
-
-			backend.WaitForConfirmation(i.GetTestContext(), tx)
-		}(backend)
-	}
-	wg.Wait()
-
+func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 	// construct the config
 	relayerAPIPort, err := freeport.GetFreePort()
 	i.NoError(err)
 	dsn := filet.TmpDir(i.T(), "")
 	cctpContractOrigin, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.originBackend)
 	cctpContractDest, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.destBackend)
-	cfg := relconfig.Config{
+	return relconfig.Config{
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
-				RFQAddress:         i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
-				SynapseCCTPAddress: cctpContractOrigin.Address().Hex(),
-				Confirmations:      0,
+				RFQAddress: i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+				RebalanceConfigs: relconfig.RebalanceConfigs{
+					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+						SynapseCCTPAddress: cctpContractOrigin.Address().Hex(),
+					},
+				},
+				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -263,12 +289,16 @@ func (i *IntegrationSuite) setupRelayer() {
 				NativeToken: "ETH",
 			},
 			destBackendChainID: {
-				RFQAddress:         i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
-				SynapseCCTPAddress: cctpContractDest.Address().Hex(),
-				Confirmations:      0,
+				RFQAddress: i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+				RebalanceConfigs: relconfig.RebalanceConfigs{
+					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
+						SynapseCCTPAddress: cctpContractDest.Address().Hex(),
+					},
+				},
+				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
-						Address:  chain.EthAddress.String(),
+						Address:  util.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -299,7 +329,43 @@ func (i *IntegrationSuite) setupRelayer() {
 			TokenPriceCacheTTLSeconds: 60,
 		},
 		RebalanceInterval: 0,
+		VolumeLimit:       10_000,
 	}
+}
+
+//nolint:gocognit,cyclop
+func (i *IntegrationSuite) setupRelayer() {
+	// add myself as a filler
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	for _, backend := range core.ToSlice(i.originBackend, i.destBackend) {
+		go func(backend backends.SimulatedTestBackend) {
+			defer wg.Done()
+
+			err := retry.WithBackoff(i.GetTestContext(), func(ctx context.Context) error {
+				metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
+
+				txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
+				relayerRole, err := rfqContract.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+				if err != nil {
+					return fmt.Errorf("could not get relayer role: %w", err)
+				}
+
+				tx, err := rfqContract.GrantRole(txContext.TransactOpts, relayerRole, i.relayerWallet.Address())
+				if err != nil {
+					return fmt.Errorf("could not grant role: %w", err)
+				}
+				backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+				return nil
+			}, retry.WithMaxTotalTime(15*time.Second))
+			i.NoError(err)
+		}(backend)
+	}
+	wg.Wait()
+
+	cfg := i.getRelayerConfig()
 
 	// in the first backend, we want to deploy a bunch of different tokens
 	// TODO: functionalize me.
@@ -332,7 +398,7 @@ func (i *IntegrationSuite) setupRelayer() {
 				Address:               tokenAddress,
 				Decimals:              decimals,
 				PriceUSD:              1, // TODO: this will break on non-stables
-				RebalanceMethod:       rebalanceMethod,
+				RebalanceMethods:      []string{rebalanceMethod},
 				MaintenanceBalancePct: 20,
 				InitialBalancePct:     50,
 			}
@@ -367,22 +433,59 @@ func (i *IntegrationSuite) setupRelayer() {
 	}
 
 	// Add ETH as quotable token from origin to destination
-	cfg.QuotableTokens[fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress)] = []string{
-		fmt.Sprintf("%d-%s", destBackendChainID, chain.EthAddress),
+	cfg.QuotableTokens[fmt.Sprintf("%d-%s", originBackendChainID, util.EthAddress)] = []string{
+		fmt.Sprintf("%d-%s", destBackendChainID, util.EthAddress),
 	}
-	cfg.QuotableTokens[fmt.Sprintf("%d-%s", destBackendChainID, chain.EthAddress)] = []string{
-		fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress),
+	cfg.QuotableTokens[fmt.Sprintf("%d-%s", destBackendChainID, util.EthAddress)] = []string{
+		fmt.Sprintf("%d-%s", originBackendChainID, util.EthAddress),
 	}
 
-	// TODO: good chance we wanna leave actually starting this up to the indiividual test.
+	var err error
 	i.relayer, err = service.NewRelayer(i.GetTestContext(), i.metrics, cfg)
 	i.NoError(err)
-	go func() {
-		err = i.relayer.Start(i.GetTestContext())
-	}()
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
 	i.NoError(err)
 	i.store, err = connect.Connect(i.GetTestContext(), dbType, cfg.Database.DSN, i.metrics)
+	i.NoError(err)
+}
+
+func (i *IntegrationSuite) setupGuard() {
+	// add myself as a guard
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	for _, backend := range core.ToSlice(i.originBackend, i.destBackend) {
+		go func(backend backends.SimulatedTestBackend) {
+			defer wg.Done()
+
+			metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
+
+			txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
+			guardRole, err := rfqContract.GUARDROLE(&bind.CallOpts{Context: i.GetTestContext()})
+			i.NoError(err)
+
+			tx, err := rfqContract.GrantRole(txContext.TransactOpts, guardRole, i.guardWallet.Address())
+			i.NoError(err)
+
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
+		}(backend)
+	}
+	wg.Wait()
+
+	relayerCfg := i.getRelayerConfig()
+	guardCfg := guardconfig.NewGuardConfigFromRelayer(relayerCfg)
+	guardCfg.Signer = signerConfig.SignerConfig{
+		Type: signerConfig.FileType.String(),
+		File: filet.TmpFile(i.T(), "", i.guardWallet.PrivateKeyHex()).Name(),
+	}
+
+	var err error
+	i.guard, err = guardService.NewGuard(i.GetTestContext(), i.metrics, guardCfg, nil)
+	i.NoError(err)
+
+	dbType, err := dbcommon.DBTypeFromString(guardCfg.Database.Type)
+	i.NoError(err)
+	i.guardStore, err = guardConnect.Connect(i.GetTestContext(), dbType, guardCfg.Database.DSN, i.metrics)
 	i.NoError(err)
 }

@@ -7,6 +7,7 @@ import json from '@rollup/plugin-json'
 import terser from '@rollup/plugin-terser'
 import peerDepsExternal from 'rollup-plugin-peer-deps-external'
 import sourcemaps from 'rollup-plugin-sourcemaps'
+import { codecovRollupPlugin } from "@codecov/rollup-plugin";
 
 import packageJson from './package.json' assert { type: 'json' }
 
@@ -51,6 +52,14 @@ export default [
       json(),
       terser(),
       sourcemaps(),
+      codecovRollupPlugin({
+        enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+        bundleName: "widget",
+        uploadToken: process.env.CODECOV_TOKEN,
+        uploadOverrides: {
+          sha: process.env.GH_COMMIT_SHA,
+        }
+      }),
     ],
     watch: {
       buildDelay: 200,

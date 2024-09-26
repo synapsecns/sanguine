@@ -24,10 +24,13 @@ type Writer interface {
 	// StoreRebalance stores a rebalance.
 	StoreRebalance(ctx context.Context, rebalance Rebalance) error
 	// UpdateQuoteRequestStatus updates the status of a quote request
-	UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status QuoteRequestStatus) error
+	UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status QuoteRequestStatus, prevStatus *QuoteRequestStatus) error
 	// UpdateRebalance updates the status of a rebalance action.
 	// If the origin is supplied, it will be used to update the ID for the corresponding rebalance model.
 	UpdateRebalance(ctx context.Context, rebalance Rebalance, updateID bool) error
+	// UpdateLatestRebalance updates a rebalance action.
+	// This is meant to be used in cases where a consistent rebalance ID cannot be determined across chains.
+	UpdateLatestRebalance(ctx context.Context, rebalance Rebalance) error
 	// UpdateDestTxHash updates the dest tx hash of a quote request
 	UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash common.Hash) error
 	// UpdateRelayNonce updates the relay nonce of a quote request
@@ -48,6 +51,8 @@ type Reader interface {
 	GetRebalanceByID(ctx context.Context, rebalanceID string) (*Rebalance, error)
 	// GetDBStats gets the database stats.
 	GetDBStats(ctx context.Context) (*sql.DBStats, error)
+	// GetStatusCounts gets the counts of quote requests by status.
+	GetStatusCounts(ctx context.Context, matchStatuses ...QuoteRequestStatus) (map[QuoteRequestStatus]int, error)
 }
 
 // Service is the interface for the database service.
@@ -180,6 +185,7 @@ type Rebalance struct {
 	Status          RebalanceStatus
 	OriginTxHash    common.Hash
 	DestTxHash      common.Hash
+	TokenName       string
 }
 
 // RebalanceStatus is the status of a rebalance action in the db.

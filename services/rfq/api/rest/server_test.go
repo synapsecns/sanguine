@@ -9,6 +9,10 @@ import (
 	"strconv"
 	"time"
 
+	apiClient "github.com/synapsecns/sanguine/services/rfq/api/client"
+	"github.com/synapsecns/sanguine/services/rfq/api/db"
+	"github.com/synapsecns/sanguine/services/rfq/api/rest"
+
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
@@ -55,9 +59,43 @@ func (c *ServerSuite) TestEIP191_SuccessfulSignature() {
 		c.Require().NoError(err)
 	}()
 
-	// Log the response body for debugging.
-	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
+	// Check for X-Api-Version on the response
+	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
+	// Assert that the response status code is HTTP 200 OK.
+	c.Equal(http.StatusOK, resp.StatusCode)
+}
+
+// TestEIP191_SuccessfulSignature_vCodeNormalize tests the EIP191 signature process for successful authentication.
+// using a recovery ID (v) value of 27/28 instead of the 0/1 value. Should be normalized & still authenticate successfully.
+func (c *ServerSuite) TestEIP191_SuccessfulSignature_vCodeNormalize() {
+	// Start the API server in a separate goroutine and wait for it to initialize.
+	c.startQuoterAPIServer()
+
+	// Prepare the authorization header with a signed timestamp.
+	header, err := c.prepareAuthHeader(c.testWallet)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	// swap in v code 27/28 for 0/1 respectively.
+	if header[len(header)-2:] == "00" {
+		header = header[:len(header)-2] + "1b"
+	} else if header[len(header)-2:] == "01" {
+		header = header[:len(header)-2] + "1c"
+	}
+
+	// Perform a PUT request to the API server with the authorization header.
+	resp, err := c.sendPutQuoteRequest(header)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	defer func() {
+		err = resp.Body.Close()
+		c.Require().NoError(err)
+	}()
 
 	// Assert that the response status code is HTTP 200 OK.
 	c.Equal(http.StatusOK, resp.StatusCode)
@@ -111,6 +149,9 @@ func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
 		_ = resp.Body.Close()
 	}()
 
+	// Check for X-Api-Version on the response
+	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
 	// Log the response body for debugging.
 	body, err := io.ReadAll(resp.Body)
 	c.Require().NoError(err)
@@ -135,6 +176,9 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 	}()
 	c.Assert().Equal(http.StatusOK, putResp.StatusCode)
 
+	// Check for X-Api-Version on the response
+	c.Equal(putResp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
 	// Send GET request to verify the PUT
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/quotes?originChainId=1&originTokenAddr=0xOriginTokenAddrdestChainId=42161&destTokenAddr=0xDestTokenAddr", c.port), nil)
@@ -146,6 +190,9 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 		_ = getResp.Body.Close()
 	}()
 	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
+
+	// Check for X-Api-Version on the response
+	c.Equal(getResp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
 
 	var quotes []*model.GetQuoteResponse
 	err = json.NewDecoder(getResp.Body).Decode(&quotes)
@@ -177,6 +224,9 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 	}()
 	c.Assert().Equal(http.StatusOK, putResp.StatusCode)
 
+	// Check for X-Api-Version on the response
+	c.Equal(putResp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
 	// Send GET request to verify the PUT
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/quotes?relayerAddress=%s", c.port, c.testWallet.Address().Hex()), nil)
@@ -188,6 +238,9 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 		_ = getResp.Body.Close()
 	}()
 	c.Assert().Equal(http.StatusOK, getResp.StatusCode)
+
+	// Check for X-Api-Version on the response
+	c.Equal(getResp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
 
 	var quotes []*model.GetQuoteResponse
 	err = json.NewDecoder(getResp.Body).Decode(&quotes)
@@ -202,6 +255,69 @@ func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
 		}
 	}
 	c.Assert().True(found, "Newly added quote not found")
+}
+
+func (c *ServerSuite) TestMultiplePutRequestsWithIncorrectAuth() {
+	// Start the API server in a separate goroutine and wait for it to initialize.
+	c.startQuoterAPIServer()
+
+	// Create a random wallet for incorrect authorization
+	randomWallet, err := wallet.FromRandom()
+	c.Require().NoError(err)
+
+	// Prepare the authorization header with a signed timestamp using the incorrect wallet
+	header, err := c.prepareAuthHeader(randomWallet)
+	c.Require().NoError(err)
+
+	// Perform multiple PUT requests to the API server with the incorrect authorization header
+	for i := 0; i < 3; i++ {
+		resp, err := c.sendPutQuoteRequest(header)
+		c.Require().NoError(err)
+		defer func() {
+			err = resp.Body.Close()
+			c.Require().NoError(err)
+		}()
+
+		// Read the response body
+		body, err := io.ReadAll(resp.Body)
+		c.Require().NoError(err)
+
+		// Check for X-Api-Version on the response
+		c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
+		// Log the response body for debugging
+		fmt.Printf("Request %d response: Status: %d, Body: %s\n", i+1, resp.StatusCode, string(body))
+
+		switch resp.StatusCode {
+		case http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden:
+			// These are acceptable error status codes for failed authentication
+			c.Assert().True(true, "Request %d correctly failed with status %d", i+1, resp.StatusCode)
+		case http.StatusOK:
+			// The ModifyQuote method returns 200 OK with an empty body on success
+			c.Assert().Empty(string(body), "Request %d should return an empty body on success", i+1)
+
+			// Since this shouldn't happen with incorrect auth, fail the test
+			c.Fail("Request %d unexpectedly succeeded, while submitting incorrect authentication", i+1)
+		default:
+			c.Fail("Unexpected status code %d for request %d", resp.StatusCode, i+1)
+		}
+	}
+}
+
+func (c *ServerSuite) TestFilterQuoteAge() {
+	now := time.Now()
+
+	// insert quote outside age range
+	quotes := []*db.Quote{
+		{OriginChainID: 1, UpdatedAt: now.Add(-time.Hour)},
+		{OriginChainID: 2, UpdatedAt: now.Add(-time.Minute)},
+	}
+
+	filteredQuotes := rest.FilterQuoteAge(c.cfg, quotes)
+
+	// verify old quote is filtered out
+	c.Equal(1, len(filteredQuotes))
+	c.Equal(quotes[1], filteredQuotes[0])
 }
 
 func (c *ServerSuite) TestPutAck() {
@@ -227,6 +343,9 @@ func (c *ServerSuite) TestPutAck() {
 	c.Equal(expectedResult, result)
 	err = resp.Body.Close()
 	c.Require().NoError(err)
+
+	// Check for X-Api-Version on the response
+	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
 
 	// Send another request with same txID
 	header, err = c.prepareAuthHeader(c.testWallet)
@@ -337,4 +456,17 @@ func (c *ServerSuite) sendPutAckRequest(header string, txID string) (*http.Respo
 		return nil, fmt.Errorf("failed to send PUT request: %w", err)
 	}
 	return resp, nil
+}
+
+func (c *ServerSuite) TestContracts() {
+	// Start the API server in a separate goroutine and wait for it to initialize.
+	c.startQuoterAPIServer()
+
+	client, err := apiClient.NewUnauthenticatedClient(c.handler, fmt.Sprintf("http://localhost:%d", c.port))
+	c.Require().NoError(err)
+
+	contracts, err := client.GetRFQContracts(c.GetTestContext())
+	c.Require().NoError(err)
+
+	c.Require().Len(contracts.Contracts, 2)
 }

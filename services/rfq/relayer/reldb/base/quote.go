@@ -53,12 +53,12 @@ func (s Store) GetQuoteRequestByOriginTxHash(ctx context.Context, txHash common.
 	}
 
 	if tx.Error != nil {
-		return nil, fmt.Errorf("could not get quote")
+		return nil, fmt.Errorf("could not get quote %w", tx.Error)
 	}
 
 	qr, err := modelResult.ToQuoteRequest()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not convert to quote request %w", err)
 	}
 	return qr, nil
 }
@@ -89,7 +89,18 @@ func (s Store) GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...rel
 }
 
 // UpdateQuoteRequestStatus todo: db test.
-func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status reldb.QuoteRequestStatus) error {
+func (s Store) UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status reldb.QuoteRequestStatus, prevStatus *reldb.QuoteRequestStatus) error {
+	if prevStatus == nil {
+		req, err := s.GetQuoteRequestByID(ctx, id)
+		if err != nil {
+			return fmt.Errorf("could not get quote: %w", reldb.ErrNoQuoteForID)
+		}
+		prevStatus = &req.Status
+	}
+	if !isValidStateTransition(*prevStatus, status) {
+		return nil
+	}
+
 	tx := s.DB().WithContext(ctx).Model(&RequestForQuote{}).
 		Where(fmt.Sprintf("%s = ?", transactionIDFieldName), hexutil.Encode(id[:])).
 		Update(statusFieldName, status)
@@ -119,4 +130,43 @@ func (s Store) UpdateRelayNonce(ctx context.Context, id [32]byte, nonce uint64) 
 		return fmt.Errorf("could not update: %w", tx.Error)
 	}
 	return nil
+}
+
+func isValidStateTransition(prevStatus, status reldb.QuoteRequestStatus) bool {
+	if status == reldb.DeadlineExceeded || status == reldb.WillNotProcess || status == reldb.RelayRaceLost {
+		return true
+	}
+	return status >= prevStatus
+}
+
+type statusCount struct {
+	Status int
+	Count  int64
+}
+
+// GetStatusCounts gets the counts of quote requests by status.
+func (s Store) GetStatusCounts(ctx context.Context, matchStatuses ...reldb.QuoteRequestStatus) (map[reldb.QuoteRequestStatus]int, error) {
+	inArgs := make([]int, len(matchStatuses))
+	for i := range matchStatuses {
+		inArgs[i] = int(matchStatuses[i].Int())
+	}
+
+	var results []statusCount
+	tx := s.DB().
+		WithContext(ctx).
+		Model(&RequestForQuote{}).
+		Select(fmt.Sprintf("%s, COUNT(*) as count", statusFieldName)).
+		Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).
+		Group(statusFieldName).
+		Scan(&results)
+	if tx.Error != nil {
+		return nil, fmt.Errorf("could not get db results: %w", tx.Error)
+	}
+
+	statuses := make(map[reldb.QuoteRequestStatus]int)
+	for _, result := range results {
+		statuses[reldb.QuoteRequestStatus(result.Status)] = int(result.Count)
+	}
+
+	return statuses, nil
 }

@@ -5,8 +5,8 @@ import * as allPool from '@constants/tokens/poolMaster'
 import { GMX, ETH, USDC, USDT, WETH } from '@constants/tokens/bridgeable'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import { Chain, Token } from '@utils/types'
-
-import { CHAINS_BY_ID } from '@/constants/chains'
+import { ETHEREUM_ADDRESS } from '@constants'
+import { CHAINS_BY_ID } from '@constants/chains'
 
 const allSwap = [WETH, USDC, USDT]
 
@@ -37,6 +37,7 @@ export const PAUSED_TOKENS_BY_CHAIN = {
   [CHAINS.BOBA.id]: ['WETH'],
   [CHAINS.MOONBEAM.id]: ['WETH'],
   [CHAINS.BASE.id]: ['WETH'],
+  [CHAINS.BLAST.id]: ['WETH'],
   [CHAINS.ARBITRUM.id]: ['WETH'],
   [CHAINS.FANTOM.id]: [],
   [CHAINS.DOGE.id]: ['BUSD', 'WETH'],
@@ -135,6 +136,8 @@ export const tokenAddressToToken = (
   if (chainId) {
     if (tokenAddress === WETH.addresses[chainId]) {
       return WETH
+    } else if (tokenAddress === ETHEREUM_ADDRESS) {
+      return ETH
     } else {
       const token = BRIDGABLE_TOKENS[chainId]?.find((token: Token) => {
         return token.addresses[chainId] === tokenAddress

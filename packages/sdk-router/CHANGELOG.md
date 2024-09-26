@@ -3,6 +3,106 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.11.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.11.1...@synapsecns/sdk-router@0.11.2) (2024-09-26)
+
+
+### Bug Fixes
+
+* **sdk-router:** disable ARB airdrop tests ([#3195](https://github.com/synapsecns/sanguine/issues/3195)) ([fc6ddae](https://github.com/synapsecns/sanguine/commit/fc6ddaedf03f7769dab362f0bcdf81a3dd010516))
+
+
+
+
+
+## [0.11.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.11.0...@synapsecns/sdk-router@0.11.1) (2024-09-04)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
+# [0.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.10.0...@synapsecns/sdk-router@0.11.0) (2024-08-26)
+
+
+### Features
+
+* **sdk:** uuid `BridgeQuote.id` ([#2896](https://github.com/synapsecns/sanguine/issues/2896)) ([85b5f53](https://github.com/synapsecns/sanguine/commit/85b5f538034a47f513d434aac2e55979bdbe390c))
+
+
+
+
+
+# [0.10.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.9.0...@synapsecns/sdk-router@0.10.0) (2024-08-05)
+
+
+* feat(sdk-router)!: add support for FastBridgeRouterV2 (#2957) ([175e0cd](https://github.com/synapsecns/sanguine/commit/175e0cd32a7e93e12af5bf458cbad49276f98518)), closes [#2957](https://github.com/synapsecns/sanguine/issues/2957)
+
+
+### BREAKING CHANGES
+
+* The `bridgeQuote` and `allBridgeQuotes` functions now accept an options object instead of individual optional parameters.
+
+* docs: new options
+
+* test: update
+
+* test: cleanup
+
+* fix: make `createRFQDestQuery` static, expose for tests
+
+* test: add unit tests for `createRFQDestQuery`
+
+* feat: use FastBridgeRouterV2 address
+
+* docs: be more explicit about smart contract integrations
+
+* docs: add address section
+
+* docs: strike through deprecated addresses
+
+* feat: use newest address
+
+* docs: more explicit language
+
+* docs: be more explicit in README as well
+
+* fix: update docs link, slippage wording
+
+
+
+
+
+# [0.9.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.8.0...@synapsecns/sdk-router@0.9.0) (2024-07-24)
+
+
+### Features
+
+* **sdk-router:** add Blast, Linea support ([#2903](https://github.com/synapsecns/sanguine/issues/2903)) ([c5cf52a](https://github.com/synapsecns/sanguine/commit/c5cf52a80c6f0bc16c29a0a9496713777d49654d))
+
+
+
+
+
+# [0.8.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.7.1...@synapsecns/sdk-router@0.8.0) (2024-07-15)
+
+
+### Features
+
+* **sdk:** Adds BSC to RFQ ([#2830](https://github.com/synapsecns/sanguine/issues/2830)) ([5fb5e8a](https://github.com/synapsecns/sanguine/commit/5fb5e8a429511da6cd271719fcd2a43dad47d1f7))
+
+
+
+
+
+## [0.7.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.7.0...@synapsecns/sdk-router@0.7.1) (2024-07-03)
+
+**Note:** Version bump only for package @synapsecns/sdk-router
+
+
+
+
+
 # [0.7.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.6.0...@synapsecns/sdk-router@0.7.0) (2024-06-27)
 
 

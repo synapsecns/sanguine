@@ -13,6 +13,11 @@ type PutQuoteRequest struct {
 	DestFastBridgeAddress   string `json:"dest_fast_bridge_address"`
 }
 
+// PutBulkQuotesRequest contains the schema for a PUT /quote request.
+type PutBulkQuotesRequest struct {
+	Quotes []PutQuoteRequest `json:"quotes"`
+}
+
 // PutAckRequest contains the schema for a PUT /ack request.
 type PutAckRequest struct {
 	TxID        string `json:"tx_id"`

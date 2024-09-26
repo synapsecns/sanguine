@@ -50,6 +50,8 @@ type APIDBReader interface {
 type APIDBWriter interface {
 	// UpsertQuote upserts a quote in the database.
 	UpsertQuote(ctx context.Context, quote *Quote) error
+	// UpsertQuotes upserts multiple quotes in the database.
+	UpsertQuotes(ctx context.Context, quotes []*Quote) error
 }
 
 // APIDB is the interface for the database service.

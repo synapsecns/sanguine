@@ -1,0 +1,65 @@
+{
+  "name": "@synapsecns/rfq-indexer-api",
+  "private": true,
+  "version": "1.0.4",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "check-env": "dotenv -e .env.local -- printenv | grep DATABASE_URL",
+    "dev:local": "dotenv -e .env.local -- tsx watch src/app.ts",
+    "dev:prod": "dotenv -e .env.production -- tsx watch src/app.ts",
+    "start": "tsx src/app.ts",
+    "start:local": "dotenv -e .env -- tsx src/app.ts",
+    "dev": "dotenv -e .env -- tsx watch src/app.ts",
+    "lint:check": " ",
+    "ci:lint": " ",
+    "build:go": " ",
+    "build": " ",
+    "build:slither": " ",
+    "test": "",
+    "test:coverage": "echo no tests defined"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@graphql-tools/load-files": "^7.0.0",
+    "@graphql-tools/merge": "^9.0.7",
+    "@graphql-tools/schema": "^10.0.6",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.5.4",
+    "dotenv-cli": "^7.4.2",
+    "express": "^4.21.0",
+    "express-validator": "^7.2.0",
+    "graphql": "^16.9.0",
+    "graphql-yoga": "^5.7.0",
+    "kysely": "^0.27.4",
+    "pg": "^8.12.0",
+    "supertest": "^7.0.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2",
+    "viem": "^2.21.6"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.4",
+    "@babel/preset-typescript": "^7.24.7",
+    "@types/pg": "^8.11.9",
+    "@types/supertest": "^6.0.2",
+    "@types/swagger-jsdoc": "6.0.4",
+    "@types/swagger-ui-express": "4.1.6",
+    "dotenv": "^16.4.5",
+    "express-validator": "^7.2.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine",
+    "directory": "packages/rfq-indexer/api"
+  }
+}

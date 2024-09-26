@@ -1,4 +1,4 @@
-export function mode(arr) {
+export const mode = (arr) => {
   const mode = {}
   let max = 0
   let count = 0

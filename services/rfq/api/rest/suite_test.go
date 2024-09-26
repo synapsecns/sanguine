@@ -3,7 +3,9 @@ package rest_test
 import (
 	"fmt"
 	"math/big"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -76,7 +78,8 @@ func (c *ServerSuite) SetupTest() {
 			1:     ethFastBridgeAddress.Hex(),
 			42161: arbFastBridgeAddress.Hex(),
 		},
-		Port: fmt.Sprintf("%d", port),
+		Port:        fmt.Sprintf("%d", port),
+		MaxQuoteAge: 15 * time.Minute,
 	}
 	c.cfg = testConfig
 
@@ -103,6 +106,7 @@ func (c *ServerSuite) SetupSuite() {
 	g, _ := errgroup.WithContext(c.GetSuiteContext())
 	for _, chainID := range chainIDs {
 		chainID := chainID // capture func literal
+		mux := sync.Mutex{}
 		g.Go(func() error {
 			// Setup Anvil backend for the suite to have RPC support
 			// anvilOpts := anvil.NewAnvilOptionBuilder()
@@ -112,6 +116,8 @@ func (c *ServerSuite) SetupSuite() {
 			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
 
 			// add the backend to the list of backends
+			mux.Lock()
+			defer mux.Unlock()
 			c.testBackends[chainID] = backend
 			c.omniRPCTestBackends = append(c.omniRPCTestBackends, backend)
 			return nil

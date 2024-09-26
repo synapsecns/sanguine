@@ -1,0 +1,1696 @@
+apiVersion: v1
+entries:
+  agents:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-15T16:05:28.619441468Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.92
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.16
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 2e5a511213a71d779bc019c9da89b3ec55ff11a86fbac91de8dcf26dd7bb73e0
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.30/agents-0.1.30.tgz
+    version: 0.1.30
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-04T02:29:43.471160828Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.91
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.15
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 0d35207b4437dd7bf1c2499efd6c8be9db4d7204b80c9bd36554949763819051
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.29/agents-0.1.29.tgz
+    version: 0.1.29
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-10-07T00:24:26.86440696Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.9
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.14
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: dd5f2c486141e712edfd6420e0fe659cac6e7cb778af701d8a9b103f255d67b2
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.28/agents-0.1.28.tgz
+    version: 0.1.28
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-10-06T23:02:22.41007833Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.8
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.13
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 92695a7205b7b92de7aa768ffd37167684aba0034f6efff9299ef8f156188c40
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.27/agents-0.1.27.tgz
+    version: 0.1.27
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-08-02T00:15:52.615661508Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.7
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.12
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 1fcfbaa7310e7031c2767ea177e1e42c184afecad57da28b2b105843923764f9
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.26/agents-0.1.26.tgz
+    version: 0.1.26
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-08-01T23:31:24.558063132Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.7
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.11
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 4c33a8ae520ba98ab0d1533b3fcfddc36c2b67b6aec958b0d1a6476c554f43de
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.25/agents-0.1.25.tgz
+    version: 0.1.25
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-07-31T14:37:49.065445479Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.6
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.10
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 55a8313a4da0da43a1c17a95faa7b7625c577aba2180fcc37565155a69a21075
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.24/agents-0.1.24.tgz
+    version: 0.1.24
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-07-05T21:20:54.016694746Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.5
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.9
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: d065aad107e72d8dadf047a3ee355c3662147ba1a08fec25655cc0976e3c673d
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.23/agents-0.1.23.tgz
+    version: 0.1.23
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-05-28T07:59:32.695340284Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.5
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.8
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: d60f9f9f850cbee824a46818a1eb897c9f31d2980e01531c3e81aa076077f1e7
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.22/agents-0.1.22.tgz
+    version: 0.1.22
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-05-22T22:57:13.838710338Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.5
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.7
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 75d05fbe2fada76665bf9371d227f3c4321ada50888e646d498cfaf697c3f0c6
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.21/agents-0.1.21.tgz
+    version: 0.1.21
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-26T20:02:44.991817377Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.2
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.5
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 87e4b18c2e7f3ebc09e7ba25e69cdb26ea1af2e8eb4d6b6a6828af9bd7016178
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.19/agents-0.1.19.tgz
+    version: 0.1.19
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-26T06:11:40.680782393Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.1
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.4
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 10fc8cd84d3d1c423fa532e1e9f8beb8afc9f8128ad07fd9ea11aa50d0dc1b60
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.18/agents-0.1.18.tgz
+    version: 0.1.18
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-07T23:13:31.086967042Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 15950d3ca38b0fcc0816aa3beb4a4576bf8b7c3807922998aa3da071f491fc64
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.17/agents-0.1.17.tgz
+    version: 0.1.17
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-05T22:35:40.482371209Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 160e5817fb893d7abe88b16c36e3d5e009eb6a3f9ce707b08abc48f806a95bc7
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.16/agents-0.1.16.tgz
+    version: 0.1.16
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-05T21:47:43.153922967Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 431a4e053867244109c5130ca4efe18e05faba1890489beba51e8e78432ee392
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.15/agents-0.1.15.tgz
+    version: 0.1.15
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-05T21:28:44.179469733Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.69.1
+    description: A Helm chart for Kubernetes
+    digest: 4260256bcb65c5b7d5ff2d3c9901dad651963924e0340a3ac00837f89da6e385
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.14/agents-0.1.14.tgz
+    version: 0.1.14
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-03-23T18:58:15.577289188Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    description: A Helm chart for Kubernetes
+    digest: f71aa70f700ccca485f9b63c3fcb9a7f21d946ae5eb1fc8652f73591ba570837
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.13/agents-0.1.13.tgz
+    version: 0.1.13
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-03-18T10:14:29.686093103Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    description: A Helm chart for Kubernetes
+    digest: ff2633fa90eb0f5d443f23406382d88d920c47f39cd33e8a34ebd28b78cbae5e
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.12/agents-0.1.12.tgz
+    version: 0.1.12
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-28T18:39:25.27662422Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    description: A Helm chart for Kubernetes
+    digest: 3c5380e3b9f17168dd631dc20dbfd2d963f9916a4c4259b1df1a7cb646112877
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.9/agents-0.1.9.tgz
+    version: 0.1.9
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-27T22:43:40.467317512Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    description: A Helm chart for Kubernetes
+    digest: 74ef93c34c2b47b7b8b21f2307754dc256539b90570a0786ab6f93e7587831b4
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.8/agents-0.1.8.tgz
+    version: 0.1.8
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-27T17:31:34.607173414Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    description: A Helm chart for Kubernetes
+    digest: 865a7d0acf8db64abd8c7a7252067ddd5a5137d9c4f9f98ebe691979bacfbfc0
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.7/agents-0.1.7.tgz
+    version: 0.1.7
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-24T22:45:29.104211539Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    description: A Helm chart for Kubernetes
+    digest: ab85342440c372e6275bb2bc15439df01a51f6d3b288f1293839ceec96df33ea
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.6/agents-0.1.6.tgz
+    version: 0.1.6
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-23T22:47:39.149175118Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.3
+    description: A Helm chart for Kubernetes
+    digest: a82f439d967b940299368470c74293906e7f2b8a51634406b69cc038ec0c45af
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.5/agents-0.1.5.tgz
+    version: 0.1.5
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-21T14:19:59.432989239Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.2
+    description: A Helm chart for Kubernetes
+    digest: 25b64b5cc3b642b737f597272f170015d7e243df138d8d6d6b421eabc1f24b6d
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.4/agents-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-12T02:23:46.956947784Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.1
+    description: A Helm chart for Kubernetes
+    digest: cf66309561337ad98b7787b38fa2a4fb595a54fb9049552ce983c2224fd2d01f
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.3/agents-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-11T12:49:09.636325559Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.1
+    description: A Helm chart for Kubernetes
+    digest: 5e440d40ac081c49493ec23fc5b6896d196812b5effb4df2d8b0f4194a40b642
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.2/agents-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-11T06:11:11.494990736Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.1
+    description: A Helm chart for Kubernetes
+    digest: e5e5a86befe1137a0d2ea57dec6b5146fc270a62346e075be98764f6ba49fa4b
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.1/agents-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-11T05:50:32.77252133Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: scribe.enabled
+      name: scribe
+      repository: file://../scribe/
+      version: 0.2.1
+    description: A Helm chart for Kubernetes
+    digest: 84f155f98d850f831ca0ad3735b1b8a014e9efc87569518613e3e625ae0b6cf1
+    name: agents
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/agents-0.1.0/agents-0.1.0.tgz
+    version: 0.1.0
+  cctp:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-06-21T00:00:46.389701199Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    description: A cctp chart
+    digest: 0e73c8cfc9276a9da18d06f3703cfd96d24d63a90d22116d5395e7f63417cd3b
+    name: cctp
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/cctp-0.3.0/cctp-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-10-07T00:24:26.989065439Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    description: A cctp chart
+    digest: 9e91b5a4b391b1d58ab8e13b74f8bdde5723369505b723a7b7f3741f3c7f074f
+    name: cctp
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/cctp-0.2.2/cctp-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-10-06T23:02:22.641575931Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    description: A cctp chart
+    digest: 7e43487b68d10acaa9109c7211cd18ab65bba31ec5887eab46d3cb89dc0249e3
+    name: cctp
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/cctp-0.2.1/cctp-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-06-28T04:24:31.546235076Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    description: A cctp chart
+    digest: 9817f3a9ed3e3f2cb8ea8f509c98a32d79264125a21871638a1349ccb14cd593
+    name: cctp
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/cctp-0.2.0/cctp-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-06-28T02:19:57.551825666Z"
+    description: A cctp chart
+    digest: 6077103a98218c069d8080cb070deff146b960947cc5a504a9f062560e07b31a
+    name: cctp
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/cctp-0.1.0/cctp-0.1.0.tgz
+    version: 0.1.0
+  explorer:
+  - apiVersion: v2
+    appVersion: 1.17.0
+    created: "2023-11-15T16:05:28.862756733Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.92
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: d3dd67692e7cd58dc1d6d917438abe8e72df266264fea1096fd5d6ea2c1fcd18
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.16/explorer-0.2.16.tgz
+    version: 0.2.16
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-04T02:29:43.624804939Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.91
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: 8b798f6986099576aa289734aa7138673efebdea9e5b3b85eff735d021214fe6
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.15/explorer-0.2.15.tgz
+    version: 0.2.15
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-10-07T00:24:27.111992917Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.9
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: 8c915a24f815b8f850c682701dd28ee423502dd43419e8542654723a41403e94
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.14/explorer-0.2.14.tgz
+    version: 0.2.14
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-10-06T23:02:22.852502558Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.8
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: e1ea3c1cf595bb3858e274f77efdc53a2ce6cb370ad7038b3c1a61ca8852e2b0
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.13/explorer-0.2.13.tgz
+    version: 0.2.13
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-08-02T00:15:52.741152138Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.7
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: 5eb58a8cb154f20d314d2f4d42383516f5e138d5757139ff9c1d05a83dc6ec63
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.11/explorer-0.2.11.tgz
+    version: 0.2.11
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-08-01T23:31:24.709647185Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.7
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: a756d2d70a4293500ccac729ba3bb0404df296080b48edb0d2c41a2acd485947
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.10/explorer-0.2.10.tgz
+    version: 0.2.10
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-07-31T14:37:49.248836717Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.6
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: 1ec6c23795cc39e5b952ac76dfbdf5c326a4c4018ec959a726da5118910414ca
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.9/explorer-0.2.9.tgz
+    version: 0.2.9
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-05-28T07:59:32.934369068Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.5
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: 94bc23b14cd383ece2ed9053132729848bd4f889393da182195890d180146706
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.8/explorer-0.2.8.tgz
+    version: 0.2.8
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-05-22T22:57:14.006505763Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.5
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: 25e36b24ecf8387b01028c50442d569422057d10d6249a7c3d0dc06e457b903e
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.6/explorer-0.2.6.tgz
+    version: 0.2.6
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-29T19:45:11.845123398Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.2
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: 442ac97b546b21e930852e27ac8d9aff32c0dd91542c8f3a6b1a43dc2df15452
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.4/explorer-0.2.4.tgz
+    version: 0.2.4
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-26T20:02:45.162467004Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.2
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: bfab5ccfa0a0382fc27dde36a221bdc1c5852612902dec99c7124271f4fccb8d
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.3/explorer-0.2.3.tgz
+    version: 0.2.3
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-26T06:11:40.843897998Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.1
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: 9b1cd48a2ef25d1df617fbd03e198eca447fe104ffdf73c66f95086d6e168588
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.2/explorer-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-03-28T18:17:01.71620633Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: bf58332fc09570b4d754dcf2dbfe6a586fc04a18222090444410ce51c5d4ac0d
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.1/explorer-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-06T09:50:34.459022548Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: f60be11d1d4576349fdbf8efd15865189bc160624f51af058303a31e71107574
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.2.0/explorer-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-11-16T06:03:51.699960931Z"
+    dependencies:
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.1.2
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.1.3
+    description: A Helm chart for Kubernetes
+    digest: e1ac290809782c0dd408c9eababac726e819f5a7b4680c75acd86bb9db675c8b
+    name: explorer
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/explorer-0.1.0/explorer-0.1.0.tgz
+    version: 0.1.0
+  omnirpc:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-15T16:05:29.111877183Z"
+    description: A omnirpc chart
+    digest: 2db90ef5abc0c65405cdeaf3a09bd1ef39a95a8d68e679ee7d7b1a6070df6e18
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.2.92/omnirpc-0.2.92.tgz
+    version: 0.2.92
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-04T02:29:43.780936178Z"
+    description: A omnirpc chart
+    digest: 4b2662599281d738f93a6e1bfa1920d13619dfa3a0328abf9ead8ebe88e330d8
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.2.91/omnirpc-0.2.91.tgz
+    version: 0.2.91
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-10-07T00:24:27.25942821Z"
+    description: A omnirpc chart
+    digest: 7ee45a04207a68884d3d6c1a09a1352b53f250c250e3a8b0e55f80b0595f7e32
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.2.9/omnirpc-0.2.9.tgz
+    version: 0.2.9
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-10-06T23:02:23.072373847Z"
+    description: A omnirpc chart
+    digest: 8a2838f846e6b45f1c46bd05d779aa76c359a39179bfad8a6e34610b9c863175
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.2.8/omnirpc-0.2.8.tgz
+    version: 0.2.8
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-08-01T23:31:24.812489114Z"
+    description: A omnirpc chart
+    digest: c038dd3bcf43966bec7d424e8847b48bc279fc8589a892decf411d7ab0aa1ea3
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.2.7/omnirpc-0.2.7.tgz
+    version: 0.2.7
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-07-31T14:37:49.639673176Z"
+    description: A omnirpc chart
+    digest: 175688d8b1b62bd5ff6e979316688874edcd3270da8cdf8cd485982af1d986ab
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.2.6/omnirpc-0.2.6.tgz
+    version: 0.2.6
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-05-22T22:57:14.202542779Z"
+    description: A omnirpc chart
+    digest: 307bea1edaa83f4051c5dd3560e80bc3971d9d446b8f309fd94dfde7c5ab2c40
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.2.5/omnirpc-0.2.5.tgz
+    version: 0.2.5
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-26T20:02:45.319190781Z"
+    description: A omnirpc chart
+    digest: c324d35a6179c3c16d621a0edde53089495f69da7d9926ca39f76a9faf90ebb0
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.2.2/omnirpc-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-26T06:11:40.999043161Z"
+    description: A omnirpc chart
+    digest: 387c62731ef9523cd926922b3f9aa18b3beb85679d3b61b4d2f45ec720731aba
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.2.1/omnirpc-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-06T09:50:34.635840202Z"
+    description: A omnirpc chart
+    digest: 20da3ba54ef20c816f423de32f0b0520f11636d33b6a2f789d48eeb3d83abac9
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.2.0/omnirpc-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-10-02T23:39:23.019587423Z"
+    description: A omnirpc chart
+    digest: 2c68a02d9385416b3d450418f5ca2f5ac95ea4ef59bc7c5ca3c22c64884414d8
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.1.2/omnirpc-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-09-24T18:28:04.257746986Z"
+    description: A omnirpc chart
+    digest: 09f4be6103d5177c254a8c87feafd8104d87305a235598011e23cedcec6ebde5
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.1.1/omnirpc-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-09-13T00:24:26.127889892Z"
+    description: A omnirpc chart
+    digest: 0dec1e3c2d1938e5c09f8dcd3d2f431c2d34c6507cc2b13c5814bf726c43ddc2
+    name: omnirpc
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/omnirpc-0.1.0/omnirpc-0.1.0.tgz
+    version: 0.1.0
+  promexporter:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-07-31T14:37:49.860260817Z"
+    description: A Helm chart for Kubernetes
+    digest: 5c72bb016b643e2fbbaf862377eaa513ded7c8345dc406edfc66ee2c7e36e35d
+    name: promexporter
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/promexporter-0.1.1/promexporter-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-07-29T17:08:46.1889086Z"
+    description: A Helm chart for Kubernetes
+    digest: 0bb3189d4504f71a4c6bd43a0ee48dc89bf3c0aaec6ac796772dcf0de8137429
+    name: promexporter
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/promexporter-0.1.0/promexporter-0.1.0.tgz
+    version: 0.1.0
+  screener:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-05-09T14:50:37.286253669Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    description: A screener chart
+    digest: b2f8bed4bff3132ff693f5853a38896548f1b1fefdc76bf6d8f8f72507f3bcc3
+    name: screener
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/screener-0.2.5/screener-0.2.5.tgz
+    version: 0.2.5
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-01-24T13:18:33.237615192Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    description: A screener chart
+    digest: 41ee1d2db705b54d517a4d9de49697ccfac9b6ba0fee1446b022d3d4e792d5cf
+    name: screener
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/screener-0.2.4/screener-0.2.4.tgz
+    version: 0.2.4
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-01-24T07:08:52.641499318Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    description: A screener chart
+    digest: db7a3c75a450cacc3db94a23dca397e1d1ab8a2b510f784aa6ddcc5bbd7bbbfd
+    name: screener
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/screener-0.2.3/screener-0.2.3.tgz
+    version: 0.2.3
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-01-24T03:29:48.086520729Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    description: A screener chart
+    digest: 567b48e162925ebee712a87a8e5f05ef9e4b6b4d1437ddcf0f641b16a3dc6ca1
+    name: screener
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/screener-0.2.2/screener-0.2.2.tgz
+    version: 0.2.2
+  scribe:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-15T16:05:29.3521351Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.92
+    description: A Helm chart for Kubernetes
+    digest: 05ca8f618d459e5b0d993064ad284a5b29050b2910fce56e79ebe9e5259137cd
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.16/scribe-0.2.16.tgz
+    version: 0.2.16
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-04T02:29:43.922126851Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.91
+    description: A Helm chart for Kubernetes
+    digest: 96ee0eceb0b7154caad836d068c76c624b04e6d67a1e52bac746a9fecfef65b4
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.15/scribe-0.2.15.tgz
+    version: 0.2.15
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-10-07T00:24:27.38527069Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.9
+    description: A Helm chart for Kubernetes
+    digest: e132297875b080e704462ce8f2b10284c13a1fc3431eda48ed11752edf338f79
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.14/scribe-0.2.14.tgz
+    version: 0.2.14
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-10-06T23:02:23.310749973Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.8
+    description: A Helm chart for Kubernetes
+    digest: a77a5762283eb2e4393e46151f40068ac4069464b8ac6ac9f316e9724cd9fd8c
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.13/scribe-0.2.13.tgz
+    version: 0.2.13
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-08-02T00:15:52.875210519Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.7
+    description: A Helm chart for Kubernetes
+    digest: 0dbb3afd8dd7c351e415f8db969133df7275a3ee7380d6b7633ea9f4ff310bab
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.12/scribe-0.2.12.tgz
+    version: 0.2.12
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-08-01T23:31:24.945332688Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.7
+    description: A Helm chart for Kubernetes
+    digest: 5749715debf1b12ea8995789b1cd13a4d0f859987d41a3dafa35aabdb2c86578
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.11/scribe-0.2.11.tgz
+    version: 0.2.11
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-07-31T14:37:50.071207584Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.6
+    description: A Helm chart for Kubernetes
+    digest: d393b266408abe7d51fd2606cf0ddff429c65a040c8fbd46b86367ad9eb04efa
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.10/scribe-0.2.10.tgz
+    version: 0.2.10
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-07-05T21:20:54.251606246Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.5
+    description: A Helm chart for Kubernetes
+    digest: 8b626fb80dc24514de6e7c480783fd897f9dd0e8c0970dc44815f6ba0c6948a4
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.9/scribe-0.2.9.tgz
+    version: 0.2.9
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-05-28T07:59:33.193453847Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.5
+    description: A Helm chart for Kubernetes
+    digest: 771ba42a4ddf34d14d4e9dded31c9f570f0c5f87614777124e3b9023629d6cc0
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.8/scribe-0.2.8.tgz
+    version: 0.2.8
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-05-22T22:57:14.371893721Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.5
+    description: A Helm chart for Kubernetes
+    digest: 9ec7d3a18b2ba4a98c677a7b67fd3556048887e703cd307c0da2d722f402c734
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.7/scribe-0.2.7.tgz
+    version: 0.2.7
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-26T20:02:45.49637282Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.2
+    description: A Helm chart for Kubernetes
+    digest: f3ff884024f821b97b6c77ed1902a1238284fa6488a07fad98e76da0baa35add
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.5/scribe-0.2.5.tgz
+    version: 0.2.5
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-26T06:11:41.159766791Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.1
+    description: A Helm chart for Kubernetes
+    digest: c554c761138aefb522bcc9915b72c32e67216bcc9fe1020e712d9988d9a39862
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.4/scribe-0.2.4.tgz
+    version: 0.2.4
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-23T22:47:39.401562759Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    description: A Helm chart for Kubernetes
+    digest: 953242c1b65d218b4946a0211bec24cffc851897360982d0d334ab1791a72f56
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.3/scribe-0.2.3.tgz
+    version: 0.2.3
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-21T14:19:59.69319414Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    description: A Helm chart for Kubernetes
+    digest: 917f3c35f76dc167960c4cd437a04e11d8ef09c1074c7cf0fff66a2a1b7760d7
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.2/scribe-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-11T05:50:32.924330225Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    description: A Helm chart for Kubernetes
+    digest: 0d48abc1c7731cc92a73edf5cac6cbdcd53f9b5e2fc7dfb795f2763614a13c91
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.1/scribe-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-02-06T09:50:34.858627506Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.2.0
+    description: A Helm chart for Kubernetes
+    digest: 547bd80952bccf395cff03801f59cd9db0eda55c606b68fb6e3c2bd6e4ee398a
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.2.0/scribe-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-10-31T21:51:36.54619327Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.1.2
+    description: A Helm chart for Kubernetes
+    digest: e44d612e2ca73c7fdc2751bf10453f8dca956e4952c855349683811404d7f5d5
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.1.4/scribe-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-10-30T21:21:47.714458959Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.1.2
+    description: A Helm chart for Kubernetes
+    digest: 0804370c394ca56b8a00de2cde8bf5873f7eb1313f19bb512e8a19ed79867aab
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.1.3/scribe-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-10-02T23:39:23.169811556Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.1.2
+    description: A Helm chart for Kubernetes
+    digest: bb485b556e227da97c40e92bb8fc833c412ad892cfe28d5545fbc2375f8e9d5a
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.1.2/scribe-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-09-28T18:11:37.712727887Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - condition: omnirpc.enabled
+      name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.1.1
+    description: A Helm chart for Kubernetes
+    digest: 2d99eb9cf2eaf1babf6702e534ab9540dbe6394c4dd4496639cc63a379408be8
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.1.1/scribe-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-09-24T18:28:04.408531267Z"
+    dependencies:
+    - name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    - name: omnirpc
+      repository: file://../omnirpc/
+      version: 0.1.1
+    description: A Helm chart for Kubernetes
+    digest: 7218a26e133275337eff731fbb2a9ebd119e11e476cbe5b6de1412ca5685d394
+    name: scribe
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/scribe-0.1.0/scribe-0.1.0.tgz
+    version: 0.1.0
+  sinner:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-11-04T02:29:44.056013742Z"
+    dependencies:
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.2
+    description: A Helm chart for Kubernetes
+    digest: 583766bb829f18c1f419cb8c4830888f4618e00fbcc85176571caec6e7cfdbee
+    name: sinner
+    type: application
+    urls:
+    - https://github.com/synapsecns/sanguine/releases/download/sinner-0.1.0/sinner-0.1.0.tgz
+    version: 0.1.0
+generated: "2024-06-21T00:00:46.389969799Z"

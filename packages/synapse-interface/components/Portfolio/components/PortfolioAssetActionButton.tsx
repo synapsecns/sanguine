@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl'
+
 type PortfolioAssetActionButtonProps = {
   selectCallback: () => void
   isDisabled: boolean
@@ -9,6 +11,8 @@ export const PortfolioAssetActionButton = ({
   isDisabled,
   isSelected,
 }: PortfolioAssetActionButtonProps) => {
+  const t = useTranslations('Activity')
+
   return (
     <>
       <button
@@ -21,7 +25,7 @@ export const PortfolioAssetActionButton = ({
         onClick={selectCallback}
         disabled={isDisabled}
       >
-        Select{isSelected && 'ed'}
+        {isSelected ? t('Selected') : t('Select')}
       </button>
     </>
   )

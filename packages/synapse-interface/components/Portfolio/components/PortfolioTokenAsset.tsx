@@ -2,6 +2,8 @@ import React, { useCallback } from 'react'
 import { zeroAddress } from 'viem'
 import { isNumber } from 'lodash'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
+
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId, setFromToken } from '@/slices/bridge/reducer'
 import { Token } from '@/utils/types'
@@ -14,6 +16,7 @@ import { useGasEstimator } from '@/utils/hooks/useGasEstimator'
 import GasIcon from '@/components/icons/GasIcon'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatAmount } from '@/utils/formatAmount'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()
@@ -34,6 +37,7 @@ export const PortfolioTokenAsset = ({
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
   const { fromChainId, fromToken } = useBridgeState()
+  const { isWalletPending } = useWalletState()
   const { icon, symbol, decimals, addresses } = token
   const tokenAddress = addresses[portfolioChainId]
   const tokenDecimals = isNumber(decimals)
@@ -49,6 +53,8 @@ export const PortfolioTokenAsset = ({
   const isGasToken = tokenAddress === zeroAddress
 
   const { maxBridgeableGas } = useGasEstimator()
+
+  const t = useTranslations('Portfolio')
 
   const handleFromSelectionCallback = useCallback(async () => {
     dispatch(setFromChainId(portfolioChainId))
@@ -75,7 +81,7 @@ export const PortfolioTokenAsset = ({
           hoverContent={
             isPortfolioChainSelected && isGasToken && maxBridgeableGas ? (
               <div className="whitespace-nowrap">
-                Available:{' '}
+                {t('Available')}:{' '}
                 {trimTrailingZeroesAfterDecimal(maxBridgeableGas.toFixed(8))}{' '}
                 {symbol}
               </div>
@@ -93,7 +99,9 @@ export const PortfolioTokenAsset = ({
 
         {isGasToken && (
           <HoverTooltip
-            hoverContent={<div className="whitespace-nowrap">Gas token</div>}
+            hoverContent={
+              <div className="whitespace-nowrap">{t('Gas token')}</div>
+            }
           >
             <GasIcon className="pt-0.5 m-auto fill-secondary" />
           </HoverTooltip>
@@ -101,7 +109,7 @@ export const PortfolioTokenAsset = ({
       </div>
       <PortfolioAssetActionButton
         selectCallback={handleFromSelectionCallback}
-        isDisabled={isDisabled || isTokenSelected}
+        isDisabled={isDisabled || isTokenSelected || isWalletPending}
         isSelected={isTokenSelected}
       />
     </div>

@@ -1,4 +1,6 @@
 import { Address } from 'viem'
+import { useTranslations } from 'next-intl'
+
 import { usePortfolioActionHandlers } from '@/slices/portfolio/hooks'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ClearSearchButton } from './ClearSearchButton'
@@ -10,6 +12,8 @@ export const ViewSearchAddressBanner = ({
 }) => {
   const { clearSearchResults } = usePortfolioActionHandlers()
   const shortened: string = shortenAddress(viewingAddress, 4)
+  const t = useTranslations('Portfolio')
+
   return (
     <div
       id="view-search-address-banner"
@@ -23,7 +27,7 @@ export const ViewSearchAddressBanner = ({
       }}
     >
       <div className="flex space-x-1">
-        <div className="text-secondary ">Viewing</div>
+        <div className="text-secondary ">{t('Viewing')}</div>
         <div className="font-bold text-primary">{shortened}</div>
       </div>
       <ClearSearchButton onClick={clearSearchResults} show={true} />

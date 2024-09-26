@@ -1,7 +1,8 @@
-import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { getChainUrl, getExplorerTxUrl } from '@urls'
+import Link from 'next/link'
 import Image from 'next/image'
 import { CHAINS } from 'synapse-constants'
+import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
+import { getChainUrl, getExplorerTxUrl } from '@urls'
 
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
@@ -16,16 +17,14 @@ interface ChainInfoProps {
   className?: string
 }
 
-export function ChainInfo({
+export const ChainInfo = ({
   chainId,
   imgClassName = 'w-4 h-4 rounded-full',
-  linkClassName = 'float-right text-white transition ease-out hover:text-[#8FEBFF] px-1.5  rounded-md ease-in-out bg-[#191919]',
   textClassName = 'pl-1 whitespace-nowrap text-sm text-white',
   txHash,
   useExplorerLink = false,
-  noLink = false,
   className = '',
-}: ChainInfoProps) {
+}: ChainInfoProps) => {
   const chain = CHAINS_BY_ID[chainId]
   let link = ''
 
@@ -40,25 +39,20 @@ export function ChainInfo({
   if (chain) {
     return (
       <div className="relative w-full">
-        <div className="flex items-center justify-start">
-          <Image
-            className={`inline rounded-full ${imgClassName}`}
-            src={chain?.chainImg}
-            alt={chain?.name}
-          />
-          <p className={textClassName}>{chain.name}</p>
-          {/* we should just add this link to the text */}
-          {/* {noLink ? null : (
-            <a
-              type="link"
-              target="_blank"
-              href={link}
-              className={linkClassName}
+        <Link href={link} passHref legacyBehavior>
+          <div className="flex items-center justify-start cursor-pointer group">
+            <Image
+              className={`inline rounded-full ${imgClassName}`}
+              src={chain?.chainImg}
+              alt={chain?.name}
+            />
+            <p
+              className={`${textClassName} group-hover:text-[#8FEBFF] transition-colors duration-200`}
             >
-              ↗
-            </a>
-          )} */}
-        </div>
+              {chain.name}
+            </p>
+          </div>
+        </Link>
       </div>
     )
   } else {

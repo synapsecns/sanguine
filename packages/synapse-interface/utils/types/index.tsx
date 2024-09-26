@@ -70,6 +70,10 @@ type QuoteQuery = {
 }
 
 export type BridgeQuote = {
+  id: string
+  inputAmountForQuote: string
+  originTokenForQuote: Token
+  destTokenForQuote: Token
   outputAmount: bigint
   outputAmountString: string
   routerAddress: string
@@ -85,6 +89,7 @@ export type BridgeQuote = {
   timestamp: number
   originChainId: number
   destChainId: number
+  requestId: number
 }
 
 interface TokensByChain {

@@ -8,6 +8,7 @@ import bridge from '@/slices/bridge/reducer'
 import portfolio from '@/slices/portfolio/reducer'
 import swap from '@/slices/swap/reducer'
 import transactions from '@/slices/transactions/reducer'
+import maintenance from '@/slices/maintenance/reducer'
 import bridgeDisplay from '@/slices/bridgeDisplaySlice'
 import poolData from '@/slices/poolDataSlice'
 import poolDeposit from '@/slices/poolDepositSlice'
@@ -15,6 +16,8 @@ import poolUserData from '@/slices/poolUserDataSlice'
 import poolWithdraw from '@/slices/poolWithdrawSlice'
 import priceData from '@/slices/priceDataSlice'
 import gasData from '@/slices/gasDataSlice'
+import wallet from '@/slices/wallet/reducer'
+import bridgeQuote from '@/slices/bridgeQuote/reducer'
 import { api } from '@/slices/api/slice'
 import { RootActions } from '@/slices/application/actions'
 
@@ -37,6 +40,7 @@ export const appReducer = combineReducers({
   bridge,
   portfolio,
   swap,
+  maintenance,
   bridgeDisplay,
   poolData,
   poolDeposit,
@@ -44,6 +48,8 @@ export const appReducer = combineReducers({
   poolWithdraw,
   priceData,
   gasData,
+  wallet,
+  bridgeQuote,
   [api.reducerPath]: api.reducer,
   ...persistedReducers,
 })

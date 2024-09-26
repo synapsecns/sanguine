@@ -1,4 +1,6 @@
 import { useCallback } from 'react'
+import { useTranslations } from 'next-intl'
+
 import { useAppDispatch } from '@/store/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
@@ -35,6 +37,7 @@ interface _TransactionProps {
   currentTime: number
   kappa?: string
   status: 'pending' | 'completed' | 'reverted' | 'refunded'
+  disabled: boolean
 }
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
@@ -54,8 +57,11 @@ export const _Transaction = ({
   currentTime,
   kappa,
   status,
+  disabled,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
+
+  const t = useTranslations('Time')
 
   const handleClearTransaction = useCallback(() => {
     dispatch(removeTransaction({ originTxHash }))
@@ -141,6 +147,7 @@ export const _Transaction = ({
           tokenAmount={originValue}
           isOrigin={true}
           showChain={false}
+          disabled={disabled}
         />
         <RightArrow className="stroke-secondaryTextColor mt-0.5 mx-1" />
         <TransactionPayloadDetail
@@ -148,6 +155,7 @@ export const _Transaction = ({
           token={destinationToken}
           tokenAmount={null}
           isOrigin={false}
+          disabled={disabled}
         />
         <div className="flex items-center justify-end gap-2 grow">
           <DropdownMenu
@@ -161,7 +169,7 @@ export const _Transaction = ({
             }
           >
             <div className="p-2 mt-1 text-xs cursor-default text-zinc-300">
-              Began{' '}
+              {t('Began')}{' '}
               {new Date(timestamp * 1000).toLocaleString('en-US', {
                 month: 'short',
                 day: 'numeric',
@@ -185,15 +193,15 @@ export const _Transaction = ({
               />
             )}
             <MenuItem
-              text="Contact Support (Discord)"
+              text={t('Contact Support (Discord)')}
               link="https://discord.gg/synapseprotocol"
             />
             {status !== 'pending' && (
               <MenuItem
                 text={
                   isTxReverted || isTxRefunded
-                    ? 'Clear notification'
-                    : 'Clear transaction'
+                    ? t('Clear notification')
+                    : t('Clear transaction')
                 }
                 link={null}
                 onClick={handleClearTransaction}

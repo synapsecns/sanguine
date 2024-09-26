@@ -1,4 +1,6 @@
 import { Address } from 'viem'
+import { useTranslations } from 'next-intl'
+
 import { shortenAddress } from '@/utils/shortenAddress'
 import { convertUnixTimestampToMonthAndDate } from '@/utils/time'
 import { isTimestampToday } from '@/utils/time'
@@ -26,6 +28,8 @@ export const Completed = ({
 
   const isDestinationValid: boolean = isValidAddress(destinationAddress)
 
+  const t = useTranslations('Completed')
+
   return (
     <div
       data-test-id="completed"
@@ -40,12 +44,14 @@ export const Completed = ({
         `}
     >
       {isDestinationValid && !isDestinationSender && (
-        <div>to {shortenAddress(destinationAddress)} </div>
+        <div>
+          {t('to')} {shortenAddress(destinationAddress)}{' '}
+        </div>
       )}
       {isToday ? (
-        <div>Today</div>
+        <div>{t('Today')}</div>
       ) : (
-        <div>{formattedTime ? formattedTime : 'Completed'}</div>
+        <div>{formattedTime ? formattedTime : t('Completed')}</div>
       )}
     </div>
   )

@@ -52,6 +52,28 @@ func (s MapMutexSuite) TestExampleMapMutex() {
 	NotPanics(s.T(), ExampleStringMapMutex)
 }
 
+func (s MapMutexSuite) TestKeys() {
+	s.T().Run("StringMapMutexKeys", func(t *testing.T) {
+		mapMutex := mapmutex.NewStringMapMutex()
+		mapMutex.Lock("lock1")
+		Equal(t, "lock1", mapMutex.Keys()[0])
+		Equal(t, 1, len(mapMutex.Keys()))
+	})
+	s.T().Run("StringerMapMutexKeys", func(t *testing.T) {
+		mapMutex := mapmutex.NewStringerMapMutex()
+		vitalik := common.HexToAddress("0xab5801a7d398351b8be11c439e05c5b3259aec9b")
+		mapMutex.Lock(vitalik)
+		Equal(t, vitalik.String(), mapMutex.Keys()[0])
+		Equal(t, 1, len(mapMutex.Keys()))
+	})
+	s.T().Run("IntMapMutexKeys", func(t *testing.T) {
+		mapMutex := mapmutex.NewIntMapMutex()
+		mapMutex.Lock(1)
+		Equal(t, 1, mapMutex.Keys()[0])
+		Equal(t, 1, len(mapMutex.Keys()))
+	})
+}
+
 func (s MapMutexSuite) TestMapMutex() {
 	//nolint:gosec
 	r := rand.New(rand.NewSource(42))

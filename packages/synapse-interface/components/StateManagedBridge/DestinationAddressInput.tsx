@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { isNull, isString } from 'lodash'
+import { useTranslations } from 'next-intl'
+
 import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
@@ -28,6 +30,7 @@ export const DestinationAddressInput = ({
   connectedAddress: string
 }) => {
   const dispatch = useAppDispatch()
+  const t = useTranslations('Bridge')
   const { destinationAddress } = useBridgeState()
   const { showDestinationWarning } = useBridgeDisplayState()
   const { userHistoricalTransactions }: TransactionsState =
@@ -220,6 +223,8 @@ export const DestinationAddressInput = ({
   const adjustInputSize = () => {
     const addressInput: HTMLElement = document.getElementById('address-input')
 
+    if (!addressInput) return
+
     if (isInputFocused || isInputInvalid) {
       addressInput.style.width = '12rem'
     } else if (inputValue.length > 0) {
@@ -236,7 +241,7 @@ export const DestinationAddressInput = ({
   return (
     <div id="destination-address-input">
       <div className="relative flex items-center">
-        <div className="mr-1.5 text-secondary text-sm">To: </div>
+        <div className="mr-1.5 text-secondary text-sm">{t('To')}: </div>
         <div
           className={`
            flex border text-md rounded-sm
@@ -323,6 +328,8 @@ const ListRecipient = ({
     onSelectRecipient && onSelectRecipient(address as Address)
   }
 
+  const t = useTranslations('Time')
+
   return (
     <div
       onMouseDown={handleMouseDown}
@@ -334,7 +341,10 @@ const ListRecipient = ({
       `}
     >
       <div>{shortenAddress(address)}</div>
-      <div>{daysAgo}d</div>
+      <div>
+        {daysAgo}
+        {t('d')}
+      </div>
     </div>
   )
 }

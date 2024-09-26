@@ -1,4 +1,4 @@
-export default function ArrowIcon({ className }) {
+export const ArrowIcon = ({ className }) => {
   return (
     <svg
       className={`w-6 ${className}`}

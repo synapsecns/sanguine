@@ -1,3 +1,7 @@
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
+import deepmerge from 'deepmerge'
+
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { LandingPageContainer } from '../../components/landing/shared'
 
@@ -10,19 +14,25 @@ import HowItWorksSection from './sections/HowItWorksSection'
 import UseCasesSection from './sections/UseCasesSection'
 import ResourcesSection from './sections/ResourcesSection'
 
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-import { useAccount } from 'wagmi'
-
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
+export async function getStaticProps({ locale }) {
+  const userMessages = (await import(`../../messages/${locale}.json`)).default
+  const defaultMessages = (await import(`../../messages/en-US.json`)).default
+  const messages = deepmerge(defaultMessages, userMessages)
+
+  return {
+    props: {
+      messages,
+    },
+  }
+}
+
 const LandingPage = () => {
-  const { address: currentAddress } = useAccount()
   const router = useRouter()
 
   useEffect(() => {
     segmentAnalyticsEvent(`[Landing] arrives`, {
-      address: currentAddress,
       query: router.query,
       pathname: router.pathname,
     })

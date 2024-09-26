@@ -1,17 +1,26 @@
 import { useState } from 'react'
 import { joinClassNames } from '@/utils/joinClassNames'
 
-export function SwitchButton({ onClick }: { onClick: () => void }) {
+const ms = 300
+
+export function SwitchButton({
+  onClick,
+  disabled,
+}: {
+  onClick: () => void
+  disabled: boolean
+}) {
   const [isActive, setIsActive] = useState(false)
-  const ms = 300
+
   const handleClick = () => {
-    onClick()
-    setIsActive(true)
-    setTimeout(() => setIsActive(false), ms)
-    console.log('click')
+    if (!disabled) {
+      onClick()
+      setIsActive(true)
+      setTimeout(() => setIsActive(false), ms)
+    }
   }
 
-  const className = joinClassNames({
+  const classNames = {
     space: '-mt-4 -mb-4 rounded z-10 justify-self-center',
     background: 'bg-zinc-50 dark:bg-bgLight', // TODO: Remove
     // background: 'bg-zinc-50 dark:bg-zinc-800/50',
@@ -22,12 +31,12 @@ export function SwitchButton({ onClick }: { onClick: () => void }) {
     transition: `hover:opacity-80 cursor-pointer transition-transform ${
       isActive ? `duration-${ms} rotate-180 ease-in-out` : 'ease-out' // 'duration-0'
     }`,
-  })
+  }
 
   return (
     <svg
       onClick={handleClick}
-      className={className}
+      className={joinClassNames(classNames)}
       width="32"
       height="32"
       viewBox="0 0 32 32"

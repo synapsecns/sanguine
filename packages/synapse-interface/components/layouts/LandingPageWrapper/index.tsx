@@ -2,6 +2,8 @@ import { Fragment } from 'react'
 import { useRouter } from 'next/router'
 import { Popover, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
+import { useTranslations } from 'next-intl'
+
 import Grid from '@tw/Grid'
 import ForumIcon from '@icons/ForumIcon'
 import TwitterIcon from '@icons/TwitterIcon'
@@ -19,23 +21,26 @@ import {
   LANDING_PATH,
   TELEGRAM_URL,
   TWITTER_URL,
-  getBuySynUrl,
 } from '@/constants/urls'
 import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 import { joinClassNames } from '@/utils/joinClassNames'
-import { MaintenanceBanners } from '@/components/Maintenance/Maintenance'
+import {
+  MaintenanceBanners,
+  useMaintenance,
+} from '@/components/Maintenance/Maintenance'
 import { AnnouncementBanner } from '@/components/Maintenance/components/AnnouncementBanner'
+import { LanguageSelector } from '@/components/LanguageSelector'
 
-const wrapperClassName = joinClassNames({
+const wrapperClassNames = {
   textColor: 'text-zinc-800 dark:text-zinc-200',
   font: 'tracking-wide',
   bgColor: 'bg-gradient-to-b',
   bgGradient: 'from-white to-[hsl(235deg_75%_96%)]',
   bgGradientDark: 'dark:from-black dark:to-[hsl(265deg_25%_7.5%)]',
   // bgFrame: 'w-screen h-screen overflow-scroll', // TODO: Enable once wrapperStyle is removed
-})
+}
 
 const TODO_REMOVE_wrapperStyle = {
   background:
@@ -49,12 +54,15 @@ const TODO_REMOVE_wrapperStyle = {
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div className="dark">
-      <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
+      <div
+        className={joinClassNames(wrapperClassNames)}
+        style={TODO_REMOVE_wrapperStyle}
+      >
         <AnnouncementBanner
-          bannerId="2024-05-02-scroll-launch"
-          bannerContent="Synapse Protocol now available on Scroll"
-          startDate={new Date('2024-05-08T18:45:09+00:00')}
-          endDate={new Date('2024-06-15T18:45:09+00:00')}
+          bannerId="2024-07-22-rfq"
+          bannerContent="Synapse now supports Linea - bridge to & from in 10 seconds"
+          startDate={new Date('2024-07-10T18:45:09+00:00')}
+          endDate={new Date('2024-08-15T18:45:09+00:00')}
         />
         <MaintenanceBanners />
         <LandingNav />
@@ -66,6 +74,8 @@ export function LandingPageWrapper({ children }: { children: any }) {
 }
 
 export function LandingNav() {
+  const t = useTranslations('Nav')
+
   return (
     <Popover>
       <div className="flex gap-4 place-content-between p-8 max-w-[1440px] m-auto">
@@ -75,7 +85,7 @@ export function LandingNav() {
             data-test-id="mobile-navbar-button"
             className="p-2 text-gray-400 rounded-md hover:bg-gray-800 focus:outline-none"
           >
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{t('Open menu')}</span>
             <MenuIcon className="w-8 h-8" aria-hidden="true" />
           </Popover.Button>
         </div>
@@ -88,6 +98,7 @@ export function LandingNav() {
         </Popover.Group>
         <div className="hidden lg:flex h-fit">
           <div className="flex items-center space-x-2">
+            <LanguageSelector />
             <Wallet />
             <Popover className="relative">
               {({ open }) => (
@@ -123,14 +134,15 @@ export function LandingNav() {
             <div className="flex items-center px-4 pt-4 place-content-between">
               <SynapseTitleLogo showText={true} />
               <Popover.Button className="p-2 text-gray-400 rounded-md hover:bg-gray-900 focus:outline-none">
-                <span className="sr-only">Close menu</span>
+                <span className="sr-only">{t('Close menu')}</span>
                 <XIcon className="w-8 h-8" aria-hidden="true" />
               </Popover.Button>
             </div>
             <div className="flex flex-col gap-2 py-4" data-test-id="mobile-nav">
               <MobileBarButtons />
             </div>
-            <div className="px-2 py-4 bg-white/10">
+            <div className="flex items-center px-2 py-4 space-x-2 bg-white/10">
+              <LanguageSelector />
               <Wallet />
             </div>
           </div>
@@ -175,11 +187,13 @@ export function PopoverPanelContainer({
 }
 
 function TopBarButtons() {
+  const t = useTranslations('Nav')
+
   const topBarNavLinks = Object.entries(NAVIGATION).map(([key, value]) => (
     <TopBarNavLink
       key={key}
       to={value.path}
-      labelText={value.text}
+      labelText={t(value.text)}
       match={value.match}
     />
   ))

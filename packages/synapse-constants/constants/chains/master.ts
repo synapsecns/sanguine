@@ -19,6 +19,7 @@ import moonriverImg from '../assets/chains/moonriver.svg'
 import optimismImg from '../assets/chains/optimism.svg'
 import polygonImg from '../assets/chains/polygon.svg'
 import scrollImg from '../assets/chains/scroll.svg'
+import lineaImg from '../assets/chains/linea.svg'
 import ethExplorerImg from '../assets/explorer/etherscan.svg'
 import arbitrumExplorerImg from '../assets/explorer/arbitrum.svg'
 import bnbExplorerImg from '../assets/explorer/bscscan.svg'
@@ -40,6 +41,7 @@ import dogeExplorerImg from '../assets/explorer/dogechain.svg'
 import baseExplorerImg from '../assets/explorer/basescan.svg'
 import blastExplorerImg from '../assets/explorer/blast.svg'
 import scrollExplorerImg from '../assets/explorer/scroll.svg'
+import lineaExplorerImg from '../assets/explorer/linea.svg'
 import { Chain } from '../types'
 
 export const ETH: Chain = {
@@ -54,7 +56,7 @@ export const ETH: Chain = {
     primary: 'https://rpc.ankr.com/eth',
     fallback: 'https://1rpc.io/eth',
   },
-  explorerUrl: 'https://etherscan.com',
+  explorerUrl: 'https://etherscan.io',
   explorerName: 'Etherscan',
   explorerImg: ethExplorerImg,
   blockTime: 12000,
@@ -477,4 +479,28 @@ export const SCROLL: Chain = {
     decimals: 18,
   },
   color: 'orange',
+}
+
+export const LINEA: Chain = {
+  priorityRank: 90,
+  id: 59144,
+  chainSymbol: 'LINEA',
+  name: 'Linea',
+  codeName: 'linea',
+  chainImg: lineaImg,
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://linea.blockpi.network/v1/rpc/public',
+    fallback: 'https://rpc.linea.build',
+  },
+  explorerUrl: 'https://lineascan.build/',
+  explorerName: 'LineaScan',
+  explorerImg: lineaExplorerImg,
+  blockTime: 3000,
+  nativeCurrency: {
+    name: 'Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  color: 'black',
 }

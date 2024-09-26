@@ -13,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"golang.org/x/sync/errgroup"
 )
 
 // FeePricer is the interface for the fee pricer.
@@ -28,6 +27,8 @@ type FeePricer interface {
 	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool) (*big.Int, error)
 	// GetGasPrice returns the gas price for a given chainID in native units.
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
+	// GetTokenPrice returns the price of a token in USD.
+	GetTokenPrice(ctx context.Context, token string) (float64, error)
 }
 
 type feePricer struct {
@@ -66,17 +67,15 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 }
 
 func (f *feePricer) Start(ctx context.Context) {
-	g, _ := errgroup.WithContext(ctx)
-
 	// Start the TTL caches.
-	g.Go(func() error {
-		f.gasPriceCache.Start()
-		return nil
-	})
-	g.Go(func() error {
-		f.tokenPriceCache.Start()
-		return nil
-	})
+	go f.gasPriceCache.Start()
+	go f.tokenPriceCache.Start()
+
+	go func() {
+		<-ctx.Done()
+		f.gasPriceCache.Stop()
+		f.tokenPriceCache.Stop()
+	}()
 }
 
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
@@ -207,11 +206,11 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	if err != nil {
 		return nil, err
 	}
-	nativeTokenPrice, err := f.getTokenPrice(ctx, nativeToken)
+	nativeTokenPrice, err := f.GetTokenPrice(ctx, nativeToken)
 	if err != nil {
 		return nil, err
 	}
-	denomTokenPrice, err := f.getTokenPrice(ctx, denomToken)
+	denomTokenPrice, err := f.GetTokenPrice(ctx, denomToken)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +296,7 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 }
 
 // getTokenPrice returns the price of a token in USD.
-func (f *feePricer) getTokenPrice(ctx context.Context, token string) (price float64, err error) {
+func (f *feePricer) GetTokenPrice(ctx context.Context, token string) (price float64, err error) {
 	// Attempt to fetch gas price from cache.
 	tokenPriceItem := f.tokenPriceCache.Get(token)
 	//nolint:nestif

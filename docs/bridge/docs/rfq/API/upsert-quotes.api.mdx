@@ -1,0 +1,244 @@
+---
+id: upsert-quotes
+title: "Upsert quotes"
+description: "upsert bulk quotes from relayer."
+sidebar_label: "Upsert quotes"
+hide_title: true
+hide_table_of_contents: true
+api: eJyNVMGOmzAQ/RXkc9pEPea4VU89tKo2p3SFBhjAG8DesdkNQvx7ZzDZ0IRFCxIy4+fx87w37lWGLiVtvTaN2qvWOiQfJW11il5a49FFOZk6IqygQ/qqNorwpUXnH0zWqX2vUtN4bLwMwdpKpyCpts9O8vXKpSXWICNLxnJujU7+QnIZaY+1uwcwLx9DbdqQ23cWmZ/zpJtCDZswn5agm1hnM4RmOgXSOyQH/iSkswJjyDJC5z7O580JmxG2iMn1GbM4R1ycreEcG9IFM1rhPSHWmU+gz3Kf4KvsGTZFTPKMqVfXABBBt4QYQl1m/mDpqYssELBmwQuakE/hqcVBAs6axgUJv+12k5KzDL9+hp2gYMzx4oMnLh/60nAmZVvPqS34kn+2YsV4Qm2U2OrP1YA/zlDbCueGOt5Y51KAO8fs1gxys2pe2evUzA7X4IILrpN34u/Wtb5buURkeOJ66iY3l3aEVKwnRdZeiqN4/SuSCwKI8NY4X8PYoA3UAjmExn8v9H+izbr8MzfE5CKPZ7+1FR9VtmypGpt8lPWo5rKy+CUTknDfJ+DwQNUwSHi0G8d5+AqkIZHjHOW8JULGvSJyn5Ah6ntg+OVRNhd41Y7evr2ThrnVfh8eGZtMV1ltMllC8CbW5u9e/eVXqj8WYjT1GO9VBU3RQiH4kFaefxaR3uo=
+sidebar_class_name: "put api-method"
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import Markdown from "@theme/Markdown";
+import Heading from "@theme/Heading";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Upsert quotes"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/bulk_quotes"}
+>
+  
+</MethodEndpoint>
+
+
+
+upsert bulk quotes from relayer.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<MimeTabs
+  className={"openapi-tabs__mime"}
+>
+  <TabItem
+    label={"application/json"}
+    value={"application/json-schema"}
+  >
+    <details
+      style={{}}
+      className={"openapi-markdown__details mime"}
+      data-collapsed={false}
+      open={true}
+    >
+      <summary
+        style={{}}
+        className={"openapi-markdown__details-summary-mime"}
+      >
+        <h3
+          className={"openapi-markdown__details-summary-header-body"}
+        >
+          Body
+        </h3><strong
+          className={"openapi-schema__required"}
+        >
+          required
+        </strong>
+      </summary><div
+        style={{"textAlign":"left","marginLeft":"1rem"}}
+      >
+        <div
+          style={{"marginTop":"1rem","marginBottom":"1rem"}}
+        >
+          
+          
+          query params
+          
+          
+        </div>
+      </div><ul
+        style={{"marginLeft":"1rem"}}
+      >
+        <SchemaItem
+          collapsible={true}
+          className={"schemaItem"}
+        >
+          <details
+            style={{}}
+            className={"openapi-markdown__details"}
+          >
+            <summary
+              style={{}}
+            >
+              <span
+                className={"openapi-schema__container"}
+              >
+                <strong
+                  className={"openapi-schema__property"}
+                >
+                  quotes
+                </strong><span
+                  className={"openapi-schema__name"}
+                >
+                   object[]
+                </span>
+              </span>
+            </summary><div
+              style={{"marginLeft":"1rem"}}
+            >
+              <li>
+                <div
+                  style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}
+                >
+                  Array [
+                </div>
+              </li><SchemaItem
+                collapsible={false}
+                name={"dest_amount"}
+                required={false}
+                schemaName={"string"}
+                qualifierMessage={undefined}
+                schema={{"type":"string"}}
+              >
+                
+              </SchemaItem><SchemaItem
+                collapsible={false}
+                name={"dest_chain_id"}
+                required={false}
+                schemaName={"integer"}
+                qualifierMessage={undefined}
+                schema={{"type":"integer"}}
+              >
+                
+              </SchemaItem><SchemaItem
+                collapsible={false}
+                name={"dest_fast_bridge_address"}
+                required={false}
+                schemaName={"string"}
+                qualifierMessage={undefined}
+                schema={{"type":"string"}}
+              >
+                
+              </SchemaItem><SchemaItem
+                collapsible={false}
+                name={"dest_token_addr"}
+                required={false}
+                schemaName={"string"}
+                qualifierMessage={undefined}
+                schema={{"type":"string"}}
+              >
+                
+              </SchemaItem><SchemaItem
+                collapsible={false}
+                name={"fixed_fee"}
+                required={false}
+                schemaName={"string"}
+                qualifierMessage={undefined}
+                schema={{"type":"string"}}
+              >
+                
+              </SchemaItem><SchemaItem
+                collapsible={false}
+                name={"max_origin_amount"}
+                required={false}
+                schemaName={"string"}
+                qualifierMessage={undefined}
+                schema={{"type":"string"}}
+              >
+                
+              </SchemaItem><SchemaItem
+                collapsible={false}
+                name={"origin_chain_id"}
+                required={false}
+                schemaName={"integer"}
+                qualifierMessage={undefined}
+                schema={{"type":"integer"}}
+              >
+                
+              </SchemaItem><SchemaItem
+                collapsible={false}
+                name={"origin_fast_bridge_address"}
+                required={false}
+                schemaName={"string"}
+                qualifierMessage={undefined}
+                schema={{"type":"string"}}
+              >
+                
+              </SchemaItem><SchemaItem
+                collapsible={false}
+                name={"origin_token_addr"}
+                required={false}
+                schemaName={"string"}
+                qualifierMessage={undefined}
+                schema={{"type":"string"}}
+              >
+                
+              </SchemaItem><li>
+                <div
+                  style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}
+                >
+                  ]
+                </div>
+              </li>
+            </div>
+          </details>
+        </SchemaItem>
+      </ul>
+    </details>
+  </TabItem>
+</MimeTabs><div>
+  <div>
+    <ApiTabs
+      label={undefined}
+      id={undefined}
+    >
+      <TabItem
+        label={"200"}
+        value={"200"}
+      >
+        <div>
+          
+          
+          OK
+          
+          
+        </div><div>
+          
+        </div>
+      </TabItem>
+    </ApiTabs>
+  </div>
+</div>
+      

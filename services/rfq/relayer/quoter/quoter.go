@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
@@ -19,10 +20,10 @@ import (
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 
@@ -36,6 +37,8 @@ import (
 var logger = log.Logger("quoter")
 
 // Quoter submits quotes to the RFQ API.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name Quoter --output ./mocks --case=underscore
 type Quoter interface {
 	// SubmitAllQuotes submits all quotes to the RFQ API.
 	SubmitAllQuotes(ctx context.Context) (err error)
@@ -46,6 +49,8 @@ type Quoter interface {
 	ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
 	// IsProfitable determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
 	IsProfitable(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
+	// GetPrice gets the price of a token.
+	GetPrice(ctx context.Context, tokenName string) (float64, error)
 }
 
 // Manager submits quotes to the RFQ API.
@@ -238,12 +243,27 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	inv, err := m.inventoryManager.GetCommittableBalances(ctx)
+	inv, err := m.inventoryManager.GetCommittableBalances(ctx, inventory.SkipDBCache())
 	if err != nil {
 		return fmt.Errorf("error getting committable balances: %w", err)
 	}
 
 	return m.prepareAndSubmitQuotes(ctx, inv)
+}
+
+// GetPrice gets the price of a token.
+func (m *Manager) GetPrice(parentCtx context.Context, tokenName string) (_ float64, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "GetPrice")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	price, err := m.feePricer.GetTokenPrice(ctx, tokenName)
+	if err != nil {
+		return 0, fmt.Errorf("error getting price: %w", err)
+	}
+
+	return price, nil
 }
 
 // Prepares and submits quotes based on inventory.
@@ -257,34 +277,58 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	var allQuotes []model.PutQuoteRequest
 
 	// First, generate all quotes
-	for chainID, balances := range inv {
-		for address, balance := range balances {
-			quotes, err := m.generateQuotes(ctx, chainID, address, balance)
-			if err != nil {
-				return err
-			}
-			allQuotes = append(allQuotes, quotes...)
+	g, gctx := errgroup.WithContext(ctx)
+	mtx := sync.Mutex{}
+	for cid, balances := range inv {
+		chainid := cid // capture loop variable
+		for a, b := range balances {
+			address := a
+			balance := b
+			g.Go(func() error {
+				quotes, err := m.generateQuotes(gctx, chainid, address, balance, inv)
+				if err != nil {
+					return fmt.Errorf("error generating quotes: %w", err)
+				}
+				mtx.Lock()
+				allQuotes = append(allQuotes, quotes...)
+				mtx.Unlock()
+				return nil
+			})
 		}
+	}
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("error generating quotes: %w", err)
 	}
 
 	span.SetAttributes(attribute.Int("num_quotes", len(allQuotes)))
 
 	// Now, submit all the generated quotes
-	for _, quote := range allQuotes {
-		if err := m.submitQuote(ctx, quote); err != nil {
-			span.AddEvent("error submitting quote; setting relayPaused to true", trace.WithAttributes(
-				attribute.String("error", err.Error()),
-				attribute.Int(metrics.Origin, quote.OriginChainID),
-				attribute.Int(metrics.Destination, quote.DestChainID),
-				attribute.String("origin_token_addr", quote.OriginTokenAddr),
-				attribute.String("dest_token_addr", quote.DestTokenAddr),
-				attribute.String("max_origin_amount", quote.MaxOriginAmount),
-				attribute.String("dest_amount", quote.DestAmount),
-			))
-			m.relayPaused.Store(true)
+	if m.config.SubmitSingleQuotes {
+		for _, quote := range allQuotes {
+			if err := m.submitQuote(ctx, quote); err != nil {
+				span.AddEvent("error submitting quote; setting relayPaused to true", trace.WithAttributes(
+					attribute.String("error", err.Error()),
+					attribute.Int(metrics.Origin, quote.OriginChainID),
+					attribute.Int(metrics.Destination, quote.DestChainID),
+					attribute.String("origin_token_addr", quote.OriginTokenAddr),
+					attribute.String("dest_token_addr", quote.DestTokenAddr),
+					attribute.String("max_origin_amount", quote.MaxOriginAmount),
+					attribute.String("dest_amount", quote.DestAmount),
+				))
+				m.relayPaused.Store(true)
 
-			// Suppress error so that we can continue submitting quotes
-			return nil
+				// Suppress error so that we can continue submitting quotes
+				return nil
+			}
+		}
+	} else {
+		err = m.submitBulkQuotes(ctx, allQuotes)
+		if err != nil {
+			span.AddEvent("error submitting bulk quotes; setting relayPaused to true", trace.WithAttributes(
+				attribute.String("error", err.Error())))
+			m.relayPaused.Store(true)
+			return fmt.Errorf("error submitting bulk quotes: %w", err)
 		}
 	}
 
@@ -296,11 +340,10 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 
 const meterName = "github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 
-// generateQuotes TODO: THIS LOOP IS BROKEN
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
-func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address common.Address, balance *big.Int) (quotes []model.PutQuoteRequest, err error) {
+func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address common.Address, balance *big.Int, inv map[int]map[common.Address]*big.Int) (quotes []model.PutQuoteRequest, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "generateQuotes", trace.WithAttributes(
 		attribute.Int(metrics.Origin, chainID),
 		attribute.String("address", address.String()),
@@ -314,42 +357,85 @@ func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address
 	if err != nil {
 		return nil, fmt.Errorf("error getting destination RFQ address: %w", err)
 	}
-
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
+
+	// generate quotes in parallel
+	g, gctx := errgroup.WithContext(ctx)
+	quoteMtx := &sync.Mutex{}
 	quotes = []model.PutQuoteRequest{}
-	for keyTokenID, itemTokenIDs := range m.quotableTokens {
+	for k, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			//nolint:nestif
 			if tokenID == destTokenID {
-				quote, quoteErr := m.generateQuote(ctx, keyTokenID, chainID, address, balance, destRFQAddr)
-				if quoteErr != nil {
-					// continue generating quotes even if one fails
-					span.AddEvent("error generating quote", trace.WithAttributes(
+				keyTokenID := k // Parse token info
+				originStr := strings.Split(keyTokenID, "-")[0]
+				origin, tokenErr := strconv.Atoi(originStr)
+				if err != nil {
+					span.AddEvent("error converting origin chainID", trace.WithAttributes(
 						attribute.String("key_token_id", keyTokenID),
-						attribute.String("error", quoteErr.Error()),
+						attribute.String("error", tokenErr.Error()),
 					))
 					continue
 				}
-				quotes = append(quotes, *quote)
+				originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
+
+				var originBalance *big.Int
+				originTokens, ok := inv[origin]
+				if ok {
+					originBalance = originTokens[originTokenAddr]
+				}
+
+				g.Go(func() error {
+					input := QuoteInput{
+						OriginChainID:   origin,
+						DestChainID:     chainID,
+						OriginTokenAddr: originTokenAddr,
+						DestTokenAddr:   address,
+						OriginBalance:   originBalance,
+						DestBalance:     balance,
+						DestRFQAddr:     destRFQAddr.Hex(),
+					}
+
+					quote, quoteErr := m.generateQuote(gctx, input)
+					if quoteErr != nil {
+						// continue generating quotes even if one fails
+						span.AddEvent("error generating quote", trace.WithAttributes(
+							attribute.String("key_token_id", keyTokenID),
+							attribute.String("error", quoteErr.Error()),
+						))
+						return nil
+					}
+					quoteMtx.Lock()
+					defer quoteMtx.Unlock()
+					quotes = append(quotes, *quote)
+					return nil
+				})
 			}
 		}
 	}
+	err = g.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("error generating quotes: %w", err)
+	}
+
 	m.currentQuotes = quotes
 	return quotes, nil
 }
 
-func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID int, address common.Address, balance *big.Int, destRFQAddr string) (quote *model.PutQuoteRequest, err error) {
-	// Parse token info
-	originStr := strings.Split(keyTokenID, "-")[0]
-	origin, err := strconv.Atoi(originStr)
-	if err != nil {
-		logger.Error("Error converting origin chainID", "error", err)
-		return nil, fmt.Errorf("error converting origin chainID: %w", err)
-	}
-	originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
+// QuoteInput is a wrapper struct for input arguments to generateQuote.
+type QuoteInput struct {
+	OriginChainID   int
+	DestChainID     int
+	OriginTokenAddr common.Address
+	DestTokenAddr   common.Address
+	OriginBalance   *big.Int
+	DestBalance     *big.Int
+	DestRFQAddr     string
+}
 
+func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *model.PutQuoteRequest, err error) {
 	// Calculate the quote amount for this route
-	originAmount, err := m.getOriginAmount(ctx, origin, chainID, address, balance)
+	originAmount, err := m.getOriginAmount(ctx, input)
 	// don't quote if gas exceeds quote
 	if errors.Is(err, errMinGasExceedsQuoteAmount) {
 		originAmount = big.NewInt(0)
@@ -359,38 +445,38 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 	}
 
 	// Calculate the fee for this route
-	destToken, err := m.config.GetTokenName(uint32(chainID), address.Hex())
+	destToken, err := m.config.GetTokenName(uint32(input.DestChainID), input.DestTokenAddr.Hex())
 	if err != nil {
 		logger.Error("Error getting dest token ID", "error", err)
 		return nil, fmt.Errorf("error getting dest token ID: %w", err)
 	}
-	fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken, true)
+	fee, err := m.feePricer.GetTotalFee(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), destToken, true)
 	if err != nil {
 		logger.Error("Error getting total fee", "error", err)
 		return nil, fmt.Errorf("error getting total fee: %w", err)
 	}
-	originRFQAddr, err := m.config.GetRFQAddress(origin)
+	originRFQAddr, err := m.config.GetRFQAddress(input.OriginChainID)
 	if err != nil {
 		logger.Error("Error getting RFQ address", "error", err)
 		return nil, fmt.Errorf("error getting RFQ address: %w", err)
 	}
 
 	// Build the quote
-	destAmount, err := m.getDestAmount(ctx, originAmount, chainID, destToken)
+	destAmount, err := m.getDestAmount(ctx, originAmount, input.DestChainID, destToken)
 	if err != nil {
 		logger.Error("Error getting dest amount", "error", err)
 		return nil, fmt.Errorf("error getting dest amount: %w", err)
 	}
 	quote = &model.PutQuoteRequest{
-		OriginChainID:           origin,
-		OriginTokenAddr:         originTokenAddr.Hex(),
-		DestChainID:             chainID,
-		DestTokenAddr:           address.Hex(),
+		OriginChainID:           input.OriginChainID,
+		OriginTokenAddr:         input.OriginTokenAddr.Hex(),
+		DestChainID:             input.DestChainID,
+		DestTokenAddr:           input.DestTokenAddr.Hex(),
 		DestAmount:              destAmount.String(),
 		MaxOriginAmount:         originAmount.String(),
 		FixedFee:                fee.String(),
-		OriginFastBridgeAddress: originRFQAddr,
-		DestFastBridgeAddress:   destRFQAddr,
+		OriginFastBridgeAddress: originRFQAddr.Hex(),
+		DestFastBridgeAddress:   input.DestRFQAddr,
 	}
 	return quote, nil
 }
@@ -433,12 +519,14 @@ func (m *Manager) recordQuoteAmounts(_ context.Context, observer metric.Observer
 // getOriginAmount calculates the origin quote amount for a given route.
 //
 //nolint:cyclop
-func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, address common.Address, balance *big.Int) (quoteAmount *big.Int, err error) {
+func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (quoteAmount *big.Int, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getOriginAmount", trace.WithAttributes(
-		attribute.String(metrics.Origin, strconv.Itoa(origin)),
-		attribute.String(metrics.Destination, strconv.Itoa(dest)),
-		attribute.String("address", address.String()),
-		attribute.String("balance", balance.String()),
+		attribute.Int(metrics.Origin, input.OriginChainID),
+		attribute.Int(metrics.Destination, input.DestChainID),
+		attribute.String("dest_address", input.DestTokenAddr.String()),
+		attribute.String("origin_address", input.OriginTokenAddr.String()),
+		attribute.String("origin_balance", input.OriginBalance.String()),
+		attribute.String("dest_balance", input.DestBalance.String()),
 	))
 
 	defer func() {
@@ -449,11 +537,11 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	// First, check if we have enough gas to complete the a bridge for this route
 	// If not, set the quote amount to zero to make sure a stale quote won't be used
 	// TODO: handle in-flight gas; for now we can set a high min_gas_token
-	sufficentGasOrigin, err := m.inventoryManager.HasSufficientGas(ctx, origin, nil)
+	sufficentGasOrigin, err := m.inventoryManager.HasSufficientGas(ctx, input.OriginChainID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error checking sufficient gas: %w", err)
 	}
-	sufficentGasDest, err := m.inventoryManager.HasSufficientGas(ctx, dest, nil)
+	sufficentGasDest, err := m.inventoryManager.HasSufficientGas(ctx, input.DestChainID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error checking sufficient gas: %w", err)
 	}
@@ -466,26 +554,26 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	}
 
 	// Apply the quotePct
-	quotePct, err := m.config.GetQuotePct(dest)
+	quotePct, err := m.config.GetQuotePct(input.DestChainID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote pct: %w", err)
 	}
-	balanceFlt := new(big.Float).SetInt(balance)
+	balanceFlt := new(big.Float).SetInt(input.DestBalance)
 	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
 	// Apply the quoteOffset to origin token.
-	tokenName, err := m.config.GetTokenName(uint32(dest), address.Hex())
+	tokenName, err := m.config.GetTokenName(uint32(input.DestChainID), input.DestTokenAddr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("error getting token name: %w", err)
 	}
-	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(origin, tokenName, true)
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(input.OriginChainID, tokenName, true)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}
 	quoteAmount = m.applyOffset(ctx, quoteOffsetBps, quoteAmount)
 
 	// Clip the quoteAmount by the minQuoteAmount
-	minQuoteAmount := m.config.GetMinQuoteAmount(dest, address)
+	minQuoteAmount := m.config.GetMinQuoteAmount(input.DestChainID, input.DestTokenAddr)
 	if quoteAmount.Cmp(minQuoteAmount) < 0 {
 		span.AddEvent("quote amount less than min quote amount", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
@@ -494,17 +582,39 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 		quoteAmount = minQuoteAmount
 	}
 
-	// Finally, clip the quoteAmount by the balance
-	if quoteAmount.Cmp(balance) > 0 {
-		span.AddEvent("quote amount greater than balance", trace.WithAttributes(
+	// Clip the quoteAmount by the max origin balance
+	maxBalance := m.config.GetMaxBalance(input.OriginChainID, input.OriginTokenAddr)
+	if maxBalance != nil && input.OriginBalance != nil {
+		quotableBalance := new(big.Int).Sub(maxBalance, input.OriginBalance)
+		if quotableBalance.Cmp(big.NewInt(0)) <= 0 {
+			span.AddEvent("non-positive quotable balance", trace.WithAttributes(
+				attribute.String("quotable_balance", quotableBalance.String()),
+				attribute.String("max_balance", maxBalance.String()),
+				attribute.String("origin_balance", input.OriginBalance.String()),
+			))
+			quoteAmount = big.NewInt(0)
+		} else if quoteAmount.Cmp(quotableBalance) > 0 {
+			span.AddEvent("quote amount greater than quotable balance", trace.WithAttributes(
+				attribute.String("quote_amount", quoteAmount.String()),
+				attribute.String("quotable_balance", quotableBalance.String()),
+				attribute.String("max_balance", maxBalance.String()),
+				attribute.String("origin_balance", input.OriginBalance.String()),
+			))
+			quoteAmount = quotableBalance
+		}
+	}
+
+	// Finally, clip the quoteAmount by the dest balance
+	if quoteAmount.Cmp(input.DestBalance) > 0 {
+		span.AddEvent("quote amount greater than destination balance", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
-			attribute.String("balance", balance.String()),
+			attribute.String("balance", input.DestBalance.String()),
 		))
-		quoteAmount = balance
+		quoteAmount = input.DestBalance
 	}
 
 	// Deduct gas cost from the quote amount, if necessary
-	quoteAmount, err = m.deductGasCost(ctx, quoteAmount, address, dest)
+	quoteAmount, err = m.deductGasCost(ctx, quoteAmount, input.DestTokenAddr, input.DestChainID)
 	if err != nil {
 		return nil, fmt.Errorf("error deducting gas cost: %w", err)
 	}
@@ -514,7 +624,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 
 // deductGasCost deducts the gas cost from the quote amount, if necessary.
 func (m *Manager) deductGasCost(parentCtx context.Context, quoteAmount *big.Int, address common.Address, dest int) (quoteAmountAdj *big.Int, err error) {
-	if !chain.IsGasToken(address) {
+	if !util.IsGasToken(address) {
 		return quoteAmount, nil
 	}
 
@@ -597,6 +707,21 @@ func (m *Manager) submitQuote(ctx context.Context, quote model.PutQuoteRequest) 
 	err := m.rfqClient.PutQuote(quoteCtx, &quote)
 	if err != nil {
 		return fmt.Errorf("error submitting quote: %w", err)
+	}
+	return nil
+}
+
+// Submits multiple quotes.
+func (m *Manager) submitBulkQuotes(ctx context.Context, quotes []model.PutQuoteRequest) error {
+	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
+	defer quoteCancel()
+
+	req := model.PutBulkQuotesRequest{
+		Quotes: quotes,
+	}
+	err := m.rfqClient.PutBulkQuotes(quoteCtx, &req)
+	if err != nil {
+		return fmt.Errorf("error submitting bulk quotes: %w", err)
 	}
 	return nil
 }

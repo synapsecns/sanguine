@@ -2,7 +2,11 @@
 sidebar_position: 0
 sidebar_label: Relayer
 ---
+:::note
 
+Relayers must be whitelisted in order to fill bridgeRequests.
+
+:::
 
 At a high level, the canonical implementation of the relayer has 3 different responsibilities.
 
@@ -23,12 +27,37 @@ The quoting loop is comparitively simple and updates the api on each route it su
 
 ### Rebalancing
 
-The rebalancing loop is more complex and is responsible for ensuring that the relayer has enough liquidity on each chain. Right now only the CCTP rebalancer is supported and works like this:
+Automated rebalancing is configurable by token and currently supports CCTP routes as well as native bridging in the case of Scroll. Rebalancing evaluation follows this logic on every `rebalance_interval`:
+
+- For every supported rebalance method, compute the 'total balance' of each token as the sum of all balances across chains that support the given rebalance method.
+- For every supported token, compute the 'maintenance threshold' as the product of the `maintenance_balance_pct` and the 'total balance'. A token is eligible for rebalancing if the current balance is below the 'maintenance threshold'.
+
+To limit the amount of inventory that is inflight, only one rebalance can be pending at a time for each token. As such, we select the 'best' rebalance candidate as the rebalance with the largest delta between origin balance and destination balance.
+
+The final step in evaluating a rebalance is determining the rebalance amount:
+
+- Arrive at an initial rebalance amount by computing the delta between current balance and the initial threshold on origin.
+- Check if this rebalance amount is too much, i.e. it would take the destination balance above its initial threshold. If so, clip the rebalance amount to target the destination initial threshold.
+- Filter the rebalance amount by the configured min and max.
+
+An example of this process is given below:
+
+We are dealing with chains 1, 2, and 3. Chains 1 and 2 support USDC with CCTP, and chain 3 supports USDC but does not support CCTP. Each chain has a `maintenance_pct` of 20%, while chains 1 and 2 have `initial_pct` of 40% and chain 3 has 20%. Assume chain 1 has a balance of 100 USDC, chain 2 has 900 USDC, and chain 3 has 2000 USDC.
+
+The system would trigger a rebalance from chain 2 to chain 1, since the total balance of CCTP-supported chains is 1000 USDC, and chain 1 is below the 20% maintenance threshold. Chain 3 is not considered for rebalance since it does not support CCTP.
+
+The rebalance amount would be initially be targeted as 600 since this would take chain 2 to its 40% initial threshold. However, since chain 1 only needs 300 to reach its initial 40% threshold, the rebalance amount is clipped at 300.
+
+So, the final result is a rebalance of 300 USDC from chain 2 to chain 1, leading to chain 1 having 400 USDC, chain 2 having 600 USDC, and chain 3 having 2000 USDC.
+
 
 1. At `rebalance_interval`, check the `maintenance_balance_pct` of each token on each chain and compare it to the current balance. If the balance is below the `maintenance_balance_pct`, continue
 2. Calculate the amount to rebalance by taking the difference between the maintenance balance and the current balance and multiplying it by the `initial_balance_pct`.
 3. If the amount to rebalance is greater than the `max_rebalance_amount`, set the amount to rebalance to the `max_rebalance_amount`. If the amount to rebalance is less than the `min_rebalance_amount`, do not rebalance.
 4. Repeat after `rebalance_interval`
+
+The implementation for certain native bridges (e.g Scroll) is also supported. It works slightly differently as flows are only supported between Scroll and Mainnet. At a high level, the rebalancer checks inventory on Scroll versus other chains, and if imbalanced, initiates a bridge to mainnet, allowing the CCTP relayer to rebalance funds where needed.
+
 
 ### Relaying
 
@@ -64,6 +93,24 @@ The relayer can also be run with docker. To do this, you will need to pull the [
 docker run ghcr.io/synapsecns/sanguine/rfq-relayer:latest --config /path/to/config
 ```
 
+### Withdrawals
+
+The `POST /withdraw` endpoint is exposed to allow for withdrawing from the relayer wallet without having to deal with the private key directly. This can be used for manual rebalancing, if desired. To use this feature, the following config values must be set:
+
+```yaml
+enable_api_withdrawals: true
+withdrawal_whitelist:
+  - <your_address_here>
+```
+
+The relayer CLI (at `services/rfq/relayer/main.go`) exposes a withdrawal command for convenience:
+
+```bash
+go run main.go withdraw --relayer-url https://localhost:8081 --chain-id 1 --amount 1000000000000000000 --token-address 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE --to 0x0000000000000000000000000000000000000000
+```
+
+Be sure to sub in your respective `to` address!
+
 ### Configuration
 
 The relayer is configured with a yaml file. The following is an example configuration:
@@ -86,9 +133,10 @@ The relayer is configured with a yaml file. The following is an example configur
 
   screener_api_url: 'http://screener-url' # can be left blank
   rfq_url: 'http://rfq-api' # url of the rfq api backend.
-  omnirpc_url: 'http://omnirpc' # url of the omnirpc instance
+  omnirpc_url: 'http://omnirpc' # url of the omnirpc instance, please reference the Omnirpc section under Services for proper configuration
   rebalance_interval: 2m # how often to rebalance
   relayer_api_port: '8081' # api port for the relayer api
+  volume_limit: 10000 # USD price cap for a bridge under block confirmation minimum (configurable under `chains`)
 
   base_chain_config: # this is hte base chain config, other chains override it
     confirmations: 0
@@ -172,7 +220,7 @@ The relayer is configured with a yaml file. The following is an example configur
       - chain_id: 10
         synapse_cctp_address: "0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E"
         token_messenger_address: "0x2B4069517957735bE00ceE0fadAE88a26365528f"
-    base_omnirpc_url: "http://omnirpc"
+    base_omnirpc_url: "http://omnirpc" # Make sure this is configured properly
     unbonded_signer:
       type: GCP
       file: /config/signer.txt
@@ -193,6 +241,8 @@ The relayer is configured with a yaml file. The following is an example configur
  - `rebalance_interval` - How often to rebalance, formatted as (s = seconds, m = minutes, h = hours)
  - `relayer_api_port` - the relayer api is used to control the relayer. <!--TODO: more info here--> This api should be secured/not public.
  - `base_chain_config`: Base chain config is the default config applied for each chain if the other chains do not override it. This is covered in the chains section.
+ - `enable_guard`  - Run a guard on the same instance.
+ - `submit_single_quotes` - Wether to use the batch endpoint for posting quotes to the api. This can be useful for debugging.
  - `chains` - each chain has a different config that overrides base_chain_config. Here are the parameters for each chain
   - `rfq_address` - the address of the rfq contract on this chain. These addresses are available [here](../Contracts.md).
 
@@ -229,3 +279,4 @@ The metrics exposed by the relayer are:
 
 - `inventory_balance`: The balance of the inventory on the chain for a given `token_name` and `relayer`.
 - `quote_amount`: The amount quoted for a given `token_name` and `relayer`.
+- `status_count`: The distribution of non-terminal `QuoteRequestStatus` values over time.

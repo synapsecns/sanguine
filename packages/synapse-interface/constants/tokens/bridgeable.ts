@@ -19,6 +19,7 @@ import klayLogo from '@assets/icons/klay.svg'
 import l2daoLogo from '@assets/icons/l2dao.svg'
 import lusdLogo from '@assets/icons/lusd.svg'
 import maticLogo from '@assets/icons/matic.svg'
+import metisLogo from '@assets/icons/metis.svg'
 import movrLogo from '@assets/icons/movr.svg'
 import nethLogo from '@assets/icons/neth.svg'
 import newoLogo from '@assets/icons/newo.svg'
@@ -411,6 +412,7 @@ export const USDC = new Token({
     [CHAINS.DFK.id]: '0x3AD9DFE640E1A9Cc1D9B0948620820D975c3803a',
     [CHAINS.BASE.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     [CHAINS.SCROLL.id]: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+    [CHAINS.LINEA.id]: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff',
   },
   decimals: {
     [CHAINS.ETH.id]: 6,
@@ -427,6 +429,7 @@ export const USDC = new Token({
     [CHAINS.DFK.id]: 18,
     [CHAINS.BASE.id]: 6,
     [CHAINS.SCROLL.id]: 6,
+    [CHAINS.LINEA.id]: 6,
   },
   symbol: 'USDC',
   name: 'USD Coin',
@@ -466,6 +469,8 @@ export const USDT = new Token({
     [CHAINS.KLAYTN.id]: '0xd6dAb4CfF47dF175349e6e7eE2BF7c40Bb8C05A3',
     [CHAINS.ARBITRUM.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
     [CHAINS.AVALANCHE.id]: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
+    [CHAINS.SCROLL.id]: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
+    [CHAINS.LINEA.id]: '0xA219439258ca9da29E9Cc4cE5596924745e12B93',
   },
   decimals: {
     [CHAINS.ETH.id]: 6,
@@ -478,6 +483,8 @@ export const USDT = new Token({
     [CHAINS.KLAYTN.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
+    [CHAINS.SCROLL.id]: 6,
+    [CHAINS.LINEA.id]: 6,
   },
   symbol: 'USDT',
   name: 'USD Tether',
@@ -703,6 +710,7 @@ export const ETH = new Token({
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
     [CHAINS.BLAST.id]: zeroAddress,
     [CHAINS.SCROLL.id]: zeroAddress,
+    [CHAINS.LINEA.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'ETH',
@@ -1201,4 +1209,24 @@ export const SPECTRAL = new Token({
   swapableType: 'SPEC',
   color: 'blue',
   routeSymbol: 'SPEC',
+})
+
+export const METIS = new Token({
+  priorityRank: 300,
+  addresses: {
+    [CHAINS.DFK.id]: '0x43E8E55792D6317328e5c6B0A0C89eF4b8102Fa2',
+    [CHAINS.KLAYTN.id]: '0x543f1b2176F7E677a95D01ca83551FAa08F83D9F',
+    [CHAINS.METIS.id]: zeroAddress,
+  },
+  decimals: {
+    [CHAINS.DFK.id]: 18,
+    [CHAINS.KLAYTN.id]: 18,
+    [CHAINS.METIS.id]: 18,
+  },
+  symbol: 'Metis',
+  name: 'Metis Token',
+  swapableType: 'Metis',
+  logo: metisLogo,
+  color: 'blue',
+  routeSymbol: 'Metis',
 })

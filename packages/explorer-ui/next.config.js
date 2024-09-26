@@ -1,3 +1,5 @@
+const { codecovWebpackPlugin } = require('@codecov/webpack-plugin')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -18,6 +20,16 @@ const nextConfig = {
       test: /\.tsx?$/,
       use: 'ts-loader',
     })
+    config.plugins.push(
+      codecovWebpackPlugin({
+        enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+        bundleName: 'explorer-ui',
+        uploadToken: process.env.CODECOV_TOKEN,
+        uploadOverrides: {
+          sha: process.env.GH_COMMIT_SHA,
+        },
+      })
+    )
     return config
   },
   eslint: {

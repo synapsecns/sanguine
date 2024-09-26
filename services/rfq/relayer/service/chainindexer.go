@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -11,8 +13,8 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -79,13 +81,13 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			}
 		case *fastbridge.FastBridgeBridgeRelayed:
 			// blocking lock on the txid mutex to ensure state transitions are not overrwitten
-			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
 			defer unlocker.Unlock()
 
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
+				return r.setRelayRaceLost(ctx, event.TransactionId)
 			}
 
 			err = r.handleRelayLog(ctx, event)
@@ -93,13 +95,13 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return fmt.Errorf("could not handle relay: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeProofProvided:
-			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
 			defer unlocker.Unlock()
 
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
+				return r.setRelayRaceLost(ctx, event.TransactionId)
 			}
 
 			err = r.handleProofProvided(ctx, event)
@@ -107,13 +109,13 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 				return fmt.Errorf("could not handle proof provided: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeDepositClaimed:
-			unlocker := r.relayMtx.Lock(hexutil.Encode(event.TransactionId[:]))
+			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
 			defer unlocker.Unlock()
 
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
 				//nolint: wrapcheck
-				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
+				return r.setRelayRaceLost(ctx, event.TransactionId)
 			}
 
 			err = r.handleDepositClaimed(ctx, event)
@@ -178,7 +180,7 @@ func (r *Relayer) getDecimals(ctx context.Context, addr common.Address, chainID 
 		return decimals, nil
 	}
 
-	if addr == chain.EthAddress {
+	if addr == util.EthAddress {
 		return &ethDecimals, nil
 	}
 
@@ -206,9 +208,21 @@ func getDecimalsKey(addr common.Address, chainID uint32) string {
 }
 
 func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed) error {
-	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
+	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted, nil)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
+	}
+	return nil
+}
+
+func (r *Relayer) setRelayRaceLost(ctx context.Context, transactionID [32]byte) error {
+	err := r.db.UpdateQuoteRequestStatus(ctx, transactionID, reldb.RelayRaceLost, nil)
+	// quote does not exist, no need to update status
+	if err != nil && (errors.Is(err, reldb.ErrNoQuoteForID) || strings.Contains(err.Error(), reldb.ErrNoQuoteForID.Error())) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("could not set relay race lost: %w", err)
 	}
 	return nil
 }

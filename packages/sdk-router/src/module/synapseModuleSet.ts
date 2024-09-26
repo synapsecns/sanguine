@@ -1,4 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { uuidv7 } from 'uuidv7'
 import invariant from 'tiny-invariant'
 
 import { BigintIsh } from '../constants'
@@ -98,6 +99,7 @@ export abstract class SynapseModuleSet {
    * @param tokenIn - The input token.
    * @param tokenOut - The output token.
    * @param amountIn - The amount of input token.
+   * @param originUserAddress - The address of the user on the origin chain.
    *
    * @returns - A list of BridgeRoute objects with the found routes.
    */
@@ -106,7 +108,8 @@ export abstract class SynapseModuleSet {
     destChainId: number,
     tokenIn: string,
     tokenOut: string,
-    amountIn: BigintIsh
+    amountIn: BigintIsh,
+    originUserAddress?: string
   ): Promise<BridgeRoute[]>
 
   /**
@@ -199,6 +202,7 @@ export abstract class SynapseModuleSet {
       bridgeRoute.bridgeModuleName === this.bridgeModuleName,
       'Invalid bridge module name'
     )
+    const uuid = uuidv7()
     const { originQuery, destQuery } = bridgeRoute
     const { originModuleDeadline, destModuleDeadline } =
       this.getModuleDeadlines(originDeadline, destDeadline)
@@ -206,6 +210,7 @@ export abstract class SynapseModuleSet {
     destQuery.deadline = destModuleDeadline
     const { feeAmount, feeConfig } = await this.getFeeData(bridgeRoute)
     return {
+      id: uuid,
       feeAmount,
       feeConfig,
       routerAddress: originModule.address,

@@ -3,6 +3,8 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/synapsecns/sanguine/core"
@@ -25,10 +27,9 @@ import (
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 const pyroscopeEndpoint = internal.PyroscopeEndpoint
@@ -36,12 +37,14 @@ const pyroscopeEndpoint = internal.PyroscopeEndpoint
 // baseHandler is a base metrics handler that implements the Handler interface.
 // this is used to reduce the amount of boilerplate code needed to implement opentracing methods.
 type baseHandler struct {
-	resource   *resource.Resource
-	tp         trace.TracerProvider
-	tracer     trace.Tracer
-	name       string
-	propagator propagation.TextMapPropagator
-	meter      MeterProvider
+	resource *resource.Resource
+	// used only for shutdown, use tp for providing traces.
+	unwrappedTP *tracesdk.TracerProvider
+	tp          trace.TracerProvider
+	tracer      trace.Tracer
+	name        string
+	propagator  propagation.TextMapPropagator
+	meter       MeterProvider
 	// handler is an integrated handler for everything exported over http. This includes prometheus
 	// or http-based sampling methods for other providers.
 	handler http.Handler
@@ -205,16 +208,23 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 	opts := append([]tracesdk.TracerProviderOption{tracesdk.WithResource(rsr)}, extraOpts...)
 
 	// TODO: add a way for users to pass in extra pyroscope options
-	tp := PyroscopeWrapTracerProvider(tracesdk.NewTracerProvider(opts...), buildInfo)
+	unwrappedTP := tracesdk.NewTracerProvider(opts...)
+	tp := PyroscopeWrapTracerProvider(unwrappedTP, buildInfo)
 	// will do nothing if not enabled.
 	StartPyroscope(buildInfo)
 
+	startRookout()
+
 	propagator := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
-	return newBaseHandlerWithTracerProvider(rsr, buildInfo, tp, propagator)
+	return newBaseHandlerWithTracerProvider(rsr, buildInfo, unwrappedTP, tp, propagator)
+}
+
+func startRookout() {
+
 }
 
 // newBaseHandlerWithTracerProvider creates a new baseHandler for any opentelemtry tracer.
-func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.BuildInfo, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
+func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.BuildInfo, unwrappedTP *tracesdk.TracerProvider, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
 	// default tracer for server.
 	otel.SetTracerProvider(tracerProvider)
 	tracer := tracerProvider.Tracer(buildInfo.Name())
@@ -236,6 +246,7 @@ func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.B
 	// note: meter purposely is not registered until startup.
 	return &baseHandler{
 		resource:           rsr,
+		unwrappedTP:        unwrappedTP,
 		tp:                 tracerProvider,
 		tracer:             tracer,
 		name:               buildInfo.Name(),

@@ -58,6 +58,11 @@ func FromKeyFile(keyFile string) (Wallet, error) {
 
 // FromHex gets the wallet from the private key.
 func FromHex(privateKey string) (Wallet, error) {
+	// Check for '0x' prefix and remove it if it exists
+	if len(privateKey) >= 2 && strings.EqualFold(privateKey[:2], "0x") {
+		privateKey = privateKey[2:]
+	}
+
 	privKey, err := crypto.HexToECDSA(privateKey)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode key: %w", err)

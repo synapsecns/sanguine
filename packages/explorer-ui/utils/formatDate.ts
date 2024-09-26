@@ -20,7 +20,7 @@ const getUTCDay = (date) => {
   return time - (time % 86400000)
 }
 
-export function formatDateTime(d) {
+export const formatDateTime = (d) => {
   // const month = monthNames[d.getMonth()]
   // const day = d.getDate()
   // const year = d.getFullYear()
@@ -30,7 +30,7 @@ export function formatDateTime(d) {
   return d.toLocaleString()
 }
 
-export function formatDate(date) {
+export const formatDate = (date) => {
   if (!date) {
     return ''
   }
@@ -44,6 +44,6 @@ export function formatDate(date) {
   return `${month} ${day}, ${year}`
 }
 
-export function formatDateTimestamp(date) {
+export const formatDateTimestamp = (date) => {
   return moment(date).format('dddd, MMMM Do, h:mma')
 }

@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react'
-import numeral from 'numeral'
 import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
 import {
@@ -11,6 +10,7 @@ import {
 import { Chain, Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+import { formatAmount } from '@/utils/formatAmount'
 
 function isObject(object): boolean {
   return typeof object === 'object' && object !== null
@@ -23,6 +23,7 @@ export const TransactionPayloadDetail = ({
   isOrigin,
   className,
   showChain = true,
+  disabled,
 }: {
   chain?: Chain
   token?: Token
@@ -30,26 +31,31 @@ export const TransactionPayloadDetail = ({
   isOrigin: boolean
   className?: string
   showChain?: boolean
+  disabled: boolean
 }) => {
   const dispatch = useAppDispatch()
 
   const handleSelectChainCallback = useCallback(() => {
-    if (isOrigin) {
-      dispatch(setFromChainId(chain?.id as number))
-    } else {
-      dispatch(setToChainId(chain?.id as number))
+    if (!disabled) {
+      if (isOrigin) {
+        dispatch(setFromChainId(chain?.id as number))
+      } else {
+        dispatch(setToChainId(chain?.id as number))
+      }
     }
-  }, [isOrigin, chain])
+  }, [isOrigin, chain, disabled])
 
   const handleSelectTokenCallback = useCallback(() => {
-    if (isOrigin && chain && token) {
-      dispatch(setFromChainId(chain?.id as number))
-      dispatch(setFromToken(token as Token))
-    } else {
-      dispatch(setToChainId(chain?.id as number))
-      dispatch(setToToken(token as Token))
+    if (!disabled) {
+      if (isOrigin && chain && token) {
+        dispatch(setFromChainId(chain?.id as number))
+        dispatch(setFromToken(token as Token))
+      } else {
+        dispatch(setToChainId(chain?.id as number))
+        dispatch(setToToken(token as Token))
+      }
     }
-  }, [isOrigin, token, chain])
+  }, [isOrigin, token, chain, disabled])
 
   const tokenDecimals = useMemo(() => {
     if (token && chain) {
@@ -92,14 +98,14 @@ export const TransactionPayloadDetail = ({
           />
           {typeof tokenAmount === 'string' && tokenDecimals ? (
             <span>
-              {trimTrailingZeroesAfterDecimal(
-                formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 4)
+              {formatAmount(
+                formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 18)
               )}
             </span>
           ) : typeof tokenAmount === 'number' ? (
             <span>
               {trimTrailingZeroesAfterDecimal(
-                numeral(tokenAmount).format('0,0.000')
+                formatAmount(tokenAmount.toString())
               )}
             </span>
           ) : (

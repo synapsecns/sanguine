@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 
 interface ArrowProps {
-  className?: string;
-  color?: string;
+  className?: string
+  color?: string
 }
 
 const Arrow: React.FC<ArrowProps> = ({ className, color = 'currentColor' }) => (
@@ -14,8 +14,13 @@ const Arrow: React.FC<ArrowProps> = ({ className, color = 'currentColor' }) => (
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <path d="M16 12L24 21L16 30" stroke={color} strokeOpacity="0.4" strokeWidth="2"/>
+    <path
+      d="M16 12L24 21L16 30"
+      stroke={color}
+      strokeOpacity="0.4"
+      strokeWidth="2"
+    />
   </svg>
-);
+)
 
-export default Arrow;
+export default Arrow

@@ -91,15 +91,11 @@ func (c *rebalanceManagerSynapseCCTP) initContracts(parentCtx context.Context) (
 		if err != nil {
 			return fmt.Errorf("could not get cctp address: %w", err)
 		}
-		if contractAddr == "" {
-			span.AddEvent(fmt.Sprintf("no synapse cctp address for chain %d; skipping", chainID))
-			continue
-		}
 		chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-		contract, err := cctp.NewSynapseCCTP(common.HexToAddress(contractAddr), chainClient)
+		contract, err := cctp.NewSynapseCCTP(contractAddr, chainClient)
 		if err != nil {
 			return fmt.Errorf("could not get cctp: %w", err)
 		}
@@ -118,11 +114,11 @@ func (c *rebalanceManagerSynapseCCTP) initListeners(ctx context.Context) (err er
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-		initialBlock, err := c.cfg.GetCCTPStartBlock(chainID)
+		initialBlock, err := c.cfg.GetRebalanceStartBlock(chainID)
 		if err != nil {
 			return fmt.Errorf("could not get cctp start block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, c.db, common.HexToAddress(cctpAddr), initialBlock, c.handler)
+		chainListener, err := listener.NewChainListener(chainClient, c.db, cctpAddr, initialBlock, c.handler)
 		if err != nil {
 			return fmt.Errorf("could not get chain listener: %w", err)
 		}
@@ -167,10 +163,12 @@ func (c *rebalanceManagerSynapseCCTP) Execute(parentCtx context.Context, rebalan
 
 	// store the rebalance in the db
 	model := reldb.Rebalance{
-		Origin:       uint64(rebalance.OriginMetadata.ChainID),
-		Destination:  uint64(rebalance.DestMetadata.ChainID),
-		OriginAmount: rebalance.Amount,
-		Status:       reldb.RebalanceInitiated,
+		Origin:          uint64(rebalance.OriginMetadata.ChainID),
+		Destination:     uint64(rebalance.DestMetadata.ChainID),
+		OriginAmount:    rebalance.Amount,
+		Status:          reldb.RebalanceInitiated,
+		OriginTokenAddr: rebalance.OriginMetadata.Addr,
+		TokenName:       rebalance.OriginMetadata.Name,
 	}
 	err = c.db.StoreRebalance(ctx, model)
 	if err != nil {
@@ -189,7 +187,10 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
-	cctpAddr := common.HexToAddress(c.cfg.Chains[chainID].SynapseCCTPAddress)
+	cctpAddr, err := c.cfg.GetSynapseCCTPAddress(chainID)
+	if err != nil {
+		return fmt.Errorf("could not get cctp address: %w", err)
+	}
 	parser, err := cctp.NewSynapseCCTPEvents(cctpAddr, ethClient)
 	if err != nil {
 		return fmt.Errorf("could not get cctp events: %w", err)

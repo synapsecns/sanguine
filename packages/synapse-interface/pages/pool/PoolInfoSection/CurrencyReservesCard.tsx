@@ -1,5 +1,6 @@
 import numeral from 'numeral'
 import { useSelector } from 'react-redux'
+import { useTranslations } from 'next-intl'
 
 import InfoSectionCard from './InfoSectionCard'
 import { RootState } from '@/store/store'
@@ -47,8 +48,10 @@ const TokenLabels = ({ tokens }) => {
 const CurrencyReservesCard = () => {
   const { poolData } = useSelector((state: RootState) => state.poolData)
 
+  const t = useTranslations('Pools.Other')
+
   return (
-    <InfoSectionCard title="Currency Reserves">
+    <InfoSectionCard title={t('Currency Reserves')}>
       {poolData ? <TokenLabels tokens={poolData.tokens} /> : null}
     </InfoSectionCard>
   )

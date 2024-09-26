@@ -25,10 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 2
       - name: Install Go
         if: ${{ matrix.language == 'go' }}
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version-file: 'go.work'
 
@@ -42,7 +42,7 @@ jobs:
 
       - name: Go modules cache
         if: ${{ matrix.language == 'go' }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           # see https://github.com/mvdan/github-actions-golang
           path: |

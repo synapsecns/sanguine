@@ -1,7 +1,7 @@
 import { getExplorerTxUrl } from '@urls'
 import { getNetworkTextHoverColor } from '@utils/styles/networks'
 
-export function StyleHash({ sourceInfo, limiter = 6 }) {
+export const StyleHash = ({ sourceInfo, limiter = 6 }) => {
   if (sourceInfo.hash) {
     return (
       <a

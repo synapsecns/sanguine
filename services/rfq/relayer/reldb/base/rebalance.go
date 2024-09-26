@@ -76,7 +76,69 @@ func (s Store) UpdateRebalance(ctx context.Context, rebalance reldb.Rebalance, u
 	return nil
 }
 
+// UpdateLatestRebalance updates a rebalance model.
+// This handles the case where rebalance ID is not unique, so we update
+// the latest rebalance that matches origin / destination and has a non-terminal rebalance status.
+//
+//nolint:cyclop
+func (s Store) UpdateLatestRebalance(ctx context.Context, rebalance reldb.Rebalance) error {
+	tx := s.DB().WithContext(ctx).Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("could not start transaction: %w", tx.Error)
+	}
+	rebalanceModel := FromRebalance(rebalance)
+
+	// prepare the updates
+	updates := map[string]interface{}{
+		statusFieldName: rebalance.Status,
+	}
+	if rebalanceModel.OriginTxHash.Valid {
+		updates[originTxHashFieldName] = rebalanceModel.OriginTxHash
+	}
+	if rebalanceModel.DestTxHash.Valid {
+		updates[destTxHashFieldName] = rebalanceModel.DestTxHash
+	}
+
+	matchStatuses := []reldb.RebalanceStatus{reldb.RebalanceInitiated, reldb.RebalancePending}
+	inArgs := make([]int, len(matchStatuses))
+	for i := range matchStatuses {
+		inArgs[i] = int(matchStatuses[i].Int())
+	}
+
+	// prepare the update transaction
+	var result *gorm.DB
+	if rebalance.Origin == 0 {
+		tx.Rollback()
+		return fmt.Errorf("origin chain id is required")
+	}
+	if rebalance.Destination == 0 {
+		tx.Rollback()
+		return fmt.Errorf("destination chain id is required")
+	}
+	result = tx.Model(&Rebalance{}).
+		Where(fmt.Sprintf("%s = ?", "origin"), rebalance.Origin).
+		Where(fmt.Sprintf("%s = ?", "destination"), rebalance.Destination).
+		Where(fmt.Sprintf("%s in ?", statusFieldName), inArgs).
+		Updates(updates)
+
+	// commit the transaction if only one row is affected
+	if result.Error != nil {
+		tx.Rollback()
+		return fmt.Errorf("could not update rebalance status: %w", result.Error)
+	}
+	if result.RowsAffected != 1 {
+		tx.Rollback()
+		return fmt.Errorf("expected 1 row to be affected, got %d", result.RowsAffected)
+	}
+	err := tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("could not commit transaction: %w", err)
+	}
+	return nil
+}
+
 // GetPendingRebalances checks fetches all pending rebalances that involve the given chainIDs.
+// Note that no chainID filtering will be done if no chainID is specified.
 func (s Store) GetPendingRebalances(ctx context.Context, chainIDs ...uint64) ([]*reldb.Rebalance, error) {
 	var rebalances []Rebalance
 	var pendingRebalances []*reldb.Rebalance
@@ -88,7 +150,12 @@ func (s Store) GetPendingRebalances(ctx context.Context, chainIDs ...uint64) ([]
 	}
 
 	// TODO: can be made more efficient by doing below check inside sql query
-	tx := s.DB().WithContext(ctx).Model(&Rebalance{}).Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).Find(&rebalances)
+	var tx *gorm.DB
+	if len(matchStatuses) == 0 {
+		tx = s.DB().WithContext(ctx).Model(&Rebalance{}).Find(&rebalances)
+	} else {
+		tx = s.DB().WithContext(ctx).Model(&Rebalance{}).Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).Find(&rebalances)
+	}
 	if tx.Error != nil {
 		return pendingRebalances, fmt.Errorf("could not get db results: %w", tx.Error)
 	}

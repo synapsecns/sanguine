@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"math/big"
 	"strconv"
+	"sync"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/params"
+	"github.com/synapsecns/sanguine/services/rfq/testutil"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/phayes/freeport"
 	"github.com/puzpuzpuz/xsync/v2"
 	"github.com/stretchr/testify/suite"
@@ -35,8 +39,10 @@ import (
 // RelayerServer suite is the relayer API server test suite.
 type RelayerServerSuite struct {
 	*testsuite.TestSuite
+	deployManager        *testutil.DeployManager
 	omniRPCClient        omniClient.RPCClient
 	omniRPCTestBackends  []backends.SimulatedTestBackend
+	testBackendMux       sync.Mutex
 	testBackends         map[uint64]backends.SimulatedTestBackend
 	originChainID        uint32
 	destChainID          uint32
@@ -49,6 +55,8 @@ type RelayerServerSuite struct {
 	port                 uint16
 	wallet               wallet.Wallet
 }
+
+var testWithdrawalAddress = common.BigToAddress(big.NewInt(1))
 
 // NewRelayerServerSuite creates a end-to-end test suite.
 func NewRelayerServerSuite(tb testing.TB) *RelayerServerSuite {
@@ -90,6 +98,25 @@ func (c *RelayerServerSuite) SetupTest() {
 			Type: "sqlite",
 			DSN:  filet.TmpFile(c.T(), "", "").Name(),
 		},
+		EnableAPIWithdrawals: true,
+		WithdrawalWhitelist: []string{
+			testWithdrawalAddress.String(),
+		},
+		QuotableTokens: map[string][]string{
+			// gas tokens.
+			fmt.Sprintf("%d-%s", c.originChainID, util.EthAddress): {
+				// not used for this test
+			},
+			fmt.Sprintf("%d-%s", c.destChainID, util.EthAddress): {
+				// not used for this test
+			},
+			c.getMockTokenID(c.testBackends[uint64(c.originChainID)]): {
+				// not used for this test
+			},
+			c.getMockTokenID(c.testBackends[uint64(c.destChainID)]): {
+				// not used for this test
+			},
+		},
 	}
 	c.cfg = testConfig
 
@@ -99,43 +126,78 @@ func (c *RelayerServerSuite) SetupTest() {
 	submitterCfg := &submitterConfig.Config{}
 	ts := submitter.NewTransactionSubmitter(c.handler, signer, omniRPCClient, c.database.SubmitterDB(), submitterCfg)
 
+	var wg sync.WaitGroup
+	wg.Add(len(c.testBackends) * 2)
+	go func() {
+		// small potential for a race condition if submitter hasn't started by the time our test starts
+		_ = ts.Start(c.GetTestContext())
+	}()
+
+	for _, backend := range c.testBackends {
+		go func() {
+			defer wg.Done()
+			backend.FundAccount(c.GetTestContext(), c.wallet.Address(), *big.NewInt(params.Ether))
+		}()
+
+		go func() {
+			defer wg.Done()
+			mockMetadata, mockToken := c.deployManager.GetMockERC20(c.GetTestContext(), backend)
+			auth := backend.GetTxContext(c.GetTestContext(), mockMetadata.OwnerPtr()).TransactOpts
+
+			tx, err := mockToken.Mint(auth, c.wallet.Address(), big.NewInt(1000000000000000000))
+			c.Require().NoError(err)
+			backend.WaitForConfirmation(c.GetTestContext(), tx)
+		}()
+	}
+
 	server, err := relapi.NewRelayerAPI(c.GetTestContext(), c.cfg, c.handler, c.omniRPCClient, c.database, ts)
 	c.Require().NoError(err)
 	c.RelayerAPIServer = server
+	wg.Wait()
+}
+
+func (c *RelayerServerSuite) getMockTokenID(backend backends.SimulatedTestBackend) string {
+	erc20Metadata, _ := c.deployManager.GetMockERC20(c.GetTestContext(), backend)
+	return fmt.Sprintf("%d-%s", backend.GetChainID(), erc20Metadata.Address().Hex())
 }
 
 func (c *RelayerServerSuite) SetupSuite() {
 	c.TestSuite.SetupSuite()
+
+	c.deployManager = testutil.NewDeployManager(c.T())
 
 	// let's create 2 mock chains
 	chainIDs := []uint64{1, 42161}
 
 	c.testBackends = make(map[uint64]backends.SimulatedTestBackend)
 
+	testWallet, err := wallet.FromRandom()
+	c.Require().NoError(err)
+	c.testWallet = testWallet
+
 	g, _ := errgroup.WithContext(c.GetSuiteContext())
 	for _, chainID := range chainIDs {
 		// Setup Anvil backend for the suite to have RPC support
-		// anvilOpts := anvil.NewAnvilOptionBuilder()
-		// anvilOpts.SetChainID(chainID)
-		// anvilOpts.SetBlockTime(1 * time.Second)
-		// backend := anvil.NewAnvilBackend(c.GetSuiteContext(), c.T(), anvilOpts)
-		backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
+		//nolint: copyloopvar
+		chainID := chainID // capture loop variable
+		g.Go(func() error {
+			backend := geth.NewEmbeddedBackendForChainID(c.GetSuiteContext(), c.T(), new(big.Int).SetUint64(chainID))
 
-		// add the backend to the list of backends
-		c.testBackends[chainID] = backend
-		c.omniRPCTestBackends = append(c.omniRPCTestBackends, backend)
+			backend.FundAccount(c.GetSuiteContext(), c.testWallet.Address(), *big.NewInt(params.Ether))
+
+			// add the backend to the list of backends
+			c.testBackendMux.Lock()
+			defer c.testBackendMux.Unlock()
+			c.testBackends[chainID] = backend
+			c.omniRPCTestBackends = append(c.omniRPCTestBackends, backend)
+
+			return nil
+		})
 	}
 
 	// wait for all backends to be ready
 	if err := g.Wait(); err != nil {
 		c.T().Fatal(err)
-	}
-
-	testWallet, err := wallet.FromRandom()
-	c.Require().NoError(err)
-	c.testWallet = testWallet
-	for _, backend := range c.testBackends {
-		backend.FundAccount(c.GetSuiteContext(), c.testWallet.Address(), *big.NewInt(params.Ether))
 	}
 
 	c.fastBridgeAddressMap = xsync.NewIntegerMapOf[uint64, common.Address]()
@@ -149,35 +211,41 @@ func (c *RelayerServerSuite) SetupSuite() {
 			if err != nil {
 				return fmt.Errorf("could not get chain id: %w", err)
 			}
-			// Create an auth to interact with the blockchain
-			auth, err := bind.NewKeyedTransactorWithChainID(c.testWallet.PrivateKey(), chainID)
-			c.Require().NoError(err)
 
-			// Deploy the FastBridge contract
-			fastBridgeAddress, tx, _, err := fastbridge.DeployFastBridge(auth, backend, c.testWallet.Address())
-			c.Require().NoError(err)
-			backend.WaitForConfirmation(c.GetSuiteContext(), tx)
+			fastBridgeMetadata, _ := c.deployManager.GetFastBridge(c.GetSuiteContext(), backend)
 
 			// Save the contracts to the map
-			c.fastBridgeAddressMap.Store(chainID.Uint64(), fastBridgeAddress)
+			c.fastBridgeAddressMap.Store(chainID.Uint64(), fastBridgeMetadata.Address())
 
-			fastBridgeInstance, err := fastbridge.NewFastBridge(fastBridgeAddress, backend)
+			fastBridgeInstance, err := fastbridge.NewFastBridge(fastBridgeMetadata.Address(), backend)
 			c.Require().NoError(err)
 
-			relayerRole, err := fastBridgeInstance.RELAYERROLE(&bind.CallOpts{Context: c.GetTestContext()})
+			relayerRole, err := fastBridgeInstance.RELAYERROLE(&bind.CallOpts{Context: c.GetSuiteContext()})
 			c.NoError(err)
 
-			tx, err = fastBridgeInstance.GrantRole(auth, relayerRole, c.testWallet.Address())
+			auth := backend.GetTxContext(c.GetSuiteContext(), fastBridgeMetadata.OwnerPtr()).TransactOpts
+
+			tx, err := fastBridgeInstance.GrantRole(auth, relayerRole, c.testWallet.Address())
 			c.Require().NoError(err)
 			backend.WaitForConfirmation(c.GetSuiteContext(), tx)
 
 			return nil
 		})
-	}
 
-	// wait for all backends to be ready
-	if err := g.Wait(); err != nil {
-		c.T().Fatal(err)
+		g.Go(func() error {
+			mockERC20Metadata, mockERC20 := c.deployManager.GetMockERC20(c.GetSuiteContext(), backend)
+			if err != nil {
+				return fmt.Errorf("could not get mock ERC20: %w", err)
+			}
+
+			auth := backend.GetTxContext(c.GetSuiteContext(), mockERC20Metadata.OwnerPtr()).TransactOpts
+
+			mintTx, err := mockERC20.Mint(auth, c.testWallet.Address(), big.NewInt(1000000000000000000))
+			c.Require().NoError(err)
+
+			backend.WaitForConfirmation(c.GetSuiteContext(), mintTx)
+			return nil
+		})
 	}
 
 	dbType, err := dbcommon.DBTypeFromString("sqlite")
@@ -188,6 +256,11 @@ func (c *RelayerServerSuite) SetupSuite() {
 	testDB, _ := connect.Connect(c.GetSuiteContext(), dbType, filet.TmpDir(c.T(), ""), metricsHandler)
 	c.database = testDB
 	// setup config
+
+	// wait for all backends to be ready
+	if err := g.Wait(); err != nil {
+		c.T().Fatal(err)
+	}
 }
 
 // TestConfigSuite runs the integration test suite.
@@ -211,6 +284,7 @@ func NewRelayerClientSuite(tb testing.TB) *RelayerClientSuite {
 		underlying: underlying,
 	}
 }
+
 func (c *RelayerClientSuite) SetupSuite() {
 	c.underlying.SetupSuite()
 }

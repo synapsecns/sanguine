@@ -13,6 +13,13 @@ export const ETHEREUM: Chain = {
   blockTime: 12000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/ethereum.4a372106.svg',
+  networkName: 'Ethereum Mainnet',
+  networkUrl: 'https://eth.llamarpc.com',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const ARBITRUM: Chain = {
@@ -27,6 +34,13 @@ export const ARBITRUM: Chain = {
   blockTime: 300,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/arbitrum.8ddb1b22.svg',
+  networkName: 'Arbitrum One',
+  networkUrl: 'https://arb1.arbitrum.io/rpc',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const BNBCHAIN: Chain = {
@@ -41,6 +55,13 @@ export const BNBCHAIN: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.5948fe5e.svg',
+  networkName: 'BNB Smart Chain Mainnet',
+  networkUrl: 'https://bsc-dataseed1.bnbchain.org',
+  nativeCurrency: {
+    name: 'Binance Coin',
+    symbol: 'BNB',
+    decimals: 18,
+  },
 }
 
 export const AVALANCHE: Chain = {
@@ -55,6 +76,13 @@ export const AVALANCHE: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/avalanche.9d53cbf0.svg',
+  networkName: 'Avalanche C-Chain',
+  networkUrl: 'https://api.avax.network/ext/bc/C/rpc',
+  nativeCurrency: {
+    name: 'Avax',
+    symbol: 'AVAX',
+    decimals: 18,
+  },
 }
 
 export const CANTO: Chain = {
@@ -69,6 +97,13 @@ export const CANTO: Chain = {
   blockTime: 6000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/canto.cb85e14f.svg',
+  networkName: 'Canto',
+  networkUrl: 'https://canto.slingshot.finance',
+  nativeCurrency: {
+    name: 'Canto',
+    symbol: 'CANTO',
+    decimals: 18,
+  },
 }
 
 export const OPTIMISM: Chain = {
@@ -83,6 +118,13 @@ export const OPTIMISM: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/optimism.84d4f0ef.svg',
+  networkName: 'OP Mainnet',
+  networkUrl: 'https://mainnet.optimism.io',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const POLYGON: Chain = {
@@ -97,6 +139,13 @@ export const POLYGON: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/polygon.237cd2b6.svg',
+  networkName: 'Polygon Mainnet',
+  networkUrl: 'https://polygon-rpc.com',
+  nativeCurrency: {
+    name: 'Matic',
+    symbol: 'MATIC',
+    decimals: 18,
+  },
 }
 
 export const DFK: Chain = {
@@ -111,6 +160,13 @@ export const DFK: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dfk.2bd1f0e4.svg',
+  networkName: 'DFK Chain',
+  networkUrl: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
+  nativeCurrency: {
+    name: 'Jewel',
+    symbol: 'JEWEL',
+    decimals: 18,
+  },
 }
 
 export const KLAYTN: Chain = {
@@ -125,6 +181,13 @@ export const KLAYTN: Chain = {
   blockTime: 1000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/klaytn.59495fbb.svg',
+  networkName: 'Klaytn Mainnet Cypress',
+  networkUrl: 'https://public-en-cypress.klaytn.net',
+  nativeCurrency: {
+    name: 'Klaytn',
+    symbol: 'KLAY',
+    decimals: 18,
+  },
 }
 
 export const FANTOM: Chain = {
@@ -139,6 +202,13 @@ export const FANTOM: Chain = {
   blockTime: 1000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/fantom.1e444dad.svg',
+  networkName: 'Fantom Opera',
+  networkUrl: 'https://rpc.ftm.tools',
+  nativeCurrency: {
+    name: 'Fantom',
+    symbol: 'FTM',
+    decimals: 18,
+  },
 }
 
 export const CRONOS: Chain = {
@@ -153,6 +223,13 @@ export const CRONOS: Chain = {
   blockTime: 6000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/cronos.b06f8311.svg',
+  networkName: 'Cronos Mainnet',
+  networkUrl: 'https://evm.cronos.org',
+  nativeCurrency: {
+    name: 'Cronos',
+    symbol: 'CRO',
+    decimals: 18,
+  },
 }
 
 export const BOBA: Chain = {
@@ -167,6 +244,13 @@ export const BOBA: Chain = {
   blockTime: 1000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/boba.2072e50b.svg',
+  networkName: 'Boba Network',
+  networkUrl: 'https://mainnet.boba.network',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const METIS: Chain = {
@@ -180,7 +264,14 @@ export const METIS: Chain = {
   explorerName: 'Metis Explorer',
   blockTime: 4000,
   imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/metis.3114f675.svg',
+    'https://7bdf4de3.sanguine-fe.pages.dev/_next/static/media/metis.90b6abf0.svg',
+  networkName: 'Metis Andromeda Mainnet',
+  networkUrl: 'https://andromeda.metis.io/?owner=1088',
+  nativeCurrency: {
+    name: 'Metis',
+    symbol: 'METIS',
+    decimals: 18,
+  },
 }
 
 export const AURORA: Chain = {
@@ -195,6 +286,13 @@ export const AURORA: Chain = {
   blockTime: 1000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/aurora.5a46037d.svg',
+  networkName: 'Aurora Mainnet',
+  networkUrl: 'https://mainnet.aurora.dev',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const HARMONY: Chain = {
@@ -209,6 +307,13 @@ export const HARMONY: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/harmony.af12f77e.svg',
+  networkName: 'Harmony Mainnet Shard 0',
+  networkUrl: 'https://api.harmony.one',
+  nativeCurrency: {
+    name: 'Harmony One',
+    symbol: 'ONE',
+    decimals: 18,
+  },
 }
 
 export const MOONBEAM: Chain = {
@@ -223,6 +328,13 @@ export const MOONBEAM: Chain = {
   blockTime: 12000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
+  networkName: 'Moonbeam',
+  networkUrl: 'https://rpc.api.moonbeam.network',
+  nativeCurrency: {
+    name: 'Glimmer',
+    symbol: 'GLMR',
+    decimals: 18,
+  },
 }
 
 export const MOONRIVER: Chain = {
@@ -237,6 +349,13 @@ export const MOONRIVER: Chain = {
   blockTime: 12000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
+  networkName: 'Moonriver',
+  networkUrl: 'https://rpc.api.moonriver.moonbeam.network',
+  nativeCurrency: {
+    name: 'Moonriver',
+    symbol: 'MOVR',
+    decimals: 18,
+  },
 }
 
 export const DOGE: Chain = {
@@ -251,6 +370,13 @@ export const DOGE: Chain = {
   blockTime: 2000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dogechain.36935650.svg',
+  networkName: 'Dogechain Mainnet',
+  networkUrl: 'https://rpc.dogechain.dog',
+  nativeCurrency: {
+    name: 'DOGE',
+    symbol: 'DOGE',
+    decimals: 18,
+  },
 }
 
 export const BASE: Chain = {
@@ -265,6 +391,13 @@ export const BASE: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/base.d919fbef.svg',
+  networkName: 'Base',
+  networkUrl: 'https://mainnet.base.org',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const BLAST: Chain = {
@@ -280,6 +413,13 @@ export const BLAST: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/blast.e39807f8.svg',
+  networkName: 'Blast',
+  networkUrl: 'https://rpc.blast.io',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const SCROLL: Chain = {
@@ -294,6 +434,34 @@ export const SCROLL: Chain = {
   blockTime: 3000,
   imgUrl:
     'https://fe-adds-scroll.sanguine-fe.pages.dev/_next/static/media/scroll.a805c122.svg',
+  networkName: 'Scroll',
+  networkUrl: 'https://rpc.scroll.io',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+}
+
+export const LINEA: Chain = {
+  id: 59144,
+  name: 'Linea',
+  rpcUrls: {
+    primary: 'https://rpc.linea.build',
+    fallback: 'https://linea.blockpi.network/v1/rpc/public',
+  },
+  explorerUrl: 'https://lineascan.build',
+  explorerName: 'LineaScan',
+  blockTime: 3000,
+  imgUrl:
+    'https://master.sanguine-fe.pages.dev/_next/static/media/linea.e476f2ad.svg',
+  networkName: 'Linea',
+  networkUrl: 'https://rpc.linea.build',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
 }
 
 export const CHAINS = {
@@ -318,6 +486,7 @@ export const CHAINS = {
   BASE,
   BLAST,
   SCROLL,
+  LINEA,
 }
 
 export const CHAINS_ARRAY = Object.values(CHAINS)

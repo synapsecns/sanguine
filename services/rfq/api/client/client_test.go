@@ -38,6 +38,65 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 	c.Equal(expectedResp, *quotes[0])
 }
 
+func (c *ClientSuite) TestPutAndGetBulkQuotes() {
+	req := model.PutBulkQuotesRequest{
+		Quotes: []model.PutQuoteRequest{
+			{
+				OriginChainID:   1,
+				OriginTokenAddr: "0xOriginTokenAddr",
+				DestChainID:     42161,
+				DestTokenAddr:   "0xDestTokenAddr",
+				DestAmount:      "100",
+				MaxOriginAmount: "200",
+				FixedFee:        "10",
+			},
+			{
+				OriginChainID:   42161,
+				OriginTokenAddr: "0xOriginTokenAddr",
+				DestChainID:     1,
+				DestTokenAddr:   "0xDestTokenAddr",
+				DestAmount:      "100",
+				MaxOriginAmount: "200",
+				FixedFee:        "10",
+			},
+		},
+	}
+
+	err := c.client.PutBulkQuotes(c.GetTestContext(), &req)
+	c.Require().NoError(err)
+
+	quotes, err := c.client.GetAllQuotes(c.GetTestContext())
+	c.Require().NoError(err)
+
+	expectedResp := []model.GetQuoteResponse{
+		{
+			OriginChainID:   1,
+			OriginTokenAddr: "0xOriginTokenAddr",
+			DestChainID:     42161,
+			DestTokenAddr:   "0xDestTokenAddr",
+			DestAmount:      "100",
+			MaxOriginAmount: "200",
+			FixedFee:        "10",
+			RelayerAddr:     c.testWallet.Address().String(),
+			UpdatedAt:       quotes[0].UpdatedAt,
+		},
+		{
+			OriginChainID:   42161,
+			OriginTokenAddr: "0xOriginTokenAddr",
+			DestChainID:     1,
+			DestTokenAddr:   "0xDestTokenAddr",
+			DestAmount:      "100",
+			MaxOriginAmount: "200",
+			FixedFee:        "10",
+			RelayerAddr:     c.testWallet.Address().String(),
+			UpdatedAt:       quotes[0].UpdatedAt,
+		},
+	}
+	c.Len(quotes, 2)
+	c.Equal(expectedResp[0], *quotes[0])
+	c.Equal(expectedResp[1], *quotes[1])
+}
+
 func (c *ClientSuite) TestGetSpecificQuote() {
 	req := model.PutQuoteRequest{
 		OriginChainID:   1,

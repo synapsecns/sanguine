@@ -6,6 +6,7 @@ import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import { ALL_TOKENS } from '@/constants/tokens/master'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { useWalletState } from '@/slices/wallet/hooks'
 
 /** TODO: Update naming once refactoring of previous Activity/Tx flow is done */
 export const _Transactions = ({
@@ -14,6 +15,7 @@ export const _Transactions = ({
   connectedAddress: string
 }) => {
   const { transactions } = use_TransactionsState()
+  const { isWalletPending } = useWalletState()
   const hasTransactions: boolean = checkTransactionsExist(transactions)
 
   const currentTime = useIntervalTimer(5000)
@@ -60,6 +62,7 @@ export const _Transactions = ({
               timestamp={tx.timestamp}
               currentTime={currentTime}
               status={tx.status}
+              disabled={isWalletPending}
             />
           )
         })}

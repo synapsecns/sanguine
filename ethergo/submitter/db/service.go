@@ -23,7 +23,7 @@ type Service interface {
 	// PutTXS stores a tx in the database.
 	PutTXS(ctx context.Context, txs ...TX) error
 	// GetTXS gets all txs for a given address and chain id. If chain id is nil, it will get all txs for the address.
-	GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, statuses ...Status) (txs []TX, err error)
+	GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, options ...Option) (txs []TX, err error)
 	// MarkAllBeforeNonceReplacedOrConfirmed marks all txs for a given chain id and address before a given nonce as replaced or confirmed.
 	// TODO: cleaner function name
 	MarkAllBeforeNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error
@@ -31,7 +31,7 @@ type Service interface {
 	// the function passed in will be passed a new service that is scoped to the transaction.
 	DBTransaction(ctx context.Context, f TransactionFunc) error
 	// GetAllTXAttemptByStatus gets all txs for a given address and chain id with a given status.
-	GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, matchStatuses ...Status) (txs []TX, err error)
+	GetAllTXAttemptByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, options ...Option) (txs []TX, err error)
 	// GetNonceStatus returns the nonce status for a given nonce by aggregating all attempts and finding the highest status.
 	GetNonceStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64) (status Status, err error)
 	// GetNonceAttemptsByStatus gets all txs for a given address and chain id with a given status and nonce.
@@ -44,8 +44,71 @@ type Service interface {
 	GetDistinctChainIDs(ctx context.Context) ([]*big.Int, error)
 }
 
+// Option is a type for specifying optional parameters.
+type Option func(*options)
+
+type options struct {
+	statuses   []Status
+	maxResults int
+}
+
+var _ OptionsFetcher = (*options)(nil)
+
+// OptionsFetcher is the interface for fetching options.
+type OptionsFetcher interface {
+	Statuses() []Status
+	MaxResults() int
+}
+
+func (o *options) MaxResults() int {
+	return o.maxResults
+}
+
+func (o *options) Statuses() []Status {
+	return o.statuses
+}
+
+// DefaultMaxResultsPerChain is the maximum number of transactions to return per chain id.
+// it is exported for testing.
+// TODO: this should be an option passed to the GetTXs function.
+// TODO: temporarily reduced from 50 to 1 to increase resiliency.
+const DefaultMaxResultsPerChain = 10
+
+// ParseOptions parses the options.
+func ParseOptions(opts ...Option) OptionsFetcher {
+	myOptions := &options{
+		statuses:   nil,
+		maxResults: DefaultMaxResultsPerChain, // Default to 0 for no limit.
+	}
+
+	for _, opt := range opts {
+		opt(myOptions)
+	}
+
+	return myOptions
+}
+
+// WithStatuses specifies the statuses to match.
+func WithStatuses(statuses ...Status) Option {
+	return func(opts *options) {
+		opts.statuses = statuses
+	}
+}
+
+// WithMaxResults specifies the maximum number of results to return.
+func WithMaxResults(maxResults int) Option {
+	return func(opts *options) {
+		opts.maxResults = maxResults
+	}
+}
+
 // TransactionFunc is a function that can be passed to DBTransaction.
 type TransactionFunc func(ctx context.Context, svc Service) error
+
+// SubmitterDBFactory is the interface for the tx queue database factory.
+type SubmitterDBFactory interface {
+	SubmitterDB() Service
+}
 
 // Status is the status of a tx.
 //

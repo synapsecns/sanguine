@@ -6,7 +6,11 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -46,7 +50,7 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 
 	// Fetch the quote request by tx hash
 	client := &http.Client{}
-	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/status?hash=%s", c.port, quoteRequest.OriginTxHash), nil)
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/request/by_tx_hash?hash=%s", c.port, quoteRequest.OriginTxHash), nil)
 	c.Require().NoError(err)
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
@@ -59,16 +63,20 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxHash() {
 	c.Equal(http.StatusOK, resp.StatusCode)
 
 	// Compare to expected result
-	var result relapi.GetQuoteRequestStatusResponse
+	var result relapi.GetQuoteRequestResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
-	expectedResult := relapi.GetQuoteRequestStatusResponse{
-		Status:        quoteRequest.Status.String(),
-		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash:  quoteRequest.OriginTxHash.String(),
-		OriginChainID: quoteRequest.Transaction.OriginChainId,
-		DestChainID:   quoteRequest.Transaction.DestChainId,
-		DestTxHash:    quoteRequest.DestTxHash.String(),
+	expectedResult := relapi.GetQuoteRequestResponse{
+		Status:          quoteRequest.Status.String(),
+		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
+		QuoteRequestRaw: result.QuoteRequestRaw,
+		OriginTxHash:    quoteRequest.OriginTxHash.String(),
+		DestTxHash:      quoteRequest.DestTxHash.String(),
+		OriginChainID:   quoteRequest.Transaction.OriginChainId,
+		DestChainID:     quoteRequest.Transaction.DestChainId,
+		OriginToken:     quoteRequest.Transaction.OriginToken.String(),
+		DestToken:       quoteRequest.Transaction.DestToken.String(),
+		Sender:          quoteRequest.Sender.String(),
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()
@@ -85,7 +93,7 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	// Fetch the quote request by tx hash
 	client := &http.Client{}
 	txIDStr := hexutil.Encode(quoteRequest.TransactionID[:])
-	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/status/by_tx_id?id=%s", c.port, txIDStr), nil)
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d/request/by_tx_id?id=%s", c.port, txIDStr), nil)
 	c.Require().NoError(err)
 	resp, err := client.Do(req)
 	c.Require().NoError(err)
@@ -98,16 +106,20 @@ func (c *RelayerServerSuite) TestGetQuoteRequestByTxID() {
 	c.Equal(http.StatusOK, resp.StatusCode)
 
 	// Compare to expected result
-	var result relapi.GetQuoteRequestStatusResponse
+	var result relapi.GetQuoteRequestResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	c.Require().NoError(err)
-	expectedResult := relapi.GetQuoteRequestStatusResponse{
-		Status:        quoteRequest.Status.String(),
-		TxID:          hexutil.Encode(quoteRequest.TransactionID[:]),
-		OriginTxHash:  quoteRequest.OriginTxHash.String(),
-		OriginChainID: quoteRequest.Transaction.OriginChainId,
-		DestChainID:   quoteRequest.Transaction.DestChainId,
-		DestTxHash:    quoteRequest.DestTxHash.String(),
+	expectedResult := relapi.GetQuoteRequestResponse{
+		Status:          quoteRequest.Status.String(),
+		TxID:            hexutil.Encode(quoteRequest.TransactionID[:]),
+		QuoteRequestRaw: result.QuoteRequestRaw,
+		OriginTxHash:    quoteRequest.OriginTxHash.String(),
+		DestTxHash:      quoteRequest.DestTxHash.String(),
+		OriginChainID:   quoteRequest.Transaction.OriginChainId,
+		DestChainID:     quoteRequest.Transaction.DestChainId,
+		OriginToken:     quoteRequest.Transaction.OriginToken.String(),
+		DestToken:       quoteRequest.Transaction.DestToken.String(),
+		Sender:          quoteRequest.Sender.String(),
 	}
 	c.Equal(expectedResult, result)
 	c.GetTestContext().Done()
@@ -200,5 +212,88 @@ func (c *RelayerServerSuite) getTestQuoteRequest(status reldb.QuoteRequestStatus
 		},
 		OriginTxHash: common.HexToHash("0x0000000"),
 		DestTxHash:   common.HexToHash("0x0000001"),
+	}
+}
+
+func TestTokenIDExists(t *testing.T) {
+	cfg := relconfig.Config{
+		QuotableTokens: map[string][]string{
+			fmt.Sprintf("1%s0x1234567890abcdef1234567890abcdef12345678", relconfig.TokenIDDelimiter): {},
+			fmt.Sprintf("1%s0xabcdefabcdefabcdefabcdefabcdefabcdefabcd", relconfig.TokenIDDelimiter): {},
+		},
+	}
+
+	tests := []struct {
+		name         string
+		tokenAddress common.Address
+		chainID      int
+		expected     bool
+	}{
+		{
+			name:         "Valid token address",
+			tokenAddress: common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678"),
+			chainID:      1,
+			expected:     true,
+		},
+		{
+			name:         "Invalid token address",
+			tokenAddress: common.HexToAddress("0x0000000000000000000000000000000000000000"),
+			chainID:      1,
+			expected:     false,
+		},
+		{
+			name:         "Valid token address, different chain ID",
+			tokenAddress: common.HexToAddress("0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"),
+			chainID:      2,
+			expected:     false,
+		},
+		{
+			name:         "Edge case: empty token address",
+			tokenAddress: common.Address{},
+			chainID:      1,
+			expected:     false,
+		},
+	}
+
+	for i := range tests {
+		tt := tests[i]
+		t.Run(tt.name, func(t *testing.T) {
+			result := relapi.TokenIDExists(cfg, tt.tokenAddress, tt.chainID)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestToAddressIsWhitelisted(t *testing.T) {
+	cfg := relconfig.Config{
+		WithdrawalWhitelist: []string{
+			"0x1111111111111111111111111111111111111111",
+			"0x2222222222222222222222222222222222222222",
+		},
+	}
+
+	tests := []struct {
+		name      string
+		toAddress common.Address
+		expected  bool
+	}{
+		{
+			name:      "Address is whitelisted",
+			toAddress: common.HexToAddress("0x1111111111111111111111111111111111111111"),
+			expected:  true,
+		},
+		{
+			name:      "Address is not whitelisted",
+			toAddress: common.HexToAddress("0x3333333333333333333333333333333333333333"),
+			expected:  false,
+		},
+	}
+
+	for i := range tests {
+		tt := tests[i]
+		t.Run(tt.name, func(t *testing.T) {
+			result := relapi.ToAddressIsWhitelisted(cfg, tt.toAddress)
+			assert.Equal(t, tt.expected, result)
+		})
 	}
 }

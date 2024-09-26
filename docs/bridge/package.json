@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/bridge-docs",
-  "version": "0.1.4",
+  "version": "0.2.4",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -19,6 +19,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@codecov/webpack-plugin": "^0.0.1-beta.10",
     "@docusaurus/core": "3.1.1",
     "@docusaurus/logger": "3.1.1",
     "@docusaurus/plugin-content-docs": "3.1.1",

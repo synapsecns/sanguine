@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react'
 import { Address } from 'viem'
+import { useTranslations } from 'next-intl'
+
 import {
   NetworkTokenBalances,
   TokenAndBalance,
@@ -135,25 +137,29 @@ function getCurrentNetworkPortfolio(
 }
 
 const LoadingPortfolioContent = () => {
+  const t = useTranslations('Portfolio')
   return (
     <>
       <p id="loading-portfolio-content" className="text-[#CCCAD3BF]">
-        Loading assets...
+        {t('Loading assets')}...
       </p>
     </>
   )
 }
 
 const HomeContent = () => {
+  const t = useTranslations('Portfolio')
   return (
     <div id="portfolio-home-content" className="text-white">
       <p className="mb-3">
-        Synapse is the most widely used, extensible, and secure cross-chain
-        communications network.
+        {t(
+          'Synapse is the most widely used, extensible, and secure cross-chain communications network'
+        )}
       </p>
       <p className="mb-5">
-        Get route quotes in the Bridge panel, and connect your wallet when you
-        are ready to submit a transaction.
+        {t(
+          'Get route quotes in the Bridge panel, and connect your wallet when you are ready to submit a transaction'
+        )}
       </p>
       <ConnectWalletButton />
     </div>

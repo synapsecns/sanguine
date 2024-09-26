@@ -1,5 +1,7 @@
 const path = require('path')
 
+const { codecovWebpackPlugin } = require('@codecov/webpack-plugin')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -22,6 +24,16 @@ const nextConfig = {
       '.json',
       '.nvmrc',
     ]
+    config.plugins.push(
+      codecovWebpackPlugin({
+        enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+        bundleName: 'synapse-interface',
+        uploadToken: process.env.CODECOV_TOKEN,
+        uploadOverrides: {
+          sha: process.env.GH_COMMIT_SHA,
+        },
+      })
+    )
     return config
   },
   eslint: {
@@ -30,6 +42,10 @@ const nextConfig = {
   },
   typescript: {
     tsconfigPath: './tsconfig.json',
+  },
+  i18n: {
+    locales: ['en-US', 'fr', 'ar', 'tr', 'es', 'zh-CN'],
+    defaultLocale: 'en-US',
   },
 }
 

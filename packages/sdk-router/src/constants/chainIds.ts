@@ -16,6 +16,7 @@ export enum SupportedChainId {
   ARBITRUM = 42161,
   AVALANCHE = 43114,
   DFK = 53935,
+  LINEA = 59144,
   BLAST = 81457,
   SCROLL = 534352,
   AURORA = 1313161554,
@@ -25,7 +26,10 @@ export enum SupportedChainId {
 /**
  * List of chain ids where SynapseBridge is not deployed
  */
-const UNSUPPORTED_BRIDGE_CHAIN_IDS: number[] = [SupportedChainId.SCROLL]
+const UNSUPPORTED_BRIDGE_CHAIN_IDS: number[] = [
+  SupportedChainId.LINEA,
+  SupportedChainId.SCROLL,
+]
 
 /**
  * List of supported chain ids, where SynapseBridge is deployed.
@@ -53,13 +57,15 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
 /**
  * List of chain ids where FastBridge (RFQ) is deployed, ordered by chain id
  *
- * Note: This is a subset of SUPPORTED_CHAIN_IDS.
  */
 export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.ETH,
   SupportedChainId.OPTIMISM,
+  SupportedChainId.BSC,
   SupportedChainId.BASE,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.LINEA,
+  SupportedChainId.BLAST,
   SupportedChainId.SCROLL,
 ]
 

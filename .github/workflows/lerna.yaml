@@ -37,6 +37,9 @@ jobs:
       - name: 'Version and publish' # Interesting step
         env:
           GH_TOKEN: ${{ secrets.LERNA_FGPAT }}
+          CODECOV_TOKEN: ${{ secrets.CODECOV }}
+          GH_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+
         # branch is protected so this must be an admin token, this will expire on 03/01/2024
         # replacement should be done by a service account with a fine-grained personal access token
         run: |

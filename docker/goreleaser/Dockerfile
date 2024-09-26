@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:11-slim
+FROM --platform=linux/amd64 debian:12-slim
 
 ARG VERSION_ARG=1.24.0-pro
 ARG SHA_ARG=01237f7151d2c46c307f21de183eb863ce47a4b5244507487ec663640b077d7d
@@ -113,10 +113,15 @@ ENV NODE_MAJOR=20
 
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" |  tee /etc/apt/sources.list.d/nodesource.list
 
-RUN apt-get update && apt-get install -y nodejs
+RUN apt-get update && apt-get install -y nodejs sudo
 
 # Install syft
 
 RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
 RUN rm -rf /var/lib/apt/lists/* /var/log/apt/* /tmp/* /var/tmp/*
+
+
+RUN curl -fsSL https://get.namespace.so/cloud/install.sh | NS_ROOT=/usr/local sh && exit 0
+ENV NS_ROOT=/usr/local/bin
+ENV PATH=${PATH}:/usr/local/bin

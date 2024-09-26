@@ -14,8 +14,11 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/limiter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/services/rfq/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -49,8 +52,20 @@ type QuoteRequestHandler struct {
 	// mutexMiddlewareFunc is used to wrap the handler in a mutex middleware.
 	// this should only be done if Handling, not forwarding.
 	mutexMiddlewareFunc func(func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error
-	// relayMtx is the mutex for relaying.
-	relayMtx mapmutex.StringMapMutex
+	// handlerMtx is the mutex for relaying.
+	handlerMtx mapmutex.StringMapMutex
+	// limiter is the rate limiter.
+	limiter limiter.Limiter
+	// tokenNames is the map of addresses to token names
+	tokenNames map[string]relconfig.TokenConfig
+	// balanceMtx is the mutex for balances.
+	balanceMtx mapmutex.StringMapMutex
+	// cfg is the relayer config.
+	cfg relconfig.Config
+}
+
+func getBalanceMtxKey(chainID uint32, token common.Address) string {
+	return fmt.Sprintf("%d-%s", chainID, token.Hex())
 }
 
 // Handler is the handler for a quote request.
@@ -67,6 +82,11 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		return nil, fmt.Errorf("could not get dest chain: %w", err)
 	}
 
+	originTokens, err := r.cfg.GetTokens(req.Transaction.OriginChainId)
+	if err != nil {
+		return nil, fmt.Errorf("could not get tokens: %w", err)
+	}
+
 	qr := &QuoteRequestHandler{
 		Origin:              *origin,
 		Dest:                *dest,
@@ -79,7 +99,17 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 		claimCache:          r.claimCache,
 		apiClient:           r.apiClient,
 		mutexMiddlewareFunc: r.mutexMiddleware,
-		relayMtx:            r.relayMtx,
+		handlerMtx:          r.handlerMtx,
+		limiter: limiter.NewRateLimiter(
+			r.cfg,
+			r.chainListeners[int(req.Transaction.OriginChainId)],
+			r.quoter,
+			r.metrics,
+			originTokens,
+		),
+		tokenNames: originTokens,
+		balanceMtx: r.balanceMtx,
+		cfg:        r.cfg,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened
@@ -102,9 +132,12 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 
 func (r *Relayer) mutexMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
 	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) (err error) {
-		unlocker, ok := r.relayMtx.TryLock(hexutil.Encode(req.TransactionID[:]))
+		unlocker, ok := r.handlerMtx.TryLock(hexutil.Encode(req.TransactionID[:]))
 		if !ok {
-			span.SetAttributes(attribute.Bool("locked", true))
+			span.SetAttributes(
+				attribute.Bool("locked", true),
+				attribute.StringSlice("current_locks", r.handlerMtx.Keys()),
+			)
 			return nil
 		}
 		defer unlocker.Unlock()
@@ -138,7 +171,7 @@ func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.S
 
 		// if deadline < now, we don't even have to bother calling the underlying function
 		if req.Transaction.Deadline.Cmp(big.NewInt(almostNow.Unix())) < 0 {
-			err := r.db.UpdateQuoteRequestStatus(ctx, req.TransactionID, reldb.DeadlineExceeded)
+			err := r.db.UpdateQuoteRequestStatus(ctx, req.TransactionID, reldb.DeadlineExceeded, &req.Status)
 			if err != nil {
 				return fmt.Errorf("could not update request status: %w", err)
 			}
@@ -172,7 +205,7 @@ func (r *Relayer) gasMiddleware(next func(ctx context.Context, span trace.Span, 
 		// Therefore, we only need to check the gas value for requests with all the other statuses.
 		isInFlight := req.Status == reldb.CommittedPending || req.Status == reldb.CommittedConfirmed || req.Status == reldb.RelayStarted
 		var destGasValue *big.Int
-		if req.Transaction.DestToken == chain.EthAddress && !isInFlight {
+		if req.Transaction.DestToken == util.EthAddress && !isInFlight {
 			destGasValue = req.Transaction.DestAmount
 			span.SetAttributes(attribute.String("dest_gas_value", destGasValue.String()))
 		}
@@ -197,12 +230,7 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*chain.Ch
 		return nil, fmt.Errorf("could not get origin client: %w", err)
 	}
 
-	//nolint: wrapcheck
-	rfqAddr, err := r.cfg.GetRFQAddress(id)
-	if err != nil {
-		return nil, fmt.Errorf("could not get rfq address: %w", err)
-	}
-	chain, err := chain.NewChain(ctx, chainClient, common.HexToAddress(rfqAddr), r.chainListeners[id], r.submitter)
+	chain, err := chain.NewChain(ctx, r.cfg, chainClient, r.chainListeners[id], r.submitter)
 	if err != nil {
 		return nil, fmt.Errorf("could not create chain: %w", err)
 	}
@@ -248,7 +276,7 @@ func (q *QuoteRequestHandler) Forward(ctx context.Context, request reldb.QuoteRe
 	}()
 
 	// sanity check to make sure that the lock is already acquired for this tx
-	_, ok := q.relayMtx.TryLock(txID)
+	_, ok := q.handlerMtx.TryLock(txID)
 	if ok {
 		panic(fmt.Sprintf("attempted forward while lock was not acquired for tx: %s", txID))
 	}

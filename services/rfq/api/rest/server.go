@@ -3,6 +3,7 @@ package rest
 
 import (
 	"context"
+
 	"fmt"
 	"net/http"
 	"sync"
@@ -32,6 +33,14 @@ import (
 )
 
 const meterName = "github.com/synapsecns/sanguine/services/rfq/api/rest"
+
+func getCurrentVersion() (string, error) {
+	if len(APIversions.Versions) == 0 {
+		return "", fmt.Errorf("no versions found")
+	}
+
+	return APIversions.Versions[0].Version, nil
+}
 
 // QuoterAPIServer is a struct that holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
@@ -142,9 +151,13 @@ func NewAPI(
 const (
 	// QuoteRoute is the API endpoint for handling quote related requests.
 	QuoteRoute = "/quotes"
+	// BulkQuotesRoute is the API endpoint for handling bulk quote related requests.
+	BulkQuotesRoute = "/bulk_quotes"
 	// AckRoute is the API endpoint for handling relay ack related requests.
-	AckRoute      = "/ack"
-	cacheInterval = time.Minute
+	AckRoute = "/ack"
+	// ContractsRoute is the API endpoint for returning a list fo contracts.
+	ContractsRoute = "/contracts"
+	cacheInterval  = time.Minute
 )
 
 var logger = log.Logger("rfq-api")
@@ -153,13 +166,22 @@ var logger = log.Logger("rfq-api")
 func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
-	h := NewHandler(r.db)
+	h := NewHandler(r.db, r.cfg)
+
+	versionNumber, versionNumErr := getCurrentVersion()
+	if versionNumErr != nil {
+		return fmt.Errorf("could not get current API version: %w", versionNumErr)
+	}
+	engine.Use(APIVersionMiddleware(versionNumber))
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Apply AuthMiddleware only to the PUT routes
 	quotesPut := engine.Group(QuoteRoute)
 	quotesPut.Use(r.AuthMiddleware())
 	quotesPut.PUT("", h.ModifyQuote)
+	bulkQuotesPut := engine.Group(BulkQuotesRoute)
+	bulkQuotesPut.Use(r.AuthMiddleware())
+	bulkQuotesPut.PUT("", h.ModifyBulkQuotes)
 	ackPut := engine.Group(AckRoute)
 	ackPut.Use(r.AuthMiddleware())
 	ackPut.PUT("", r.PutRelayAck)
@@ -168,8 +190,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// engine.PUT("/quotes", h.ModifyQuote)
 	engine.GET(QuoteRoute, h.GetQuotes)
 
-	// Expose Prometheus metrics
-	engine.GET(metrics.MetricsPathDefault, gin.WrapH(r.handler.Handler()))
+	engine.GET(ContractsRoute, h.GetContracts)
 
 	r.engine = engine
 
@@ -187,8 +208,8 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var loggedRequest interface{}
-		var destChainID uint32
 		var err error
+		destChainIDs := []uint32{}
 
 		// Parse the dest chain id from the request
 		switch c.Request.URL.Path {
@@ -196,14 +217,23 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 			var req model.PutQuoteRequest
 			err = c.BindJSON(&req)
 			if err == nil {
-				destChainID = uint32(req.DestChainID)
+				destChainIDs = append(destChainIDs, uint32(req.DestChainID))
+				loggedRequest = &req
+			}
+		case BulkQuotesRoute:
+			var req model.PutBulkQuotesRequest
+			err = c.BindJSON(&req)
+			if err == nil {
+				for _, quote := range req.Quotes {
+					destChainIDs = append(destChainIDs, uint32(quote.DestChainID))
+				}
 				loggedRequest = &req
 			}
 		case AckRoute:
 			var req model.PutAckRequest
 			err = c.BindJSON(&req)
 			if err == nil {
-				destChainID = uint32(req.DestChainID)
+				destChainIDs = append(destChainIDs, uint32(req.DestChainID))
 				loggedRequest = &req
 			}
 		default:
@@ -216,11 +246,21 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// Authenticate and fetch the address from the request
-		addressRecovered, err := r.checkRole(c, destChainID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
-			c.Abort()
-			return
+		var addressRecovered *common.Address
+		for _, destChainID := range destChainIDs {
+			addr, err := r.checkRole(c, destChainID)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+				c.Abort()
+				return
+			}
+			if addressRecovered == nil {
+				addressRecovered = &addr
+			} else if *addressRecovered != addr {
+				c.JSON(http.StatusBadRequest, gin.H{"msg": "relayer address mismatch"})
+				c.Abort()
+				return
+			}
 		}
 
 		// Log and pass to the next middleware if authentication succeeds
@@ -249,22 +289,28 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 		return addressRecovered, err
 	}
 
-	hasRole := r.roleCache[destChainID].Get(addressRecovered.Hex())
+	// Check and update cache
+	cachedRoleItem := r.roleCache[destChainID].Get(addressRecovered.Hex())
+	var hasRole bool
 
-	if hasRole == nil || hasRole.IsExpired() {
-		has, roleErr := bridge.HasRole(ops, relayerRole, addressRecovered)
-		if roleErr == nil {
-			r.roleCache[destChainID].Set(addressRecovered.Hex(), has, cacheInterval)
+	if cachedRoleItem == nil || cachedRoleItem.IsExpired() {
+		// Cache miss or expired, check on-chain
+		hasRole, err = bridge.HasRole(ops, relayerRole, addressRecovered)
+		if err != nil {
+			return addressRecovered, fmt.Errorf("unable to check relayer role on-chain: %w", err)
 		}
-
-		if roleErr != nil {
-			err = fmt.Errorf("unable to check relayer role on-chain")
-			return addressRecovered, err
-		} else if !has {
-			err = fmt.Errorf("q.Relayer not an on-chain relayer")
-			return addressRecovered, err
-		}
+		// Update cache
+		r.roleCache[destChainID].Set(addressRecovered.Hex(), hasRole, cacheInterval)
+	} else {
+		// Use cached value
+		hasRole = cachedRoleItem.Value()
 	}
+
+	// Verify role
+	if !hasRole {
+		return addressRecovered, fmt.Errorf("relayer not an on-chain relayer")
+	}
+
 	return addressRecovered, nil
 }
 
@@ -284,6 +330,7 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 // @Accept json
 // @Produce json
 // @Success 200
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /ack [put].
 func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 	req, exists := c.Get("putRequest")

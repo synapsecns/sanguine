@@ -1,108 +1,85 @@
-import { TRANSACTIONS_PATH } from '@urls'
+import _ from 'lodash'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { useQuery } from '@apollo/client'
+import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
+import { CopyTitle } from '@components/misc/CopyTitle'
+import { HolisticStats } from '@components/misc/HolisticStats'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
-import { useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { useRouter } from 'next/router'
 import { checksumAddress } from '@utils/checksum'
-import CopyTitle from '@components/misc/CopyTitle'
-import {
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-} from '@graphql/queries'
-import HolisticStats from '@components/misc/HolisticStats'
-import _ from 'lodash'
+import { TRANSACTIONS_PATH } from '@urls'
 
-const titles = {
-  VOLUME: 'Volume',
-  FEE: 'Fees',
-  ADDRESSES: 'Addrs',
-  TRANSACTIONS: 'TXs',
-}
-const platformTitles = {
-  BRIDGE: 'Bridge',
-  SWAP: 'Swap',
-  MESSAGE_BUS: 'Message Bus',
-}
-const formatCurrency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
-
-function truncateAddress(address) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+const truncateAddress = (addr: string) => {
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`
 }
 
 interface variableTypes {
   page: number
-  addressFrom?: string,
-  useMv?: boolean,
-  addressTo?: string,
+  addressFrom?: string
+  useMv?: boolean
+  addressTo?: string
 }
 
-export default function address() {
+export const AddressPage = () => {
   const router = useRouter()
   const { address } = router.query
 
-  const [currentTooltipIndex, setCurrentTooltipIndex] = useState(0)
   const [platform, setPlatform] = useState('ALL')
   const [transactionsArr, setTransactionsArr] = useState([])
-  const [tokenChainID, setTokenChainID] = useState([])
   const [variables, setVariables] = useState<variableTypes>({ page: 1 })
-  const [completed, setCompleted] = useState(false)
   const [walletAddress, setWalletAddress] = useState('')
   const unSelectStyle =
     'transition ease-out border-l-0 border-gray-700 border-opacity-30 text-gray-500 bg-gray-700 bg-opacity-30 hover:bg-opacity-20 '
   const selectStyle = 'text-white border-[#BE78FF] bg-synapse-radial'
 
-  const {
-    loading,
-    error,
-    data: dataTx,
-    stopPolling,
-    startPolling,
-  } = useQuery(GET_BRIDGE_TRANSACTIONS_QUERY, {
-    pollInterval: 5000,
-    variables,
-    fetchPolicy: 'network-only',
-    onCompleted: (data) => {
-      let bridgeTransactionsTable = data.bridgeTransactions
-      bridgeTransactionsTable = _.orderBy(
-        bridgeTransactionsTable,
-        'fromInfo.time',
-        ['desc']
-      )
-      setTransactionsArr(bridgeTransactionsTable)
-    },
-  })
+  const { loading, stopPolling, startPolling } = useQuery(
+    GET_BRIDGE_TRANSACTIONS_QUERY,
+    {
+      pollInterval: 5000,
+      variables,
+      fetchPolicy: 'network-only',
+      onCompleted: (data) => {
+        let bridgeTransactionsTable = data.bridgeTransactions
+        bridgeTransactionsTable = _.orderBy(
+          bridgeTransactionsTable,
+          'fromInfo.time',
+          ['desc']
+        )
+        setTransactionsArr(bridgeTransactionsTable)
+      },
+    }
+  )
 
   useEffect(() => {
-    if (!completed) {
-      startPolling(10000)
-    } else {
-      stopPolling()
-    }
+    startPolling(10000)
     return () => {
       stopPolling()
     }
-  }, [stopPolling, startPolling, completed])
+  }, [stopPolling, startPolling])
 
   // Get initial data
   useEffect(() => {
-    setWalletAddress(checksumAddress(address))
-    setVariables({
-      page: 1,
-      addressFrom: checksumAddress(address),
-      useMv: true,
-    })
+    if (typeof address === 'string') {
+      setWalletAddress(checksumAddress(address))
+      setVariables({
+        page: 1,
+        addressFrom: checksumAddress(address),
+        useMv: true,
+      })
+    }
   }, [address])
 
   return (
     <StandardPageContainer title={'Address'}>
       <CopyTitle title={walletAddress} className="hidden sm:block" />
-      <CopyTitle title={truncateAddress(walletAddress)} className="block sm:hidden" />
-      {walletAddress != '' ? (
+      <CopyTitle
+        title={truncateAddress(walletAddress)}
+        className="block sm:hidden"
+      />
+      {walletAddress !== '' ? (
         <HolisticStats
           platform={platform}
           loading={false}
@@ -120,8 +97,8 @@ export default function address() {
       <HorizontalDivider />
       <HorizontalDivider />
       <br /> <br />
-      <p className="text-white text-2xl font-bold">Recent Transactions</p>
-      <div className="h-full flex items-center mt-4">
+      <p className="text-2xl font-bold text-white">Recent Transactions</p>
+      <div className="flex items-center h-full mt-4">
         <button
           onClick={() =>
             setVariables({ page: 1, addressFrom: walletAddress, useMv: true })
@@ -157,7 +134,7 @@ export default function address() {
         <BridgeTransactionTable queryResult={transactionsArr} />
       )}
       <br />
-      <div className="text-center text-white my-6 ">
+      <div className="my-6 text-center text-white ">
         <div className="mt-2 mb-14 ">
           <a
             className="text-white rounded-md px-5 py-3 text-opacity-100 transition-all ease-in hover:bg-synapse-radial border-l-0 border-gray-700 border-opacity-30 bg-gray-700 bg-opacity-30 hover:border-[#BE78FF] cursor-pointer"
@@ -171,3 +148,9 @@ export default function address() {
     </StandardPageContainer>
   )
 }
+
+const Address = () => {
+  return <AddressPage />
+}
+
+export default Address

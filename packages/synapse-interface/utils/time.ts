@@ -1,13 +1,13 @@
 export const oneMonthInMinutes: number = 43200
 export const oneDayInMinutes: number = 1440
 
-export const getTimeMinutesFromNow = (minutesFromNow) => {
+export const getUnixTimeMinutesFromNow = (minutesFromNow) => {
   const currentTimeSeconds = new Date().getTime() / 1000
 
   return Math.round(currentTimeSeconds + 60 * minutesFromNow)
 }
 
-export const getTimeMinutesBeforeNow = (minutesBeforeNow) => {
+export const getUnixTimeMinutesBeforeNow = (minutesBeforeNow) => {
   const currentTimeSeconds = new Date().getTime() / 1000
 
   return Math.round(currentTimeSeconds - 60 * minutesBeforeNow)
@@ -50,4 +50,8 @@ export const isTimestampToday = (unixTimestamp: number): boolean => {
     dateFromTimestamp.getMonth() === currentDate.getMonth() &&
     dateFromTimestamp.getFullYear() === currentDate.getFullYear()
   )
+}
+
+export const convertMsToSeconds = (ms: number) => {
+  return Math.ceil(ms / 1000)
 }

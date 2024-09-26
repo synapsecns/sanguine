@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 
 import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
 import { DropDownArrowSvg } from '@/components/icons/DropDownArrowSvg'
@@ -20,6 +21,7 @@ export const SelectorWrapper = ({
   onSearch,
   open,
   setOpen,
+  disabled,
 }) => {
   const escPressed = useKeyPress('Escape', open)
 
@@ -59,7 +61,9 @@ export const SelectorWrapper = ({
 
   useCloseOnOutsideClick(parentRef, () => onClose())
 
-  const buttonClassName = joinClassNames({
+  const t = useTranslations()
+
+  const buttonClassNames = {
     flex: 'flex items-center gap-2',
     space: 'px-2 py-1.5 rounded',
     border: 'border border-zinc-200 dark:border-transparent',
@@ -69,7 +73,8 @@ export const SelectorWrapper = ({
     }`,
     active: 'active:opacity-80',
     custom: label || open ? 'bg-transparent' : 'bg-white dark:bg-separator',
-  })
+    disabled: `${disabled ? 'hover:cursor-not-allowed' : ''}`,
+  }
 
   // TODO: Unify chainImg/icon properties between Chain and Token types
   const imgSrc =
@@ -81,8 +86,12 @@ export const SelectorWrapper = ({
     <div className="relative min-w-fit" ref={parentRef}>
       <button
         data-test-id={`${dataTestId}-button`}
-        className={buttonClassName}
-        onClick={() => (!open ? setOpen(true) : onClose())}
+        className={joinClassNames(buttonClassNames)}
+        onClick={() => {
+          if (!disabled) {
+            !open ? setOpen(true) : onClose()
+          }
+        }}
       >
         {itemName && (
           <img
@@ -113,7 +122,7 @@ export const SelectorWrapper = ({
             <div className="absolute border rounded shadow-md bg-bgLight border-separator">
               <div className="flex items-center p-1 font-medium">
                 <SlideSearchBox
-                  placeholder="Find"
+                  placeholder={t('Search.Find')}
                   searchStr={searchStr}
                   onSearch={onSearch}
                 />

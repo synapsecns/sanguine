@@ -40,6 +40,7 @@ There are a variety of different packages in this repo, covered comprehensively 
   - [Contracts](https://github.com/synapsecns/synapse-contracts): The contracts used to power the synapse bridge.
   - [Frontend](packages/synapse-interface): The frontend used to interact with the bridge.
   - [SDK](packages/sdk-router): The SDK used to interact with the bridge.
+  - [Widget](packages/widget): The widget used to access the synapse bridge externally.
 - Explorer: A bridge explorer that allows users to view on-chain data state about the bridge.
   - [Backend](services/explorer): The backend used to power the explorer.
   - [Frontend](packages/explorer-ui): The frontend used to interact with the explorer.
@@ -63,6 +64,7 @@ root
 │   ├── <a href="./packages/coverage-aggregator">coverage-aggregator</a>: Javascript coverage aggregator based on <a href="https://www.npmjs.com/package/nyc">nyc</a>
 │   ├── <a href="./packages/docs">docs</a>: Docasaurus documentation. Note: this is not yet in use, and docs are still maintained on gitbook
 │   ├── <a href="./packages/explorer-ui">explorer-ui</a>: Explorer UI
+│   ├── <a href="./packages/rfq-indexer">rfq-indexer</a>: RFQ indexer
 │   ├── <a href="./packages/rest-api">rest-api</a>: Rest API
 │   ├── <a href="./packages/sdk-router">sdk-router</a>: SDK router
 │   ├── <a href="./packages/solidity-devops">solidity-devops</a>: provides a set of tools and scripts to help with the development of Solidity smart contracts

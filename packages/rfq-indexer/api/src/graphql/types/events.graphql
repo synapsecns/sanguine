@@ -1,0 +1,81 @@
+scalar BigInt
+
+  type BridgeRequestEvent {
+    id:  String!
+    transactionId: String!
+    blockNumber: BigInt!
+    blockTimestamp: Int!
+    transactionHash: String!
+    originChainId: Int!
+    originChain: String!
+    sender: String!
+    originToken: String!
+    destToken: String!
+    originAmount: BigInt!
+    originAmountFormatted: String!
+    destAmount: BigInt!
+    destAmountFormatted: String!
+    destChainId: Int!
+    destChain: String!
+    sendChainGas: Boolean!
+  }
+  
+  type BridgeRelayedEvent {
+    id:  String!
+    transactionId: String!
+    blockNumber: BigInt!
+    blockTimestamp: Int!
+    transactionHash: String!
+    originChainId: Int!
+    originChain: String!
+    relayer: String!
+    to: String!
+    originToken: String!
+    destToken: String!
+    originAmount: BigInt!
+    originAmountFormatted: String!
+    destAmount: BigInt!
+    destAmountFormatted: String!
+    destChainId: Int!
+    destChain: String!
+  }
+  
+  type BridgeProofProvidedEvent {
+    id:  String!
+    transactionId: String!
+    blockNumber: BigInt!
+    blockTimestamp: Int!
+    transactionHash: String!
+    originChainId: Int!
+    originChain: String!
+    relayer: String!
+  }
+  
+  type BridgeDepositRefundedEvent {
+    id: String!
+    transactionId: String!
+    blockNumber: BigInt!
+    blockTimestamp: Int!
+    transactionHash: String!
+    originChainId: Int!
+    originChain: String!
+    to: String!
+    token: String!
+    amount: BigInt!
+    amountFormatted: String!
+  }
+  
+  type BridgeDepositClaimedEvent {
+    id:  String!
+    transactionId: String!
+    blockNumber: BigInt!
+    blockTimestamp: Int!
+    transactionHash: String!
+    originChainId: Int!
+    originChain: String!
+    relayer: String!
+    to: String!
+    token: String!
+    amount: BigInt!
+    amountFormatted: String!
+  }

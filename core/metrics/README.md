@@ -4,7 +4,7 @@ The metrics package contains standard drivers for opentracing, profiling and met
 
 | `METRICS_HANDLER` env | Description                                                                                                                                                                                                                                                                                                                                                                                                                          | Supports Traces | Supports Span Events | Supports Profiling                                                                            |
 |-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|----------------------|-----------------------------------------------------------------------------------------------|
-| OTLP                  | [OTLP Exporter](https://opentelemetry.io/docs/specs/otel/protocol/exporter/) protocol. Supported by various external providers including [New Relic](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/opentelemetry-introduction/), [Signoz](https://signoz.io/blog/opentelemetry-collector-complete-guide/), [Grafana](https://grafana.com/docs/opentelemetry/collector/) and more | ✅               | ✅                    | ❌ (but it can through pyroscope, by specifying the `PYROSCOPE_ENDPOINT` enviornment variable) |
+| OTLP                  | [OTLP Exporter](https://opentelemetry.io/docs/specs/otel/protocol/exporter/) protocol. Supported by various external providers including [New Relic](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/opentelemetry-introduction/), [Signoz](https://signoz.io/blog/opentelemetry-collector-complete-guide/), [Grafana](https://grafana.com/docs/opentelemetry/collector/) and more | ✅               | ✅                    | ❌ (but it can through pyroscope, by specifying the `PYROSCOPE_ENDPOINT` environment variable) |
 | Jaeger                | [Jaeger](https://www.jaegertracing.io/docs/1.46/) Client Clibrary, will soon be deprecated in favor of OTLP exports to jaeger as per [this deprecation notice](https://www.jaegertracing.io/docs/1.46/client-libraries/)                                                                                                                                                                                                             | ✅               | ✅                    | ❌ (but it can through pyroscope, by specifying the `PYROSCOPE_ENDPOINT` enviornment variable) |
 
 
@@ -12,7 +12,27 @@ There's also a `NAME_PREFIX` environment variable that will prefix all the metri
 
 ## OTLP
 
-We do our best to support enviornment variables specified in the [Otel Spec](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/) and have added a few of our own. Key ones to note are:
+We do our best to support enviornment variables specified in the [Otel Spec](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/) and the [OTLP Spec](https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/) and have added a few of our own. This was to allow for multiple exporter backends for traces, as otel clients only allow for one URL. The relevant multi exporter code is in `multiexporter.go`, and simply wraps multiple otel clients.
+
+The additional environment variables to note are:
+| Enviornment Variable                     | Description                               | Default |
+|------------------------------------------|-------------------------------------------|---------|
+| `OTEL_EXPORTER_OTLP_ENDPOINT`            | The endpoint for the primary OTLP exporter | None    |
+| `OTEL_EXPORTER_OTLP_ENDPOINT_1`          | The endpoint for the first additional OTLP exporter | None    |
+| `OTEL_EXPORTER_OTLP_ENDPOINT_2`          | The endpoint for the second additional OTLP exporter | None    |
+| `OTEL_EXPORTER_OTLP_ENDPOINT_3`          | The endpoint for the third additional OTLP exporter | None    |
+| ...                                      | Additional endpoints can be added by incrementing the number | None    |
+| `OTEL_EXPORTER_OTLP_TRANSPORT`           | The transport protocol for the primary OTLP exporter | `http` |
+| `OTEL_EXPORTER_OTLP_TRANSPORT_1`         | The transport protocol for the first additional OTLP exporter | `http` |
+| `OTEL_EXPORTER_OTLP_TRANSPORT_2`         | The transport protocol for the second additional OTLP exporter | `http` |
+| `OTEL_EXPORTER_OTLP_TRANSPORT_3`         | The transport protocol for the third additional OTLP exporter | `http` |
+| ...                                      | Additional transports can be specified by incrementing the number | `http` |
+
+You can do the same thing for `OTEL_EXPORTER_OTLP_SECURE_MODE` and `OTEL_EXPORTER_OTLP_HEADERS`
+
+<!-- TODO: fully document these optins-->
+
+Note: The OTLP exporter endpoints and transports can be specified for multiple exporters by using incrementing numbers (1, 2, 3, etc.) in the environment variable names. This allows for configuration of multiple OTLP exporters. The primary exporter uses the base names without numbers.
 
 
 ## Jaeger
@@ -22,6 +42,11 @@ Pass in the `JAEGER_ENDPOINT` enviornment variable
 ## Pyroscope
 
 Pass in the `PYROSCOPE_ENDPOINT` environment variable
+
+## Rookout
+
+Pass in `ROOKOUT_TOKEN`. Note: this will not work if ldflags -s and -w are used, as these disable the symbol table. Additionally the gcflag `all=-dwarflocationlists=true` must be enabled. You can override the git repo by setting an ldflag on `github.com/synapsecns/sanguine/core/metrics.DefaultGitRepo` to your repo or setting the enviornment variable `GIT_REPO`.
+Additionally, all [rookout enviornment](https://docs.rookout.com/docs/setup-guide/#configuration) variables are supported.
 
 ## Metrics Endpoint
 
@@ -48,9 +73,9 @@ The current logger is currently depended on by a large amount of modules:
 
 ### Limitations
 
-Currently, no enviornment variables are supported for the logger. This is a known limitation and will be fixed in a future release. Things like controlling the log level, sugarring, format, etc are [not currently supported](https://pkg.go.dev/go.uber.org/zap#NewProductionConfig). These will be added as the module beocmes more stable.
+Currently, no environment variables are supported for the logger. This is a known limitation and will be fixed in a future release. Things like controlling the log level, sugaring, format, etc are [not currently supported](https://pkg.go.dev/go.uber.org/zap#NewProductionConfig). These will be added as the module beocmes more stable.
 
-Note: because both  [ipfs go-log]("https://github.com/ipfs/go-log") and [otelzap logger](https://pkg.go.dev/github.com/uptrace/opentelemetry-go-extra/otelzap) depend on zap globals, in orderr to enable globals you can set `ENABLE_EXPERIMENTAL_ZAP_GLOBALS` to `true` in your environment. This will enable the zap globals, and you can use the `handler.Logger` to log to the global logger. This is not recommended, and will be removed in a future release.
+Note: because both  [ipfs go-log]("https://github.com/ipfs/go-log") and [otelzap logger](https://pkg.go.dev/github.com/uptrace/opentelemetry-go-extra/otelzap) depend on zap globals, in order to enable globals you can set `ENABLE_EXPERIMENTAL_ZAP_GLOBALS` to `true` in your environment. This will enable the zap globals, and you can use the `handler.Logger` to log to the global logger. This is not recommended, and will be removed in a future release.
 
 ### Using the logger
 

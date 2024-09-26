@@ -1,9 +1,10 @@
 package anvil_test
 
 import (
+	"testing"
+
 	"github.com/synapsecns/sanguine/ethergo/examples/contracttests"
 	"github.com/synapsecns/sanguine/ethergo/examples/contracttests/counter"
-	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
@@ -44,7 +45,8 @@ func (a *AnvilSuite) SetupSuite() {
 	// enable otterscan
 	options.OtterscanEnabled(true)
 
-	a.backend = anvil.NewAnvilBackend(a.GetSuiteContext(), a.T(), options)
+	a.backend, err = anvil.NewAnvilBackend(a.GetSuiteContext(), a.T(), options)
+	Nil(a.T(), err)
 	a.options = options
 	a.client, err = anvil.Dial(a.GetSuiteContext(), a.backend.RPCAddress())
 	Nil(a.T(), err)

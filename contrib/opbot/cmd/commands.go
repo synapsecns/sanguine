@@ -2,15 +2,18 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/synapsecns/sanguine/contrib/opbot/botmd"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 
 	// used for testing.
+
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/synapsecns/sanguine/contrib/opbot/config"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 var fileFlag = &cli.StringFlag{
@@ -23,7 +26,7 @@ var slackBotCommand = &cli.Command{
 	Usage: "start the slack bot",
 	Flags: []cli.Flag{fileFlag},
 	Action: func(c *cli.Context) error {
-		configFile, err := os.ReadFile(c.String(fileFlag.Name))
+		configFile, err := os.ReadFile(core.ExpandOrReturnPath(c.String(fileFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("failed to open config file: %w", err)
 		}
