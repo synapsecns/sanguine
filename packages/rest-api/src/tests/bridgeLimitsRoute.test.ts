@@ -3,6 +3,7 @@ import express from 'express'
 
 import bridgeLimitsRoute from '../routes/bridgeLimitsRoute'
 import { USDC, ETH } from '../constants/bridgeable'
+import { NativeGasAddress } from '../constants'
 
 const app = express()
 app.use('/bridgeLimits', bridgeLimitsRoute)
@@ -34,6 +35,20 @@ describe('Get Bridge Limits Route', () => {
     expect(response.body).toHaveProperty('minOriginAmount')
   }, 10_000)
 
+  it('should return 400 for unsupported route', async () => {
+    const response = await request(app).get('/bridgeLimits').query({
+      fromChain: '1',
+      toChain: '10',
+      fromToken: NativeGasAddress,
+      toToken: USDC.addresses[10],
+    })
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      'No valid route exists for the chain/token combination'
+    )
+  })
+
   it('should return 400 for unsupported fromChain', async () => {
     const response = await request(app).get('/bridgeLimits').query({
       fromChain: '999',
@@ -46,7 +61,7 @@ describe('Get Bridge Limits Route', () => {
       'message',
       'Unsupported fromChain'
     )
-  }, 10_000)
+  })
 
   it('should return 400 for unsupported toChain', async () => {
     const response = await request(app).get('/bridgeLimits').query({
@@ -57,7 +72,7 @@ describe('Get Bridge Limits Route', () => {
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('message', 'Unsupported toChain')
-  }, 10_000)
+  })
 
   it('should return 400 for missing fromToken', async () => {
     const response = await request(app).get('/bridgeLimits').query({
@@ -67,7 +82,7 @@ describe('Get Bridge Limits Route', () => {
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'fromToken')
-  }, 10_000)
+  })
 
   it('should return 400 for missing toToken', async () => {
     const response = await request(app).get('/bridgeLimits').query({
@@ -77,5 +92,5 @@ describe('Get Bridge Limits Route', () => {
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'toToken')
-  }, 10_000)
+  })
 })

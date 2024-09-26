@@ -3,6 +3,7 @@ import express from 'express'
 
 import bridgeTxInfoRoute from '../routes/bridgeTxInfoRoute'
 import { USDC } from '../constants/bridgeable'
+import { NativeGasAddress } from '../constants'
 
 const app = express()
 app.use('/bridgeTxInfo', bridgeTxInfoRoute)
@@ -28,6 +29,22 @@ describe('Bridge TX Info Route', () => {
     )
   }, 10_000)
 
+  it('should return 400 for unsupported route', async () => {
+    const response = await request(app).get('/bridgeTxInfo').query({
+      fromChain: '1',
+      toChain: '10',
+      fromToken: NativeGasAddress,
+      toToken: USDC.addresses[10],
+      amount: '10',
+      destAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    })
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      'No valid route exists for the chain/token combination'
+    )
+  })
+
   it('should return 400 for unsupported fromChain', async () => {
     const response = await request(app).get('/bridgeTxInfo').query({
       fromChain: '999',
@@ -42,7 +59,7 @@ describe('Bridge TX Info Route', () => {
       'message',
       'Unsupported fromChain'
     )
-  }, 10_000)
+  })
 
   it('should return 400 for invalid fromToken address', async () => {
     const response = await request(app).get('/bridgeTxInfo').query({
@@ -58,7 +75,7 @@ describe('Bridge TX Info Route', () => {
       'message',
       'Invalid fromToken address'
     )
-  }, 10_000)
+  })
 
   it('should return 400 for token not supported on specified chain', async () => {
     const response = await request(app).get('/bridgeTxInfo').query({
@@ -74,7 +91,7 @@ describe('Bridge TX Info Route', () => {
       'message',
       'Invalid fromToken address'
     )
-  }, 10_000)
+  })
 
   it('should return 400 for missing amount', async () => {
     const response = await request(app).get('/bridgeTxInfo').query({
@@ -86,7 +103,7 @@ describe('Bridge TX Info Route', () => {
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'amount')
-  }, 10_000)
+  })
 
   it('should return 400 for invalid destAddress', async () => {
     const response = await request(app).get('/bridgeTxInfo').query({
@@ -102,5 +119,5 @@ describe('Bridge TX Info Route', () => {
       'message',
       'Invalid destination address'
     )
-  }, 10_000)
+  })
 })
