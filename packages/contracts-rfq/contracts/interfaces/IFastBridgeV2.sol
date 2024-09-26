@@ -33,6 +33,8 @@ interface IFastBridgeV2 is IFastBridge {
         uint256 exclusivityEndTime;
     }
 
+    event BridgeRequestedV2(bytes32 indexed transactionId, bytes quoteId);
+
     /// @notice Initiates bridge on origin chain to be relayed by off-chain relayer, with the ability
     /// to provide temporary exclusivity fill rights for the quote relayer.
     /// @param params   The parameters required to bridge

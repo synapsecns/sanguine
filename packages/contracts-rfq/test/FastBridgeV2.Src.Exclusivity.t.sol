@@ -10,8 +10,10 @@ contract FastBridgeV2SrcExclusivityTest is FastBridgeV2SrcTest {
     function createFixturesV2() public virtual override {
         tokenParamsV2.quoteRelayer = relayerA;
         tokenParamsV2.quoteExclusivitySeconds = EXCLUSIVITY_PERIOD;
+        tokenParamsV2.quoteId = bytes("Created by Relayer A");
         ethParamsV2.quoteRelayer = relayerB;
         ethParamsV2.quoteExclusivitySeconds = EXCLUSIVITY_PERIOD;
+        ethParamsV2.quoteId = bytes("Created by Relayer B");
 
         tokenTx.exclusivityRelayer = relayerA;
         tokenTx.exclusivityEndTime = block.timestamp + EXCLUSIVITY_PERIOD;
