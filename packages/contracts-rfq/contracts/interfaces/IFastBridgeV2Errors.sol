@@ -14,6 +14,7 @@ interface IFastBridgeV2Errors {
     error DeadlineTooShort();
     error DisputePeriodNotPassed();
     error DisputePeriodPassed();
+    error ExclusivityPeriodNotPassed();
 
     error TransactionRelayed();
 }

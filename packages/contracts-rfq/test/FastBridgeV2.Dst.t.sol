@@ -30,8 +30,12 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
 
     function mintTokens() public override {
         dstToken.mint(address(relayerA), LEFTOVER_BALANCE + tokenParams.destAmount);
+        dstToken.mint(address(relayerB), LEFTOVER_BALANCE + tokenParams.destAmount);
+        deal(relayerA, LEFTOVER_BALANCE + ethParams.destAmount);
         deal(relayerB, LEFTOVER_BALANCE + ethParams.destAmount);
         vm.prank(relayerA);
+        dstToken.approve(address(fastBridge), type(uint256).max);
+        vm.prank(relayerB);
         dstToken.approve(address(fastBridge), type(uint256).max);
     }
 
@@ -86,14 +90,14 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         assertEq(dstToken.balanceOf(address(fastBridge)), 0);
     }
 
-    /// @notice RelayerA completes the ERC20 bridge request, using relayerB's address
+    /// @notice RelayerB completes the ERC20 bridge request, using relayerA's address
     function test_relay_token_withRelayerAddress() public {
         bytes32 txId = getTxId(tokenTx);
-        expectBridgeRelayed(tokenTx, txId, address(relayerB));
-        relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: 0, bridgeTx: tokenTx});
+        expectBridgeRelayed(tokenTx, txId, address(relayerA));
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: 0, bridgeTx: tokenTx});
         assertTrue(fastBridge.bridgeRelays(txId));
         assertEq(dstToken.balanceOf(address(userB)), tokenParams.destAmount);
-        assertEq(dstToken.balanceOf(address(relayerA)), LEFTOVER_BALANCE);
+        assertEq(dstToken.balanceOf(address(relayerB)), LEFTOVER_BALANCE);
         assertEq(dstToken.balanceOf(address(fastBridge)), 0);
     }
 
@@ -108,30 +112,30 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         assertEq(address(fastBridge).balance, 0);
     }
 
-    /// @notice RelayerB completes the ETH bridge request, using relayerA's address
+    /// @notice RelayerA completes the ETH bridge request, using relayerB's address
     function test_relay_eth_withRelayerAddress() public {
         bytes32 txId = getTxId(ethTx);
-        expectBridgeRelayed(ethTx, txId, address(relayerA));
-        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: ethParams.destAmount, bridgeTx: ethTx});
+        expectBridgeRelayed(ethTx, txId, address(relayerB));
+        relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
         assertTrue(fastBridge.bridgeRelays(txId));
         assertEq(address(userB).balance, ethParams.destAmount);
-        assertEq(address(relayerB).balance, LEFTOVER_BALANCE);
+        assertEq(address(relayerA).balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, 0);
     }
 
-    /// @notice RelayerB completes the ETH bridge request, using relayerA's address
+    /// @notice RelayerA completes the ETH bridge request, using relayerB's address
     function test_relay_eth_withRelayerAddress_checkBlockData() public {
         vm.roll(987_654_321);
         vm.warp(123_456_789);
         bytes32 txId = getTxId(ethTx);
-        expectBridgeRelayed(ethTx, txId, address(relayerA));
-        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: ethParams.destAmount, bridgeTx: ethTx});
+        expectBridgeRelayed(ethTx, txId, address(relayerB));
+        relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
         assertTrue(fastBridge.bridgeRelays(txId));
         (uint48 recordedBlockNumber, uint48 recordedblockTimestamp,) = fastBridge.bridgeRelayDetails(txId);
         assertEq(recordedBlockNumber, 987_654_321);
         assertEq(recordedblockTimestamp, 123_456_789);
         assertEq(address(userB).balance, ethParams.destAmount);
-        assertEq(address(relayerB).balance, LEFTOVER_BALANCE);
+        assertEq(address(relayerA).balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, 0);
     }
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
