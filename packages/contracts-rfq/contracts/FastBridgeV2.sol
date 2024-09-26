@@ -75,6 +75,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         return abi.decode(request, (BridgeTransaction));
     }
 
+    /// @inheritdoc IFastBridgeV2
+    function getBridgeTransactionV2(bytes memory request) public pure returns (BridgeTransactionV2 memory) {
+        return abi.decode(request, (BridgeTransactionV2));
+    }
+
     /// @inheritdoc IFastBridge
     function bridge(BridgeParams memory params) external payable {
         BridgeParamsV2 memory defaultParamsV2 =
@@ -153,11 +158,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function relay(bytes memory request, address relayer) public payable {
         if (relayer == address(0)) revert ZeroAddress();
         bytes32 transactionId = keccak256(request);
-        BridgeTransaction memory transaction = getBridgeTransaction(request);
-        if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
+        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
+        if (transaction.txV1.destChainId != uint32(block.chainid)) revert ChainIncorrect();
 
         // check haven't exceeded deadline for relay to happen
-        if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
+        if (block.timestamp > transaction.txV1.deadline) revert DeadlineExceeded();
 
         if (bridgeRelayDetails[transactionId].relayer != address(0)) revert TransactionRelayed();
 
@@ -166,12 +171,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
         // transfer tokens to recipient on destination chain and gas rebate if requested
-        address to = transaction.destRecipient;
-        address token = transaction.destToken;
-        uint256 amount = transaction.destAmount;
+        address to = transaction.txV1.destRecipient;
+        address token = transaction.txV1.destToken;
+        uint256 amount = transaction.txV1.destAmount;
 
         uint256 rebate = chainGasAmount;
-        if (!transaction.sendChainGas) {
+        if (!transaction.txV1.sendChainGas) {
             // forward erc20
             rebate = 0;
             _pullToken(to, token, amount);
@@ -188,11 +193,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             transactionId,
             relayer,
             to,
-            transaction.originChainId,
-            transaction.originToken,
-            transaction.destToken,
-            transaction.originAmount,
-            transaction.destAmount,
+            transaction.txV1.originChainId,
+            transaction.txV1.originToken,
+            transaction.txV1.destToken,
+            transaction.txV1.originAmount,
+            transaction.txV1.destAmount,
             rebate
         );
     }

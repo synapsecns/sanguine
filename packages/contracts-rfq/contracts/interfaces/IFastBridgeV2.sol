@@ -58,4 +58,8 @@ interface IFastBridgeV2 is IFastBridge {
     /// @param transactionId The ID of the transaction to check
     /// @return True if the transaction has been relayed, false otherwise
     function bridgeRelays(bytes32 transactionId) external view returns (bool);
+
+    /// @notice Decodes bridge request into a bridge transaction V2 struct used by FastBridgeV2
+    /// @param request The bridge request to decode
+    function getBridgeTransactionV2(bytes memory request) external view returns (BridgeTransactionV2 memory);
 }
