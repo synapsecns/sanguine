@@ -3,14 +3,15 @@ pragma solidity 0.8.24;
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./libs/Errors.sol";
 import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 
 import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
+import {IFastBridgeV2Errors} from "./interfaces/IFastBridgeV2Errors.sol";
 
-contract FastBridgeV2 is Admin, IFastBridgeV2 {
+/// @notice FastBridgeV2 is a contract for bridging tokens across chains.
+contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     using SafeERC20 for IERC20;
     using UniversalTokenLib for address;
 
@@ -185,16 +186,17 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
     /// @inheritdoc IFastBridge
     function prove(bytes memory request, bytes32 destTxHash) external {
-        prove(request, destTxHash, msg.sender);
+        bytes32 transactionId = keccak256(request);
+        prove(transactionId, destTxHash, msg.sender);
     }
 
     /// @inheritdoc IFastBridgeV2
-    function prove(bytes memory request, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
-        bytes32 transactionId = keccak256(request);
+    function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
         // update bridge tx status given proof provided
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
         bridgeStatuses[transactionId] = BridgeStatus.RELAYER_PROVED;
-        bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: relayer}); // overflow ok
+        // overflow ok
+        bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: relayer});
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
     }

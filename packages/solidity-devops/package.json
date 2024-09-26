@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/solidity-devops",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "A collection of utils to effortlessly test, deploy and maintain the smart contracts on EVM compatible blockchains",
   "license": "MIT",
   "repository": {
@@ -40,6 +40,6 @@
     "vp": "js/verifyProxy.js"
   },
   "devDependencies": {
-    "solhint": "^4.5.4"
+    "solhint": "5.0.3"
   }
 }
