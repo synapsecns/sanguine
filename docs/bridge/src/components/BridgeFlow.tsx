@@ -5,19 +5,18 @@ export const BridgeFlow = () => {
       viewBox="-240 0 480 164"
       xmlns="http://www.w3.org/2000/svg"
     >
+      <set
+        id="bridgeFlowTimer"
+        attributeName="x"
+        begin="0s; bridgeFlowTimerOut.end + 2s"
+      />
       <g fill="currentcolor" fillOpacity=".05">
         <rect x="-50%" rx="4" y="0" width="100%" height="48" />
         <rect x="-50%" rx="4" y="56" width="100%" height="48" />
         <rect x="-50%" rx="4" y="112" width="100%" height="48" />
-
         <rect x="-50%" rx="4" y="0%" width="33.3%" height="100%" />
         <rect x="16.7%" rx="4" y="0%" width="33.3%" height="100%" />
       </g>
-      <set
-        id="bridgeFlowTimer"
-        attributeName="visibility"
-        begin="0s; bridgeFlowTimerOut.end + 2s"
-      />
       <line
         x1="-50%"
         y1="100%"
@@ -51,75 +50,6 @@ export const BridgeFlow = () => {
           fill="freeze"
         />
       </line>
-      {/* <line
-        x1="-16.7%"
-        y1="47"
-        x2="16.7%"
-        y2="47"
-        stroke="var(--synapse-green-secondary)"
-        strokeWidth="2"
-      >
-        <animate
-          attributeName="x2"
-          values="-16.7%; 16.7%"
-          begin="0s; bridgeFlowSign.begin"
-          dur="8s"
-          calcMode="spline"
-          keyTimes="0; 1"
-          keySplines=".5 0 .2 1"
-          fill="freeze"
-        />
-      </line>
-      <line
-        x1="-16.7%"
-        y1="103"
-        x2="16.7%"
-        y2="103"
-        stroke="var(--synapse-green-secondary)"
-        strokeWidth="2"
-      >
-        <set attributeName="x2" to="-16.7%" begin="bridgeFlowTimer.begin" />
-        <animate
-          attributeName="x2"
-          values="-16.7%; 0%"
-          begin="bridgeFlowSend.begin"
-          dur="1s"
-          calcMode="spline"
-          keyTimes="0; 1"
-          keySplines=".5 0 .2 1"
-          fill="freeze"
-        />
-        <animate
-          attributeName="x2"
-          values="0%; 16.7%"
-          begin="bridgeFlowReceive.begin"
-          dur="1s"
-          calcMode="spline"
-          keyTimes="0; 1"
-          keySplines=".5 0 .2 1"
-          fill="freeze"
-        />
-      </line>
-      <line
-        x1="-16.7%"
-        y1="159"
-        x2="16.7%"
-        y2="159"
-        stroke="var(--synapse-green-secondary)"
-        strokeWidth="2"
-      >
-        <set attributeName="x2" to="-16.7%" begin="bridgeFlowTimer.begin" />
-        <animate
-          attributeName="x2"
-          values="-16.7%; 16.7%"
-          begin="bridgeFlowMint.begin"
-          dur="2.5s"
-          calcMode="linear"
-          keyTimes="0; 1"
-          keySplines=".5 0 .2 1"
-          fill="freeze"
-        />
-      </line> */}
       <g fill="currentcolor" textAnchor="middle" dominantBaseline="middle">
         <text x="-33%" y="24">
           originChain
@@ -142,7 +72,7 @@ export const BridgeFlow = () => {
           fill="freeze"
         />
       </circle>
-      <circle r="12" fill="hsl(211deg 67% 50%)">
+      <circle cx="-33%" cy="80" r="12" fill="hsl(211deg 67% 50%)">
         <set attributeName="cy" to="80" begin="bridgeFlowTimer.begin" />
         <set attributeName="cx" to="-33%" begin="bridgeFlowTimer.begin" />
         <animate
@@ -187,7 +117,7 @@ export const BridgeFlow = () => {
           fill="freeze"
         />
       </circle>
-      <circle r="12" cx="21%" cy="136" fill="hsl(285deg 100% 50%)">
+      <circle r="12" cx="21%" cy="136" fill="hsl(285deg 100% 50%)" opacity="0">
         <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
         <animate
           attributeName="opacity"
@@ -198,7 +128,7 @@ export const BridgeFlow = () => {
           fill="freeze"
         />
       </circle>
-      <circle r="12" cx="30%" cy="136" fill="hsl(164deg 37% 50%)">
+      <circle r="12" cx="21%" cy="136" fill="hsl(164deg 37% 50%)">
         <set attributeName="cy" to="136" begin="bridgeFlowTimer.begin" />
         <set attributeName="cx" to="21%" begin="bridgeFlowTimer.begin" />
         <animate
@@ -258,48 +188,6 @@ export const BridgeFlow = () => {
           repeatCount="indefinite"
         />
       </circle>
-      {/* <g fill="var(--synapse-green-secondary)">
-        <circle r="3" cx="-14%" cy="24">
-          <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
-          <set
-            attributeName="opacity"
-            to="1"
-            begin="bridgeFlowTimer.begin + .25s"
-          />
-        </circle>
-        <circle r="3" cx="-14%" cy="80">
-          <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
-          <set attributeName="opacity" to="1" begin="bridgeFlowSend.end" />
-        </circle>
-        <circle r="3" cx="-14%" cy="136">
-          <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
-          <set
-            attributeName="opacity"
-            to="1"
-            begin="bridgeFlowSend.end + .5s"
-          />
-        </circle>
-        <circle r="3" cx="14%" cy="136">
-          <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
-          <set
-            attributeName="opacity"
-            to="1"
-            begin="bridgeFlowBurn.end + .2s"
-          />
-        </circle>
-        <circle r="3" cx="14%" cy="80">
-          <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
-          <set attributeName="opacity" to="1" begin="bridgeFlowReceive.end" />
-        </circle>
-        <circle r="3" cx="14%" cy="24">
-          <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
-          <set
-            attributeName="opacity"
-            to="1"
-            begin="bridgeFlowReceive.end + .5s"
-          />
-        </circle>
-      </g> */}
     </svg>
   )
 }
