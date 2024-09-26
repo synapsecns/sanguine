@@ -354,12 +354,18 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				ctx.Context(),
 				func(ctx context.Context) error {
 					status, err = b.submitter.GetSubmissionStatus(ctx, big.NewInt(int64(rawRequest.OriginChainID)), nonce)
-					if err != nil || status.State() == submitter.NotFound {
+					if err != nil {
 						b.logger.Errorf(ctx, "error fetching quote request: %v", err)
 						return fmt.Errorf("error fetching quote request: %w", err)
 					}
+					if status.State() != submitter.Confirmed {
+						b.logger.Errorf(ctx, "refund not confirmed yet")
+						return errors.New("refund not confirmed yet")
+					}
 					return nil
 				},
+				retry.WithMaxAttemptTime(15),
+				retry.WithMaxAttempts(3),
 			)
 			if err != nil {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
