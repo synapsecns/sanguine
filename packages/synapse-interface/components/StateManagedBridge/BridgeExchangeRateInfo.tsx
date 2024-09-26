@@ -11,6 +11,7 @@ import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
+import { getSignificantDecimals } from '@/utils/getSignificantDecimals'
 
 export const BridgeExchangeRateInfo = () => {
   /* TODO:
@@ -134,7 +135,6 @@ const TimeEstimate = () => {
 }
 
 const GasDropLabel = () => {
-  let decimalsToDisplay
   const { toChainId } = useBridgeState()
   const {
     bridgeQuote: { gasDropAmount },
@@ -143,20 +143,13 @@ const GasDropLabel = () => {
   const t = useTranslations('Bridge')
   const symbol = CHAINS_BY_ID[toChainId]?.nativeCurrency.symbol
 
-  if ([CHAINS.FANTOM.id].includes(toChainId)) {
-    decimalsToDisplay = 2
-  } else if (
-    [CHAINS.BNB.id, CHAINS.AVALANCHE.id, CHAINS.BOBA.id].includes(toChainId)
-  ) {
-    decimalsToDisplay = 3
-  } else {
-    decimalsToDisplay = 4
-  }
+  const stringifiedGasAmount = formatBigIntToString(gasDropAmount, 18)
+  const significantDecimals = getSignificantDecimals(stringifiedGasAmount)
 
   const formattedGasDropAmount = formatBigIntToString(
     gasDropAmount,
     18,
-    decimalsToDisplay
+    significantDecimals
   )
 
   const airdropInDollars = getAirdropInDollars(symbol, formattedGasDropAmount)
@@ -214,12 +207,13 @@ const getAirdropInDollars = (
   symbol: string,
   formattedGasDropAmount: string
 ) => {
+  const decimals = symbol === 'JEWEL' ? 4 : 2
   const price = useCoingeckoPrice(symbol)
 
   if (price) {
     const airdropInDollars = parseFloat(formattedGasDropAmount) * price
 
-    return airdropInDollars.toFixed(2)
+    return airdropInDollars.toFixed(decimals)
   } else {
     return undefined
   }

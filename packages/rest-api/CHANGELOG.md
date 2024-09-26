@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.3.1...@synapsecns/rest-api@1.3.2) (2024-09-26)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+## [1.3.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.3.0...@synapsecns/rest-api@1.3.1) (2024-09-26)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+# [1.3.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.2.0...@synapsecns/rest-api@1.3.0) (2024-09-25)
+
+
+### Features
+
+* **rest-api:** Adds validateRouteExists validation [SLT-260] ([#3180](https://github.com/synapsecns/sanguine/issues/3180)) ([ceff8bc](https://github.com/synapsecns/sanguine/commit/ceff8bcbc179dd6442cd1861eb31505217f9c55c))
+
+
+
+
+
 # [1.2.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.1.5...@synapsecns/rest-api@1.2.0) (2024-09-24)
 
 

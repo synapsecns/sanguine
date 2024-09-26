@@ -36,8 +36,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     mapping(bytes32 => BridgeStatus) public bridgeStatuses;
     /// @notice Proof of relayed bridge tx on origin chain
     mapping(bytes32 => BridgeProof) public bridgeProofs;
-    /// @notice Whether bridge has been relayed on destination chain
-    mapping(bytes32 => bool) public bridgeRelays;
+    /// @notice Relay details on destination chain
+    mapping(bytes32 => BridgeRelay) public bridgeRelayDetails;
 
     /// @dev to prevent replays
     uint256 public nonce;
@@ -80,6 +80,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // check bridge params
         if (params.dstChainId == block.chainid) revert ChainIncorrect();
         if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
+        if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
         if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
 
@@ -132,6 +133,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridgeV2
     function relay(bytes memory request, address relayer) public payable {
+        if (relayer == address(0)) revert ZeroAddress();
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
         if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
@@ -139,9 +141,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // check haven't exceeded deadline for relay to happen
         if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
 
+        if (bridgeRelayDetails[transactionId].relayer != address(0)) revert TransactionRelayed();
+
         // mark bridge transaction as relayed
-        if (bridgeRelays[transactionId]) revert TransactionRelayed();
-        bridgeRelays[transactionId] = true;
+        bridgeRelayDetails[transactionId] =
+            BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
         // transfer tokens to recipient on destination chain and gas rebate if requested
         address to = transaction.destRecipient;
@@ -175,18 +179,25 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         );
     }
 
+    /// @inheritdoc IFastBridgeV2
+    function bridgeRelays(bytes32 transactionId) public view returns (bool) {
+        // has this transactionId been relayed?
+        return bridgeRelayDetails[transactionId].relayer != address(0);
+    }
+
     /// @inheritdoc IFastBridge
     function prove(bytes memory request, bytes32 destTxHash) external {
-        prove(request, destTxHash, msg.sender);
+        bytes32 transactionId = keccak256(request);
+        prove(transactionId, destTxHash, msg.sender);
     }
 
     /// @inheritdoc IFastBridgeV2
-    function prove(bytes memory request, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
-        bytes32 transactionId = keccak256(request);
+    function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
         // update bridge tx status given proof provided
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
         bridgeStatuses[transactionId] = BridgeStatus.RELAYER_PROVED;
-        bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: relayer}); // overflow ok
+        // overflow ok
+        bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: relayer});
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
     }
@@ -263,6 +274,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @inheritdoc IFastBridge
     function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
+
+        if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
+
         BridgeTransaction memory transaction = getBridgeTransaction(request);
 
         if (hasRole(REFUNDER_ROLE, msg.sender)) {
@@ -273,8 +287,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             if (block.timestamp <= transaction.deadline + REFUND_DELAY) revert DeadlineNotExceeded();
         }
 
-        // set status to refunded if still in requested state
-        if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
+        // if all checks passed, set to REFUNDED status
         bridgeStatuses[transactionId] = BridgeStatus.REFUNDED;
 
         // transfer origin collateral back to original sender

@@ -8,6 +8,7 @@ import { isTokenSupportedOnChain } from './../utils/isTokenSupportedOnChain'
 import { isTokenAddress } from '../utils/isTokenAddress'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
 import { checksumAddresses } from '../middleware/checksumAddresses'
+import { validateRouteExists } from '../validations/validateRouteExists'
 
 const router = express.Router()
 
@@ -130,6 +131,13 @@ router.get(
         isTokenSupportedOnChain(value, req.query.toChain as string)
       )
       .withMessage('Token not supported on specified chain'),
+    check()
+      .custom((_value, { req }) => {
+        const { fromChain, toChain, fromToken, toToken } = req.query
+
+        return validateRouteExists(fromChain, fromToken, toChain, toToken)
+      })
+      .withMessage('No valid route exists for the chain/token combination'),
   ],
   showFirstValidationError,
   bridgeLimitsController
