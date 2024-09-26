@@ -861,7 +861,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         refund({caller: refunder, bridgeTx: ethTx});
         assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
@@ -875,8 +875,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         refund({caller: refunder, bridgeTx: ethTx});
         assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + 2 * ethParams.originAmount);
-        assertEq(address(userB).balance, LEFTOVER_BALANCE);
+        assertEq(userA.balance, LEFTOVER_BALANCE + 2 * ethParams.originAmount);
+        assertEq(userB.balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
@@ -889,7 +889,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         refund({caller: refunder, bridgeTx: ethTx});
         assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
@@ -903,7 +903,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         refund({caller: caller, bridgeTx: ethTx});
         assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
