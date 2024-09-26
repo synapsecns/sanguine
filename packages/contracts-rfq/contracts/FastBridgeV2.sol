@@ -164,8 +164,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // check haven't exceeded deadline for relay to happen
         if (block.timestamp > transaction.txV1.deadline) revert DeadlineExceeded();
 
-        if (bridgeRelayDetails[transactionId].relayer != address(0)) revert TransactionRelayed();
-
+        if (bridgeRelays(transactionId)) revert TransactionRelayed();
+        // Check if exclusivity period is ongoing
+        if (block.timestamp <= transaction.exclusivityEndTime && relayer != transaction.exclusivityRelayer) {
+            revert ExclusivityPeriodNotPassed();
+        }
         // mark bridge transaction as relayed
         bridgeRelayDetails[transactionId] =
             BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
