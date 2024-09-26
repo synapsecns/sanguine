@@ -57,7 +57,8 @@
     "ReceiveWithEllipsis": "受取…",
     "All receivable tokens": "すべての受取可能トークン",
     "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "{fromChainId}の{debouncedFromValue} {fromToken}から{toChainId}の{toToken}へのブリッジのルートが見つかりました",
-    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "{fromChainId}の{debouncedFromValue} {fromToken}から{toChainId}の{toToken}へのブリッジのルートが見つかりませんでした"
+    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "{fromChainId}の{debouncedFromValue} {fromToken}から{toChainId}の{toToken}へのブリッジのルートが見つかりませんでした",
+    "Confirm new quote": "新しい見積もりを確認"
   },
   "Completed": {
     "to": "へ",
@@ -305,7 +306,9 @@
     "Began": "開始",
     "Complete": "完了",
     "Reverted": "取り消し",
+    "Refunded": "返金済み",
     "Transaction reverted, funds returned": "取引が取り消されました。資金が返還されました",
+    "Transaction refunded, funds returned": "取引が返金され、資金が戻されました",
     "What's taking so long?": "なぜ時間がかかっているのですか？",
     "FAQ": "よくある質問",
     "Support": "サポート",

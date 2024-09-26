@@ -17,7 +17,11 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { useBridgeValidations } from './hooks/useBridgeValidations'
 import { useTranslations } from 'next-intl'
 
-export const OutputContainer = () => {
+interface OutputContainerProps {
+  isQuoteStale: boolean
+}
+
+export const OutputContainer = ({ isQuoteStale }: OutputContainerProps) => {
   const { address } = useAccount()
   const { bridgeQuote, isLoading } = useBridgeQuoteState()
   const { showDestinationAddress } = useBridgeDisplayState()
@@ -32,6 +36,8 @@ export const OutputContainer = () => {
       return ''
     }
   }, [bridgeQuote, hasValidInput, hasValidQuote])
+
+  const inputClassName = isQuoteStale ? 'opacity-50' : undefined
 
   return (
     <BridgeSectionContainer>
@@ -48,6 +54,7 @@ export const OutputContainer = () => {
           disabled={true}
           showValue={showValue}
           isLoading={isLoading}
+          className={inputClassName}
         />
       </BridgeAmountContainer>
     </BridgeSectionContainer>

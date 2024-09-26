@@ -10,7 +10,7 @@ import { API_URL } from '@graphql'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
 import { formatDateTimestamp } from '@utils/formatDate'
 import { IconAndAmount } from '@components/misc/IconAndAmount'
-
+import { addressToSymbol } from '@utils/addressToSymbol'
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
 const link = new HttpLink({
@@ -157,7 +157,10 @@ export const BridgeTransaction = ({ queryResult }) => {
                       value={fromInfo.value}
                       tokenAddress={fromInfo.tokenAddress}
                       chainId={fromInfo.chainID}
-                      tokenSymbol={fromInfo.tokenSymbol}
+                      tokenSymbol={addressToSymbol({
+                        tokenAddress: fromInfo.tokenAddress,
+                        chainId: fromInfo.chainID,
+                      })}
                       iconSize="w-4 h-4"
                       // textSize="text-sm"
                       // styledCoin={true}
@@ -183,7 +186,10 @@ export const BridgeTransaction = ({ queryResult }) => {
                         value={toInfo.value}
                         tokenAddress={toInfo.tokenAddress}
                         chainId={toInfo.chainID}
-                        tokenSymbol={toInfo.tokenSymbol}
+                        tokenSymbol={addressToSymbol({
+                          tokenAddress: toInfo.tokenAddress,
+                          chainId: toInfo.chainID,
+                        })}
                         iconSize="w-4 h-4"
                         // textSize="text-sm"
                         // styledCoin={true}

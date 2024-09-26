@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.5...@synapsecns/solidity-devops@0.4.6) (2024-09-24)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** CI workflows [SLT-245] ([#3178](https://github.com/synapsecns/sanguine/issues/3178)) ([74b620e](https://github.com/synapsecns/sanguine/commit/74b620e4c928be8d0dbb422708376d167db7848d))
+
+
+
+
+
 ## [0.4.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.4...@synapsecns/solidity-devops@0.4.5) (2024-09-23)
 
 **Note:** Version bump only for package @synapsecns/solidity-devops
