@@ -344,6 +344,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return tx, nil
 			})
 			if err != nil {
+				_, err := ctx.Response().Reply("error submitting refund")
 				log.Printf("error submitting refund: %v\n", err)
 				return
 			}
@@ -353,25 +354,25 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				ctx.Context(),
 				func(ctx context.Context) error {
 					status, err = b.submitter.GetSubmissionStatus(ctx, big.NewInt(int64(rawRequest.OriginChainID)), nonce)
-					if err != nil || !status.HasTx() {
+					if err != nil || status.State() == submitter.NotFound {
 						b.logger.Errorf(ctx, "error fetching quote request: %v", err)
 						return fmt.Errorf("error fetching quote request: %w", err)
 					}
 					return nil
 				},
-				retry.WithMaxAttempts(5),
-				retry.WithMaxAttemptTime(30*time.Second),
 			)
 			if err != nil {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
-				_, err := ctx.Response().Reply(fmt.Sprintf("error fetching explorer link to refund, but nonce is %d", nonce))
+				_, err := ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
 				log.Printf("error fetching quote request: %v\n", err)
 				return
 			}
 
-			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toExplorerSlackLink(status.TxHash().String())))
-			if err != nil {
-				log.Println(err)
+			if status.HasTx() {
+				_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toTXSlackLink(status.TxHash().String(), rawRequest.OriginChainID)))
+				if err != nil {
+					log.Println(err)
+				}
 			}
 		},
 	}
