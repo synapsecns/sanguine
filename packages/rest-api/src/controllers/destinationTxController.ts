@@ -2,6 +2,7 @@ import { validationResult } from 'express-validator'
 import { ethers } from 'ethers'
 
 import { getTokenDecimals } from '../utils/getTokenDecimals'
+import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 
 export const destinationTxController = async (req, res) => {
   const errors = validationResult(req)
@@ -47,15 +48,18 @@ export const destinationTxController = async (req, res) => {
     const toInfo = graphqlData.data.bridgeTransactions[0]?.toInfo || null
 
     if (toInfo) {
-      const { tokenAddress, value, ...restToInfo } = toInfo
+      const { tokenAddress, value, chainID, ...restToInfo } = toInfo
 
-      const tokenDecimals = getTokenDecimals(toInfo.chainID, tokenAddress)
+      const tokenInfo = tokenAddressToToken(chainID.toString(), tokenAddress)
+      const tokenDecimals = getTokenDecimals(chainID, tokenAddress)
       const formattedValue = ethers.utils.formatUnits(value, tokenDecimals)
 
       res.json({
         status: 'completed',
         toInfo: {
+          chainID,
           ...restToInfo,
+          tokenSymbol: tokenInfo ? tokenInfo?.symbol : null,
           formattedValue: `${formattedValue}`,
         },
       })

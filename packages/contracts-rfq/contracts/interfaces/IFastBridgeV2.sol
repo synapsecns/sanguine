@@ -4,6 +4,12 @@ pragma solidity ^0.8.20;
 import {IFastBridge} from "./IFastBridge.sol";
 
 interface IFastBridgeV2 is IFastBridge {
+    struct BridgeRelay {
+        uint48 blockNumber;
+        uint48 blockTimestamp;
+        address relayer;
+    }
+
     /// @notice Relays destination side of bridge transaction by off-chain relayer
     /// @param request The encoded bridge transaction to relay on destination chain
     /// @param relayer The address of the relaying entity which should have control of the origin funds when claimed
@@ -19,4 +25,8 @@ interface IFastBridgeV2 is IFastBridge {
     /// @notice Can only send funds to the relayer address on the proof.
     /// @param request The encoded bridge transaction to claim on origin chain
     function claim(bytes memory request) external;
+    /// @notice Checks if a transaction has been relayed
+    /// @param transactionId The ID of the transaction to check
+    /// @return True if the transaction has been relayed, false otherwise
+    function bridgeRelays(bytes32 transactionId) external view returns (bool);
 }

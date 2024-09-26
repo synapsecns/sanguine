@@ -302,6 +302,7 @@ const StateManagedBridge = () => {
         estimatedTime: bridgeQuote.estimatedTime,
         bridgeModuleName: bridgeQuote.bridgeModuleName,
         destinationAddress: destinationAddress,
+        routerAddress: bridgeQuote.routerAddress,
       })
     )
     try {
