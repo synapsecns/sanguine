@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {ChainIncorrect, DeadlineExceeded, TransactionRelayed, ZeroAddress} from "../contracts/libs/Errors.sol";
+
 import {FastBridgeV2, FastBridgeV2Test, IFastBridge} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
@@ -113,6 +115,21 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         assertEq(address(fastBridge).balance, 0);
     }
 
+    /// @notice RelayerB completes the ETH bridge request, using relayerA's address
+    function test_relay_eth_withRelayerAddress_checkBlockData() public {
+        vm.roll(987_654_321);
+        vm.warp(123_456_789);
+        bytes32 txId = getTxId(ethTx);
+        expectBridgeRelayed(ethTx, txId, address(relayerA));
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: ethParams.destAmount, bridgeTx: ethTx});
+        assertTrue(fastBridge.bridgeRelays(txId));
+        (uint48 recordedBlockNumber, uint48 recordedblockTimestamp,) = fastBridge.bridgeRelayDetails(txId);
+        assertEq(recordedBlockNumber, 987_654_321);
+        assertEq(recordedblockTimestamp, 123_456_789);
+        assertEq(address(userB).balance, ethParams.destAmount);
+        assertEq(address(relayerB).balance, LEFTOVER_BALANCE);
+        assertEq(address(fastBridge).balance, 0);
+    }
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
 
     function test_relay_revert_chainIncorrect() public {
@@ -149,5 +166,10 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         skip(DEADLINE + 1);
         vm.expectRevert(DeadlineExceeded.selector);
         relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: 0, bridgeTx: tokenTx});
+    }
+
+    function test_relay_withRelayerAddress_revert_zeroAddr() public {
+        vm.expectRevert(ZeroAddress.selector);
+        relayWithAddress({caller: relayerA, relayer: address(0), msgValue: 0, bridgeTx: tokenTx});
     }
 }

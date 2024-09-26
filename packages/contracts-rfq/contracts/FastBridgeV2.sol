@@ -36,8 +36,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     mapping(bytes32 => BridgeStatus) public bridgeStatuses;
     /// @notice Proof of relayed bridge tx on origin chain
     mapping(bytes32 => BridgeProof) public bridgeProofs;
-    /// @notice Whether bridge has been relayed on destination chain
-    mapping(bytes32 => bool) public bridgeRelays;
+    /// @notice Relay details on destination chain
+    mapping(bytes32 => BridgeRelay) public bridgeRelayDetails;
 
     /// @dev to prevent replays
     uint256 public nonce;
@@ -132,6 +132,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridgeV2
     function relay(bytes memory request, address relayer) public payable {
+        if (relayer == address(0)) revert ZeroAddress();
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
         if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
@@ -139,9 +140,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // check haven't exceeded deadline for relay to happen
         if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
 
+        if (bridgeRelayDetails[transactionId].relayer != address(0)) revert TransactionRelayed();
+
         // mark bridge transaction as relayed
-        if (bridgeRelays[transactionId]) revert TransactionRelayed();
-        bridgeRelays[transactionId] = true;
+        bridgeRelayDetails[transactionId] =
+            BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
         // transfer tokens to recipient on destination chain and gas rebate if requested
         address to = transaction.destRecipient;
@@ -173,6 +176,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             transaction.destAmount,
             rebate
         );
+    }
+
+    /// @inheritdoc IFastBridgeV2
+    function bridgeRelays(bytes32 transactionId) public view returns (bool) {
+        // has this transactionId been relayed?
+        return bridgeRelayDetails[transactionId].relayer != address(0);
     }
 
     /// @inheritdoc IFastBridge
