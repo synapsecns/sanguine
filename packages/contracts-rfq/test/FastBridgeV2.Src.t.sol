@@ -70,7 +70,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         srcToken.approve(address(fastBridge), type(uint256).max);
     }
 
-    function bridge(address caller, uint256 msgValue, IFastBridge.BridgeParams memory params) public {
+    function bridge(address caller, uint256 msgValue, IFastBridge.BridgeParams memory params) public virtual {
         vm.prank(caller);
         fastBridge.bridge{value: msgValue}(params);
     }
