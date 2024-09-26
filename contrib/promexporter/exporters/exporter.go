@@ -142,17 +142,17 @@ func (e *exporter) collectMetrics(parentCtx context.Context) (err error) {
 	for _, pending := range e.cfg.DFKPending {
 		if err := e.stuckHeroCountStats(ctx, common.HexToAddress(pending.Owner), pending.ChainName); err != nil {
 			errs = append(errs, fmt.Errorf("could not get stuck hero count: %w", err))
+			span.AddEvent("could not get stuck hero count")
 		}
-		span.AddEvent("could not get stuck hero count")
 	}
 
 	for _, gasCheck := range e.cfg.SubmitterChecks {
 		for _, chainID := range gasCheck.ChainIDs {
 			if err := e.submitterStats(common.HexToAddress(gasCheck.Address), chainID, gasCheck.Name); err != nil {
-				errs = append(errs, fmt.Errorf("could setup metric: %w", err))
+				errs = append(errs, fmt.Errorf("could not get submitter stats: %w", err))
+				span.AddEvent("could not get submitter stats")
 			}
 		}
-		span.AddEvent("could get submitter stats")
 	}
 
 	for chainID := range e.cfg.BridgeChecks {
@@ -161,7 +161,8 @@ func (e *exporter) collectMetrics(parentCtx context.Context) (err error) {
 			return retry.WithBackoff(ctx, func(ctx context.Context) error {
 				err := e.vpriceStats(ctx, chainID, token)
 				if err != nil && !errors.Is(err, errPoolNotExist) {
-					errs = append(errs, fmt.Errorf("stuck hero stats: %w", err))
+					errs = append(errs, fmt.Errorf("could not get vprice %w", err))
+					span.AddEvent("could not get vprice stats")
 				}
 
 				return nil
@@ -172,7 +173,7 @@ func (e *exporter) collectMetrics(parentCtx context.Context) (err error) {
 
 	if len(errs) > 0 {
 		span.AddEvent("could not collect metrics")
-		return fmt.Errorf("could not collect metrics: %v", errs)
+		return fmt.Errorf("could not collect metrics: %w", combineErrors(errs))
 	}
 
 	return nil

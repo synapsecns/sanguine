@@ -90,11 +90,15 @@ const StateManagedSwap = () => {
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    segmentAnalyticsEvent(`[Swap page] arrives`, {
-      swapChainId,
-      query,
-      pathname,
-    })
+    segmentAnalyticsEvent(
+      `[Swap page] arrives`,
+      {
+        swapChainId,
+        query,
+        pathname,
+      },
+      true
+    )
   }, [query])
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import { validationResult } from 'express-validator'
 import { parseUnits } from '@ethersproject/units'
 
 import { Synapse } from '../services/synapseService'
+import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 
 export const bridgeTxInfoController = async (req, res) => {
   const errors = validationResult(req)
@@ -10,17 +11,18 @@ export const bridgeTxInfoController = async (req, res) => {
   }
 
   try {
-    const { fromChain, toChain, amount, destAddress } = req.query
-    const fromTokenInfo = res.locals.tokenInfo.fromToken
-    const toTokenInfo = res.locals.tokenInfo.toToken
+    const { fromChain, toChain, amount, destAddress, fromToken, toToken } =
+      req.query
+
+    const fromTokenInfo = tokenAddressToToken(fromChain.toString(), fromToken)
 
     const amountInWei = parseUnits(amount.toString(), fromTokenInfo.decimals)
 
     const quotes = await Synapse.allBridgeQuotes(
       Number(fromChain),
       Number(toChain),
-      fromTokenInfo.address,
-      toTokenInfo.address,
+      fromToken,
+      toToken,
       amountInWei
     )
 
@@ -31,7 +33,7 @@ export const bridgeTxInfoController = async (req, res) => {
           quote.routerAddress,
           Number(fromChain),
           Number(toChain),
-          fromTokenInfo.address,
+          fromToken,
           amountInWei,
           quote.originQuery,
           quote.destQuery
