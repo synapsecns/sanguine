@@ -10,10 +10,10 @@ interface IFastBridgeV2 is IFastBridge {
     function relay(bytes memory request, address relayer) external payable;
 
     /// @notice Provides proof on origin side that relayer provided funds on destination side of bridge transaction
-    /// @param request The encoded bridge transaction to prove on origin chain
+    /// @param transactionId The transaction id associated with the encoded bridge transaction to prove
     /// @param destTxHash The destination tx hash proving bridge transaction was relayed
     /// @param relayer The address of the relaying entity which should have control of the origin funds when claimed
-    function prove(bytes memory request, bytes32 destTxHash, address relayer) external;
+    function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) external;
 
     /// @notice Completes bridge transaction on origin chain by claiming originally deposited capital.
     /// @notice Can only send funds to the relayer address on the proof.
