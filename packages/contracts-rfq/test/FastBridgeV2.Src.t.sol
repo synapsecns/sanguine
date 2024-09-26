@@ -275,14 +275,12 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     }
 
     function test_bridge_revert_zeroSender() public {
-        vm.skip(true); // TODO: unskip when fixed
         tokenParams.sender = address(0);
         vm.expectRevert(ZeroAddress.selector);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 
     function test_bridge_revert_zeroRecipient() public {
-        vm.skip(true); // TODO: unskip when fixed
         tokenParams.to = address(0);
         vm.expectRevert(ZeroAddress.selector);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
