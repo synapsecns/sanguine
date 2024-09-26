@@ -103,12 +103,11 @@ figure {
   display: grid;
   gap: 1rem;
   justify-items: center;
+}
 
-  & caption {
-    text-align: center;
-    width: 100%;
-    font-style: italic;
-    opacity: .67;
-
-  }
+figure caption {
+  text-align: center;
+  width: 100%;
+  font-style: italic;
+  opacity: .67;
 }
