@@ -77,6 +77,13 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridge
     function bridge(BridgeParams memory params) external payable {
+        BridgeParamsV2 memory defaultParamsV2 =
+            BridgeParamsV2({quoteRelayer: address(0), quoteExclusivitySeconds: 0, quoteId: bytes("")});
+        bridge(params, defaultParamsV2);
+    }
+
+    /// @inheritdoc IFastBridgeV2
+    function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
         // check bridge params
         if (params.dstChainId == block.chainid) revert ChainIncorrect();
         if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
