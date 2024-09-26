@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
+import {IFastBridgeV2} from "../contracts/interfaces/IFastBridgeV2.sol";
 import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.sol";
 import {FastBridgeV2} from "../contracts/FastBridgeV2.sol";
 
@@ -11,7 +12,7 @@ import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol"
 import {Test} from "forge-std/Test.sol";
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
 
-// solhint-disable no-empty-blocks, ordering
+// solhint-disable no-empty-blocks, max-states-count, ordering
 abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     using stdStorage for StdStorage;
 
@@ -32,15 +33,19 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     address public governor = makeAddr("Governor");
     address public refunder = makeAddr("Refunder");
 
-    IFastBridge.BridgeTransaction public tokenTx;
-    IFastBridge.BridgeTransaction public ethTx;
+    IFastBridgeV2.BridgeTransactionV2 public tokenTx;
+    IFastBridgeV2.BridgeTransactionV2 public ethTx;
     IFastBridge.BridgeParams public tokenParams;
     IFastBridge.BridgeParams public ethParams;
+
+    IFastBridgeV2.BridgeParamsV2 public tokenParamsV2;
+    IFastBridgeV2.BridgeParamsV2 public ethParamsV2;
 
     function setUp() public virtual {
         srcToken = new MockERC20("SrcToken", 6);
         dstToken = new MockERC20("DstToken", 6);
         createFixtures();
+        createFixturesV2();
         fastBridge = deployFastBridge();
         configureFastBridge();
         mintTokens();
@@ -76,7 +81,7 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
             deadline: block.timestamp + DEADLINE
         });
 
-        tokenTx = IFastBridge.BridgeTransaction({
+        tokenTx.txV1 = IFastBridge.BridgeTransaction({
             originChainId: SRC_CHAIN_ID,
             destChainId: DST_CHAIN_ID,
             originSender: userA,
@@ -91,7 +96,7 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
             deadline: block.timestamp + DEADLINE,
             nonce: 0
         });
-        ethTx = IFastBridge.BridgeTransaction({
+        ethTx.txV1 = IFastBridge.BridgeTransaction({
             originChainId: SRC_CHAIN_ID,
             destChainId: DST_CHAIN_ID,
             originSender: userA,
@@ -108,7 +113,19 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         });
     }
 
-    function getTxId(IFastBridge.BridgeTransaction memory bridgeTx) public pure returns (bytes32) {
+    function createFixturesV2() public virtual {
+        // Override in tests with exclusivity params
+        tokenParamsV2 =
+            IFastBridgeV2.BridgeParamsV2({quoteRelayer: address(0), quoteExclusivitySeconds: 0, quoteId: ""});
+        ethParamsV2 = IFastBridgeV2.BridgeParamsV2({quoteRelayer: address(0), quoteExclusivitySeconds: 0, quoteId: ""});
+
+        tokenTx.exclusivityRelayer = address(0);
+        tokenTx.exclusivityEndTime = 0;
+        ethTx.exclusivityRelayer = address(0);
+        ethTx.exclusivityEndTime = 0;
+    }
+
+    function getTxId(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public pure returns (bytes32) {
         return keccak256(abi.encode(bridgeTx));
     }
 

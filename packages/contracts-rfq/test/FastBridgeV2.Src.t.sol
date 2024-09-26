@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {FastBridgeV2, FastBridgeV2Test, IFastBridge} from "./FastBridgeV2.t.sol";
+import {FastBridgeV2, FastBridgeV2Test, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 contract FastBridgeV2SrcTest is FastBridgeV2Test {
@@ -80,17 +80,17 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         fastBridge.prove(transactionId, destTxHash, relayer);
     }
 
-    function prove(address caller, IFastBridge.BridgeTransaction memory bridgeTx, bytes32 destTxHash) public {
+    function prove(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx, bytes32 destTxHash) public {
         vm.prank(caller);
         fastBridge.prove(abi.encode(bridgeTx), destTxHash);
     }
 
-    function claim(address caller, IFastBridge.BridgeTransaction memory bridgeTx) public {
+    function claim(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public {
         vm.prank(caller);
         fastBridge.claim(abi.encode(bridgeTx));
     }
 
-    function claim(address caller, IFastBridge.BridgeTransaction memory bridgeTx, address to) public {
+    function claim(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx, address to) public {
         vm.prank(caller);
         fastBridge.claim(abi.encode(bridgeTx), to);
     }
@@ -100,23 +100,23 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         fastBridge.dispute(txId);
     }
 
-    function refund(address caller, IFastBridge.BridgeTransaction memory bridgeTx) public {
+    function refund(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public {
         vm.prank(caller);
         fastBridge.refund(abi.encode(bridgeTx));
     }
 
-    function expectBridgeRequested(IFastBridge.BridgeTransaction memory bridgeTx, bytes32 txId) public {
+    function expectBridgeRequested(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx, bytes32 txId) public {
         vm.expectEmit(address(fastBridge));
         emit BridgeRequested({
             transactionId: txId,
-            sender: bridgeTx.originSender,
+            sender: bridgeTx.txV1.originSender,
             request: abi.encode(bridgeTx),
-            destChainId: bridgeTx.destChainId,
-            originToken: bridgeTx.originToken,
-            destToken: bridgeTx.destToken,
-            originAmount: bridgeTx.originAmount,
-            destAmount: bridgeTx.destAmount,
-            sendChainGas: bridgeTx.sendChainGas
+            destChainId: bridgeTx.txV1.destChainId,
+            originToken: bridgeTx.txV1.originToken,
+            destToken: bridgeTx.txV1.destToken,
+            originAmount: bridgeTx.txV1.originAmount,
+            destAmount: bridgeTx.txV1.destAmount,
+            sendChainGas: bridgeTx.txV1.sendChainGas
         });
     }
 
@@ -126,7 +126,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     }
 
     function expectBridgeDepositClaimed(
-        IFastBridge.BridgeTransaction memory bridgeTx,
+        IFastBridgeV2.BridgeTransactionV2 memory bridgeTx,
         bytes32 txId,
         address relayer,
         address to
@@ -138,8 +138,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
             transactionId: txId,
             relayer: relayer,
             to: to,
-            token: bridgeTx.originToken,
-            amount: bridgeTx.originAmount
+            token: bridgeTx.txV1.originToken,
+            amount: bridgeTx.txV1.originAmount
         });
     }
 
@@ -219,9 +219,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         vm.skip(true); // TODO: unskip when implemented
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         // UserB nonce is 0
-        ethTx.nonce = 0;
+        ethTx.txV1.nonce = 0;
         ethParams.sender = userB;
-        ethTx.originSender = userB;
+        ethTx.txV1.originSender = userB;
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
         bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams});
@@ -484,9 +484,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     // ═══════════════════════════════════════════════════ CLAIM ═══════════════════════════════════════════════════════
 
     function checkTokenBalancesAfterClaim(address relayer) public view {
-        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount);
-        assertEq(srcToken.balanceOf(relayer), tokenTx.originAmount);
-        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount);
+        uint256 expectedProtocolFees = INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.txV1.originFeeAmount;
+        assertEq(fastBridge.protocolFees(address(srcToken)), expectedProtocolFees);
+        assertEq(srcToken.balanceOf(relayer), tokenTx.txV1.originAmount);
+        assertEq(srcToken.balanceOf(address(fastBridge)), expectedProtocolFees);
     }
 
     function test_claim_token() public {
@@ -549,9 +550,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     }
 
     function checkEthBalancesAfterClaim(address relayer) public view {
-        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount);
-        assertEq(address(relayer).balance, ethTx.originAmount);
-        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount);
+        uint256 expectedProtocolFees = INITIAL_PROTOCOL_FEES_ETH + ethTx.txV1.originFeeAmount;
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), expectedProtocolFees);
+        assertEq(address(relayer).balance, ethTx.txV1.originAmount);
+        assertEq(address(fastBridge).balance, expectedProtocolFees);
     }
 
     function test_claim_eth() public {

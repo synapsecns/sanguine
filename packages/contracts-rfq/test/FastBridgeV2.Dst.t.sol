@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {ChainIncorrect, DeadlineExceeded, TransactionRelayed, ZeroAddress} from "../contracts/libs/Errors.sol";
-
-import {FastBridgeV2, FastBridgeV2Test, IFastBridge} from "./FastBridgeV2.t.sol";
+import {FastBridgeV2, FastBridgeV2Test, IFastBridgeV2} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 contract FastBridgeV2DstTest is FastBridgeV2Test {
@@ -37,22 +35,28 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         dstToken.approve(address(fastBridge), type(uint256).max);
     }
 
-    function expectBridgeRelayed(IFastBridge.BridgeTransaction memory bridgeTx, bytes32 txId, address relayer) public {
+    function expectBridgeRelayed(
+        IFastBridgeV2.BridgeTransactionV2 memory bridgeTx,
+        bytes32 txId,
+        address relayer
+    )
+        public
+    {
         vm.expectEmit(address(fastBridge));
         emit BridgeRelayed({
             transactionId: txId,
             relayer: relayer,
-            to: bridgeTx.destRecipient,
-            originChainId: bridgeTx.originChainId,
-            originToken: bridgeTx.originToken,
-            destToken: bridgeTx.destToken,
-            originAmount: bridgeTx.originAmount,
-            destAmount: bridgeTx.destAmount,
+            to: bridgeTx.txV1.destRecipient,
+            originChainId: bridgeTx.txV1.originChainId,
+            originToken: bridgeTx.txV1.originToken,
+            destToken: bridgeTx.txV1.destToken,
+            originAmount: bridgeTx.txV1.originAmount,
+            destAmount: bridgeTx.txV1.destAmount,
             chainGasAmount: 0
         });
     }
 
-    function relay(address caller, uint256 msgValue, IFastBridge.BridgeTransaction memory bridgeTx) public {
+    function relay(address caller, uint256 msgValue, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public {
         bytes memory request = abi.encode(bridgeTx);
         vm.prank(caller);
         fastBridge.relay{value: msgValue}(request);
@@ -62,7 +66,7 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         address caller,
         address relayer,
         uint256 msgValue,
-        IFastBridge.BridgeTransaction memory bridgeTx
+        IFastBridgeV2.BridgeTransactionV2 memory bridgeTx
     )
         public
     {
