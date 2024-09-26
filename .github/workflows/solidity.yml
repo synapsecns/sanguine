@@ -278,6 +278,7 @@ jobs:
         uses: Rubilmax/foundry-gas-diff@v3.18
         # TODO: define some options?
         with:
+          ignore: 'test/**/*'
           report: 'gas-report-${{ matrix.package }}.ansi'
         id: gas_diff
 
