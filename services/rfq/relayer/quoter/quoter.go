@@ -44,8 +44,8 @@ var logger = log.Logger("quoter")
 type Quoter interface {
 	// SubmitAllQuotes submits all quotes to the RFQ API.
 	SubmitAllQuotes(ctx context.Context) (err error)
-	// SubscribeRFQStream subscribes to the RFQ websocket API.
-	SubscribeRFQStream(ctx context.Context) (err error)
+	// SubscribeActiveRFQ subscribes to the RFQ websocket API.
+	SubscribeActiveRFQ(ctx context.Context) (err error)
 	// ShouldProcess determines if a quote should be processed.
 	// We do this by either saving all quotes in-memory, and refreshing via GetSelfQuotes() through the API
 	// The first comparison is does bridge transaction OriginChainID+TokenAddr match with a quote + DestChainID+DestTokenAddr, then we look to see if we have enough amount to relay it + if the price fits our bounds (based on that the Relayer is relaying the destination token for the origin)
@@ -255,9 +255,9 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	return m.prepareAndSubmitQuotes(ctx, inv)
 }
 
-// SubscribeRFQStream subscribes to the RFQ websocket API.
+// SubscribeActiveRFQ subscribes to the RFQ websocket API.
 // This function is blocking and will run until the context is cancelled.
-func (m *Manager) SubscribeRFQStream(ctx context.Context) (err error) {
+func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 	chainIDs := []int{}
 	for chainID := range m.config.Chains {
 		chainIDs = append(chainIDs, chainID)

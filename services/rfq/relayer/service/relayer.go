@@ -219,6 +219,16 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		}
 	})
 
+	if r.cfg.SupportsActiveRFQ {
+		g.Go(func() error {
+			err = r.quoter.SubscribeActiveRFQ(ctx)
+			if err != nil {
+				return fmt.Errorf("could not subscribe to active RFQ: %w", err)
+			}
+			return nil
+		})
+	}
+
 	g.Go(func() error {
 		for {
 			select {
