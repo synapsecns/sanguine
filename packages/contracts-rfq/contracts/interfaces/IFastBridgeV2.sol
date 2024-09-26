@@ -15,7 +15,8 @@ interface IFastBridgeV2 is IFastBridge {
     /// @param relayer The address of the relaying entity which should have control of the origin funds when claimed
     function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) external;
 
-    /// @notice Completes bridge transaction on origin chain by claiming originally deposited capital. Can only send funds to the relayer address on the proof.
+    /// @notice Completes bridge transaction on origin chain by claiming originally deposited capital.
+    /// @notice Can only send funds to the relayer address on the proof.
     /// @param request The encoded bridge transaction to claim on origin chain
     function claim(bytes memory request) external;
 }
