@@ -29,6 +29,7 @@ The [Synapse Router](#) will return an appropriate bridge function based on the 
 
 ## Pool Liquidity
 
+![liquidity pool tokens](lp-tokens.svg)\
 Synapse liquidity pools use the nexus USD (nUSD) and nexus ETH (nETH) interchain stablecoins. nUSD and nETH are fully backed by the nexus USD and nexus ETH liquidity pools on Ethereum.
 
 When a token is bridged using a Synapse Liquidity Pool, it is converted to a nexus token on the source chain, which is then bridged to the destination chain, before being converted back into a native token.

@@ -1,3 +1,5 @@
+import { BridgeFlow } from '@site/src/components/BridgeFlow'
+
 # Synapse Router
 
 The Synapse Router overhauls current Synapse Bridge contracts to abstract much of the complexity around liquidity based bridging to one simple [`bridge()`](/docs/Bridge/SDK/#bridge) function.
@@ -5,6 +7,11 @@ The Synapse Router overhauls current Synapse Bridge contracts to abstract much o
 <!-- The new Router is comprised of one bridge() function and three supporting functions that help to construct a bridge transaction. All of the mentioned are organized by an important struct called a “Query”. Before diving into these functions, a deeper understanding of how the bridge actually works is fundamental. -->
 
 <!-- Find out more about Synapse intermediary tokens nUSD and nETH in the [docs](https://docs.synapseprotocol.com/reference/faq#synapse-bridge). -->
+
+<figure>
+    <BridgeFlow />
+    <caption>User assets are sent to a bridge contract, moved to the destination chain, and returned to the user.</caption>
+</figure>
 
 ## Queries
 
@@ -26,8 +33,6 @@ Origin and destination queries are taken from the `getOriginAmountOut()` and `ge
 
 
 <!-- See the Example Page for further information (and arguments) that the functions above require. It is imperative that the program uses the functions here to construct Queries instead of manually doing so -- this guarantees that the transaction won't be reverted for misconfigured parameters.  -->
-
-
 
 ## Constructing a Bridge transaction
 
