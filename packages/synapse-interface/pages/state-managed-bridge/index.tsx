@@ -58,7 +58,6 @@ import { RootState } from '@/store/store'
 import { getUnixTimeMinutesFromNow } from '@/utils/time'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { wagmiConfig } from '@/wagmiConfig'
-import { useStaleQuoteUpdater } from '@/utils/hooks/useStaleQuoteUpdater'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { screenAddress } from '@/utils/screenAddress'
 import { useWalletState } from '@/slices/wallet/hooks'
@@ -66,10 +65,14 @@ import { useBridgeQuoteState } from '@/slices/bridgeQuote/hooks'
 import { resetBridgeQuote } from '@/slices/bridgeQuote/reducer'
 import { fetchBridgeQuote } from '@/slices/bridgeQuote/thunks'
 import { useIsBridgeApproved } from '@/utils/hooks/useIsBridgeApproved'
+import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
+import { BridgeQuoteResetTimer } from '@/components/StateManagedBridge/BridgeQuoteResetTimer'
+import { useBridgeValidations } from '@/components/StateManagedBridge/hooks/useBridgeValidations'
+import { useStaleQuoteUpdater } from '@/components/StateManagedBridge/hooks/useStaleQuoteUpdater'
 
 const StateManagedBridge = () => {
   const dispatch = useAppDispatch()
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
   const { synapseSDK } = useSynapseContext()
   const router = useRouter()
   const { query, pathname } = router
@@ -96,6 +99,8 @@ const StateManagedBridge = () => {
 
   const isApproved = useIsBridgeApproved()
 
+  const { hasValidQuote, hasSufficientBalance } = useBridgeValidations()
+
   const { isWalletPending } = useWalletState()
 
   const { showSettingsSlideOver } = useSelector(
@@ -110,11 +115,15 @@ const StateManagedBridge = () => {
   } = useMaintenance()
 
   useEffect(() => {
-    segmentAnalyticsEvent(`[Bridge page] arrives`, {
-      fromChainId,
-      query,
-      pathname,
-    })
+    segmentAnalyticsEvent(
+      `[Bridge page] arrives`,
+      {
+        fromChainId,
+        query,
+        pathname,
+      },
+      true
+    )
   }, [query])
 
   useEffect(() => {
@@ -137,8 +146,6 @@ const StateManagedBridge = () => {
 
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
 
-    /* clear stored bridge quote before requesting new bridge quote */
-    dispatch(resetBridgeQuote())
     const currentTimestamp: number = getUnixTimeMinutesFromNow(0)
 
     try {
@@ -217,11 +224,18 @@ const StateManagedBridge = () => {
     }
   }
 
-  useStaleQuoteUpdater(
+  const isUpdaterEnabled =
+    isConnected &&
+    hasValidQuote &&
+    hasSufficientBalance &&
+    isApproved &&
+    !isBridgePaused &&
+    !isWalletPending
+
+  const isQuoteStale = useStaleQuoteUpdater(
     bridgeQuote,
     getAndSetBridgeQuote,
-    isLoading,
-    isWalletPending,
+    isUpdaterEnabled,
     quoteTimeout
   )
 
@@ -288,6 +302,7 @@ const StateManagedBridge = () => {
         estimatedTime: bridgeQuote.estimatedTime,
         bridgeModuleName: bridgeQuote.bridgeModuleName,
         destinationAddress: destinationAddress,
+        routerAddress: bridgeQuote.routerAddress,
       })
     )
     try {
@@ -424,6 +439,10 @@ const StateManagedBridge = () => {
         )
       }
 
+      if (isTransactionUserRejectedError(error)) {
+        getAndSetBridgeQuote()
+      }
+
       return txErrorHandler(error)
     } finally {
       dispatch(setIsWalletPending(false))
@@ -467,18 +486,29 @@ const StateManagedBridge = () => {
                 }}
                 disabled={isWalletPending}
               />
-              <OutputContainer />
+              <OutputContainer isQuoteStale={isQuoteStale} />
               <Warning />
               <BridgeMaintenanceWarningMessage />
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />
-              <BridgeTransactionButton
-                isTyping={isTyping}
-                isApproved={isApproved}
-                approveTxn={approveTxn}
-                executeBridge={executeBridge}
-                isBridgePaused={isBridgePaused}
-              />
+              <div className="relative flex items-center">
+                <BridgeTransactionButton
+                  isTyping={isTyping}
+                  isApproved={isApproved}
+                  approveTxn={approveTxn}
+                  executeBridge={executeBridge}
+                  isBridgePaused={isBridgePaused}
+                  isQuoteStale={isQuoteStale}
+                />
+                <div className="absolute flex items-center !right-10 pointer-events-none">
+                  <BridgeQuoteResetTimer
+                    bridgeQuote={bridgeQuote}
+                    isLoading={isLoading}
+                    isActive={isUpdaterEnabled}
+                    duration={quoteTimeout}
+                  />
+                </div>
+              </div>
             </>
           )}
         </BridgeCard>

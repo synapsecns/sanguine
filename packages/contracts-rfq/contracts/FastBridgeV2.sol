@@ -3,14 +3,15 @@ pragma solidity 0.8.24;
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./libs/Errors.sol";
 import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 
 import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
+import {IFastBridgeV2Errors} from "./interfaces/IFastBridgeV2Errors.sol";
 
-contract FastBridgeV2 is Admin, IFastBridgeV2 {
+/// @notice FastBridgeV2 is a contract for bridging tokens across chains.
+contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     using SafeERC20 for IERC20;
     using UniversalTokenLib for address;
 
@@ -35,8 +36,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     mapping(bytes32 => BridgeStatus) public bridgeStatuses;
     /// @notice Proof of relayed bridge tx on origin chain
     mapping(bytes32 => BridgeProof) public bridgeProofs;
-    /// @notice Whether bridge has been relayed on destination chain
-    mapping(bytes32 => bool) public bridgeRelays;
+    /// @notice Relay details on destination chain
+    mapping(bytes32 => BridgeRelay) public bridgeRelayDetails;
 
     /// @dev to prevent replays
     uint256 public nonce;
@@ -132,6 +133,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
     /// @inheritdoc IFastBridgeV2
     function relay(bytes memory request, address relayer) public payable {
+        if (relayer == address(0)) revert ZeroAddress();
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
         if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
@@ -139,9 +141,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         // check haven't exceeded deadline for relay to happen
         if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
 
+        if (bridgeRelayDetails[transactionId].relayer != address(0)) revert TransactionRelayed();
+
         // mark bridge transaction as relayed
-        if (bridgeRelays[transactionId]) revert TransactionRelayed();
-        bridgeRelays[transactionId] = true;
+        bridgeRelayDetails[transactionId] =
+            BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
         // transfer tokens to recipient on destination chain and gas rebate if requested
         address to = transaction.destRecipient;
@@ -175,18 +179,25 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         );
     }
 
+    /// @inheritdoc IFastBridgeV2
+    function bridgeRelays(bytes32 transactionId) public view returns (bool) {
+        // has this transactionId been relayed?
+        return bridgeRelayDetails[transactionId].relayer != address(0);
+    }
+
     /// @inheritdoc IFastBridge
     function prove(bytes memory request, bytes32 destTxHash) external {
-        prove(request, destTxHash, msg.sender);
+        bytes32 transactionId = keccak256(request);
+        prove(transactionId, destTxHash, msg.sender);
     }
 
     /// @inheritdoc IFastBridgeV2
-    function prove(bytes memory request, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
-        bytes32 transactionId = keccak256(request);
+    function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
         // update bridge tx status given proof provided
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
         bridgeStatuses[transactionId] = BridgeStatus.RELAYER_PROVED;
-        bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: relayer}); // overflow ok
+        // overflow ok
+        bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: relayer});
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
     }
