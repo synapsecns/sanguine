@@ -79,12 +79,20 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         fastBridge.relay{value: msgValue}(request, relayer);
     }
 
+    function checkRelayedViews(bytes32 txId, address expectedRelayer) public view {
+        assertTrue(fastBridge.bridgeRelays(txId));
+        (uint48 blockNumber, uint48 blockTimestamp, address relayer) = fastBridge.bridgeRelayDetails(txId);
+        assertEq(blockNumber, block.number);
+        assertEq(blockTimestamp, block.timestamp);
+        assertEq(relayer, expectedRelayer);
+    }
+
     /// @notice RelayerA completes the ERC20 bridge request
     function test_relay_token() public {
         bytes32 txId = getTxId(tokenTx);
         expectBridgeRelayed(tokenTx, txId, address(relayerA));
         relay({caller: relayerA, msgValue: 0, bridgeTx: tokenTx});
-        assertTrue(fastBridge.bridgeRelays(txId));
+        checkRelayedViews({txId: txId, expectedRelayer: relayerA});
         assertEq(dstToken.balanceOf(address(userB)), tokenParams.destAmount);
         assertEq(dstToken.balanceOf(address(relayerA)), LEFTOVER_BALANCE);
         assertEq(dstToken.balanceOf(address(fastBridge)), 0);
@@ -95,7 +103,7 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         bytes32 txId = getTxId(tokenTx);
         expectBridgeRelayed(tokenTx, txId, address(relayerA));
         relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: 0, bridgeTx: tokenTx});
-        assertTrue(fastBridge.bridgeRelays(txId));
+        checkRelayedViews({txId: txId, expectedRelayer: relayerA});
         assertEq(dstToken.balanceOf(address(userB)), tokenParams.destAmount);
         assertEq(dstToken.balanceOf(address(relayerB)), LEFTOVER_BALANCE);
         assertEq(dstToken.balanceOf(address(fastBridge)), 0);
@@ -106,7 +114,7 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         bytes32 txId = getTxId(ethTx);
         expectBridgeRelayed(ethTx, txId, address(relayerB));
         relay({caller: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
-        assertTrue(fastBridge.bridgeRelays(txId));
+        checkRelayedViews({txId: txId, expectedRelayer: relayerB});
         assertEq(address(userB).balance, ethParams.destAmount);
         assertEq(address(relayerB).balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, 0);
@@ -117,7 +125,7 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         bytes32 txId = getTxId(ethTx);
         expectBridgeRelayed(ethTx, txId, address(relayerB));
         relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
-        assertTrue(fastBridge.bridgeRelays(txId));
+        checkRelayedViews({txId: txId, expectedRelayer: relayerB});
         assertEq(address(userB).balance, ethParams.destAmount);
         assertEq(address(relayerA).balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, 0);
@@ -131,9 +139,11 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         expectBridgeRelayed(ethTx, txId, address(relayerB));
         relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
         assertTrue(fastBridge.bridgeRelays(txId));
-        (uint48 recordedBlockNumber, uint48 recordedblockTimestamp,) = fastBridge.bridgeRelayDetails(txId);
+        (uint48 recordedBlockNumber, uint48 recordedBlockTimestamp, address recordedRelayer) =
+            fastBridge.bridgeRelayDetails(txId);
         assertEq(recordedBlockNumber, 987_654_321);
-        assertEq(recordedblockTimestamp, 123_456_789);
+        assertEq(recordedBlockTimestamp, 123_456_789);
+        assertEq(recordedRelayer, relayerB);
         assertEq(address(userB).balance, ethParams.destAmount);
         assertEq(address(relayerA).balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, 0);
