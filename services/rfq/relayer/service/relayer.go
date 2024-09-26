@@ -130,7 +130,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	priceFetcher := pricer.NewCoingeckoPriceFetcher(cfg.GetHTTPTimeout())
 	fp := pricer.NewFeePricer(cfg, omniClient, priceFetcher, metricHandler)
 
-	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricHandler, cfg.GetRfqAPIURL(), nil, sg)
+	apiClient, err := rfqAPIClient.NewAuthenticatedClient(metricHandler, cfg.GetRFQAPIURL(), cfg.GetRFQWsURL(), sg)
 	if err != nil {
 		return nil, fmt.Errorf("error creating RFQ API client: %w", err)
 	}
@@ -219,7 +219,7 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		}
 	})
 
-	if r.cfg.SupportsActiveRFQ {
+	if r.cfg.GetRFQWsURL() != nil {
 		g.Go(func() error {
 			err = r.quoter.SubscribeActiveRFQ(ctx)
 			if err != nil {
