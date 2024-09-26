@@ -11,11 +11,15 @@ contract MockERC20 is ERC20 {
     }
 
     function burn(address account, uint256 amount) external {
+        // TODO: remove
+        assert(balanceOf(account) >= amount);
         _burn(account, amount);
     }
 
     function mint(address account, uint256 amount) external {
         _mint(account, amount);
+        // TODO: remove
+        assert(balanceOf(account) >= amount);
     }
 
     function decimals() public view override returns (uint8) {
