@@ -445,7 +445,9 @@ func (p *BridgeParser) MatureLogs(ctx context.Context, bridgeEvent *model.Bridge
 	if coinGeckoID != "" && !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
 		tokenPrice = p.tokenPriceService.GetPriceData(ctx, int(*timeStamp), coinGeckoID)
 		if tokenPrice == nil && coinGeckoID != noTokenID && coinGeckoID != noPrice {
-			return nil, fmt.Errorf("BRIDGE could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, bridgeEvent.TxHash, bridgeEvent.TimeStamp)
+			logger.Warnf("BRIDGE could not get token price for coingeckotoken; assuming price of 1:  %s txhash %s %d", coinGeckoID, bridgeEvent.TxHash, bridgeEvent.TimeStamp)
+			one := 1.0
+			tokenPrice = &one
 		}
 	}
 
