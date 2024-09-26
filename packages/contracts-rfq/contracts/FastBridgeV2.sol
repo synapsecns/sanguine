@@ -162,15 +162,15 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     // solhint-disable-next-line code-complexity
     function relay(bytes memory request, address relayer) public payable {
         if (relayer == address(0)) revert ZeroAddress();
+        // Check if the transaction has already been relayed
         bytes32 transactionId = keccak256(request);
+        if (bridgeRelays(transactionId)) revert TransactionRelayed();
+        // Decode the transaction and check that it could be relayed on this chain
         BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
         if (transaction.txV1.destChainId != uint32(block.chainid)) revert ChainIncorrect();
-
-        // check haven't exceeded deadline for relay to happen
+        // Check the deadline for relay to happen
         if (block.timestamp > transaction.txV1.deadline) revert DeadlineExceeded();
-
-        if (bridgeRelays(transactionId)) revert TransactionRelayed();
-        // Check if exclusivity period is ongoing
+        // Check the exclusivity period, if it is still ongoing
         if (block.timestamp <= transaction.exclusivityEndTime && relayer != transaction.exclusivityRelayer) {
             revert ExclusivityPeriodNotPassed();
         }
