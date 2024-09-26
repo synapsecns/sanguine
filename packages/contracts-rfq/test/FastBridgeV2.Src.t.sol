@@ -358,7 +358,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         prove({caller: caller, bridgeTx: tokenTx, destTxHash: hex"01"});
     }
 
-    // ═══════════════════════════════════════════════════ PROVE OTHER RELAYER ═══════════════════════════════════════════════════════
+    // ════════════════════════════════════════ PROVE OTHER RELAYER ════════════════════════════════════════════
 
     function test_proveOther_token() public {
         bytes32 txId = getTxId(tokenTx);
