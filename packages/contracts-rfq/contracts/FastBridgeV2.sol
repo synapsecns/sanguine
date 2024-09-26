@@ -274,6 +274,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @inheritdoc IFastBridge
     function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
+
+        if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
+
         BridgeTransaction memory transaction = getBridgeTransaction(request);
 
         if (hasRole(REFUNDER_ROLE, msg.sender)) {
@@ -284,8 +287,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             if (block.timestamp <= transaction.deadline + REFUND_DELAY) revert DeadlineNotExceeded();
         }
 
-        // set status to refunded if still in requested state
-        if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
+        // if all checks passed, set to REFUNDED status
         bridgeStatuses[transactionId] = BridgeStatus.REFUNDED;
 
         // transfer origin collateral back to original sender
