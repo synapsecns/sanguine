@@ -442,10 +442,10 @@ func (p *BridgeParser) MatureLogs(ctx context.Context, bridgeEvent *model.Bridge
 	bridgeEvent.TokenSymbol = ToNullString(&realID)
 	var tokenPrice *float64
 	// takes into account an empty bridge token id and for tokens that were bridged before price trackers (coin gecko) had price data.
-	if coinGeckoID != "" && !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
+	if coinGeckoID != "" && !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) && !(coinGeckoID == "wrapped-staked-olympus" && *timeStamp < 1714601620) {
 		tokenPrice = p.tokenPriceService.GetPriceData(ctx, int(*timeStamp), coinGeckoID)
 		if tokenPrice == nil && coinGeckoID != noTokenID && coinGeckoID != noPrice {
-			logger.Warnf("BRIDGE could not get token price for coingeckotoken; assuming price of 1:  %s txhash %s %d", coinGeckoID, bridgeEvent.TxHash, bridgeEvent.TimeStamp)
+			logger.Warnf("New Error message: BRIDGE could not get token price for coingeckotoken; assuming price of 1:  %s txhash %s %d", coinGeckoID, bridgeEvent.TxHash, bridgeEvent.TimeStamp)
 			one := 1.0
 			tokenPrice = &one
 		}
