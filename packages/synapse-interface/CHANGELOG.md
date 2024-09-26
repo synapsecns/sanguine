@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.0...@synapsecns/synapse-interface@0.40.1) (2024-09-26)
+
+
+### Bug Fixes
+
+* **synapse-interface:** Generalizes airdrop decimal display based on SDK gasAirdropAmount [SLT-269] ([#3196](https://github.com/synapsecns/sanguine/issues/3196)) ([aa37b50](https://github.com/synapsecns/sanguine/commit/aa37b503786824d7a2460640be7d2484f0491071))
+
+
+
+
+
 # [0.40.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.39.2...@synapsecns/synapse-interface@0.40.0) (2024-09-26)
 
 
