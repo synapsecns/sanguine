@@ -307,6 +307,7 @@
     "Complete": "Complete",
     "Reverted": "Reverted",
     "Transaction reverted, funds returned": "Transaction reverted, funds returned",
+    "Transaction refunded, funds returned": "Transaction refunded, funds returned",
     "What's taking so long?": "What's taking so long?",
     "FAQ": "F.A.Q",
     "Support": "Support",

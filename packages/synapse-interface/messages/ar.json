@@ -307,6 +307,7 @@
     "Complete": "مكتمل",
     "Reverted": "تم الرجوع",
     "Transaction reverted, funds returned": "تم الرجوع عن المعاملة، تم إرجاع الأموال",
+    "Transaction refunded, funds returned": "تم استرداد المعاملة، وتمت إعادة الأموال",
     "What's taking so long?": "لماذا يستغرق الأمر وقتًا طويلًا؟",
     "FAQ": "الأسئلة الشائعة",
     "Support": "الدعم",
