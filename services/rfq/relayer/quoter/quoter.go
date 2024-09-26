@@ -3,6 +3,7 @@ package quoter
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
@@ -31,6 +32,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
+	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 )
 
@@ -42,6 +44,8 @@ var logger = log.Logger("quoter")
 type Quoter interface {
 	// SubmitAllQuotes submits all quotes to the RFQ API.
 	SubmitAllQuotes(ctx context.Context) (err error)
+	// SubscribeRFQStream subscribes to the RFQ websocket API.
+	SubscribeRFQStream(ctx context.Context) (err error)
 	// ShouldProcess determines if a quote should be processed.
 	// We do this by either saving all quotes in-memory, and refreshing via GetSelfQuotes() through the API
 	// The first comparison is does bridge transaction OriginChainID+TokenAddr match with a quote + DestChainID+DestTokenAddr, then we look to see if we have enough amount to relay it + if the price fits our bounds (based on that the Relayer is relaying the destination token for the origin)
@@ -249,6 +253,83 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	}
 
 	return m.prepareAndSubmitQuotes(ctx, inv)
+}
+
+// SubscribeRFQStream subscribes to the RFQ websocket API.
+// This function is blocking and will run until the context is cancelled.
+func (m *Manager) SubscribeRFQStream(ctx context.Context) (err error) {
+	chainIDs := []int{}
+	for chainID := range m.config.Chains {
+		chainIDs = append(chainIDs, chainID)
+	}
+	req := model.SubscribeActiveRFQRequest{
+		ChainIDs: chainIDs,
+	}
+	reqChan := make(chan *model.ActiveRFQMessage)
+	respChan, err := m.rfqClient.SubscribeActiveQuotes(ctx, &req, reqChan)
+	if err != nil {
+		return fmt.Errorf("error subscribing to active quotes: %w", err)
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg := <-respChan:
+			resp, err := m.generateActiveRFQ(ctx, msg)
+			if err != nil {
+				return fmt.Errorf("error generating active RFQ message: %w", err)
+			}
+			respChan <- resp
+		}
+	}
+}
+
+// getActiveRFQ handles an active RFQ message.
+func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMessage) (resp *model.ActiveRFQMessage, err error) {
+	if msg.Op != rest.RequestQuoteOp {
+		return nil, nil
+	}
+
+	inv, err := m.inventoryManager.GetCommittableBalances(ctx, inventory.SkipDBCache())
+	if err != nil {
+		return nil, fmt.Errorf("error getting committable balances: %w", err)
+	}
+
+	var rfqRequest model.WsRFQRequest
+	err = json.Unmarshal(msg.Content, &rfqRequest)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling quote data: %w", err)
+	}
+
+	quoteInput := QuoteInput{
+		OriginChainID:   rfqRequest.Data.OriginChainID,
+		DestChainID:     rfqRequest.Data.DestChainID,
+		OriginTokenAddr: common.HexToAddress(rfqRequest.Data.OriginTokenAddr),
+		DestTokenAddr:   common.HexToAddress(rfqRequest.Data.DestTokenAddr),
+		OriginBalance:   inv[rfqRequest.Data.OriginChainID][common.HexToAddress(rfqRequest.Data.OriginTokenAddr)],
+		DestBalance:     inv[rfqRequest.Data.DestChainID][common.HexToAddress(rfqRequest.Data.DestTokenAddr)],
+	}
+
+	rawQuote, err := m.generateQuote(ctx, quoteInput)
+	if err != nil {
+		return nil, fmt.Errorf("error generating quote: %w", err)
+	}
+
+	rfqResp := model.WsRFQResponse{
+		RequestID:  rfqRequest.RequestID,
+		DestAmount: rawQuote.DestAmount,
+	}
+	respBytes, err := json.Marshal(rfqResp)
+	if err != nil {
+		return nil, fmt.Errorf("error serializing response: %w", err)
+	}
+	resp = &model.ActiveRFQMessage{
+		Op:      rest.SendQuoteOp,
+		Content: respBytes,
+	}
+
+	return resp, nil
 }
 
 // GetPrice gets the price of a token.

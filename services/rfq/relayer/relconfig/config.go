@@ -67,6 +67,8 @@ type Config struct {
 	SubmitSingleQuotes bool `yaml:"submit_single_quotes"`
 	// VolumeLimit is the maximum dollar value of relayed transactions in the BlockWindow.
 	VolumeLimit float64 `yaml:"volume_limit"`
+	// SupportsActiveRFQ indicates whether the chain supports active RFQ.
+	SupportsActiveRFQ bool `yaml:"supports_active_rfq"`
 }
 
 // ChainConfig represents the configuration for a chain.
