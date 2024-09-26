@@ -896,14 +896,14 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     function test_refund_revert_zeroDelay() public {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         vm.expectRevert(DeadlineNotExceeded.selector);
-        refund({caller: refunder, bridgeTx: ethTx});
+        refund({caller: refunder, bridgeTx: tokenTx});
     }
 
     function test_refund_revert_justBeforeDeadline() public {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         skip(DEADLINE);
         vm.expectRevert(DeadlineNotExceeded.selector);
-        refund({caller: refunder, bridgeTx: ethTx});
+        refund({caller: refunder, bridgeTx: tokenTx});
     }
 
     function test_refund_revert_justBeforeDeadline_permisionless(address caller) public {
@@ -911,17 +911,15 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         skip(DEADLINE + PERMISSIONLESS_REFUND_DELAY);
         vm.expectRevert(DeadlineNotExceeded.selector);
-        refund({caller: caller, bridgeTx: ethTx});
+        refund({caller: caller, bridgeTx: tokenTx});
     }
 
     function test_refund_revert_statusNull() public {
-        vm.skip(true); // TODO: unskip when fixed
         vm.expectRevert(StatusIncorrect.selector);
         refund({caller: refunder, bridgeTx: ethTx});
     }
 
     function test_refund_revert_statusProven() public {
-        vm.skip(true); // TODO: unskip when fixed
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
         vm.expectRevert(StatusIncorrect.selector);
@@ -929,7 +927,6 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     }
 
     function test_refund_revert_statusClaimed() public {
-        vm.skip(true); // TODO: unskip when fixed
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
         skip(CLAIM_DELAY + 1);
