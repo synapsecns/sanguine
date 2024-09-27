@@ -38,9 +38,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         return bridgeTxDetails[transactionId].status;
     }
 
-    function bridgeProofs(bytes32 transactionId) public view returns (BridgeProof memory) {
+    function bridgeProofs(bytes32 transactionId) public view returns (uint96 timestamp, address relayer) {
         BridgeTxDetails storage _thisBridgeTxDetails = bridgeTxDetails[transactionId];
-        return BridgeProof(_thisBridgeTxDetails.proofBlockTimestamp, _thisBridgeTxDetails.proofRelayer);
+        return (uint96(_thisBridgeTxDetails.proofBlockTimestamp), _thisBridgeTxDetails.proofRelayer);
     }
 
     constructor(address _owner) Admin(_owner) {
@@ -280,11 +280,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
 
-        if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
-
         BridgeTransaction memory transaction = getBridgeTransaction(request);
 
         BridgeTxDetails storage _thisBridgeTxDetails = bridgeTxDetails[transactionId];
+
+        if (_thisBridgeTxDetails.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
 
         if (hasRole(REFUNDER_ROLE, msg.sender)) {
             // Refunder can refund if deadline has passed
@@ -295,7 +295,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         }
 
         // if all checks passed, set to REFUNDED status
-        bridgeStatuses[transactionId] = BridgeStatus.REFUNDED;
+        _thisBridgeTxDetails.status = BridgeStatus.REFUNDED;
 
         // transfer origin collateral back to original sender
         address to = transaction.originSender;
