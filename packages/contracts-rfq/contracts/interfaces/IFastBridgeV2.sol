@@ -4,6 +4,21 @@ pragma solidity ^0.8.20;
 import {IFastBridge} from "./IFastBridge.sol";
 
 interface IFastBridgeV2 is IFastBridge {
+    enum BridgeStatus {
+        NULL, // doesn't exist yet
+        REQUESTED,
+        RELAYER_PROVED,
+        RELAYER_CLAIMED,
+        REFUNDED
+    }
+
+    struct BridgeTxDetails {
+        BridgeStatus status;
+        uint40 proofBlockTimestamp;
+        uint48 proofBlockNumber;
+        address proofRelayer;
+    }
+
     struct BridgeRelay {
         uint48 blockNumber;
         uint48 blockTimestamp;
@@ -29,4 +44,15 @@ interface IFastBridgeV2 is IFastBridge {
     /// @param transactionId The ID of the transaction to check
     /// @return True if the transaction has been relayed, false otherwise
     function bridgeRelays(bytes32 transactionId) external view returns (bool);
+
+    /// @notice Returns the status of a bridge transaction
+    /// @param transactionId The ID of the bridge transaction
+    /// @return BridgeStatus Status of the bridge transaction
+    function bridgeStatuses(bytes32 transactionId) external view returns (BridgeStatus);
+
+    /// @notice Returns the timestamp and relayer of a bridge proof
+    /// @param transactionId The ID of the bridge transaction
+    /// @return timestamp The timestamp of the bridge proof
+    /// @return relayer The relayer address of the bridge proof
+    function bridgeProofs(bytes32 transactionId) external view returns (uint96 timestamp, address relayer);
 }
