@@ -8,6 +8,7 @@ import {FastBridgeV2, FastBridgeV2SrcBaseTest, IFastBridge} from "./FastBridgeV2
 /// Very little state checks are performed, make sure to do full coverage in different tests.
 contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
     uint256 public constant BLOCK_TIME = 12 seconds;
+    uint256 public constant INITIAL_RELAYER_BALANCE = 100 ether;
 
     IFastBridge.BridgeTransaction public bridgedTokenTx;
     IFastBridge.BridgeTransaction public bridgedEthTx;
@@ -43,6 +44,14 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         // Next nonce for userA tx would be 4 (either token or eth)
         tokenTx.nonce = 4;
         ethTx.nonce = 4;
+    }
+
+    function mintTokens() public virtual override {
+        super.mintTokens();
+        srcToken.mint(relayerA, INITIAL_RELAYER_BALANCE);
+        srcToken.mint(relayerB, INITIAL_RELAYER_BALANCE);
+        deal(relayerA, INITIAL_RELAYER_BALANCE);
+        deal(relayerB, INITIAL_RELAYER_BALANCE);
     }
 
     function initExistingTxs() public {
@@ -105,7 +114,7 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
         claim({caller: relayerA, bridgeTx: provenTokenTx});
         assertEq(fastBridge.bridgeStatuses(getTxId(provenTokenTx)), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
-        assertEq(srcToken.balanceOf(relayerA), tokenTx.originAmount);
+        assertEq(srcToken.balanceOf(relayerA), INITIAL_RELAYER_BALANCE + tokenTx.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken - tokenTx.originAmount);
     }
 
@@ -113,7 +122,7 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
         claim({caller: relayerA, bridgeTx: provenTokenTx, to: relayerB});
         assertEq(fastBridge.bridgeStatuses(getTxId(provenTokenTx)), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
-        assertEq(srcToken.balanceOf(relayerB), tokenTx.originAmount);
+        assertEq(srcToken.balanceOf(relayerB), INITIAL_RELAYER_BALANCE + tokenTx.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken - tokenTx.originAmount);
     }
 
@@ -175,7 +184,7 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
         claim({caller: relayerA, bridgeTx: provenEthTx});
         assertEq(fastBridge.bridgeStatuses(getTxId(provenEthTx)), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
-        assertEq(relayerA.balance, ethTx.originAmount);
+        assertEq(relayerA.balance, INITIAL_RELAYER_BALANCE + ethTx.originAmount);
         assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth - ethTx.originAmount);
     }
 
@@ -183,7 +192,7 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
         claim({caller: relayerA, bridgeTx: provenEthTx, to: relayerB});
         assertEq(fastBridge.bridgeStatuses(getTxId(provenEthTx)), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
-        assertEq(relayerB.balance, ethTx.originAmount);
+        assertEq(relayerB.balance, INITIAL_RELAYER_BALANCE + ethTx.originAmount);
         assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth - ethTx.originAmount);
     }
 

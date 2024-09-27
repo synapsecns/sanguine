@@ -16,7 +16,7 @@ contract FastBridgeV2DstBaseTest is FastBridgeV2Test {
         return new FastBridgeV2(address(this));
     }
 
-    function mintTokens() public override {
+    function mintTokens() public virtual override {
         dstToken.mint(address(relayerA), LEFTOVER_BALANCE + tokenParams.destAmount);
         dstToken.mint(address(relayerB), LEFTOVER_BALANCE + tokenParams.destAmount);
         deal(relayerA, LEFTOVER_BALANCE + ethParams.destAmount);
