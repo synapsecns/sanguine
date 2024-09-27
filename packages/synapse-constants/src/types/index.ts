@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { getAddress } from '@ethersproject/address'
 
-import * as CHAINS from '../chains/master'
+import { makeMultiChainObj } from '../utils/makeMultiChainObj'
+import { validateAddresses } from '../utils/validateAddresses'
 
 export type Chain = {
   id: number
@@ -20,6 +20,7 @@ export type Chain = {
   priorityRank?: number
   color?: string
 }
+
 export type PoolToken = {
   symbol: string
   percent: string
@@ -29,6 +30,7 @@ export type PoolToken = {
   isLP: boolean
   rawBalance: bigint
 }
+
 export type Query = [string, string, BigNumber, BigNumber, string] & {
   swapAdapter: string
   tokenOut: string
@@ -36,12 +38,14 @@ export type Query = [string, string, BigNumber, BigNumber, string] & {
   deadline: BigNumber
   rawParams: string
 }
+
 export type PoolUserData = {
   name: string
   tokens: PoolToken[]
   lpTokenBalance: bigint
   nativeTokens?: any
 }
+
 export type PoolData = {
   name: string
   tokens: PoolToken[]
@@ -55,26 +59,31 @@ export type PoolData = {
 interface TokensByChain {
   [cID: string]: Token[]
 }
+
 export type PoolCardInfo = {
   index: number
   label: string
   poolsByChain: TokensByChain
 }
+
 export enum WalletId {
   MetaMask = 'metaMask',
   WalletConnect = 'walletConnect',
   CoinbaseWallet = 'coinbaseWallet',
 }
+
 export interface IconProps {
   walletId?: string
   className?: string
 }
+
 export type PoolTokenObject = {
   token: Token
   balance: string
   rawBalance: bigint
   isLP: boolean
 }
+
 /**
  * Represents an ERC20-like token with a unique address, chainId, and some metadata.
  */
@@ -277,28 +286,4 @@ export class Token {
     this.notStake = notStake ?? false
     this.routeSymbol = routeSymbol
   }
-}
-
-const makeMultiChainObj = (valOrObj: any) => {
-  if (typeof valOrObj === 'object') {
-    return valOrObj
-  } else {
-    const obj: { [key: number]: any } = {}
-    for (const chain of Object.values(CHAINS)) {
-      obj[chain.id] = valOrObj
-    }
-    return obj
-  }
-}
-
-const validateAddresses = (addresses: {
-  [x: number]: string
-}): { [x: number]: string } => {
-  const reformatted: { [x: number]: string } = {}
-  for (const chainId in addresses) {
-    reformatted[chainId] = addresses[chainId]
-      ? getAddress(addresses[chainId])
-      : ''
-  }
-  return reformatted
 }

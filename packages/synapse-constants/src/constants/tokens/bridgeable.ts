@@ -39,7 +39,7 @@ import vstaLogo from '../assets/icons/vsta.svg'
 import wbtcLogo from '../assets/icons/wbtc.svg'
 import wethLogo from '../assets/icons/weth.svg'
 import usdbLogo from '../assets/icons/usdb.svg'
-import { Token } from '../types'
+import { Token } from '../../types'
 import * as CHAINS from '../chains/master'
 
 const zeroAddress = '0x0000000000000000000000000000000000000000'

@@ -2,13 +2,18 @@
   "name": "synapse-constants",
   "version": "1.3.24",
   "description": "This is an npm package that maintains all synapse constants",
-  "type": "module",
-  "main": "dist/bundle.cjs.js",
-  "module": "dist/bundle.esm.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "license": "MIT",
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine.git"
+  },
+  "homepage": "https://github.com/synapsecns/sanguine/blob/master/packages/synapse-constants/README.md",
   "scripts": {
     "test:coverage": "echo 'No tests defined.'",
     "ci:lint": " ",
@@ -22,14 +27,12 @@
     "prepublish": "yarn build",
     "maps:generate": "node ./src/scripts/generateMaps.cjs && node ./src/scripts/findMissing.cjs && yarn build"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "ethers": "5.7.2",
-    "@ethersproject/bignumber": "5.7.0",
     "@ethersproject/address": "5.7.0",
-    "viem": "^2.21.6",
-    "lodash": "^4.17.21"
+    "@ethersproject/bignumber": "5.7.0",
+    "ethers": "5.7.2",
+    "lodash": "^4.17.21",
+    "viem": "^2.21.6"
   },
   "devDependencies": {
     "@codecov/rollup-plugin": "^1.2.0",

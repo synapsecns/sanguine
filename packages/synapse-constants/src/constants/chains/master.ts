@@ -42,7 +42,7 @@ import baseExplorerImg from '../assets/explorer/basescan.svg'
 import blastExplorerImg from '../assets/explorer/blast.svg'
 import scrollExplorerImg from '../assets/explorer/scroll.svg'
 import lineaExplorerImg from '../assets/explorer/linea.svg'
-import { Chain } from '../types'
+import { Chain } from '../../types'
 
 export const ETH: Chain = {
   priorityRank: 100,

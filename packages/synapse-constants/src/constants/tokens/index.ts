@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-import { Token } from '../types/index'
+import { Token } from '../../types/index'
 import * as CHAINS from '../chains/master'
 import * as all from './bridgeable'
 import * as allPool from './poolMaster'

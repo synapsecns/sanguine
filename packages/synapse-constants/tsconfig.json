@@ -4,7 +4,8 @@
     "target": "ES2019",
     "moduleResolution": "node",
     "declaration": true,
-    "outDir": "dist",
+    "declarationDir": "./dist/types",
+    "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true
