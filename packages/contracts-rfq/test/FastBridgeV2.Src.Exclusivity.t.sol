@@ -26,18 +26,6 @@ contract FastBridgeV2SrcExclusivityTest is FastBridgeV2SrcTest {
         bridge(caller, msgValue, params, paramsV2);
     }
 
-    function bridge(
-        address caller,
-        uint256 msgValue,
-        IFastBridge.BridgeParams memory params,
-        IFastBridgeV2.BridgeParamsV2 memory paramsV2
-    )
-        public
-    {
-        vm.prank(caller);
-        fastBridge.bridge{value: msgValue}(params, paramsV2);
-    }
-
     function test_bridge_revert_quoteRelayerSet_exclusivityPeriodNotSet() public {
         tokenParamsV2.quoteExclusivitySeconds = 0;
         vm.expectRevert(ExclusivityParamsIncorrect.selector);

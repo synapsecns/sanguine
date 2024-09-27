@@ -9,6 +9,7 @@ import {FastBridgeV2, FastBridgeV2SrcBaseTest, IFastBridgeV2} from "./FastBridge
 contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
     uint256 public constant BLOCK_TIME = 12 seconds;
     uint256 public constant INITIAL_RELAYER_BALANCE = 100 ether;
+    uint256 public constant EXCLUSIVITY_PERIOD = 60 seconds;
 
     IFastBridgeV2.BridgeTransactionV2 public bridgedTokenTx;
     IFastBridgeV2.BridgeTransactionV2 public bridgedEthTx;
@@ -91,6 +92,18 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken + tokenParams.originAmount);
     }
 
+    function test_bridge_token_withExclusivity() public {
+        tokenParamsV2.quoteRelayer = relayerA;
+        tokenParamsV2.quoteExclusivitySeconds = EXCLUSIVITY_PERIOD;
+        tokenParamsV2.quoteId = bytes("Created by Relayer A");
+        tokenTx.exclusivityRelayer = relayerA;
+        tokenTx.exclusivityEndTime = block.timestamp + EXCLUSIVITY_PERIOD;
+        bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
+        assertEq(fastBridge.bridgeStatuses(getTxId(tokenTx)), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(srcToken.balanceOf(userA), initialUserBalanceToken - tokenParams.originAmount);
+        assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken + tokenParams.originAmount);
+    }
+
     function test_prove_token() public {
         bytes32 txId = getTxId(bridgedTokenTx);
         prove({caller: relayerA, bridgeTx: bridgedTokenTx, destTxHash: hex"03"});
@@ -155,6 +168,18 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
 
     function test_bridge_eth() public {
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        assertEq(fastBridge.bridgeStatuses(getTxId(ethTx)), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(userA.balance, initialUserBalanceEth - ethParams.originAmount);
+        assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth + ethParams.originAmount);
+    }
+
+    function test_bridge_eth_withExclusivity() public {
+        ethParamsV2.quoteRelayer = relayerA;
+        ethParamsV2.quoteExclusivitySeconds = EXCLUSIVITY_PERIOD;
+        ethParamsV2.quoteId = bytes("Created by Relayer A");
+        ethTx.exclusivityRelayer = relayerA;
+        ethTx.exclusivityEndTime = block.timestamp + EXCLUSIVITY_PERIOD;
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
         assertEq(fastBridge.bridgeStatuses(getTxId(ethTx)), FastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(userA.balance, initialUserBalanceEth - ethParams.originAmount);
         assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth + ethParams.originAmount);

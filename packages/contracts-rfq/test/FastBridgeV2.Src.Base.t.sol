@@ -53,6 +53,18 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
         fastBridge.bridge{value: msgValue}(params);
     }
 
+    function bridge(
+        address caller,
+        uint256 msgValue,
+        IFastBridge.BridgeParams memory params,
+        IFastBridgeV2.BridgeParamsV2 memory paramsV2
+    )
+        public
+    {
+        vm.prank({msgSender: caller, txOrigin: caller});
+        fastBridge.bridge{value: msgValue}(params, paramsV2);
+    }
+
     function prove(address caller, bytes32 transactionId, bytes32 destTxHash, address relayer) public {
         vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.prove(transactionId, destTxHash, relayer);
