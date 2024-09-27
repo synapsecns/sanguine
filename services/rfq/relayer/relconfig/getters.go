@@ -546,11 +546,6 @@ func (c Config) GetRFQAPIURL() string {
 	return c.RFQAPIURL
 }
 
-// GetRFQWsURL returns the RFQ Ws URL.
-func (c Config) GetRFQWsURL() *string {
-	return c.RFQWsURL
-}
-
 // GetDatabase returns the database config.
 func (c Config) GetDatabase() DatabaseConfig {
 	return c.Database

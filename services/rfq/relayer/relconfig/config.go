@@ -35,8 +35,6 @@ type Config struct {
 	OmniRPCURL string `yaml:"omnirpc_url"`
 	// RFQAPIURL is the URL of the RFQ API.
 	RFQAPIURL string `yaml:"rfq_url"`
-	// RFQWsURL is the URL of the RFQ websocket.
-	RFQWsURL *string `yaml:"rfq_ws_url"`
 	// RelayerAPIPort is the port of the relayer API.
 	RelayerAPIPort string `yaml:"relayer_api_port"`
 	// Database is the database config.
@@ -69,6 +67,8 @@ type Config struct {
 	SubmitSingleQuotes bool `yaml:"submit_single_quotes"`
 	// VolumeLimit is the maximum dollar value of relayed transactions in the BlockWindow.
 	VolumeLimit float64 `yaml:"volume_limit"`
+	// SupportActiveQuoting enables support for active quoting.
+	SupportActiveQuoting bool `yaml:"support_active_quoting"`
 }
 
 // ChainConfig represents the configuration for a chain.

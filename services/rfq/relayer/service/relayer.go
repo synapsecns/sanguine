@@ -219,7 +219,7 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		}
 	})
 
-	if r.cfg.GetRFQWsURL() != nil {
+	if r.cfg.SupportActiveQuoting {
 		g.Go(func() error {
 			err = r.quoter.SubscribeActiveRFQ(ctx)
 			if err != nil {
