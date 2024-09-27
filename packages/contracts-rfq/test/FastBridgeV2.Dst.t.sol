@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {FastBridgeV2, FastBridgeV2Test, IFastBridgeV2} from "./FastBridgeV2.t.sol";
+import {FastBridgeV2DstBaseTest, IFastBridgeV2} from "./FastBridgeV2.Dst.Base.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2DstTest is FastBridgeV2Test {
+contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
     event BridgeRelayed(
         bytes32 indexed transactionId,
         address indexed relayer,
@@ -16,28 +16,6 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
         uint256 destAmount,
         uint256 chainGasAmount
     );
-
-    uint256 public constant LEFTOVER_BALANCE = 1 ether;
-
-    function setUp() public override {
-        vm.chainId(DST_CHAIN_ID);
-        super.setUp();
-    }
-
-    function deployFastBridge() public override returns (FastBridgeV2) {
-        return new FastBridgeV2(address(this));
-    }
-
-    function mintTokens() public override {
-        dstToken.mint(relayerA, LEFTOVER_BALANCE + tokenParams.destAmount);
-        dstToken.mint(relayerB, LEFTOVER_BALANCE + tokenParams.destAmount);
-        deal(relayerA, LEFTOVER_BALANCE + ethParams.destAmount);
-        deal(relayerB, LEFTOVER_BALANCE + ethParams.destAmount);
-        vm.prank(relayerA);
-        dstToken.approve(address(fastBridge), type(uint256).max);
-        vm.prank(relayerB);
-        dstToken.approve(address(fastBridge), type(uint256).max);
-    }
 
     function expectBridgeRelayed(
         IFastBridgeV2.BridgeTransactionV2 memory bridgeTx,
@@ -58,25 +36,6 @@ contract FastBridgeV2DstTest is FastBridgeV2Test {
             destAmount: bridgeTx.txV1.destAmount,
             chainGasAmount: 0
         });
-    }
-
-    function relay(address caller, uint256 msgValue, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public {
-        bytes memory request = abi.encode(bridgeTx);
-        vm.prank(caller);
-        fastBridge.relay{value: msgValue}(request);
-    }
-
-    function relayWithAddress(
-        address caller,
-        address relayer,
-        uint256 msgValue,
-        IFastBridgeV2.BridgeTransactionV2 memory bridgeTx
-    )
-        public
-    {
-        bytes memory request = abi.encode(bridgeTx);
-        vm.prank(caller);
-        fastBridge.relay{value: msgValue}(request, relayer);
     }
 
     function checkRelayedViews(bytes32 txId, address expectedRelayer) public view {
