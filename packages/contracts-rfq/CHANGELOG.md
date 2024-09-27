@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.7...@synapsecns/contracts-rfq@0.5.8) (2024-09-27)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** gas estimation tests [SLT-275] ([#3204](https://github.com/synapsecns/sanguine/issues/3204)) ([0a573d1](https://github.com/synapsecns/sanguine/commit/0a573d1c1855f1682dbc1dc7722934593c2a70bd))
+
+
+
+
+
 ## [0.5.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.6...@synapsecns/contracts-rfq@0.5.7) (2024-09-26)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq

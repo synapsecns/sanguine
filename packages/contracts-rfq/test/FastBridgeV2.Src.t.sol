@@ -17,7 +17,7 @@ import {
 import {FastBridgeV2, FastBridgeV2Test, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2SrcTest is FastBridgeV2Test {
+contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     event BridgeRequested(
         bytes32 indexed transactionId,
         address indexed sender,
@@ -40,83 +40,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
 
     event BridgeDepositRefunded(bytes32 indexed transactionId, address indexed to, address token, uint256 amount);
 
-    uint256 public constant MIN_DEADLINE = 30 minutes;
-    uint256 public constant CLAIM_DELAY = 30 minutes;
-    uint256 public constant PERMISSIONLESS_REFUND_DELAY = 7 days;
-
-    uint256 public constant LEFTOVER_BALANCE = 1 ether;
-    uint256 public constant INITIAL_PROTOCOL_FEES_TOKEN = 456_789;
-    uint256 public constant INITIAL_PROTOCOL_FEES_ETH = 0.123 ether;
-
     address public claimTo = makeAddr("Claim To");
-
-    function setUp() public override {
-        vm.chainId(SRC_CHAIN_ID);
-        super.setUp();
-    }
-
-    function deployFastBridge() public override returns (FastBridgeV2) {
-        return new FastBridgeV2(address(this));
-    }
-
-    function configureFastBridge() public virtual override {
-        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayerA);
-        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayerB);
-        fastBridge.grantRole(fastBridge.GUARD_ROLE(), guard);
-        fastBridge.grantRole(fastBridge.REFUNDER_ROLE(), refunder);
-    }
-
-    function mintTokens() public override {
-        // Prior Protocol fees
-        srcToken.mint(address(fastBridge), INITIAL_PROTOCOL_FEES_TOKEN);
-        deal(address(fastBridge), INITIAL_PROTOCOL_FEES_ETH);
-        cheatCollectedProtocolFees(address(srcToken), INITIAL_PROTOCOL_FEES_TOKEN);
-        cheatCollectedProtocolFees(ETH_ADDRESS, INITIAL_PROTOCOL_FEES_ETH);
-        // Users
-        srcToken.mint(userA, LEFTOVER_BALANCE + tokenParams.originAmount);
-        srcToken.mint(userB, LEFTOVER_BALANCE + tokenParams.originAmount);
-        deal(userA, LEFTOVER_BALANCE + ethParams.originAmount);
-        deal(userB, LEFTOVER_BALANCE + ethParams.originAmount);
-        vm.prank(userA);
-        srcToken.approve(address(fastBridge), type(uint256).max);
-        vm.prank(userB);
-        srcToken.approve(address(fastBridge), type(uint256).max);
-    }
-
-    function bridge(address caller, uint256 msgValue, IFastBridge.BridgeParams memory params) public {
-        vm.prank(caller);
-        fastBridge.bridge{value: msgValue}(params);
-    }
-
-    function prove(address caller, bytes32 transactionId, bytes32 destTxHash, address relayer) public {
-        vm.prank(caller);
-        fastBridge.prove(transactionId, destTxHash, relayer);
-    }
-
-    function prove(address caller, IFastBridge.BridgeTransaction memory bridgeTx, bytes32 destTxHash) public {
-        vm.prank(caller);
-        fastBridge.prove(abi.encode(bridgeTx), destTxHash);
-    }
-
-    function claim(address caller, IFastBridge.BridgeTransaction memory bridgeTx) public {
-        vm.prank(caller);
-        fastBridge.claim(abi.encode(bridgeTx));
-    }
-
-    function claim(address caller, IFastBridge.BridgeTransaction memory bridgeTx, address to) public {
-        vm.prank(caller);
-        fastBridge.claim(abi.encode(bridgeTx), to);
-    }
-
-    function dispute(address caller, bytes32 txId) public {
-        vm.prank(caller);
-        fastBridge.dispute(txId);
-    }
-
-    function refund(address caller, IFastBridge.BridgeTransaction memory bridgeTx) public {
-        vm.prank(caller);
-        fastBridge.refund(abi.encode(bridgeTx));
-    }
 
     function expectBridgeRequested(IFastBridge.BridgeTransaction memory bridgeTx, bytes32 txId) public {
         vm.expectEmit(address(fastBridge));
