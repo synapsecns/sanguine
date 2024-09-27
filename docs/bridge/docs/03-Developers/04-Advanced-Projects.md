@@ -1,3 +1,0 @@
-# Advanced projects
-
-Lorem ipsum

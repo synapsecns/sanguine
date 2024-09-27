@@ -1,5 +1,5 @@
 ---
-title: API
+title: REST API
 ---
 
 :::warning
@@ -8,7 +8,7 @@ The [previous version](https://synapse-rest-api-v2.herokuapp.com/) is no longer 
 
 :::
 
-# Bridge API
+# REST API
 
 Get read-only data from on-chain Synapse contracts, and generate Bridge and Swap quotes, plus additional transaction information.
 
