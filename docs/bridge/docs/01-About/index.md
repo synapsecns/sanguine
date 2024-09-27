@@ -1,9 +1,10 @@
 ---
 title: About
 ---
-<br />
 
-![Synapse mark](/brand-assets/synapse-mark.svg)
+import AnimatedLogo from '@site/src/components/AnimatedLogo'
+
+<AnimatedLogo />
 
 # Use Synapse
 
