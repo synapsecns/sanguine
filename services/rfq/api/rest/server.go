@@ -442,23 +442,28 @@ func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Cont
 		metrics.EndSpan(span)
 	}()
 
+	fmt.Println("upgrading websocket")
 	ws, err := r.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		logger.Error("Failed to set websocket upgrade", "error", err)
 		return
 	}
+	fmt.Println("upgraded websocket")
 
 	// use the relayer address as the ID for the connection
 	rawRelayerAddr, exists := c.Get("relayerAddr")
 	if !exists {
+		fmt.Println("no relayer address recovered from signature")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
 		return
 	}
 	relayerAddr, ok := rawRelayerAddr.(string)
 	if !ok {
+		fmt.Println("invalid relayer address type")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid relayer address type"})
 		return
 	}
+	fmt.Printf("relayer address: %s\n", relayerAddr)
 
 	span.SetAttributes(
 		attribute.String("relayer_address", relayerAddr),
@@ -467,6 +472,7 @@ func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Cont
 	// only one connection per relayer allowed
 	_, ok = r.wsClients.Load(relayerAddr)
 	if ok {
+		fmt.Println("relayer already connected")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "relayer already connected"})
 		return
 	}
@@ -477,12 +483,16 @@ func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Cont
 	}()
 
 	client := newWsClient(relayerAddr, ws, r.pubSubManager, r.handler)
+	fmt.Println("registered ws client")
 	r.wsClients.Store(relayerAddr, client)
 	span.AddEvent("registered ws client")
+	fmt.Println("running ws client")
 	err = client.Run(ctx)
 	if err != nil {
+		fmt.Printf("error running ws client: %v\n", err)
 		logger.Error("Error running websocket client", "error", err)
 	}
+	fmt.Println("ws client done")
 }
 
 const (

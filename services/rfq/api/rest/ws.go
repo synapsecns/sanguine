@@ -96,6 +96,7 @@ const (
 
 // Run runs the WebSocket client.
 func (c *wsClient) Run(ctx context.Context) (err error) {
+	fmt.Println("running ws client")
 	c.lastPong = time.Now()
 	messageChan := make(chan []byte)
 	pingTicker := time.NewTicker(PingPeriod)
@@ -114,13 +115,17 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			close(c.doneChan)
 			return nil
 		case req := <-c.requestChan:
+			fmt.Printf("sending quote request: %v\n", req)
 			err = c.sendRelayerRequest(ctx, req)
 			if err != nil {
+				fmt.Printf("error sending quote request: %v\n", err)
 				logger.Error("Error sending quote request: %s", err)
 			}
 		case msg := <-messageChan:
+			fmt.Printf("received message: %s\n", msg)
 			err = c.handleRelayerMessage(ctx, msg)
 			if err != nil {
+				fmt.Printf("error handling relayer message: %v\n", err)
 				logger.Error("Error handling relayer message: %s", err)
 			}
 		case <-pingTicker.C:
@@ -204,6 +209,7 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 }
 
 func (c *wsClient) handleSubscribe(ctx context.Context, content json.RawMessage) (resp model.ActiveRFQMessage) {
+	fmt.Printf("handleSubscribe: %s\n", content)
 	ctx, span := c.handler.Tracer().Start(ctx, "handleSubscribe", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
 	))
@@ -219,8 +225,10 @@ func (c *wsClient) handleSubscribe(ctx context.Context, content json.RawMessage)
 	span.SetAttributes(attribute.IntSlice("chain_ids", sub.Chains))
 	err = c.pubsub.AddSubscription(c.relayerAddr, sub)
 	if err != nil {
+		fmt.Printf("error adding subscription: %v\n", err)
 		return getErrorResponse(SubscribeOp, fmt.Errorf("error adding subscription: %w", err))
 	}
+	fmt.Printf("successfully added subscription for chain ids: %v\n", sub.Chains)
 	return getSuccessResponse(SubscribeOp)
 }
 
