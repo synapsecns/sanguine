@@ -3,7 +3,7 @@ title: About
 ---
 <br />
 
-![Synapse mark](/img/synapse-mark.svg)
+![Synapse mark](/brand-assets/synapse-mark.svg)
 
 # Use Synapse
 

@@ -84,7 +84,7 @@ const config: Config = {
       title: 'Synapse Bridge Docs',
       logo: {
         alt: 'My Site Logo',
-        src: 'img/logo.svg',
+        src: 'brand-assets/synapse-mark.svg',
       },
       items: [
         {

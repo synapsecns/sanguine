@@ -1,8 +1,3 @@
----
-sidebar_position: 0
-title: Synapse DAO
----
-
 # Synapse DAO
 
 Since launch of the Synapse Protocol, a number of governance initiatives have been put forward and voted on by the Synapse DAO.
