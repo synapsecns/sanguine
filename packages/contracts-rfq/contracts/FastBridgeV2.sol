@@ -39,9 +39,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     function bridgeProofs(bytes32 transactionId) public view returns (uint96 timestamp, address relayer) {
-        uint96 proofBlockTimestamp = bridgeTxDetails[transactionId].proofBlockTimestamp;
-        address proofRelayer = bridgeTxDetails[transactionId].proofRelayer;
-        return (proofBlockTimestamp, proofRelayer);
+        timestamp = bridgeTxDetails[transactionId].proofBlockTimestamp;
+        relayer = bridgeTxDetails[transactionId].proofRelayer;
     }
 
     constructor(address _owner) Admin(_owner) {
