@@ -14,7 +14,8 @@ import {
     ZeroAddress
 } from "../contracts/libs/Errors.sol";
 
-import {FastBridgeV2, FastBridgeV2Test, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.t.sol";
+import {FastBridgeV2SrcBaseTest} from "./FastBridgeV2.Src.Base.t.sol";
+import {IFastBridge, IFastBridgeV2} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
@@ -94,10 +95,6 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
             token: bridgeParams.originToken,
             amount: bridgeParams.originAmount
         });
-    }
-
-    function assertEq(IFastBridgeV2.BridgeStatus a, IFastBridgeV2.BridgeStatus b) public pure {
-        assertEq(uint8(a), uint8(b));
     }
 
     // ══════════════════════════════════════════════════ BRIDGE ═══════════════════════════════════════════════════════
