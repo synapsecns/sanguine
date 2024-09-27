@@ -258,6 +258,11 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 // SubscribeActiveRFQ subscribes to the RFQ websocket API.
 // This function is blocking and will run until the context is cancelled.
 func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(ctx, "SubscribeActiveRFQ")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	chainIDs := []int{}
 	for chainID := range m.config.Chains {
 		chainIDs = append(chainIDs, chainID)
@@ -265,11 +270,14 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 	req := model.SubscribeActiveRFQRequest{
 		ChainIDs: chainIDs,
 	}
+	span.SetAttributes(attribute.IntSlice("chain_ids", chainIDs))
+
 	reqChan := make(chan *model.ActiveRFQMessage)
 	respChan, err := m.rfqClient.SubscribeActiveQuotes(ctx, &req, reqChan)
 	if err != nil {
 		return fmt.Errorf("error subscribing to active quotes: %w", err)
 	}
+	span.AddEvent("subscribed to active quotes")
 
 	for {
 		select {
@@ -287,7 +295,15 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 
 // getActiveRFQ handles an active RFQ message.
 func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMessage) (resp *model.ActiveRFQMessage, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(ctx, "generateActiveRFQ", trace.WithAttributes(
+		attribute.String("op", msg.Op),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	if msg.Op != rest.RequestQuoteOp {
+		span.AddEvent("not a request quote op")
 		return nil, nil
 	}
 
@@ -301,6 +317,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling quote data: %w", err)
 	}
+	span.SetAttributes(attribute.String("request_id", rfqRequest.RequestID))
 
 	quoteInput := QuoteInput{
 		OriginChainID:   rfqRequest.Data.OriginChainID,
@@ -315,6 +332,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	if err != nil {
 		return nil, fmt.Errorf("error generating quote: %w", err)
 	}
+	span.SetAttributes(attribute.String("dest_amount", rawQuote.DestAmount))
 
 	rfqResp := model.WsRFQResponse{
 		RequestID:  rfqRequest.RequestID,
@@ -328,6 +346,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		Op:      rest.SendQuoteOp,
 		Content: respBytes,
 	}
+	span.AddEvent("generated response")
 
 	return resp, nil
 }
