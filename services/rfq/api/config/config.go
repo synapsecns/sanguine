@@ -26,7 +26,6 @@ type Config struct {
 	Port            string            `yaml:"port"`
 	RelayAckTimeout time.Duration     `yaml:"relay_ack_timeout"`
 	MaxQuoteAge     time.Duration     `yaml:"max_quote_age"`
-	WebsocketPort   *string           `yaml:"websocket_port"`
 }
 
 const defaultRelayAckTimeout = 30 * time.Second

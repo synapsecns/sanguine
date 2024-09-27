@@ -79,7 +79,6 @@ func (c *ServerSuite) SetupTest() {
 	c.wsPort = uint16(wsPort)
 	c.Require().NoError(err)
 
-	wsPortStr := fmt.Sprintf("%d", wsPort)
 	testConfig := config.Config{
 		Database: config.DatabaseConfig{
 			Type: "sqlite",
@@ -90,9 +89,8 @@ func (c *ServerSuite) SetupTest() {
 			1:     ethFastBridgeAddress.Hex(),
 			42161: arbFastBridgeAddress.Hex(),
 		},
-		Port:          fmt.Sprintf("%d", port),
-		WebsocketPort: &wsPortStr,
-		MaxQuoteAge:   15 * time.Minute,
+		Port:        fmt.Sprintf("%d", port),
+		MaxQuoteAge: 15 * time.Minute,
 	}
 	c.cfg = testConfig
 

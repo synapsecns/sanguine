@@ -67,7 +67,6 @@ type QuoterAPIServer struct {
 	latestQuoteAgeGauge metric.Float64ObservableGauge
 	// wsClients maintains a mapping of connection ID to a channel for sending quote requests.
 	wsClients     *xsync.MapOf[string, WsClient]
-	wsServer      *http.Server
 	pubSubManager PubSubManager
 }
 
@@ -141,26 +140,7 @@ func NewAPI(
 		relayAckCache:       relayAckCache,
 		ackMux:              sync.Mutex{},
 		wsClients:           xsync.NewMapOf[WsClient](),
-	}
-
-	// Initialize WebSocket server if WebsocketPort is set
-	if cfg.WebsocketPort != nil {
-		wsEngine := gin.New()
-		wsEngine.Use(q.AuthMiddleware())
-		wsEngine.GET(RFQStreamRoute, func(c *gin.Context) {
-			q.GetActiveRFQWebsocket(ctx, c)
-		})
-		wsEngine.GET("", func(c *gin.Context) {
-			q.GetActiveRFQWebsocket(ctx, c)
-		})
-
-		wsPort := *cfg.WebsocketPort
-		q.wsServer = &http.Server{
-			Addr:              ":" + wsPort,
-			Handler:           wsEngine,
-			ReadHeaderTimeout: 10 * time.Second,
-		}
-		q.pubSubManager = NewPubSubManager()
+		pubSubManager:       NewPubSubManager(),
 	}
 
 	// Prometheus metrics setup
@@ -202,7 +182,6 @@ var logger = log.Logger("rfq-api")
 
 // Run runs the quoter api server.
 func (r *QuoterAPIServer) Run(ctx context.Context) error {
-	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
 	h := NewHandler(r.db, r.cfg)
 
@@ -227,6 +206,13 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	openQuoteRequestsGet.Use(r.AuthMiddleware())
 	openQuoteRequestsGet.GET("", h.GetOpenQuoteRequests)
 
+	// WebSocket route
+	wsRoute := engine.Group(RFQStreamRoute)
+	wsRoute.Use(r.AuthMiddleware())
+	wsRoute.GET("", func(c *gin.Context) {
+		r.GetActiveRFQWebsocket(ctx, c)
+	})
+
 	// Unauthenticated routes
 	engine.GET(QuoteRoute, h.GetQuotes)
 	engine.GET(ContractsRoute, h.GetContracts)
@@ -244,16 +230,6 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// Start the main HTTP server
 	connection := baseServer.Server{}
 	fmt.Printf("starting api at http://localhost:%s\n", r.cfg.Port)
-
-	// Start WebSocket server if configured
-	if r.wsServer != nil {
-		fmt.Printf("starting websocket server at ws://localhost:%s\n", *r.cfg.WebsocketPort)
-		go func() {
-			if err := r.wsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				logger.Error("WebSocket server error", "error", err)
-			}
-		}()
-	}
 
 	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%s", r.cfg.Port), r.engine)
 	if err != nil {
@@ -592,16 +568,5 @@ func (r *QuoterAPIServer) recordLatestQuoteAge(ctx context.Context, observer met
 		observer.ObserveFloat64(r.latestQuoteAgeGauge, age, opts)
 	}
 
-	return nil
-}
-
-// Shutdown gracefully shuts down the WebSocket server.
-func (r *QuoterAPIServer) Shutdown(ctx context.Context) error {
-	if r.wsServer != nil {
-		if err := r.wsServer.Shutdown(ctx); err != nil {
-			return fmt.Errorf("WebSocket server shutdown error: %w", err)
-		}
-	}
-	// Add any other cleanup or shutdown logic here
 	return nil
 }

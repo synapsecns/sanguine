@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ipfs/go-log"
@@ -59,13 +60,12 @@ func (c unauthenticatedClient) resty() *resty.Client {
 type clientImpl struct {
 	UnauthenticatedClient
 	rClient   *resty.Client
-	wsURL     *string
 	reqSigner signer.Signer
 }
 
 // NewAuthenticatedClient creates a new client for the RFQ quoting API.
 // TODO: @aurelius,  you don't actually need to be authed for GET Requests.
-func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, wsURL *string, reqSigner signer.Signer) (AuthenticatedClient, error) {
+func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, reqSigner signer.Signer) (AuthenticatedClient, error) {
 	unauthedClient, err := NewUnauthenticatedClient(metrics, rfqURL)
 	if err != nil {
 		return nil, fmt.Errorf("could not create unauthenticated client: %w", err)
@@ -86,7 +86,6 @@ func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, wsURL *strin
 	return &clientImpl{
 		UnauthenticatedClient: unauthedClient,
 		rClient:               authedClient,
-		wsURL:                 wsURL,
 		reqSigner:             reqSigner,
 	}, nil
 }
@@ -221,9 +220,6 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 }
 
 func (c *clientImpl) connectWebsocket(ctx context.Context, req *model.SubscribeActiveRFQRequest) (conn *websocket.Conn, err error) {
-	if c.wsURL == nil {
-		return nil, fmt.Errorf("websocket URL is not set")
-	}
 	if len(req.ChainIDs) == 0 {
 		return nil, fmt.Errorf("chain IDs are required")
 	}
@@ -233,7 +229,7 @@ func (c *clientImpl) connectWebsocket(ctx context.Context, req *model.SubscribeA
 		return nil, fmt.Errorf("failed to get auth header: %w", err)
 	}
 
-	reqURL := *c.wsURL + rest.RFQStreamRoute
+	reqURL := strings.Replace(c.rClient.BaseURL, "http", "ws", 1) + rest.RFQStreamRoute
 	conn, httpResp, err := websocket.DefaultDialer.Dial(reqURL, header)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
