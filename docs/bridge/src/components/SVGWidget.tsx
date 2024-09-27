@@ -2,10 +2,10 @@ export default () => {
   return (
     <svg
       width="400"
-      height="406"
-      viewBox="0 0 400 406"
+      height="382"
+      viewBox="0 0 400 382"
       fill="currentcolor"
-      //   style={{ pointerEvents: 'none' }}
+      style={{ pointerEvents: 'none' }}
     >
       <defs>
         <linearGradient id="synGrad">
@@ -14,7 +14,7 @@ export default () => {
         </linearGradient>
         <mask id="switcherMask">
           <rect width="100%" height="100%" fill="white" />
-          <rect x="182" y="134" width="36" height="36" rx="4" fill="black" />
+          <rect x="182" y="122" width="36" height="36" rx="4" fill="black" />
         </mask>
       </defs>
       <style>
@@ -37,102 +37,78 @@ export default () => {
         x="8"
         y="8"
         width="384"
-        height="140"
+        height="128"
         rx="4"
         className="bridgeSurface"
         mask="url(#switcherMask)"
       />
-      <circle
-        cx="266"
-        cy="37"
-        r="4"
-        stroke="hsl(285deg 72.5% 62.5%)"
-        fill="none"
-      />
-      <text x="380" y="42" textAnchor="end" style={{ fontSize: '.9rem' }}>
-        Connect Wallet
-      </text>
-      <text x="20" y="32" opacity=".67" style={{ fontSize: '.9rem' }}>
-        From
-      </text>
-      <text x="20" y="56" style={{ fontWeight: 500 }}>
+      <rect x="16" y="20" width="116" height="36" rx="4" fillOpacity=".1" />
+      <text x="28" y="44" style={{ fontSize: '1.1rem', fontWeight: 500 }}>
         Network
       </text>
-      <path stroke="currentcolor" opacity=".5" d="m96 33 4.5 8 4.5 -8z" />
-      <rect
-        x="16"
-        y="72"
-        width="368"
-        height="56"
-        rx="6"
-        stroke="#80808040"
-        fill="none"
-      />
-      <rect x="24" y="80" width="76" height="40" rx="4" fillOpacity=".1" />
+      <path stroke="currentcolor" d="m108 34 4.5 8 4.5 -8z" />
+      <rect x="304" y="62" width="80" height="36" rx="4" fillOpacity=".1" />
       <text
-        x="32"
-        y="101"
+        x="316"
+        y="82"
         dominantBaseline="middle"
         style={{ fontSize: '1.2rem', fontWeight: 500 }}
       >
         Out
       </text>
-      <path stroke="currentcolor" opacity=".5" d="m77 96 4.5 8 4.5 -8z" />
+      <path stroke="currentcolor" d="m361 77 4.5 8 4.5 -8z" />
       <text
-        x="116"
+        x="380"
+        y="124"
+        textAnchor="end"
+        opacity=".67"
+        style={{ fontSize: '.9rem' }}
+      >
+        Available 0.0000
+      </text>
+      <text
+        x="24"
         y="102"
         dominantBaseline="middle"
-        style={{ fontSize: '1.5rem', fontWeight: 600 }}
+        style={{ fontSize: '2rem', fontWeight: 500 }}
       >
         0.0000
       </text>
-
       <rect
         x="8"
-        y="156"
+        y="144"
         width="384"
-        height="140"
+        height="128"
         rx="4"
         className="bridgeSurface"
         mask="url(#switcherMask)"
       />
-      <rect
-        x="16"
-        y="220"
-        width="368"
-        height="56"
-        rx="6"
-        stroke="#80808040"
-        fill="none"
-      />
-      <text x="20" y="180" opacity=".67" style={{ fontSize: '.9rem' }}>
-        To
-      </text>
-      <text x="20" y="204" style={{ fontWeight: 500 }}>
+      <rect x="16" y="154" width="116" height="36" rx="4" fillOpacity=".1" />
+      <text x="28" y="178" style={{ fontSize: '1.1rem', fontWeight: 500 }}>
         Network
       </text>
-      <path stroke="currentcolor" opacity=".5" d="m96 180 4.5 8 4.5 -8z" />
-      <rect x="24" y="228" width="64" height="40" rx="4" fillOpacity=".1" />
+      <path stroke="currentcolor" d="m108 168 4.5 8 4.5 -8z" />
       <text
-        x="32"
-        y="250"
+        x="24"
+        y="230"
+        dominantBaseline="middle"
+        style={{ fontSize: '2rem', fontWeight: 500 }}
+      >
+        0.0000
+      </text>
+      <rect x="320" y="210" width="64" height="36" rx="4" fillOpacity=".1" />
+      <text
+        x="332"
+        y="230"
         dominantBaseline="middle"
         style={{ fontSize: '1.2rem', fontWeight: 500 }}
       >
         In
       </text>
-      <path stroke="currentcolor" opacity=".5" d="m64 244 4.5 8 4.5 -8z" />
-      <text
-        x="104"
-        y="250"
-        dominantBaseline="middle"
-        style={{ fontSize: '1.5rem', fontWeight: 500 }}
-      >
-        0.0000
-      </text>
+      <path stroke="currentcolor" d="m361 225 4.5 8 4.5 -8z" />
       <rect
         x="186"
-        y="138"
+        y="126"
         width="28"
         height="28"
         rx="2"
@@ -143,23 +119,26 @@ export default () => {
         strokeWidth="2"
         opacity=".7"
         fill="none"
-        d="m200 143.5 v15 l-6 -5.5 m6 5.5 l6 -5.5"
+        d="m200 131.5 v15 l-6 -5.5 m6 5.5 l6 -5.5"
       />
-
-      <text x="364" y="324" textAnchor="end" style={{ fontSize: '.9rem' }}>
-        Select origin token
+      <text
+        x="364"
+        y="300"
+        textAnchor="end"
+        style={{ fontSize: '.9rem', fontWeight: 500 }}
+      >
+        25 seconds via SynapseRFQ
       </text>
       <path
         stroke="currentcolor"
         strokeWidth="2"
         fill="none"
         opacity=".67"
-        d="m372 313 5 5 5 -5 m-10 7 5 5 5 -5"
+        d="m372 289 5 5 5 -5 m-10 7 5 5 5 -5"
       />
-
       <rect
         x="8"
-        y="344"
+        y="320"
         width="384"
         height="52"
         rx="6"
@@ -169,11 +148,10 @@ export default () => {
       />
       <text
         x="200"
-        y="372"
+        y="348"
         textAnchor="middle"
         dominantBaseline="middle"
-        // fill="white"
-        style={{ fontSize: '1.2rem', fontWeight: 500 }}
+        style={{ fontSize: '1.5rem', fontWeight: 500 }}
       >
         Bridge
       </text>

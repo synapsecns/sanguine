@@ -38,11 +38,11 @@ When a token is bridged using a Synapse Liquidity Pool, it is converted to a nex
 ## How to Bridge
 
 <figure>
-<SVGBridge />
-<figcaption>Synapse Bridge</figcaption>
+    <SVGBridge />
+    <figcaption>Synapse Bridge</figcaption>
 </figure>
 
-To use the [Synapse Bridge](https://synapseprotocol.com):
+### Instructions
 
 1. Connect your wallet
 2. Select your origin and destination chains from the dropdown menus
