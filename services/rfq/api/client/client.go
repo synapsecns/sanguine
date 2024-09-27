@@ -230,6 +230,8 @@ func (c *clientImpl) connectWebsocket(ctx context.Context, req *model.SubscribeA
 	}
 
 	reqURL := strings.Replace(c.rClient.BaseURL, "http", "ws", 1) + rest.RFQStreamRoute
+	fmt.Printf("dialing websocket: %s\n", reqURL)
+	fmt.Printf("headers: %v\n", header)
 	conn, httpResp, err := websocket.DefaultDialer.Dial(reqURL, header)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)

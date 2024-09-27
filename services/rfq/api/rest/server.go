@@ -275,7 +275,9 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 				loggedRequest = &req
 			}
 		case RFQRoute, RFQStreamRoute:
+			fmt.Println("RFQRoute, RFQStreamRoute")
 			chainsHeader := c.GetHeader(ChainsHeader)
+			fmt.Printf("got chains header: %s\n", chainsHeader)
 			if chainsHeader != "" {
 				var chainIDs []int
 				err = json.Unmarshal([]byte(chainsHeader), &chainIDs)
@@ -434,6 +436,7 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 // @Header 101 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /quote_requests [get].
 func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Context) {
+	fmt.Println("GetActiveRFQWebsocket")
 	ctx, span := r.handler.Tracer().Start(ctx, "GetActiveRFQWebsocket")
 	defer func() {
 		metrics.EndSpan(span)
