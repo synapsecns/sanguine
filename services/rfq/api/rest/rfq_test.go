@@ -15,10 +15,10 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 )
 
-func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet wallet.Wallet, quoteResp *model.WsRFQResponse, url, wsURL string) {
+func runMockRelayer(c *ServerSuite, respCtx context.Context, relayerWallet wallet.Wallet, quoteResp *model.WsRFQResponse, url string) {
 	// Create a relayer client
 	relayerSigner := localsigner.NewSigner(relayerWallet.PrivateKey())
-	relayerClient, err := client.NewAuthenticatedClient(metrics.Get(), url, &wsURL, relayerSigner)
+	relayerClient, err := client.NewAuthenticatedClient(metrics.Get(), url, relayerSigner)
 	c.Require().NoError(err)
 
 	// Create channels for active quote requests and responses
@@ -80,13 +80,12 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	c.startQuoterAPIServer()
 
 	url := fmt.Sprintf("http://localhost:%d", c.port)
-	wsURL := fmt.Sprintf("ws://localhost:%d", c.wsPort)
 
 	// Create a user client
 	userWallet, err := wallet.FromRandom()
 	c.Require().NoError(err)
 	userSigner := localsigner.NewSigner(userWallet.PrivateKey())
-	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
+	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, userSigner)
 	c.Require().NoError(err)
 
 	// Prepare a user quote request
@@ -111,7 +110,7 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	}
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
 	defer cancel()
-	runMockRelayer(c, respCtx, c.relayerWallets[0], quoteResp, url, wsURL)
+	runMockRelayer(c, respCtx, c.relayerWallets[0], quoteResp, url)
 
 	// Submit the user quote request
 	userQuoteResp, err := userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
@@ -134,13 +133,12 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 	c.startQuoterAPIServer()
 
 	url := fmt.Sprintf("http://localhost:%d", c.port)
-	wsURL := fmt.Sprintf("ws://localhost:%d", c.wsPort)
 
 	// Create a user client
 	userWallet, err := wallet.FromRandom()
 	c.Require().NoError(err)
 	userSigner := localsigner.NewSigner(userWallet.PrivateKey())
-	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
+	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, userSigner)
 	c.Require().NoError(err)
 
 	// Prepare a user quote request
@@ -164,7 +162,7 @@ func (c *ServerSuite) TestActiveRFQExpiredRequest() {
 	}
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
 	defer cancel()
-	runMockRelayer(c, respCtx, c.relayerWallets[0], quoteResp, url, wsURL)
+	runMockRelayer(c, respCtx, c.relayerWallets[0], quoteResp, url)
 
 	// Submit the user quote request
 	userQuoteResp, err := userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
@@ -185,13 +183,12 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	c.startQuoterAPIServer()
 
 	url := fmt.Sprintf("http://localhost:%d", c.port)
-	wsURL := fmt.Sprintf("ws://localhost:%d", c.wsPort)
 
 	// Create a user client
 	userWallet, err := wallet.FromRandom()
 	c.Require().NoError(err)
 	userSigner := localsigner.NewSigner(userWallet.PrivateKey())
-	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
+	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, userSigner)
 	c.Require().NoError(err)
 
 	// Prepare a user quote request
@@ -226,9 +223,9 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	}
 	respCtx, cancel := context.WithCancel(c.GetTestContext())
 	defer cancel()
-	runMockRelayer(c, respCtx, c.relayerWallets[0], &quoteResp, url, wsURL)
-	runMockRelayer(c, respCtx, c.relayerWallets[1], &quoteResp2, url, wsURL)
-	runMockRelayer(c, respCtx, c.relayerWallets[2], &quoteResp3, url, wsURL)
+	runMockRelayer(c, respCtx, c.relayerWallets[0], &quoteResp, url)
+	runMockRelayer(c, respCtx, c.relayerWallets[1], &quoteResp2, url)
+	runMockRelayer(c, respCtx, c.relayerWallets[2], &quoteResp3, url)
 
 	// Submit the user quote request
 	userQuoteResp, err := userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
@@ -251,13 +248,12 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	c.startQuoterAPIServer()
 
 	url := fmt.Sprintf("http://localhost:%d", c.port)
-	wsURL := fmt.Sprintf("ws://localhost:%d", c.wsPort)
 
 	// Create a user client
 	userWallet, err := wallet.FromRandom()
 	c.Require().NoError(err)
 	userSigner := localsigner.NewSigner(userWallet.PrivateKey())
-	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
+	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, userSigner)
 	c.Require().NoError(err)
 
 	userRequestAmount := big.NewInt(1_000_000)
@@ -304,7 +300,7 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	defer cancel()
 
 	// Run mock relayer even though we expect it to be ignored
-	runMockRelayer(c, respCtx, c.relayerWallets[0], quoteResp, url, wsURL)
+	runMockRelayer(c, respCtx, c.relayerWallets[0], quoteResp, url)
 
 	// Submit the user quote request
 	userQuoteResp, err := userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
@@ -323,13 +319,12 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	c.startQuoterAPIServer()
 
 	url := fmt.Sprintf("http://localhost:%d", c.port)
-	wsURL := fmt.Sprintf("ws://localhost:%d", c.wsPort)
 
 	// Create a user client
 	userWallet, err := wallet.FromRandom()
 	c.Require().NoError(err)
 	userSigner := localsigner.NewSigner(userWallet.PrivateKey())
-	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, nil, userSigner)
+	userClient, err := client.NewAuthenticatedClient(metrics.Get(), url, userSigner)
 	c.Require().NoError(err)
 
 	userRequestAmount := big.NewInt(1_000_000)
@@ -383,9 +378,9 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	destAmount3 := new(big.Int).Sub(userRequestAmount, big.NewInt(3000))
 	quoteResp3.DestAmount = destAmount3.String()
 
-	runMockRelayer(c, respCtx, c.relayerWallets[0], &quoteResp, url, wsURL)
-	runMockRelayer(c, respCtx, c.relayerWallets[1], &quoteResp2, url, wsURL)
-	runMockRelayer(c, respCtx, c.relayerWallets[2], &quoteResp3, url, wsURL)
+	runMockRelayer(c, respCtx, c.relayerWallets[0], &quoteResp, url)
+	runMockRelayer(c, respCtx, c.relayerWallets[1], &quoteResp2, url)
+	runMockRelayer(c, respCtx, c.relayerWallets[2], &quoteResp3, url)
 
 	// Submit the user quote request
 	userQuoteResp, err := userClient.PutRFQRequest(c.GetTestContext(), userQuoteReq)
