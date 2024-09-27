@@ -21,5 +21,16 @@ contract FastBridgeV2GasBenchmarkSrcProtocolFeesTest is FastBridgeV2GasBenchmark
         ethTx.originAmount = 0.99 ether;
         ethTx.destAmount = 0.98 ether;
         ethParams.destAmount = 0.98 ether;
+
+        // Copy txs to bridged and proven with different nonce
+        bridgedTokenTx = tokenTx;
+        provenTokenTx = tokenTx;
+        bridgedEthTx = ethTx;
+        provenEthTx = ethTx;
+
+        bridgedTokenTx.nonce = 0;
+        bridgedEthTx.nonce = 1;
+        provenTokenTx.nonce = 2;
+        provenEthTx.nonce = 3;
     }
 }

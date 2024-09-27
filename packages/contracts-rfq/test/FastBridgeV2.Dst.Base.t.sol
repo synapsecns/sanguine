@@ -31,7 +31,7 @@ contract FastBridgeV2DstBaseTest is FastBridgeV2Test {
 
     function relay(address caller, uint256 msgValue, IFastBridge.BridgeTransaction memory bridgeTx) public {
         bytes memory request = abi.encode(bridgeTx);
-        vm.prank(caller);
+        vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.relay{value: msgValue}(request);
     }
 
@@ -44,7 +44,7 @@ contract FastBridgeV2DstBaseTest is FastBridgeV2Test {
         public
     {
         bytes memory request = abi.encode(bridgeTx);
-        vm.prank(caller);
+        vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.relay{value: msgValue}(request, relayer);
     }
 }

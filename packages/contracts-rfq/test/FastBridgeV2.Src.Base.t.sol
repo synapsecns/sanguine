@@ -9,7 +9,7 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
     uint256 public constant CLAIM_DELAY = 30 minutes;
     uint256 public constant PERMISSIONLESS_REFUND_DELAY = 7 days;
 
-    uint256 public constant LEFTOVER_BALANCE = 1 ether;
+    uint256 public constant LEFTOVER_BALANCE = 10 ether;
     uint256 public constant INITIAL_PROTOCOL_FEES_TOKEN = 456_789;
     uint256 public constant INITIAL_PROTOCOL_FEES_ETH = 0.123 ether;
 
@@ -49,37 +49,37 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
     // ══════════════════════════════════════════════════ HELPERS ══════════════════════════════════════════════════════
 
     function bridge(address caller, uint256 msgValue, IFastBridge.BridgeParams memory params) public {
-        vm.prank(caller);
+        vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.bridge{value: msgValue}(params);
     }
 
     function prove(address caller, bytes32 transactionId, bytes32 destTxHash, address relayer) public {
-        vm.prank(caller);
+        vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.prove(transactionId, destTxHash, relayer);
     }
 
     function prove(address caller, IFastBridge.BridgeTransaction memory bridgeTx, bytes32 destTxHash) public {
-        vm.prank(caller);
+        vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.prove(abi.encode(bridgeTx), destTxHash);
     }
 
     function claim(address caller, IFastBridge.BridgeTransaction memory bridgeTx) public {
-        vm.prank(caller);
+        vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.claim(abi.encode(bridgeTx));
     }
 
     function claim(address caller, IFastBridge.BridgeTransaction memory bridgeTx, address to) public {
-        vm.prank(caller);
+        vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.claim(abi.encode(bridgeTx), to);
     }
 
     function dispute(address caller, bytes32 txId) public {
-        vm.prank(caller);
+        vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.dispute(txId);
     }
 
     function refund(address caller, IFastBridge.BridgeTransaction memory bridgeTx) public {
-        vm.prank(caller);
+        vm.prank({msgSender: caller, txOrigin: caller});
         fastBridge.refund(abi.encode(bridgeTx));
     }
 
