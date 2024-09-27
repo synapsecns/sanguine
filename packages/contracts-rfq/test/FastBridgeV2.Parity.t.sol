@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {FastBridgeTest, SenderIncorrect} from "./FastBridge.t.sol";
+import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.sol";
+
+import {FastBridgeTest} from "./FastBridge.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2ParityTest is FastBridgeTest {
+contract FastBridgeV2ParityTest is FastBridgeTest, IFastBridgeV2Errors {
     address public anotherRelayer = makeAddr("Another Relayer");
 
     function deployFastBridge() internal virtual override returns (address) {

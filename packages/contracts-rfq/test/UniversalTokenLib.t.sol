@@ -8,6 +8,7 @@ import {MockRevertingRecipient} from "./MockRevertingRecipient.sol";
 
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable ordering
 contract UniversalTokenLibraryTest is Test {
     UniversalTokenLibHarness public libHarness;
     MockERC20 public token;

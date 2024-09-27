@@ -13,7 +13,7 @@ type TransformedBridgeRoutes = Record<string, TokenData[]>
 const constructJSON = (
   swappableMap,
   exclusionList
-): TransformedBridgeRoutes => {
+): StringifiedBridgeRoutes => {
   const result = {}
 
   // Iterate through the chains
@@ -56,8 +56,7 @@ const constructJSON = (
       }
     }
   }
-
-  return transformBridgeRouteValues(result)
+  return result
 }
 
 const transformPair = (string: string): any => {
@@ -97,4 +96,7 @@ const transformBridgeRouteValues = (
   )
 }
 
-export const BRIDGE_ROUTE_MAPPING = constructJSON(BRIDGE_MAP, [])
+export const BRIDGE_ROUTE_MAPPING_SYMBOLS = constructJSON(BRIDGE_MAP, [])
+export const BRIDGE_ROUTE_MAPPING = transformBridgeRouteValues(
+  BRIDGE_ROUTE_MAPPING_SYMBOLS
+)

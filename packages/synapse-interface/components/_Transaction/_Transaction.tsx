@@ -19,6 +19,7 @@ import { TransactionSupport } from './components/TransactionSupport'
 import { RightArrow } from '@/components/icons/RightArrow'
 import { Address } from 'viem'
 import { useIsTxReverted } from './helpers/useIsTxReverted'
+import { useTxRefundStatus } from './helpers/useTxRefundStatus'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -30,11 +31,12 @@ interface _TransactionProps {
   destinationToken: Token
   originTxHash: string
   bridgeModuleName: string
+  routerAddress: string
   estimatedTime: number // in seconds
   timestamp: number
   currentTime: number
   kappa?: string
-  status: 'pending' | 'completed' | 'reverted'
+  status: 'pending' | 'completed' | 'reverted' | 'refunded'
   disabled: boolean
 }
 
@@ -49,6 +51,7 @@ export const _Transaction = ({
   destinationToken,
   originTxHash,
   bridgeModuleName,
+  routerAddress,
   estimatedTime,
   timestamp,
   currentTime,
@@ -80,6 +83,7 @@ export const _Transaction = ({
     isEstimatedTimeReached,
     isCheckTxStatus,
     isCheckTxForRevert,
+    isCheckTxForRefund,
   } = calculateEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxCompleted, _kappa] = useBridgeTxStatus({
@@ -98,18 +102,29 @@ export const _Transaction = ({
     isCheckTxForRevert && status === 'pending'
   )
 
+  const isTxRefunded = useTxRefundStatus(
+    kappa,
+    routerAddress as Address,
+    originChain,
+    isCheckTxForRefund &&
+      status === 'pending' &&
+      bridgeModuleName === 'SynapseRFQ'
+  )
+
   useBridgeTxUpdater(
     connectedAddress,
     destinationChain,
     _kappa,
     originTxHash,
     isTxCompleted,
-    isTxReverted
+    isTxReverted,
+    isTxRefunded
   )
 
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
   const showTransactionSupport =
     status === 'reverted' ||
+    status === 'refunded' ||
     (status === 'pending' && delayedTimeInMin && delayedTimeInMin <= -5)
 
   return (
@@ -184,7 +199,7 @@ export const _Transaction = ({
             {status !== 'pending' && (
               <MenuItem
                 text={
-                  isTxReverted
+                  isTxReverted || isTxRefunded
                     ? t('Clear notification')
                     : t('Clear transaction')
                 }

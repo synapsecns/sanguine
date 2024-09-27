@@ -57,7 +57,8 @@
     "ReceiveWithEllipsis": "接收…",
     "All receivable tokens": "所有可接收代币",
     "Route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "找到桥接路线：从 {fromChainId} 的 {fromToken} 到 {toChainId} 的 {toToken}",
-    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "未找到桥接路线：从 {fromChainId} 的 {fromToken} 到 {toChainId} 的 {toToken}"
+    "No route found for bridging {debouncedFromValue} {fromToken} on {fromChainId} to {toToken} on {toChainId}": "未找到桥接路线：从 {fromChainId} 的 {fromToken} 到 {toChainId} 的 {toToken}",
+    "Confirm new quote": "确认新报价"
   },
   "Completed": {
     "to": "到",
@@ -305,7 +306,9 @@
     "Began": "已开始",
     "Complete": "已完成",
     "Reverted": "已回退",
+    "Refunded": "已退款",
     "Transaction reverted, funds returned": "交易已回退，资金已退还",
+    "Transaction refunded, funds returned": "交易已退款，资金已退还",
     "What's taking so long?": "为什么这么久？",
     "FAQ": "常见问题",
     "Support": "支持",

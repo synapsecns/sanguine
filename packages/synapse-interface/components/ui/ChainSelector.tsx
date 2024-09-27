@@ -45,7 +45,7 @@ export function ChainSelector({
             newToChainId: chainId,
           }
 
-      segmentAnalyticsEvent(eventTitle, eventData)
+      segmentAnalyticsEvent(eventTitle, eventData, true)
       dispatch(setFunction(chainId))
     }
   }
