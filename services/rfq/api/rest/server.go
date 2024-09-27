@@ -18,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -433,6 +434,11 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 // @Header 101 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /quote_requests [get].
 func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Context) {
+	ctx, span := r.handler.Tracer().Start(ctx, "GetActiveRFQWebsocket")
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
 	ws, err := r.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		logger.Error("Failed to set websocket upgrade", "error", err)
@@ -451,6 +457,10 @@ func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Cont
 		return
 	}
 
+	span.SetAttributes(
+		attribute.String("relayer_address", relayerAddr),
+	)
+
 	// only one connection per relayer allowed
 	_, ok = r.wsClients.Load(relayerAddr)
 	if ok {
@@ -463,8 +473,9 @@ func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Cont
 		r.wsClients.Delete(relayerAddr)
 	}()
 
-	client := newWsClient(relayerAddr, ws, r.pubSubManager)
+	client := newWsClient(relayerAddr, ws, r.pubSubManager, r.handler)
 	r.wsClients.Store(relayerAddr, client)
+	span.AddEvent("registered ws client")
 	err = client.Run(ctx)
 	if err != nil {
 		logger.Error("Error running websocket client", "error", err)
@@ -497,7 +508,14 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 	}
 
 	requestID := uuid.New().String()
-	err = r.db.InsertActiveQuoteRequest(c.Request.Context(), &req, requestID)
+	ctx, span := r.handler.Tracer().Start(c.Request.Context(), "PutRFQRequest", trace.WithAttributes(
+		attribute.String("request_id", requestID),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
+	err = r.db.InsertActiveQuoteRequest(ctx, &req, requestID)
 	if err != nil {
 		logger.Warnf("Error inserting active quote request: %w", err)
 	}
@@ -509,13 +527,14 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 			break
 		}
 	}
+	span.SetAttributes(attribute.Bool("is_active_rfq", isActiveRFQ))
 
 	// if specified, fetch the active quote. always consider passive quotes
 	var activeQuote *model.QuoteData
 	if isActiveRFQ {
-		activeQuote = r.handleActiveRFQ(c.Request.Context(), &req, requestID)
+		activeQuote = r.handleActiveRFQ(ctx, &req, requestID)
 	}
-	passiveQuote, err := r.handlePassiveRFQ(c.Request.Context(), &req)
+	passiveQuote, err := r.handlePassiveRFQ(ctx, &req)
 	if err != nil {
 		logger.Error("Error handling passive RFQ", "error", err)
 	}

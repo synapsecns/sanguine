@@ -8,7 +8,10 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/puzpuzpuz/xsync"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // WsClient is a client for the WebSocket API.
@@ -19,6 +22,7 @@ type WsClient interface {
 }
 
 type wsClient struct {
+	handler       metrics.Handler
 	relayerAddr   string
 	conn          *websocket.Conn
 	pubsub        PubSubManager
@@ -28,8 +32,9 @@ type wsClient struct {
 	lastPong      time.Time
 }
 
-func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager) *wsClient {
+func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager, handler metrics.Handler) *wsClient {
 	return &wsClient{
+		handler:       handler,
 		relayerAddr:   relayerAddr,
 		conn:          conn,
 		pubsub:        pubsub,
@@ -109,12 +114,12 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			close(c.doneChan)
 			return nil
 		case req := <-c.requestChan:
-			err = c.sendRelayerRequest(req)
+			err = c.sendRelayerRequest(ctx, req)
 			if err != nil {
 				logger.Error("Error sending quote request: %s", err)
 			}
 		case msg := <-messageChan:
-			err = c.handleRelayerMessage(msg)
+			err = c.handleRelayerMessage(ctx, msg)
 			if err != nil {
 				logger.Error("Error handling relayer message: %s", err)
 			}
@@ -139,7 +144,15 @@ func pollWsMessages(conn *websocket.Conn, messageChan chan []byte) {
 	}
 }
 
-func (c *wsClient) sendRelayerRequest(req *model.WsRFQRequest) (err error) {
+func (c *wsClient) sendRelayerRequest(ctx context.Context, req *model.WsRFQRequest) (err error) {
+	ctx, span := c.handler.Tracer().Start(ctx, "sendRelayerRequest", trace.WithAttributes(
+		attribute.String("relayer_address", c.relayerAddr),
+		attribute.String("request_id", req.RequestID),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
 	rawData, err := json.Marshal(req)
 	if err != nil {
 		return fmt.Errorf("error marshaling quote request: %w", err)
@@ -156,7 +169,7 @@ func (c *wsClient) sendRelayerRequest(req *model.WsRFQRequest) (err error) {
 	return nil
 }
 
-func (c *wsClient) handleRelayerMessage(msg []byte) (err error) {
+func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err error) {
 	var rfqMsg model.ActiveRFQMessage
 	err = json.Unmarshal(msg, &rfqMsg)
 	if err != nil {
@@ -165,19 +178,19 @@ func (c *wsClient) handleRelayerMessage(msg []byte) (err error) {
 
 	switch rfqMsg.Op {
 	case SubscribeOp:
-		resp := c.handleSubscribe(rfqMsg.Content)
+		resp := c.handleSubscribe(ctx, rfqMsg.Content)
 		err = c.conn.WriteJSON(resp)
 		if err != nil {
 			return fmt.Errorf("error sending subscribe response: %w", err)
 		}
 	case UnsubscribeOp:
-		resp := c.handleUnsubscribe(rfqMsg.Content)
+		resp := c.handleUnsubscribe(ctx, rfqMsg.Content)
 		err = c.conn.WriteJSON(resp)
 		if err != nil {
 			return fmt.Errorf("error sending unsubscribe response: %w", err)
 		}
 	case SendQuoteOp:
-		err = c.handleSendQuote(rfqMsg.Content)
+		err = c.handleSendQuote(ctx, rfqMsg.Content)
 		if err != nil {
 			return fmt.Errorf("error handling send quote: %w", err)
 		}
@@ -190,12 +203,20 @@ func (c *wsClient) handleRelayerMessage(msg []byte) (err error) {
 	return nil
 }
 
-func (c *wsClient) handleSubscribe(content json.RawMessage) (resp model.ActiveRFQMessage) {
+func (c *wsClient) handleSubscribe(ctx context.Context, content json.RawMessage) (resp model.ActiveRFQMessage) {
+	ctx, span := c.handler.Tracer().Start(ctx, "handleSubscribe", trace.WithAttributes(
+		attribute.String("relayer_address", c.relayerAddr),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
 	var sub model.SubscriptionParams
 	err := json.Unmarshal(content, &sub)
 	if err != nil {
 		return getErrorResponse(SubscribeOp, fmt.Errorf("could not unmarshal subscription params: %w", err))
 	}
+	span.SetAttributes(attribute.IntSlice("chain_ids", sub.Chains))
 	err = c.pubsub.AddSubscription(c.relayerAddr, sub)
 	if err != nil {
 		return getErrorResponse(SubscribeOp, fmt.Errorf("error adding subscription: %w", err))
@@ -203,12 +224,20 @@ func (c *wsClient) handleSubscribe(content json.RawMessage) (resp model.ActiveRF
 	return getSuccessResponse(SubscribeOp)
 }
 
-func (c *wsClient) handleUnsubscribe(content json.RawMessage) (resp model.ActiveRFQMessage) {
+func (c *wsClient) handleUnsubscribe(ctx context.Context, content json.RawMessage) (resp model.ActiveRFQMessage) {
+	ctx, span := c.handler.Tracer().Start(ctx, "handleUnsubscribe", trace.WithAttributes(
+		attribute.String("relayer_address", c.relayerAddr),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
 	var sub model.SubscriptionParams
 	err := json.Unmarshal(content, &sub)
 	if err != nil {
 		return getErrorResponse(UnsubscribeOp, fmt.Errorf("could not unmarshal subscription params: %w", err))
 	}
+	span.SetAttributes(attribute.IntSlice("chain_ids", sub.Chains))
 	err = c.pubsub.RemoveSubscription(c.relayerAddr, sub)
 	if err != nil {
 		return getErrorResponse(UnsubscribeOp, fmt.Errorf("error removing subscription: %w", err))
@@ -216,13 +245,24 @@ func (c *wsClient) handleUnsubscribe(content json.RawMessage) (resp model.Active
 	return getSuccessResponse(UnsubscribeOp)
 }
 
-func (c *wsClient) handleSendQuote(content json.RawMessage) (err error) {
+func (c *wsClient) handleSendQuote(ctx context.Context, content json.RawMessage) (err error) {
+	ctx, span := c.handler.Tracer().Start(ctx, "handleSendQuote", trace.WithAttributes(
+		attribute.String("relayer_address", c.relayerAddr),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
 	// forward the response to the server
 	var resp model.WsRFQResponse
 	err = json.Unmarshal(content, &resp)
 	if err != nil {
 		return fmt.Errorf("error unmarshaling websocket message: %w", err)
 	}
+	span.SetAttributes(
+		attribute.String("request_id", resp.RequestID),
+		attribute.String("dest_amount", resp.DestAmount),
+	)
 	responseChan, ok := c.responseChans.Load(resp.RequestID)
 	if !ok {
 		return fmt.Errorf("no response channel for request %s", resp.RequestID)
