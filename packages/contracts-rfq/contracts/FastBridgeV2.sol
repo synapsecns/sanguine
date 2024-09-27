@@ -39,7 +39,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     function bridgeProofs(bytes32 transactionId) public view returns (uint96 timestamp, address relayer) {
-        return (uint96(bridgeTxDetails[transactionId].proofBlockTimestamp), bridgeTxDetails[transactionId].proofRelayer);
+        uint96 proofBlockTimestamp = bridgeTxDetails[transactionId].proofBlockTimestamp;
+        address proofRelayer = bridgeTxDetails[transactionId].proofRelayer;
+        return (proofBlockTimestamp, proofRelayer);
     }
 
     constructor(address _owner) Admin(_owner) {
@@ -240,7 +242,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             revert SenderIncorrect();
         }
 
-        if (_timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) <= DISPUTE_PERIOD) revert DisputePeriodNotPassed();
+        if (_timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) <= DISPUTE_PERIOD) {
+            revert DisputePeriodNotPassed();
+        }
 
         bridgeTxDetails[transactionId].status = BridgeStatus.RELAYER_CLAIMED;
 
@@ -258,7 +262,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @inheritdoc IFastBridge
     function dispute(bytes32 transactionId) external onlyRole(GUARD_ROLE) {
         if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
-        if (_timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD) revert DisputePeriodPassed();
+        if (_timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD) {
+            revert DisputePeriodPassed();
+        }
 
         // @dev relayer gets slashed effectively if dest relay has gone thru
         bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
