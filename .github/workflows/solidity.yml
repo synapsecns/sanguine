@@ -264,15 +264,10 @@ jobs:
         with:
           version: nightly
 
-      # TODO: consider defining a package-specific script for this
       - name: Run tests and generate gas report
         working-directory: './packages/${{matrix.package}}'
-        # Excluding tests with reverts to get accurate average gas cost estimates
-        run: forge test --nmt "(fail|revert)" --gas-report > "../../gas-report-${{ matrix.package }}.ansi"
-        env:
-          # make fuzzing semi-deterministic to avoid noisy gas cost estimation
-          # due to non-deterministic fuzzing (but still use pseudo-random fuzzing seeds)
-          FOUNDRY_FUZZ_SEED: 0x${{ github.event.pull_request.base.sha || github.sha }}
+        # Run separate set of tests (no fuzzing) to get accurate average gas cost estimates
+        run: forge test --mc GasBenchmark --gas-report > "../../gas-report-${{ matrix.package }}.ansi"
 
       - name: Compare gas reports
         uses: Rubilmax/foundry-gas-diff@v3.18
