@@ -7,7 +7,7 @@ import {FastBridgeV2, FastBridgeV2Test, IFastBridgeV2} from "./FastBridgeV2.t.so
 contract FastBridgeV2DstBaseTest is FastBridgeV2Test {
     uint256 public constant LEFTOVER_BALANCE = 1 ether;
 
-    function setUp() public override {
+    function setUp() public virtual override {
         vm.chainId(DST_CHAIN_ID);
         super.setUp();
     }
