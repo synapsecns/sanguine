@@ -2,7 +2,7 @@ import { BridgeFlow } from '@site/src/components/BridgeFlow'
 
 # Synapse Router
 
-The Synapse Router overhauls current Synapse Bridge contracts to abstract much of the complexity around liquidity based bridging to one simple [`bridge()`](/docs/Bridge/SDK/#bridge) function.
+The Synapse Router overhauls current Synapse Bridge contracts to abstract much of the complexity around liquidity based bridging to one simple [`bridge()`](/docs/Developers/Bridge-SDK/#bridge) function.
 
 <!-- The new Router is comprised of one bridge() function and three supporting functions that help to construct a bridge transaction. All of the mentioned are organized by an important struct called a “Query”. Before diving into these functions, a deeper understanding of how the bridge actually works is fundamental. -->
 

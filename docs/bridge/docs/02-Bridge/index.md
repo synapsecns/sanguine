@@ -7,7 +7,7 @@ import SVGBridge from '@site/src/components/SVGBridge'
 
 # Synapse Bridge
 
-The [Synapse Bridge](https://synapseprotocol.com) and [Solana Bridge](https://solana.synapseprotocol.com/) seamlessly swap on-chain assets between 20+ EVM and non-EVM blockchains in a safe and secure manner.
+The [Synapse Bridge](https://synapseprotocol.com) and [Solana Bridge](https://solana.synapseprotocol.com/) seamlessly swap on-chain assets between [20+ EVM and non-EVM blockchains](Supported-Routes) in a safe and secure manner.
 
 <br />
 

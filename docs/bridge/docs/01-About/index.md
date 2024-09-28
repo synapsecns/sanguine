@@ -3,41 +3,54 @@ title: About
 ---
 
 import AnimatedLogo from '@site/src/components/AnimatedLogo'
+import SVGBridge from '@site/src/components/SVGBridge'
+import { BridgeFlow } from '@site/src/components/BridgeFlow'
+import { CCTPFlow } from '@site/src/components/CCTPFlow'
+import { RFQFlow } from '@site/src/components/RFQFlow'
 
 <AnimatedLogo />
 
 # Use Synapse
 
-Synapse is an Interchain Programming Interface. Developers read and write interchain data with Synapse, which has settled $50B in transactions between 2M+ users, and generated $30M+ in fees [[source](https://explorer.synapseprotol.com)].
-
-## Why Synapse?
-
-_Description of top benefits Synapse brings to developers and users._
-
-
-## Developer Guide
-
-* **[Send and receive interchain data](#)**
-* **[On-chain swaps](#)**
-* **[Interchain swaps](#)**
-* **[Upgrade to Synapse](#)**
-
-:::tip[Supported Chains]
-
-Synapse supports every chain and token that can be found on the [Synapse Bridge](https://synapseprotocol.com).
-
-:::
+Synapse is an Interchain Programming Interface. Developers read and write interchain data with Synapse, which has settled $50B in transactions between 2M+ users, and generated $30M+ in fees [[Explorer](https://explorer.synapseprotocol.com)].
 
 ## Interchain Bridge
 
-Embed the Synapse Widget or build your own custom instance.
+<figure>
+    <SVGBridge />
+    <figcaption>Synapse Bridge</figcaption>
+</figure>
 
-* **[Widget](/docs/Bridge/Widget)** – Embed a customized Synapse Bridge in your application.
-* **[SDK](/docs/Bridge/SDK)** – Call Synapse Router functions from your frontend or backend application.
+* [Overview](/docs/Bridge)
+* [Bridge guide](/docs/Bridge#how-to-bridge)
+<!-- * [Supported routes](/docs/Bridge#how-to-bridge) -->
 
-## Routers
+## Developers
 
-Synapse offers several of routers for different transaction types.
+Embed or build a custom Bridge application.
+
+* **[SDK](/docs/Developers/Bridge-SDK)** – Call Synapse Router functions from your frontend or backend application.
+* **[REST API](/docs/Developers/REST-API)** – Endpoints and example code
+* **[Widget](/docs/Developers/Widget)** – Embed a customized Synapse Bridge in your application.
+
+## Synapse Routers
+
+Synapse Router automatically determines the appropriate router type to use for each Bridge transaction.
+
+<figure id="flowGroup">
+    <figure>
+        <BridgeFlow />
+        <figcaption>Synapse Router</figcaption>
+    </figure>
+    <figure>
+        <CCTPFlow />
+        <figcaption>Synapse CCTP</figcaption>
+    </figure>
+    <figure>
+        <RFQFlow />
+        <figcaption>Synapse RFQ</figcaption>
+    </figure>
+</figure>
 
 * **[Synapse Router](/docs/Routers/Synapse-Router)** – Executable quotes for arbitrary blockchain transactions.
 * **[CCTP](/docs/Routers/CCTP)** – Native router for USDC transactions.
@@ -48,10 +61,10 @@ Synapse offers several of routers for different transaction types.
 Bolt-on services for reliability and ease-of-use:
 
 * **[Scribe](/docs/Services/Scribe)** – Index logs, receipts and transactions across multiple chains
-* **[Omnirpc](/docs/Services/Omnirpc)** – Interchain RPC load balancer and verifier
-* **[Key management](/docs/Services/Signer)** – Support for the AWS Key Management System (KMS)
-* **[Ethergo](/docs/Services/Submitter)** – Gas management service to ensure transaction confirmation
-* **[Telemetry](/docs/Services/Observability)** – Open telemetry system for Synapse SDK
+* **[OmniRPC](/docs/Services/Omnirpc)** – Interchain RPC load balancer and verifier
+* **[Signer](/docs/Services/Signer)** – Support for the AWS Key Management System (KMS)
+* **[Submitter](/docs/Services/Submitter)** – Gas management service to ensure transaction confirmation
+* **[Observability](/docs/Services/Observability)** – Open telemetry system for Synapse SDK
 
 
 ## Community & Support

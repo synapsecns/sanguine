@@ -1,5 +1,5 @@
 ---
-title: SDK
+title: Bridge SDK
 ---
 
 # Bridge SDK

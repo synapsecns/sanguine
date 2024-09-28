@@ -3,7 +3,7 @@ export default () => {
     <svg
       id="synapseAnimatedLogo"
       width="64"
-      height="64"
+      height="96"
       viewBox="-24 -24 48 48"
       overflow="visible"
     >

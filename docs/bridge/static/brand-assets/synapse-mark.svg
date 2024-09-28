@@ -1,4 +1,4 @@
-<svg width="64" height="64" fill="url(#synGrad)" viewBox="-24 -24 48 48" xmlns="http://www.w3.org/2000/svg">
+<svg width="96" height="96" fill="url(#synGrad)" viewBox="-24 -24 48 48" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <linearGradient id="synGrad" fx="0%">
             <stop offset="0%" stop-color="hsl(285deg 100% 65%)" />

@@ -26,7 +26,7 @@ const options = {
 const config: Config = {
   title: 'Synapse Bridge Docs',
   tagline: 'The future is cross-chain.',
-  favicon: 'img/favicon.ico',
+  favicon: 'brand-assets/synapse-mark.svg',
 
   // Set the production url of your site here
   url: 'https://docs.bridge.synapseprotocol.com',

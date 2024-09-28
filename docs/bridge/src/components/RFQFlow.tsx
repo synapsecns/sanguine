@@ -97,11 +97,61 @@ export const RFQFlow = () => {
           attributeName="cy"
           to="136"
           dur=".5s"
-          begin="bridgeFlowReceive.end + .25s"
+          begin="bridgeFlowReceive.begin"
           calcMode="spline"
           keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
+        />
+      </circle>
+
+      <circle
+        cx="-33%"
+        cy="136"
+        r="12"
+        stroke="hsl(211deg 67% 50%)"
+        fill="none"
+        opacity="0"
+        strokeDasharray="2.5"
+      >
+        <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
+        <animate
+          attributeName="opacity"
+          values="0; .3; 0; .5; 0; .7; 0; 1"
+          dur=".4s"
+          begin="bridgeFlowSign.begin"
+          fill="freeze"
+        />
+        <animate
+          attributeName="stroke-dashoffset"
+          by="5"
+          dur="1s"
+          repeatCount="indefinite"
+        />
+      </circle>
+
+      <circle
+        r="11"
+        cx="33%"
+        cy="80"
+        stroke="hsl(164deg 37% 50%)"
+        fill="none"
+        opacity="0"
+        strokeDasharray="2.5"
+      >
+        <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
+        <animate
+          attributeName="opacity"
+          values="0; .3; 0; .5; 0; .7; 0; 1"
+          dur=".4s"
+          begin="bridgeFlowSign.begin"
+          fill="freeze"
+        />
+        <animate
+          attributeName="stroke-dashoffset"
+          by="5"
+          dur="1s"
+          repeatCount="indefinite"
         />
       </circle>
       <circle
@@ -125,35 +175,11 @@ export const RFQFlow = () => {
           attributeName="cy"
           to="80"
           dur=".5s"
-          begin="bridgeFlowSend.end + .25s"
+          begin="bridgeFlowSend.begin + 2s"
           calcMode="spline"
           keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
-        />
-      </circle>
-      <circle
-        r="11"
-        cx="33%"
-        cy="80"
-        stroke="hsl(164deg 37% 50%)"
-        fill="none"
-        opacity="0"
-        strokeDasharray="2.5"
-      >
-        <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
-        <animate
-          attributeName="opacity"
-          values="0; .3; 0; .5; 0; .7; 0; 1"
-          dur=".4s"
-          begin="bridgeFlowSign.begin"
-          fill="freeze"
-        />
-        <animate
-          attributeName="stroke-dashoffset"
-          by="5"
-          dur="1s"
-          repeatCount="indefinite"
         />
       </circle>
     </svg>

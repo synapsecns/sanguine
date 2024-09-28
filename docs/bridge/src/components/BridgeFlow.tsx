@@ -83,6 +83,15 @@ export const BridgeFlow = () => {
         cx="-33%"
         cy="80"
         r="12"
+        stroke="hsl(211deg 67% 50%)"
+        fill="none"
+        opacity=".5"
+        strokeDasharray="2.5"
+      />
+      <circle
+        cx="-33%"
+        cy="80"
+        r="12"
         fill="hsl(211deg 67% 50%)"
         stroke="hsl(211deg 67% 50%)"
       >
