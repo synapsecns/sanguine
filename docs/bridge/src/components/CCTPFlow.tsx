@@ -7,9 +7,9 @@ export const CCTPFlow = () => {
       className="flowAnimation"
     >
       <set
-        id="bridgeFlowTimer"
+        id="cctpFlowTimer"
         attributeName="x"
-        begin="0s; bridgeFlowTimerOut.end + 2s"
+        begin="0s; cctpFlowTimerOut.end + 2s"
       />
       <g fill="currentcolor" fillOpacity=".05">
         <rect x="-50%" rx="4" y="0" width="100%" height="48" />
@@ -27,12 +27,12 @@ export const CCTPFlow = () => {
         strokeWidth="4"
         strokeOpacity=".25"
       >
-        <set attributeName="x1" to="-50%" begin="bridgeFlowTimer.begin" />
-        <set attributeName="x2" to="-50%" begin="bridgeFlowTimer.begin" />
+        <set attributeName="x1" to="-50%" begin="cctpFlowTimer.begin" />
+        <set attributeName="x2" to="-50%" begin="cctpFlowTimer.begin" />
         <animate
           attributeName="x2"
           values="-50%; 50%"
-          begin="bridgeFlowSend.begin"
+          begin="cctpFlowSend.begin"
           dur="4s"
           calcMode="linear"
           keyTimes="0; 1"
@@ -40,10 +40,10 @@ export const CCTPFlow = () => {
           fill="freeze"
         />
         <animate
-          id="bridgeFlowTimerOut"
+          id="cctpFlowTimerOut"
           attributeName="x1"
           values="-50%; 50%"
-          begin="bridgeFlowReceive.end + 1s"
+          begin="cctpFlowReceive.end + 1s"
           dur=".75s"
           calcMode="spline"
           keyTimes="0; 1"
@@ -78,35 +78,35 @@ export const CCTPFlow = () => {
         fill="hsl(211deg 67% 50%)"
         stroke="hsl(211deg 67% 50%)"
       >
-        <set attributeName="opacity" to="1" begin="bridgeFlowTimer.begin" />
-        <set attributeName="cy" to="80" begin="bridgeFlowTimer.begin" />
-        <set attributeName="cx" to="-33%" begin="bridgeFlowTimer.begin" />
+        <set attributeName="opacity" to="1" begin="cctpFlowTimer.begin" />
+        <set attributeName="cy" to="80" begin="cctpFlowTimer.begin" />
+        <set attributeName="cx" to="-33%" begin="cctpFlowTimer.begin" />
         <animate
-          id="bridgeFlowSign"
+          id="cctpFlowSign"
           attributeName="opacity"
           values=".5; 1"
           dur=".1s"
           repeatCount="3"
-          begin="bridgeFlowTimer.begin + 1s"
+          begin="cctpFlowTimer.begin + 1s"
           fill="freeze"
         />
         <animate
-          id="bridgeFlowSend"
+          id="cctpFlowSend"
           attributeName="cy"
           to="136"
           dur=".5s"
-          begin="bridgeFlowSign.end + 2s"
+          begin="cctpFlowSign.end + 2s"
           calcMode="spline"
           keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
         <animate
-          id="bridgeFlowBurn"
+          id="cctpFlowBurn"
           attributeName="cx"
           to="-31.5%"
           dur=".5s"
-          begin="bridgeFlowSend.begin + 2s"
+          begin="cctpFlowSend.begin + 2s"
           calcMode="spline"
           keyTimes="0; 1"
           keySplines=".5 0 .2 1"
@@ -116,7 +116,7 @@ export const CCTPFlow = () => {
           attributeName="opacity"
           values="1; 0"
           dur=".1s"
-          begin="bridgeFlowBurn.begin"
+          begin="cctpFlowBurn.begin"
           repeatCount="3"
           fill="freeze"
         />
@@ -128,34 +128,34 @@ export const CCTPFlow = () => {
         fill="hsl(211deg 67% 50%)"
         stroke="hsl(211deg 67% 50%)"
       >
-        <set attributeName="cy" to="136" begin="bridgeFlowTimer.begin" />
-        <set attributeName="cx" to="31.5%" begin="bridgeFlowTimer.begin" />
+        <set attributeName="cy" to="136" begin="cctpFlowTimer.begin" />
+        <set attributeName="cx" to="31.5%" begin="cctpFlowTimer.begin" />
         <animate
-          id="bridgeFlowMint"
+          id="cctpFlowMint"
           attributeName="cx"
           to="33%"
           dur=".5s"
-          begin="bridgeFlowBurn.begin + .1s"
+          begin="cctpFlowBurn.begin + .1s"
           calcMode="spline"
           keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
-        <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
+        <set attributeName="opacity" to="0" begin="cctpFlowTimer.begin" />
         <animate
           attributeName="opacity"
           values="0; 1"
-          begin="bridgeFlowMint.begin"
+          begin="cctpFlowMint.begin"
           dur=".1s"
           repeatCount="5"
           fill="freeze"
         />
         <animate
-          id="bridgeFlowReceive"
+          id="cctpFlowReceive"
           attributeName="cy"
           to="80"
           dur=".5s"
-          begin="bridgeFlowMint.end + 1s"
+          begin="cctpFlowMint.end + 1s"
           calcMode="spline"
           keyTimes="0; 1"
           keySplines=".5 0 .2 1"
@@ -171,12 +171,12 @@ export const CCTPFlow = () => {
         opacity="0"
         strokeDasharray="2.5"
       >
-        <set attributeName="opacity" to="0" begin="bridgeFlowTimer.begin" />
+        <set attributeName="opacity" to="0" begin="cctpFlowTimer.begin" />
         <animate
           attributeName="opacity"
           values="0; .3; 0; .5; 0; .7; 0; 1"
           dur=".4s"
-          begin="bridgeFlowSign.begin"
+          begin="cctpFlowSign.begin"
           fill="freeze"
         />
         <animate
