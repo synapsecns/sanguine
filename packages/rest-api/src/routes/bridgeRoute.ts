@@ -1,5 +1,6 @@
 import express from 'express'
 import { check } from 'express-validator'
+import { isAddress } from 'ethers/lib/utils'
 
 import { isTokenAddress } from '../utils/isTokenAddress'
 import { CHAINS_ARRAY } from '../constants/chains'
@@ -236,6 +237,10 @@ router.get(
         return validateRouteExists(fromChain, fromToken, toChain, toToken)
       })
       .withMessage('No valid route exists for the chain/token combination'),
+    check('originUserAddress')
+      .optional()
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid originUserAddress address'),
   ],
   showFirstValidationError,
   bridgeController

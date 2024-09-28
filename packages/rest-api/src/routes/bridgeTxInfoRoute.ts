@@ -177,6 +177,10 @@ router.get(
         return validateRouteExists(fromChain, fromToken, toChain, toToken)
       })
       .withMessage('No valid route exists for the chain/token combination'),
+    check('originUserAddress')
+      .optional()
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid originUserAddress address'),
   ],
   showFirstValidationError,
   bridgeTxInfoController
