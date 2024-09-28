@@ -9,8 +9,8 @@ export default () => {
     >
       <defs>
         <linearGradient id="synGrad">
-          <stop offset="0%" stop-color="hsl(300deg 60% 50%)" />
-          <stop offset="100%" stop-color="hsl(270deg 85% 75%)" />
+          <stop offset="0%" stopColor="hsl(300deg 60% 50%)" />
+          <stop offset="100%" stopColor="hsl(270deg 85% 75%)" />
         </linearGradient>
         <mask id="switcherMask">
           <rect width="100%" height="100%" fill="white" />

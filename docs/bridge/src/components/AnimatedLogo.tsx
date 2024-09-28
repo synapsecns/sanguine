@@ -9,8 +9,8 @@ export default () => {
     >
       <defs>
         <linearGradient id="synGrad" fx="0%">
-          <stop offset="0%" stop-color="hsl(285deg 100% 65%)" />
-          <stop offset="100%" stop-color="hsl(265deg 100% 75%)" />
+          <stop offset="0%" stopColor="hsl(285deg 100% 65%)" />
+          <stop offset="100%" stopColor="hsl(265deg 100% 75%)" />
         </linearGradient>
       </defs>
       <path
