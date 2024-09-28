@@ -37,10 +37,11 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 
   --ifm-color-gray-700: hsl(240deg 20% 20%);
+  --ifm-color-gray-900: hsl(240deg 25% 10%);
 
   --ifm-background-color: hsl(240deg 25% 7.5%);
-  --ifm-background-surface-color: hsl(240deg 25% 10%);
-  --ifm-table-stripe-background: var(--ifm-background-surface-color);
+  --ifm-background-surface-color: var(--ifm-color-gray-900);
+  --ifm-table-stripe-background: var(--ifm-color-gray-900);
 
   --ifm-color-secondary-contrast-background: hsl(285deg 40% 12.5%);
   --ifm-color-secondary-dark: hsl(285deg 40% 25%);
