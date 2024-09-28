@@ -78,12 +78,12 @@ const config: Config = {
     announcementBar: {
       id: 'announcementBar-v3.2', // Increment on change
       // content: `⭐️ If you like Docusaurus, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/facebook/docusaurus">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/docusaurus">Twitter ${TwitterSvg}</a>`,
-      content: `⚠️️ <b>Caution! These docs are a work in progress. Informaton may be incorrect or incomplete. For the current docs, please see <a href="https://docs.synapseprotocol.com/">here</a> </b>`,
+      content: `⚠️️ <b>Caution! These docs are a work in progress. Information may be incorrect or incomplete. For the current docs, please see <a href="https://docs.synapseprotocol.com/">here</a> </b>`,
     },
     navbar: {
       title: 'Synapse Bridge Docs',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'Synapse logo mark',
         src: 'brand-assets/synapse-mark.svg',
       },
       items: [
@@ -95,7 +95,7 @@ const config: Config = {
       ],
     },
     footer: {
-      style: 'dark',
+      // style: 'dark',
       links: [
         // {
         //   title: 'Docs',
