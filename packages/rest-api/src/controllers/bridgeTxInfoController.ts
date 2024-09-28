@@ -11,8 +11,15 @@ export const bridgeTxInfoController = async (req, res) => {
   }
 
   try {
-    const { fromChain, toChain, amount, destAddress, fromToken, toToken } =
-      req.query
+    const {
+      fromChain,
+      toChain,
+      amount,
+      destAddress,
+      fromToken,
+      toToken,
+      originUserAddress,
+    } = req.query
 
     const fromTokenInfo = tokenAddressToToken(fromChain.toString(), fromToken)
 
@@ -23,7 +30,10 @@ export const bridgeTxInfoController = async (req, res) => {
       Number(toChain),
       fromToken,
       toToken,
-      amountInWei
+      amountInWei,
+      originUserAddress
+        ? { originUserAddress: originUserAddress.toString() }
+        : {}
     )
 
     const txInfoArray = await Promise.all(

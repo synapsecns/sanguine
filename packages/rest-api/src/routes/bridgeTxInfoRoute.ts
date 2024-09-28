@@ -51,6 +51,12 @@ const router = express.Router()
  *           type: number
  *         description: The amount of tokens to bridge
  *       - in: query
+ *         name: originUserAddress
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The address of the user on the origin chain
+ *       - in: query
  *         name: destAddress
  *         required: true
  *         schema:
