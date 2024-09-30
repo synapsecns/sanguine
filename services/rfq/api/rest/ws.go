@@ -147,7 +147,7 @@ func pollWsMessages(conn *websocket.Conn, messageChan chan []byte) {
 }
 
 func (c *wsClient) sendRelayerRequest(ctx context.Context, req *model.WsRFQRequest) (err error) {
-	ctx, span := c.handler.Tracer().Start(ctx, "sendRelayerRequest", trace.WithAttributes(
+	_, span := c.handler.Tracer().Start(ctx, "sendRelayerRequest", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
 		attribute.String("request_id", req.RequestID),
 	))
@@ -207,7 +207,7 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 }
 
 func (c *wsClient) handleSubscribe(ctx context.Context, content json.RawMessage) (resp model.ActiveRFQMessage) {
-	ctx, span := c.handler.Tracer().Start(ctx, "handleSubscribe", trace.WithAttributes(
+	_, span := c.handler.Tracer().Start(ctx, "handleSubscribe", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
 	))
 	defer func() {
@@ -228,7 +228,7 @@ func (c *wsClient) handleSubscribe(ctx context.Context, content json.RawMessage)
 }
 
 func (c *wsClient) handleUnsubscribe(ctx context.Context, content json.RawMessage) (resp model.ActiveRFQMessage) {
-	ctx, span := c.handler.Tracer().Start(ctx, "handleUnsubscribe", trace.WithAttributes(
+	_, span := c.handler.Tracer().Start(ctx, "handleUnsubscribe", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
 	))
 	defer func() {

@@ -499,6 +499,8 @@ const (
 // @Success 200 {object} model.PutUserQuoteResponse
 // @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /quote_request [put].
+//
+//nolint:cyclop
 func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 	var req model.PutRFQRequest
 	err := c.BindJSON(&req)

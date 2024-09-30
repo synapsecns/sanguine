@@ -55,7 +55,8 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	responses := r.collectRelayerResponses(ctx, request, requestID)
 	var quoteID string
 	var isUpdated bool
-	for relayerAddr, resp := range responses {
+	for r, resp := range responses {
+		relayerAddr := r
 		quote, isUpdated = getBestQuote(quote, getRelayerQuoteData(request, resp))
 		if isUpdated {
 			quoteID = resp.QuoteID

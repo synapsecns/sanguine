@@ -256,7 +256,7 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 }
 
 // SubscribeActiveRFQ subscribes to the RFQ websocket API.
-// This function is blocking and will run until the context is cancelled.
+// This function is blocking and will run until the context is canceled.
 func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "SubscribeActiveRFQ")
 	defer func() {
@@ -282,10 +282,10 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return nil
 		case msg, ok := <-respChan:
 			if !ok {
-				return
+				return nil
 			}
 			if msg == nil {
 				continue
@@ -300,6 +300,8 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 }
 
 // getActiveRFQ handles an active RFQ message.
+//
+//nolint:nilnil
 func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMessage) (resp *model.ActiveRFQMessage, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "generateActiveRFQ", trace.WithAttributes(
 		attribute.String("op", msg.Op),
