@@ -102,8 +102,8 @@ const (
 // Run runs the WebSocket client.
 func (c *wsClient) Run(ctx context.Context) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	fmt.Println("running ws client")
-	c.lastPong = time.Now()
 	messageChan := make(chan []byte)
 	pingTicker := time.NewTicker(PingPeriod)
 	defer pingTicker.Stop()
@@ -133,13 +133,12 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			if err != nil {
 				fmt.Printf("error handling relayer message: %v\n", err)
 				logger.Error("Error handling relayer message: %s", err)
-				cancel()
 				return fmt.Errorf("error handling relayer message: %w", err)
 			}
 		case <-pingTicker.C:
 			err = c.trySendPing(c.lastPong)
 			if err != nil {
-				logger.Error("Error sending ping message: %s", err)
+				logger.Error("Error sending ping message: %w", err)
 			}
 		}
 	}
@@ -293,7 +292,7 @@ func (c *wsClient) handleSendQuote(ctx context.Context, content json.RawMessage)
 }
 
 func (c *wsClient) trySendPing(lastPong time.Time) (err error) {
-	if time.Since(lastPong) > PingPeriod {
+	if time.Since(lastPong) > PingPeriod && !lastPong.IsZero() {
 		err = c.conn.Close()
 		if err != nil {
 			return fmt.Errorf("error closing websocket connection: %w", err)
