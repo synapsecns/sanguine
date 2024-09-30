@@ -148,7 +148,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             params.destAmount,
             params.sendChainGas
         );
-        emit BridgeRequestedV2(transactionId, paramsV2.quoteId);
+        emit BridgeQuoteDetails(transactionId, paramsV2.quoteId);
     }
 
     /// @inheritdoc IFastBridge
