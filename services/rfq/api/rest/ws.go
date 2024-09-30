@@ -189,8 +189,10 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 	switch rfqMsg.Op {
 	case SubscribeOp:
 		resp := c.handleSubscribe(ctx, rfqMsg.Content)
+		fmt.Printf("sending subscribe response: %v\n", resp)
 		err = c.conn.WriteJSON(resp)
 		if err != nil {
+			fmt.Printf("error sending subscribe response: %v\n", err)
 			return fmt.Errorf("error sending subscribe response: %w", err)
 		}
 	case UnsubscribeOp:
