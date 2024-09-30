@@ -258,6 +258,7 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 // SubscribeActiveRFQ subscribes to the RFQ websocket API.
 // This function is blocking and will run until the context is cancelled.
 func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
+	fmt.Println("subscribing to active RFQ")
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "SubscribeActiveRFQ")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -278,16 +279,20 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 		return fmt.Errorf("error subscribing to active quotes: %w", err)
 	}
 	span.AddEvent("subscribed to active quotes")
+	fmt.Println("subscribed to active quotes")
 
 	for {
 		select {
 		case <-ctx.Done():
+			fmt.Println("context done for ws")
 			return
 		case msg := <-respChan:
+			fmt.Printf("got message: %v\n", msg)
 			resp, err := m.generateActiveRFQ(ctx, msg)
 			if err != nil {
 				return fmt.Errorf("error generating active RFQ message: %w", err)
 			}
+			fmt.Printf("generated response: %v\n", resp)
 			respChan <- resp
 		}
 	}
