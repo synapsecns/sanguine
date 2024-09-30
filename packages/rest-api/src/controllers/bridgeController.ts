@@ -11,7 +11,14 @@ export const bridgeController = async (req, res) => {
     return res.status(400).json({ errors: errors.array() })
   }
   try {
-    const { fromChain, toChain, amount, fromToken, toToken } = req.query
+    const {
+      fromChain,
+      toChain,
+      amount,
+      fromToken,
+      toToken,
+      originUserAddress,
+    } = req.query
 
     const fromTokenInfo = tokenAddressToToken(fromChain.toString(), fromToken)
     const toTokenInfo = tokenAddressToToken(toChain.toString(), toToken)
@@ -23,19 +30,29 @@ export const bridgeController = async (req, res) => {
       Number(toChain),
       fromToken,
       toToken,
-      amountInWei
+      amountInWei,
+      originUserAddress
+        ? { originUserAddress: originUserAddress.toString() }
+        : {}
     )
-    const payload = resp.map((quote) => ({
-      ...quote,
-      maxAmountOutStr: formatBNToString(
-        quote.maxAmountOut,
-        toTokenInfo.decimals
-      ),
-      bridgeFeeFormatted: formatBNToString(
-        quote.feeAmount,
-        toTokenInfo.decimals
-      ),
-    }))
+
+    const payload = resp.map((quote) => {
+      const originQueryTokenOutInfo = tokenAddressToToken(
+        fromChain.toString(),
+        quote.originQuery.tokenOut
+      )
+      return {
+        ...quote,
+        maxAmountOutStr: formatBNToString(
+          quote.maxAmountOut,
+          toTokenInfo.decimals
+        ),
+        bridgeFeeFormatted: formatBNToString(
+          quote.feeAmount,
+          originQueryTokenOutInfo.decimals
+        ),
+      }
+    })
     res.json(payload)
   } catch (err) {
     res.status(500).json({

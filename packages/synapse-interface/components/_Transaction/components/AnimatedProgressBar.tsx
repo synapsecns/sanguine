@@ -5,7 +5,7 @@ import { getUnixTimeMinutesBeforeNow } from '@/utils/time'
  * @param {string} id - The unique ID of a rendered instance.
  * @param {number} startTime - The start time of an event as a timestamp.
  * @param {number} duration - The estimated total duration of an event.
- * @param {'pending' | 'completed' | 'reverted'} status - The current status of an event.
+ * @param {'pending' | 'completed' | 'reverted' | 'refunded'} status - The current status of an event.
  */
 export const AnimatedProgressBar = memo(
   ({
@@ -17,7 +17,7 @@ export const AnimatedProgressBar = memo(
     id: string
     startTime: number
     estDuration: number
-    status: 'pending' | 'completed' | 'reverted'
+    status: 'pending' | 'completed' | 'reverted' | 'refunded'
   }) => {
     const currentTime = getUnixTimeMinutesBeforeNow(0)
     const elapsedTime = currentTime - startTime
@@ -25,7 +25,7 @@ export const AnimatedProgressBar = memo(
     const percentElapsed = (elapsedTime / estDuration) * 100
 
     const isComplete = status === 'completed'
-    const isError = status === 'reverted'
+    const isError = status === 'reverted' || status === 'refunded'
 
     let duration = isComplete ? 0.5 : remainingTime
 

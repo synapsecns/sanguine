@@ -9,6 +9,7 @@ import { isTokenAddress } from '../utils/isTokenAddress'
 import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 import { checksumAddresses } from '../middleware/checksumAddresses'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
+import { validateRouteExists } from '../validations/validateRouteExists'
 
 const router = express.Router()
 
@@ -55,6 +56,12 @@ const router = express.Router()
  *         schema:
  *           type: string
  *         description: The destination address for the bridged tokens
+ *       - in: query
+ *         name: originUserAddress
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The address of the user on the origin chain
  *     responses:
  *       200:
  *         description: Successful response
@@ -163,6 +170,17 @@ router.get(
       .withMessage('destAddress is required')
       .custom((value) => isAddress(value))
       .withMessage('Invalid destination address'),
+    check()
+      .custom((_value, { req }) => {
+        const { fromChain, toChain, fromToken, toToken } = req.query
+
+        return validateRouteExists(fromChain, fromToken, toChain, toToken)
+      })
+      .withMessage('No valid route exists for the chain/token combination'),
+    check('originUserAddress')
+      .optional()
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid originUserAddress address'),
   ],
   showFirstValidationError,
   bridgeTxInfoController

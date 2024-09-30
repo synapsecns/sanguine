@@ -11,6 +11,7 @@ interface AmountInputTypes {
   showValue: string
   handleFromValueChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
   setIsTyping?: (isTyping: boolean) => void
+  className?: string
 }
 
 export function AmountInput({
@@ -20,6 +21,7 @@ export function AmountInput({
   showValue,
   handleFromValueChange,
   setIsTyping,
+  className,
 }: AmountInputTypes) {
   const debouncedSetIsTyping = useCallback(
     debounce((value: boolean) => setIsTyping?.(value), 600),
@@ -38,6 +40,7 @@ export function AmountInput({
     placeholder: 'placeholder:text-zinc-500 placeholder:dark:text-zinc-400',
     font: 'text-xl md:text-2xl font-medium',
     focus: 'focus:outline-none focus:ring-0 focus:border-none',
+    custom: className,
   }
 
   return (

@@ -3,6 +3,109 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.8...@synapsecns/contracts-rfq@0.5.9) (2024-09-27)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.5.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.7...@synapsecns/contracts-rfq@0.5.8) (2024-09-27)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** gas estimation tests [SLT-275] ([#3204](https://github.com/synapsecns/sanguine/issues/3204)) ([0a573d1](https://github.com/synapsecns/sanguine/commit/0a573d1c1855f1682dbc1dc7722934593c2a70bd))
+
+
+
+
+
+## [0.5.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.6...@synapsecns/contracts-rfq@0.5.7) (2024-09-26)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.5.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.5...@synapsecns/contracts-rfq@0.5.6) (2024-09-26)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.5.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.4...@synapsecns/contracts-rfq@0.5.5) (2024-09-26)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.5.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.3...@synapsecns/contracts-rfq@0.5.4) (2024-09-26)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.5.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.2...@synapsecns/contracts-rfq@0.5.3) (2024-09-26)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.5.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.1...@synapsecns/contracts-rfq@0.5.2) (2024-09-25)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.5.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.0...@synapsecns/contracts-rfq@0.5.1) (2024-09-25)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** limit the amount of solhint warnings [SLT-245] ([#3182](https://github.com/synapsecns/sanguine/issues/3182)) ([c15ec86](https://github.com/synapsecns/sanguine/commit/c15ec8691902817f096589553bac360b53ba40cf))
+
+
+
+
+
+# 0.5.0 (2024-09-24)
+
+
+### Bug Fixes
+
+* adjust to [#2658](https://github.com/synapsecns/sanguine/issues/2658) breaking changes ([#2688](https://github.com/synapsecns/sanguine/issues/2688)) ([7533f70](https://github.com/synapsecns/sanguine/commit/7533f70f4bc88f334af26a009c81c9d581d3997f))
+* **contracts-rfq:** CI workflows [SLT-245] ([#3178](https://github.com/synapsecns/sanguine/issues/3178)) ([74b620e](https://github.com/synapsecns/sanguine/commit/74b620e4c928be8d0dbb422708376d167db7848d))
+
+
+### Features
+
+* **contracts-rfq:** Deploy new RFQ Contracts ([#2255](https://github.com/synapsecns/sanguine/issues/2255)) ([b3a51e2](https://github.com/synapsecns/sanguine/commit/b3a51e28c037a93fb62fd064c3c2df5e901bd79d))
+* **contracts-rfq:** Multicall target abstraction [SLT-134] ([#3078](https://github.com/synapsecns/sanguine/issues/3078)) ([100324f](https://github.com/synapsecns/sanguine/commit/100324f269f77f73fc10913d0162676f5f918996))
+* **contracts-rfq:** relay/prove/claim with different address [SLT-130] ([#3138](https://github.com/synapsecns/sanguine/issues/3138)) ([23f6c4c](https://github.com/synapsecns/sanguine/commit/23f6c4c652743c5ca7a184ad730ce19af3600a9c))
+* **rfq:** Deploy RFQ to Base ([#2397](https://github.com/synapsecns/sanguine/issues/2397)) ([b73538e](https://github.com/synapsecns/sanguine/commit/b73538e93dfe6ecc0ce6806e75d4d1c59328c7b3))
+
+
+### Reverts
+
+* Revert "update bl" ([3693110](https://github.com/synapsecns/sanguine/commit/3693110e0f9df6177935bbbfba5444df62b11866))
+
+
+
+
+
 ## [0.4.1](https://github.com/synapsecns/sanguine/compare/FastBridge@0.4.0...FastBridge@0.4.1) (2024-09-23)
 
 **Note:** Version bump only for package FastBridge

@@ -50,6 +50,7 @@ export const use_TransactionsListener = () => {
               destinationChain: tx.destinationChain,
               destinationToken: tx.destinationToken,
               bridgeModuleName: tx.bridgeModuleName,
+              routerAddress: tx.routerAddress,
               estimatedTime: tx.estimatedTime,
               timestamp: tx.id,
               status: 'pending',

@@ -1,15 +1,32 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {FastBridgeTest, SenderIncorrect} from "./FastBridge.t.sol";
+import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.sol";
+
+import {FastBridgeTest} from "./FastBridge.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2ParityTest is FastBridgeTest {
+contract FastBridgeV2ParityTest is FastBridgeTest, IFastBridgeV2Errors {
     address public anotherRelayer = makeAddr("Another Relayer");
 
     function deployFastBridge() internal virtual override returns (address) {
         // Use the cheatcode to deploy 0.8.24 contract within a 0.8.20 test
         return deployCode({what: "FastBridgeV2", args: abi.encode(owner)});
+    }
+
+    /// @notice We use uint40 for the timestamps in FastBridgeV2
+    function assertCorrectProof(
+        bytes32 transactionId,
+        uint256 expectedTimestamp,
+        address expectedRelayer
+    )
+        internal
+        virtual
+        override
+    {
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(transactionId);
+        assertEq(timestamp, uint40(expectedTimestamp));
+        assertEq(relayer, expectedRelayer);
     }
 
     /// @notice Relay function is no longer permissioned, so we skip this test
