@@ -58,10 +58,8 @@ func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.WsR
 }
 
 func (c *wsClient) ReceiveQuoteResponse(ctx context.Context, requestID string) (resp *model.WsRFQResponse, err error) {
-	fmt.Printf("waiting for quote response for request %s\n", requestID)
 	responseChan, ok := c.responseChans.Load(requestID)
 	if !ok {
-		fmt.Printf("no response channel for request %s\n", requestID)
 		return nil, fmt.Errorf("no response channel for request %s", requestID)
 	}
 	defer c.responseChans.Delete(requestID)
@@ -69,14 +67,11 @@ func (c *wsClient) ReceiveQuoteResponse(ctx context.Context, requestID string) (
 	for {
 		select {
 		case resp = <-responseChan:
-			fmt.Printf("received quote response for request %s: %v\n", requestID, resp)
 			// successfully received
 			return resp, nil
 		case <-c.doneChan:
-			fmt.Printf("websocket client is closed\n")
 			return nil, fmt.Errorf("websocket client is closed")
 		case <-ctx.Done():
-			fmt.Printf("expiration reached without response\n")
 			return nil, fmt.Errorf("expiration reached without response")
 		}
 	}
@@ -103,7 +98,6 @@ const (
 func (c *wsClient) Run(ctx context.Context) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	fmt.Println("running ws client")
 	messageChan := make(chan []byte)
 	pingTicker := time.NewTicker(PingPeriod)
 	defer pingTicker.Stop()
@@ -121,17 +115,13 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			close(c.doneChan)
 			return nil
 		case req := <-c.requestChan:
-			fmt.Printf("sending quote request: %v\n", req)
 			err = c.sendRelayerRequest(ctx, req)
 			if err != nil {
-				fmt.Printf("error sending quote request: %v\n", err)
 				logger.Error("Error sending quote request: %s", err)
 			}
 		case msg := <-messageChan:
-			fmt.Printf("received message: %v\n", msg)
 			err = c.handleRelayerMessage(ctx, msg)
 			if err != nil {
-				fmt.Printf("error handling relayer message: %v\n", err)
 				logger.Error("Error handling relayer message: %s", err)
 				return fmt.Errorf("error handling relayer message: %w", err)
 			}
@@ -193,13 +183,10 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 	switch rfqMsg.Op {
 	case SubscribeOp:
 		resp := c.handleSubscribe(ctx, rfqMsg.Content)
-		fmt.Printf("sending subscribe response: %v\n", resp)
 		err = c.conn.WriteJSON(resp)
 		if err != nil {
-			fmt.Printf("error sending subscribe response: %v\n", err)
 			return fmt.Errorf("error sending subscribe response: %w", err)
 		}
-		fmt.Printf("sent subscribe response: %v\n", resp)
 	case UnsubscribeOp:
 		resp := c.handleUnsubscribe(ctx, rfqMsg.Content)
 		err = c.conn.WriteJSON(resp)
@@ -220,7 +207,6 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 }
 
 func (c *wsClient) handleSubscribe(ctx context.Context, content json.RawMessage) (resp model.ActiveRFQMessage) {
-	fmt.Printf("handleSubscribe: %s\n", content)
 	ctx, span := c.handler.Tracer().Start(ctx, "handleSubscribe", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
 	))
@@ -236,10 +222,8 @@ func (c *wsClient) handleSubscribe(ctx context.Context, content json.RawMessage)
 	span.SetAttributes(attribute.IntSlice("chain_ids", sub.Chains))
 	err = c.pubsub.AddSubscription(c.relayerAddr, sub)
 	if err != nil {
-		fmt.Printf("error adding subscription: %v\n", err)
 		return getErrorResponse(SubscribeOp, fmt.Errorf("error adding subscription: %w", err))
 	}
-	fmt.Printf("successfully added subscription for chain ids: %v\n", sub.Chains)
 	return getSuccessResponse(SubscribeOp)
 }
 

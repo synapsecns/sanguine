@@ -11,7 +11,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 
@@ -259,7 +258,6 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 // SubscribeActiveRFQ subscribes to the RFQ websocket API.
 // This function is blocking and will run until the context is cancelled.
 func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
-	fmt.Printf("%s subscribing to active RFQ\n", time.Now().String())
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "SubscribeActiveRFQ")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -280,17 +278,13 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 		return fmt.Errorf("error subscribing to active quotes: %w", err)
 	}
 	span.AddEvent("subscribed to active quotes")
-	fmt.Printf("%s subscribed to active quotes\n", time.Now().String())
 
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Printf("%s context done for ws\n", time.Now().String())
 			return
 		case msg, ok := <-respChan:
-			fmt.Printf("%s got message: %v\n", time.Now().String(), msg)
 			if !ok {
-				fmt.Printf("%s respChan closed\n", time.Now().String())
 				return
 			}
 			if msg == nil {
@@ -300,7 +294,6 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 			if err != nil {
 				return fmt.Errorf("error generating active RFQ message: %w", err)
 			}
-			fmt.Printf("%s generated response: %v\n", time.Now().String(), resp)
 			reqChan <- resp
 		}
 	}
@@ -308,7 +301,6 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 
 // getActiveRFQ handles an active RFQ message.
 func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMessage) (resp *model.ActiveRFQMessage, err error) {
-	fmt.Printf("%s generating active RFQ\n", time.Now().String())
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "generateActiveRFQ", trace.WithAttributes(
 		attribute.String("op", msg.Op),
 		attribute.String("content", string(msg.Content)),

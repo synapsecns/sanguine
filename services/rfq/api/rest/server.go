@@ -211,7 +211,6 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	wsRoute := engine.Group(RFQStreamRoute)
 	wsRoute.Use(r.AuthMiddleware())
 	wsRoute.GET("", func(c *gin.Context) {
-		fmt.Println("GET /rfq_stream")
 		r.GetActiveRFQWebsocket(ctx, c)
 	})
 
@@ -276,9 +275,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 				loggedRequest = &req
 			}
 		case RFQRoute, RFQStreamRoute:
-			fmt.Println("RFQRoute, RFQStreamRoute")
 			chainsHeader := c.GetHeader(ChainsHeader)
-			fmt.Printf("got chains header: %s\n", chainsHeader)
 			if chainsHeader != "" {
 				var chainIDs []int
 				err = json.Unmarshal([]byte(chainsHeader), &chainIDs)
@@ -288,12 +285,10 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 					}
 				}
 			}
-			fmt.Printf("dest chain ids: %v\n", destChainIDs)
 		default:
 			err = fmt.Errorf("unexpected request path: %s", c.Request.URL.Path)
 		}
 		if err != nil {
-			fmt.Printf("error: %v\n", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			c.Abort()
 			return
@@ -304,16 +299,13 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		for _, destChainID := range destChainIDs {
 			addr, err := r.checkRole(c, destChainID)
 			if err != nil {
-				fmt.Printf("error checking role: %v\n", err)
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 				c.Abort()
 				return
 			}
 			if addressRecovered == nil {
-				fmt.Printf("no address recovered, setting to %s\n", addr.Hex())
 				addressRecovered = &addr
 			} else if *addressRecovered != addr {
-				fmt.Printf("relayer address mismatch: %s != %s\n", addressRecovered.Hex(), addr.Hex())
 				c.JSON(http.StatusBadRequest, gin.H{"msg": "relayer address mismatch"})
 				c.Abort()
 				return
@@ -324,7 +316,6 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		// Store the request in context after binding and validation
 		c.Set("putRequest", loggedRequest)
 		c.Set("relayerAddr", addressRecovered.Hex())
-		fmt.Println("auth succeeded")
 		c.Next()
 	}
 }
@@ -443,34 +434,28 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 // @Header 101 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /quote_requests [get].
 func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Context) {
-	fmt.Println("GetActiveRFQWebsocket")
 	ctx, span := r.handler.Tracer().Start(ctx, "GetActiveRFQWebsocket")
 	defer func() {
 		metrics.EndSpan(span)
 	}()
 
-	fmt.Println("upgrading websocket")
 	ws, err := r.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		logger.Error("Failed to set websocket upgrade", "error", err)
 		return
 	}
-	fmt.Println("upgraded websocket")
 
 	// use the relayer address as the ID for the connection
 	rawRelayerAddr, exists := c.Get("relayerAddr")
 	if !exists {
-		fmt.Println("no relayer address recovered from signature")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
 		return
 	}
 	relayerAddr, ok := rawRelayerAddr.(string)
 	if !ok {
-		fmt.Println("invalid relayer address type")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid relayer address type"})
 		return
 	}
-	fmt.Printf("relayer address: %s\n", relayerAddr)
 
 	span.SetAttributes(
 		attribute.String("relayer_address", relayerAddr),
@@ -479,7 +464,6 @@ func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Cont
 	// only one connection per relayer allowed
 	_, ok = r.wsClients.Load(relayerAddr)
 	if ok {
-		fmt.Println("relayer already connected")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "relayer already connected"})
 		return
 	}
@@ -490,16 +474,12 @@ func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Cont
 	}()
 
 	client := newWsClient(relayerAddr, ws, r.pubSubManager, r.handler)
-	fmt.Println("registered ws client")
 	r.wsClients.Store(relayerAddr, client)
 	span.AddEvent("registered ws client")
-	fmt.Println("running ws client")
 	err = client.Run(ctx)
 	if err != nil {
-		fmt.Printf("error running ws client: %v\n", err)
 		logger.Error("Error running websocket client", "error", err)
 	}
-	fmt.Println("ws client done")
 }
 
 const (
@@ -583,7 +563,6 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 			attribute.String("quote_type", quoteType),
 			attribute.String("quote_dest_amount", *quote.DestAmount),
 		)
-		fmt.Printf("quote: %+v\n", quote)
 		resp = model.PutUserQuoteResponse{
 			Success:        true,
 			QuoteType:      quoteType,
