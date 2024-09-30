@@ -195,6 +195,7 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 			fmt.Printf("error sending subscribe response: %v\n", err)
 			return fmt.Errorf("error sending subscribe response: %w", err)
 		}
+		fmt.Printf("sent subscribe response: %v\n", resp)
 	case UnsubscribeOp:
 		resp := c.handleUnsubscribe(ctx, rfqMsg.Content)
 		err = c.conn.WriteJSON(resp)
