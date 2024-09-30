@@ -211,6 +211,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	wsRoute := engine.Group(RFQStreamRoute)
 	wsRoute.Use(r.AuthMiddleware())
 	wsRoute.GET("", func(c *gin.Context) {
+		fmt.Println("GET /rfq_stream")
 		r.GetActiveRFQWebsocket(ctx, c)
 	})
 
@@ -287,10 +288,12 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 					}
 				}
 			}
+			fmt.Printf("dest chain ids: %v\n", destChainIDs)
 		default:
 			err = fmt.Errorf("unexpected request path: %s", c.Request.URL.Path)
 		}
 		if err != nil {
+			fmt.Printf("error: %v\n", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			c.Abort()
 			return
@@ -301,13 +304,16 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		for _, destChainID := range destChainIDs {
 			addr, err := r.checkRole(c, destChainID)
 			if err != nil {
+				fmt.Printf("error checking role: %v\n", err)
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 				c.Abort()
 				return
 			}
 			if addressRecovered == nil {
+				fmt.Printf("no address recovered, setting to %s\n", addr.Hex())
 				addressRecovered = &addr
 			} else if *addressRecovered != addr {
+				fmt.Printf("relayer address mismatch: %s != %s\n", addressRecovered.Hex(), addr.Hex())
 				c.JSON(http.StatusBadRequest, gin.H{"msg": "relayer address mismatch"})
 				c.Abort()
 				return
@@ -318,6 +324,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		// Store the request in context after binding and validation
 		c.Set("putRequest", loggedRequest)
 		c.Set("relayerAddr", addressRecovered.Hex())
+		fmt.Println("auth succeeded")
 		c.Next()
 	}
 }
