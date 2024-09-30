@@ -103,7 +103,6 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	}
 
 	// Prepare the relayer quote response
-	originAmount := userRequestAmount.String()
 	destAmount := new(big.Int).Sub(userRequestAmount, big.NewInt(1000)).String()
 	quoteResp := &model.WsRFQResponse{
 		DestAmount: destAmount,
@@ -119,8 +118,7 @@ func (c *ServerSuite) TestActiveRFQSingleRelayer() {
 	// Assert the response
 	c.Assert().True(userQuoteResp.Success)
 	c.Assert().Equal("active", userQuoteResp.QuoteType)
-	c.Assert().Equal(destAmount, *userQuoteResp.Data.DestAmount)
-	c.Assert().Equal(originAmount, userQuoteResp.Data.OriginAmount)
+	c.Assert().Equal(destAmount, userQuoteResp.DestAmount)
 
 	// Verify ActiveQuoteRequest insertion
 	activeQuoteRequests, err := c.database.GetActiveQuoteRequests(c.GetTestContext())
@@ -206,7 +204,6 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	}
 
 	// Prepare the relayer quote responses
-	originAmount := userRequestAmount.String()
 	destAmount := "999000"
 	quoteResp := model.WsRFQResponse{
 		DestAmount: destAmount,
@@ -234,8 +231,7 @@ func (c *ServerSuite) TestActiveRFQMultipleRelayers() {
 	// Assert the response
 	c.Assert().True(userQuoteResp.Success)
 	c.Assert().Equal("active", userQuoteResp.QuoteType)
-	c.Assert().Equal(destAmount, *userQuoteResp.Data.DestAmount)
-	c.Assert().Equal(originAmount, userQuoteResp.Data.OriginAmount)
+	c.Assert().Equal(destAmount, userQuoteResp.DestAmount)
 
 	// Verify ActiveQuoteRequest insertion
 	activeQuoteRequests, err := c.database.GetActiveQuoteRequests(c.GetTestContext())
@@ -309,9 +305,8 @@ func (c *ServerSuite) TestActiveRFQFallbackToPassive() {
 	// Assert the response
 	c.Assert().True(userQuoteResp.Success)
 	c.Assert().Equal("passive", userQuoteResp.QuoteType)
-	c.Assert().Equal("998000", *userQuoteResp.Data.DestAmount) // destAmount is quote destAmount minus fixed fee
-	c.Assert().Equal(userRequestAmount.String(), userQuoteResp.Data.OriginAmount)
-	c.Assert().Equal(c.relayerWallets[0].Address().Hex(), *userQuoteResp.Data.RelayerAddress)
+	c.Assert().Equal("998000", userQuoteResp.DestAmount) // destAmount is quote destAmount minus fixed fee
+	c.Assert().Equal(c.relayerWallets[0].Address().Hex(), userQuoteResp.RelayerAddress)
 }
 
 func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
@@ -389,7 +384,6 @@ func (c *ServerSuite) TestActiveRFQPassiveBestQuote() {
 	// Assert the response
 	c.Assert().True(userQuoteResp.Success)
 	c.Assert().Equal("passive", userQuoteResp.QuoteType)
-	c.Assert().Equal("998900", *userQuoteResp.Data.DestAmount) // destAmount is quote destAmount minus fixed fee
-	c.Assert().Equal(userRequestAmount.String(), userQuoteResp.Data.OriginAmount)
-	c.Assert().Equal(c.relayerWallets[0].Address().Hex(), *userQuoteResp.Data.RelayerAddress)
+	c.Assert().Equal("998900", userQuoteResp.DestAmount) // destAmount is quote destAmount minus fixed fee
+	c.Assert().Equal(c.relayerWallets[0].Address().Hex(), userQuoteResp.RelayerAddress)
 }

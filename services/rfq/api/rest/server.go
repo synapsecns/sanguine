@@ -583,10 +583,12 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 			attribute.String("quote_type", quoteType),
 			attribute.String("quote_dest_amount", *quote.DestAmount),
 		)
+		fmt.Printf("quote: %+v\n", quote)
 		resp = model.PutUserQuoteResponse{
-			Success:   true,
-			Data:      *quote,
-			QuoteType: quoteType,
+			Success:        true,
+			QuoteType:      quoteType,
+			DestAmount:     *quote.DestAmount,
+			RelayerAddress: *quote.RelayerAddress,
 		}
 	}
 	c.JSON(http.StatusOK, resp)
