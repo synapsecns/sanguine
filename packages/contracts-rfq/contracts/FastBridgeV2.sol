@@ -70,7 +70,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridge
-    function getBridgeTransaction(bytes memory request) public pure returns (BridgeTransaction memory) {
+    function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory) {
         // Note: when passing V2 request, this will decode the V1 fields correctly since the new fields were
         // added as the last fields of the struct and hence the ABI decoder will simply ignore the extra data.
         return abi.decode(request, (BridgeTransaction));
