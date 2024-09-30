@@ -103,7 +103,7 @@ func (c *ClientSuite) SetupTest() {
 	}()
 	time.Sleep(2 * time.Second) // Wait for the server to start.
 
-	c.client, err = client.NewAuthenticatedClient(metrics.Get(), fmt.Sprintf("http://127.0.0.1:%d", port), nil, localsigner.NewSigner(c.testWallet.PrivateKey()))
+	c.client, err = client.NewAuthenticatedClient(metrics.Get(), fmt.Sprintf("http://127.0.0.1:%d", port), localsigner.NewSigner(c.testWallet.PrivateKey()))
 	c.Require().NoError(err)
 }
 
