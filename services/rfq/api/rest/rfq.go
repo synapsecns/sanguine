@@ -55,11 +55,12 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	responses := r.collectRelayerResponses(ctx, request, requestID)
 	var quoteID string
 	var isUpdated bool
-	for _, resp := range responses {
+	for relayerAddr, resp := range responses {
 		quote, isUpdated = getBestQuote(quote, getRelayerQuoteData(request, resp))
 		if isUpdated {
 			quoteID = resp.QuoteID
 		}
+		quote.RelayerAddress = &relayerAddr
 	}
 	err = r.recordActiveQuote(ctx, quote, requestID, quoteID)
 	if err != nil {
@@ -90,13 +91,14 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 		wg.Add(1)
 		go func(client WsClient) {
 			var respStatus db.ActiveQuoteResponseStatus
+			var err error
 			_, clientSpan := r.handler.Tracer().Start(collectionCtx, "collectRelayerResponses", trace.WithAttributes(
 				attribute.String("relayer_address", relayerAddr),
 				attribute.String("request_id", requestID),
 			))
 			defer func() {
 				clientSpan.SetAttributes(attribute.String("status", respStatus.String()))
-				metrics.EndSpan(clientSpan)
+				metrics.EndSpanWithErr(clientSpan, err)
 			}()
 
 			defer wg.Done()
@@ -105,6 +107,11 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 				logger.Errorf("Error receiving quote response: %v", err)
 				return
 			}
+			clientSpan.AddEvent("received quote response", trace.WithAttributes(
+				attribute.String("relayer_address", relayerAddr),
+				attribute.String("request_id", requestID),
+				attribute.String("dest_amount", resp.DestAmount),
+			))
 
 			// validate the response
 			respStatus = getQuoteResponseStatus(expireCtx, resp)
@@ -247,6 +254,9 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 		)
 
 		rawDestAmountInt, _ := rawDestAmount.Int(nil)
+		if rawDestAmountInt.Cmp(quote.FixedFee.BigInt()) < 0 {
+			continue
+		}
 		destAmount := new(big.Int).Sub(rawDestAmountInt, quote.FixedFee.BigInt()).String()
 		//nolint:gosec
 		quoteData := &model.QuoteData{

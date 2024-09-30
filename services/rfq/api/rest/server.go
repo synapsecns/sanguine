@@ -533,16 +533,23 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 	var activeQuote *model.QuoteData
 	if isActiveRFQ {
 		activeQuote = r.handleActiveRFQ(ctx, &req, requestID)
+		if activeQuote != nil && activeQuote.DestAmount != nil {
+			span.SetAttributes(attribute.String("active_quote_dest_amount", *activeQuote.DestAmount))
+		}
 	}
 	passiveQuote, err := r.handlePassiveRFQ(ctx, &req)
 	if err != nil {
 		logger.Error("Error handling passive RFQ", "error", err)
+	}
+	if passiveQuote != nil && passiveQuote.DestAmount != nil {
+		span.SetAttributes(attribute.String("passive_quote_dest_amount", *passiveQuote.DestAmount))
 	}
 	quote, _ := getBestQuote(activeQuote, passiveQuote)
 
 	// construct the response
 	var resp model.PutUserQuoteResponse
 	if quote == nil {
+		span.AddEvent("no quotes found")
 		resp = model.PutUserQuoteResponse{
 			Success: false,
 			Reason:  "no quotes found",
@@ -552,10 +559,15 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 		if activeQuote == nil {
 			quoteType = quoteTypePassive
 		}
+		span.SetAttributes(
+			attribute.String("quote_type", quoteType),
+			attribute.String("quote_dest_amount", *quote.DestAmount),
+		)
 		resp = model.PutUserQuoteResponse{
-			Success:   true,
-			Data:      *quote,
-			QuoteType: quoteType,
+			Success:        true,
+			QuoteType:      quoteType,
+			DestAmount:     *quote.DestAmount,
+			RelayerAddress: *quote.RelayerAddress,
 		}
 	}
 	c.JSON(http.StatusOK, resp)

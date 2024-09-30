@@ -153,8 +153,8 @@ type ActiveQuoteRequest struct {
 	ExpirationWindow time.Duration            `gorm:"column:expiration_window"`
 	CreatedAt        time.Time                `gorm:"column:created_at"`
 	Status           ActiveQuoteRequestStatus `gorm:"column:status"`
-	ClosedAt         time.Time                `gorm:"column:fulfilled_at"`
-	ClosedQuoteID    string                   `gorm:"column:fulfilled_quote_id"`
+	ClosedAt         *time.Time               `gorm:"column:closed_at"`
+	ClosedQuoteID    *string                  `gorm:"column:closed_quote_id"`
 }
 
 // FromUserRequest converts a model.PutRFQRequest to an ActiveQuoteRequest.

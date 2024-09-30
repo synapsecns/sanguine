@@ -96,7 +96,8 @@ const (
 
 // Run runs the WebSocket client.
 func (c *wsClient) Run(ctx context.Context) (err error) {
-	c.lastPong = time.Now()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	messageChan := make(chan []byte)
 	pingTicker := time.NewTicker(PingPeriod)
 	defer pingTicker.Stop()
@@ -122,11 +123,12 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			err = c.handleRelayerMessage(ctx, msg)
 			if err != nil {
 				logger.Error("Error handling relayer message: %s", err)
+				return fmt.Errorf("error handling relayer message: %w", err)
 			}
 		case <-pingTicker.C:
 			err = c.trySendPing(c.lastPong)
 			if err != nil {
-				logger.Error("Error sending ping message: %s", err)
+				logger.Error("Error sending ping message: %w", err)
 			}
 		}
 	}
@@ -169,6 +171,8 @@ func (c *wsClient) sendRelayerRequest(ctx context.Context, req *model.WsRFQReque
 	return nil
 }
 
+// handleRelayerMessage handles messages from the relayer.
+// An error returned will result in the websocket connection being closed.
 func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err error) {
 	var rfqMsg model.ActiveRFQMessage
 	err = json.Unmarshal(msg, &rfqMsg)
@@ -191,13 +195,12 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 		}
 	case SendQuoteOp:
 		err = c.handleSendQuote(ctx, rfqMsg.Content)
-		if err != nil {
-			return fmt.Errorf("error handling send quote: %w", err)
-		}
+		logger.Errorf("error handling send quote: %v", err)
 	case PongOp:
 		c.lastPong = time.Now()
 	default:
-		return fmt.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
+		logger.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
+		return nil
 	}
 
 	return nil
@@ -273,7 +276,7 @@ func (c *wsClient) handleSendQuote(ctx context.Context, content json.RawMessage)
 }
 
 func (c *wsClient) trySendPing(lastPong time.Time) (err error) {
-	if time.Since(lastPong) > PingPeriod {
+	if time.Since(lastPong) > PingPeriod && !lastPong.IsZero() {
 		err = c.conn.Close()
 		if err != nil {
 			return fmt.Errorf("error closing websocket connection: %w", err)

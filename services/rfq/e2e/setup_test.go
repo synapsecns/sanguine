@@ -314,7 +314,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 		},
 		// generated ex-post facto
 		QuotableTokens: map[string][]string{},
-		RfqAPIURL:      i.apiServer,
+		RFQAPIURL:      i.apiServer,
 		Signer: signerConfig.SignerConfig{
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(i.T(), "", i.relayerWallet.PrivateKeyHex()).Name(),

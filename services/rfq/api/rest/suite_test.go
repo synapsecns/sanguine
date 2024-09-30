@@ -44,7 +44,6 @@ type ServerSuite struct {
 	handler              metrics.Handler
 	QuoterAPIServer      *rest.QuoterAPIServer
 	port                 uint16
-	wsPort               uint16
 	originChainID        int
 	destChainID          int
 }
@@ -75,8 +74,6 @@ func (c *ServerSuite) SetupTest() {
 	c.True(ok)
 	port, err := freeport.GetFreePort()
 	c.port = uint16(port)
-	wsPort, err := freeport.GetFreePort()
-	c.wsPort = uint16(wsPort)
 	c.Require().NoError(err)
 
 	testConfig := config.Config{
