@@ -149,6 +149,9 @@ func (l *limiterImpl) getNumberOfConfirmationsToWait(ctx context.Context, reques
 	}
 
 	volumeLimitForChain := l.cfg.GetVolumeLimit(int(request.Transaction.OriginChainId), request.Transaction.OriginToken)
+	if volumeLimitForChain.Cmp(big.NewInt(-1)) == 0 {
+		return 0, nil
+	}
 
 	return uint64(new(big.Int).Div(
 		tokenVolume,
@@ -158,7 +161,7 @@ func (l *limiterImpl) getNumberOfConfirmationsToWait(ctx context.Context, reques
 
 // isUnderVolumeLimit returns true if the request is under the volume limit, false otherwise.
 func (l *limiterImpl) isUnderVolumeLimit(ctx context.Context, request *reldb.QuoteRequest) (_ bool, err error) {
-	ctx, span := l.metrics.Tracer().Start(ctx, "limiter.underVolumeLimitLimit")
+	ctx, span := l.metrics.Tracer().Start(ctx, "limiter.isUnderVolumeLimit")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
