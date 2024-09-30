@@ -301,7 +301,7 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 				return fmt.Errorf("error generating active RFQ message: %w", err)
 			}
 			fmt.Printf("%s generated response: %v\n", time.Now().String(), resp)
-			respChan <- resp
+			reqChan <- resp
 		}
 	}
 }
