@@ -102,8 +102,8 @@ func (s *Store) UpdateActiveQuoteRequestStatus(ctx context.Context, requestID st
 		if quoteID == nil {
 			return fmt.Errorf("quote id is required for fulfilled status")
 		}
-		updates["fulfilled_quote_id"] = quoteID
-		updates["fulfilled_at"] = time.Now().UTC()
+		updates["closed_quote_id"] = quoteID
+		updates["closed_at"] = time.Now().UTC()
 	}
 	result := s.db.WithContext(ctx).
 		Model(&db.ActiveQuoteRequest{}).
