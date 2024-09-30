@@ -71,6 +71,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridge
     function getBridgeTransaction(bytes memory request) public pure returns (BridgeTransaction memory) {
+        // Note: when passing V2 request, this will decode the V1 fields correctly since the new fields were
+        // added as the last fields of the struct and hence the ABI decoder will simply ignore the extra data.
         return abi.decode(request, (BridgeTransaction));
     }
 
@@ -260,7 +262,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @inheritdoc IFastBridge
     function claim(bytes memory request, address to) public {
         bytes32 transactionId = keccak256(request);
-        BridgeTransaction memory transaction = getBridgeTransaction(request);
+        BridgeTransaction memory transaction = getBridgeTransactionV2(request).txV1;
 
         // update bridge tx status if able to claim origin collateral
         if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
@@ -309,7 +311,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
 
-        BridgeTransaction memory transaction = getBridgeTransaction(request);
+        BridgeTransaction memory transaction = getBridgeTransactionV2(request).txV1;
 
         if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
 
