@@ -96,6 +96,7 @@ const (
 
 // Run runs the WebSocket client.
 func (c *wsClient) Run(ctx context.Context) (err error) {
+	ctx, cancel := context.WithCancel(ctx)
 	fmt.Println("running ws client")
 	c.lastPong = time.Now()
 	messageChan := make(chan []byte)
@@ -127,6 +128,8 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			if err != nil {
 				fmt.Printf("error handling relayer message: %v\n", err)
 				logger.Error("Error handling relayer message: %s", err)
+				cancel()
+				return fmt.Errorf("error handling relayer message: %w", err)
 			}
 		case <-pingTicker.C:
 			err = c.trySendPing(c.lastPong)
@@ -174,6 +177,8 @@ func (c *wsClient) sendRelayerRequest(ctx context.Context, req *model.WsRFQReque
 	return nil
 }
 
+// handleRelayerMessage handles messages from the relayer.
+// An error returned will result in the websocket connection being closed.
 func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err error) {
 	var rfqMsg model.ActiveRFQMessage
 	err = json.Unmarshal(msg, &rfqMsg)
@@ -196,13 +201,12 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 		}
 	case SendQuoteOp:
 		err = c.handleSendQuote(ctx, rfqMsg.Content)
-		if err != nil {
-			return fmt.Errorf("error handling send quote: %w", err)
-		}
+		logger.Errorf("error handling send quote: %v", err)
 	case PongOp:
 		c.lastPong = time.Now()
 	default:
-		return fmt.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
+		logger.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
+		return nil
 	}
 
 	return nil
