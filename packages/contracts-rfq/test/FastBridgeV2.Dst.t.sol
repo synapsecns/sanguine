@@ -109,6 +109,13 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
     }
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
 
+    function test_relay_revert_usedRequestV1() public {
+        bytes memory request = abi.encode(tokenTx.txV1);
+        vm.expectRevert();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.relay(request);
+    }
+
     function test_relay_revert_chainIncorrect() public {
         vm.chainId(SRC_CHAIN_ID);
         vm.expectRevert(ChainIncorrect.selector);
@@ -125,6 +132,13 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         skip(DEADLINE + 1);
         vm.expectRevert(DeadlineExceeded.selector);
         relay({caller: relayerA, msgValue: 0, bridgeTx: tokenTx});
+    }
+
+    function test_relay_withRelayerAddress_revert_usedRequestV1() public {
+        bytes memory request = abi.encode(tokenTx.txV1);
+        vm.expectRevert();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.relay(request, relayerB);
     }
 
     function test_relay_withRelayerAddress_revert_chainIncorrect() public {

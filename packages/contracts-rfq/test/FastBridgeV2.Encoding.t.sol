@@ -58,4 +58,10 @@ contract FastBridgeV2EncodingTest is FastBridgeV2Test {
         IFastBridgeV2.BridgeTransactionV2 memory decodedTxV2 = fastBridge.getBridgeTransactionV2(request);
         assertEq(decodedTxV2, bridgeTxV2);
     }
+
+    function test_getBridgeTransactionV2_revert_usedRequestV1(IFastBridge.BridgeTransaction memory bridgeTx) public {
+        bytes memory request = abi.encode(bridgeTx);
+        vm.expectRevert();
+        fastBridge.getBridgeTransactionV2(request);
+    }
 }
