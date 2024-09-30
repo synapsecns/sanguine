@@ -107,7 +107,7 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 				logger.Errorf("Error receiving quote response: %v", err)
 				return
 			}
-			span.AddEvent("received quote response", trace.WithAttributes(
+			clientSpan.AddEvent("received quote response", trace.WithAttributes(
 				attribute.String("relayer_address", relayerAddr),
 				attribute.String("request_id", requestID),
 				attribute.String("dest_amount", resp.DestAmount),
