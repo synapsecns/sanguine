@@ -28,12 +28,12 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         emit BridgeRelayed({
             transactionId: txId,
             relayer: relayer,
-            to: bridgeTx.txV1.destRecipient,
-            originChainId: bridgeTx.txV1.originChainId,
-            originToken: bridgeTx.txV1.originToken,
-            destToken: bridgeTx.txV1.destToken,
-            originAmount: bridgeTx.txV1.originAmount,
-            destAmount: bridgeTx.txV1.destAmount,
+            to: bridgeTx.destRecipient,
+            originChainId: bridgeTx.originChainId,
+            originToken: bridgeTx.originToken,
+            destToken: bridgeTx.destToken,
+            originAmount: bridgeTx.originAmount,
+            destAmount: bridgeTx.destAmount,
             chainGasAmount: 0
         });
     }
@@ -110,7 +110,7 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
 
     function test_relay_revert_usedRequestV1() public {
-        bytes memory request = abi.encode(tokenTx.txV1);
+        bytes memory request = abi.encode(extractV1(tokenTx));
         vm.expectRevert();
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
         fastBridge.relay(request);
@@ -135,7 +135,7 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
     }
 
     function test_relay_withRelayerAddress_revert_usedRequestV1() public {
-        bytes memory request = abi.encode(tokenTx.txV1);
+        bytes memory request = abi.encode(extractV1(tokenTx));
         vm.expectRevert();
         vm.prank({msgSender: relayerA, txOrigin: relayerA});
         fastBridge.relay(request, relayerB);

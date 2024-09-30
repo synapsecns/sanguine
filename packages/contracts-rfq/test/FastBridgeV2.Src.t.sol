@@ -35,14 +35,14 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         vm.expectEmit(address(fastBridge));
         emit BridgeRequested({
             transactionId: txId,
-            sender: bridgeTx.txV1.originSender,
+            sender: bridgeTx.originSender,
             request: abi.encode(bridgeTx),
-            destChainId: bridgeTx.txV1.destChainId,
-            originToken: bridgeTx.txV1.originToken,
-            destToken: bridgeTx.txV1.destToken,
-            originAmount: bridgeTx.txV1.originAmount,
-            destAmount: bridgeTx.txV1.destAmount,
-            sendChainGas: bridgeTx.txV1.sendChainGas
+            destChainId: bridgeTx.destChainId,
+            originToken: bridgeTx.originToken,
+            destToken: bridgeTx.destToken,
+            originAmount: bridgeTx.originAmount,
+            destAmount: bridgeTx.destAmount,
+            sendChainGas: bridgeTx.sendChainGas
         });
     }
 
@@ -69,8 +69,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
             transactionId: txId,
             relayer: relayer,
             to: to,
-            token: bridgeTx.txV1.originToken,
-            amount: bridgeTx.txV1.originAmount
+            token: bridgeTx.originToken,
+            amount: bridgeTx.originAmount
         });
     }
 
@@ -150,9 +150,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         vm.skip(true); // TODO: unskip when implemented
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         // UserB nonce is 0
-        ethTx.txV1.nonce = 0;
+        ethTx.nonce = 0;
         ethParams.sender = userB;
-        ethTx.txV1.originSender = userB;
+        ethTx.originSender = userB;
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
         expectBridgeRequestedV2(txId, ethParamsV2.quoteId);
@@ -416,9 +416,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     // ═══════════════════════════════════════════════════ CLAIM ═══════════════════════════════════════════════════════
 
     function checkTokenBalancesAfterClaim(address relayer) public view {
-        uint256 expectedProtocolFees = INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.txV1.originFeeAmount;
+        uint256 expectedProtocolFees = INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount;
         assertEq(fastBridge.protocolFees(address(srcToken)), expectedProtocolFees);
-        assertEq(srcToken.balanceOf(relayer), tokenTx.txV1.originAmount);
+        assertEq(srcToken.balanceOf(relayer), tokenTx.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), expectedProtocolFees);
     }
 
@@ -482,9 +482,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     }
 
     function checkEthBalancesAfterClaim(address relayer) public view {
-        uint256 expectedProtocolFees = INITIAL_PROTOCOL_FEES_ETH + ethTx.txV1.originFeeAmount;
+        uint256 expectedProtocolFees = INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount;
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), expectedProtocolFees);
-        assertEq(address(relayer).balance, ethTx.txV1.originAmount);
+        assertEq(address(relayer).balance, ethTx.originAmount);
         assertEq(address(fastBridge).balance, expectedProtocolFees);
     }
 

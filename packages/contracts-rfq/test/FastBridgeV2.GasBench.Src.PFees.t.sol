@@ -13,13 +13,13 @@ contract FastBridgeV2GasBenchmarkSrcProtocolFeesTest is FastBridgeV2GasBenchmark
 
     function createFixtures() public virtual override {
         super.createFixtures();
-        tokenTx.txV1.originFeeAmount = 0.01e6;
-        tokenTx.txV1.originAmount = 0.99e6;
-        tokenTx.txV1.destAmount = 0.98e6;
+        tokenTx.originFeeAmount = 0.01e6;
+        tokenTx.originAmount = 0.99e6;
+        tokenTx.destAmount = 0.98e6;
         tokenParams.destAmount = 0.98e6;
-        ethTx.txV1.originFeeAmount = 0.01 ether;
-        ethTx.txV1.originAmount = 0.99 ether;
-        ethTx.txV1.destAmount = 0.98 ether;
+        ethTx.originFeeAmount = 0.01 ether;
+        ethTx.originAmount = 0.99 ether;
+        ethTx.destAmount = 0.98 ether;
         ethParams.destAmount = 0.98 ether;
 
         // Copy txs to bridged and proven with different nonce
@@ -28,9 +28,9 @@ contract FastBridgeV2GasBenchmarkSrcProtocolFeesTest is FastBridgeV2GasBenchmark
         bridgedEthTx = ethTx;
         provenEthTx = ethTx;
 
-        bridgedTokenTx.txV1.nonce = 0;
-        bridgedEthTx.txV1.nonce = 1;
-        provenTokenTx.txV1.nonce = 2;
-        provenEthTx.txV1.nonce = 3;
+        bridgedTokenTx.nonce = 0;
+        bridgedEthTx.nonce = 1;
+        provenTokenTx.nonce = 2;
+        provenEthTx.nonce = 3;
     }
 }

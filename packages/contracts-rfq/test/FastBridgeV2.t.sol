@@ -34,13 +34,13 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     address public governor = makeAddr("Governor");
     address public refunder = makeAddr("Refunder");
 
-    IFastBridgeV2.BridgeTransactionV2 public tokenTx;
-    IFastBridgeV2.BridgeTransactionV2 public ethTx;
-    IFastBridge.BridgeParams public tokenParams;
-    IFastBridge.BridgeParams public ethParams;
+    IFastBridgeV2.BridgeTransactionV2 internal tokenTx;
+    IFastBridgeV2.BridgeTransactionV2 internal ethTx;
+    IFastBridge.BridgeParams internal tokenParams;
+    IFastBridge.BridgeParams internal ethParams;
 
-    IFastBridgeV2.BridgeParamsV2 public tokenParamsV2;
-    IFastBridgeV2.BridgeParamsV2 public ethParamsV2;
+    IFastBridgeV2.BridgeParamsV2 internal tokenParamsV2;
+    IFastBridgeV2.BridgeParamsV2 internal ethParamsV2;
 
     function setUp() public virtual {
         srcToken = new MockERC20("SrcToken", 6);
@@ -82,36 +82,42 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
             deadline: block.timestamp + DEADLINE
         });
 
-        tokenTx.txV1 = IFastBridge.BridgeTransaction({
-            originChainId: SRC_CHAIN_ID,
-            destChainId: DST_CHAIN_ID,
-            originSender: userA,
-            destRecipient: userB,
-            originToken: address(srcToken),
-            destToken: address(dstToken),
-            originAmount: 1e6,
-            destAmount: 0.99e6,
-            // override this in tests with protocol fees
-            originFeeAmount: 0,
-            sendChainGas: false,
-            deadline: block.timestamp + DEADLINE,
-            nonce: 0
-        });
-        ethTx.txV1 = IFastBridge.BridgeTransaction({
-            originChainId: SRC_CHAIN_ID,
-            destChainId: DST_CHAIN_ID,
-            originSender: userA,
-            destRecipient: userB,
-            originToken: ETH_ADDRESS,
-            destToken: ETH_ADDRESS,
-            originAmount: 1 ether,
-            destAmount: 0.99 ether,
-            // override this in tests with protocol fees
-            originFeeAmount: 0,
-            sendChainGas: false,
-            deadline: block.timestamp + DEADLINE,
-            nonce: 1
-        });
+        setStorageBridgeTxV2(
+            tokenTx,
+            IFastBridge.BridgeTransaction({
+                originChainId: SRC_CHAIN_ID,
+                destChainId: DST_CHAIN_ID,
+                originSender: userA,
+                destRecipient: userB,
+                originToken: address(srcToken),
+                destToken: address(dstToken),
+                originAmount: 1e6,
+                destAmount: 0.99e6,
+                // override this in tests with protocol fees
+                originFeeAmount: 0,
+                sendChainGas: false,
+                deadline: block.timestamp + DEADLINE,
+                nonce: 0
+            })
+        );
+        setStorageBridgeTxV2(
+            ethTx,
+            IFastBridge.BridgeTransaction({
+                originChainId: SRC_CHAIN_ID,
+                destChainId: DST_CHAIN_ID,
+                originSender: userA,
+                destRecipient: userB,
+                originToken: ETH_ADDRESS,
+                destToken: ETH_ADDRESS,
+                originAmount: 1 ether,
+                destAmount: 0.99 ether,
+                // override this in tests with protocol fees
+                originFeeAmount: 0,
+                sendChainGas: false,
+                deadline: block.timestamp + DEADLINE,
+                nonce: 1
+            })
+        );
     }
 
     function createFixturesV2() public virtual {
@@ -124,6 +130,47 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         tokenTx.exclusivityEndTime = 0;
         ethTx.exclusivityRelayer = address(0);
         ethTx.exclusivityEndTime = 0;
+    }
+
+    function setStorageBridgeTxV2(
+        IFastBridgeV2.BridgeTransactionV2 storage txV2,
+        IFastBridge.BridgeTransaction memory txV1
+    )
+        internal
+    {
+        txV2.originChainId = txV1.originChainId;
+        txV2.destChainId = txV1.destChainId;
+        txV2.originSender = txV1.originSender;
+        txV2.destRecipient = txV1.destRecipient;
+        txV2.originToken = txV1.originToken;
+        txV2.destToken = txV1.destToken;
+        txV2.originAmount = txV1.originAmount;
+        txV2.destAmount = txV1.destAmount;
+        txV2.originFeeAmount = txV1.originFeeAmount;
+        txV2.sendChainGas = txV1.sendChainGas;
+        txV2.deadline = txV1.deadline;
+        txV2.nonce = txV1.nonce;
+    }
+
+    function extractV1(
+        IFastBridgeV2.BridgeTransactionV2 memory txV2
+    )
+        public
+        pure
+        returns (IFastBridge.BridgeTransaction memory txV1)
+    {
+        txV1.originChainId = txV2.originChainId;
+        txV1.destChainId = txV2.destChainId;
+        txV1.originSender = txV2.originSender;
+        txV1.destRecipient = txV2.destRecipient;
+        txV1.originToken = txV2.originToken;
+        txV1.destToken = txV2.destToken;
+        txV1.originAmount = txV2.originAmount;
+        txV1.destAmount = txV2.destAmount;
+        txV1.originFeeAmount = txV2.originFeeAmount;
+        txV1.sendChainGas = txV2.sendChainGas;
+        txV1.deadline = txV2.deadline;
+        txV1.nonce = txV2.nonce;
     }
 
     function getTxId(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public pure returns (bytes32) {

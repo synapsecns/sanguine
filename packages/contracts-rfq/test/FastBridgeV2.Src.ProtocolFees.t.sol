@@ -13,13 +13,13 @@ contract FastBridgeV2SrcProtocolFeesTest is FastBridgeV2SrcTest {
 
     function createFixtures() public virtual override {
         super.createFixtures();
-        tokenTx.txV1.originFeeAmount = 0.01e6;
-        tokenTx.txV1.originAmount = 0.99e6;
-        tokenTx.txV1.destAmount = 0.98e6;
+        tokenTx.originFeeAmount = 0.01e6;
+        tokenTx.originAmount = 0.99e6;
+        tokenTx.destAmount = 0.98e6;
         tokenParams.destAmount = 0.98e6;
-        ethTx.txV1.originFeeAmount = 0.01 ether;
-        ethTx.txV1.originAmount = 0.99 ether;
-        ethTx.txV1.destAmount = 0.98 ether;
+        ethTx.originFeeAmount = 0.01 ether;
+        ethTx.originAmount = 0.99 ether;
+        ethTx.destAmount = 0.98 ether;
         ethParams.destAmount = 0.98 ether;
     }
 }

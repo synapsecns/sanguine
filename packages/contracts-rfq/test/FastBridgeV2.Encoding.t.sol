@@ -36,7 +36,7 @@ contract FastBridgeV2EncodingTest is FastBridgeV2Test {
         public
         pure
     {
-        assertEq(a.txV1, b.txV1);
+        assertEq(extractV1(a), extractV1(b));
         assertEq(a.exclusivityRelayer, b.exclusivityRelayer);
         assertEq(a.exclusivityEndTime, b.exclusivityEndTime);
     }
@@ -50,7 +50,7 @@ contract FastBridgeV2EncodingTest is FastBridgeV2Test {
     function test_getBridgeTransaction_supportsV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTxV2) public view {
         bytes memory request = abi.encode(bridgeTxV2);
         IFastBridge.BridgeTransaction memory decodedTx = fastBridge.getBridgeTransaction(request);
-        assertEq(decodedTx, bridgeTxV2.txV1);
+        assertEq(decodedTx, extractV1(bridgeTxV2));
     }
 
     function test_getBridgeTransactionV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTxV2) public view {

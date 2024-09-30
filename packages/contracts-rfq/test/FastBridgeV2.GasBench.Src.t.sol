@@ -11,11 +11,11 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
     uint256 public constant INITIAL_RELAYER_BALANCE = 100 ether;
     uint256 public constant EXCLUSIVITY_PERIOD = 60 seconds;
 
-    IFastBridgeV2.BridgeTransactionV2 public bridgedTokenTx;
-    IFastBridgeV2.BridgeTransactionV2 public bridgedEthTx;
+    IFastBridgeV2.BridgeTransactionV2 internal bridgedTokenTx;
+    IFastBridgeV2.BridgeTransactionV2 internal bridgedEthTx;
 
-    IFastBridgeV2.BridgeTransactionV2 public provenTokenTx;
-    IFastBridgeV2.BridgeTransactionV2 public provenEthTx;
+    IFastBridgeV2.BridgeTransactionV2 internal provenTokenTx;
+    IFastBridgeV2.BridgeTransactionV2 internal provenEthTx;
 
     uint256 public initialUserBalanceToken;
     uint256 public initialUserBalanceEth;
@@ -38,13 +38,13 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         bridgedEthTx = ethTx;
         provenEthTx = ethTx;
 
-        bridgedTokenTx.txV1.nonce = 0;
-        bridgedEthTx.txV1.nonce = 1;
-        provenTokenTx.txV1.nonce = 2;
-        provenEthTx.txV1.nonce = 3;
+        bridgedTokenTx.nonce = 0;
+        bridgedEthTx.nonce = 1;
+        provenTokenTx.nonce = 2;
+        provenEthTx.nonce = 3;
         // Next nonce for userA tx would be 4 (either token or eth)
-        tokenTx.txV1.nonce = 4;
-        ethTx.txV1.nonce = 4;
+        tokenTx.nonce = 4;
+        ethTx.nonce = 4;
     }
 
     function mintTokens() public virtual override {
@@ -127,16 +127,16 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
         claim({caller: relayerA, bridgeTx: provenTokenTx});
         assertEq(fastBridge.bridgeStatuses(getTxId(provenTokenTx)), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
-        assertEq(srcToken.balanceOf(relayerA), INITIAL_RELAYER_BALANCE + tokenTx.txV1.originAmount);
-        assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken - tokenTx.txV1.originAmount);
+        assertEq(srcToken.balanceOf(relayerA), INITIAL_RELAYER_BALANCE + tokenTx.originAmount);
+        assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken - tokenTx.originAmount);
     }
 
     function test_claimWithAddress_token() public {
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
         claim({caller: relayerA, bridgeTx: provenTokenTx, to: relayerB});
         assertEq(fastBridge.bridgeStatuses(getTxId(provenTokenTx)), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
-        assertEq(srcToken.balanceOf(relayerB), INITIAL_RELAYER_BALANCE + tokenTx.txV1.originAmount);
-        assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken - tokenTx.txV1.originAmount);
+        assertEq(srcToken.balanceOf(relayerB), INITIAL_RELAYER_BALANCE + tokenTx.originAmount);
+        assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken - tokenTx.originAmount);
     }
 
     function test_dispute_token() public {
@@ -209,16 +209,16 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
         claim({caller: relayerA, bridgeTx: provenEthTx});
         assertEq(fastBridge.bridgeStatuses(getTxId(provenEthTx)), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
-        assertEq(relayerA.balance, INITIAL_RELAYER_BALANCE + ethTx.txV1.originAmount);
-        assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth - ethTx.txV1.originAmount);
+        assertEq(relayerA.balance, INITIAL_RELAYER_BALANCE + ethTx.originAmount);
+        assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth - ethTx.originAmount);
     }
 
     function test_claimWithAddress_eth() public {
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
         claim({caller: relayerA, bridgeTx: provenEthTx, to: relayerB});
         assertEq(fastBridge.bridgeStatuses(getTxId(provenEthTx)), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
-        assertEq(relayerB.balance, INITIAL_RELAYER_BALANCE + ethTx.txV1.originAmount);
-        assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth - ethTx.txV1.originAmount);
+        assertEq(relayerB.balance, INITIAL_RELAYER_BALANCE + ethTx.originAmount);
+        assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth - ethTx.originAmount);
     }
 
     function test_dispute_eth() public {
