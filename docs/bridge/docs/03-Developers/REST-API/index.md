@@ -63,13 +63,14 @@ Get a token swap quote.
 
 Get a token bridge quote.
 
-#### Parameters 
+#### Parameters
 
 * `fromChain` (int): `chainId` of origin chain
 * `toChain` (int): `chainId` of destination chain
 * `fromToken` (string): Token address to bridge
 * `toToken` (string): Token address to bridge to
 * `amount` (int): Amount to bridge
+* **Optional**`originUserAddress` (string): Address of the user bridging the token
 
 #### Returns
 
@@ -113,7 +114,7 @@ Get transaction data for executing a swap.
 
 #### Example
 
-[`/swapTxInfo?chain=1&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x6b175474e89094c44da98b954eedeac495271d0f&amount=100&address=0x22858d74Fdb1b9007Bee4e0396531FD806a66eF4`](https://api.synapseprotocol.com/swapTxInfo?chain=1&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x6b175474e89094c44da98b954eedeac495271d0f&amount=100&address=0x22858d74Fdb1b9007Bee4e0396531FD806a66eF4)
+[`/swapTxInfo?chain=1&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x6b175474e89094c44da98b954eedeac495271d0f&amount=100&address=0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5`](https://api.synapseprotocol.com/swapTxInfo?chain=1&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x6b175474e89094c44da98b954eedeac495271d0f&amount=100&address=0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5)
 
 ### `/bridgeTxInfo`
 Used to get transaction data for executing a bridge.
@@ -132,13 +133,13 @@ Returns txInfo for the best (highest expected output) quote.
 
 #### Example
 
-[`/bridgeTxInfo?fromChain=1&toChain=10&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=1000000&destAddress=0xcc78d2f004c9de9694ff6a9bbdee4793d30f3842`](https://api.synapseprotocol.com/bridgeTxInfo?fromChain=1&toChain=10&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=1000000&destAddress=0xcc78d2f004c9de9694ff6a9bbdee4793d30f3842)
+[`/bridgeTxInfo?fromChain=1&toChain=10&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=1000000&destAddress=0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5`](https://api.synapseprotocol.com/bridgeTxInfo?fromChain=1&toChain=10&fromToken=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&toToken=0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85&amount=1000000&destAddress=0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5)
 
 ### `/synapseTxId`
 
 Get the unique `synapseTxId` data needed to execute a bridge.
 
-#### Parameters 
+#### Parameters
 
 * `originChainId` (int): `chainId` of the origin chain
 * `bridgeModule` (string): String of the bridge module used (e.g. "SynapseRFQ")
@@ -155,7 +156,7 @@ Get the unique `synapseTxId` data needed to execute a bridge.
 ### `/bridgeTxStatus`
 Get the status of a bridge transaction, with destination transaction information if finalized.
 
-#### Parameters 
+#### Parameters
 * `destChainId` (int): `chainId` of the destination chain
 * `bridgeModule` (string): String of the bridge module used (e.g. "SynapseRFQ")
 * `synapseTxId` (string): The unique `SynapseTxId` (Kappa)
@@ -172,7 +173,7 @@ Get the status of a bridge transaction, with destination transaction information
 ### `/destinationTx`
 Get the status of a bridge transaction, and the destination transaction information if the transaction is finalized. This is a simple implementation of the above two methods.
 
-#### Parameters 
+#### Parameters
 * `originChainId` (int): `chainId` of the origin chain
 * `txHash` (string): Transaction hash of the Bridge transaction on the origin chain
 
@@ -187,7 +188,7 @@ Get the status of a bridge transaction, and the destination transaction informat
 ### `/destinationTokens`
 Used to return which tokens you can bridge to, once an origin token is identified.
 
-#### Parameters 
+#### Parameters
 * `fromChain` (int): `chainId` of the origin chain
 * `fromToken` (string): Transaction hash of the bridge transaction on the origin chain
 
@@ -219,7 +220,7 @@ async function estimateBridgeOutput(
 ) {
   const query_string = `fromChain=${fromChain}&toChain=${toChain}&fromToken=${fromToken}&toToken=${toToken}&amountFrom=${amountFrom}`;
   const response = await fetch(
-    `https://synapse-rest-api-v2.herokuapp.com/bridge?${query_string}`
+    `https://api.synapseprotocol.com/bridge?${query_string}`
   );
 
   const response_json = await response.json();
@@ -234,8 +235,8 @@ async function estimateBridgeOutput(
 estimateBridgeOutput(
   1,     // Ethereum
   42161, // Arbitrum
-  "USDC", 
-  "USDC", 
+  "USDC",
+  "USDC",
   "1000"
 ).then(firstQuote => {
   console.log('First bridge quote:', firstQuote);
@@ -257,7 +258,7 @@ async function generateUnsignedBridgeTxn(
 ) {
   const query_string = `fromChain=${fromChain}&toChain=${toChain}&fromToken=${fromToken}&toToken=${toToken}&amount=${amountFrom}&destAddress=${addressTo}`;
   const response = await fetch(
-    `https://synapse-rest-api-v2.herokuapp.com/bridgeTxInfo?${query_string}`
+    `https://api.synapseprotocol.com/bridgeTxInfo?${query_string}`
   );
   const response_json = await response.json();
   return await response_json;
@@ -266,8 +267,8 @@ async function generateUnsignedBridgeTxn(
 generateUnsignedBridgeTxn(
   1,     // Ethereum
   42161, // Arbitrum
-  "USDC", 
-  "USDC", 
+  "USDC",
+  "USDC",
   "1000"
   "0x2D2c027E0d1A899a1965910Dd272bcaE1cD03c22"
 );

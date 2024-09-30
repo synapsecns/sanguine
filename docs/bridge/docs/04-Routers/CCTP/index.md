@@ -20,7 +20,7 @@ A [Synapse Router](../Synapse-Router) bridge module which uses Circle's [Cross-C
 [Synapse CCTP contracts](/docs/Contracts/CCTP) overlay Circle CCTP contracts to mint and burn USDC and fulfill CCTP transactions.
 
 ### Configuration
-CCTP can be configured to bridge through any supported liquidity source, such as [Curve](https://github.com/synapsecns/synapse-contracts/blob/885cbe06a960591b1bdef330f3d3d57c49dba8e2/contracts/router/modules/pool/curve/CurveV1Module.sol), [Algebra](https://github.com/synapsecns/synapse-contracts/blob/885cbe06a960591b1bdef330f3d3d57c49dba8e2/contracts/router/modules/pool/algebra/AlgebraModule.sol), [DAI PSM](https://github.com/synapsecns/synapse-contracts/blob/885cbe06a960591b1bdef330f3d3d57c49dba8e2/contracts/router/modules/pool/dss/DssPsmModule.sol),  and others.
+CCTP can be configured to bridge through any supported liquidity source, such as [Uniswap](https://github.com/synapsecns/synapse-contracts/blob/master/contracts/router/modules/pool/uniswap/UniswapV3Module.sol), [Curve](https://github.com/synapsecns/synapse-contracts/blob/master/contracts/router/modules/pool/curve/CurveV1Module.sol), [Algebra](https://github.com/synapsecns/synapse-contracts/blob/master/contracts/router/modules/pool/algebra/AlgebraModule.sol), [DAI PSM](https://github.com/synapsecns/synapse-contracts/blob/master/contracts/router/modules/pool/dss/DssPsmModule.sol),  and others.
 
 ### Relayer
 
