@@ -152,9 +152,7 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         txV2.nonce = txV1.nonce;
     }
 
-    function extractV1(
-        IFastBridgeV2.BridgeTransactionV2 memory txV2
-    )
+    function extractV1(IFastBridgeV2.BridgeTransactionV2 memory txV2)
         public
         pure
         returns (IFastBridge.BridgeTransaction memory txV1)
