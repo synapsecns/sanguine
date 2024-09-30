@@ -220,7 +220,6 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 	})
 
 	if r.cfg.SupportActiveQuoting {
-		fmt.Println("supports active quoting")
 		g.Go(func() error {
 			err = r.quoter.SubscribeActiveRFQ(ctx)
 			if err != nil {
