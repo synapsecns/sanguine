@@ -177,7 +177,7 @@ func (c *clientImpl) PutRelayAck(ctx context.Context, req *model.PutAckRequest) 
 }
 
 func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.SubscribeActiveRFQRequest, reqChan chan *model.ActiveRFQMessage) (respChan chan *model.ActiveRFQMessage, err error) {
-	fmt.Println("client: subscribing")
+	logger.Info("client: subscribing")
 	conn, err := c.connectWebsocket(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
@@ -191,25 +191,26 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 	if err != nil {
 		return respChan, fmt.Errorf("error marshaling subscription params: %w", err)
 	}
-	fmt.Printf("sub: %v\n", sub)
+	logger.Infof("sub: %v\n", sub)
 	err = conn.WriteJSON(model.ActiveRFQMessage{
 		Op:      rest.SubscribeOp,
 		Content: json.RawMessage(subJSON),
 	})
 	if err != nil {
-		fmt.Printf("error sending subscribe message: %v\n", err)
+		logger.Infof("error sending subscribe message: %v\n", err)
 		return nil, fmt.Errorf("error sending subscribe message: %w", err)
 	}
 
 	// make sure subscription is successful
-	fmt.Println("waiting for subscribe response")
+	logger.Info("waiting for subscribe response")
 	var resp model.ActiveRFQMessage
 	err = conn.ReadJSON(&resp)
 	if err != nil {
 		return nil, fmt.Errorf("error reading subscribe response: %w", err)
 	}
+	logger.Infof("subscribe response: %v\n", resp)
 	if !resp.Success || resp.Op != rest.SubscribeOp {
-		fmt.Printf("subscription failed: %v\n", resp)
+		logger.Infof("subscription failed: %v\n", resp)
 		return nil, fmt.Errorf("subscription failed")
 	}
 
@@ -225,7 +226,7 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 }
 
 func (c *clientImpl) connectWebsocket(ctx context.Context, req *model.SubscribeActiveRFQRequest) (conn *websocket.Conn, err error) {
-	fmt.Printf("connecting websocket: %v\n", req)
+	logger.Infof("connecting websocket: %v\n", req)
 	if len(req.ChainIDs) == 0 {
 		return nil, fmt.Errorf("chain IDs are required")
 	}
@@ -236,19 +237,19 @@ func (c *clientImpl) connectWebsocket(ctx context.Context, req *model.SubscribeA
 	}
 
 	reqURL := strings.Replace(c.rClient.BaseURL, "http", "ws", 1) + rest.RFQStreamRoute
-	fmt.Printf("dialing websocket: %s\n", reqURL)
-	fmt.Printf("headers: %v\n", header)
+	logger.Infof("dialing websocket: %s\n", reqURL)
+	logger.Infof("headers: %v\n", header)
 	conn, httpResp, err := websocket.DefaultDialer.Dial(reqURL, header)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
 	}
 	err = httpResp.Body.Close()
 	if err != nil {
-		fmt.Printf("error closing resp body: %v\n", err)
+		logger.Infof("error closing resp body: %v\n", err)
 		logger.Warnf("error closing websocket connection: %v", err)
 	}
 
-	fmt.Println("connected to websocket")
+	logger.Info("connected to websocket")
 	return conn, nil
 }
 
@@ -268,7 +269,7 @@ func (c *clientImpl) getWsHeaders(ctx context.Context, req *model.SubscribeActiv
 }
 
 func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn, reqChan, respChan chan *model.ActiveRFQMessage) (err error) {
-	fmt.Println("processing websocket")
+	logger.Info("processing websocket")
 	defer func() {
 		close(respChan)
 		err := conn.Close()
@@ -283,11 +284,11 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("context done for processWebsocket")
+			logger.Info("context done for processWebsocket")
 			return nil
 		case msg, ok := <-reqChan:
 			if !ok {
-				fmt.Println("reqChan closed")
+				logger.Info("reqChan closed")
 				return nil
 			}
 			err := conn.WriteJSON(msg)
@@ -296,12 +297,12 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 			}
 		case msg, ok := <-readChan:
 			if !ok {
-				fmt.Println("readChan closed")
+				logger.Info("readChan closed")
 				return nil
 			}
 			err = c.handleWsMessage(ctx, msg, reqChan, respChan)
 			if err != nil {
-				fmt.Printf("error handling websocket message: %v\n", err)
+				logger.Infof("error handling websocket message: %v\n", err)
 				return fmt.Errorf("error handling websocket message: %w", err)
 			}
 		}
@@ -312,8 +313,8 @@ func (c *clientImpl) listenWsMessages(ctx context.Context, conn *websocket.Conn,
 	defer close(readChan)
 	for {
 		_, message, err := conn.ReadMessage()
-		fmt.Printf("read message: %v\n", message)
-		fmt.Printf("read message err: %v\n", err)
+		logger.Infof("read message: %v\n", message)
+		logger.Infof("read message err: %v\n", err)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				logger.Warnf("websocket connection closed unexpectedly: %v", err)
@@ -323,14 +324,14 @@ func (c *clientImpl) listenWsMessages(ctx context.Context, conn *websocket.Conn,
 		select {
 		case readChan <- message:
 		case <-ctx.Done():
-			fmt.Println("context done for listenWsMessages")
+			logger.Info("context done for listenWsMessages")
 			return
 		}
 	}
 }
 
 func (c *clientImpl) handleWsMessage(ctx context.Context, msg []byte, reqChan, respChan chan *model.ActiveRFQMessage) (err error) {
-	fmt.Printf("handling websocket message: %v\n", msg)
+	logger.Infof("handling websocket message: %v\n", msg)
 	var rfqMsg model.ActiveRFQMessage
 	err = json.Unmarshal(msg, &rfqMsg)
 	if err != nil {
@@ -352,9 +353,9 @@ func (c *clientImpl) handleWsMessage(ctx context.Context, msg []byte, reqChan, r
 
 	select {
 	case respChan <- &rfqMsg:
-		fmt.Println("sent message to respChan")
+		logger.Info("sent message to respChan")
 	case <-ctx.Done():
-		fmt.Println("context done for handleWsMessage")
+		logger.Info("context done for handleWsMessage")
 		return nil
 	}
 	return nil
