@@ -118,20 +118,18 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // set status to requested
         bytes memory request = abi.encode(
             BridgeTransactionV2({
-                txV1: BridgeTransaction({
-                    originChainId: uint32(block.chainid),
-                    destChainId: params.dstChainId,
-                    originSender: params.sender,
-                    destRecipient: params.to,
-                    originToken: params.originToken,
-                    destToken: params.destToken,
-                    originAmount: originAmount,
-                    destAmount: params.destAmount,
-                    originFeeAmount: originFeeAmount,
-                    sendChainGas: params.sendChainGas,
-                    deadline: params.deadline,
-                    nonce: nonce++ // increment nonce on every bridge
-                }),
+                originChainId: uint32(block.chainid),
+                destChainId: params.dstChainId,
+                originSender: params.sender,
+                destRecipient: params.to,
+                originToken: params.originToken,
+                destToken: params.destToken,
+                originAmount: originAmount,
+                destAmount: params.destAmount,
+                originFeeAmount: originFeeAmount,
+                sendChainGas: params.sendChainGas,
+                deadline: params.deadline,
+                nonce: nonce++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
                 exclusivityEndTime: exclusivityEndTime
             })
@@ -168,9 +166,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (bridgeRelays(transactionId)) revert TransactionRelayed();
         // Decode the transaction and check that it could be relayed on this chain
         BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
-        if (transaction.txV1.destChainId != uint32(block.chainid)) revert ChainIncorrect();
+        if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
         // Check the deadline for relay to happen
-        if (block.timestamp > transaction.txV1.deadline) revert DeadlineExceeded();
+        if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
         // Check the exclusivity period, if it is still ongoing
         if (block.timestamp <= transaction.exclusivityEndTime && relayer != transaction.exclusivityRelayer) {
             revert ExclusivityPeriodNotPassed();
@@ -180,12 +178,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
         // transfer tokens to recipient on destination chain and gas rebate if requested
-        address to = transaction.txV1.destRecipient;
-        address token = transaction.txV1.destToken;
-        uint256 amount = transaction.txV1.destAmount;
+        address to = transaction.destRecipient;
+        address token = transaction.destToken;
+        uint256 amount = transaction.destAmount;
 
         uint256 rebate = chainGasAmount;
-        if (!transaction.txV1.sendChainGas) {
+        if (!transaction.sendChainGas) {
             // forward erc20
             rebate = 0;
             _pullToken(to, token, amount);
@@ -202,11 +200,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             transactionId,
             relayer,
             to,
-            transaction.txV1.originChainId,
-            transaction.txV1.originToken,
-            transaction.txV1.destToken,
-            transaction.txV1.originAmount,
-            transaction.txV1.destAmount,
+            transaction.originChainId,
+            transaction.originToken,
+            transaction.destToken,
+            transaction.originAmount,
+            transaction.destAmount,
             rebate
         );
     }
@@ -262,7 +260,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @inheritdoc IFastBridge
     function claim(bytes memory request, address to) public {
         bytes32 transactionId = keccak256(request);
-        BridgeTransaction memory transaction = getBridgeTransactionV2(request).txV1;
+        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
 
         // update bridge tx status if able to claim origin collateral
         if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
@@ -311,7 +309,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
 
-        BridgeTransaction memory transaction = getBridgeTransactionV2(request).txV1;
+        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
 
         if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
 

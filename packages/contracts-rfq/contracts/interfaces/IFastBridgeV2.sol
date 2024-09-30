@@ -43,7 +43,18 @@ interface IFastBridgeV2 is IFastBridge {
     /// Note: only `exclusivityRelayer` can fill such a transaction until `exclusivityEndTime`.
     /// TODO: consider changing the encoding scheme to prevent spending extra gas on decoding.
     struct BridgeTransactionV2 {
-        BridgeTransaction txV1;
+        uint32 originChainId;
+        uint32 destChainId;
+        address originSender; // user (origin)
+        address destRecipient; // user (dest)
+        address originToken;
+        address destToken;
+        uint256 originAmount; // amount in on origin bridge less originFeeAmount
+        uint256 destAmount;
+        uint256 originFeeAmount;
+        bool sendChainGas;
+        uint256 deadline; // user specified deadline for destination relay
+        uint256 nonce;
         address exclusivityRelayer;
         uint256 exclusivityEndTime;
     }
