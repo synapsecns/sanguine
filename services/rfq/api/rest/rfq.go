@@ -90,13 +90,14 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 		wg.Add(1)
 		go func(client WsClient) {
 			var respStatus db.ActiveQuoteResponseStatus
+			var err error
 			_, clientSpan := r.handler.Tracer().Start(collectionCtx, "collectRelayerResponses", trace.WithAttributes(
 				attribute.String("relayer_address", relayerAddr),
 				attribute.String("request_id", requestID),
 			))
 			defer func() {
 				clientSpan.SetAttributes(attribute.String("status", respStatus.String()))
-				metrics.EndSpan(clientSpan)
+				metrics.EndSpanWithErr(clientSpan, err)
 			}()
 
 			defer wg.Done()
@@ -105,6 +106,11 @@ func (r *QuoterAPIServer) collectRelayerResponses(ctx context.Context, request *
 				logger.Errorf("Error receiving quote response: %v", err)
 				return
 			}
+			span.AddEvent("received quote response", trace.WithAttributes(
+				attribute.String("relayer_address", relayerAddr),
+				attribute.String("request_id", requestID),
+				attribute.String("dest_amount", resp.DestAmount),
+			))
 
 			// validate the response
 			respStatus = getQuoteResponseStatus(expireCtx, resp)

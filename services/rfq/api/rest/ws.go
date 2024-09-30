@@ -58,8 +58,10 @@ func (c *wsClient) SendQuoteRequest(ctx context.Context, quoteRequest *model.WsR
 }
 
 func (c *wsClient) ReceiveQuoteResponse(ctx context.Context, requestID string) (resp *model.WsRFQResponse, err error) {
+	fmt.Printf("waiting for quote response for request %s\n", requestID)
 	responseChan, ok := c.responseChans.Load(requestID)
 	if !ok {
+		fmt.Printf("no response channel for request %s\n", requestID)
 		return nil, fmt.Errorf("no response channel for request %s", requestID)
 	}
 	defer c.responseChans.Delete(requestID)
@@ -67,11 +69,14 @@ func (c *wsClient) ReceiveQuoteResponse(ctx context.Context, requestID string) (
 	for {
 		select {
 		case resp = <-responseChan:
+			fmt.Printf("received quote response for request %s: %v\n", requestID, resp)
 			// successfully received
 			return resp, nil
 		case <-c.doneChan:
+			fmt.Printf("websocket client is closed\n")
 			return nil, fmt.Errorf("websocket client is closed")
 		case <-ctx.Done():
+			fmt.Printf("expiration reached without response\n")
 			return nil, fmt.Errorf("expiration reached without response")
 		}
 	}

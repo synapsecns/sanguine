@@ -311,6 +311,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	fmt.Printf("%s generating active RFQ\n", time.Now().String())
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "generateActiveRFQ", trace.WithAttributes(
 		attribute.String("op", msg.Op),
+		attribute.String("content", string(msg.Content)),
 	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -352,6 +353,7 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 		RequestID:  rfqRequest.RequestID,
 		DestAmount: rawQuote.DestAmount,
 	}
+	span.SetAttributes(attribute.String("dest_amount", rawQuote.DestAmount))
 	respBytes, err := json.Marshal(rfqResp)
 	if err != nil {
 		return nil, fmt.Errorf("error serializing response: %w", err)
