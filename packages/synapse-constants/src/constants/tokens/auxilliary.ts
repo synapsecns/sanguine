@@ -1,9 +1,3 @@
-import avaxLogo from '../assets/icons/avax.svg'
-import avwethLogo from '../assets/icons/avweth.svg'
-import ethLogo from '../assets/icons/eth.svg'
-import mimLogo from '../assets/icons/mim.svg'
-import usdcLogo from '../assets/icons/usdc.svg'
-import usdtLogo from '../assets/icons/usdt.svg'
 import { Token } from '../../types'
 import * as CHAINS from '../chains/master'
 
@@ -14,7 +8,7 @@ export const AVWETH = new Token({
   decimals: 18,
   symbol: 'AVWETH',
   name: 'Aave Wrapped ETH',
-  logo: avwethLogo,
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/weth.19fa93ab.svg',
   swapableType: 'ETH',
   color: 'cyan',
   priorityRank: 2,
@@ -30,7 +24,7 @@ export const KLAYTN_oUSDT = new Token({
   },
   symbol: 'orbitUSDT',
   name: 'Orbit Bridged USDT',
-  logo: usdtLogo,
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/usdt.3c9cd2f8.svg',
   swapableType: 'KLAYTN_USDT',
   swapableOn: [CHAINS.KLAYTN.id],
   priorityRank: 6,
@@ -45,7 +39,7 @@ export const MIM = new Token({
   decimals: 18,
   symbol: 'MIM',
   name: 'Magic Internet Money',
-  logo: mimLogo,
+  logo: 'https://docs.abracadabra.money/~gitbook/image?url=https%3A%2F%2F2388475231-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-legacy-files%2Fo%2Fassets%252F-Mc9U0yE30Tc9xb3mVGA%252F-McF-MUtKQnjF8iBPrv5%252F-McF8_XaAL4kyHrICXUw%252FMIM%2520Logo%2520PNG.png%3Falt%3Dmedia%26token%3D12b05d37-765f-494d-809b-4deab52bd212&width=768&dpr=2&quality=100&sign=7d2ede98&sv=1',
   swapableType: 'USD',
   color: 'indigo',
   priorityRank: 6,
@@ -59,7 +53,7 @@ export const MULTIAVAX = new Token({
   decimals: 18,
   symbol: 'multiAVAX',
   name: 'AnySwap Wrapped AVAX',
-  logo: avaxLogo,
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/avax.9d53cbf0.svg',
   swapableType: 'AVAX',
   swapableOn: [CHAINS.HARMONY.id],
   color: 'red',
@@ -77,7 +71,7 @@ export const FANTOMUSDC = new Token({
   },
   symbol: 'USDC',
   name: 'USD Coin',
-  logo: usdcLogo,
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/usdc.d5dcb030.svg',
   swapableType: 'USD',
   swapableOn: [],
   color: 'blue',
@@ -95,7 +89,7 @@ export const FANTOMUSDT = new Token({
   },
   symbol: 'USDT',
   name: 'USD Tether',
-  logo: usdtLogo,
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/usdt.3c9cd2f8.svg',
   color: 'lime',
   swapableType: 'USD',
   swapableOn: [],
@@ -111,7 +105,7 @@ export const FANTOMETH = new Token({
   decimals: 18,
   symbol: 'ETH',
   name: 'Ethereum',
-  logo: ethLogo,
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/eth.b3692688.svg',
   isNative: true,
   swapableType: 'ETH',
   color: 'sky',

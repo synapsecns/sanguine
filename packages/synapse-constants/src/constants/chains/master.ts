@@ -1,25 +1,3 @@
-import arbitrumImg from '../assets/chains/arbitrum.svg'
-import auroraImg from '../assets/chains/aurora.svg'
-import avalancheImg from '../assets/chains/avalanche.svg'
-import baseImg from '../assets/chains/base.svg'
-import bobaImg from '../assets/chains/boba.svg'
-import bscImg from '../assets/chains/bnb.svg'
-import blastImg from '../assets/chains/blast.svg'
-import cantoImg from '../assets/chains/canto.svg'
-import cronosImg from '../assets/chains/cronos.svg'
-import dfkImg from '../assets/chains/dfk.svg'
-import dogechainImg from '../assets/chains/dogechain.svg'
-import ethImg from '../assets/chains/ethereum.svg'
-import fantomImg from '../assets/chains/fantom.svg'
-import harmonyImg from '../assets/chains/harmony.svg'
-import klaytnImg from '../assets/chains/klaytn.svg'
-import metisImg from '../assets/chains/metis.svg'
-import moonbeamImg from '../assets/chains/moonbeam.svg'
-import moonriverImg from '../assets/chains/moonriver.svg'
-import optimismImg from '../assets/chains/optimism.svg'
-import polygonImg from '../assets/chains/polygon.svg'
-import scrollImg from '../assets/chains/scroll.svg'
-import lineaImg from '../assets/chains/linea.svg'
 import ethExplorerImg from '../assets/explorer/etherscan.svg'
 import arbitrumExplorerImg from '../assets/explorer/arbitrum.svg'
 import bnbExplorerImg from '../assets/explorer/bscscan.svg'
@@ -50,7 +28,8 @@ export const ETH: Chain = {
   chainSymbol: 'ETH',
   name: 'Ethereum',
   codeName: 'ethereum',
-  chainImg: ethImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/ethereum.4a372106.svg',
   layer: 1,
   rpcUrls: {
     primary: 'https://rpc.ankr.com/eth',
@@ -73,7 +52,8 @@ export const ARBITRUM: Chain = {
   id: 42161,
   chainSymbol: 'ARBITRUM',
   name: 'Arbitrum',
-  chainImg: arbitrumImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/arbitrum.8ddb1b22.svg',
   layer: 2,
   codeName: 'arbitrum',
   blockTime: 300,
@@ -93,7 +73,8 @@ export const BNB: Chain = {
   id: 56,
   chainSymbol: 'BNB',
   name: 'BNB Chain',
-  chainImg: bscImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/bnb.5948fe5e.svg',
   altName: 'BNB',
   layer: 1,
   codeName: 'bsc',
@@ -114,7 +95,8 @@ export const AVALANCHE: Chain = {
   id: 43114,
   chainSymbol: 'AVALANCHE',
   name: 'Avalanche',
-  chainImg: avalancheImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/avalanche.9d53cbf0.svg',
   layer: 1,
   codeName: 'avalanche',
   blockTime: 2000,
@@ -134,7 +116,8 @@ export const CANTO: Chain = {
   id: 7700,
   chainSymbol: 'CANTO',
   name: 'Canto',
-  chainImg: cantoImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/canto.cb85e14f.svg',
   layer: 1,
   codeName: 'canto',
   blockTime: 6000,
@@ -154,7 +137,8 @@ export const OPTIMISM: Chain = {
   id: 10,
   chainSymbol: 'OPTIMISM',
   name: 'Optimism',
-  chainImg: optimismImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/optimism.84d4f0ef.svg',
   layer: 2,
   codeName: 'optimism',
   blockTime: 2000,
@@ -174,7 +158,8 @@ export const POLYGON: Chain = {
   id: 137,
   chainSymbol: 'POLYGON',
   name: 'Polygon',
-  chainImg: polygonImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/polygon.237cd2b6.svg',
   layer: 2,
   codeName: 'polygon',
   blockTime: 2000,
@@ -194,7 +179,8 @@ export const DFK: Chain = {
   id: 53935,
   chainSymbol: 'DFK',
   name: 'DFK Chain',
-  chainImg: dfkImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/dfk.2bd1f0e4.svg',
   layer: 1,
   codeName: 'dfk',
   blockTime: 2000,
@@ -214,7 +200,8 @@ export const KLAYTN: Chain = {
   id: 8217,
   chainSymbol: 'KLAYTN',
   name: 'Klaytn',
-  chainImg: klaytnImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/klaytn.59495fbb.svg',
   layer: 1,
   codeName: 'klaytn',
   blockTime: 1000,
@@ -234,7 +221,8 @@ export const FANTOM: Chain = {
   id: 250,
   chainSymbol: 'FANTOM',
   name: 'Fantom',
-  chainImg: fantomImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/fantom.1e444dad.svg',
   layer: 1,
   codeName: 'fantom',
   blockTime: 1000,
@@ -254,7 +242,8 @@ export const CRONOS: Chain = {
   id: 25,
   chainSymbol: 'CRONOS',
   name: 'Cronos',
-  chainImg: cronosImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/cronos.b06f8311.svg',
   layer: 1,
   codeName: 'cronos',
   blockTime: 6000,
@@ -274,7 +263,8 @@ export const BOBA: Chain = {
   id: 288,
   chainSymbol: 'BOBA',
   name: 'Boba Chain',
-  chainImg: bobaImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/boba.2072e50b.svg',
   layer: 2,
   codeName: 'boba',
   blockTime: 1000,
@@ -294,7 +284,8 @@ export const METIS: Chain = {
   id: 1088,
   chainSymbol: 'METIS',
   name: 'Metis',
-  chainImg: metisImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/metis.90b6abf0.svg',
   layer: 2,
   codeName: 'metis',
   blockTime: 4000,
@@ -314,7 +305,8 @@ export const AURORA: Chain = {
   id: 1313161554,
   chainSymbol: 'AURORA',
   name: 'Aurora',
-  chainImg: auroraImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/aurora.5a46037d.svg',
   layer: 1,
   codeName: 'aurora',
   blockTime: 1000,
@@ -334,7 +326,8 @@ export const HARMONY: Chain = {
   id: 1666600000,
   chainSymbol: 'HARMONY',
   name: 'Harmony',
-  chainImg: harmonyImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/harmony.af12f77e.svg',
   layer: 1,
   codeName: 'harmony',
   blockTime: 2000,
@@ -354,7 +347,8 @@ export const MOONBEAM: Chain = {
   id: 1284,
   chainSymbol: 'MOONBEAM',
   name: 'Moonbeam',
-  chainImg: moonbeamImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
   layer: 1,
   codeName: 'moonbeam',
   blockTime: 12000,
@@ -374,7 +368,8 @@ export const MOONRIVER: Chain = {
   id: 1285,
   chainSymbol: 'MOONRIVER',
   name: 'Moonriver',
-  chainImg: moonriverImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
   layer: 1,
   codeName: 'moonriver',
   blockTime: 12000,
@@ -394,7 +389,8 @@ export const DOGE: Chain = {
   id: 2000,
   chainSymbol: 'DOGE',
   name: 'Dogechain',
-  chainImg: dogechainImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/dogechain.36935650.svg',
   layer: 1,
   codeName: 'dogechain',
   blockTime: 2000,
@@ -415,7 +411,8 @@ export const BASE: Chain = {
   chainSymbol: 'ETH',
   name: 'Base',
   codeName: 'base',
-  chainImg: baseImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/base.d919fbef.svg',
   layer: 2,
   rpcUrls: {
     primary: 'https://base.blockpi.network/v1/rpc/public',
@@ -439,7 +436,8 @@ export const BLAST: Chain = {
   chainSymbol: 'ETH',
   name: 'Blast',
   codeName: 'blast',
-  chainImg: blastImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/blast.e39807f8.svg',
   layer: 2,
   rpcUrls: {
     primary: 'https://rpc.blast.io',
@@ -463,7 +461,8 @@ export const SCROLL: Chain = {
   chainSymbol: 'SCROLL',
   name: 'Scroll',
   codeName: 'scroll',
-  chainImg: scrollImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/scroll.a805c122.svg',
   layer: 2,
   rpcUrls: {
     primary: 'https://rpc.scroll.io',
@@ -487,7 +486,8 @@ export const LINEA: Chain = {
   chainSymbol: 'LINEA',
   name: 'Linea',
   codeName: 'linea',
-  chainImg: lineaImg,
+  chainImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/linea.e476f2ad.svg',
   layer: 2,
   rpcUrls: {
     primary: 'https://linea.blockpi.network/v1/rpc/public',

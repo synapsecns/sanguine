@@ -1,4 +1,3 @@
-import sushiLogo from '../assets/icons/sushi.svg'
 import { Token } from '../../types'
 import * as CHAINS from '../chains/master'
 import { MINICHEF_ADDRESSES } from '../minichef'
@@ -10,7 +9,7 @@ export const SYN_ETH_SUSHI_TOKEN = new Token({
   decimals: 18,
   symbol: 'SYN/ETH-SLP',
   name: 'SYN/ETH Sushi LP',
-  logo: sushiLogo,
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/syn.042f8cd0.svg',
   poolName: 'SYN/ETH Sushiswap LP',
   poolId: 0,
   poolType: 'EXTERNAL_LP',
@@ -27,7 +26,7 @@ export const ETH_USDC_SUSHI_TOKEN = new Token({
   decimals: 18,
   symbol: 'ETH/USDC-SLP',
   name: 'ETH/USDC Sushi LP',
-  logo: sushiLogo,
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/eth.b3692688.svg',
   poolName: 'ETH/USDC Sushiswap LP',
   poolId: 666,
   poolType: 'EXTERNAL_LP',

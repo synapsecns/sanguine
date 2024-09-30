@@ -1,6 +1,4 @@
 import { Token } from '../../types'
-import usdtLogo from '../assets/icons/usdt.svg'
-import usdcLogo from '../assets/icons/usdc.svg'
 import * as CHAINS from '../chains/master'
 
 export const SwapUSDC = new Token({
@@ -13,7 +11,7 @@ export const SwapUSDC = new Token({
   },
   symbol: 'USDC',
   name: 'USD Circle',
-  logo: usdcLogo,
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/usdc.d5dcb030.svg',
   description: `
     USD Coin (known by its ticker USDC) is a stablecoin that is pegged to the
     U.S. dollar on a 1:1 basis. Every unit of this cryptocurrency in circulation
@@ -35,7 +33,7 @@ export const SwapUSDT = new Token({
   },
   symbol: 'USDT',
   name: 'USD Tether',
-  logo: usdtLogo,
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/usdt.3c9cd2f8.svg',
   color: 'lime',
   description: `
     USDT mirrors the price of the U.S. dollar, issued by a Hong Kong-based company Tether.

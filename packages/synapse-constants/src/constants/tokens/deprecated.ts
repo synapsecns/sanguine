@@ -1,5 +1,3 @@
-import usdbLogo from '../assets/icons/usdc.svg'
-import fusdtLogo from '../assets/icons/usdt.svg'
 import { Token } from '../../types'
 import * as CHAINS from '../chains/master'
 
@@ -10,7 +8,7 @@ export const USDB = new Token({
   decimals: 18,
   symbol: 'USDB',
   name: 'USDB',
-  logo: usdbLogo,
+  logo: 'https://bscscan.com/token/images/usdb_32.png',
   docUrl: '',
   swapableType: 'USDB',
   priorityRank: 6,
@@ -26,7 +24,7 @@ export const FUSDT = new Token({
   },
   symbol: 'fUSDT',
   name: 'Frapped USDT',
-  logo: fusdtLogo,
+  logo: 'https://ftmscan.com/token/images/frappedusdt_32.png',
   color: 'lime',
   swapableType: 'USD',
   swapableOn: [CHAINS.FANTOM.id],
