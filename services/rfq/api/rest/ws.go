@@ -122,7 +122,7 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 				logger.Error("Error sending quote request: %s", err)
 			}
 		case msg := <-messageChan:
-			fmt.Printf("received message: %s\n", msg)
+			fmt.Printf("received message: %v\n", msg)
 			err = c.handleRelayerMessage(ctx, msg)
 			if err != nil {
 				fmt.Printf("error handling relayer message: %v\n", err)

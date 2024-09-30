@@ -177,6 +177,7 @@ func (c *clientImpl) PutRelayAck(ctx context.Context, req *model.PutAckRequest) 
 }
 
 func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.SubscribeActiveRFQRequest, reqChan chan *model.ActiveRFQMessage) (respChan chan *model.ActiveRFQMessage, err error) {
+	fmt.Println("client: subscribing")
 	conn, err := c.connectWebsocket(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
@@ -190,21 +191,25 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 	if err != nil {
 		return respChan, fmt.Errorf("error marshaling subscription params: %w", err)
 	}
+	fmt.Printf("sub: %v\n", sub)
 	err = conn.WriteJSON(model.ActiveRFQMessage{
 		Op:      rest.SubscribeOp,
 		Content: json.RawMessage(subJSON),
 	})
 	if err != nil {
+		fmt.Printf("error sending subscribe message: %v\n", err)
 		return nil, fmt.Errorf("error sending subscribe message: %w", err)
 	}
 
 	// make sure subscription is successful
+	fmt.Println("waiting for subscribe response")
 	var resp model.ActiveRFQMessage
 	err = conn.ReadJSON(&resp)
 	if err != nil {
 		return nil, fmt.Errorf("error reading subscribe response: %w", err)
 	}
 	if !resp.Success || resp.Op != rest.SubscribeOp {
+		fmt.Printf("subscription failed: %v\n", resp)
 		return nil, fmt.Errorf("subscription failed")
 	}
 
@@ -220,6 +225,7 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 }
 
 func (c *clientImpl) connectWebsocket(ctx context.Context, req *model.SubscribeActiveRFQRequest) (conn *websocket.Conn, err error) {
+	fmt.Printf("connecting websocket: %v\n", req)
 	if len(req.ChainIDs) == 0 {
 		return nil, fmt.Errorf("chain IDs are required")
 	}
@@ -238,9 +244,11 @@ func (c *clientImpl) connectWebsocket(ctx context.Context, req *model.SubscribeA
 	}
 	err = httpResp.Body.Close()
 	if err != nil {
+		fmt.Printf("error closing resp body: %v\n", err)
 		logger.Warnf("error closing websocket connection: %v", err)
 	}
 
+	fmt.Println("connected to websocket")
 	return conn, nil
 }
 
