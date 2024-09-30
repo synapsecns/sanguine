@@ -286,8 +286,12 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 		case <-ctx.Done():
 			fmt.Println("context done for ws")
 			return
-		case msg := <-respChan:
+		case msg, ok := <-respChan:
 			fmt.Printf("got message: %v\n", msg)
+			if !ok {
+				fmt.Println("respChan closed")
+				return
+			}
 			if msg == nil {
 				continue
 			}

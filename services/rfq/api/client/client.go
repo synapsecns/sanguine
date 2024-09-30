@@ -268,6 +268,7 @@ func (c *clientImpl) getWsHeaders(ctx context.Context, req *model.SubscribeActiv
 }
 
 func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn, reqChan, respChan chan *model.ActiveRFQMessage) (err error) {
+	fmt.Println("processing websocket")
 	defer func() {
 		close(respChan)
 		err := conn.Close()
@@ -282,9 +283,11 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 	for {
 		select {
 		case <-ctx.Done():
+			fmt.Println("context done for processWebsocket")
 			return nil
 		case msg, ok := <-reqChan:
 			if !ok {
+				fmt.Println("reqChan closed")
 				return nil
 			}
 			err := conn.WriteJSON(msg)
@@ -293,10 +296,12 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 			}
 		case msg, ok := <-readChan:
 			if !ok {
+				fmt.Println("readChan closed")
 				return nil
 			}
 			err = c.handleWsMessage(ctx, msg, reqChan, respChan)
 			if err != nil {
+				fmt.Printf("error handling websocket message: %v\n", err)
 				return fmt.Errorf("error handling websocket message: %w", err)
 			}
 		}
@@ -307,6 +312,8 @@ func (c *clientImpl) listenWsMessages(ctx context.Context, conn *websocket.Conn,
 	defer close(readChan)
 	for {
 		_, message, err := conn.ReadMessage()
+		fmt.Printf("read message: %v\n", message)
+		fmt.Printf("read message err: %v\n", err)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				logger.Warnf("websocket connection closed unexpectedly: %v", err)
@@ -316,12 +323,14 @@ func (c *clientImpl) listenWsMessages(ctx context.Context, conn *websocket.Conn,
 		select {
 		case readChan <- message:
 		case <-ctx.Done():
+			fmt.Println("context done for listenWsMessages")
 			return
 		}
 	}
 }
 
 func (c *clientImpl) handleWsMessage(ctx context.Context, msg []byte, reqChan, respChan chan *model.ActiveRFQMessage) (err error) {
+	fmt.Printf("handling websocket message: %v\n", msg)
 	var rfqMsg model.ActiveRFQMessage
 	err = json.Unmarshal(msg, &rfqMsg)
 	if err != nil {
@@ -343,7 +352,9 @@ func (c *clientImpl) handleWsMessage(ctx context.Context, msg []byte, reqChan, r
 
 	select {
 	case respChan <- &rfqMsg:
+		fmt.Println("sent message to respChan")
 	case <-ctx.Done():
+		fmt.Println("context done for handleWsMessage")
 		return nil
 	}
 	return nil
