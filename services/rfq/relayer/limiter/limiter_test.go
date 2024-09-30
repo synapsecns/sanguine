@@ -42,11 +42,12 @@ func (l *LimiterSuite) TestOverLimitEnoughConfirmations() {
 			Nonce:           big.NewInt(86730),
 		},
 	}
+	// 1 hundred million dollars per eth
 	mockQuoter := buildMockQuoter(100_000_000)
-	mockListener := buildMockListener(6)
-	packedBridgeTx, err := packBridgeTransaction(quote.Transaction)
-	l.NoError(err)
-	mockClient := buildMockEVMClient(quoteRequestToReceipt(quote, packedBridgeTx, false))
+	// we need to wait 1198 blocks for such a large transaction.
+	// originAmount/10^18 * 100_000_000 / 1000 = 1198. the quoterequest block is 4. 1201 will fail.
+	mockListener := buildMockListener(1202)
+	mockClient := buildMockEVMClient(l.quoteRequestToReceipt(quote, false))
 
 	l.limiter = limiter.NewRateLimiter(
 		l.cfg,
@@ -62,7 +63,7 @@ func (l *LimiterSuite) TestOverLimitEnoughConfirmations() {
 	l.True(allowed)
 
 	// now test the case where the transaction is reverted (we find out from the log)
-	mockClient = buildMockEVMClient(quoteRequestToReceipt(quote, packedBridgeTx, true))
+	mockClient = buildMockEVMClient(l.quoteRequestToReceipt(quote, true))
 
 	l.limiter = limiter.NewRateLimiter(
 		l.cfg,
@@ -100,9 +101,7 @@ func (l *LimiterSuite) TestUnderLimitEnoughConfirmations() {
 	}
 	mockQuoter := buildMockQuoter(100)
 	mockListener := buildMockListener(10)
-	packedBridgeTx, err := packBridgeTransaction(quote.Transaction)
-	l.NoError(err)
-	mockClient := buildMockEVMClient(quoteRequestToReceipt(quote, packedBridgeTx, false))
+	mockClient := buildMockEVMClient(l.quoteRequestToReceipt(quote, false))
 
 	l.limiter = limiter.NewRateLimiter(
 		l.cfg,
@@ -140,9 +139,7 @@ func (l *LimiterSuite) TestUnderLimitNotEnoughConfirmations() {
 	}
 	mockQuoter := buildMockQuoter(100)
 	mockListener := buildMockListener(1)
-	packedBridgeTx, err := packBridgeTransaction(quote.Transaction)
-	l.NoError(err)
-	mockClient := buildMockEVMClient(quoteRequestToReceipt(quote, packedBridgeTx, false))
+	mockClient := buildMockEVMClient(l.quoteRequestToReceipt(quote, false))
 
 	l.limiter = limiter.NewRateLimiter(
 		l.cfg,
@@ -181,9 +178,7 @@ func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
 	mockQuoter := buildMockQuoter(100_000_000) // eth price per
 	mockListener := buildMockListener(4)
 
-	packedBridgeTx, err := packBridgeTransaction(quote.Transaction)
-	l.NoError(err)
-	mockClient := buildMockEVMClient(quoteRequestToReceipt(quote, packedBridgeTx, false))
+	mockClient := buildMockEVMClient(l.quoteRequestToReceipt(quote, false))
 
 	l.limiter = limiter.NewRateLimiter(l.cfg,
 		mockListener,
@@ -198,7 +193,7 @@ func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
 	l.False(allowed)
 }
 
-// returns a mock quoter that quotes the given price.
+// returns a mock quoter that quotes the given price of the whole token (1 eth).
 func buildMockQuoter(price float64) *mocks.Quoter {
 	mockQuoter := new(mocks.Quoter)
 	mockQuoter.On("GetPrice", mock.Anything, mock.Anything).Return(price, nil)
@@ -254,7 +249,8 @@ func packBridgeTransaction(tx fastbridge.IFastBridgeBridgeTransaction) ([]byte, 
 	return packed, nil
 }
 
-func quoteRequestToReceipt(q reldb.QuoteRequest, data []byte, removed bool) *types.Receipt {
+func (l *LimiterSuite) quoteRequestToReceipt(q reldb.QuoteRequest, removed bool) *types.Receipt {
+	l.T().Helper()
 	// Basically, I used some random RFQ transaction as the test case for this suite,
 	// but mocked the block and price that's returned instead of changing the actual transaction fields.
 	// This is why the data is hardcoded.
@@ -269,7 +265,12 @@ func quoteRequestToReceipt(q reldb.QuoteRequest, data []byte, removed bool) *typ
 		"0000000000000000000000000000000000000000000000000000000000000180"
 
 	prefixData := common.Hex2Bytes(prefixDataStr[2:])
-	fullData := append(prefixData, data...)
+	quoteData, err := packBridgeTransaction(q.Transaction)
+	if err != nil {
+		l.T().Fail()
+	}
+
+	fullData := append(prefixData, quoteData...)
 	return &types.Receipt{
 		Logs: []*types.Log{
 			{

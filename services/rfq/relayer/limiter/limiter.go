@@ -64,13 +64,13 @@ func NewRateLimiter(
 // IsAllowed returns true if the request is allowed, false otherwise.
 func (l *limiterImpl) IsAllowed(ctx context.Context, request *reldb.QuoteRequest) (_ bool, err error) {
 	ctx, span := l.metrics.Tracer().Start(
-		ctx, "limiter.IsAllowed", trace.WithAttributes(util.QuoteRequestToAttributes(*request)...),
+		ctx, "limiter.IsAllowed", trace.WithAttributes(util.QuoteRequestToAttributes(request)...),
 	)
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
-	// if not enough confirmations, check volume. if under limit, allow.
+	// if not enough confirmations, check volume. if under limit, wait 0 confirmations.
 	underVolumeLimit, err := l.isUnderVolumeLimit(ctx, request)
 	if err != nil {
 		return false, fmt.Errorf("could not check volume limit: %w", err)
@@ -103,6 +103,7 @@ func (l *limiterImpl) IsAllowed(ctx context.Context, request *reldb.QuoteRequest
 	return false, nil
 }
 
+// hasEnoughConfirmations returns true if the request has enough confirmations, false otherwise.
 func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request *reldb.QuoteRequest) (_ bool, err error) {
 	_, span := l.metrics.Tracer().Start(ctx, "limiter.hasEnoughConfirmations")
 	defer func() {
@@ -114,7 +115,10 @@ func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request *reldb
 		return false, fmt.Errorf("could not get block number: %w", err)
 	}
 
-	requiredConfirmations := l.cfg.GetLimitConfirmations(int(request.Transaction.OriginChainId))
+	requiredConfirmations, err := l.getNumberOfConfirmationsToWait(ctx, request)
+	if err != nil {
+		return false, fmt.Errorf("could not get number of confirmations to wait: %w", err)
+	}
 
 	actualConfirmations := currentBlockNumber - request.BlockNumber
 	hasEnoughConfirmations := actualConfirmations >= requiredConfirmations
@@ -130,6 +134,29 @@ func (l *limiterImpl) hasEnoughConfirmations(ctx context.Context, request *reldb
 	return hasEnoughConfirmations, nil
 }
 
+// getNumberOfConfirmationsToWait returns the number of confirmations to wait for the request.
+// confirmations = requestVolume / volumeLimitForChain, e.g. we wait 1 confirmation per every `volumeLimitForChain` USD.
+func (l *limiterImpl) getNumberOfConfirmationsToWait(ctx context.Context, request *reldb.QuoteRequest) (_ uint64, err error) {
+	ctx, span := l.metrics.Tracer().Start(ctx, "limiter.getNumberOfConfirmationsToWait")
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	tokenVolume, err := l.getRequestVolumeOfToken(ctx, request)
+	if err != nil {
+		return 0, fmt.Errorf("could not get token volume: %w", err)
+	}
+
+	volumeLimitForChain := l.cfg.GetVolumeLimit(int(request.Transaction.OriginChainId), request.Transaction.OriginToken)
+
+	return uint64(new(big.Int).Div(
+		tokenVolume,
+		volumeLimitForChain,
+	).Int64()), nil
+}
+
+// isUnderVolumeLimit returns true if the request is under the volume limit, false otherwise.
 func (l *limiterImpl) isUnderVolumeLimit(ctx context.Context, request *reldb.QuoteRequest) (_ bool, err error) {
 	ctx, span := l.metrics.Tracer().Start(ctx, "limiter.underVolumeLimitLimit")
 	defer func() {
@@ -147,14 +174,14 @@ func (l *limiterImpl) isUnderVolumeLimit(ctx context.Context, request *reldb.Quo
 		return false, fmt.Errorf("could not get USD amount of token: %w", err)
 	}
 
-	underVolumeLimitLimit := tokenPrice.Cmp(volumeLimit) < 0
+	underVolumeLimit := tokenPrice.Cmp(volumeLimit) < 0
 	span.SetAttributes(
 		attribute.String("volume_limit", volumeLimit.String()),
 		attribute.String("token_price", tokenPrice.String()),
-		attribute.Bool("within_size_limit", underVolumeLimitLimit),
+		attribute.Bool("within_size_limit", underVolumeLimit),
 	)
 
-	return underVolumeLimitLimit, nil
+	return underVolumeLimit, nil
 }
 
 // getRequestVolumeOfToken returns the volume of the token in USD. This value is NOT human readable.

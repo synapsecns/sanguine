@@ -849,15 +849,6 @@ func (c Config) GetVolumeLimit(chainID int, addr common.Address) *big.Int {
 	return volumeLimitScaled
 }
 
-// GetLimitConfirmations returns the limit confirmations for the given chain.
-func (c Config) GetLimitConfirmations(chainID int) uint64 {
-	chainConfig, ok := c.Chains[chainID]
-	if !ok {
-		return 0
-	}
-	return chainConfig.LimitConfirmations
-}
-
 const defaultRPCConfirmations = 1
 
 // GetRPCConfirmations returns the RPC confirmations for the given chain.

@@ -45,10 +45,9 @@ func (s *LimiterSuite) SetupTest() {
 						Decimals: 18,
 					},
 				},
-				RPCConfirmations:   1,
-				LimitConfirmations: 1,
-				VolumeLimit:        1000, // 1k usd
-				RFQAddress:         "0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E",
+				RPCConfirmations: 1,
+				VolumeLimit:      1000, // 1k usd, exceedingly low for testing. $10k bridged means 10 confirmations
+				RFQAddress:       "0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E",
 			},
 			81457: {
 				Tokens: map[string]relconfig.TokenConfig{
@@ -63,10 +62,9 @@ func (s *LimiterSuite) SetupTest() {
 						Decimals: 18,
 					},
 				},
-				RPCConfirmations:   1,
-				LimitConfirmations: 1,
-				VolumeLimit:        10000, // 10k usd
-				RFQAddress:         "0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E",
+				RPCConfirmations: 1,
+				VolumeLimit:      10000, // 10k usd
+				RFQAddress:       "0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E",
 			},
 		},
 	}
