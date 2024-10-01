@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {FastBridgeV2SrcBaseTest} from "./FastBridgeV2.Src.Base.t.sol";
-import {IFastBridge, IFastBridgeV2} from "./FastBridgeV2.t.sol";
+import {FastBridgeV2SrcBaseTest, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.Src.Base.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
@@ -28,9 +27,11 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
 
     event BridgeDepositRefunded(bytes32 indexed transactionId, address indexed to, address token, uint256 amount);
 
+    event BridgeQuoteDetails(bytes32 indexed transactionId, bytes quoteId);
+
     address public claimTo = makeAddr("Claim To");
 
-    function expectBridgeRequested(IFastBridge.BridgeTransaction memory bridgeTx, bytes32 txId) public {
+    function expectBridgeRequested(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx, bytes32 txId) public {
         vm.expectEmit(address(fastBridge));
         emit BridgeRequested({
             transactionId: txId,
@@ -45,13 +46,18 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         });
     }
 
+    function expectBridgeQuoteDetails(bytes32 txId, bytes memory quoteId) public {
+        vm.expectEmit(address(fastBridge));
+        emit BridgeQuoteDetails({transactionId: txId, quoteId: quoteId});
+    }
+
     function expectBridgeProofProvided(bytes32 txId, address relayer, bytes32 destTxHash) public {
         vm.expectEmit(address(fastBridge));
         emit BridgeProofProvided({transactionId: txId, relayer: relayer, transactionHash: destTxHash});
     }
 
     function expectBridgeDepositClaimed(
-        IFastBridge.BridgeTransaction memory bridgeTx,
+        IFastBridgeV2.BridgeTransactionV2 memory bridgeTx,
         bytes32 txId,
         address relayer,
         address to
@@ -95,6 +101,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     function test_bridge_token() public {
         bytes32 txId = getTxId(tokenTx);
         expectBridgeRequested(tokenTx, txId);
+        expectBridgeQuoteDetails(txId, tokenParamsV2.quoteId);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         checkTokenBalancesAfterBridge(userA);
@@ -103,6 +110,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     function test_bridge_token_diffSender() public {
         bytes32 txId = getTxId(tokenTx);
         expectBridgeRequested(tokenTx, txId);
+        expectBridgeQuoteDetails(txId, tokenParamsV2.quoteId);
         bridge({caller: userB, msgValue: 0, params: tokenParams});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + tokenParams.originAmount);
@@ -120,6 +128,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
+        expectBridgeQuoteDetails(txId, ethParamsV2.quoteId);
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         checkEthBalancesAfterBridge(userA);
@@ -130,6 +139,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
+        expectBridgeQuoteDetails(txId, ethParamsV2.quoteId);
         bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
@@ -145,6 +155,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         ethTx.originSender = userB;
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
+        expectBridgeQuoteDetails(txId, ethParamsV2.quoteId);
         bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         checkEthBalancesAfterBridge(userB);
@@ -405,9 +416,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     // ═══════════════════════════════════════════════════ CLAIM ═══════════════════════════════════════════════════════
 
     function checkTokenBalancesAfterClaim(address relayer) public view {
-        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount);
+        uint256 expectedProtocolFees = INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount;
+        assertEq(fastBridge.protocolFees(address(srcToken)), expectedProtocolFees);
         assertEq(srcToken.balanceOf(relayer), tokenTx.originAmount);
-        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount);
+        assertEq(srcToken.balanceOf(address(fastBridge)), expectedProtocolFees);
     }
 
     function test_claim_token() public {
@@ -470,9 +482,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     }
 
     function checkEthBalancesAfterClaim(address relayer) public view {
-        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount);
+        uint256 expectedProtocolFees = INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount;
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), expectedProtocolFees);
         assertEq(address(relayer).balance, ethTx.originAmount);
-        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount);
+        assertEq(address(fastBridge).balance, expectedProtocolFees);
     }
 
     function test_claim_eth() public {
@@ -768,7 +781,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         refund({caller: refunder, bridgeTx: ethTx});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
@@ -782,8 +795,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         refund({caller: refunder, bridgeTx: ethTx});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + 2 * ethParams.originAmount);
-        assertEq(address(userB).balance, LEFTOVER_BALANCE);
+        assertEq(userA.balance, LEFTOVER_BALANCE + 2 * ethParams.originAmount);
+        assertEq(userB.balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
@@ -796,7 +809,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         refund({caller: refunder, bridgeTx: ethTx});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
@@ -810,7 +823,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         refund({caller: caller, bridgeTx: ethTx});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
