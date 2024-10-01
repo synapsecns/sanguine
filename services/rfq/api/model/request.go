@@ -59,6 +59,7 @@ type QuoteData struct {
 	ExpirationWindow int64   `json:"expiration_window"`
 	DestAmount       *string `json:"dest_amount"`
 	RelayerAddress   *string `json:"relayer_address"`
+	QuoteID          *string `json:"quote_id"`
 }
 
 // WsRFQRequest represents a request for a quote to a relayer.

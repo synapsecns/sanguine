@@ -441,6 +441,29 @@ const docTemplate = `{
                 }
             }
         },
+        "model.PutRFQResponse": {
+            "type": "object",
+            "properties": {
+                "dest_amount": {
+                    "type": "string"
+                },
+                "quote_id": {
+                    "type": "string"
+                },
+                "quote_type": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "relayer_address": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "model.PutRelayerQuoteRequest": {
             "type": "object",
             "properties": {
@@ -473,26 +496,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.PutRFQResponse": {
-            "type": "object",
-            "properties": {
-                "dest_amount": {
-                    "type": "string"
-                },
-                "quote_type": {
-                    "type": "string"
-                },
-                "reason": {
-                    "type": "string"
-                },
-                "relayer_address": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                }
-            }
-        },
         "model.QuoteData": {
             "type": "object",
             "properties": {
@@ -515,6 +518,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "origin_token_addr": {
+                    "type": "string"
+                },
+                "quote_id": {
                     "type": "string"
                 },
                 "relayer_address": {

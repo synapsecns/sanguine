@@ -568,6 +568,7 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 		resp = model.PutRFQResponse{
 			Success:        true,
 			QuoteType:      quoteType,
+			QuoteID:        quote.QuoteID,
 			DestAmount:     *quote.DestAmount,
 			RelayerAddress: *quote.RelayerAddress,
 		}

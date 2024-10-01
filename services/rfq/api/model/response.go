@@ -56,11 +56,12 @@ type ActiveRFQMessage struct {
 
 // PutRFQResponse represents a response to a user quote request.
 type PutRFQResponse struct {
-	Success        bool   `json:"success"`
-	Reason         string `json:"reason,omitempty"`
-	QuoteType      string `json:"quote_type,omitempty"`
-	DestAmount     string `json:"dest_amount,omitempty"`
-	RelayerAddress string `json:"relayer_address,omitempty"`
+	Success        bool    `json:"success"`
+	Reason         string  `json:"reason,omitempty"`
+	QuoteType      string  `json:"quote_type,omitempty"`
+	QuoteID        *string `json:"quote_id,omitempty"`
+	DestAmount     string  `json:"dest_amount,omitempty"`
+	RelayerAddress string  `json:"relayer_address,omitempty"`
 }
 
 // WsRFQResponse represents a response to a quote request.

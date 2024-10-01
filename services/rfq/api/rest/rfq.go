@@ -53,17 +53,12 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 
 	// collect the responses and determine the best quote
 	responses := r.collectRelayerResponses(ctx, request, requestID)
-	var quoteID string
-	var isUpdated bool
 	for r, resp := range responses {
 		relayerAddr := r
-		quote, isUpdated = getBestQuote(quote, getRelayerQuoteData(request, resp))
-		if isUpdated {
-			quoteID = resp.QuoteID
-		}
+		quote, _ = getBestQuote(quote, getRelayerQuoteData(request, resp))
 		quote.RelayerAddress = &relayerAddr
 	}
-	err = r.recordActiveQuote(ctx, quote, requestID, quoteID)
+	err = r.recordActiveQuote(ctx, quote, requestID)
 	if err != nil {
 		logger.Errorf("Error recording active quote: %v", err)
 	}
@@ -157,6 +152,7 @@ func getRelayerQuoteData(request *model.PutRFQRequest, resp *model.WsRFQResponse
 		DestTokenAddr:   request.Data.DestTokenAddr,
 		OriginAmount:    request.Data.OriginAmount,
 		DestAmount:      &resp.DestAmount,
+		QuoteID:         &resp.QuoteID,
 	}
 }
 
@@ -200,18 +196,18 @@ func validateRelayerQuoteResponse(resp *model.WsRFQResponse) error {
 	return nil
 }
 
-func (r *QuoterAPIServer) recordActiveQuote(ctx context.Context, quote *model.QuoteData, requestID, quoteID string) (err error) {
+func (r *QuoterAPIServer) recordActiveQuote(ctx context.Context, quote *model.QuoteData, requestID string) (err error) {
 	if quote == nil {
 		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, nil, db.Expired)
 		if err != nil {
 			logger.Errorf("Error updating active quote request status: %v", err)
 		}
 	} else {
-		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, &quoteID, db.Closed)
+		err = r.db.UpdateActiveQuoteRequestStatus(ctx, requestID, quote.QuoteID, db.Closed)
 		if err != nil {
 			logger.Errorf("Error updating active quote request status: %v", err)
 		}
-		err = r.db.UpdateActiveQuoteResponseStatus(ctx, quoteID, db.Returned)
+		err = r.db.UpdateActiveQuoteResponseStatus(ctx, *quote.QuoteID, db.Returned)
 		if err != nil {
 			return fmt.Errorf("error updating active quote response status: %w", err)
 		}

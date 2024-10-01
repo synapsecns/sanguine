@@ -90,6 +90,21 @@ definitions:
       user_address:
         type: string
     type: object
+  model.PutRFQResponse:
+    properties:
+      dest_amount:
+        type: string
+      quote_id:
+        type: string
+      quote_type:
+        type: string
+      reason:
+        type: string
+      relayer_address:
+        type: string
+      success:
+        type: boolean
+    type: object
   model.PutRelayerQuoteRequest:
     properties:
       dest_amount:
@@ -111,19 +126,6 @@ definitions:
       origin_token_addr:
         type: string
     type: object
-  model.PutRFQResponse:
-    properties:
-      dest_amount:
-        type: string
-      quote_type:
-        type: string
-      reason:
-        type: string
-      relayer_address:
-        type: string
-      success:
-        type: boolean
-    type: object
   model.QuoteData:
     properties:
       dest_amount:
@@ -139,6 +141,8 @@ definitions:
       origin_chain_id:
         type: integer
       origin_token_addr:
+        type: string
+      quote_id:
         type: string
       relayer_address:
         type: string
