@@ -130,7 +130,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
         if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
-
+        int256 exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
+        // exclusivityEndTime must be in range (0 .. params.deadline]
+        if (exclusivityEndTime <= 0 || exclusivityEndTime > int256(params.deadline)) {
+            revert ExclusivityParamsIncorrect();
+        }
         // transfer tokens to bridge contract
         // @dev use returned originAmount in request in case of transfer fees
         uint256 originAmount = _pullToken(address(this), params.originToken, params.originAmount);
@@ -140,7 +144,6 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
         originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
 
-        uint256 exclusivityEndTime = block.timestamp + paramsV2.quoteExclusivitySeconds;
         // set status to requested
         bytes memory request = abi.encode(
             BridgeTransactionV2({
@@ -157,7 +160,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 deadline: params.deadline,
                 nonce: nonce++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
-                exclusivityEndTime: exclusivityEndTime
+                // We checked exclusivityEndTime to be in range (0 .. params.deadline] above, so can safely cast
+                exclusivityEndTime: uint256(exclusivityEndTime)
             })
         );
         bytes32 transactionId = keccak256(request);
