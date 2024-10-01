@@ -25,28 +25,4 @@ contract FastBridgeV2SrcExclusivityTest is FastBridgeV2SrcTest {
         IFastBridgeV2.BridgeParamsV2 memory paramsV2 = params.originToken == ETH_ADDRESS ? ethParamsV2 : tokenParamsV2;
         bridge(caller, msgValue, params, paramsV2);
     }
-
-    function test_bridge_revert_quoteRelayerSet_exclusivityPeriodNotSet() public {
-        tokenParamsV2.quoteExclusivitySeconds = 0;
-        vm.expectRevert(ExclusivityParamsIncorrect.selector);
-        bridge(userA, 0, tokenParams, tokenParamsV2);
-    }
-
-    function test_bridge_revert_quoteRelayerNotSet_exclusivityPeriodSet() public {
-        tokenParamsV2.quoteRelayer = address(0);
-        vm.expectRevert(ExclusivityParamsIncorrect.selector);
-        bridge(userA, 0, tokenParams, tokenParamsV2);
-    }
-
-    function test_bridge_eth_revert_quoteRelayerSet_exclusivityPeriodNotSet() public {
-        ethParamsV2.quoteExclusivitySeconds = 0;
-        vm.expectRevert(ExclusivityParamsIncorrect.selector);
-        bridge(userA, 0, ethParams, ethParamsV2);
-    }
-
-    function test_bridge_eth_revert_quoteRelayerNotSet_exclusivityPeriodSet() public {
-        ethParamsV2.quoteRelayer = address(0);
-        vm.expectRevert(ExclusivityParamsIncorrect.selector);
-        bridge(userA, 0, ethParams, ethParamsV2);
-    }
 }

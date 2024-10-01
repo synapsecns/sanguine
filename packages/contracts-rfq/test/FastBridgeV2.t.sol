@@ -129,9 +129,9 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         ethParamsV2 = IFastBridgeV2.BridgeParamsV2({quoteRelayer: address(0), quoteExclusivitySeconds: 0, quoteId: ""});
 
         tokenTx.exclusivityRelayer = address(0);
-        tokenTx.exclusivityEndTime = 0;
+        tokenTx.exclusivityEndTime = block.timestamp;
         ethTx.exclusivityRelayer = address(0);
-        ethTx.exclusivityEndTime = 0;
+        ethTx.exclusivityEndTime = block.timestamp;
     }
 
     function setStorageBridgeTxV2(
