@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.10...@synapsecns/contracts-rfq@0.6.0) (2024-10-01)
+
+
+### Features
+
+* **contracts-rfq:** relayer exclusivity [SLT-187] ([#3202](https://github.com/synapsecns/sanguine/issues/3202)) ([eb3db7c](https://github.com/synapsecns/sanguine/commit/eb3db7ceb781feaa84f606869d9f9ffee5928cdf)), closes [#3204](https://github.com/synapsecns/sanguine/issues/3204)
+
+
+
+
+
 ## [0.5.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.9...@synapsecns/contracts-rfq@0.5.10) (2024-10-01)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq
