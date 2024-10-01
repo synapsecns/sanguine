@@ -1,25 +1,3 @@
-import ethExplorerImg from '../assets/explorer/etherscan.svg'
-import arbitrumExplorerImg from '../assets/explorer/arbitrum.svg'
-import bnbExplorerImg from '../assets/explorer/bscscan.svg'
-import avalancheExplorerImg from '../assets/explorer/avalanche.svg'
-import cantoExplorerImg from '../assets/explorer/canto.svg'
-import optimismExplorerImg from '../assets/explorer/optimism.svg'
-import polygonExplorerImg from '../assets/explorer/polygon.svg'
-import dfkExplorerImg from '../assets/explorer/dfk-chain.svg'
-import klaytynExplorerImg from '../assets/explorer/klaytn.svg'
-import fantomExplorerImg from '../assets/explorer/fantom.svg'
-import cronosExplorerImg from '../assets/explorer/cronos.svg'
-import bobaExplorerImg from '../assets/explorer/boba.svg'
-import metisExplorerImg from '../assets/explorer/metis.svg'
-import auroraExplorerImg from '../assets/explorer/aurora.svg'
-import harmonyExplorerImg from '../assets/explorer/harmony.svg'
-import moonbeamExplorerImg from '../assets/explorer/moonbeam.svg'
-import moonriverExplorerImg from '../assets/explorer/moonriver.svg'
-import dogeExplorerImg from '../assets/explorer/dogechain.svg'
-import baseExplorerImg from '../assets/explorer/basescan.svg'
-import blastExplorerImg from '../assets/explorer/blast.svg'
-import scrollExplorerImg from '../assets/explorer/scroll.svg'
-import lineaExplorerImg from '../assets/explorer/linea.svg'
 import { Chain } from '../../types'
 
 export const ETH: Chain = {
@@ -37,7 +15,8 @@ export const ETH: Chain = {
   },
   explorerUrl: 'https://etherscan.io',
   explorerName: 'Etherscan',
-  explorerImg: ethExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/ethereum.4a372106.svg',
   blockTime: 12000,
   nativeCurrency: {
     name: 'Ethereum',
@@ -64,7 +43,8 @@ export const ARBITRUM: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://arbiscan.io',
   explorerName: 'Arbiscan',
-  explorerImg: arbitrumExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/arbitrum.8ddb1b22.svg',
   color: 'gray',
 }
 
@@ -86,7 +66,8 @@ export const BNB: Chain = {
   nativeCurrency: { name: 'Binance Coin', symbol: 'BNB', decimals: 18 },
   explorerUrl: 'https://bscscan.com',
   explorerName: 'BscScan',
-  explorerImg: bnbExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/bscscan.a50e7cfb.svg',
   color: 'yellow',
 }
 
@@ -107,7 +88,8 @@ export const AVALANCHE: Chain = {
   nativeCurrency: { name: 'Avax', symbol: 'AVAX', decimals: 18 },
   explorerUrl: 'https://snowscan.xyz/',
   explorerName: 'SnowScan',
-  explorerImg: avalancheExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/snowscan.1d03dfbf.svg',
   color: 'red',
 }
 
@@ -128,7 +110,8 @@ export const CANTO: Chain = {
   nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
   explorerUrl: 'https://tuber.build/',
   explorerName: 'Canto Explorer',
-  explorerImg: cantoExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/snowscan.1d03dfbf.svg',
   color: 'green',
 }
 
@@ -149,7 +132,8 @@ export const OPTIMISM: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://optimistic.etherscan.io',
   explorerName: 'Optimism Explorer',
-  explorerImg: optimismExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/optimism.84d4f0ef.svg',
   color: 'red',
 }
 
@@ -170,7 +154,8 @@ export const POLYGON: Chain = {
   nativeCurrency: { name: 'Matic', symbol: 'MATIC', decimals: 18 },
   explorerUrl: 'https://polygonscan.com',
   explorerName: 'PolygonScan',
-  explorerImg: polygonExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/polygon.237cd2b6.svg',
   color: 'purple',
 }
 
@@ -191,7 +176,8 @@ export const DFK: Chain = {
   nativeCurrency: { name: 'Jewel', symbol: 'JEWEL', decimals: 18 },
   explorerUrl: 'https://subnets.avax.network/defi-kingdoms',
   explorerName: 'DFK Subnet Explorer',
-  explorerImg: dfkExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/dfk.2bd1f0e4.svg',
   color: 'lime',
 }
 
@@ -212,7 +198,8 @@ export const KLAYTN: Chain = {
   nativeCurrency: { name: 'Klaytn', symbol: 'KLAY', decimals: 18 },
   explorerUrl: 'https://scope.klaytn.com',
   explorerName: 'Klaytn Explorer',
-  explorerImg: klaytynExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/klaytn.59495fbb.svg',
   color: 'orange',
 }
 
@@ -233,7 +220,8 @@ export const FANTOM: Chain = {
   nativeCurrency: { name: 'Fantom', symbol: 'FTM', decimals: 18 },
   explorerUrl: 'https://ftmscan.com',
   explorerName: 'FTMScan',
-  explorerImg: fantomExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/fantom.1e444dad.svg',
   color: 'blue',
 }
 
@@ -254,7 +242,8 @@ export const CRONOS: Chain = {
   nativeCurrency: { name: 'Cronos', symbol: 'CRO', decimals: 18 },
   explorerUrl: 'https://cronoscan.com',
   explorerName: 'CronoScan',
-  explorerImg: cronosExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/cronos.b06f8311.svg',
   color: 'gray',
 }
 
@@ -275,7 +264,8 @@ export const BOBA: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://bobascan.com',
   explorerName: 'Boba Explorer',
-  explorerImg: bobaExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/boba.2072e50b.svg',
   color: 'lime',
 }
 
@@ -296,7 +286,8 @@ export const METIS: Chain = {
   nativeCurrency: { name: 'Metis', symbol: 'METIS', decimals: 18 },
   explorerUrl: 'https://andromeda-explorer.metis.io',
   explorerName: 'Metis Explorer',
-  explorerImg: metisExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/metis.90b6abf0.svg',
   color: 'teal',
 }
 
@@ -317,7 +308,8 @@ export const AURORA: Chain = {
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   explorerUrl: 'https://explorer.mainnet.aurora.dev',
   explorerName: 'Aurora Explorer',
-  explorerImg: auroraExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/aurora.5a46037d.svg',
   color: 'lime',
 }
 
@@ -338,7 +330,8 @@ export const HARMONY: Chain = {
   nativeCurrency: { name: 'Harmony One', symbol: 'ONE', decimals: 18 },
   explorerUrl: 'https://explorer.harmony.one',
   explorerName: 'Harmony Explorer',
-  explorerImg: harmonyExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/harmony.af12f77e.svg',
   color: 'cyan',
 }
 
@@ -359,7 +352,8 @@ export const MOONBEAM: Chain = {
   nativeCurrency: { name: 'Glimmer', symbol: 'GLMR', decimals: 18 },
   explorerUrl: 'https://moonbeam.moonscan.io',
   explorerName: 'Moonbeam Explorer',
-  explorerImg: moonbeamExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
   color: 'teal',
 }
 
@@ -380,7 +374,8 @@ export const MOONRIVER: Chain = {
   nativeCurrency: { name: 'Moonriver', symbol: 'MOVR', decimals: 18 },
   explorerUrl: 'https://moonriver.moonscan.io',
   explorerName: 'Moonriver Explorer',
-  explorerImg: moonriverExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
   color: 'purple',
 }
 
@@ -401,7 +396,8 @@ export const DOGE: Chain = {
   nativeCurrency: { name: 'DOGE', symbol: 'DOGE', decimals: 18 },
   explorerUrl: 'https://explorer.dogechain.dog',
   explorerName: 'Dogechain Explorer',
-  explorerImg: dogeExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/dogechain.36935650.svg',
   color: 'purple',
 }
 
@@ -420,7 +416,8 @@ export const BASE: Chain = {
   },
   explorerUrl: 'https://basescan.org',
   explorerName: 'BaseScan',
-  explorerImg: baseExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/base.d919fbef.svg',
   blockTime: 3000,
   nativeCurrency: {
     name: 'Ether',
@@ -445,7 +442,8 @@ export const BLAST: Chain = {
   },
   explorerUrl: 'https://blastscan.io',
   explorerName: 'Blastscan',
-  explorerImg: blastExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/blast.e39807f8.svg',
   blockTime: 3000,
   nativeCurrency: {
     name: 'Ether',
@@ -470,7 +468,8 @@ export const SCROLL: Chain = {
   },
   explorerUrl: 'https://scrollscan.com/',
   explorerName: 'Scrollscan',
-  explorerImg: scrollExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/scroll.a805c122.svg',
   blockTime: 3000,
   nativeCurrency: {
     name: 'Ether',
@@ -495,7 +494,8 @@ export const LINEA: Chain = {
   },
   explorerUrl: 'https://lineascan.build/',
   explorerName: 'LineaScan',
-  explorerImg: lineaExplorerImg,
+  explorerImg:
+    'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/scroll.a805c122.svg',
   blockTime: 3000,
   nativeCurrency: {
     name: 'Ether',
