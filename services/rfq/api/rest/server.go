@@ -424,7 +424,7 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 }
 
 // GetActiveRFQWebsocket handles the WebSocket connection for active quote requests.
-// GET /quote_requests.
+// GET /rfq_stream.
 // @Summary Handle WebSocket connection for active quote requests
 // @Schemes
 // @Description Establish a WebSocket connection to receive active quote requests.
@@ -432,7 +432,7 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 // @Produce json
 // @Success 101 {string} string "Switching Protocols"
 // @Header 101 {string} X-Api-Version "API Version Number - See docs for more info"
-// @Router /quote_requests [get].
+// @Router /rfq_stream [get].
 func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Context) {
 	ctx, span := r.handler.Tracer().Start(ctx, "GetActiveRFQWebsocket")
 	defer func() {
@@ -488,7 +488,7 @@ const (
 )
 
 // PutRFQRequest handles a user request for a quote.
-// PUT /quote_request.
+// PUT /rfq.
 // @Summary Handle user quote request
 // @Schemes
 // @Description Handle user quote request and return the best quote available.
@@ -498,7 +498,7 @@ const (
 // @Produce json
 // @Success 200 {object} model.PutUserQuoteResponse
 // @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
-// @Router /quote_request [put].
+// @Router /rfq [put].
 //
 //nolint:cyclop
 func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {

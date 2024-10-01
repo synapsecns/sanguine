@@ -153,72 +153,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/quote_request": {
-            "put": {
-                "description": "Handle user quote request and return the best quote available.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "quotes"
-                ],
-                "summary": "Handle user quote request",
-                "parameters": [
-                    {
-                        "description": "User quote request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.PutRFQRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.PutUserQuoteResponse"
-                        },
-                        "headers": {
-                            "X-Api-Version": {
-                                "type": "string",
-                                "description": "API Version Number - See docs for more info"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/quote_requests": {
-            "get": {
-                "description": "Establish a WebSocket connection to receive active quote requests.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "quotes"
-                ],
-                "summary": "Handle WebSocket connection for active quote requests",
-                "responses": {
-                    "101": {
-                        "description": "Switching Protocols",
-                        "schema": {
-                            "type": "string"
-                        },
-                        "headers": {
-                            "X-Api-Version": {
-                                "type": "string",
-                                "description": "API Version Number - See docs for more info"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/quotes": {
             "get": {
                 "description": "get quotes from all relayers.",
@@ -308,6 +242,72 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rfq": {
+            "put": {
+                "description": "Handle user quote request and return the best quote available.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Handle user quote request",
+                "parameters": [
+                    {
+                        "description": "User quote request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PutRFQRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.PutUserQuoteResponse"
+                        },
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rfq_stream": {
+            "get": {
+                "description": "Establish a WebSocket connection to receive active quote requests.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Handle WebSocket connection for active quote requests",
+                "responses": {
+                    "101": {
+                        "description": "Switching Protocols",
+                        "schema": {
+                            "type": "string"
+                        },
                         "headers": {
                             "X-Api-Version": {
                                 "type": "string",
@@ -476,8 +476,8 @@ const docTemplate = `{
         "model.PutUserQuoteResponse": {
             "type": "object",
             "properties": {
-                "data": {
-                    "$ref": "#/definitions/model.QuoteData"
+                "dest_amount": {
+                    "type": "string"
                 },
                 "quote_type": {
                     "type": "string"
@@ -485,11 +485,11 @@ const docTemplate = `{
                 "reason": {
                     "type": "string"
                 },
+                "relayer_address": {
+                    "type": "string"
+                },
                 "success": {
                     "type": "boolean"
-                },
-                "user_address": {
-                    "type": "string"
                 }
             }
         },

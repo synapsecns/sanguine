@@ -113,16 +113,16 @@ definitions:
     type: object
   model.PutUserQuoteResponse:
     properties:
-      data:
-        $ref: '#/definitions/model.QuoteData'
+      dest_amount:
+        type: string
       quote_type:
         type: string
       reason:
         type: string
+      relayer_address:
+        type: string
       success:
         type: boolean
-      user_address:
-        type: string
     type: object
   model.QuoteData:
     properties:
@@ -237,49 +237,6 @@ paths:
       summary: Get open quote requests
       tags:
       - quotes
-  /quote_request:
-    put:
-      consumes:
-      - application/json
-      description: Handle user quote request and return the best quote available.
-      parameters:
-      - description: User quote request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/model.PutRFQRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          headers:
-            X-Api-Version:
-              description: API Version Number - See docs for more info
-              type: string
-          schema:
-            $ref: '#/definitions/model.PutUserQuoteResponse'
-      summary: Handle user quote request
-      tags:
-      - quotes
-  /quote_requests:
-    get:
-      description: Establish a WebSocket connection to receive active quote requests.
-      produces:
-      - application/json
-      responses:
-        "101":
-          description: Switching Protocols
-          headers:
-            X-Api-Version:
-              description: API Version Number - See docs for more info
-              type: string
-          schema:
-            type: string
-      summary: Handle WebSocket connection for active quote requests
-      tags:
-      - quotes
   /quotes:
     get:
       consumes:
@@ -343,6 +300,49 @@ paths:
               description: API Version Number - See docs for more info
               type: string
       summary: Upsert quote
+      tags:
+      - quotes
+  /rfq:
+    put:
+      consumes:
+      - application/json
+      description: Handle user quote request and return the best quote available.
+      parameters:
+      - description: User quote request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PutRFQRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Api-Version:
+              description: API Version Number - See docs for more info
+              type: string
+          schema:
+            $ref: '#/definitions/model.PutUserQuoteResponse'
+      summary: Handle user quote request
+      tags:
+      - quotes
+  /rfq_stream:
+    get:
+      description: Establish a WebSocket connection to receive active quote requests.
+      produces:
+      - application/json
+      responses:
+        "101":
+          description: Switching Protocols
+          headers:
+            X-Api-Version:
+              description: API Version Number - See docs for more info
+              type: string
+          schema:
+            type: string
+      summary: Handle WebSocket connection for active quote requests
       tags:
       - quotes
 swagger: "2.0"
