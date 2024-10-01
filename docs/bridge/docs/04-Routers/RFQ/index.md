@@ -70,7 +70,7 @@ The relayer is a service ran by the solvers. The relayer is responsible for post
 
 The RFQ system includes an optimistic dispute window in which Guard contracts may initiate a dispute if they detect errors or fraudulent activity, such as incorrect fill amounts or proofs submitted by the wrong relayer.
 
-In a successful dispute the relayer loses their claimable funds. This design is intended to enforce honest behavior while also protecting honest relayers in cases of blockchain reorgs.
+In a successful dispute, the relayer loses their claimable funds. This design is intended to enforce honest behavior while also protecting honest relayers in cases of blockchain reorgs.
 
 ## Unfulfilled requests
 

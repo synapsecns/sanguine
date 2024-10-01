@@ -1,10 +1,14 @@
-# MiniChef
+---
+title: MiniChef
+---
 
 :::note This list may be incomplete
 
 The canonical list is hosted within the SynapseCNS on [Github](https://github.com/synapsecns/synapse-contracts).
 
 :::
+
+# MiniChef
 
 | Chain     | Address                                      |
 |-----------|----------------------------------------------|

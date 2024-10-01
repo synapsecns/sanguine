@@ -2,28 +2,26 @@
 title: REST API
 ---
 
-:::warning
-
-The [previous version](https://synapse-rest-api-v2.herokuapp.com/) is no longer maintained and will be fully deprecated by October 2024.
-
-:::
-
 # REST API
 
 Get read-only data from on-chain Synapse contracts, and generate Bridge and Swap quotes, plus additional transaction information.
 
-## Use cases
+## API-docs
 
-* Integrate your front-end application with the Synapse Bridge.
-* Provide bridge liquidity.
-* Perform cross-chain arbitrage.
-* Integrate the Synapse Javascript SDK with your non-Javascript application.
+[`api.synapseprotocol.com/api-docs`](https://api.synapseprotocol.com/api-docs)
 
-## Base URL
+## Previous versions
 
-[`api.synapseprotocol.com/`](https://api.synapseprotocol.com/)
+| Date                   | Description
+|------------------------|-
+| 2024&#8209;10&#8209;01 | [https://synapse-rest-api-v2.herokuapp.com/](https://synapse-rest-api-v2.herokuapp.com/) is no longer maintained and has been fully deprecated as of October 2024.
 
-## GET Endpoints
+## Support
+
+Please read the documentation and examples carefully before reaching out on [Discord](https://discord.gg/synapseprotocol) for questions.
+
+
+<!-- ## GET Endpoints
 
 ### `/swap`
 
@@ -204,76 +202,4 @@ Used to return which tokens you can bridge to, once an origin token is identifie
 
 #### Example
 
-[`/destinationTokens?fromChain=1&fromToken=0xdAC17F958D2ee523a2206206994597C13D831ec7`](https://api.synapseprotocol.com/destinationTokens?fromChain=1&fromToken=0xdAC17F958D2ee523a2206206994597C13D831ec7)
-
-## Javascript examples
-
-### Estimate bridge output
-
-```js
-async function estimateBridgeOutput(
-  fromChain,
-  toChain,
-  fromToken,
-  toToken,
-  amountFrom
-) {
-  const query_string = `fromChain=${fromChain}&toChain=${toChain}&fromToken=${fromToken}&toToken=${toToken}&amountFrom=${amountFrom}`;
-  const response = await fetch(
-    `https://api.synapseprotocol.com/bridge?${query_string}`
-  );
-
-  const response_json = await response.json();
-  // Check if the response is an array and has at least one item
-  if (Array.isArray(response_json) && response_json.length > 0) {
-    return response_json[0]; // Return the first item
-  } else {
-    throw new Error('No bridge quotes available');
-  }
-}
-
-estimateBridgeOutput(
-  1,     // Ethereum
-  42161, // Arbitrum
-  "USDC",
-  "USDC",
-  "1000"
-).then(firstQuote => {
-  console.log('First bridge quote:', firstQuote);
-}).catch(error => {
-  console.error('Error:', error.message);
-});
-```
-
-### Generate unsigned bridge transaction
-
-```js
-async function generateUnsignedBridgeTxn(
-  fromChain,
-  toChain,
-  fromToken,
-  toToken,
-  amountFrom,
-  destAddress
-) {
-  const query_string = `fromChain=${fromChain}&toChain=${toChain}&fromToken=${fromToken}&toToken=${toToken}&amount=${amountFrom}&destAddress=${addressTo}`;
-  const response = await fetch(
-    `https://api.synapseprotocol.com/bridgeTxInfo?${query_string}`
-  );
-  const response_json = await response.json();
-  return await response_json;
-}
-
-generateUnsignedBridgeTxn(
-  1,     // Ethereum
-  42161, // Arbitrum
-  "USDC",
-  "USDC",
-  "1000"
-  "0x2D2c027E0d1A899a1965910Dd272bcaE1cD03c22"
-);
-```
-
-## Support
-
-Please read the documentation and examples carefully before reaching out on [Discord](https://discord.gg/synapseprotocol) for questions.
+[`/destinationTokens?fromChain=1&fromToken=0xdAC17F958D2ee523a2206206994597C13D831ec7`](https://api.synapseprotocol.com/destinationTokens?fromChain=1&fromToken=0xdAC17F958D2ee523a2206206994597C13D831ec7) -->

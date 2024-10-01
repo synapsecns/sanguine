@@ -2,7 +2,7 @@ import { BridgeFlow } from '@site/src/components/BridgeFlow'
 
 # Synapse Router
 
-The Synapse Router overhauls current Synapse Bridge contracts to abstract much of the complexity around liquidity based bridging to one simple [`bridge()`](/docs/Developers/Bridge-SDK/#bridge) function.
+The Synapse Router abstracts much of the complexity around liquidity based bridging and Synapse Bridge contracts into a single [`bridge()`](/docs/Bridge/SDK/#bridge) function.
 
 <!-- The new Router is comprised of one bridge() function and three supporting functions that help to construct a bridge transaction. All of the mentioned are organized by an important struct called a “Query”. Before diving into these functions, a deeper understanding of how the bridge actually works is fundamental. -->
 
@@ -15,15 +15,15 @@ The Synapse Router overhauls current Synapse Bridge contracts to abstract much o
 
 ## Queries
 
-:::tip Intermediate tokens
+:::note Intermediate tokens
 
-Most Bridge transactions require an [“intermediary token”](/docs/Bridge/#pool-liquidity) which the protocol has mint/burn permissions over. When users Bridge native or wrapped tokens, their transaction is routed through a liquidity pool on both chains.
+Some Bridge transactions utilize an [intermediary token](/docs/Bridge/#pool-liquidity) (nETH, nUSD) the protocol has mint/burn permissions over.
 
-**Swaps to or from an intermediate token will return an empty query.**
+Swaps to/from an intermediate token return an empty query.
 
 :::
 
-Determining an optimal route with minimal slippage and maximum output is not trivial. Synapse Router condenses this complexity into a [`Query`](https://github.com/synapsecns/synapse-contracts/blob/7bc3a579c08838d7f4c3e62954135901abb16183/contracts/bridge/libraries/BridgeStructs.sol#L12-L18), or data structure that describes generic swap instructions that will result in a `token`, and an `amountReceived`.
+Determining an optimal route with minimal slippage and maximum output is not trivial. Synapse Router condenses this complexity into a [`Query`](https://github.com/synapsecns/synapse-contracts/blob/7bc3a579c08838d7f4c3e62954135901abb16183/contracts/bridge/libraries/BridgeStructs.sol#L12-L18), or data structure of generic swap instructions that return a `token`, and an `amountReceived`.
 
 
 

@@ -24,11 +24,17 @@ CCTP can be configured to bridge through any supported liquidity source, such as
 
 ### Relayer
 
-A Go application which coordinates on-chain events & stored message states to relay user funds. The Synapse CCTP relayer can be run by anyone, and is easily observable.
+Relayers coordinate on-chain events with stored message states to relay user funds. 
+
+:::tip
+
+While the Synapse CCTP Golang relayer can be run by anyone, and is easily observable, you can also build and run your own relayer permissionlessly in any programming language.
+
+:::
 
 ## Behavior
 
-CCTP Relayer polls for new transactions and and state updates from CCTP contracts on-chain, to store in an off-chain database.
+CCTP Relayer polls for new transactions and state updates from CCTP contracts on-chain, to store in an off-chain database.
 
 Attestations from the [Circle API](https://developers.circle.com/stablecoin/reference) are submitted to the destination contract, and marked `Complete` when a transaction receipt is received.
 

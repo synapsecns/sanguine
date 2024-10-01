@@ -8,13 +8,20 @@ The Synapse Bridge SDK is the easiest way to integrate cross-chain token & liqui
 
 The Synapse Bridge SDK is built on top of the [Synapse Router](/docs/Routers/Synapse-Router) contract.
 
-:::note requires Node v16+
+### Use cases
 
-The SDK has only been fully tested on Node 16+ or greater. Earlier versions may experience errors. 
-
-:::
+* Integrate your front-end application with the Synapse Bridge.
+* Provide bridge liquidity.
+* Perform cross-chain arbitrage.
+* Integrate the Synapse Javascript SDK with your non-Javascript application.
 
 ## Install
+
+:::note requires Node v16+
+
+The SDK has only been fully tested on Node 16+ or greater. Earlier versions are not guaranteed to work. 
+
+:::
 
 Requires either the `npx` or `yarn` package manager.
 

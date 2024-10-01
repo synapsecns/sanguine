@@ -1,10 +1,14 @@
-# Synapse Token
+---
+title: Synapse Token
+---
 
 :::note This list may be incomplete
 
 The canonical list is hosted within the SynapseCNS on [Github](https://github.com/synapsecns/synapse-contracts).
 
 :::
+
+# Synapse Token
 
 | Chain     | Address                                      |
 |-----------|----------------------------------------------|

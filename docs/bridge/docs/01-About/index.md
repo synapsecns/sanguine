@@ -12,7 +12,9 @@ import { RFQFlow } from '@site/src/components/RFQFlow'
 
 # Use Synapse
 
-Synapse is an Interchain Programming Interface. Developers read and write interchain data with Synapse, which has settled $50B in transactions between 2M+ users, and generated $30M+ in fees [[Explorer](https://explorer.synapseprotocol.com)].
+Synapse is an Interchain Programming Interface. Developers read and write interchain data with Synapse, which has settled $50B in transactions between 2M+ users, and generated $30M+ in fees.
+
+Source: [Synapse Explorer analytics](https://explorer.synapseprotocol.com).
 
 ## Interchain Bridge
 
@@ -29,43 +31,32 @@ Synapse is an Interchain Programming Interface. Developers read and write interc
 
 Embed or build a custom Bridge application.
 
-* **[SDK](/docs/Developers/Bridge-SDK)** – Call Synapse Router functions from your frontend or backend application.
-* **[REST API](/docs/Developers/REST-API)** – Endpoints and example code
-* **[Widget](/docs/Developers/Widget)** – Embed a customized Synapse Bridge in your application.
+* **[SDK](/docs/Bridge/SDK)** – Call Synapse Router functions from your frontend or backend application.
+* **[REST API](/docs/Bridge/REST-API)** – Endpoints and example code
+* **[Widget](/docs/Bridge/Widget)** – Embed a customized Synapse Bridge in your application.
 
 ## Synapse Routers
 
-Synapse Router automatically determines the appropriate router type to use for each Bridge transaction.
+Synapse Router automatically determines the appropriate router for each Bridge transaction.
+
+* **[Synapse Router](/docs/Routers/Synapse-Router)** – Returns and executes quotes for supported interchain transactions.
+* **[CCTP](/docs/Routers/CCTP)** – Native router for USDC transactions.
+* **[RFQ](/docs/Routers/RFQ)** – Relayers bid for the right to provide immediate delivery.
 
 <figure id="flowGroup">
     <figure>
         <BridgeFlow />
-        <figcaption>Synapse Router</figcaption>
+        <figcaption>Synapse Router &ndash; Mint and burn any token between chains</figcaption>
     </figure>
     <figure>
         <CCTPFlow />
-        <figcaption>Synapse CCTP</figcaption>
+        <figcaption>CCTP &ndash; Use Circle contracts to mint and burn native USDC</figcaption>
     </figure>
     <figure>
         <RFQFlow />
-        <figcaption>Synapse RFQ</figcaption>
+        <figcaption>RFQ &ndash; Take Immediate delivery from a destination relayer, who receives your origin chain assets on confirmation.</figcaption>
     </figure>
 </figure>
-
-* **[Synapse Router](/docs/Routers/Synapse-Router)** – Executable quotes for arbitrary blockchain transactions.
-* **[CCTP](/docs/Routers/CCTP)** – Native router for USDC transactions.
-* **[RFQ](/docs/Routers/RFQ)** – Fast router that allows on-chain agents to bid on interchain delivery.
-
-## Essential Services
-
-Bolt-on services for reliability and ease-of-use:
-
-* **[Scribe](/docs/Services/Scribe)** – Index logs, receipts and transactions across multiple chains
-* **[OmniRPC](/docs/Services/Omnirpc)** – Interchain RPC load balancer and verifier
-* **[Signer](/docs/Services/Signer)** – Support for the AWS Key Management System (KMS)
-* **[Submitter](/docs/Services/Submitter)** – Gas management service to ensure transaction confirmation
-* **[Observability](/docs/Services/Observability)** – Open telemetry system for Synapse SDK
-
 
 ## Community & Support
 

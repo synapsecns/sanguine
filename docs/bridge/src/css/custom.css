@@ -88,20 +88,25 @@ figcaption {
   margin: 1rem 0;
 }
 
-#flowGroup { width: 100% }
+#flowGroup {
+  display: grid;
+  width: 100%;
+  gap: 2rem;
+  margin: 2rem 0;
+}
 
-#flowGroup figure { width: 100% }
+#flowGroup figure {
+  width: 100%;
+  max-width: 40rem;
+}
 
-@media only screen and (min-width: 720px) {
+@media only screen and (min-width: 96rem) {
   #flowGroup {
-    display: grid;
-    gap: .5rem;
+    grid-template-columns: 1fr 1fr;
   }
 
-  #flowGroup figure {
-    display: grid;
-    grid-template-rows: subgrid;
-    grid-row: 1 / 3;
-    align-items: center;
+  #flowGroup figcaption {
+    /* margin: .5rem; */
+    text-align: center;
   }
 }

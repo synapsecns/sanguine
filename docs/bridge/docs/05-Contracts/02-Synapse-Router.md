@@ -1,4 +1,6 @@
-# Synapse Router
+---
+title: Synapse Router
+---
 
 :::note This list may be incomplete
 
@@ -6,11 +8,17 @@ The canonical list is hosted within the SynapseCNS on [Github](https://github.co
 
 :::
 
-For event indexing, see the [SynapseBridge](https://github.com/synapsecns/synapse-contracts/blob/ed93453430635e2d43704d5599d3318c43a23033/contracts/bridge/SynapseBridge.sol#L63-L118) contract. 
+# Synapse Router
 
-Events that start with `TokenMint` or `TokenWithdraw` are emitted when the bridge transaction is complete on the destination chain. The contracts that emit these events are in the deployments folder of each chain‘s `SynapseBridge.json` file.
+Synapse Router contracts route through the [SynapseBridge](https://github.com/synapsecns/synapse-contracts/blob/ed93453430635e2d43704d5599d3318c43a23033/contracts/bridge/SynapseBridge.sol#L63-L118) contract, which is used for event indexing.
 
-**Address**: `0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a`
+:::tip Events
+
+Contracts in the `deployments` folder of each chain's `SynapseBridge.json` file emit `TokenMint` or `TokenWithdraw` events when a transaction completes on the destination chain.
+
+:::
+
+**Router address**: `0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a`
 
 | Chain     | Address                                      |
 |-----------|----------------------------------------------|

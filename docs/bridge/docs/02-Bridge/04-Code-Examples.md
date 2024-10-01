@@ -2,13 +2,15 @@
 sidebar_label: Examples
 ---
 
-# SDK Examples
+# Example Code
 
-Implemented Bridge SDK examples
+Example SDK & API implementations
 
 ## Basic Implementation
 
 ```js
+// app.js
+
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Provider } from '@ethersproject/abstract-provider'
 import { SynapseSDK } from '@synapsecns/sdk-router'
@@ -52,13 +54,19 @@ await Synapse.bridge(
 )
 ```
 
-## NextJS
+## NextJS Implementation
 
-Uses Wagmi, and RainbowKit
+:::note Dependencies
 
-### `app.tsx`
+Wagmi, RainbowKit
 
-```js
+:::
+
+### App
+
+```tsx
+// app.tsx
+
 import '@styles/global.css'
 import '@rainbow-me/rainbowkit/styles.css'
 import { SynapseProvider } from '@/utils/SynapseProvider'
@@ -141,9 +149,11 @@ export default function App({ Component, pageProps }: AppProps) {
 }
 ```
 
-### `@/utils/SynapseProvider.tsx`
+### Provider
 
-```js
+```tsx
+// `@/utils/SynapseProvider.tsx`
+
 import { createContext, useContext } from 'react'
 import { SynapseSDK } from '@synapsecns/sdk-router'
 import { Provider } from '@ethersproject/abstract-provider'
@@ -168,9 +178,11 @@ export const SynapseProvider = ({
 export const useSynapseContext = () => useContext(SynapseContext)
 ```
 
-### `/homepage/index.tsx`
+### Homepage
 
-```js
+```tsx
+// `/homepage/index.tsx`
+
 import { useSynapseContext } from '@/utils/SynapseProvider'
 import { Zero } from '@ethersproject/constants'
 import { useState, useEffect } from 'react'
@@ -267,4 +279,72 @@ export default function HomePage({ address }: { address: `0x${string}` }) {
 // ...
 
 }
+```
+
+## API Functions
+
+### Estimate bridge output
+
+```js
+async function estimateBridgeOutput(
+  fromChain,
+  toChain,
+  fromToken,
+  toToken,
+  amountFrom
+) {
+  const query_string = `fromChain=${fromChain}&toChain=${toChain}&fromToken=${fromToken}&toToken=${toToken}&amountFrom=${amountFrom}`;
+  const response = await fetch(
+    `https://api.synapseprotocol.com/bridge?${query_string}`
+  );
+
+  const response_json = await response.json();
+  // Check if the response is an array and has at least one item
+  if (Array.isArray(response_json) && response_json.length > 0) {
+    return response_json[0]; // Return the first item
+  } else {
+    throw new Error('No bridge quotes available');
+  }
+}
+
+estimateBridgeOutput(
+  1,     // Ethereum
+  42161, // Arbitrum
+  "USDC",
+  "USDC",
+  "1000"
+).then(firstQuote => {
+  console.log('First bridge quote:', firstQuote);
+}).catch(error => {
+  console.error('Error:', error.message);
+});
+```
+
+### Generate unsigned bridge transaction
+
+```js
+async function generateUnsignedBridgeTxn(
+  fromChain,
+  toChain,
+  fromToken,
+  toToken,
+  amountFrom,
+  destAddress
+) {
+  const query_string = `fromChain=${fromChain}&toChain=${toChain}&fromToken=${fromToken}&toToken=${toToken}&amount=${amountFrom}&destAddress=${addressTo}`;
+  const response = await fetch(
+    `https://api.synapseprotocol.com/bridgeTxInfo?${query_string}`
+  );
+  const response_json = await response.json();
+  return await response_json;
+}
+
+generateUnsignedBridgeTxn(
+  1,     // Ethereum
+  42161, // Arbitrum
+  "USDC",
+  "USDC",
+  "1000"
+  "0x2D2c027E0d1A899a1965910Dd272bcaE1cD03c22"
+);
 ```
