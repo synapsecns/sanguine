@@ -10,12 +10,12 @@ contract FastBridgeV2DstExclusivityTest is FastBridgeV2DstTest {
     function createFixturesV2() public virtual override {
         tokenParamsV2 = IFastBridgeV2.BridgeParamsV2({
             quoteRelayer: relayerA,
-            quoteExclusivitySeconds: EXCLUSIVITY_PERIOD,
+            quoteExclusivitySeconds: int256(EXCLUSIVITY_PERIOD),
             quoteId: ""
         });
         ethParamsV2 = IFastBridgeV2.BridgeParamsV2({
             quoteRelayer: relayerB,
-            quoteExclusivitySeconds: EXCLUSIVITY_PERIOD,
+            quoteExclusivitySeconds: int256(EXCLUSIVITY_PERIOD),
             quoteId: ""
         });
 

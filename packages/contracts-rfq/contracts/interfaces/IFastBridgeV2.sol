@@ -35,7 +35,7 @@ interface IFastBridgeV2 is IFastBridge {
     /// @param quoteId                  Unique quote identifier used for tracking the quote
     struct BridgeParamsV2 {
         address quoteRelayer;
-        uint256 quoteExclusivitySeconds;
+        int256 quoteExclusivitySeconds;
         bytes quoteId;
     }
 

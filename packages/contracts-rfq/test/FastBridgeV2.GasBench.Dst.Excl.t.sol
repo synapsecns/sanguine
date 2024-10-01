@@ -14,9 +14,9 @@ contract FastBridgeV2DstExclusivityTest is FastBridgeV2DstGasBenchmarkTest {
 
     function createFixturesV2() public virtual override {
         tokenParamsV2.quoteRelayer = relayerA;
-        tokenParamsV2.quoteExclusivitySeconds = EXCLUSIVITY_PERIOD;
+        tokenParamsV2.quoteExclusivitySeconds = int256(EXCLUSIVITY_PERIOD);
         ethParamsV2.quoteRelayer = relayerA;
-        ethParamsV2.quoteExclusivitySeconds = EXCLUSIVITY_PERIOD;
+        ethParamsV2.quoteExclusivitySeconds = int256(EXCLUSIVITY_PERIOD);
         tokenTx.exclusivityRelayer = relayerA;
         tokenTx.exclusivityEndTime = block.timestamp + EXCLUSIVITY_PERIOD;
         ethTx.exclusivityRelayer = relayerA;

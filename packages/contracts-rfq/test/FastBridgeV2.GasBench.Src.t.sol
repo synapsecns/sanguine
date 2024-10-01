@@ -105,7 +105,7 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
 
     function test_bridge_token_withExclusivity() public {
         tokenParamsV2.quoteRelayer = relayerA;
-        tokenParamsV2.quoteExclusivitySeconds = EXCLUSIVITY_PERIOD;
+        tokenParamsV2.quoteExclusivitySeconds = int256(EXCLUSIVITY_PERIOD);
         tokenParamsV2.quoteId = bytes("Created by Relayer A");
         tokenTx.exclusivityRelayer = relayerA;
         tokenTx.exclusivityEndTime = block.timestamp + EXCLUSIVITY_PERIOD;
@@ -186,7 +186,7 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
 
     function test_bridge_eth_withExclusivity() public {
         ethParamsV2.quoteRelayer = relayerA;
-        ethParamsV2.quoteExclusivitySeconds = EXCLUSIVITY_PERIOD;
+        ethParamsV2.quoteExclusivitySeconds = int256(EXCLUSIVITY_PERIOD);
         ethParamsV2.quoteId = bytes("Created by Relayer A");
         ethTx.exclusivityRelayer = relayerA;
         ethTx.exclusivityEndTime = block.timestamp + EXCLUSIVITY_PERIOD;
