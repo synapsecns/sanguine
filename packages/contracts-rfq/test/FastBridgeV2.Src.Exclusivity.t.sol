@@ -25,4 +25,16 @@ contract FastBridgeV2SrcExclusivityTest is FastBridgeV2SrcTest {
         IFastBridgeV2.BridgeParamsV2 memory paramsV2 = params.originToken == ETH_ADDRESS ? ethParamsV2 : tokenParamsV2;
         bridge(caller, msgValue, params, paramsV2);
     }
+
+    function test_bridge_revert_exclusivityEndTimeOverDeadline() public {
+        tokenParamsV2.quoteExclusivitySeconds = int256(DEADLINE + 1);
+        vm.expectRevert(ExclusivityParamsIncorrect.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
+    }
+
+    function test_bridge_eth_revert_exclusivityEndTimeOverDeadline() public {
+        ethParamsV2.quoteExclusivitySeconds = int256(DEADLINE + 1);
+        vm.expectRevert(ExclusivityParamsIncorrect.selector);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
+    }
 }

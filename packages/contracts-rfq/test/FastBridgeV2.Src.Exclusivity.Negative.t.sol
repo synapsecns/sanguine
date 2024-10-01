@@ -26,10 +26,22 @@ contract FastBridgeV2SrcExclusivityNegativeTest is FastBridgeV2SrcTest {
         bridge(caller, msgValue, params, paramsV2);
     }
 
+    function test_bridge_revert_exclusivityEndTimeZero() public {
+        tokenParamsV2.quoteExclusivitySeconds = -int256(block.timestamp);
+        vm.expectRevert(ExclusivityParamsIncorrect.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
+    }
+
     function test_bridge_revert_exclusivityPeriodUnderflow() public {
         tokenParamsV2.quoteExclusivitySeconds = -int256(block.timestamp + 1);
         vm.expectRevert(ExclusivityParamsIncorrect.selector);
         bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
+    }
+
+    function test_bridge_eth_revert_exclusivityEndTimeZero() public {
+        ethParamsV2.quoteExclusivitySeconds = -int256(block.timestamp);
+        vm.expectRevert(ExclusivityParamsIncorrect.selector);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
     }
 
     function test_bridge_eth_revert_exclusivityPeriodUnderflow() public {
