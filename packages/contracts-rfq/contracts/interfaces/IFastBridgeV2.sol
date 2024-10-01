@@ -33,10 +33,12 @@ interface IFastBridgeV2 is IFastBridge {
     /// @param quoteRelayer             Relayer that provided the quote for the transaction
     /// @param quoteExclusivitySeconds  Period of time the quote relayer is guaranteed exclusivity after user's deposit
     /// @param quoteId                  Unique quote identifier used for tracking the quote
+    /// @param callParams               Parameters for the arbitrary call to the destination recipient (if any)
     struct BridgeParamsV2 {
         address quoteRelayer;
         int256 quoteExclusivitySeconds;
         bytes quoteId;
+        bytes callParams;
     }
 
     /// @notice Updated bridge transaction struct to include parameters introduced in FastBridgeV2.

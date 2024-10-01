@@ -124,9 +124,18 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
 
     function createFixturesV2() public virtual {
         // Override in tests with exclusivity params
-        tokenParamsV2 =
-            IFastBridgeV2.BridgeParamsV2({quoteRelayer: address(0), quoteExclusivitySeconds: 0, quoteId: ""});
-        ethParamsV2 = IFastBridgeV2.BridgeParamsV2({quoteRelayer: address(0), quoteExclusivitySeconds: 0, quoteId: ""});
+        tokenParamsV2 = IFastBridgeV2.BridgeParamsV2({
+            quoteRelayer: address(0),
+            quoteExclusivitySeconds: 0,
+            quoteId: bytes(""),
+            callParams: bytes("")
+        });
+        ethParamsV2 = IFastBridgeV2.BridgeParamsV2({
+            quoteRelayer: address(0),
+            quoteExclusivitySeconds: 0,
+            quoteId: bytes(""),
+            callParams: bytes("")
+        });
 
         tokenTx.exclusivityRelayer = address(0);
         tokenTx.exclusivityEndTime = block.timestamp;

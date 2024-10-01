@@ -45,7 +45,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function bridge(BridgeParams memory params) external payable {
         bridge({
             params: params,
-            paramsV2: BridgeParamsV2({quoteRelayer: address(0), quoteExclusivitySeconds: 0, quoteId: bytes("")})
+            paramsV2: BridgeParamsV2({
+                quoteRelayer: address(0),
+                quoteExclusivitySeconds: 0,
+                quoteId: bytes(""),
+                callParams: bytes("")
+            })
         });
     }
 
