@@ -31,6 +31,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @dev to prevent replays
     uint256 public nonce;
+
     // @dev the block the contract was deployed at
     uint256 public immutable deployBlock;
 
@@ -91,18 +92,17 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridge
     function relay(bytes memory request) external payable {
-        relay(request, msg.sender);
+        relay({request: request, relayer: msg.sender});
     }
 
     /// @inheritdoc IFastBridge
     function prove(bytes memory request, bytes32 destTxHash) external {
-        bytes32 transactionId = keccak256(request);
-        prove(transactionId, destTxHash, msg.sender);
+        prove({transactionId: keccak256(request), destTxHash: destTxHash, relayer: msg.sender});
     }
 
     /// @inheritdoc IFastBridgeV2
     function claim(bytes memory request) external {
-        claim(request, address(0));
+        claim({request: request, to: address(0)});
     }
 
     /// @inheritdoc IFastBridge
