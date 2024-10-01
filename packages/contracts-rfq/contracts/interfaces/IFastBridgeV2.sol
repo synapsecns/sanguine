@@ -59,6 +59,7 @@ interface IFastBridgeV2 is IFastBridge {
         uint256 nonce;
         address exclusivityRelayer;
         uint256 exclusivityEndTime;
+        bytes callParams;
     }
 
     event BridgeQuoteDetails(bytes32 indexed transactionId, bytes quoteId);

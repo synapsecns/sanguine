@@ -168,7 +168,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 nonce: senderNonces[params.sender]++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
                 // We checked exclusivityEndTime to be in range (0 .. params.deadline] above, so can safely cast
-                exclusivityEndTime: uint256(exclusivityEndTime)
+                exclusivityEndTime: uint256(exclusivityEndTime),
+                callParams: paramsV2.callParams
             })
         );
         bytes32 transactionId = keccak256(request);
