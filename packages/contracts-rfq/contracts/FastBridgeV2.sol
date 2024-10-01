@@ -144,7 +144,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
 
-        BridgeTransaction memory transaction = getBridgeTransaction(request);
+        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
 
         if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
 
@@ -173,6 +173,13 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
         if (bridgeTxDetails[transactionId].proofRelayer != relayer) revert SenderIncorrect();
         return _timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD;
+    }
+
+    /// @inheritdoc IFastBridge
+    function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory) {
+        // Note: when passing V2 request, this will decode the V1 fields correctly since the new fields were
+        // added as the last fields of the struct and hence the ABI decoder will simply ignore the extra data.
+        return abi.decode(request, (BridgeTransaction));
     }
 
     /// @inheritdoc IFastBridgeV2
@@ -287,9 +294,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         return bridgeRelayDetails[transactionId].relayer != address(0);
     }
 
-    /// @inheritdoc IFastBridge
-    function getBridgeTransaction(bytes memory request) public pure returns (BridgeTransaction memory) {
-        return abi.decode(request, (BridgeTransaction));
+    /// @inheritdoc IFastBridgeV2
+    function getBridgeTransactionV2(bytes memory request) public pure returns (BridgeTransactionV2 memory) {
+        return abi.decode(request, (BridgeTransactionV2));
     }
 
     /// @notice Pulls a requested token from the user to the requested recipient.
