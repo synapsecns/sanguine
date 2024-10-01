@@ -31,54 +31,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @dev to prevent replays
     uint256 public nonce;
+
     // @dev the block the contract was deployed at
     uint256 public immutable deployBlock;
 
-    function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status) {
-        return bridgeTxDetails[transactionId].status;
-    }
-
-    function bridgeProofs(bytes32 transactionId) public view returns (uint96 timestamp, address relayer) {
-        timestamp = bridgeTxDetails[transactionId].proofBlockTimestamp;
-        relayer = bridgeTxDetails[transactionId].proofRelayer;
-    }
-
     constructor(address _owner) Admin(_owner) {
         deployBlock = block.number;
-    }
-
-    /// @notice Pulls a requested token from the user to the requested recipient.
-    /// @dev Be careful of re-entrancy issues when msg.value > 0 and recipient != address(this)
-    function _pullToken(address recipient, address token, uint256 amount) internal returns (uint256 amountPulled) {
-        if (token != UniversalTokenLib.ETH_ADDRESS) {
-            token.assertIsContract();
-            // Record token balance before transfer
-            amountPulled = IERC20(token).balanceOf(recipient);
-            // Token needs to be pulled only if msg.value is zero
-            // This way user can specify WETH as the origin asset
-            IERC20(token).safeTransferFrom(msg.sender, recipient, amount);
-            // Use the difference between the recorded balance and the current balance as the amountPulled
-            amountPulled = IERC20(token).balanceOf(recipient) - amountPulled;
-        } else {
-            // Otherwise, we need to check that ETH amount matches msg.value
-            if (amount != msg.value) revert MsgValueIncorrect();
-            // Transfer value to recipient if not this address
-            if (recipient != address(this)) token.universalTransfer(recipient, amount);
-            // We will forward msg.value in the external call later, if recipient is not this contract
-            amountPulled = msg.value;
-        }
-    }
-
-    /// @inheritdoc IFastBridge
-    function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory) {
-        // Note: when passing V2 request, this will decode the V1 fields correctly since the new fields were
-        // added as the last fields of the struct and hence the ABI decoder will simply ignore the extra data.
-        return abi.decode(request, (BridgeTransaction));
-    }
-
-    /// @inheritdoc IFastBridgeV2
-    function getBridgeTransactionV2(bytes memory request) public pure returns (BridgeTransactionV2 memory) {
-        return abi.decode(request, (BridgeTransactionV2));
     }
 
     /// @inheritdoc IFastBridge
@@ -153,7 +111,68 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridge
     function relay(bytes memory request) external payable {
-        relay(request, msg.sender);
+        relay({request: request, relayer: msg.sender});
+    }
+
+    /// @inheritdoc IFastBridge
+    function prove(bytes memory request, bytes32 destTxHash) external {
+        prove({transactionId: keccak256(request), destTxHash: destTxHash, relayer: msg.sender});
+    }
+
+    /// @inheritdoc IFastBridgeV2
+    function claim(bytes memory request) external {
+        claim({request: request, to: address(0)});
+    }
+
+    /// @inheritdoc IFastBridge
+    function dispute(bytes32 transactionId) external onlyRole(GUARD_ROLE) {
+        if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        if (_timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD) {
+            revert DisputePeriodPassed();
+        }
+
+        // @dev relayer gets slashed effectively if dest relay has gone thru
+        bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
+        bridgeTxDetails[transactionId].proofRelayer = address(0);
+        bridgeTxDetails[transactionId].proofBlockTimestamp = 0;
+        bridgeTxDetails[transactionId].proofBlockNumber = 0;
+
+        emit BridgeProofDisputed(transactionId, msg.sender);
+    }
+
+    /// @inheritdoc IFastBridge
+    function refund(bytes memory request) external {
+        bytes32 transactionId = keccak256(request);
+
+        BridgeTransaction memory transaction = getBridgeTransaction(request);
+
+        if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
+
+        if (hasRole(REFUNDER_ROLE, msg.sender)) {
+            // Refunder can refund if deadline has passed
+            if (block.timestamp <= transaction.deadline) revert DeadlineNotExceeded();
+        } else {
+            // Permissionless refund is allowed after REFUND_DELAY
+            if (block.timestamp <= transaction.deadline + REFUND_DELAY) revert DeadlineNotExceeded();
+        }
+
+        // if all checks passed, set to REFUNDED status
+        bridgeTxDetails[transactionId].status = BridgeStatus.REFUNDED;
+
+        // transfer origin collateral back to original sender
+        address to = transaction.originSender;
+        address token = transaction.originToken;
+        uint256 amount = transaction.originAmount + transaction.originFeeAmount;
+        token.universalTransfer(to, amount);
+
+        emit BridgeDepositRefunded(transactionId, to, token, amount);
+    }
+
+    /// @inheritdoc IFastBridge
+    function canClaim(bytes32 transactionId, address relayer) external view returns (bool) {
+        if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        if (bridgeTxDetails[transactionId].proofRelayer != relayer) revert SenderIncorrect();
+        return _timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD;
     }
 
     /// @inheritdoc IFastBridgeV2
@@ -210,18 +229,6 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridgeV2
-    function bridgeRelays(bytes32 transactionId) public view returns (bool) {
-        // has this transactionId been relayed?
-        return bridgeRelayDetails[transactionId].relayer != address(0);
-    }
-
-    /// @inheritdoc IFastBridge
-    function prove(bytes memory request, bytes32 destTxHash) external {
-        bytes32 transactionId = keccak256(request);
-        prove(transactionId, destTxHash, msg.sender);
-    }
-
-    /// @inheritdoc IFastBridgeV2
     function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
         // update bridge tx status given proof provided
         if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
@@ -231,30 +238,6 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         bridgeTxDetails[transactionId].proofRelayer = relayer;
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
-    }
-
-    /// @notice Calculates time since proof submitted
-    /// @dev proof.timestamp stores casted uint40(block.timestamp) block timestamps for gas optimization
-    ///      _timeSince(proof) can accomodate rollover case when block.timestamp > type(uint40).max but
-    ///      proof.timestamp < type(uint40).max via unchecked statement
-    /// @param proofBlockTimestamp The bridge proof block timestamp
-    /// @return delta Time delta since proof submitted
-    function _timeSince(uint40 proofBlockTimestamp) internal view returns (uint256 delta) {
-        unchecked {
-            delta = uint40(block.timestamp) - proofBlockTimestamp;
-        }
-    }
-
-    /// @inheritdoc IFastBridge
-    function canClaim(bytes32 transactionId, address relayer) external view returns (bool) {
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
-        if (bridgeTxDetails[transactionId].proofRelayer != relayer) revert SenderIncorrect();
-        return _timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD;
-    }
-
-    /// @inheritdoc IFastBridgeV2
-    function claim(bytes memory request) external {
-        claim(request, address(0));
     }
 
     /// @inheritdoc IFastBridge
@@ -289,47 +272,57 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         emit BridgeDepositClaimed(transactionId, bridgeTxDetails[transactionId].proofRelayer, to, token, amount);
     }
 
-    /// @inheritdoc IFastBridge
-    function dispute(bytes32 transactionId) external onlyRole(GUARD_ROLE) {
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
-        if (_timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD) {
-            revert DisputePeriodPassed();
-        }
+    function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status) {
+        return bridgeTxDetails[transactionId].status;
+    }
 
-        // @dev relayer gets slashed effectively if dest relay has gone thru
-        bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
-        bridgeTxDetails[transactionId].proofRelayer = address(0);
-        bridgeTxDetails[transactionId].proofBlockTimestamp = 0;
-        bridgeTxDetails[transactionId].proofBlockNumber = 0;
+    function bridgeProofs(bytes32 transactionId) public view returns (uint96 timestamp, address relayer) {
+        timestamp = bridgeTxDetails[transactionId].proofBlockTimestamp;
+        relayer = bridgeTxDetails[transactionId].proofRelayer;
+    }
 
-        emit BridgeProofDisputed(transactionId, msg.sender);
+    /// @inheritdoc IFastBridgeV2
+    function bridgeRelays(bytes32 transactionId) public view returns (bool) {
+        // has this transactionId been relayed?
+        return bridgeRelayDetails[transactionId].relayer != address(0);
     }
 
     /// @inheritdoc IFastBridge
-    function refund(bytes memory request) external {
-        bytes32 transactionId = keccak256(request);
+    function getBridgeTransaction(bytes memory request) public pure returns (BridgeTransaction memory) {
+        return abi.decode(request, (BridgeTransaction));
+    }
 
-        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
-
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
-
-        if (hasRole(REFUNDER_ROLE, msg.sender)) {
-            // Refunder can refund if deadline has passed
-            if (block.timestamp <= transaction.deadline) revert DeadlineNotExceeded();
+    /// @notice Pulls a requested token from the user to the requested recipient.
+    /// @dev Be careful of re-entrancy issues when msg.value > 0 and recipient != address(this)
+    function _pullToken(address recipient, address token, uint256 amount) internal returns (uint256 amountPulled) {
+        if (token != UniversalTokenLib.ETH_ADDRESS) {
+            token.assertIsContract();
+            // Record token balance before transfer
+            amountPulled = IERC20(token).balanceOf(recipient);
+            // Token needs to be pulled only if msg.value is zero
+            // This way user can specify WETH as the origin asset
+            IERC20(token).safeTransferFrom(msg.sender, recipient, amount);
+            // Use the difference between the recorded balance and the current balance as the amountPulled
+            amountPulled = IERC20(token).balanceOf(recipient) - amountPulled;
         } else {
-            // Permissionless refund is allowed after REFUND_DELAY
-            if (block.timestamp <= transaction.deadline + REFUND_DELAY) revert DeadlineNotExceeded();
+            // Otherwise, we need to check that ETH amount matches msg.value
+            if (amount != msg.value) revert MsgValueIncorrect();
+            // Transfer value to recipient if not this address
+            if (recipient != address(this)) token.universalTransfer(recipient, amount);
+            // We will forward msg.value in the external call later, if recipient is not this contract
+            amountPulled = msg.value;
         }
+    }
 
-        // if all checks passed, set to REFUNDED status
-        bridgeTxDetails[transactionId].status = BridgeStatus.REFUNDED;
-
-        // transfer origin collateral back to original sender
-        address to = transaction.originSender;
-        address token = transaction.originToken;
-        uint256 amount = transaction.originAmount + transaction.originFeeAmount;
-        token.universalTransfer(to, amount);
-
-        emit BridgeDepositRefunded(transactionId, to, token, amount);
+    /// @notice Calculates time since proof submitted
+    /// @dev proof.timestamp stores casted uint40(block.timestamp) block timestamps for gas optimization
+    ///      _timeSince(proof) can accomodate rollover case when block.timestamp > type(uint40).max but
+    ///      proof.timestamp < type(uint40).max via unchecked statement
+    /// @param proofBlockTimestamp The bridge proof block timestamp
+    /// @return delta Time delta since proof submitted
+    function _timeSince(uint40 proofBlockTimestamp) internal view returns (uint256 delta) {
+        unchecked {
+            delta = uint40(block.timestamp) - proofBlockTimestamp;
+        }
     }
 }

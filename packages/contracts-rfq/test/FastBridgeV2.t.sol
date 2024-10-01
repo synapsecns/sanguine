@@ -2,6 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
+
+// solhint-disable-next-line no-unused-import
 import {IFastBridgeV2} from "../contracts/interfaces/IFastBridgeV2.sol";
 
 import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.sol";

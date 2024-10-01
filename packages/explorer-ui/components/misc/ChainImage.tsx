@@ -12,6 +12,8 @@ export const ChainImage = ({ chainId, imgSize = 'w-4 h-4', className }) => {
         src={chain.chainImg}
         className={`${imgSize} rounded-full mr-2 inline ${className}`}
         alt={chain.name}
+        height={16}
+        width={16}
       />
     )
   } else {
