@@ -295,26 +295,6 @@ func (c *wsClient) handleSendQuote(ctx context.Context, content json.RawMessage)
 	return nil
 }
 
-func (c *wsClient) trySendPong(lastPing time.Time) (err error) {
-	if time.Since(lastPing) > pingPeriod && !lastPing.IsZero() {
-		err = c.conn.Close()
-		if err != nil {
-			return fmt.Errorf("error closing websocket connection: %w", err)
-		}
-		close(c.doneChan)
-		return fmt.Errorf("ping not received in time")
-	}
-	pingMsg := model.ActiveRFQMessage{
-		Op: PongOp,
-	}
-	err = c.conn.WriteJSON(pingMsg)
-	if err != nil {
-		return fmt.Errorf("error sending ping message: %w", err)
-	}
-
-	return nil
-}
-
 func getSuccessResponse(op string) model.ActiveRFQMessage {
 	return model.ActiveRFQMessage{
 		Op:      op,
