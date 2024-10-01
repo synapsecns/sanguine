@@ -41,72 +41,10 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridge
     function bridge(BridgeParams memory params) external payable {
-        BridgeParamsV2 memory defaultParamsV2 =
-            BridgeParamsV2({quoteRelayer: address(0), quoteExclusivitySeconds: 0, quoteId: bytes("")});
-        bridge(params, defaultParamsV2);
-    }
-
-    /// @inheritdoc IFastBridgeV2
-    // TODO: reduce cyclomatic complexity alongside arbitrary call
-    // solhint-disable-next-line code-complexity
-    function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
-        // check bridge params
-        if (params.dstChainId == block.chainid) revert ChainIncorrect();
-        if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
-        if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
-        if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
-        if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
-        // quoteRelayer and quoteExclusivitySeconds must be both set or both not set
-        if ((paramsV2.quoteRelayer == address(0)) != (paramsV2.quoteExclusivitySeconds == 0)) {
-            revert ExclusivityParamsIncorrect();
-        }
-
-        // transfer tokens to bridge contract
-        // @dev use returned originAmount in request in case of transfer fees
-        uint256 originAmount = _pullToken(address(this), params.originToken, params.originAmount);
-
-        // track amount of origin token owed to protocol
-        uint256 originFeeAmount;
-        if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
-        originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
-
-        // Calculate exclusivity end time only if exclusivity params are set
-        uint256 exclusivityEndTime =
-            paramsV2.quoteExclusivitySeconds == 0 ? 0 : block.timestamp + paramsV2.quoteExclusivitySeconds;
-        // set status to requested
-        bytes memory request = abi.encode(
-            BridgeTransactionV2({
-                originChainId: uint32(block.chainid),
-                destChainId: params.dstChainId,
-                originSender: params.sender,
-                destRecipient: params.to,
-                originToken: params.originToken,
-                destToken: params.destToken,
-                originAmount: originAmount,
-                destAmount: params.destAmount,
-                originFeeAmount: originFeeAmount,
-                sendChainGas: params.sendChainGas,
-                deadline: params.deadline,
-                nonce: nonce++, // increment nonce on every bridge
-                exclusivityRelayer: paramsV2.quoteRelayer,
-                exclusivityEndTime: exclusivityEndTime
-            })
-        );
-        bytes32 transactionId = keccak256(request);
-        bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
-
-        emit BridgeRequested(
-            transactionId,
-            params.sender,
-            request,
-            params.dstChainId,
-            params.originToken,
-            params.destToken,
-            originAmount,
-            params.destAmount,
-            params.sendChainGas
-        );
-        emit BridgeQuoteDetails(transactionId, paramsV2.quoteId);
+        bridge({
+            params: params,
+            paramsV2: BridgeParamsV2({quoteRelayer: address(0), quoteExclusivitySeconds: 0, quoteId: bytes("")})
+        });
     }
 
     /// @inheritdoc IFastBridge
@@ -180,6 +118,69 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // Note: when passing V2 request, this will decode the V1 fields correctly since the new fields were
         // added as the last fields of the struct and hence the ABI decoder will simply ignore the extra data.
         return abi.decode(request, (BridgeTransaction));
+    }
+
+    /// @inheritdoc IFastBridgeV2
+    // TODO: reduce cyclomatic complexity alongside arbitrary call
+    // solhint-disable-next-line code-complexity
+    function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
+        // check bridge params
+        if (params.dstChainId == block.chainid) revert ChainIncorrect();
+        if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
+        if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
+        if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
+        if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
+        // quoteRelayer and quoteExclusivitySeconds must be both set or both not set
+        if ((paramsV2.quoteRelayer == address(0)) != (paramsV2.quoteExclusivitySeconds == 0)) {
+            revert ExclusivityParamsIncorrect();
+        }
+
+        // transfer tokens to bridge contract
+        // @dev use returned originAmount in request in case of transfer fees
+        uint256 originAmount = _pullToken(address(this), params.originToken, params.originAmount);
+
+        // track amount of origin token owed to protocol
+        uint256 originFeeAmount;
+        if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
+        originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
+
+        // Calculate exclusivity end time only if exclusivity params are set
+        uint256 exclusivityEndTime =
+            paramsV2.quoteExclusivitySeconds == 0 ? 0 : block.timestamp + paramsV2.quoteExclusivitySeconds;
+        // set status to requested
+        bytes memory request = abi.encode(
+            BridgeTransactionV2({
+                originChainId: uint32(block.chainid),
+                destChainId: params.dstChainId,
+                originSender: params.sender,
+                destRecipient: params.to,
+                originToken: params.originToken,
+                destToken: params.destToken,
+                originAmount: originAmount,
+                destAmount: params.destAmount,
+                originFeeAmount: originFeeAmount,
+                sendChainGas: params.sendChainGas,
+                deadline: params.deadline,
+                nonce: nonce++, // increment nonce on every bridge
+                exclusivityRelayer: paramsV2.quoteRelayer,
+                exclusivityEndTime: exclusivityEndTime
+            })
+        );
+        bytes32 transactionId = keccak256(request);
+        bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
+
+        emit BridgeRequested(
+            transactionId,
+            params.sender,
+            request,
+            params.dstChainId,
+            params.originToken,
+            params.destToken,
+            originAmount,
+            params.destAmount,
+            params.sendChainGas
+        );
+        emit BridgeQuoteDetails(transactionId, paramsV2.quoteId);
     }
 
     /// @inheritdoc IFastBridgeV2
