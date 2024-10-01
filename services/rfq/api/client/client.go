@@ -29,6 +29,8 @@ import (
 
 var logger = log.Logger("rfq-client")
 
+const pingPeriod = 20 * time.Second
+
 // AuthenticatedClient is an interface for the RFQ API.
 // It provides methods for creating, retrieving and updating quotes.
 type AuthenticatedClient interface {
@@ -268,6 +270,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 
 	readChan := make(chan []byte)
 	go c.listenWsMessages(ctx, conn, readChan)
+	go c.sendPings(ctx, reqChan)
 
 	for {
 		select {
@@ -285,7 +288,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 			if !ok {
 				return nil
 			}
-			err = c.handleWsMessage(ctx, msg, reqChan, respChan)
+			err = c.handleWsMessage(ctx, msg, respChan)
 			if err != nil {
 				return fmt.Errorf("error handling websocket message: %w", err)
 			}
@@ -293,6 +296,22 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 	}
 }
 
+func (c *clientImpl) sendPings(ctx context.Context, reqChan chan *model.ActiveRFQMessage) (err error) {
+	pingTicker := time.NewTicker(pingPeriod)
+	defer pingTicker.Stop()
+
+	for {
+		select {
+		case <-pingTicker.C:
+			pingMsg := model.ActiveRFQMessage{
+				Op: rest.PingOp,
+			}
+			reqChan <- &pingMsg
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
 func (c *clientImpl) listenWsMessages(ctx context.Context, conn *websocket.Conn, readChan chan []byte) {
 	defer close(readChan)
 	for {
@@ -311,24 +330,11 @@ func (c *clientImpl) listenWsMessages(ctx context.Context, conn *websocket.Conn,
 	}
 }
 
-func (c *clientImpl) handleWsMessage(ctx context.Context, msg []byte, reqChan, respChan chan *model.ActiveRFQMessage) (err error) {
+func (c *clientImpl) handleWsMessage(ctx context.Context, msg []byte, respChan chan *model.ActiveRFQMessage) (err error) {
 	var rfqMsg model.ActiveRFQMessage
 	err = json.Unmarshal(msg, &rfqMsg)
 	if err != nil {
 		return fmt.Errorf("error unmarshaling message: %w", err)
-	}
-
-	// automatically send the pong
-	if rfqMsg.Op == rest.PingOp {
-		pongMsg := model.ActiveRFQMessage{
-			Op: rest.PongOp,
-		}
-		select {
-		case reqChan <- &pongMsg:
-		case <-ctx.Done():
-			return nil
-		}
-		return nil
 	}
 
 	select {

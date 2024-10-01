@@ -29,7 +29,8 @@ type wsClient struct {
 	requestChan   chan *model.WsRFQRequest
 	responseChans *xsync.MapOf[string, chan *model.WsRFQResponse]
 	doneChan      chan struct{}
-	lastPong      time.Time
+	pingTicker    *time.Ticker
+	lastPing      time.Time
 }
 
 func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager, handler metrics.Handler) *wsClient {
@@ -41,6 +42,7 @@ func newWsClient(relayerAddr string, conn *websocket.Conn, pubsub PubSubManager,
 		requestChan:   make(chan *model.WsRFQRequest),
 		responseChans: xsync.NewMapOf[chan *model.WsRFQResponse](),
 		doneChan:      make(chan struct{}),
+		pingTicker:    time.NewTicker(pingPeriod),
 	}
 }
 
@@ -90,17 +92,19 @@ const (
 	RequestQuoteOp = "request_quote"
 	// SendQuoteOp is the operation for a send quote message.
 	SendQuoteOp = "send_quote"
-	// PingPeriod is the period for a ping message.
-	PingPeriod = 15 * time.Second
+	// pingPeriod is the period for a ping message.
+	pingPeriod = 1 * time.Minute
 )
 
 // Run runs the WebSocket client.
 func (c *wsClient) Run(ctx context.Context) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
 	messageChan := make(chan []byte)
-	pingTicker := time.NewTicker(PingPeriod)
-	defer pingTicker.Stop()
+
+	defer func() {
+		cancel()
+		c.pingTicker.Stop()
+	}()
 
 	// poll messages from websocket in background
 	go pollWsMessages(c.conn, messageChan)
@@ -125,11 +129,9 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 				logger.Error("Error handling relayer message: %s", err)
 				return fmt.Errorf("error handling relayer message: %w", err)
 			}
-		case <-pingTicker.C:
-			err = c.trySendPing(c.lastPong)
-			if err != nil {
-				logger.Error("Error sending ping message: %w", err)
-			}
+		case <-c.pingTicker.C:
+			// ping timed out, close the connection
+			cancel()
 		}
 	}
 }
@@ -181,6 +183,13 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 	}
 
 	switch rfqMsg.Op {
+	case PingOp:
+		c.lastPing = time.Now()
+		resp := c.handlePing(ctx)
+		err = c.conn.WriteJSON(resp)
+		if err != nil {
+			return fmt.Errorf("error sending ping response: %w", err)
+		}
 	case SubscribeOp:
 		resp := c.handleSubscribe(ctx, rfqMsg.Content)
 		err = c.conn.WriteJSON(resp)
@@ -197,13 +206,24 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 		err = c.handleSendQuote(ctx, rfqMsg.Content)
 		logger.Errorf("error handling send quote: %v", err)
 	case PongOp:
-		c.lastPong = time.Now()
+		c.lastPing = time.Now()
 	default:
 		logger.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
 		return nil
 	}
 
 	return nil
+}
+
+func (c *wsClient) handlePing(ctx context.Context) (resp model.ActiveRFQMessage) {
+	_, span := c.handler.Tracer().Start(ctx, "handlePing", trace.WithAttributes(
+		attribute.String("relayer_address", c.relayerAddr),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
+	return getSuccessResponse(PongOp)
 }
 
 func (c *wsClient) handleSubscribe(ctx context.Context, content json.RawMessage) (resp model.ActiveRFQMessage) {
@@ -275,17 +295,17 @@ func (c *wsClient) handleSendQuote(ctx context.Context, content json.RawMessage)
 	return nil
 }
 
-func (c *wsClient) trySendPing(lastPong time.Time) (err error) {
-	if time.Since(lastPong) > PingPeriod && !lastPong.IsZero() {
+func (c *wsClient) trySendPong(lastPing time.Time) (err error) {
+	if time.Since(lastPing) > pingPeriod && !lastPing.IsZero() {
 		err = c.conn.Close()
 		if err != nil {
 			return fmt.Errorf("error closing websocket connection: %w", err)
 		}
 		close(c.doneChan)
-		return fmt.Errorf("pong not received in time")
+		return fmt.Errorf("ping not received in time")
 	}
 	pingMsg := model.ActiveRFQMessage{
-		Op: PingOp,
+		Op: PongOp,
 	}
 	err = c.conn.WriteJSON(pingMsg)
 	if err != nil {
