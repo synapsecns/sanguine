@@ -29,7 +29,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @notice Relay details on destination chain
     mapping(bytes32 => BridgeRelay) public bridgeRelayDetails;
     /// @notice Unique bridge nonces tracked per originSender
-    mapping(address => uint96) public senderNonces;
+    mapping(address => uint256) public senderNonces;
 
     // @dev the block the contract was deployed at
     uint256 public immutable deployBlock;
