@@ -12,7 +12,7 @@ import (
 var EthAddress = common.HexToAddress("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE")
 
 // QuoteRequestToAttributes converts a quote request to attributes.
-func QuoteRequestToAttributes(request reldb.QuoteRequest) []attribute.KeyValue {
+func QuoteRequestToAttributes(request *reldb.QuoteRequest) []attribute.KeyValue {
 	//nolint: gosec
 	return []attribute.KeyValue{
 		attribute.Int64("block_number", int64(request.BlockNumber)),

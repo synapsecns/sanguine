@@ -840,11 +840,22 @@ func (c Config) GetVolumeLimit(chainID int, addr common.Address) *big.Int {
 		}
 	}
 
-	volumeLimitFlt := new(big.Float).SetFloat64(c.VolumeLimit)
+	volumeLimitFlt := new(big.Float).SetFloat64(chainCfg.VolumeLimit)
 
 	// Scale the minBalance by the token decimals.
 	//nolint: mnd
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
 	volumeLimitScaled, _ := new(big.Float).Mul(volumeLimitFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return volumeLimitScaled
+}
+
+const defaultRPCConfirmations = 1
+
+// GetRPCConfirmations returns the RPC confirmations for the given chain.
+func (c Config) GetRPCConfirmations(chainID int) int {
+	chainConfig, ok := c.Chains[chainID]
+	if !ok {
+		return defaultRPCConfirmations
+	}
+	return chainConfig.RPCConfirmations
 }

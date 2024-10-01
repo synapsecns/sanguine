@@ -287,6 +287,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 					},
 				},
 				NativeToken: "ETH",
+				VolumeLimit: 10_000,
 			},
 			destBackendChainID: {
 				RFQAddress: i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
@@ -304,6 +305,7 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 					},
 				},
 				NativeToken: "ETH",
+				VolumeLimit: 10_000,
 			},
 		},
 		OmniRPCURL: i.omniServer,
@@ -329,7 +331,6 @@ func (i *IntegrationSuite) getRelayerConfig() relconfig.Config {
 			TokenPriceCacheTTLSeconds: 60,
 		},
 		RebalanceInterval: 0,
-		VolumeLimit:       10_000,
 	}
 }
 
