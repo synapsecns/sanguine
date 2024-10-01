@@ -149,7 +149,7 @@ func (l *limiterImpl) getNumberOfConfirmationsToWait(ctx context.Context, reques
 	}
 
 	volumeLimitForChain := l.cfg.GetVolumeLimit(int(request.Transaction.OriginChainId), request.Transaction.OriginToken)
-	if volumeLimitForChain.Cmp(big.NewInt(-1)) == 0 {
+	if volumeLimitForChain.Cmp(big.NewInt(-1)) == 0 || volumeLimitForChain.Cmp(big.NewInt(0)) == 0 {
 		return 0, nil
 	}
 
