@@ -278,8 +278,9 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 			return nil
 		case msg, ok := <-reqChan:
 			if !ok {
-				return nil
+				return fmt.Errorf("error reading from reqChan: %w", ctx.Err())
 			}
+			fmt.Printf("sending message to websocket: %+v\n", msg)
 			err := conn.WriteJSON(msg)
 			if err != nil {
 				return fmt.Errorf("error sending message to websocket: %w", err)

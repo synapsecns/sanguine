@@ -131,6 +131,8 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			}
 		case <-c.pingTicker.C:
 			// ping timed out, close the connection
+			_, span := c.handler.Tracer().Start(ctx, "pingTimeout")
+			defer metrics.EndSpanWithErr(span, err)
 			cancel()
 		}
 	}
@@ -176,6 +178,14 @@ func (c *wsClient) sendRelayerRequest(ctx context.Context, req *model.WsRFQReque
 // handleRelayerMessage handles messages from the relayer.
 // An error returned will result in the websocket connection being closed.
 func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err error) {
+	_, span := c.handler.Tracer().Start(ctx, "handleRelayerMessage", trace.WithAttributes(
+		attribute.String("relayer_address", c.relayerAddr),
+		attribute.String("message", string(msg)),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	var rfqMsg model.ActiveRFQMessage
 	err = json.Unmarshal(msg, &rfqMsg)
 	if err != nil {
@@ -205,8 +215,6 @@ func (c *wsClient) handleRelayerMessage(ctx context.Context, msg []byte) (err er
 	case SendQuoteOp:
 		err = c.handleSendQuote(ctx, rfqMsg.Content)
 		logger.Errorf("error handling send quote: %v", err)
-	case PongOp:
-		c.lastPing = time.Now()
 	default:
 		logger.Errorf("received unexpected operation from relayer: %s", rfqMsg.Op)
 		return nil

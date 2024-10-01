@@ -285,7 +285,7 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 			return nil
 		case msg, ok := <-respChan:
 			if !ok {
-				return nil
+				return fmt.Errorf("error subscribing to active quotes: %w", ctx.Err())
 			}
 			if msg == nil {
 				continue
