@@ -6,7 +6,9 @@ import {IFastBridgeV2Errors} from "../contracts/interfaces/IFastBridgeV2Errors.s
 import {FastBridgeTest} from "./FastBridge.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2ParityTest is FastBridgeTest, IFastBridgeV2Errors {
+/// @notice Contract was updated to be abstract to prevent these tests from being run,
+/// as the FastBridgeV2 contract is no longer fully backwards compatible with FastBridge.
+abstract contract FastBridgeV2ParityTest is FastBridgeTest, IFastBridgeV2Errors {
     address public anotherRelayer = makeAddr("Another Relayer");
 
     function deployFastBridge() internal virtual override returns (address) {

@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {FastBridgeV2SrcBaseTest, IFastBridge} from "./FastBridgeV2.Src.Base.t.sol";
-import {IFastBridgeV2} from "../contracts/interfaces/IFastBridgeV2.sol";
+import {FastBridgeV2SrcBaseTest, IFastBridgeV2} from "./FastBridgeV2.Src.Base.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 /// @notice This test is used to estimate the gas cost of FastBridgeV2 source chain functions.
@@ -10,12 +9,13 @@ import {IFastBridgeV2} from "../contracts/interfaces/IFastBridgeV2.sol";
 contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
     uint256 public constant BLOCK_TIME = 12 seconds;
     uint256 public constant INITIAL_RELAYER_BALANCE = 100 ether;
+    uint256 public constant EXCLUSIVITY_PERIOD = 60 seconds;
 
-    IFastBridge.BridgeTransaction public bridgedTokenTx;
-    IFastBridge.BridgeTransaction public bridgedEthTx;
+    IFastBridgeV2.BridgeTransactionV2 internal bridgedTokenTx;
+    IFastBridgeV2.BridgeTransactionV2 internal bridgedEthTx;
 
-    IFastBridge.BridgeTransaction public provenTokenTx;
-    IFastBridge.BridgeTransaction public provenEthTx;
+    IFastBridgeV2.BridgeTransactionV2 internal provenTokenTx;
+    IFastBridgeV2.BridgeTransactionV2 internal provenEthTx;
 
     uint256 public initialUserBalanceToken;
     uint256 public initialUserBalanceEth;
@@ -45,6 +45,17 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         // Next nonce for userA tx would be 4 (either token or eth)
         tokenTx.nonce = 4;
         ethTx.nonce = 4;
+    }
+
+    function createFixturesV2() public virtual override {
+        super.createFixturesV2();
+        bridgedTokenTx.exclusivityEndTime = block.timestamp;
+        provenTokenTx.exclusivityEndTime = block.timestamp;
+        bridgedEthTx.exclusivityEndTime = block.timestamp;
+        provenEthTx.exclusivityEndTime = block.timestamp;
+        // Actual tx will be submitted one block later
+        tokenTx.exclusivityEndTime = block.timestamp + BLOCK_TIME;
+        ethTx.exclusivityEndTime = block.timestamp + BLOCK_TIME;
     }
 
     function mintTokens() public virtual override {
@@ -87,6 +98,18 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
 
     function test_bridge_token() public {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
+        assertEq(fastBridge.bridgeStatuses(getTxId(tokenTx)), IFastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(srcToken.balanceOf(userA), initialUserBalanceToken - tokenParams.originAmount);
+        assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken + tokenParams.originAmount);
+    }
+
+    function test_bridge_token_withExclusivity() public {
+        tokenParamsV2.quoteRelayer = relayerA;
+        tokenParamsV2.quoteExclusivitySeconds = int256(EXCLUSIVITY_PERIOD);
+        tokenParamsV2.quoteId = bytes("Created by Relayer A");
+        tokenTx.exclusivityRelayer = relayerA;
+        tokenTx.exclusivityEndTime = block.timestamp + EXCLUSIVITY_PERIOD;
+        bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
         assertEq(fastBridge.bridgeStatuses(getTxId(tokenTx)), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(srcToken.balanceOf(userA), initialUserBalanceToken - tokenParams.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken + tokenParams.originAmount);
@@ -156,6 +179,18 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
 
     function test_bridge_eth() public {
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        assertEq(fastBridge.bridgeStatuses(getTxId(ethTx)), IFastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(userA.balance, initialUserBalanceEth - ethParams.originAmount);
+        assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth + ethParams.originAmount);
+    }
+
+    function test_bridge_eth_withExclusivity() public {
+        ethParamsV2.quoteRelayer = relayerA;
+        ethParamsV2.quoteExclusivitySeconds = int256(EXCLUSIVITY_PERIOD);
+        ethParamsV2.quoteId = bytes("Created by Relayer A");
+        ethTx.exclusivityRelayer = relayerA;
+        ethTx.exclusivityEndTime = block.timestamp + EXCLUSIVITY_PERIOD;
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
         assertEq(fastBridge.bridgeStatuses(getTxId(ethTx)), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(userA.balance, initialUserBalanceEth - ethParams.originAmount);
         assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth + ethParams.originAmount);
