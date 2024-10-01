@@ -249,7 +249,7 @@ func (c *wsClient) handleUnsubscribe(ctx context.Context, content json.RawMessag
 }
 
 func (c *wsClient) handleSendQuote(ctx context.Context, content json.RawMessage) (err error) {
-	ctx, span := c.handler.Tracer().Start(ctx, "handleSendQuote", trace.WithAttributes(
+	_, span := c.handler.Tracer().Start(ctx, "handleSendQuote", trace.WithAttributes(
 		attribute.String("relayer_address", c.relayerAddr),
 	))
 	defer func() {
