@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/sync/errgroup"
 )
 
 // WsClient is a client for the WebSocket API.
@@ -98,16 +99,49 @@ const (
 
 // Run runs the WebSocket client.
 func (c *wsClient) Run(ctx context.Context) (err error) {
-	ctx, cancel := context.WithCancel(ctx)
 	messageChan := make(chan []byte)
 
-	defer func() {
-		cancel()
-		c.pingTicker.Stop()
-	}()
+	g, gctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		err := pollWsMessages(gctx, c.conn, messageChan)
+		if err != nil {
+			return fmt.Errorf("error polling websocket messages: %w", err)
+		}
+		return nil
+	})
+	g.Go(func() error {
+		err := c.processWs(gctx, messageChan)
+		if err != nil {
+			return fmt.Errorf("error processing websocket messages: %w", err)
+		}
+		return nil
+	})
 
-	// poll messages from websocket in background
-	go pollWsMessages(c.conn, messageChan)
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("error running websocket client: %w", err)
+	}
+
+	return nil
+}
+
+func pollWsMessages(ctx context.Context, conn *websocket.Conn, messageChan chan []byte) (err error) {
+	defer close(messageChan)
+	for {
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			return fmt.Errorf("error reading websocket message: %w", err)
+		}
+		select {
+		case <-ctx.Done():
+			return nil
+		case messageChan <- msg:
+		}
+	}
+}
+
+func (c *wsClient) processWs(ctx context.Context, messageChan chan []byte) (err error) {
+	defer c.pingTicker.Stop()
 
 	for {
 		select {
@@ -117,7 +151,7 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 				return fmt.Errorf("error closing websocket connection: %w", err)
 			}
 			close(c.doneChan)
-			return nil
+			return fmt.Errorf("websocket client is closed")
 		case req := <-c.requestChan:
 			err = c.sendRelayerRequest(ctx, req)
 			if err != nil {
@@ -133,20 +167,7 @@ func (c *wsClient) Run(ctx context.Context) (err error) {
 			// ping timed out, close the connection
 			_, span := c.handler.Tracer().Start(ctx, "pingTimeout")
 			defer metrics.EndSpanWithErr(span, err)
-			cancel()
 		}
-	}
-}
-
-func pollWsMessages(conn *websocket.Conn, messageChan chan []byte) {
-	defer close(messageChan)
-	for {
-		_, msg, err := conn.ReadMessage()
-		if err != nil {
-			logger.Error("Error reading websocket message: %s", err)
-			return
-		}
-		messageChan <- msg
 	}
 }
 
