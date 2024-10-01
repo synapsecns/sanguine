@@ -191,7 +191,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // Check the deadline for relay to happen
         if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
         // Check the exclusivity period, if it is still ongoing
-        if (block.timestamp <= transaction.exclusivityEndTime && relayer != transaction.exclusivityRelayer) {
+        // forgefmt: disable-next-item
+        if (
+            transaction.exclusivityRelayer != address(0) &&
+            transaction.exclusivityRelayer != relayer &&
+            block.timestamp <= transaction.exclusivityEndTime
+        ) {
             revert ExclusivityPeriodNotPassed();
         }
         // mark bridge transaction as relayed
