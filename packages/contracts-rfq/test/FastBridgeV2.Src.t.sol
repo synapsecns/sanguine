@@ -137,8 +137,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     }
 
     function test_bridge_userSpecificNonce() public {
-        vm.skip(true); // TODO: unskip when implemented
         bridge({caller: userA, msgValue: 0, params: tokenParams});
+        assertEq(fastBridge.senderNonces(userA), 1);
+        assertEq(fastBridge.senderNonces(userB), 0);
         // UserB nonce is 0
         ethTx.nonce = 0;
         ethParams.sender = userB;
@@ -146,6 +147,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
         bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams});
+        assertEq(fastBridge.senderNonces(userA), 1);
+        assertEq(fastBridge.senderNonces(userB), 1);
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         checkEthBalancesAfterBridge(userB);
     }
