@@ -47,7 +47,7 @@ type UnauthenticatedClient interface {
 	GetSpecificQuote(ctx context.Context, q *model.GetQuoteSpecificRequest) ([]*model.GetQuoteResponse, error)
 	GetQuoteByRelayerAddress(ctx context.Context, relayerAddr string) ([]*model.GetQuoteResponse, error)
 	GetRFQContracts(ctx context.Context) (*model.GetContractsResponse, error)
-	PutRFQRequest(ctx context.Context, q *model.PutRFQRequest) (*model.PutUserQuoteResponse, error)
+	PutRFQRequest(ctx context.Context, q *model.PutRFQRequest) (*model.PutRFQResponse, error)
 	resty() *resty.Client
 }
 
@@ -428,8 +428,8 @@ func (c unauthenticatedClient) GetRFQContracts(ctx context.Context) (*model.GetC
 	return contracts, nil
 }
 
-func (c unauthenticatedClient) PutRFQRequest(ctx context.Context, q *model.PutRFQRequest) (*model.PutUserQuoteResponse, error) {
-	var response model.PutUserQuoteResponse
+func (c unauthenticatedClient) PutRFQRequest(ctx context.Context, q *model.PutRFQRequest) (*model.PutRFQResponse, error) {
+	var response model.PutRFQResponse
 	resp, err := c.rClient.R().
 		SetContext(ctx).
 		SetBody(q).

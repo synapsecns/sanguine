@@ -496,7 +496,7 @@ const (
 // @Tags quotes
 // @Accept json
 // @Produce json
-// @Success 200 {object} model.PutUserQuoteResponse
+// @Success 200 {object} model.PutRFQResponse
 // @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
 // @Router /rfq [put].
 //
@@ -549,10 +549,10 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 	quote, _ := getBestQuote(activeQuote, passiveQuote)
 
 	// construct the response
-	var resp model.PutUserQuoteResponse
+	var resp model.PutRFQResponse
 	if quote == nil {
 		span.AddEvent("no quotes found")
-		resp = model.PutUserQuoteResponse{
+		resp = model.PutRFQResponse{
 			Success: false,
 			Reason:  "no quotes found",
 		}
@@ -565,7 +565,7 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 			attribute.String("quote_type", quoteType),
 			attribute.String("quote_dest_amount", *quote.DestAmount),
 		)
-		resp = model.PutUserQuoteResponse{
+		resp = model.PutRFQResponse{
 			Success:        true,
 			QuoteType:      quoteType,
 			DestAmount:     *quote.DestAmount,

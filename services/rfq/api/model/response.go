@@ -50,12 +50,12 @@ type GetContractsResponse struct {
 // ActiveRFQMessage represents the general structure of WebSocket messages for Active RFQ.
 type ActiveRFQMessage struct {
 	Op      string          `json:"op"`
-	Content json.RawMessage `json:"content"`
-	Success bool            `json:"success"`
+	Content json.RawMessage `json:"content,omitempty"`
+	Success bool            `json:"success,omitempty"`
 }
 
-// PutUserQuoteResponse represents a response to a user quote request.
-type PutUserQuoteResponse struct {
+// PutRFQResponse represents a response to a user quote request.
+type PutRFQResponse struct {
 	Success        bool   `json:"success"`
 	Reason         string `json:"reason,omitempty"`
 	QuoteType      string `json:"quote_type,omitempty"`

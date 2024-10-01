@@ -111,7 +111,7 @@ definitions:
       origin_token_addr:
         type: string
     type: object
-  model.PutUserQuoteResponse:
+  model.PutRFQResponse:
     properties:
       dest_amount:
         type: string
@@ -324,7 +324,7 @@ paths:
               description: API Version Number - See docs for more info
               type: string
           schema:
-            $ref: '#/definitions/model.PutUserQuoteResponse'
+            $ref: '#/definitions/model.PutRFQResponse'
       summary: Handle user quote request
       tags:
       - quotes

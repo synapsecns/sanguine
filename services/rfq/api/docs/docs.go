@@ -280,7 +280,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.PutUserQuoteResponse"
+                            "$ref": "#/definitions/model.PutRFQResponse"
                         },
                         "headers": {
                             "X-Api-Version": {
@@ -473,7 +473,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.PutUserQuoteResponse": {
+        "model.PutRFQResponse": {
             "type": "object",
             "properties": {
                 "dest_amount": {
