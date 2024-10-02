@@ -103,6 +103,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         expectBridgeRequested(tokenTx, txId);
         expectBridgeQuoteDetails(txId, tokenParamsV2.quoteId);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
+        assertEq(fastBridge.senderNonces(userA), 1);
+        assertEq(fastBridge.senderNonces(userB), 0);
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         checkTokenBalancesAfterBridge(userA);
     }
@@ -112,6 +114,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         expectBridgeRequested(tokenTx, txId);
         expectBridgeQuoteDetails(txId, tokenParamsV2.quoteId);
         bridge({caller: userB, msgValue: 0, params: tokenParams});
+        assertEq(fastBridge.senderNonces(userA), 1);
+        assertEq(fastBridge.senderNonces(userB), 0);
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + tokenParams.originAmount);
         checkTokenBalancesAfterBridge(userB);
@@ -126,10 +130,14 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     function test_bridge_eth() public {
         // bridge token first to match the nonce
         bridge({caller: userA, msgValue: 0, params: tokenParams});
+        assertEq(fastBridge.senderNonces(userA), 1);
+        assertEq(fastBridge.senderNonces(userB), 0);
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
         expectBridgeQuoteDetails(txId, ethParamsV2.quoteId);
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        assertEq(fastBridge.senderNonces(userA), 2);
+        assertEq(fastBridge.senderNonces(userB), 0);
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         checkEthBalancesAfterBridge(userA);
     }
@@ -137,18 +145,24 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     function test_bridge_eth_diffSender() public {
         // bridge token first to match the nonce
         bridge({caller: userA, msgValue: 0, params: tokenParams});
+        assertEq(fastBridge.senderNonces(userA), 1);
+        assertEq(fastBridge.senderNonces(userB), 0);
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
         expectBridgeQuoteDetails(txId, ethParamsV2.quoteId);
+        // bridge for user A as sender, called by userB
         bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams});
+        assertEq(fastBridge.senderNonces(userA), 2);
+        assertEq(fastBridge.senderNonces(userB), 0);
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         checkEthBalancesAfterBridge(userB);
     }
 
     function test_bridge_userSpecificNonce() public {
-        vm.skip(true); // TODO: unskip when implemented
         bridge({caller: userA, msgValue: 0, params: tokenParams});
+        assertEq(fastBridge.senderNonces(userA), 1);
+        assertEq(fastBridge.senderNonces(userB), 0);
         // UserB nonce is 0
         ethTx.nonce = 0;
         ethParams.sender = userB;
@@ -157,6 +171,8 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         expectBridgeRequested(ethTx, txId);
         expectBridgeQuoteDetails(txId, ethParamsV2.quoteId);
         bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams});
+        assertEq(fastBridge.senderNonces(userA), 1);
+        assertEq(fastBridge.senderNonces(userB), 1);
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         checkEthBalancesAfterBridge(userB);
     }

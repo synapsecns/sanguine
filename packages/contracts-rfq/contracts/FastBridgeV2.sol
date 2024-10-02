@@ -28,9 +28,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     mapping(bytes32 => BridgeTxDetails) public bridgeTxDetails;
     /// @notice Relay details on destination chain
     mapping(bytes32 => BridgeRelay) public bridgeRelayDetails;
-
-    /// @dev to prevent replays
-    uint256 public nonce;
+    /// @notice Unique bridge nonces tracked per originSender
+    mapping(address => uint256) public senderNonces;
 
     // @dev the block the contract was deployed at
     uint256 public immutable deployBlock;
@@ -113,6 +112,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         return _timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD;
     }
 
+    /// @notice This function is deprecated and should not be used.
+    /// @dev Replaced by senderNonces
+    function nonce() external pure returns (uint256) {
+        return 0;
+    }
+
     /// @inheritdoc IFastBridge
     function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory) {
         // Note: when passing V2 request, this will decode the V1 fields correctly since the new fields were
@@ -158,7 +163,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 originFeeAmount: originFeeAmount,
                 sendChainGas: params.sendChainGas,
                 deadline: params.deadline,
-                nonce: nonce++, // increment nonce on every bridge
+                nonce: senderNonces[params.sender]++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
                 // We checked exclusivityEndTime to be in range (0 .. params.deadline] above, so can safely cast
                 exclusivityEndTime: uint256(exclusivityEndTime)

@@ -95,6 +95,11 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
         fastBridge.refund(abi.encode(bridgeTx));
     }
 
+    function test_nonce() public view {
+        // deprecated. should always return zero in FbV2.
+        assertEq(fastBridge.nonce(), 0);
+    }
+
     function assertEq(FastBridgeV2.BridgeStatus a, FastBridgeV2.BridgeStatus b) public pure {
         assertEq(uint8(a), uint8(b));
     }
