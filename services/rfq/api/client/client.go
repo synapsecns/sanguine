@@ -212,9 +212,9 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 
 	respChan = make(chan *model.ActiveRFQMessage)
 	go func() {
-		err = c.processWebsocket(ctx, conn, reqChan, respChan)
-		if err != nil {
-			logger.Error("Error running websocket listener: %s", err)
+		wsErr := c.processWebsocket(ctx, conn, reqChan, respChan)
+		if wsErr != nil {
+			logger.Error("Error running websocket listener: %s", wsErr)
 		}
 	}()
 
