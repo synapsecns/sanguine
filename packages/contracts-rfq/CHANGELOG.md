@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.6.0...@synapsecns/contracts-rfq@0.6.1) (2024-10-02)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
 # [0.6.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.5.10...@synapsecns/contracts-rfq@0.6.0) (2024-10-01)
 
 

@@ -27,7 +27,7 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 	s.Require().NoError(err)
 
 	// Verify the quotes are generated as expected.
-	expectedQuotes := []model.PutQuoteRequest{
+	expectedQuotes := []model.PutRelayerQuoteRequest{
 		{
 			OriginChainID:           int(s.origin),
 			OriginTokenAddr:         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -55,7 +55,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	expectedQuoteAmount := new(big.Int).Sub(balance, minGasToken)
 
 	// Verify the quotes are generated as expected.
-	expectedQuotes := []model.PutQuoteRequest{
+	expectedQuotes := []model.PutRelayerQuoteRequest{
 		{
 			OriginChainID:           int(s.origin),
 			OriginTokenAddr:         util.EthAddress.String(),
@@ -82,7 +82,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	expectedQuoteAmount = new(big.Int).Sub(balance, minGasToken)
 
 	// Verify the quotes are generated as expected.
-	expectedQuotes = []model.PutQuoteRequest{
+	expectedQuotes = []model.PutRelayerQuoteRequest{
 		{
 			OriginChainID:           int(s.origin),
 			OriginTokenAddr:         util.EthAddress.String(),

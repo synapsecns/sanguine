@@ -1,5 +1,10 @@
 package model
 
+import (
+	"encoding/json"
+	"time"
+)
+
 // GetQuoteResponse contains the schema for a GET /quote response.
 type GetQuoteResponse struct {
 	// OriginChainID is the chain which the relayer is willing to relay from
@@ -40,4 +45,46 @@ type PutRelayAckResponse struct {
 type GetContractsResponse struct {
 	// Contracts is a map of chain id to contract address
 	Contracts map[uint32]string `json:"contracts"`
+}
+
+// ActiveRFQMessage represents the general structure of WebSocket messages for Active RFQ.
+type ActiveRFQMessage struct {
+	Op      string          `json:"op"`
+	Content json.RawMessage `json:"content,omitempty"`
+	Success bool            `json:"success,omitempty"`
+}
+
+// PutRFQResponse represents a response to a user quote request.
+type PutRFQResponse struct {
+	Success        bool    `json:"success"`
+	Reason         string  `json:"reason,omitempty"`
+	QuoteType      string  `json:"quote_type,omitempty"`
+	QuoteID        *string `json:"quote_id,omitempty"`
+	DestAmount     string  `json:"dest_amount,omitempty"`
+	RelayerAddress string  `json:"relayer_address,omitempty"`
+}
+
+// WsRFQResponse represents a response to a quote request.
+type WsRFQResponse struct {
+	RequestID  string    `json:"request_id"`
+	QuoteID    string    `json:"quote_id,omitempty"`
+	DestAmount string    `json:"dest_amount"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+// SubscriptionParams are the parameters for a subscription.
+type SubscriptionParams struct {
+	Chains []int `json:"chains"`
+}
+
+// GetOpenQuoteRequestsResponse represents a response to a GET /open_quote_requests request.
+type GetOpenQuoteRequestsResponse struct {
+	UserAddress      string    `json:"user_address"`
+	OriginChainID    uint64    `json:"origin_chain_id"`
+	OriginTokenAddr  string    `json:"origin_token"`
+	DestChainID      uint64    `json:"dest_chain_id"`
+	DestTokenAddr    string    `json:"dest_token"`
+	OriginAmount     string    `json:"origin_amount"`
+	ExpirationWindow int       `json:"expiration_window"`
+	CreatedAt        time.Time `json:"created_at"`
 }

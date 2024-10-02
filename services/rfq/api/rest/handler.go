@@ -44,7 +44,7 @@ func APIVersionMiddleware(serverVersion string) gin.HandlerFunc {
 // @Summary Upsert quote
 // @Schemes
 // @Description upsert a quote from relayer.
-// @Param request body model.PutQuoteRequest true "query params"
+// @Param request body model.PutRelayerQuoteRequest true "query params"
 // @Tags quotes
 // @Accept json
 // @Produce json
@@ -63,7 +63,7 @@ func (h *Handler) ModifyQuote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
 		return
 	}
-	putRequest, ok := req.(*model.PutQuoteRequest)
+	putRequest, ok := req.(*model.PutRelayerQuoteRequest)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request type"})
 		return
@@ -133,7 +133,8 @@ func (h *Handler) ModifyBulkQuotes(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func parseDBQuote(putRequest model.PutQuoteRequest, relayerAddr interface{}) (*db.Quote, error) {
+//nolint:gosec
+func parseDBQuote(putRequest model.PutRelayerQuoteRequest, relayerAddr interface{}) (*db.Quote, error) {
 	destAmount, err := decimal.NewFromString(putRequest.DestAmount)
 	if err != nil {
 		return nil, fmt.Errorf("invalid DestAmount")
@@ -160,6 +161,23 @@ func parseDBQuote(putRequest model.PutQuoteRequest, relayerAddr interface{}) (*d
 		OriginFastBridgeAddress: putRequest.OriginFastBridgeAddress,
 		DestFastBridgeAddress:   putRequest.DestFastBridgeAddress,
 	}, nil
+}
+
+//nolint:gosec
+func quoteResponseFromDBQuote(dbQuote *db.Quote) *model.GetQuoteResponse {
+	return &model.GetQuoteResponse{
+		OriginChainID:           int(dbQuote.OriginChainID),
+		OriginTokenAddr:         dbQuote.OriginTokenAddr,
+		DestChainID:             int(dbQuote.DestChainID),
+		DestTokenAddr:           dbQuote.DestTokenAddr,
+		DestAmount:              dbQuote.DestAmount.String(),
+		MaxOriginAmount:         dbQuote.MaxOriginAmount.String(),
+		FixedFee:                dbQuote.FixedFee.String(),
+		RelayerAddr:             dbQuote.RelayerAddr,
+		OriginFastBridgeAddress: dbQuote.OriginFastBridgeAddress,
+		DestFastBridgeAddress:   dbQuote.DestFastBridgeAddress,
+		UpdatedAt:               dbQuote.UpdatedAt.Format(time.RFC3339),
+	}
 }
 
 // GetQuotes retrieves all quotes from the database.
@@ -229,9 +247,46 @@ func (h *Handler) GetQuotes(c *gin.Context) {
 	// Convert quotes from db model to api model
 	quotes := make([]*model.GetQuoteResponse, len(dbQuotes))
 	for i, dbQuote := range dbQuotes {
-		quotes[i] = model.QuoteResponseFromDbQuote(dbQuote)
+		quotes[i] = quoteResponseFromDBQuote(dbQuote)
 	}
 	c.JSON(http.StatusOK, quotes)
+}
+
+// GetOpenQuoteRequests retrieves all open quote requests.
+// GET /open_quote_requests
+// @Summary Get open quote requests
+// @Description Get all open quote requests that are currently in Received or Pending status.
+// @Tags quotes
+// @Accept json
+// @Produce json
+// @Success 200 {array} model.GetOpenQuoteRequestsResponse
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
+// @Router /open_quote_requests [get].
+func (h *Handler) GetOpenQuoteRequests(c *gin.Context) {
+	dbQuotes, err := h.db.GetActiveQuoteRequests(c, db.Received, db.Pending)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	quotes := make([]*model.GetOpenQuoteRequestsResponse, len(dbQuotes))
+	for i, dbQuote := range dbQuotes {
+		quotes[i] = dbActiveQuoteRequestToModel(dbQuote)
+	}
+	c.JSON(http.StatusOK, quotes)
+}
+
+func dbActiveQuoteRequestToModel(dbQuote *db.ActiveQuoteRequest) *model.GetOpenQuoteRequestsResponse {
+	return &model.GetOpenQuoteRequestsResponse{
+		UserAddress:      dbQuote.UserAddress,
+		OriginChainID:    dbQuote.OriginChainID,
+		OriginTokenAddr:  dbQuote.OriginTokenAddr,
+		DestChainID:      dbQuote.DestChainID,
+		DestTokenAddr:    dbQuote.DestTokenAddr,
+		OriginAmount:     dbQuote.OriginAmount.String(),
+		ExpirationWindow: int(dbQuote.ExpirationWindow.Milliseconds()),
+		CreatedAt:        dbQuote.CreatedAt,
+	}
 }
 
 // GetContracts retrieves all contracts api is currently enabled on.

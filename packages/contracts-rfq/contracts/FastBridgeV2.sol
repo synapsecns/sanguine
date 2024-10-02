@@ -28,11 +28,13 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     mapping(bytes32 => BridgeTxDetails) public bridgeTxDetails;
     /// @notice Relay details on destination chain
     mapping(bytes32 => BridgeRelay) public bridgeRelayDetails;
+    /// @notice Unique bridge nonces tracked per originSender
+    mapping(address => uint256) public senderNonces;
 
-    /// @dev to prevent replays
-    uint256 public nonce;
-
-    // @dev the block the contract was deployed at
+    /// @notice This is deprecated and should not be used.
+    /// @dev Replaced by senderNonces
+    uint256 public immutable nonce = 0;
+    /// @notice the block the contract was deployed at
     uint256 public immutable deployBlock;
 
     constructor(address _owner) Admin(_owner) {
@@ -158,7 +160,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 originFeeAmount: originFeeAmount,
                 sendChainGas: params.sendChainGas,
                 deadline: params.deadline,
-                nonce: nonce++, // increment nonce on every bridge
+                nonce: senderNonces[params.sender]++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
                 // We checked exclusivityEndTime to be in range (0 .. params.deadline] above, so can safely cast
                 exclusivityEndTime: uint256(exclusivityEndTime)
