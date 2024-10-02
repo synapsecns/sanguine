@@ -24,7 +24,7 @@ CCTP can be configured to bridge through any supported liquidity source, such as
 
 ### Relayer
 
-CCTP Relayers allow anyone to coordinate on-chain events and stored message states to send native USDC through SynapseCCTP and Circle's CCPT contracts.
+CCTP Relayers allow anyone to coordinate on-chain events and stored message states to send native USDC through SynapseCCTP and Circle's CCTP contracts.
 
 :::tip
 
