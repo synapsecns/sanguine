@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {FastBridgeV2DstBaseTest, IFastBridgeV2} from "./FastBridgeV2.Dst.Base.t.sol";
+import {NonPayableRecipient} from "./mocks/NonPayableRecipient.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
@@ -17,12 +18,21 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         uint256 chainGasAmount
     );
 
+    address public nonPayableRecipient;
+
+    function setUp() public virtual override {
+        super.setUp();
+        nonPayableRecipient = address(new NonPayableRecipient());
+        vm.label(nonPayableRecipient, "NonPayableRecipient");
+    }
+
     function expectBridgeRelayed(
         IFastBridgeV2.BridgeTransactionV2 memory bridgeTx,
         bytes32 txId,
         address relayer
     )
         public
+        virtual
     {
         vm.expectEmit(address(fastBridge));
         emit BridgeRelayed({
@@ -107,6 +117,38 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         assertEq(relayerA.balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, 0);
     }
+
+    // ═══════════════════════════════════════════ NON PAYABLE RECIPIENT ═══════════════════════════════════════════════
+
+    /// @notice Should not affect the ERC20 transfer
+    function test_relay_token_nonPayableRecipient() public {
+        tokenParams.to = nonPayableRecipient;
+        tokenTx.destRecipient = nonPayableRecipient;
+        userB = nonPayableRecipient;
+        test_relay_token();
+    }
+
+    function test_relay_token_withRelayerAddress_nonPayableRecipient() public {
+        tokenParams.to = nonPayableRecipient;
+        tokenTx.destRecipient = nonPayableRecipient;
+        userB = nonPayableRecipient;
+        test_relay_token_withRelayerAddress();
+    }
+
+    function test_relay_eth_revert_nonPayableRecipient() public {
+        ethParams.to = nonPayableRecipient;
+        ethTx.destRecipient = nonPayableRecipient;
+        vm.expectRevert();
+        relay({caller: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
+    }
+
+    function test_relay_eth_withRelayerAddress_revert_nonPayableRecipient() public {
+        ethParams.to = nonPayableRecipient;
+        ethTx.destRecipient = nonPayableRecipient;
+        vm.expectRevert();
+        relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
+    }
+
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
 
     function test_relay_revert_usedRequestV1() public {
