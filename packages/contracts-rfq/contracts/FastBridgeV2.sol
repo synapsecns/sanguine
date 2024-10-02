@@ -31,7 +31,10 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @notice Unique bridge nonces tracked per originSender
     mapping(address => uint256) public senderNonces;
 
-    // @dev the block the contract was deployed at
+    /// @notice This is deprecated and should not be used.
+    /// @dev Replaced by senderNonces
+    uint256 public immutable nonce = 0;
+    /// @notice the block the contract was deployed at
     uint256 public immutable deployBlock;
 
     constructor(address _owner) Admin(_owner) {
@@ -110,12 +113,6 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
         if (bridgeTxDetails[transactionId].proofRelayer != relayer) revert SenderIncorrect();
         return _timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD;
-    }
-
-    /// @notice This function is deprecated and should not be used.
-    /// @dev Replaced by senderNonces
-    function nonce() external pure returns (uint256) {
-        return 0;
     }
 
     /// @inheritdoc IFastBridge
