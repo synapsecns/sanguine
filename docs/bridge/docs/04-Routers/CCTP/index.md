@@ -24,7 +24,7 @@ CCTP can be configured to bridge through any supported liquidity source, such as
 
 ### Relayer
 
-Relayers coordinate on-chain events with stored message states to relay user funds. 
+CCTP Relayers allow anyone to coordinate on-chain events and stored message states to send native USDC through SynapseCCTP and Circle's CCPT contracts.
 
 :::tip
 
@@ -34,7 +34,7 @@ While the Synapse CCTP Golang relayer can be run by anyone, and is easily observ
 
 ## Behavior
 
-CCTP Relayer polls for new transactions and state updates from CCTP contracts on-chain, to store in an off-chain database.
+CCTP Relayers poll for new transactions and state updates from CCTP contracts on-chain, to store in an off-chain database.
 
 Attestations from the [Circle API](https://developers.circle.com/stablecoin/reference) are submitted to the destination contract, and marked `Complete` when a transaction receipt is received.
 
@@ -50,7 +50,7 @@ Attestations from the [Circle API](https://developers.circle.com/stablecoin/refe
 
 ## Configure
 
-CCTP Relayer requires a YAML configuration file path to be provided at run time.
+CCTP Relayers require a YAML configuration file path to be provided at run time.
 
 :::note cctp_type
 
