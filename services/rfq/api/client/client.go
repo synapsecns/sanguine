@@ -296,7 +296,7 @@ func (c *clientImpl) processWebsocket(ctx context.Context, conn *websocket.Conn,
 	}
 }
 
-func (c *clientImpl) sendPings(ctx context.Context, reqChan chan *model.ActiveRFQMessage) (err error) {
+func (c *clientImpl) sendPings(ctx context.Context, reqChan chan *model.ActiveRFQMessage) {
 	pingTicker := time.NewTicker(pingPeriod)
 	defer pingTicker.Stop()
 
@@ -308,7 +308,7 @@ func (c *clientImpl) sendPings(ctx context.Context, reqChan chan *model.ActiveRF
 			}
 			reqChan <- &pingMsg
 		case <-ctx.Done():
-			return nil
+			return
 		}
 	}
 }

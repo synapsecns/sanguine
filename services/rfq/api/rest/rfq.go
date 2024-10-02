@@ -55,7 +55,7 @@ func (r *QuoterAPIServer) handleActiveRFQ(ctx context.Context, request *model.Pu
 	responses := r.collectRelayerResponses(ctx, request, requestID)
 	for r, resp := range responses {
 		relayerAddr := r
-		quote, _ = getBestQuote(quote, getRelayerQuoteData(request, resp))
+		quote = getBestQuote(quote, getRelayerQuoteData(request, resp))
 		quote.RelayerAddress = &relayerAddr
 	}
 	err = r.recordActiveQuote(ctx, quote, requestID)
@@ -156,22 +156,22 @@ func getRelayerQuoteData(request *model.PutRFQRequest, resp *model.WsRFQResponse
 	}
 }
 
-func getBestQuote(a, b *model.QuoteData) (*model.QuoteData, bool) {
+func getBestQuote(a, b *model.QuoteData) *model.QuoteData {
 	if a == nil && b == nil {
-		return nil, false
+		return nil
 	}
 	if a == nil {
-		return b, true
+		return b
 	}
 	if b == nil {
-		return a, false
+		return a
 	}
 	aAmount, _ := new(big.Int).SetString(*a.DestAmount, 10)
 	bAmount, _ := new(big.Int).SetString(*b.DestAmount, 10)
 	if aAmount.Cmp(bAmount) > 0 {
-		return a, false
+		return a
 	}
-	return b, true
+	return b
 }
 
 func getQuoteResponseStatus(ctx context.Context, resp *model.WsRFQResponse) db.ActiveQuoteResponseStatus {
@@ -265,7 +265,7 @@ func (r *QuoterAPIServer) handlePassiveRFQ(ctx context.Context, request *model.P
 			DestAmount:      &destAmount,
 			RelayerAddress:  &quote.RelayerAddr,
 		}
-		bestQuote, _ = getBestQuote(bestQuote, quoteData)
+		bestQuote = getBestQuote(bestQuote, quoteData)
 	}
 
 	return bestQuote, nil
