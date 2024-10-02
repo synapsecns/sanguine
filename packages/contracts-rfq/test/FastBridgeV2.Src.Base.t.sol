@@ -96,8 +96,9 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
     }
 
     function test_nonce() public view {
+        uint256 result = fastBridge.nonce();
         // deprecated. should always return zero in FbV2.
-        assertEq(fastBridge.nonce(), 0);
+        assertEq(result, 0);
     }
 
     function assertEq(FastBridgeV2.BridgeStatus a, FastBridgeV2.BridgeStatus b) public pure {
