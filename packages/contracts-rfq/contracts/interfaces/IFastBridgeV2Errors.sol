@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 interface IFastBridgeV2Errors {
     error AmountIncorrect();
+    error CallParamsLengthAboveMax();
     error ChainIncorrect();
     error ExclusivityParamsIncorrect();
     error MsgValueIncorrect();
