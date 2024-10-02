@@ -173,7 +173,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 originAmount: originAmount,
                 destAmount: params.destAmount,
                 originFeeAmount: originFeeAmount,
-                sendChainGas: params.sendChainGas,
+                callValue: 0, // TODO: fix
                 deadline: params.deadline,
                 nonce: senderNonces[params.sender]++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,

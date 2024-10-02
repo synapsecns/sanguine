@@ -42,7 +42,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
             destToken: bridgeTx.destToken,
             originAmount: bridgeTx.originAmount,
             destAmount: bridgeTx.destAmount,
-            sendChainGas: bridgeTx.sendChainGas
+            sendChainGas: bridgeTx.callValue > 0
         });
     }
 

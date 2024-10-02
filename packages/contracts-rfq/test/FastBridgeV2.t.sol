@@ -160,7 +160,6 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         txV2.originAmount = txV1.originAmount;
         txV2.destAmount = txV1.destAmount;
         txV2.originFeeAmount = txV1.originFeeAmount;
-        txV2.sendChainGas = txV1.sendChainGas;
         txV2.deadline = txV1.deadline;
         txV2.nonce = txV1.nonce;
     }
@@ -207,7 +206,6 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         txV1.originAmount = txV2.originAmount;
         txV1.destAmount = txV2.destAmount;
         txV1.originFeeAmount = txV2.originFeeAmount;
-        txV1.sendChainGas = txV2.sendChainGas;
         txV1.deadline = txV2.deadline;
         txV1.nonce = txV2.nonce;
     }

@@ -57,7 +57,7 @@ interface IFastBridgeV2 is IFastBridge {
         uint256 originAmount; // amount in on origin bridge less originFeeAmount
         uint256 destAmount;
         uint256 originFeeAmount;
-        bool sendChainGas;
+        uint256 callValue; // ETH value to send to the recipient (if any) - replaces V1's sendChainGas flag
         uint256 deadline; // user specified deadline for destination relay
         uint256 nonce;
         address exclusivityRelayer;
