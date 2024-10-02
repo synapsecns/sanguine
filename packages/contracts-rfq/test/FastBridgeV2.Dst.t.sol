@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {FastBridgeV2DstBaseTest, IFastBridgeV2} from "./FastBridgeV2.Dst.Base.t.sol";
+import {NoOpContract} from "./mocks/NoOpContract.sol";
 import {NonPayableRecipient} from "./mocks/NonPayableRecipient.sol";
 
 // solhint-disable func-name-mixedcase, ordering
@@ -18,12 +19,27 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         uint256 chainGasAmount
     );
 
+    address public noOpRecipient;
     address public nonPayableRecipient;
 
     function setUp() public virtual override {
         super.setUp();
+        noOpRecipient = address(new NoOpContract());
+        vm.label(noOpRecipient, "NoOpRecipient");
         nonPayableRecipient = address(new NonPayableRecipient());
         vm.label(nonPayableRecipient, "NonPayableRecipient");
+    }
+
+    function setTokenTestRecipient(address recipient) public {
+        userB = recipient;
+        tokenParams.to = recipient;
+        tokenTx.destRecipient = recipient;
+    }
+
+    function setEthTestRecipient(address recipient) public {
+        userB = recipient;
+        ethParams.to = recipient;
+        ethTx.destRecipient = recipient;
     }
 
     function expectBridgeRelayed(
@@ -122,31 +138,50 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
 
     /// @notice Should not affect the ERC20 transfer
     function test_relay_token_nonPayableRecipient() public {
-        tokenParams.to = nonPayableRecipient;
-        tokenTx.destRecipient = nonPayableRecipient;
-        userB = nonPayableRecipient;
+        setTokenTestRecipient(nonPayableRecipient);
         test_relay_token();
     }
 
     function test_relay_token_withRelayerAddress_nonPayableRecipient() public {
-        tokenParams.to = nonPayableRecipient;
-        tokenTx.destRecipient = nonPayableRecipient;
-        userB = nonPayableRecipient;
+        setTokenTestRecipient(nonPayableRecipient);
         test_relay_token_withRelayerAddress();
     }
 
     function test_relay_eth_revert_nonPayableRecipient() public {
-        ethParams.to = nonPayableRecipient;
-        ethTx.destRecipient = nonPayableRecipient;
+        setEthTestRecipient(nonPayableRecipient);
         vm.expectRevert();
         relay({caller: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
     }
 
     function test_relay_eth_withRelayerAddress_revert_nonPayableRecipient() public {
-        ethParams.to = nonPayableRecipient;
-        ethTx.destRecipient = nonPayableRecipient;
+        setEthTestRecipient(nonPayableRecipient);
         vm.expectRevert();
         relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
+    }
+
+    // ══════════════════════════════════════════════ NO-OP RECIPIENT ══════════════════════════════════════════════════
+
+    // Note: in this test, the callParams are not present, and the below test functions succeed.
+    // Override them in the derived tests where callParams are present to check for a revert.
+
+    function test_relay_token_noOpRecipient_revertWhenCallParamsPresent() public virtual {
+        setTokenTestRecipient(noOpRecipient);
+        test_relay_token();
+    }
+
+    function test_relay_token_withRelayerAddress_noOpRecipient_revertWhenCallParamsPresent() public virtual {
+        setTokenTestRecipient(noOpRecipient);
+        test_relay_token_withRelayerAddress();
+    }
+
+    function test_relay_eth_noOpRecipient_revertWhenCallParamsPresent() public virtual {
+        setEthTestRecipient(noOpRecipient);
+        test_relay_eth();
+    }
+
+    function test_relay_eth_withRelayerAddress_noOpRecipient_revertWhenCallParamsPresent() public virtual {
+        setEthTestRecipient(noOpRecipient);
+        test_relay_eth_withRelayerAddress();
     }
 
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
