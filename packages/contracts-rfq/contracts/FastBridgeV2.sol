@@ -54,6 +54,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 quoteRelayer: address(0),
                 quoteExclusivitySeconds: 0,
                 quoteId: bytes(""),
+                callValue: 0,
                 callParams: bytes("")
             })
         });

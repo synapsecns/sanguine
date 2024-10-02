@@ -128,12 +128,14 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
             quoteRelayer: address(0),
             quoteExclusivitySeconds: 0,
             quoteId: bytes(""),
+            callValue: 0,
             callParams: bytes("")
         });
         ethParamsV2 = IFastBridgeV2.BridgeParamsV2({
             quoteRelayer: address(0),
             quoteExclusivitySeconds: 0,
             quoteId: bytes(""),
+            callValue: 0,
             callParams: bytes("")
         });
 

@@ -12,12 +12,14 @@ contract FastBridgeV2DstExclusivityTest is FastBridgeV2DstTest {
             quoteRelayer: relayerA,
             quoteExclusivitySeconds: int256(EXCLUSIVITY_PERIOD),
             quoteId: "",
+            callValue: 0,
             callParams: ""
         });
         ethParamsV2 = IFastBridgeV2.BridgeParamsV2({
             quoteRelayer: relayerB,
             quoteExclusivitySeconds: int256(EXCLUSIVITY_PERIOD),
             quoteId: "",
+            callValue: 0,
             callParams: ""
         });
 

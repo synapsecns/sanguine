@@ -30,14 +30,17 @@ interface IFastBridgeV2 is IFastBridge {
     /// for backwards compatibility.
     /// Note: quoteRelayer and quoteExclusivitySeconds are either both zero (indicating no exclusivity)
     /// or both non-zero (indicating exclusivity for the given period).
+    /// Note: callValue > 0 could NOT be used with destToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE (ETH_ADDRESS)
     /// @param quoteRelayer             Relayer that provided the quote for the transaction
     /// @param quoteExclusivitySeconds  Period of time the quote relayer is guaranteed exclusivity after user's deposit
     /// @param quoteId                  Unique quote identifier used for tracking the quote
+    /// @param callValue                ETH value to send to the recipient (if any)
     /// @param callParams               Parameters for the arbitrary call to the destination recipient (if any)
     struct BridgeParamsV2 {
         address quoteRelayer;
         int256 quoteExclusivitySeconds;
         bytes quoteId;
+        uint256 callValue;
         bytes callParams;
     }
 
