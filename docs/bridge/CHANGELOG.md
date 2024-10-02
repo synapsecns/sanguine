@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.2.4...@synapsecns/bridge-docs@0.3.0) (2024-10-02)
+
+
+### Features
+
+* **rfq:** relay rate limiting ([#2933](https://github.com/synapsecns/sanguine/issues/2933)) [SLT-149] ([a240292](https://github.com/synapsecns/sanguine/commit/a2402928f7e56369ce39cc6f211c3e3b3dfd404e))
+
+
+
+
+
 ## [0.2.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.2.3...@synapsecns/bridge-docs@0.2.4) (2024-09-09)
 
 **Note:** Version bump only for package @synapsecns/bridge-docs
