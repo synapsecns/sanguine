@@ -301,13 +301,16 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		for _, destChainID := range destChainIDs {
 			addr, err := r.checkRole(c, destChainID)
 			if err != nil {
+				fmt.Printf("AuthMiddleware - checkRole failed: %s\n", err)
 				c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 				c.Abort()
 				return
 			}
 			if addressRecovered == nil {
 				addressRecovered = &addr
+				fmt.Printf("AuthMiddleware - addressRecovered: %s\n", *addressRecovered)
 			} else if *addressRecovered != addr {
+				fmt.Printf("AuthMiddleware - relayer address mismatch: %s\n", *addressRecovered)
 				c.JSON(http.StatusBadRequest, gin.H{"msg": "relayer address mismatch"})
 				c.Abort()
 				return
@@ -318,11 +321,13 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		// Store the request in context after binding and validation
 		c.Set("putRequest", loggedRequest)
 		c.Set("relayerAddr", addressRecovered.Hex())
+		fmt.Printf("AuthMiddleware - success relayer address: %s\n", addressRecovered.Hex())
 		c.Next()
 	}
 }
 
 func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (addressRecovered common.Address, err error) {
+	fmt.Printf("checkRole - destChainID: %d\n", destChainID)
 	bridge, ok := r.fastBridgeContracts[destChainID]
 	if !ok {
 		err = fmt.Errorf("dest chain id not supported: %d", destChainID)
