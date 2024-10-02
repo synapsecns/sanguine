@@ -3,6 +3,7 @@ import { parseUnits } from '@ethersproject/units'
 
 import { Synapse } from '../services/synapseService'
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
+import { logger } from '../middleware/logger'
 
 export const bridgeTxInfoController = async (req, res) => {
   const errors = validationResult(req)
@@ -51,8 +52,14 @@ export const bridgeTxInfoController = async (req, res) => {
         return txInfo
       })
     )
+
+    logger.info(`Succesful bridgeTxInfoController response`, { txInfoArray })
     res.json(txInfoArray)
   } catch (err) {
+    logger.error(`Error in bridgeTxInfoController`, {
+      error: err.message,
+      stack: err.stack,
+    })
     res.status(500).json({
       error:
         'An unexpected error occurred in /bridgeTxInfo. Please try again later.',

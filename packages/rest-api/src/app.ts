@@ -3,11 +3,16 @@ import swaggerUi from 'swagger-ui-express'
 
 import { specs } from './swagger'
 import routes from './routes'
+import { logger } from './middleware/logger'
 
 const app = express()
 const port = process.env.PORT || 3000
 
 app.use(express.json())
+
+app.listen(port, () => {
+  logger.info(`Server is listening on port ${port}`)
+})
 
 app.use(
   '/api-docs',
@@ -27,6 +32,16 @@ app.use(
 
 app.use('/', routes)
 
-export const server = app.listen(port, () => {
-  console.log(`Server listening at ${port}`)
+app.use((err, _req, res, _next) => {
+  logger.error(`Express error: ${err.message}`, { stack: err.stack })
+  res.status(500).json({ error: 'Something went wrong', details: err.message })
+})
+
+process.on('uncaughtException', (err) => {
+  logger.error(`Uncaught Exception: ${err.message}`, { stack: err.stack })
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
 })

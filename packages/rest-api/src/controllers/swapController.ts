@@ -4,6 +4,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 
 import { Synapse } from '../services/synapseService'
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
+import { logger } from '../middleware/logger'
 
 export const swapController = async (req, res) => {
   const errors = validationResult(req)
@@ -29,11 +30,18 @@ export const swapController = async (req, res) => {
       toTokenInfo.decimals
     )
 
-    res.json({
+    const payload = {
       ...quote,
       maxAmountOut: formattedMaxAmountOut,
-    })
+    }
+
+    logger.info(`Successful swapController response`, { payload })
+    res.json(payload)
   } catch (err) {
+    logger.error(`Error in swapController`, {
+      error: err.message,
+      stack: err.stack,
+    })
     res.status(500).json({
       error: 'An unexpected error occurred in /swap. Please try again later.',
       details: err.message,

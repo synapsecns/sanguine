@@ -5,6 +5,7 @@ import { parseUnits } from '@ethersproject/units'
 import { Synapse } from '../services/synapseService'
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 import { formatBNToString } from '../utils/formatBNToString'
+import { logger } from '../middleware/logger'
 
 export const bridgeLimitsController = async (req, res) => {
   const errors = validationResult(req)
@@ -94,11 +95,18 @@ export const bridgeLimitsController = async (req, res) => {
       minAmountOriginQueryTokenOutInfo.decimals
     )
 
-    return res.json({
+    const payload = {
       maxOriginAmount,
       minOriginAmount,
-    })
+    }
+
+    logger.info(`Succesful bridgeLimitsController response`, { payload })
+    return res.json(payload)
   } catch (err) {
+    logger.error(`Error in bridgeLimitsController`, {
+      error: err.message,
+      stack: err.stack,
+    })
     res.status(500).json({
       error:
         'An unexpected error occurred in /bridgeLimits. Please try again later.',

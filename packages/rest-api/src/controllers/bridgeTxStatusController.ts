@@ -3,6 +3,7 @@ import { ethers } from 'ethers'
 
 import { Synapse } from '../services/synapseService'
 import { getTokenDecimals } from '../utils/getTokenDecimals'
+import { logger } from '../middleware/logger'
 
 export const bridgeTxStatusController = async (req, res) => {
   const errors = validationResult(req)
@@ -56,20 +57,36 @@ export const bridgeTxStatusController = async (req, res) => {
         const tokenDecimals = getTokenDecimals(toInfo.chainID, tokenAddress)
         const formattedValue = ethers.utils.formatUnits(value, tokenDecimals)
 
-        res.json({
+        const payload = {
           status,
           toInfo: {
             ...restToInfo,
             formattedValue: `${formattedValue}`,
           },
-        })
+        }
+
+        logger.info(`Successful bridgeTxStatusController response`, { payload })
+        res.json(payload)
       } else {
-        res.json({ status, toInfo: null })
+        const payload = {
+          status,
+          toInfo: null,
+        }
+
+        logger.info(`Successful bridgeTxStatusController response`, { payload })
+        res.json(payload)
       }
     } else {
-      res.json({ status })
+      const payload = { status }
+
+      logger.info(`Successful bridgeTxStatusController response`, { payload })
+      res.json(payload)
     }
   } catch (err) {
+    logger.error(`Error in bridgeTxStatusController`, {
+      error: err.message,
+      stack: err.stack,
+    })
     res.status(500).json({
       error:
         'An unexpected error occurred in /bridgeTxStatus. Please try again later.',
