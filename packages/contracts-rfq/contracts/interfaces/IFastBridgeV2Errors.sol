@@ -11,6 +11,9 @@ interface IFastBridgeV2Errors {
     error StatusIncorrect();
     error ZeroAddress();
 
+    error RecipientIncorrectReturnValue();
+    error RecipientNoReturnValue();
+
     error DeadlineExceeded();
     error DeadlineNotExceeded();
     error DeadlineTooShort();
