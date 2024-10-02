@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.PutQuoteRequest"
+                            "$ref": "#/definitions/model.PutRelayerQuoteRequest"
                         }
                     }
                 ],
@@ -109,6 +109,38 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/model.GetContractsResponse"
+                            }
+                        },
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/open_quote_requests": {
+            "get": {
+                "description": "Get all open quote requests that are currently in Received or Pending status.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Get open quote requests",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.GetOpenQuoteRequestsResponse"
                             }
                         },
                         "headers": {
@@ -203,13 +235,79 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.PutQuoteRequest"
+                            "$ref": "#/definitions/model.PutRelayerQuoteRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rfq": {
+            "put": {
+                "description": "Handle user quote request and return the best quote available.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Handle user quote request",
+                "parameters": [
+                    {
+                        "description": "User quote request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PutRFQRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.PutRFQResponse"
+                        },
+                        "headers": {
+                            "X-Api-Version": {
+                                "type": "string",
+                                "description": "API Version Number - See docs for more info"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rfq_stream": {
+            "get": {
+                "description": "Establish a WebSocket connection to receive active quote requests.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "quotes"
+                ],
+                "summary": "Handle WebSocket connection for active quote requests",
+                "responses": {
+                    "101": {
+                        "description": "Switching Protocols",
+                        "schema": {
+                            "type": "string"
+                        },
                         "headers": {
                             "X-Api-Version": {
                                 "type": "string",
@@ -231,6 +329,35 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "model.GetOpenQuoteRequestsResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "dest_chain_id": {
+                    "type": "integer"
+                },
+                "dest_token": {
+                    "type": "string"
+                },
+                "expiration_window": {
+                    "type": "integer"
+                },
+                "origin_amount": {
+                    "type": "string"
+                },
+                "origin_chain_id": {
+                    "type": "integer"
+                },
+                "origin_token": {
+                    "type": "string"
+                },
+                "user_address": {
+                    "type": "string"
                 }
             }
         },
@@ -289,12 +416,55 @@ const docTemplate = `{
                 "quotes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.PutQuoteRequest"
+                        "$ref": "#/definitions/model.PutRelayerQuoteRequest"
                     }
                 }
             }
         },
-        "model.PutQuoteRequest": {
+        "model.PutRFQRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.QuoteData"
+                },
+                "integrator_id": {
+                    "type": "string"
+                },
+                "quote_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PutRFQResponse": {
+            "type": "object",
+            "properties": {
+                "dest_amount": {
+                    "type": "string"
+                },
+                "quote_id": {
+                    "type": "string"
+                },
+                "quote_type": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "relayer_address": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "model.PutRelayerQuoteRequest": {
             "type": "object",
             "properties": {
                 "dest_amount": {
@@ -322,6 +492,38 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "origin_token_addr": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.QuoteData": {
+            "type": "object",
+            "properties": {
+                "dest_amount": {
+                    "type": "string"
+                },
+                "dest_chain_id": {
+                    "type": "integer"
+                },
+                "dest_token_addr": {
+                    "type": "string"
+                },
+                "expiration_window": {
+                    "type": "integer"
+                },
+                "origin_amount": {
+                    "type": "string"
+                },
+                "origin_chain_id": {
+                    "type": "integer"
+                },
+                "origin_token_addr": {
+                    "type": "string"
+                },
+                "quote_id": {
+                    "type": "string"
+                },
+                "relayer_address": {
                     "type": "string"
                 }
             }

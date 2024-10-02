@@ -9,7 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
-func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int, inv map[int]map[common.Address]*big.Int) ([]model.PutQuoteRequest, error) {
+func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int, inv map[int]map[common.Address]*big.Int) ([]model.PutRelayerQuoteRequest, error) {
 	// nolint: errcheck
 	return m.generateQuotes(ctx, chainID, address, balance, inv)
 }
