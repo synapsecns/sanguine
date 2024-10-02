@@ -1,0 +1,13 @@
+<svg width="96" height="96" fill="url(#synGrad)" viewBox="-24 -24 48 48" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="synGrad" fx="0%">
+            <stop offset="0%" stop-color="hsl(285deg 100% 65%)" />
+            <stop offset="100%" stop-color="hsl(265deg 100% 75%)" />
+        </linearGradient>
+    </defs>
+    <path d="M0 18 18 0 H-18 L0 -18" stroke="url(#synGrad)" stroke-width="5.5" stroke-linejoin="bevel" opacity=".5" fill="none" />
+    <circle cy="18" r="6" />
+    <circle cx="18" r="6" />
+    <circle cx="-18" r="6" />
+    <circle cy="-18" r="6" />
+</svg>

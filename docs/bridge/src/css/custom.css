@@ -6,25 +6,107 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-color-primary: hsl(285deg 100% 35%);
+  --ifm-color-primary-dark: hsl(285deg 100% 32%);
+  --ifm-color-primary-darker: hsl(285deg 100% 30%);
+  --ifm-color-primary-darkest: hsl(285deg 100% 25%);
+  --ifm-color-primary-light: hsl(285deg 100% 39%);
+  --ifm-color-primary-lighter: hsl(285deg 100% 40%);
+  --ifm-color-primary-lightest: hsl(285deg 100% 46%);
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  /* --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1); */
+
+  --ifm-color-secondary-contrast-background: hsl(285deg 100% 96%);
+  --ifm-color-secondary-dark: hsl(285deg 100% 75%);
+
+  --ifm-background-surface-color: #f8f8f8;
+
+  letter-spacing: .0125em;
+  line-height: 1.7;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
+:root[data-theme='dark'] {
+  --ifm-color-primary: hsl(285deg 100% 80%);
+  --ifm-color-primary-dark: hsl(285deg 100% 41%);
+  --ifm-color-primary-darker: hsl(285deg 100% 38%);
+  --ifm-color-primary-darkest: hsl(285deg 100% 32%);
+  --ifm-color-primary-light: hsl(285deg 100% 50%);
+  --ifm-color-primary-lighter: hsl(285deg 100% 52%);
+  --ifm-color-primary-lightest: hsl(285deg 100% 59%);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+
+  --ifm-color-gray-700: hsl(240deg 20% 20%);
+  --ifm-color-gray-900: hsl(240deg 25% 10%);
+
+  --ifm-background-color: hsl(240deg 25% 7.5%);
+  --ifm-background-surface-color: var(--ifm-color-gray-900);
+  --ifm-table-stripe-background: var(--ifm-color-gray-900);
+
+  --ifm-color-secondary-contrast-background: hsl(285deg 40% 12.5%);
+  --ifm-color-secondary-dark: hsl(285deg 40% 25%);
+
+  --ifm-color-success-contrast-background: hsl(165deg 40% 12.5%);
+  --ifm-color-success-dark: hsl(165deg 40% 25%);
+}
+
+h1 { font-weight: 400 }
+
+h2 {
+  font-weight: 600;
+  border-top: 1px solid hsl(285deg 20% 50% / 20%);
+  margin-top: 1.5em;
+  padding-top: 1em;
+}
+
+h3 {
+  font-size: 1.2rem;
+  margin: 1.5rem 0 .75rem 0;
+}
+
+ol, ul { margin-bottom: 1.5em }
+ol a, ul a { font-weight: 500 }
+
+table thead tr {
+  text-align: left;
+  border: none;
+}
+
+svg.flowAnimation text {
+  font-family: monospace;
+}
+
+figure {
+  margin: 0;
+  width: fit-content;
+}
+
+figcaption {
+  text-align: center;
+  font-style: italic;
+  opacity: .67;
+  margin: 1rem 0;
+}
+
+#flowGroup {
+  display: grid;
+  width: 100%;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+#flowGroup figure {
+  width: 100%;
+  max-width: 40rem;
+}
+
+@media only screen and (min-width: 96rem) {
+  #flowGroup {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #flowGroup figcaption {
+    /* margin: .5rem; */
+    text-align: center;
+  }
 }

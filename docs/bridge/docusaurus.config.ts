@@ -1,13 +1,32 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
-import type * as Preset from '@docusaurus/preset-classic';
-import * as path from "path";
-import {codecovWebpackPlugin} from "@codecov/webpack-plugin";
+/* eslint-disable prefer-arrow/prefer-arrow-functions */
+import * as path from 'path'
+
+import { themes as prismThemes } from 'prism-react-renderer'
+import type { Config } from '@docusaurus/types'
+import type * as Preset from '@docusaurus/preset-classic'
+import { codecovWebpackPlugin } from '@codecov/webpack-plugin'
+
+const options = {
+  id: 'api', // plugin id
+  docsPluginId: 'classic', // id of plugin-content-docs or preset for rendering docs
+  config: {
+    rfqapi: {
+      // the <id> referenced when running CLI commands
+      specPath: '../../services/rfq/api/docs/swagger.yaml', // path to OpenAPI spec, URLs supported
+      baseUrl: 'https://rfq-api.omnirpc.io/',
+      outputDir: 'docs/rfq/API', // output directory for generated files
+      sidebarOptions: {
+        // optional, instructs plugin to generate sidebar.js
+        groupPathsBy: 'tag', // group sidebar items by operation "tag"
+      },
+    },
+  },
+}
 
 const config: Config = {
   title: 'Synapse Bridge Docs',
   tagline: 'The future is cross-chain.',
-  favicon: 'img/favicon.ico',
+  favicon: 'brand-assets/synapse-mark.svg',
 
   // Set the production url of your site here
   url: 'https://docs.bridge.synapseprotocol.com',
@@ -41,8 +60,9 @@ const config: Config = {
           // Remove this to remove the "edit this page" links.
           editUrl:
             'https://github.com/synapsecns/sanguine/tree/master/docs/bridge/',
-          // docLayoutComponent: "@theme/DocPage",
-          docItemComponent: "@theme/ApiItem" // derived from docusaurus-theme-openapi-docs
+          docRootComponent: '@theme/DocRoot',
+          docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
+          // docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -58,13 +78,13 @@ const config: Config = {
     announcementBar: {
       id: 'announcementBar-v3.2', // Increment on change
       // content: `⭐️ If you like Docusaurus, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/facebook/docusaurus">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/docusaurus">Twitter ${TwitterSvg}</a>`,
-      content: `⚠️️ <b>Caution! These docs are a work in progress. Informaton may be incorrect or incomplete. For the current docs, please see <a href="https://docs.synapseprotocol.com/">here</a> </b>`,
+      content: `⚠️️ <b>Caution! These docs are a work in progress. Information may be incorrect or incomplete. For the current docs, please see <a href="https://docs.synapseprotocol.com/">here</a> </b>`,
     },
     navbar: {
       title: 'Synapse Bridge Docs',
       logo: {
-        alt: 'My Site Logo',
-        src: 'img/logo.svg',
+        alt: 'Synapse logo mark',
+        src: 'brand-assets/synapse-mark.svg',
       },
       items: [
         {
@@ -75,7 +95,7 @@ const config: Config = {
       ],
     },
     footer: {
-      style: 'dark',
+      // style: 'dark',
       links: [
         // {
         //   title: 'Docs',
@@ -120,54 +140,42 @@ const config: Config = {
       darkTheme: prismThemes.dracula,
     },
   } satisfies Preset.ThemeConfig,
-  themes: ["docusaurus-theme-openapi-docs"], // export theme components
+  themes: ['docusaurus-theme-openapi-docs'], // export theme components
   plugins: [
-    [
-      'docusaurus-plugin-openapi-docs',
-      {
-        id: "api", // plugin id
-        docsPluginId: "classic", // id of plugin-content-docs or preset for rendering docs
-        config: {
-          rfqapi: { // the <id> referenced when running CLI commands
-            specPath: "../../services/rfq/api/docs/swagger.yaml", // path to OpenAPI spec, URLs supported
-            baseUrl: "https://rfq-api.omnirpc.io/",
-            outputDir: "docs/rfq/API", // output directory for generated files
-            sidebarOptions: { // optional, instructs plugin to generate sidebar.js
-              groupPathsBy: "tag", // group sidebar items by operation "tag"
-            },
-          },
-        }
-      },
-    ],
+    ['docusaurus-plugin-openapi-docs', options],
     // please see: https://github.com/facebook/docusaurus/issues/8091#issuecomment-1269112001 for an explanation.
-    () => ({
-      name: 'resolve-react',
-      configureWebpack() {
-        return {
-          resolve: {
-            alias: {
-              // assuming root node_modules is up from "./packages/<your-docusaurus>
-              react: path.resolve('../../node_modules/react'),
+    function () {
+      return {
+        name: 'resolve-react',
+        configureWebpack() {
+          return {
+            resolve: {
+              alias: {
+                // assuming root node_modules is up from "./packages/<your-docusaurus>
+                react: path.resolve('../../node_modules/react'),
+              },
             },
-          },
-        };
-      },
-    }),
-    () => ({
-      name: 'bundle-analyzer',
-      configureWebpack() {
-        return {
-          plugins: [
-            codecovWebpackPlugin({
-              enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
-              bundleName: "docs-bridge",
-              uploadToken: process.env.CODECOV_TOKEN,
-            }),
-          ]
-        };
+          }
+        },
       }
-    }),
+    },
+    function () {
+      return {
+        name: 'bundle-analyzer',
+        configureWebpack() {
+          return {
+            plugins: [
+              codecovWebpackPlugin({
+                enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+                bundleName: 'docs-bridge',
+                uploadToken: process.env.CODECOV_TOKEN,
+              }),
+            ],
+          }
+        },
+      }
+    },
   ],
-};
+}
 
-export default config;
+export default config satisfies Config
