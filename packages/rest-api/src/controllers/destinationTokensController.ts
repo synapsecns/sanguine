@@ -19,7 +19,7 @@ export const destinationTokensController = async (req, res) => {
 
     const payload = BRIDGE_ROUTE_MAPPING[constructedKey]
 
-    logger.info(`Successful destinationnTokensController response`, { payload })
+    logger.info(`Successful destinationTokensController response`, { payload })
 
     res.json(payload)
   } catch (err) {
