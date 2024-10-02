@@ -224,18 +224,29 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
 
-        uint256 rebate = chainGasAmount;
-        if (!transaction.sendChainGas) {
-            // forward erc20
-            rebate = 0;
+        if (transaction.callParams.length == 0) {
+            // No arbitrary call requested, so we just transfer the tokens
             _pullToken(to, token, amount);
-        } else if (token == UniversalTokenLib.ETH_ADDRESS) {
-            // lump in gas rebate into amount in native gas token
-            _pullToken(to, token, amount + rebate);
+        } else if (token != UniversalTokenLib.ETH_ADDRESS) {
+            // Arbitrary call requested with ERC20: transfer the tokens first
+            _pullToken(to, token, amount);
+            // Follow up with the hook function call
+            _checkedCallRecipient({
+                recipient: to,
+                msgValue: 0,
+                token: token,
+                amount: amount,
+                callParams: transaction.callParams
+            });
         } else {
-            // forward erc20 then forward gas rebate in native gas token
-            _pullToken(to, token, amount);
-            _pullToken(to, UniversalTokenLib.ETH_ADDRESS, rebate);
+            // Arbitrary call requested with ETH: combine the ETH transfer with the call
+            _checkedCallRecipient({
+                recipient: to,
+                msgValue: amount,
+                token: token,
+                amount: amount,
+                callParams: transaction.callParams
+            });
         }
 
         emit BridgeRelayed(
@@ -247,7 +258,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             transaction.destToken,
             transaction.originAmount,
             transaction.destAmount,
-            rebate
+            // chainGasAmount is 0 since the gas rebate function is deprecated
+            0
         );
     }
 
@@ -335,6 +347,20 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             // We will forward msg.value in the external call later, if recipient is not this contract
             amountPulled = msg.value;
         }
+    }
+
+    /// @notice Calls the Recipient's hook function with the specified callParams and performs
+    /// all the necessary checks for the returned value.
+    function _checkedCallRecipient(
+        address recipient,
+        uint256 msgValue,
+        address token,
+        uint256 amount,
+        bytes memory callParams
+    )
+        internal
+    {
+        // TODO: implement
     }
 
     /// @notice Calculates time since proof submitted
