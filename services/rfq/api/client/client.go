@@ -179,18 +179,14 @@ func (c *clientImpl) PutRelayAck(ctx context.Context, req *model.PutAckRequest) 
 }
 
 func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.SubscribeActiveRFQRequest, reqChan chan *model.ActiveRFQMessage) (respChan chan *model.ActiveRFQMessage, err error) {
-	fmt.Println("SubscribeActiveQuotes - starting")
 	conn, err := c.connectWebsocket(ctx, req)
 	if err != nil {
-		fmt.Printf("SubscribeActiveQuotes - failed to connect to websocket: %s\n", err)
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
 	}
-	fmt.Println("SubscribeActiveQuotes - connected to websocket")
 	// first, subscrbe to the given chains
 	sub := model.SubscriptionParams{
 		Chains: req.ChainIDs,
 	}
-	fmt.Printf("SubscribeActiveQuotes - sub: %v\n", sub)
 	subJSON, err := json.Marshal(sub)
 	if err != nil {
 		return respChan, fmt.Errorf("error marshaling subscription params: %w", err)
@@ -200,18 +196,14 @@ func (c *clientImpl) SubscribeActiveQuotes(ctx context.Context, req *model.Subsc
 		Content: json.RawMessage(subJSON),
 	})
 	if err != nil {
-		fmt.Printf("SubscribeActiveQuotes - error sending subscribe message: %s\n", err)
 		return nil, fmt.Errorf("error sending subscribe message: %w", err)
 	}
-	fmt.Println("SubscribeActiveQuotes - subscribed to chains")
 	// make sure subscription is successful
 	var resp model.ActiveRFQMessage
 	err = conn.ReadJSON(&resp)
 	if err != nil {
-		fmt.Printf("SubscribeActiveQuotes - error reading subscribe response: %s\n", err)
 		return nil, fmt.Errorf("error reading subscribe response: %w", err)
 	}
-	fmt.Printf("SubscribeActiveQuotes - resp: %v\n", resp)
 	if !resp.Success || resp.Op != rest.SubscribeOp {
 		return nil, fmt.Errorf("subscription failed")
 	}

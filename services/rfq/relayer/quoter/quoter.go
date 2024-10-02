@@ -258,7 +258,6 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 // SubscribeActiveRFQ subscribes to the RFQ websocket API.
 // This function is blocking and will run until the context is canceled.
 func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
-	fmt.Println("SubscribeActiveRFQ - starting")
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "SubscribeActiveRFQ")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -268,7 +267,6 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 	for chainID := range m.config.Chains {
 		chainIDs = append(chainIDs, chainID)
 	}
-	fmt.Printf("SubscribeActiveRFQ - chainIDs: %v\n", chainIDs)
 	req := model.SubscribeActiveRFQRequest{
 		ChainIDs: chainIDs,
 	}
@@ -280,7 +278,6 @@ func (m *Manager) SubscribeActiveRFQ(ctx context.Context) (err error) {
 		return fmt.Errorf("error subscribing to active quotes: %w", err)
 	}
 	span.AddEvent("subscribed to active quotes")
-	fmt.Println("SubscribeActiveRFQ - subscribed to active quotes")
 	for {
 		select {
 		case <-ctx.Done():
