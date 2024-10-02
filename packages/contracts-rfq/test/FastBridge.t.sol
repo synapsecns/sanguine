@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
+// solhint-disable
 
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
@@ -49,6 +50,19 @@ contract FastBridgeTest is Test {
         ethUSDC.mint(guard, 100 * 10 ** 6);
         ethUSDC.mint(user, 100 * 10 ** 6);
         ethUSDC.mint(dstUser, 100 * 10 ** 6);
+    }
+
+    function assertCorrectProof(
+        bytes32 transactionId,
+        uint256 expectedTimestamp,
+        address expectedRelayer
+    )
+        internal
+        virtual
+    {
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(transactionId);
+        assertEq(timestamp, uint96(expectedTimestamp));
+        assertEq(relayer, expectedRelayer);
     }
 
     function _getBridgeRequestAndId(
@@ -1349,9 +1363,7 @@ contract FastBridgeTest is Test {
         fastBridge.prove(request, fakeTxnHash);
 
         // We check if the bridge transaction proof timestamp is set to the timestamp at which the proof was provided
-        (uint96 _timestamp, address _oldRelayer) = fastBridge.bridgeProofs(transactionId);
-        assertEq(_timestamp, uint96(block.timestamp));
-        assertEq(_oldRelayer, relayer);
+        assertCorrectProof(transactionId, block.timestamp, relayer);
 
         // We check if the bridge status is RELAYER_PROVED
         assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.RELAYER_PROVED));
@@ -1383,9 +1395,7 @@ contract FastBridgeTest is Test {
         fastBridge.prove(request, fakeTxnHash);
 
         // We check if the bridge transaction proof timestamp is set to the timestamp at which the proof was provided
-        (uint96 _timestamp, address _oldRelayer) = fastBridge.bridgeProofs(transactionId);
-        assertEq(_timestamp, uint96(block.timestamp));
-        assertEq(_oldRelayer, relayer);
+        assertCorrectProof(transactionId, block.timestamp, relayer);
 
         // We stop a prank to contain within test
         vm.stopPrank();
@@ -1414,9 +1424,7 @@ contract FastBridgeTest is Test {
         fastBridge.prove(request, fakeTxnHash);
 
         // We check if the bridge transaction proof timestamp is set to the timestamp at which the proof was provided
-        (uint96 _timestamp, address _oldRelayer) = fastBridge.bridgeProofs(transactionId);
-        assertEq(_timestamp, uint96(block.timestamp));
-        assertEq(_oldRelayer, relayer);
+        assertCorrectProof(transactionId, block.timestamp, relayer);
 
         // We stop a prank to contain within test
         vm.stopPrank();
@@ -1713,10 +1721,8 @@ contract FastBridgeTest is Test {
         fastBridge.dispute(transactionId);
 
         // check status and proofs updated
-        (uint96 _timestamp, address _oldRelayer) = fastBridge.bridgeProofs(transactionId);
         assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REQUESTED));
-        assertEq(_timestamp, 0);
-        assertEq(_oldRelayer, address(0));
+        assertCorrectProof(transactionId, 0, address(0));
 
         // We stop a prank to contain within test
         vm.stopPrank();
@@ -1739,10 +1745,8 @@ contract FastBridgeTest is Test {
         fastBridge.dispute(transactionId);
 
         // check status and proofs updated
-        (uint96 _timestamp, address _oldRelayer) = fastBridge.bridgeProofs(transactionId);
         assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REQUESTED));
-        assertEq(_timestamp, 0);
-        assertEq(_oldRelayer, address(0));
+        assertCorrectProof(transactionId, 0, address(0));
 
         // We stop a prank to contain within test
         vm.stopPrank();

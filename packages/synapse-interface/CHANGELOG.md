@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.1...@synapsecns/synapse-interface@0.40.2) (2024-10-01)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.40.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.40.0...@synapsecns/synapse-interface@0.40.1) (2024-09-26)
+
+
+### Bug Fixes
+
+* **synapse-interface:** Generalizes airdrop decimal display based on SDK gasAirdropAmount [SLT-269] ([#3196](https://github.com/synapsecns/sanguine/issues/3196)) ([aa37b50](https://github.com/synapsecns/sanguine/commit/aa37b503786824d7a2460640be7d2484f0491071))
+
+
+
+
+
+# [0.40.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.39.2...@synapsecns/synapse-interface@0.40.0) (2024-09-26)
+
+
+### Features
+
+* **synapse-interface:** refund RFQ transaction [SLT-272] ([#3197](https://github.com/synapsecns/sanguine/issues/3197)) ([f0b13bc](https://github.com/synapsecns/sanguine/commit/f0b13bc456620004a1787f62e87f404d95272356))
+
+
+
+
+
+## [0.39.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.39.1...@synapsecns/synapse-interface@0.39.2) (2024-09-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.39.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.39.0...@synapsecns/synapse-interface@0.39.1) (2024-09-26)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 # [0.39.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.38.9...@synapsecns/synapse-interface@0.39.0) (2024-09-23)
 
 

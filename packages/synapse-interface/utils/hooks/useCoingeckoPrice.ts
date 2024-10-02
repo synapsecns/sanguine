@@ -8,7 +8,7 @@ const ID_MAP = {
   GLMR: 'moonbeam',
   CANTO: 'canto',
   FTM: 'fantom',
-  METIS: 'metis-token',
+  Metis: 'metis-token',
   BNB: 'binancecoin',
   MATIC: 'matic-network',
   KLAY: 'klay-token',

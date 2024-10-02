@@ -17,6 +17,24 @@ describe('Bridge Route with Real Synapse Service', () => {
       toToken: USDC.addresses[10],
       amount: '1000',
     })
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(response.body)).toBe(true)
+    expect(response.body.length).toBeGreaterThan(0)
+    expect(response.body[0]).toHaveProperty('maxAmountOutStr')
+    expect(response.body[0]).toHaveProperty('bridgeFeeFormatted')
+  }, 15000)
+
+  it('should return bridge quotes for valid originUserAddress', async () => {
+    const response = await request(app).get('/bridge').query({
+      fromChain: '1',
+      toChain: '10',
+      fromToken: USDC.addresses[1],
+      toToken: USDC.addresses[10],
+      amount: '1000',
+      originUserAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    })
+
     expect(response.status).toBe(200)
     expect(Array.isArray(response.body)).toBe(true)
     expect(response.body.length).toBeGreaterThan(0)
@@ -55,6 +73,39 @@ describe('Bridge Route with Real Synapse Service', () => {
     expect(response.body[0]).toHaveProperty('bridgeFeeFormatted')
   }, 15000)
 
+  it('should return 400 for invalid originUserAddress', async () => {
+    const response = await request(app).get('/bridge').query({
+      fromChain: '1',
+      toChain: '10',
+      fromToken: USDC.addresses[1],
+      toToken: USDC.addresses[10],
+      amount: '1000',
+      originUserAddress: 'invalid_address',
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      'Invalid originUserAddress address'
+    )
+  }, 15000)
+
+  it('should return 400 for unsupported route', async () => {
+    const response = await request(app).get('/bridge').query({
+      fromChain: '1',
+      toChain: '10',
+      fromToken: NativeGasAddress,
+      toToken: USDC.addresses[10],
+      amount: '10',
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      'No valid route exists for the chain/token combination'
+    )
+  })
+
   it('should return 400 for unsupported fromChain, with error message', async () => {
     const response = await request(app).get('/bridge').query({
       fromChain: '999',
@@ -68,7 +119,7 @@ describe('Bridge Route with Real Synapse Service', () => {
       'message',
       'Unsupported fromChain'
     )
-  }, 10000)
+  })
 
   it('should return 400 for unsupported toChain, with error message', async () => {
     const response = await request(app).get('/bridge').query({
@@ -80,7 +131,7 @@ describe('Bridge Route with Real Synapse Service', () => {
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('message', 'Unsupported toChain')
-  }, 10000)
+  })
 
   it('should return 400 for invalid fromToken address, with error message', async () => {
     const response = await request(app).get('/bridge').query({
@@ -95,7 +146,7 @@ describe('Bridge Route with Real Synapse Service', () => {
       'message',
       'Invalid fromToken address'
     )
-  }, 10000)
+  })
 
   it('should return 400 for token not supported on specified chain, with error message', async () => {
     const response = await request(app).get('/bridge').query({
@@ -110,7 +161,7 @@ describe('Bridge Route with Real Synapse Service', () => {
       'message',
       'Invalid fromToken address'
     )
-  }, 10000)
+  })
 
   it('should return 400 for missing amount, with error message', async () => {
     const response = await request(app).get('/bridge').query({
@@ -121,5 +172,5 @@ describe('Bridge Route with Real Synapse Service', () => {
     })
     expect(response.status).toBe(400)
     expect(response.body.error).toHaveProperty('field', 'amount')
-  }, 10000)
+  })
 })

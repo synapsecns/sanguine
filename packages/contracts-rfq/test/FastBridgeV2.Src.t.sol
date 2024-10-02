@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {FastBridgeV2, FastBridgeV2Test, IFastBridge} from "./FastBridgeV2.t.sol";
+import {FastBridgeV2SrcBaseTest, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.Src.Base.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2SrcTest is FastBridgeV2Test {
+contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     event BridgeRequested(
         bytes32 indexed transactionId,
         address indexed sender,
@@ -27,80 +27,11 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
 
     event BridgeDepositRefunded(bytes32 indexed transactionId, address indexed to, address token, uint256 amount);
 
-    uint256 public constant MIN_DEADLINE = 30 minutes;
-    uint256 public constant CLAIM_DELAY = 30 minutes;
-    uint256 public constant PERMISSIONLESS_REFUND_DELAY = 7 days;
-
-    uint256 public constant LEFTOVER_BALANCE = 1 ether;
-    uint256 public constant INITIAL_PROTOCOL_FEES_TOKEN = 456_789;
-    uint256 public constant INITIAL_PROTOCOL_FEES_ETH = 0.123 ether;
+    event BridgeQuoteDetails(bytes32 indexed transactionId, bytes quoteId);
 
     address public claimTo = makeAddr("Claim To");
 
-    function setUp() public override {
-        vm.chainId(SRC_CHAIN_ID);
-        super.setUp();
-    }
-
-    function deployFastBridge() public override returns (FastBridgeV2) {
-        return new FastBridgeV2(address(this));
-    }
-
-    function configureFastBridge() public virtual override {
-        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayerA);
-        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayerB);
-        fastBridge.grantRole(fastBridge.GUARD_ROLE(), guard);
-        fastBridge.grantRole(fastBridge.REFUNDER_ROLE(), refunder);
-    }
-
-    function mintTokens() public override {
-        // Prior Protocol fees
-        srcToken.mint(address(fastBridge), INITIAL_PROTOCOL_FEES_TOKEN);
-        deal(address(fastBridge), INITIAL_PROTOCOL_FEES_ETH);
-        cheatCollectedProtocolFees(address(srcToken), INITIAL_PROTOCOL_FEES_TOKEN);
-        cheatCollectedProtocolFees(ETH_ADDRESS, INITIAL_PROTOCOL_FEES_ETH);
-        // Users
-        srcToken.mint(userA, LEFTOVER_BALANCE + tokenParams.originAmount);
-        srcToken.mint(userB, LEFTOVER_BALANCE + tokenParams.originAmount);
-        deal(userA, LEFTOVER_BALANCE + ethParams.originAmount);
-        deal(userB, LEFTOVER_BALANCE + ethParams.originAmount);
-        vm.prank(userA);
-        srcToken.approve(address(fastBridge), type(uint256).max);
-        vm.prank(userB);
-        srcToken.approve(address(fastBridge), type(uint256).max);
-    }
-
-    function bridge(address caller, uint256 msgValue, IFastBridge.BridgeParams memory params) public {
-        vm.prank(caller);
-        fastBridge.bridge{value: msgValue}(params);
-    }
-
-    function prove(address caller, IFastBridge.BridgeTransaction memory bridgeTx, bytes32 destTxHash) public {
-        vm.prank(caller);
-        fastBridge.prove(abi.encode(bridgeTx), destTxHash);
-    }
-
-    function claim(address caller, IFastBridge.BridgeTransaction memory bridgeTx) public {
-        vm.prank(caller);
-        fastBridge.claim(abi.encode(bridgeTx));
-    }
-
-    function claim(address caller, IFastBridge.BridgeTransaction memory bridgeTx, address to) public {
-        vm.prank(caller);
-        fastBridge.claim(abi.encode(bridgeTx), to);
-    }
-
-    function dispute(address caller, bytes32 txId) public {
-        vm.prank(caller);
-        fastBridge.dispute(txId);
-    }
-
-    function refund(address caller, IFastBridge.BridgeTransaction memory bridgeTx) public {
-        vm.prank(caller);
-        fastBridge.refund(abi.encode(bridgeTx));
-    }
-
-    function expectBridgeRequested(IFastBridge.BridgeTransaction memory bridgeTx, bytes32 txId) public {
+    function expectBridgeRequested(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx, bytes32 txId) public {
         vm.expectEmit(address(fastBridge));
         emit BridgeRequested({
             transactionId: txId,
@@ -115,13 +46,18 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         });
     }
 
+    function expectBridgeQuoteDetails(bytes32 txId, bytes memory quoteId) public {
+        vm.expectEmit(address(fastBridge));
+        emit BridgeQuoteDetails({transactionId: txId, quoteId: quoteId});
+    }
+
     function expectBridgeProofProvided(bytes32 txId, address relayer, bytes32 destTxHash) public {
         vm.expectEmit(address(fastBridge));
         emit BridgeProofProvided({transactionId: txId, relayer: relayer, transactionHash: destTxHash});
     }
 
     function expectBridgeDepositClaimed(
-        IFastBridge.BridgeTransaction memory bridgeTx,
+        IFastBridgeV2.BridgeTransactionV2 memory bridgeTx,
         bytes32 txId,
         address relayer,
         address to
@@ -154,10 +90,6 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         });
     }
 
-    function assertEq(FastBridgeV2.BridgeStatus a, FastBridgeV2.BridgeStatus b) public pure {
-        assertEq(uint8(a), uint8(b));
-    }
-
     // ══════════════════════════════════════════════════ BRIDGE ═══════════════════════════════════════════════════════
 
     function checkTokenBalancesAfterBridge(address caller) public view {
@@ -169,16 +101,18 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     function test_bridge_token() public {
         bytes32 txId = getTxId(tokenTx);
         expectBridgeRequested(tokenTx, txId);
+        expectBridgeQuoteDetails(txId, tokenParamsV2.quoteId);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         checkTokenBalancesAfterBridge(userA);
     }
 
     function test_bridge_token_diffSender() public {
         bytes32 txId = getTxId(tokenTx);
         expectBridgeRequested(tokenTx, txId);
+        expectBridgeQuoteDetails(txId, tokenParamsV2.quoteId);
         bridge({caller: userB, msgValue: 0, params: tokenParams});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + tokenParams.originAmount);
         checkTokenBalancesAfterBridge(userB);
     }
@@ -194,8 +128,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
+        expectBridgeQuoteDetails(txId, ethParamsV2.quoteId);
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         checkEthBalancesAfterBridge(userA);
     }
 
@@ -204,8 +139,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
+        expectBridgeQuoteDetails(txId, ethParamsV2.quoteId);
         bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         checkEthBalancesAfterBridge(userB);
     }
@@ -219,8 +155,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         ethTx.originSender = userB;
         bytes32 txId = getTxId(ethTx);
         expectBridgeRequested(ethTx, txId);
+        expectBridgeQuoteDetails(txId, ethParamsV2.quoteId);
         bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         checkEthBalancesAfterBridge(userB);
     }
 
@@ -270,14 +207,12 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     }
 
     function test_bridge_revert_zeroSender() public {
-        vm.skip(true); // TODO: unskip when fixed
         tokenParams.sender = address(0);
         vm.expectRevert(ZeroAddress.selector);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 
     function test_bridge_revert_zeroRecipient() public {
-        vm.skip(true); // TODO: unskip when fixed
         tokenParams.to = address(0);
         vm.expectRevert(ZeroAddress.selector);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
@@ -353,12 +288,138 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         prove({caller: caller, bridgeTx: tokenTx, destTxHash: hex"01"});
     }
 
+    // ════════════════════════════════════════ PROVE OTHER RELAYER ════════════════════════════════════════════
+
+    function test_proveOther_token() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, relayerA);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    function test_proveOther_eth() public {
+        // bridge token first to match the nonce
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, relayerA);
+        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
+    }
+
+    // relayer self-proving using tx id, which is capable of proving for another & most tests focus on that angle.
+    function test_proveOther_self() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
+        prove({caller: relayerA, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, relayerA);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    // arbitrary non-privileged address can be asserted as the relayer
+    function test_proveOther_permless() public {
+        bytes32 txId = getTxId(tokenTx);
+
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        expectBridgeProofProvided({txId: txId, relayer: address(0x1234), destTxHash: hex"01"});
+        prove({caller: relayerA, transactionId: txId, destTxHash: hex"01", relayer: address(0x1234)});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, address(0x1234));
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    function test_proveOther_reProveAfterDispute() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        bytes32 txId = getTxId(ethTx);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        expectBridgeProofDisputed(txId, guard);
+        dispute(guard, txId);
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"02"});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"02", relayer: relayerA});
+        expectBridgeProofDisputed(txId, guard);
+        dispute(guard, txId);
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"03"});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"03", relayer: relayerA});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, relayerA);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    // can prove long after relaying as long as status is still good
+    function test_proveOther_longDelay() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(10 days);
+        expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
+        prove({caller: relayerA, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        (uint96 timestamp, address relayer) = fastBridge.bridgeProofs(txId);
+        assertEq(timestamp, block.timestamp);
+        assertEq(relayer, relayerA);
+        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
+        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
+    }
+
+    function test_proveOther_revert_statusProved() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        vm.expectRevert(StatusIncorrect.selector);
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"02", relayer: relayerA});
+    }
+
+    function test_proveOther_revert_statusClaimed() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+        skip(CLAIM_DELAY + 1);
+        claim({caller: relayerA, bridgeTx: tokenTx, to: relayerA});
+        vm.expectRevert(StatusIncorrect.selector);
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"02", relayer: relayerA});
+    }
+
+    function test_proveOther_revert_statusRefunded() public {
+        bytes32 txId = getTxId(tokenTx);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        skip(DEADLINE + 1);
+        refund({caller: refunder, bridgeTx: tokenTx});
+        vm.expectRevert(StatusIncorrect.selector);
+        prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+    }
+
+    function test_proveOther_revert_callerNotAuthed(address caller) public {
+        bytes32 txId = getTxId(tokenTx);
+        vm.assume(caller != relayerA && caller != relayerB);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        expectUnauthorized(caller, fastBridge.RELAYER_ROLE());
+        prove({caller: caller, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
+    }
+
     // ═══════════════════════════════════════════════════ CLAIM ═══════════════════════════════════════════════════════
 
     function checkTokenBalancesAfterClaim(address relayer) public view {
-        assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount);
+        uint256 expectedProtocolFees = INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount;
+        assertEq(fastBridge.protocolFees(address(srcToken)), expectedProtocolFees);
         assertEq(srcToken.balanceOf(relayer), tokenTx.originAmount);
-        assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenTx.originFeeAmount);
+        assertEq(srcToken.balanceOf(address(fastBridge)), expectedProtocolFees);
     }
 
     function test_claim_token() public {
@@ -369,7 +430,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         assertTrue(fastBridge.canClaim(txId, relayerA));
         expectBridgeDepositClaimed({bridgeTx: tokenTx, txId: txId, relayer: relayerA, to: relayerA});
         claim({caller: relayerA, bridgeTx: tokenTx, to: relayerA});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         checkTokenBalancesAfterClaim(relayerA);
     }
 
@@ -381,7 +442,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(CLAIM_DELAY + 1);
         expectBridgeDepositClaimed({bridgeTx: tokenTx, txId: txId, relayer: relayerA, to: relayerA});
         claim({caller: caller, bridgeTx: tokenTx});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         checkTokenBalancesAfterClaim(relayerA);
     }
 
@@ -393,7 +454,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(CLAIM_DELAY + 1);
         expectBridgeDepositClaimed({bridgeTx: tokenTx, txId: txId, relayer: relayerA, to: relayerA});
         claim({caller: caller, bridgeTx: tokenTx, to: address(0)});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         checkTokenBalancesAfterClaim(relayerA);
     }
 
@@ -404,7 +465,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(CLAIM_DELAY + 1);
         expectBridgeDepositClaimed({bridgeTx: tokenTx, txId: txId, relayer: relayerA, to: claimTo});
         claim({caller: relayerA, bridgeTx: tokenTx, to: claimTo});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         assertEq(srcToken.balanceOf(relayerA), 0);
         checkTokenBalancesAfterClaim(claimTo);
     }
@@ -416,14 +477,15 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(CLAIM_DELAY + 30 days);
         expectBridgeDepositClaimed({bridgeTx: tokenTx, txId: txId, relayer: relayerA, to: relayerA});
         claim({caller: relayerA, bridgeTx: tokenTx, to: relayerA});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         checkTokenBalancesAfterClaim(relayerA);
     }
 
     function checkEthBalancesAfterClaim(address relayer) public view {
-        assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount);
+        uint256 expectedProtocolFees = INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount;
+        assertEq(fastBridge.protocolFees(ETH_ADDRESS), expectedProtocolFees);
         assertEq(address(relayer).balance, ethTx.originAmount);
-        assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethTx.originFeeAmount);
+        assertEq(address(fastBridge).balance, expectedProtocolFees);
     }
 
     function test_claim_eth() public {
@@ -435,7 +497,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         assertTrue(fastBridge.canClaim(txId, relayerA));
         expectBridgeDepositClaimed({bridgeTx: ethTx, txId: txId, relayer: relayerA, to: relayerA});
         claim({caller: relayerA, bridgeTx: ethTx, to: relayerA});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         checkEthBalancesAfterClaim(relayerA);
     }
 
@@ -448,7 +510,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(CLAIM_DELAY + 1);
         expectBridgeDepositClaimed({bridgeTx: ethTx, txId: txId, relayer: relayerA, to: relayerA});
         claim({caller: caller, bridgeTx: ethTx});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         checkEthBalancesAfterClaim(relayerA);
     }
 
@@ -461,7 +523,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(CLAIM_DELAY + 1);
         expectBridgeDepositClaimed({bridgeTx: ethTx, txId: txId, relayer: relayerA, to: relayerA});
         claim({caller: caller, bridgeTx: ethTx, to: address(0)});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         checkEthBalancesAfterClaim(relayerA);
     }
 
@@ -473,7 +535,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(CLAIM_DELAY + 1);
         expectBridgeDepositClaimed({bridgeTx: ethTx, txId: txId, relayer: relayerA, to: claimTo});
         claim({caller: relayerA, bridgeTx: ethTx, to: claimTo});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         checkEthBalancesAfterClaim(claimTo);
     }
 
@@ -485,7 +547,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(CLAIM_DELAY + 30 days);
         expectBridgeDepositClaimed({bridgeTx: ethTx, txId: txId, relayer: relayerA, to: relayerA});
         claim({caller: relayerA, bridgeTx: ethTx, to: relayerA});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         checkEthBalancesAfterClaim(relayerA);
     }
 
@@ -565,7 +627,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
         expectBridgeProofDisputed({txId: txId, guard: guard});
         dispute({caller: guard, txId: txId});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
     }
@@ -577,7 +639,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(CLAIM_DELAY);
         expectBridgeProofDisputed({txId: txId, guard: guard});
         dispute({caller: guard, txId: txId});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN + tokenParams.originAmount);
     }
@@ -589,7 +651,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         prove({caller: relayerA, bridgeTx: ethTx, destTxHash: hex"01"});
         expectBridgeProofDisputed({txId: txId, guard: guard});
         dispute({caller: guard, txId: txId});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
     }
@@ -602,7 +664,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(CLAIM_DELAY);
         expectBridgeProofDisputed({txId: txId, guard: guard});
         dispute({caller: guard, txId: txId});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REQUESTED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH + ethParams.originAmount);
     }
@@ -665,7 +727,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(DEADLINE + 1);
         expectBridgeDepositRefunded({bridgeParams: tokenParams, txId: txId});
         refund({caller: refunder, bridgeTx: tokenTx});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
         assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + tokenParams.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN);
@@ -678,7 +740,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(DEADLINE + 1);
         expectBridgeDepositRefunded({bridgeParams: tokenParams, txId: txId});
         refund({caller: refunder, bridgeTx: tokenTx});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
         assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + 2 * tokenParams.originAmount);
         assertEq(srcToken.balanceOf(userB), LEFTOVER_BALANCE);
@@ -691,7 +753,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(DEADLINE + 30 days);
         expectBridgeDepositRefunded({bridgeParams: tokenParams, txId: txId});
         refund({caller: refunder, bridgeTx: tokenTx});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
         assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + tokenParams.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN);
@@ -704,7 +766,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(DEADLINE + PERMISSIONLESS_REFUND_DELAY + 1);
         expectBridgeDepositRefunded({bridgeParams: tokenParams, txId: txId});
         refund({caller: caller, bridgeTx: tokenTx});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
         assertEq(srcToken.balanceOf(userA), LEFTOVER_BALANCE + tokenParams.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), INITIAL_PROTOCOL_FEES_TOKEN);
@@ -717,9 +779,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(DEADLINE + 1);
         expectBridgeDepositRefunded({bridgeParams: ethParams, txId: txId});
         refund({caller: refunder, bridgeTx: ethTx});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
@@ -731,10 +793,10 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(DEADLINE + 1);
         expectBridgeDepositRefunded({bridgeParams: ethParams, txId: txId});
         refund({caller: refunder, bridgeTx: ethTx});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + 2 * ethParams.originAmount);
-        assertEq(address(userB).balance, LEFTOVER_BALANCE);
+        assertEq(userA.balance, LEFTOVER_BALANCE + 2 * ethParams.originAmount);
+        assertEq(userB.balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
@@ -745,9 +807,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(DEADLINE + 30 days);
         expectBridgeDepositRefunded({bridgeParams: ethParams, txId: txId});
         refund({caller: refunder, bridgeTx: ethTx});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
@@ -759,23 +821,23 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         skip(DEADLINE + PERMISSIONLESS_REFUND_DELAY + 1);
         expectBridgeDepositRefunded({bridgeParams: ethParams, txId: txId});
         refund({caller: caller, bridgeTx: ethTx});
-        assertEq(fastBridge.bridgeStatuses(txId), FastBridgeV2.BridgeStatus.REFUNDED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REFUNDED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
-        assertEq(address(userA).balance, LEFTOVER_BALANCE + ethParams.originAmount);
+        assertEq(userA.balance, LEFTOVER_BALANCE + ethParams.originAmount);
         assertEq(address(fastBridge).balance, INITIAL_PROTOCOL_FEES_ETH);
     }
 
     function test_refund_revert_zeroDelay() public {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         vm.expectRevert(DeadlineNotExceeded.selector);
-        refund({caller: refunder, bridgeTx: ethTx});
+        refund({caller: refunder, bridgeTx: tokenTx});
     }
 
     function test_refund_revert_justBeforeDeadline() public {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         skip(DEADLINE);
         vm.expectRevert(DeadlineNotExceeded.selector);
-        refund({caller: refunder, bridgeTx: ethTx});
+        refund({caller: refunder, bridgeTx: tokenTx});
     }
 
     function test_refund_revert_justBeforeDeadline_permisionless(address caller) public {
@@ -783,17 +845,15 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         skip(DEADLINE + PERMISSIONLESS_REFUND_DELAY);
         vm.expectRevert(DeadlineNotExceeded.selector);
-        refund({caller: caller, bridgeTx: ethTx});
+        refund({caller: caller, bridgeTx: tokenTx});
     }
 
     function test_refund_revert_statusNull() public {
-        vm.skip(true); // TODO: unskip when fixed
         vm.expectRevert(StatusIncorrect.selector);
         refund({caller: refunder, bridgeTx: ethTx});
     }
 
     function test_refund_revert_statusProven() public {
-        vm.skip(true); // TODO: unskip when fixed
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
         vm.expectRevert(StatusIncorrect.selector);
@@ -801,7 +861,6 @@ contract FastBridgeV2SrcTest is FastBridgeV2Test {
     }
 
     function test_refund_revert_statusClaimed() public {
-        vm.skip(true); // TODO: unskip when fixed
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
         skip(CLAIM_DELAY + 1);

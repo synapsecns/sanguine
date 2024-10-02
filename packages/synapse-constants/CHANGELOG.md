@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.6](https://github.com/synapsecns/sanguine/compare/synapse-constants@1.5.4...synapse-constants@1.5.6) (2024-10-01)
+
+**Note:** Version bump only for package synapse-constants
+
+
+
+
+
+## [1.5.4](https://github.com/synapsecns/sanguine/compare/synapse-constants@1.5.2...synapse-constants@1.5.4) (2024-10-01)
+
+**Note:** Version bump only for package synapse-constants
+
+
+
+
+
+## [1.5.2](https://github.com/synapsecns/sanguine/compare/synapse-constants@1.5.0...synapse-constants@1.5.2) (2024-10-01)
+
+**Note:** Version bump only for package synapse-constants
+
+
+
+
+
+# [1.5.0](https://github.com/synapsecns/sanguine/compare/synapse-constants@1.3.24...synapse-constants@1.5.0) (2024-10-01)
+
+
+### Features
+
+* **synapse-constants:** Refactor with rollup for package build and export [SLT-160] ([#3175](https://github.com/synapsecns/sanguine/issues/3175)) ([32cee8e](https://github.com/synapsecns/sanguine/commit/32cee8e3bb88222e9876b0963effb51d72be31a6))
+
+
+
+
+
 ## [1.3.24](https://github.com/synapsecns/sanguine/compare/synapse-constants@1.3.23...synapse-constants@1.3.24) (2024-09-10)
 
 **Note:** Version bump only for package synapse-constants

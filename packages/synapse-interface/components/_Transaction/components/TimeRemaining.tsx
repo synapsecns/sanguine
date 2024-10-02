@@ -12,7 +12,7 @@ export const TimeRemaining = ({
   isDelayed: boolean
   remainingTime: number
   delayedTime: number | null
-  status: 'pending' | 'completed' | 'reverted'
+  status: 'pending' | 'completed' | 'reverted' | 'refunded'
 }) => {
   const t = useTranslations('Time')
 
@@ -32,6 +32,14 @@ export const TimeRemaining = ({
     return (
       <span className="flex items-center space-x-1 text-sm">
         <ExclamationIcon className="w-4 h-4" /> <span>{t('Reverted')}</span>
+      </span>
+    )
+  }
+
+  if (status === 'refunded') {
+    return (
+      <span className="flex items-center space-x-1 text-sm">
+        <ExclamationIcon className="w-4 h-4" /> <span>{t('Refunded')}</span>
       </span>
     )
   }

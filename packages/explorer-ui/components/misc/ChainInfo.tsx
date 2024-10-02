@@ -45,6 +45,8 @@ export const ChainInfo = ({
               className={`inline rounded-full ${imgClassName}`}
               src={chain?.chainImg}
               alt={chain?.name}
+              height={16}
+              width={16}
             />
             <p
               className={`${textClassName} group-hover:text-[#8FEBFF] transition-colors duration-200`}
