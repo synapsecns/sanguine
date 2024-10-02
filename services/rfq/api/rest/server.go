@@ -546,7 +546,7 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 	if passiveQuote != nil && passiveQuote.DestAmount != nil {
 		span.SetAttributes(attribute.String("passive_quote_dest_amount", *passiveQuote.DestAmount))
 	}
-	quote, _ := getBestQuote(activeQuote, passiveQuote)
+	quote := getBestQuote(activeQuote, passiveQuote)
 
 	// construct the response
 	var resp model.PutRFQResponse
