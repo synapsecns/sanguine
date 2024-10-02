@@ -24,6 +24,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @notice Minimum deadline period to relay a requested bridge transaction
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
 
+    /// @notice Maximum length of accepted callParams
+    uint256 public constant MAX_CALL_PARAMS_LENGTH = 2 ** 16 - 1;
+
     /// @notice Status of the bridge tx on origin chain
     mapping(bytes32 => BridgeTxDetails) public bridgeTxDetails;
     /// @notice Relay details on destination chain
@@ -137,6 +140,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
         if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
+        if (paramsV2.callParams.length > MAX_CALL_PARAMS_LENGTH) revert CallParamsLengthAboveMax();
         int256 exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
         // exclusivityEndTime must be in range (0 .. params.deadline]
         if (exclusivityEndTime <= 0 || exclusivityEndTime > int256(params.deadline)) {
