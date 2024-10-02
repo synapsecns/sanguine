@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 
@@ -9,6 +10,7 @@ import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
 import {IFastBridgeV2Errors} from "./interfaces/IFastBridgeV2Errors.sol";
+import {IFastBridgeRecipient} from "./interfaces/IFastBridgeRecipient.sol";
 
 /// @notice FastBridgeV2 is a contract for bridging tokens across chains.
 contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
@@ -360,7 +362,18 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     )
         internal
     {
-        // TODO: implement
+        bytes memory hookData =
+            abi.encodeCall(IFastBridgeRecipient.fastBridgeTransferReceived, (token, amount, callParams));
+        // This will bubble any revert messages from the hook function
+        bytes memory returnData = Address.functionCallWithValue({target: recipient, data: hookData, value: msgValue});
+        // Explicit revert if no return data at all
+        if (returnData.length == 0) revert RecipientNoReturnValue();
+        // Check that exactly a single return value was returned
+        if (returnData.length != 32) revert RecipientIncorrectReturnValue();
+        // Return value should be abi-encoded hook function selector
+        if (bytes32(returnData) != bytes32(IFastBridgeRecipient.fastBridgeTransferReceived.selector)) {
+            revert RecipientIncorrectReturnValue();
+        }
     }
 
     /// @notice Calculates time since proof submitted
