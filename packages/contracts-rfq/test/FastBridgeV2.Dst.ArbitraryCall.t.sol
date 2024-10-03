@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {FastBridgeV2DstExclusivityTest, IFastBridgeV2} from "./FastBridgeV2.Dst.Exclusivity.t.sol";
+import {IFastBridgeV2} from "../contracts/interfaces/IFastBridgeV2.sol";
+import {FastBridgeV2DstExclusivityTest} from "./FastBridgeV2.Dst.Exclusivity.t.sol";
 import {RecipientMock} from "./mocks/RecipientMock.sol";
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
@@ -98,6 +99,28 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
         relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: 0, bridgeTx: tokenTx});
     }
 
+    function test_relay_token_withCallValue_excessiveReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+        override
+    {
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(excessiveReturnValueRecipient);
+        vm.expectRevert(RecipientIncorrectReturnValue.selector);
+        relay({caller: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_excessiveReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+        override
+    {
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(excessiveReturnValueRecipient);
+        vm.expectRevert(RecipientIncorrectReturnValue.selector);
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+    }
+
     function test_relay_eth_excessiveReturnValueRecipient_revertWhenCallParamsPresent() public virtual override {
         setEthTestRecipient(excessiveReturnValueRecipient);
         vm.expectRevert(RecipientIncorrectReturnValue.selector);
@@ -132,6 +155,28 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
         relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: 0, bridgeTx: tokenTx});
     }
 
+    function test_relay_token_withCallValue_incorrectReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+        override
+    {
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(incorrectReturnValueRecipient);
+        vm.expectRevert(RecipientIncorrectReturnValue.selector);
+        relay({caller: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_incorrectReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+        override
+    {
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(incorrectReturnValueRecipient);
+        vm.expectRevert(RecipientIncorrectReturnValue.selector);
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+    }
+
     function test_relay_eth_incorrectReturnValueRecipient_revertWhenCallParamsPresent() public virtual override {
         setEthTestRecipient(incorrectReturnValueRecipient);
         vm.expectRevert(RecipientIncorrectReturnValue.selector);
@@ -160,6 +205,24 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
         setTokenTestRecipient(noOpRecipient);
         vm.expectRevert(Address.FailedInnerCall.selector);
         relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: 0, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withCallValue_noOpRecipient_revertWhenCallParamsPresent() public virtual override {
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(noOpRecipient);
+        vm.expectRevert(Address.FailedInnerCall.selector);
+        relay({caller: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_noOpRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+        override
+    {
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(noOpRecipient);
+        vm.expectRevert(Address.FailedInnerCall.selector);
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
     }
 
     function test_relay_eth_noOpRecipient_revertWhenCallParamsPresent() public virtual override {
@@ -192,6 +255,28 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
         relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: 0, bridgeTx: tokenTx});
     }
 
+    function test_relay_token_withCallValue_noReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+        override
+    {
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(noReturnValueRecipient);
+        vm.expectRevert(RecipientNoReturnValue.selector);
+        relay({caller: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_noReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+        override
+    {
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(noReturnValueRecipient);
+        vm.expectRevert(RecipientNoReturnValue.selector);
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+    }
+
     function test_relay_eth_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual override {
         setEthTestRecipient(noReturnValueRecipient);
         vm.expectRevert(RecipientNoReturnValue.selector);
@@ -220,6 +305,20 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
         mockRecipientRevert(tokenTx);
         vm.expectRevert(REVERT_MSG);
         relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: 0, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withCallValue_revert_recipientReverts() public {
+        setTokenTestCallValue(CALL_VALUE);
+        mockRecipientRevert(tokenTx);
+        vm.expectRevert(REVERT_MSG);
+        relay({caller: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_revert_recipientReverts() public {
+        setTokenTestCallValue(CALL_VALUE);
+        mockRecipientRevert(tokenTx);
+        vm.expectRevert(REVERT_MSG);
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
     }
 
     function test_relay_eth_revert_recipientReverts() public {

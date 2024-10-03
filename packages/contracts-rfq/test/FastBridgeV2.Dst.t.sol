@@ -23,6 +23,8 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         uint256 chainGasAmount
     );
 
+    uint256 public constant CALL_VALUE = 1_337_420;
+
     address public excessiveReturnValueRecipient;
     address public incorrectReturnValueRecipient;
     address public noOpRecipient;
@@ -67,6 +69,7 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         public
         virtual
     {
+        uint256 chainGasAmount = bridgeTx.destToken == ETH_ADDRESS ? 0 : bridgeTx.callValue;
         vm.expectEmit(address(fastBridge));
         emit BridgeRelayed({
             transactionId: txId,
@@ -77,7 +80,7 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
             destToken: bridgeTx.destToken,
             originAmount: bridgeTx.originAmount,
             destAmount: bridgeTx.destAmount,
-            chainGasAmount: 0
+            chainGasAmount: chainGasAmount
         });
     }
 
@@ -153,6 +156,28 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         checkEthBalances({recipient: userB, relayCaller: relayerA});
     }
 
+    // ══════════════════════════════════════════ RELAYS WITH CALL VALUE ═══════════════════════════════════════════════
+
+    function test_relay_token_withCallValue() public {
+        setTokenTestCallValue(CALL_VALUE);
+        bytes32 txId = getTxId(tokenTx);
+        expectBridgeRelayed(tokenTx, txId, relayerA);
+        relay({caller: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+        checkRelayedViews({txId: txId, expectedRelayer: relayerA});
+        checkTokenBalances({recipient: userB, relayCaller: relayerA});
+        assertEq(userB.balance, CALL_VALUE);
+    }
+
+    function test_relay_token_withRelayerAddressCallValue() public {
+        setTokenTestCallValue(CALL_VALUE);
+        bytes32 txId = getTxId(tokenTx);
+        expectBridgeRelayed(tokenTx, txId, relayerA);
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+        checkRelayedViews({txId: txId, expectedRelayer: relayerA});
+        checkTokenBalances({recipient: userB, relayCaller: relayerB});
+        assertEq(userB.balance, CALL_VALUE);
+    }
+
     // ═════════════════════════════════════ EXCESSIVE RETURN VALUE RECIPIENT ══════════════════════════════════════════
 
     // Note: in this test, the callParams are not present, and the below test functions succeed.
@@ -171,6 +196,26 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         assertEmptyCallParams(tokenTx.callParams);
         setTokenTestRecipient(excessiveReturnValueRecipient);
         test_relay_token_withRelayerAddress();
+    }
+
+    function test_relay_token_withCallValue_excessiveReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+    {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(excessiveReturnValueRecipient);
+        test_relay_token_withCallValue();
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_excessiveReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+    {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(excessiveReturnValueRecipient);
+        test_relay_token_withRelayerAddressCallValue();
     }
 
     function test_relay_eth_excessiveReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
@@ -208,6 +253,26 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         test_relay_token_withRelayerAddress();
     }
 
+    function test_relay_token_withCallValue_incorrectReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+    {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(incorrectReturnValueRecipient);
+        test_relay_token_withCallValue();
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_incorrectReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+    {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(incorrectReturnValueRecipient);
+        test_relay_token_withRelayerAddressCallValue();
+    }
+
     function test_relay_eth_incorrectReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
         assertEmptyCallParams(ethTx.callParams);
         setEthTestRecipient(incorrectReturnValueRecipient);
@@ -234,6 +299,20 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
     function test_relay_token_withRelayerAddress_nonPayableRecipient() public {
         setTokenTestRecipient(nonPayableRecipient);
         test_relay_token_withRelayerAddress();
+    }
+
+    function test_relay_token_withCallValue_nonPayableRecipient_revert() public {
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(nonPayableRecipient);
+        vm.expectRevert();
+        relay({caller: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_nonPayableRecipient_revert() public {
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(nonPayableRecipient);
+        vm.expectRevert();
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE, bridgeTx: tokenTx});
     }
 
     function test_relay_eth_revert_nonPayableRecipient() public {
@@ -265,6 +344,20 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         test_relay_token_withRelayerAddress();
     }
 
+    function test_relay_token_withCallValue_noOpRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(noOpRecipient);
+        test_relay_token_withCallValue();
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_noOpRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(noOpRecipient);
+        test_relay_token_withRelayerAddressCallValue();
+    }
+
     function test_relay_eth_noOpRecipient_revertWhenCallParamsPresent() public virtual {
         assertEmptyCallParams(ethTx.callParams);
         setEthTestRecipient(noOpRecipient);
@@ -292,6 +385,23 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         assertEmptyCallParams(tokenTx.callParams);
         setTokenTestRecipient(noReturnValueRecipient);
         test_relay_token_withRelayerAddress();
+    }
+
+    function test_relay_token_withCallValue_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(noReturnValueRecipient);
+        test_relay_token_withCallValue();
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_noReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+    {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestCallValue(CALL_VALUE);
+        setTokenTestRecipient(noReturnValueRecipient);
+        test_relay_token_withRelayerAddressCallValue();
     }
 
     function test_relay_eth_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
@@ -361,5 +471,68 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
     function test_relay_withRelayerAddress_revert_zeroAddr() public {
         vm.expectRevert(ZeroAddress.selector);
         relayWithAddress({caller: relayerA, relayer: address(0), msgValue: 0, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withCallValue_revert_zeroCallValue() public {
+        setTokenTestCallValue(CALL_VALUE);
+        vm.expectRevert(MsgValueIncorrect.selector);
+        relay({caller: relayerA, msgValue: 0, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withCallValue_revert_lowerCallValue() public {
+        setTokenTestCallValue(CALL_VALUE);
+        vm.expectRevert(MsgValueIncorrect.selector);
+        relay({caller: relayerA, msgValue: CALL_VALUE - 1, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withCallValue_revert_higherCallValue() public {
+        setTokenTestCallValue(CALL_VALUE);
+        vm.expectRevert(MsgValueIncorrect.selector);
+        relay({caller: relayerA, msgValue: CALL_VALUE + 1, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_revert_zeroCallValue() public {
+        setTokenTestCallValue(CALL_VALUE);
+        vm.expectRevert(MsgValueIncorrect.selector);
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: 0, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_revert_lowerCallValue() public {
+        setTokenTestCallValue(CALL_VALUE);
+        vm.expectRevert(MsgValueIncorrect.selector);
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE - 1, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_withRelayerAddressCallValue_revert_higherCallValue() public {
+        setTokenTestCallValue(CALL_VALUE);
+        vm.expectRevert(MsgValueIncorrect.selector);
+        relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: CALL_VALUE + 1, bridgeTx: tokenTx});
+    }
+
+    function test_relay_eth_withCallValue_revert_notSupported() public {
+        setEthTestCallValue(CALL_VALUE);
+        // Neither destAmount, CALL_VALUE, nor destAmount + CALL_VALUE should work here
+        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        relay({caller: relayerB, msgValue: CALL_VALUE, bridgeTx: ethTx});
+        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        relay({caller: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
+        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        relay({caller: relayerB, msgValue: ethParams.destAmount + CALL_VALUE, bridgeTx: ethTx});
+    }
+
+    function test_relay_eth_withRelayerAddressCallValue_revert_notSupported() public {
+        setEthTestCallValue(CALL_VALUE);
+        // Neither destAmount, CALL_VALUE, nor destAmount + CALL_VALUE should work here
+        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: CALL_VALUE, bridgeTx: ethTx});
+        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
+        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        relayWithAddress({
+            caller: relayerA,
+            relayer: relayerB,
+            msgValue: ethParams.destAmount + CALL_VALUE,
+            bridgeTx: ethTx
+        });
     }
 }
