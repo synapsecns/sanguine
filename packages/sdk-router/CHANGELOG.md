@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.11.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.11.2...@synapsecns/sdk-router@0.11.3) (2024-10-03)
+
+
+### Bug Fixes
+
+* **sdk-router:** quote unmarshall hotfix [SLT-302] ([#3223](https://github.com/synapsecns/sanguine/issues/3223)) ([e88685f](https://github.com/synapsecns/sanguine/commit/e88685f6ca763a3402ddcea9f6c465f67dea617b))
+
+
+
+
+
 ## [0.11.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.11.1...@synapsecns/sdk-router@0.11.2) (2024-09-26)
 
 
