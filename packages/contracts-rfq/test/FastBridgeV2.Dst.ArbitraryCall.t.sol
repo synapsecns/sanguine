@@ -336,14 +336,14 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
     function test_relay_eth_noCallParams_revert_recipientReverts() public {
         setEthTestCallParams("");
         vm.mockCallRevert({callee: userB, data: "", revertData: bytes(REVERT_MSG)});
-        vm.expectRevert("ETH transfer failed");
+        vm.expectRevert(Address.FailedInnerCall.selector);
         relay({caller: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
     }
 
     function test_relay_eth_withRelayerAddress_noCallParams_revert_recipientReverts() public {
         setEthTestCallParams("");
         vm.mockCallRevert({callee: userB, data: "", revertData: bytes(REVERT_MSG)});
-        vm.expectRevert("ETH transfer failed");
+        vm.expectRevert(Address.FailedInnerCall.selector);
         relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
     }
 }
