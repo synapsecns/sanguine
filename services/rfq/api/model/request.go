@@ -42,13 +42,6 @@ type PutRFQRequest struct {
 	Data         QuoteData `json:"data"`
 }
 
-// QuoteRequest represents a request for a quote.
-type QuoteRequest struct {
-	RequestID string    `json:"request_id"`
-	Data      QuoteData `json:"data"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 // QuoteData represents the data within a quote request.
 type QuoteData struct {
 	OriginChainID    int     `json:"origin_chain_id"`
