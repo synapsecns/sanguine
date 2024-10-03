@@ -250,13 +250,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
         if (transaction.callParams.length != 0) {
             // Arbitrary call requested, perform it while supplying full msg.value to the recipient
-            _checkedCallRecipient({
-                recipient: to,
-                msgValue: msg.value,
-                token: token,
-                amount: amount,
-                callParams: transaction.callParams
-            });
+            _checkedCallRecipient({recipient: to, token: token, amount: amount, callParams: transaction.callParams});
         } else if (msg.value != 0) {
             // No arbitrary call requested, but msg.value was sent. This is either a relay with ETH,
             // or a non-zero callValue request with an ERC20. In both cases, transfer the ETH to the recipient.
@@ -366,7 +360,6 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// all the necessary checks for the returned value.
     function _checkedCallRecipient(
         address recipient,
-        uint256 msgValue,
         address token,
         uint256 amount,
         bytes memory callParams
@@ -376,7 +369,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         bytes memory hookData =
             abi.encodeCall(IFastBridgeRecipient.fastBridgeTransferReceived, (token, amount, callParams));
         // This will bubble any revert messages from the hook function
-        bytes memory returnData = Address.functionCallWithValue({target: recipient, data: hookData, value: msgValue});
+        bytes memory returnData = Address.functionCallWithValue({target: recipient, data: hookData, value: msg.value});
         // Explicit revert if no return data at all
         if (returnData.length == 0) revert RecipientNoReturnValue();
         // Check that exactly a single return value was returned
