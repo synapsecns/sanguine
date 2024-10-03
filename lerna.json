@@ -3,6 +3,7 @@
   "useWorkspaces": true,
   "packages": [
     "packages/*",
+    "packages/synapse-constants/*",
     "packages/rfq-indexer/*",
     "docs/*"
   ],
