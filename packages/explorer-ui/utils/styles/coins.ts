@@ -1,4 +1,3 @@
-//@ts-ignore
 import {
   BUSD,
   USDT,
@@ -39,6 +38,7 @@ import {
   NOTE,
   MIM,
   AVWETH,
+  //@ts-ignore
 } from '@synapsecns/synapse-constants'
 
 const COLOR_COIN_MAP = {
