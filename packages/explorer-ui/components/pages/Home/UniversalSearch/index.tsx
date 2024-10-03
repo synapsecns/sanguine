@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CHAINS } from 'synapse-constants'
+import { CHAINS } from '@synapsecns/synapse-constants'
 import TextField from '@mui/material/TextField'
 import {
   inputStyle,

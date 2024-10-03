@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { CHAINS } from 'synapse-constants'
+import { CHAINS } from '@synapsecns/synapse-constants'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID

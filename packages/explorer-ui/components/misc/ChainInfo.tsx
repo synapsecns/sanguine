@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { CHAINS } from 'synapse-constants'
+import { CHAINS } from '@synapsecns/synapse-constants'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { getChainUrl, getExplorerTxUrl } from '@urls'
 

@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom'
-import { CHAINS } from 'synapse-constants'
+import { CHAINS } from '@synapsecns/synapse-constants'
 import { TableHeader } from '@components/TransactionTable/TableHeader'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { formatUSD } from '@utils/formatUSD'
