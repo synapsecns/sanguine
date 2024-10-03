@@ -40,29 +40,37 @@ type ServerSuite struct {
 	database             db.APIDB
 	cfg                  config.Config
 	testWallet           wallet.Wallet
+	relayerWallets       []wallet.Wallet
 	handler              metrics.Handler
 	QuoterAPIServer      *rest.QuoterAPIServer
 	port                 uint16
+	originChainID        int
+	destChainID          int
 }
 
 // NewServerSuite creates a end-to-end test suite.
 func NewServerSuite(tb testing.TB) *ServerSuite {
 	tb.Helper()
 	return &ServerSuite{
-		TestSuite: testsuite.NewTestSuite(tb),
+		TestSuite:      testsuite.NewTestSuite(tb),
+		relayerWallets: []wallet.Wallet{},
 	}
 }
 
+//nolint:gosec
 func (c *ServerSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
+	c.setDB()
 	testOmnirpc := omnirpcHelper.NewOmnirpcServer(c.GetTestContext(), c.T(), c.omniRPCTestBackends...)
 	omniRPCClient := omniClient.NewOmnirpcClient(testOmnirpc, c.handler, omniClient.WithCaptureReqRes())
 	c.omniRPCClient = omniRPCClient
 
-	arbFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(42161)
+	c.originChainID = 1
+	c.destChainID = 42161
+	arbFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(uint64(c.destChainID))
 	c.True(ok)
-	ethFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(1)
+	ethFastBridgeAddress, ok := c.fastBridgeAddressMap.Load(uint64(c.originChainID))
 	c.True(ok)
 	port, err := freeport.GetFreePort()
 	c.port = uint16(port)
@@ -132,8 +140,16 @@ func (c *ServerSuite) SetupSuite() {
 	testWallet, err := wallet.FromRandom()
 	c.Require().NoError(err)
 	c.testWallet = testWallet
+	c.relayerWallets = []wallet.Wallet{c.testWallet}
+	for range [2]int{} {
+		relayerWallet, err := wallet.FromRandom()
+		c.Require().NoError(err)
+		c.relayerWallets = append(c.relayerWallets, relayerWallet)
+	}
 	for _, backend := range c.testBackends {
-		backend.FundAccount(c.GetSuiteContext(), c.testWallet.Address(), *big.NewInt(params.Ether))
+		for _, relayerWallet := range c.relayerWallets {
+			backend.FundAccount(c.GetSuiteContext(), relayerWallet.Address(), *big.NewInt(params.Ether))
+		}
 	}
 
 	c.fastBridgeAddressMap = xsync.NewIntegerMapOf[uint64, common.Address]()
@@ -163,9 +179,12 @@ func (c *ServerSuite) SetupSuite() {
 			relayerRole, err := fastBridgeInstance.RELAYERROLE(&bind.CallOpts{Context: c.GetTestContext()})
 			c.NoError(err)
 
-			tx, err = fastBridgeInstance.GrantRole(auth, relayerRole, c.testWallet.Address())
-			c.Require().NoError(err)
-			backend.WaitForConfirmation(c.GetSuiteContext(), tx)
+			// Grant relayer role to all relayer wallets
+			for _, relayerWallet := range c.relayerWallets {
+				tx, err = fastBridgeInstance.GrantRole(auth, relayerRole, relayerWallet.Address())
+				c.Require().NoError(err)
+				backend.WaitForConfirmation(c.GetSuiteContext(), tx)
+			}
 
 			return nil
 		})
@@ -175,7 +194,10 @@ func (c *ServerSuite) SetupSuite() {
 	if err := g.Wait(); err != nil {
 		c.T().Fatal(err)
 	}
+	// setup config
+}
 
+func (c *ServerSuite) setDB() {
 	dbType, err := dbcommon.DBTypeFromString("sqlite")
 	c.Require().NoError(err)
 	metricsHandler := metrics.NewNullHandler()
@@ -183,7 +205,6 @@ func (c *ServerSuite) SetupSuite() {
 	// TODO use temp file / in memory sqlite3 to not create in directory files
 	testDB, _ := sql.Connect(c.GetSuiteContext(), dbType, filet.TmpDir(c.T(), ""), metricsHandler)
 	c.database = testDB
-	// setup config
 }
 
 // TestConfigSuite runs the integration test suite.
