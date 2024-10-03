@@ -10,11 +10,11 @@ The canonical list is hosted within the SynapseCNS on [Github](https://github.co
 
 # RFQ
 
-RFQ contracts route through the [SynapseBridge](https://github.com/synapsecns/synapse-contracts/blob/ed93453430635e2d43704d5599d3318c43a23033/contracts/bridge/SynapseBridge.sol#L63-L118) contract.
+RFQ transactions primarily interact with the Router Address, which is responsible for routing transactions with the proper meta data to the RFQ contract on the relevant chain.
 
 **Source code**: [SynapseCNS (Github)](https://github.com/synapsecns/sanguine/tree/master/packages/contracts-rfq)\
 **Generated docs**: [RFQ docs](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html)\
-**Address**: `0x00cD000000003f7F682BE4813200893d4e690000`
+**RFQ Router Address**: `0x00cD000000003f7F682BE4813200893d4e690000`
 
 | Chain    | Address |
 | -------- | ------- |
