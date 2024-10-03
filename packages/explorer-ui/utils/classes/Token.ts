@@ -156,7 +156,7 @@ const makeMultiChainObj = (valOrObj) => {
   } else {
     const obj = {}
     for (const [chainName, chainId] of _.entries(ChainId)) {
-      obj[chainId] = valOrObj
+      obj[chainId as number] = valOrObj
     }
     return obj
   }
