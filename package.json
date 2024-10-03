@@ -39,6 +39,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.18.2",
     "@synapsecns/coverage-aggregator": "file:./packages/coverage-aggregator",
+    "@synapsecns/synapse-constants": "file:./packages/synapse-constants",
     "@types/chai": "^4.2.18",
     "@types/chai-as-promised": "^7.1.4",
     "@types/mocha": "^8.2.2",
