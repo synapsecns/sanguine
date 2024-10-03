@@ -32,7 +32,15 @@ export const getAllQuotes = async (): Promise<FastBridgeQuote[]> => {
     }
     // The response is a list of quotes in the FastBridgeQuoteAPI format
     const quotes: FastBridgeQuoteAPI[] = await response.json()
-    return quotes.map(unmarshallFastBridgeQuote)
+    return quotes
+      .map((quote) => {
+        try {
+          return unmarshallFastBridgeQuote(quote)
+        } catch (error) {
+          return null
+        }
+      })
+      .filter((quote): quote is FastBridgeQuote => quote !== null)
   } catch (error) {
     return []
   }
