@@ -2,6 +2,8 @@
 
 This API provides access to the indexed bridge event data.
 
+To make requests, use:  https://triumphant-magic-production.up.railway.app , and Swagger docs can be found [here](https://triumphant-magic-production.up.railway.app/api-docs)
+
 ## API Calls
 
 1. GET /api/hello
