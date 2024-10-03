@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 
-//@ts-ignore
 import { CHAINS } from '@synapsecns/synapse-constants'
 
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID

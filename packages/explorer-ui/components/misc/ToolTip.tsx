@@ -1,6 +1,5 @@
 import ReactDOM from 'react-dom'
 
-//@ts-ignore
 import { CHAINS } from '@synapsecns/synapse-constants'
 import { TableHeader } from '@components/TransactionTable/TableHeader'
 import { ChainInfo } from '@components/misc/ChainInfo'

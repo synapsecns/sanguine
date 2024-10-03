@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-//@ts-ignore
 import { CHAINS } from '@synapsecns/synapse-constants'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import {

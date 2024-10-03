@@ -4,7 +4,6 @@ import { ChainInfo } from '@components/misc/ChainInfo'
 import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
-//@ts-ignore
 import { CHAINS } from '@synapsecns/synapse-constants'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import { API_URL } from '@graphql'

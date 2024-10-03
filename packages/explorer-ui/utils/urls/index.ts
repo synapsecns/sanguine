@@ -1,4 +1,3 @@
-//@ts-ignore
 import { CHAINS } from '@synapsecns/synapse-constants'
 
 const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID

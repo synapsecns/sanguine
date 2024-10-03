@@ -2,7 +2,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 
-//@ts-ignore
 import { CHAINS } from '@synapsecns/synapse-constants'
 import { getChainUrl, getExplorerTxUrl } from '@urls'
 

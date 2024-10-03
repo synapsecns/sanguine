@@ -1,4 +1,3 @@
-//@ts-ignore
 import { TOKEN_HASH_MAP, CHAINS } from '@synapsecns/synapse-constants'
 import { getCoinTextColor } from '@utils/styles/coins'
 import { getNetworkTextColor } from '@utils/styles/networks'

@@ -2,7 +2,6 @@ import _ from 'lodash'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-//@ts-ignore
 import { TOKEN_HASH_MAP } from '@synapsecns/synapse-constants'
 import { useQuery } from '@apollo/client'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'

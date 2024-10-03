@@ -8,7 +8,6 @@ import { StandardPageContainer } from '@components/layouts/StandardPageContainer
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-//@ts-ignore
 import { CHAINS } from '@synapsecns/synapse-constants'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,

@@ -1,4 +1,3 @@
-//@ts-ignore
 import { TOKEN_HASH_MAP } from '@synapsecns/synapse-constants'
 
 export const addressToSymbol = ({ tokenAddress, chainId }) => {
