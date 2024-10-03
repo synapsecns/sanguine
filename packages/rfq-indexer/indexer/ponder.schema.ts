@@ -38,7 +38,7 @@ export default createSchema((p) => ({
     destChain: p.string(),
     blockNumber: p.bigint(),
     blockTimestamp: p.int(),
-    transactionHash: p.string()
+    transactionHash: p.string(),
   }),
 
   BridgeProofProvidedEvents: p.createTable({
@@ -63,7 +63,7 @@ export default createSchema((p) => ({
     originChain: p.string(),
     blockNumber: p.bigint(),
     blockTimestamp: p.int(),
-    transactionHash: p.string()
+    transactionHash: p.string(),
   }),
 
   BridgeDepositClaimedEvents: p.createTable({
@@ -78,6 +78,17 @@ export default createSchema((p) => ({
     originChain: p.string(),
     blockNumber: p.bigint(),
     blockTimestamp: p.int(),
-    transactionHash: p.string()
+    transactionHash: p.string(),
+  }),
+
+  BridgeProofDisputedEvents: p.createTable({
+    id: p.string(),
+    transactionId: p.string(),
+    relayer: p.string(),
+    chainId: p.int(),
+    chain: p.string(),
+    blockNumber: p.bigint(),
+    blockTimestamp: p.int(),
+    transactionHash: p.string(),
   }),
 }))
