@@ -15,7 +15,6 @@
       "**/@openzeppelin/contracts-upgradeable",
       "**/@openzeppelin/contracts",
       "**/@synapsecns/solidity-devops",
-      "**/@synapsecns/synapse-constants",
       "**/ds-test",
       "**/forge-std"
     ]
