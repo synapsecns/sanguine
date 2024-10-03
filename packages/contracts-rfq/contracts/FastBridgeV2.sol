@@ -226,11 +226,14 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
 
+        // All state changes have been done at this point, can proceed to the external calls.
+        // This follows the checks-effects-interactions pattern to mitigate potential reentrancy attacks.
         if (transaction.callParams.length == 0) {
-            // No arbitrary call requested, so we just transfer the tokens
+            // No arbitrary call requested, so we just pull the tokens from the Relayer to the recipient,
+            // or transfer ETH to the recipient (if token is ETH_ADDRESS)
             _pullToken(to, token, amount);
         } else if (token != UniversalTokenLib.ETH_ADDRESS) {
-            // Arbitrary call requested with ERC20: transfer the tokens first
+            // Arbitrary call requested with ERC20: pull the tokens from the Relayer to the recipient first
             _pullToken(to, token, amount);
             // Follow up with the hook function call
             _checkedCallRecipient({
