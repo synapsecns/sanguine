@@ -10,6 +10,33 @@ const port = process.env.PORT || 3000
 
 app.use(express.json())
 
+app.use((req, res, next) => {
+  logger.info('Incoming request', {
+    method: req.method,
+    path: req.path,
+    query: req.query,
+    body: req.method === 'POST' || req.method === 'PUT' ? req.body : undefined,
+  })
+
+  const originalPath = req.path
+
+  const originalJson = res.json
+  res.json = function (body) {
+    logger.info('Outgoing response', {
+      method: req.method,
+      path: originalPath,
+      statusCode: res.statusCode,
+      body:
+        originalPath === '/' || originalPath.toLowerCase() === '/tokenlist'
+          ? '[truncated for size]'
+          : body,
+    })
+    return originalJson.call(this, body)
+  }
+
+  next()
+})
+
 app.listen(port, () => {
   logger.info(`Server is listening on port ${port}`)
 })
