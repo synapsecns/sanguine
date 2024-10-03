@@ -135,17 +135,21 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
     }
 
     function test_claim_token() public {
+        bytes32 txId = getTxId(provenTokenTx);
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
+        assertTrue(fastBridge.canClaim(txId, relayerA));
         claim({caller: relayerA, bridgeTx: provenTokenTx});
-        assertEq(fastBridge.bridgeStatuses(getTxId(provenTokenTx)), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         assertEq(srcToken.balanceOf(relayerA), INITIAL_RELAYER_BALANCE + tokenTx.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken - tokenTx.originAmount);
     }
 
     function test_claimWithAddress_token() public {
+        bytes32 txId = getTxId(provenTokenTx);
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
+        assertTrue(fastBridge.canClaim(txId, relayerA));
         claim({caller: relayerA, bridgeTx: provenTokenTx, to: relayerB});
-        assertEq(fastBridge.bridgeStatuses(getTxId(provenTokenTx)), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         assertEq(srcToken.balanceOf(relayerB), INITIAL_RELAYER_BALANCE + tokenTx.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken - tokenTx.originAmount);
     }
@@ -217,17 +221,21 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
     }
 
     function test_claim_eth() public {
+        bytes32 txId = getTxId(provenEthTx);
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
+        assertTrue(fastBridge.canClaim(txId, relayerA));
         claim({caller: relayerA, bridgeTx: provenEthTx});
-        assertEq(fastBridge.bridgeStatuses(getTxId(provenEthTx)), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         assertEq(relayerA.balance, INITIAL_RELAYER_BALANCE + ethTx.originAmount);
         assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth - ethTx.originAmount);
     }
 
     function test_claimWithAddress_eth() public {
+        bytes32 txId = getTxId(provenEthTx);
         skipTimeAtLeast({time: CLAIM_DELAY + 1});
+        assertTrue(fastBridge.canClaim(txId, relayerA));
         claim({caller: relayerA, bridgeTx: provenEthTx, to: relayerB});
-        assertEq(fastBridge.bridgeStatuses(getTxId(provenEthTx)), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
         assertEq(relayerB.balance, INITIAL_RELAYER_BALANCE + ethTx.originAmount);
         assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth - ethTx.originAmount);
     }
