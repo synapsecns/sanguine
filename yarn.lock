@@ -14245,7 +14245,7 @@ copy-webpack-plugin@^11.0.0:
     schema-utils "^4.0.0"
     serialize-javascript "^6.0.0"
 
-copyfiles@^2.3.0, copyfiles@^2.4.1:
+copyfiles@^2.3.0:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/copyfiles/-/copyfiles-2.4.1.tgz#d2dcff60aaad1015f09d0b66e7f0f1c5cd3c5da5"
   integrity sha512-fereAvAvxDrQDOXybk3Qu3dPbOoKoysFMWtkY3mv5BsL8//OSZVL5DCLYqgRfY5cWirgRzlC+WSrxp6Bo3eNZg==
@@ -32580,16 +32580,6 @@ symbol.prototype.description@^1.0.0:
     get-symbol-description "^1.0.2"
     has-symbols "^1.0.3"
     object.getownpropertydescriptors "^2.1.7"
-
-synapse-constants@1.3.22:
-  version "1.3.22"
-  resolved "https://registry.yarnpkg.com/synapse-constants/-/synapse-constants-1.3.22.tgz#e885e12870909b62b1484db007868b8b59648dd7"
-  integrity sha512-PnEuKh8LBujoqOW+VzbQPkAvDld0aBxQUcnN7f0HeSxoF43I5gHyTYngm86qmgf3D+9rPplrigYtVscIBR8NfQ==
-  dependencies:
-    "@codecov/webpack-plugin" "^0.0.1-beta.10"
-    copyfiles "^2.4.1"
-    ethers "5.7.2"
-    lodash "^4.17.21"
 
 synchronous-promise@^2.0.15:
   version "2.0.17"
