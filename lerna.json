@@ -1,11 +1,6 @@
 {
   "npmClient": "yarn",
   "useWorkspaces": true,
-  "packages": [
-    "packages/*",
-    "packages/synapse-constants/*",
-    "packages/rfq-indexer/*",
-    "docs/*"
-  ],
+  "packages": ["packages/*", "packages/rfq-indexer/*", "docs/*"],
   "version": "independent"
 }
