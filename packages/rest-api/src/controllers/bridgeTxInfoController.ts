@@ -53,10 +53,14 @@ export const bridgeTxInfoController = async (req, res) => {
       })
     )
 
-    logger.info(`Successful bridgeTxInfoController response`, { txInfoArray })
+    logger.info(`Successful bridgeTxInfoController response`, {
+      query: req.query,
+      txInfoArray,
+    })
     res.json(txInfoArray)
   } catch (err) {
     logger.error(`Error in bridgeTxInfoController`, {
+      query: req.query,
       error: err.message,
       stack: err.stack,
     })

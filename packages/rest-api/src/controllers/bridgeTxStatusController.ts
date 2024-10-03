@@ -65,7 +65,10 @@ export const bridgeTxStatusController = async (req, res) => {
           },
         }
 
-        logger.info(`Successful bridgeTxStatusController response`, { payload })
+        logger.info(`Successful bridgeTxStatusController response`, {
+          query: req.query,
+          payload,
+        })
         res.json(payload)
       } else {
         const payload = {
@@ -73,17 +76,24 @@ export const bridgeTxStatusController = async (req, res) => {
           toInfo: null,
         }
 
-        logger.info(`Successful bridgeTxStatusController response`, { payload })
+        logger.info(`Successful bridgeTxStatusController response`, {
+          query: req.query,
+          payload,
+        })
         res.json(payload)
       }
     } else {
       const payload = { status }
 
-      logger.info(`Successful bridgeTxStatusController response`, { payload })
+      logger.info(`Successful bridgeTxStatusController response`, {
+        query: req.query,
+        payload,
+      })
       res.json(payload)
     }
   } catch (err) {
     logger.error(`Error in bridgeTxStatusController`, {
+      query: req.query,
       error: err.message,
       stack: err.stack,
     })

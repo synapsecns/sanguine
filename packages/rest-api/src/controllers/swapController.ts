@@ -35,10 +35,14 @@ export const swapController = async (req, res) => {
       maxAmountOut: formattedMaxAmountOut,
     }
 
-    logger.info(`Successful swapController response`, { payload })
+    logger.info(`Successful swapController response`, {
+      query: req.query,
+      payload,
+    })
     res.json(payload)
   } catch (err) {
     logger.error(`Error in swapController`, {
+      query: req.query,
       error: err.message,
       stack: err.stack,
     })

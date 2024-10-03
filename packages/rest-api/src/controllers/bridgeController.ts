@@ -55,10 +55,14 @@ export const bridgeController = async (req, res) => {
       }
     })
 
-    logger.info(`Successful bridgeController response`, { payload })
+    logger.info(`Successful bridgeController response`, {
+      payload,
+      query: req.query,
+    })
     res.json(payload)
   } catch (err) {
     logger.error(`Error in bridgeController`, {
+      query: req.query,
       error: err.message,
       stack: err.stack,
     })

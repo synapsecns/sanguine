@@ -22,10 +22,14 @@ export const synapseTxIdController = async (req, res) => {
       synapseTxId,
     }
 
-    logger.info(`Successful synapseTxIdController response`, payload)
+    logger.info(`Successful synapseTxIdController response`, {
+      query: req.query,
+      payload,
+    })
     res.json(payload)
   } catch (err) {
     logger.error(`Error in synapseTxIdController`, {
+      query: req.query,
       error: err.message,
       stack: err.stack,
     })

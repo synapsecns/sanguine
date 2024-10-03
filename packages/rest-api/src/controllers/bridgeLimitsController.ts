@@ -100,10 +100,14 @@ export const bridgeLimitsController = async (req, res) => {
       minOriginAmount,
     }
 
-    logger.info(`Succesful bridgeLimitsController response`, { payload })
+    logger.info(`Succesful bridgeLimitsController response`, {
+      query: req.query,
+      payload,
+    })
     return res.json(payload)
   } catch (err) {
     logger.error(`Error in bridgeLimitsController`, {
+      query: req.query,
       error: err.message,
       stack: err.stack,
     })

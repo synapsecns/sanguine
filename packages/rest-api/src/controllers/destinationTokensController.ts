@@ -19,11 +19,15 @@ export const destinationTokensController = async (req, res) => {
 
     const payload = BRIDGE_ROUTE_MAPPING[constructedKey]
 
-    logger.info(`Successful destinationTokensController response`, { payload })
+    logger.info(`Successful destinationTokensController response`, {
+      query: req.query,
+      payload,
+    })
 
     res.json(payload)
   } catch (err) {
     logger.error(`Error in destinationTokensController`, {
+      query: req.query,
       error: err.message,
       stack: err.stack,
     })

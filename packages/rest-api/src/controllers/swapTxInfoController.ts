@@ -33,10 +33,14 @@ export const swapTxInfoController = async (req, res) => {
       quote.query
     )
 
-    logger.info(`Successful swapTxInfoController response`, payload)
+    logger.info(`Successful swapTxInfoController response`, {
+      query: req.query,
+      payload,
+    })
     res.json(payload)
   } catch (err) {
     logger.error(`Error in swapTxInfoController`, {
+      query: req.query,
       error: err.message,
       stack: err.stack,
     })

@@ -2,7 +2,7 @@ import * as tokensList from '../constants/bridgeable'
 import { CHAINS_ARRAY } from '../constants/chains'
 import { logger } from '../middleware/logger'
 
-export const indexController = async (_req, res) => {
+export const indexController = async (req, res) => {
   try {
     const tokensWithChains = Object.values(tokensList).map((token: any) => ({
       symbol: token.symbol,
@@ -23,10 +23,11 @@ export const indexController = async (_req, res) => {
       availableTokens: tokensWithChains,
     }
 
-    logger.info(`Successful indexController response`)
+    logger.info(`Successful indexController response`, { query: req.query })
     res.json(payload)
   } catch (err) {
     logger.error(`Error in indexController`, {
+      query: req.query,
       error: err.message,
       stack: err.stack,
     })

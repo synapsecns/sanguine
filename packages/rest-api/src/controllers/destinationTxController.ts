@@ -65,7 +65,10 @@ export const destinationTxController = async (req, res) => {
         },
       }
 
-      logger.info(`Successful destinationTxController response`, { payload })
+      logger.info(`Successful destinationTxController response`, {
+        query: req.query,
+        payload,
+      })
       res.json(payload)
     } else {
       const payload = {
@@ -73,11 +76,15 @@ export const destinationTxController = async (req, res) => {
         toInfo: null,
       }
 
-      logger.info(`Successful destinationTxController response`, { payload })
+      logger.info(`Successful destinationTxController response`, {
+        query: req.query,
+        payload,
+      })
       res.json(payload)
     }
   } catch (err) {
     logger.error(`Error in destinationTxController`, {
+      query: req.query,
       error: err.message,
       stack: err.stack,
     })
