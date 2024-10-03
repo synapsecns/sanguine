@@ -169,6 +169,11 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         tokenTx.callParams = callParams;
     }
 
+    function setTokenTestCallValue(uint256 callValue) public {
+        tokenParamsV2.callValue = callValue;
+        tokenTx.callValue = callValue;
+    }
+
     function setTokenTestExclusivityParams(address relayer, uint256 exclusivitySeconds) public {
         tokenParamsV2.quoteRelayer = relayer;
         tokenParamsV2.quoteExclusivitySeconds = int256(exclusivitySeconds);
@@ -181,6 +186,11 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     function setEthTestCallParams(bytes memory callParams) public {
         ethParamsV2.callParams = callParams;
         ethTx.callParams = callParams;
+    }
+
+    function setEthTestCallValue(uint256 callValue) public {
+        ethParamsV2.callValue = callValue;
+        ethTx.callValue = callValue;
     }
 
     function setEthTestExclusivityParams(address relayer, uint256 exclusivitySeconds) public {
