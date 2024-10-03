@@ -89,15 +89,25 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         assertEq(relayer, expectedRelayer);
     }
 
+    function checkTokenBalances(address recipient, address relayCaller) public view {
+        assertEq(dstToken.balanceOf(recipient), tokenParams.destAmount);
+        assertEq(dstToken.balanceOf(relayCaller), LEFTOVER_BALANCE);
+        assertEq(dstToken.balanceOf(address(fastBridge)), 0);
+    }
+
+    function checkEthBalances(address recipient, address relayCaller) public view {
+        assertEq(recipient.balance, ethParams.destAmount);
+        assertEq(relayCaller.balance, LEFTOVER_BALANCE);
+        assertEq(address(fastBridge).balance, 0);
+    }
+
     /// @notice RelayerA completes the ERC20 bridge request
     function test_relay_token() public {
         bytes32 txId = getTxId(tokenTx);
         expectBridgeRelayed(tokenTx, txId, relayerA);
         relay({caller: relayerA, msgValue: 0, bridgeTx: tokenTx});
         checkRelayedViews({txId: txId, expectedRelayer: relayerA});
-        assertEq(dstToken.balanceOf(userB), tokenParams.destAmount);
-        assertEq(dstToken.balanceOf(relayerA), LEFTOVER_BALANCE);
-        assertEq(dstToken.balanceOf(address(fastBridge)), 0);
+        checkTokenBalances({recipient: userB, relayCaller: relayerA});
     }
 
     /// @notice RelayerB completes the ERC20 bridge request, using relayerA's address
@@ -106,9 +116,7 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         expectBridgeRelayed(tokenTx, txId, relayerA);
         relayWithAddress({caller: relayerB, relayer: relayerA, msgValue: 0, bridgeTx: tokenTx});
         checkRelayedViews({txId: txId, expectedRelayer: relayerA});
-        assertEq(dstToken.balanceOf(userB), tokenParams.destAmount);
-        assertEq(dstToken.balanceOf(relayerB), LEFTOVER_BALANCE);
-        assertEq(dstToken.balanceOf(address(fastBridge)), 0);
+        checkTokenBalances({recipient: userB, relayCaller: relayerB});
     }
 
     /// @notice RelayerB completes the ETH bridge request
@@ -117,9 +125,7 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         expectBridgeRelayed(ethTx, txId, relayerB);
         relay({caller: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
         checkRelayedViews({txId: txId, expectedRelayer: relayerB});
-        assertEq(userB.balance, ethParams.destAmount);
-        assertEq(relayerB.balance, LEFTOVER_BALANCE);
-        assertEq(address(fastBridge).balance, 0);
+        checkEthBalances({recipient: userB, relayCaller: relayerB});
     }
 
     /// @notice RelayerA completes the ETH bridge request, using relayerB's address
@@ -128,9 +134,7 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         expectBridgeRelayed(ethTx, txId, relayerB);
         relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
         checkRelayedViews({txId: txId, expectedRelayer: relayerB});
-        assertEq(userB.balance, ethParams.destAmount);
-        assertEq(relayerA.balance, LEFTOVER_BALANCE);
-        assertEq(address(fastBridge).balance, 0);
+        checkEthBalances({recipient: userB, relayCaller: relayerA});
     }
 
     /// @notice RelayerA completes the ETH bridge request, using relayerB's address
@@ -146,9 +150,7 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         assertEq(recordedBlockNumber, 987_654_321);
         assertEq(recordedBlockTimestamp, 123_456_789);
         assertEq(recordedRelayer, relayerB);
-        assertEq(userB.balance, ethParams.destAmount);
-        assertEq(relayerA.balance, LEFTOVER_BALANCE);
-        assertEq(address(fastBridge).balance, 0);
+        checkEthBalances({recipient: userB, relayCaller: relayerA});
     }
 
     // ═════════════════════════════════════ EXCESSIVE RETURN VALUE RECIPIENT ══════════════════════════════════════════
