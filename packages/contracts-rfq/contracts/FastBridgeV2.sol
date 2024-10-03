@@ -228,51 +228,52 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         bridgeRelayDetails[transactionId] =
             BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
-        // transfer tokens to recipient on destination chain and gas rebate if requested
+        // transfer tokens to recipient on destination chain and do an arbitrary call if requested
         address to = transaction.destRecipient;
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
 
         // All state changes have been done at this point, can proceed to the external calls.
         // This follows the checks-effects-interactions pattern to mitigate potential reentrancy attacks.
-        if (transaction.callParams.length == 0) {
-            // No arbitrary call requested, so we just pull the tokens from the Relayer to the recipient,
-            // or transfer ETH to the recipient (if token is ETH_ADDRESS)
-            _pullToken(to, token, amount);
-        } else if (token != UniversalTokenLib.ETH_ADDRESS) {
-            // Arbitrary call requested with ERC20: pull the tokens from the Relayer to the recipient first
-            _pullToken(to, token, amount);
-            // Follow up with the hook function call
-            _checkedCallRecipient({
-                recipient: to,
-                msgValue: 0,
-                token: token,
-                amount: amount,
-                callParams: transaction.callParams
-            });
+        if (token == UniversalTokenLib.ETH_ADDRESS) {
+            // For ETH non-zero callValue is not allowed
+            if (transaction.callValue != 0) revert NativeTokenCallValueNotSupported();
+            // Check that the correct msg.value was sent
+            if (msg.value != amount) revert MsgValueIncorrect();
         } else {
-            // Arbitrary call requested with ETH: combine the ETH transfer with the call
-            _checkedCallRecipient({
-                recipient: to,
-                msgValue: amount,
-                token: token,
-                amount: amount,
-                callParams: transaction.callParams
-            });
+            // For ERC20s, we check that the correct msg.value was sent
+            if (msg.value != transaction.callValue) revert MsgValueIncorrect();
+            // We need to pull the tokens from the Relayer to the recipient first before performing an
+            // optional post-transfer arbitrary call.
+            _pullToken(to, token, amount);
         }
 
-        emit BridgeRelayed(
-            transactionId,
-            relayer,
-            to,
-            transaction.originChainId,
-            transaction.originToken,
-            transaction.destToken,
-            transaction.originAmount,
-            transaction.destAmount,
-            // chainGasAmount is 0 since the gas rebate function is deprecated
-            0
-        );
+        if (transaction.callParams.length != 0) {
+            // Arbitrary call requested, perform it while supplying full msg.value to the recipient
+            _checkedCallRecipient({
+                recipient: to,
+                msgValue: msg.value,
+                token: token,
+                amount: amount,
+                callParams: transaction.callParams
+            });
+        } else if (msg.value != 0) {
+            // No arbitrary call requested, but msg.value was sent. This is either a relay with ETH,
+            // or a non-zero callValue request with an ERC20. In both cases, transfer the ETH to the recipient.
+            Address.sendValue(payable(to), msg.value);
+        }
+
+        emit BridgeRelayed({
+            transactionId: transactionId,
+            relayer: relayer,
+            to: to,
+            originChainId: transaction.originChainId,
+            originToken: transaction.originToken,
+            destToken: transaction.destToken,
+            originAmount: transaction.originAmount,
+            destAmount: transaction.destAmount,
+            chainGasAmount: transaction.callValue
+        });
     }
 
     /// @inheritdoc IFastBridgeV2
