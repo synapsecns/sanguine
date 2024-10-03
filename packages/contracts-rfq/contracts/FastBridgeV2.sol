@@ -147,6 +147,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
         if (paramsV2.callParams.length > MAX_CALL_PARAMS_LENGTH) revert CallParamsLengthAboveMax();
+        if (paramsV2.callValue != 0 && params.destToken == UniversalTokenLib.ETH_ADDRESS) {
+            revert NativeTokenCallValueNotSupported();
+        }
         int256 exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
         // exclusivityEndTime must be in range (0 .. params.deadline]
         if (exclusivityEndTime <= 0 || exclusivityEndTime > int256(params.deadline)) {
@@ -173,7 +176,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 originAmount: originAmount,
                 destAmount: params.destAmount,
                 originFeeAmount: originFeeAmount,
-                callValue: 0, // TODO: fix
+                callValue: paramsV2.callValue,
                 deadline: params.deadline,
                 nonce: senderNonces[params.sender]++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
@@ -185,17 +188,17 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         bytes32 transactionId = keccak256(request);
         bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
 
-        emit BridgeRequested(
-            transactionId,
-            params.sender,
-            request,
-            params.dstChainId,
-            params.originToken,
-            params.destToken,
-            originAmount,
-            params.destAmount,
-            params.sendChainGas
-        );
+        emit BridgeRequested({
+            transactionId: transactionId,
+            sender: params.sender,
+            request: request,
+            destChainId: params.dstChainId,
+            originToken: params.originToken,
+            destToken: params.destToken,
+            originAmount: originAmount,
+            destAmount: params.destAmount,
+            sendChainGas: paramsV2.callValue != 0
+        });
         emit BridgeQuoteDetails(transactionId, paramsV2.quoteId);
     }
 
