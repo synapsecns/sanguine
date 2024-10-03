@@ -3,6 +3,7 @@ import { ethers } from 'ethers'
 
 import { getTokenDecimals } from '../utils/getTokenDecimals'
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
+import { logger } from '../middleware/logger'
 
 export const destinationTxController = async (req, res) => {
   const errors = validationResult(req)
@@ -54,7 +55,7 @@ export const destinationTxController = async (req, res) => {
       const tokenDecimals = getTokenDecimals(chainID, tokenAddress)
       const formattedValue = ethers.utils.formatUnits(value, tokenDecimals)
 
-      res.json({
+      const payload = {
         status: 'completed',
         toInfo: {
           chainID,
@@ -62,11 +63,31 @@ export const destinationTxController = async (req, res) => {
           tokenSymbol: tokenInfo ? tokenInfo?.symbol : null,
           formattedValue: `${formattedValue}`,
         },
+      }
+
+      logger.info(`Successful destinationTxController response`, {
+        query: req.query,
+        payload,
       })
+      res.json(payload)
     } else {
-      res.json({ status: 'pending', toInfo: null })
+      const payload = {
+        status: 'pending',
+        toInfo: null,
+      }
+
+      logger.info(`Successful destinationTxController response`, {
+        query: req.query,
+        payload,
+      })
+      res.json(payload)
     }
   } catch (err) {
+    logger.error(`Error in destinationTxController`, {
+      query: req.query,
+      error: err.message,
+      stack: err.stack,
+    })
     res.status(500).json({
       error:
         'An unexpected error occurred in /destinationTx. Please try again later.',

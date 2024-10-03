@@ -4,6 +4,7 @@ import { parseUnits } from '@ethersproject/units'
 import { formatBNToString } from '../utils/formatBNToString'
 import { Synapse } from '../services/synapseService'
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
+import { logger } from '../middleware/logger'
 
 export const bridgeController = async (req, res) => {
   const errors = validationResult(req)
@@ -53,8 +54,18 @@ export const bridgeController = async (req, res) => {
         ),
       }
     })
+
+    logger.info(`Successful bridgeController response`, {
+      payload,
+      query: req.query,
+    })
     res.json(payload)
   } catch (err) {
+    logger.error(`Error in bridgeController`, {
+      query: req.query,
+      error: err.message,
+      stack: err.stack,
+    })
     res.status(500).json({
       error: 'An unexpected error occurred in /bridge. Please try again later.',
       details: err.message,
