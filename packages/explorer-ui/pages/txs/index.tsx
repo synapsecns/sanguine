@@ -1,3 +1,4 @@
+//@ts-ignore
 import { CHAINS } from '@synapsecns/synapse-constants'
 import { useState, useEffect } from 'react'
 import { useLazyQuery } from '@apollo/client'

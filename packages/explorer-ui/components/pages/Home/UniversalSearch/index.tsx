@@ -1,4 +1,5 @@
 import { useState } from 'react'
+//@ts-ignore
 import { CHAINS } from '@synapsecns/synapse-constants'
 import TextField from '@mui/material/TextField'
 import {

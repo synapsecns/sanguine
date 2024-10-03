@@ -1,3 +1,4 @@
+//@ts-ignore
 import { CHAINS } from '@synapsecns/synapse-constants'
 
 const ChainId = CHAINS.ChainId
