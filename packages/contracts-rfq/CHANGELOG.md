@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.6.1...@synapsecns/contracts-rfq@0.6.2) (2024-10-03)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** gas bench tests for the views [SLT-275] ([#3217](https://github.com/synapsecns/sanguine/issues/3217)) ([68821a7](https://github.com/synapsecns/sanguine/commit/68821a7c7bca7b397abd7d54d5cf880af2a638b6))
+
+
+
+
+
 ## [0.6.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.6.0...@synapsecns/contracts-rfq@0.6.1) (2024-10-02)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq
