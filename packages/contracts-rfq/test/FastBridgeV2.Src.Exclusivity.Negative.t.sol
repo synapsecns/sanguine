@@ -8,16 +8,13 @@ contract FastBridgeV2SrcExclusivityNegativeTest is FastBridgeV2SrcTest {
     uint256 public constant EXCLUSIVITY_PERIOD_ABS = 60 seconds;
 
     function createFixturesV2() public virtual override {
-        tokenParamsV2.quoteRelayer = relayerA;
+        // Populate the fields using the absolute exclusivity period
+        setTokenTestExclusivityParams(relayerA, EXCLUSIVITY_PERIOD_ABS);
+        setEthTestExclusivityParams(relayerB, EXCLUSIVITY_PERIOD_ABS);
+        // Override with negative exclusivity period
         tokenParamsV2.quoteExclusivitySeconds = -int256(EXCLUSIVITY_PERIOD_ABS);
-        tokenParamsV2.quoteId = bytes("Created by Relayer A");
-        ethParamsV2.quoteRelayer = relayerB;
         ethParamsV2.quoteExclusivitySeconds = -int256(EXCLUSIVITY_PERIOD_ABS);
-        ethParamsV2.quoteId = bytes("Created by Relayer B");
-
-        tokenTx.exclusivityRelayer = relayerA;
         tokenTx.exclusivityEndTime = block.timestamp - EXCLUSIVITY_PERIOD_ABS;
-        ethTx.exclusivityRelayer = relayerB;
         ethTx.exclusivityEndTime = block.timestamp - EXCLUSIVITY_PERIOD_ABS;
     }
 

@@ -20,20 +20,8 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
 
     function createFixturesV2() public virtual override {
         super.createFixturesV2();
-        tokenParamsV2.callParams = CALL_PARAMS;
-        ethParamsV2.callParams = CALL_PARAMS;
-        tokenTx.callParams = CALL_PARAMS;
-        ethTx.callParams = CALL_PARAMS;
-    }
-
-    function setTokenTestCallParams(bytes memory callParams) public {
-        tokenParamsV2.callParams = callParams;
-        tokenTx.callParams = callParams;
-    }
-
-    function setEthTestCallParams(bytes memory callParams) public {
-        ethParamsV2.callParams = callParams;
-        ethTx.callParams = callParams;
+        setTokenTestCallParams(CALL_PARAMS);
+        setEthTestCallParams(CALL_PARAMS);
     }
 
     /// @notice We override the "expect event" function to also check for the arbitrary call

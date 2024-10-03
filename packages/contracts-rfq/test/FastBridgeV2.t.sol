@@ -163,6 +163,34 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         txV2.nonce = txV1.nonce;
     }
 
+    function setTokenTestCallParams(bytes memory callParams) public {
+        tokenParamsV2.callParams = callParams;
+        tokenTx.callParams = callParams;
+    }
+
+    function setTokenTestExclusivityParams(address relayer, uint256 exclusivitySeconds) public {
+        tokenParamsV2.quoteRelayer = relayer;
+        tokenParamsV2.quoteExclusivitySeconds = int256(exclusivitySeconds);
+        tokenParamsV2.quoteId = bytes.concat("Token:", getMockQuoteId(relayer));
+
+        tokenTx.exclusivityRelayer = relayer;
+        tokenTx.exclusivityEndTime = block.timestamp + exclusivitySeconds;
+    }
+
+    function setEthTestCallParams(bytes memory callParams) public {
+        ethParamsV2.callParams = callParams;
+        ethTx.callParams = callParams;
+    }
+
+    function setEthTestExclusivityParams(address relayer, uint256 exclusivitySeconds) public {
+        ethParamsV2.quoteRelayer = relayer;
+        ethParamsV2.quoteExclusivitySeconds = int256(exclusivitySeconds);
+        ethParamsV2.quoteId = bytes.concat("ETH:", getMockQuoteId(relayer));
+
+        ethTx.exclusivityRelayer = relayer;
+        ethTx.exclusivityEndTime = block.timestamp + exclusivitySeconds;
+    }
+
     function extractV1(IFastBridgeV2.BridgeTransactionV2 memory txV2)
         public
         pure
@@ -180,6 +208,16 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         txV1.sendChainGas = txV2.sendChainGas;
         txV1.deadline = txV2.deadline;
         txV1.nonce = txV2.nonce;
+    }
+
+    function getMockQuoteId(address relayer) public view returns (bytes memory) {
+        if (relayer == relayerA) {
+            return bytes("created by Relayer A");
+        } else if (relayer == relayerB) {
+            return bytes("created by Relayer B");
+        } else {
+            return bytes("created by unknown relayer");
+        }
     }
 
     function getTxId(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public pure returns (bytes32) {
