@@ -156,8 +156,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             revert ExclusivityParamsIncorrect();
         }
         // transfer tokens to bridge contract
-        // @dev use returned originAmount in request in case of transfer fees
-        uint256 originAmount = _pullToken(address(this), params.originToken, params.originAmount);
+        /// @dev use returned originAmount in request in case of transfer fees
+        uint256 originAmount = _pullToken(params.originToken, params.originAmount);
 
         // track amount of origin token owed to protocol
         uint256 originFeeAmount;
@@ -243,13 +243,15 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         } else {
             // For ERC20s, we check that the correct msg.value was sent
             if (msg.value != transaction.callValue) revert MsgValueIncorrect();
-            // We need to pull the tokens from the Relayer to the recipient first before performing an
+            // We need to transfer the tokens from the Relayer to the recipient first before performing an
             // optional post-transfer arbitrary call.
-            _pullToken(to, token, amount);
+            IERC20(token).safeTransferFrom(msg.sender, to, amount);
         }
 
         if (transaction.callParams.length != 0) {
             // Arbitrary call requested, perform it while supplying full msg.value to the recipient
+            // Note: if token has a fee on transfers, the recipient will have received less than `amount`.
+            // This is a very niche edge case and should be handled by the recipient contract.
             _checkedCallRecipient({recipient: to, token: token, amount: amount, callParams: transaction.callParams});
         } else if (msg.value != 0) {
             // No arbitrary call requested, but msg.value was sent. This is either a relay with ETH,
@@ -334,25 +336,21 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         return abi.decode(request, (BridgeTransactionV2));
     }
 
-    /// @notice Pulls a requested token from the user to the requested recipient.
-    /// @dev Be careful of re-entrancy issues when msg.value > 0 and recipient != address(this)
-    function _pullToken(address recipient, address token, uint256 amount) internal returns (uint256 amountPulled) {
-        if (token != UniversalTokenLib.ETH_ADDRESS) {
+    /// @notice Pulls a requested token from the user to this contract.
+    function _pullToken(address token, uint256 amount) internal returns (uint256 amountPulled) {
+        if (token == UniversalTokenLib.ETH_ADDRESS) {
+            // For ETH we just need to check that the supplied msg.value is correct
+            if (amount != msg.value) revert MsgValueIncorrect();
+            amountPulled = msg.value;
+        } else {
             token.assertIsContract();
             // Record token balance before transfer
-            amountPulled = IERC20(token).balanceOf(recipient);
+            amountPulled = IERC20(token).balanceOf(address(this));
             // Token needs to be pulled only if msg.value is zero
             // This way user can specify WETH as the origin asset
-            IERC20(token).safeTransferFrom(msg.sender, recipient, amount);
+            IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
             // Use the difference between the recorded balance and the current balance as the amountPulled
-            amountPulled = IERC20(token).balanceOf(recipient) - amountPulled;
-        } else {
-            // Otherwise, we need to check that ETH amount matches msg.value
-            if (amount != msg.value) revert MsgValueIncorrect();
-            // Transfer value to recipient if not this address
-            if (recipient != address(this)) token.universalTransfer(recipient, amount);
-            // We will forward msg.value in the external call later, if recipient is not this contract
-            amountPulled = msg.value;
+            amountPulled = IERC20(token).balanceOf(address(this)) - amountPulled;
         }
     }
 
