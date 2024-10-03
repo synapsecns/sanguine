@@ -137,24 +137,10 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridgeV2
-    // TODO: reduce cyclomatic complexity alongside arbitrary call
-    // solhint-disable-next-line code-complexity
     function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
-        // check bridge params
-        if (params.dstChainId == block.chainid) revert ChainIncorrect();
-        if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
-        if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
-        if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
-        if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
-        if (paramsV2.callParams.length > MAX_CALL_PARAMS_LENGTH) revert CallParamsLengthAboveMax();
-        if (paramsV2.callValue != 0 && params.destToken == UniversalTokenLib.ETH_ADDRESS) {
-            revert NativeTokenCallValueNotSupported();
-        }
         int256 exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
-        // exclusivityEndTime must be in range (0 .. params.deadline]
-        if (exclusivityEndTime <= 0 || exclusivityEndTime > int256(params.deadline)) {
-            revert ExclusivityParamsIncorrect();
-        }
+        _validateBridgeParams(params, paramsV2, exclusivityEndTime);
+
         // transfer tokens to bridge contract
         /// @dev use returned originAmount in request in case of transfer fees
         uint256 originAmount = _pullToken(params.originToken, params.originAmount);
@@ -370,6 +356,35 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function _timeSince(uint40 proofBlockTimestamp) internal view returns (uint256 delta) {
         unchecked {
             delta = uint40(block.timestamp) - proofBlockTimestamp;
+        }
+    }
+
+    /// @notice Performs all the necessary checks for a bridge to happen.
+    /// @dev There's no good way to refactor this function to reduce cyclomatic complexity due to
+    /// the number of checks that need to be performed, so we skip the code-complexity rule here.
+    // solhint-disable-next-line code-complexity
+    function _validateBridgeParams(
+        BridgeParams memory params,
+        BridgeParamsV2 memory paramsV2,
+        int256 exclusivityEndTime
+    )
+        internal
+        view
+    {
+        // Check V1 (legacy) params
+        if (params.dstChainId == block.chainid) revert ChainIncorrect();
+        if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
+        if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
+        if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
+        if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
+        // Check V2 params
+        if (paramsV2.callParams.length > MAX_CALL_PARAMS_LENGTH) revert CallParamsLengthAboveMax();
+        if (paramsV2.callValue != 0 && params.destToken == UniversalTokenLib.ETH_ADDRESS) {
+            revert NativeTokenCallValueNotSupported();
+        }
+        // exclusivityEndTime must be in range (0 .. params.deadline]
+        if (exclusivityEndTime <= 0 || exclusivityEndTime > int256(params.deadline)) {
+            revert ExclusivityParamsIncorrect();
         }
     }
 
