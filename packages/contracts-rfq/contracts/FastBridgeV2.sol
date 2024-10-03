@@ -203,27 +203,10 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridgeV2
-    // TODO: reduce cyclomatic complexity alongside arbitrary call
-    // solhint-disable-next-line code-complexity
     function relay(bytes memory request, address relayer) public payable {
-        if (relayer == address(0)) revert ZeroAddress();
-        // Check if the transaction has already been relayed
         bytes32 transactionId = keccak256(request);
-        if (bridgeRelays(transactionId)) revert TransactionRelayed();
-        // Decode the transaction and check that it could be relayed on this chain
         BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
-        if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
-        // Check the deadline for relay to happen
-        if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
-        // Check the exclusivity period, if it is still ongoing
-        // forgefmt: disable-next-item
-        if (
-            transaction.exclusivityRelayer != address(0) &&
-            transaction.exclusivityRelayer != relayer &&
-            block.timestamp <= transaction.exclusivityEndTime
-        ) {
-            revert ExclusivityPeriodNotPassed();
-        }
+        _validateRelayParams(transaction, transactionId, relayer);
         // mark bridge transaction as relayed
         bridgeRelayDetails[transactionId] =
             BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
@@ -387,6 +370,32 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function _timeSince(uint40 proofBlockTimestamp) internal view returns (uint256 delta) {
         unchecked {
             delta = uint40(block.timestamp) - proofBlockTimestamp;
+        }
+    }
+
+    /// @notice Performs all the necessary checks for a relay to happen.
+    function _validateRelayParams(
+        BridgeTransactionV2 memory transaction,
+        bytes32 transactionId,
+        address relayer
+    )
+        internal
+        view
+    {
+        if (relayer == address(0)) revert ZeroAddress();
+        // Check if the transaction has already been relayed
+        if (bridgeRelays(transactionId)) revert TransactionRelayed();
+        if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
+        // Check the deadline for relay to happen
+        if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
+        // Check the exclusivity period, if it is still ongoing
+        // forgefmt: disable-next-item
+        if (
+            transaction.exclusivityRelayer != address(0) &&
+            transaction.exclusivityRelayer != relayer &&
+            block.timestamp <= transaction.exclusivityEndTime
+        ) {
+            revert ExclusivityPeriodNotPassed();
         }
     }
 }
