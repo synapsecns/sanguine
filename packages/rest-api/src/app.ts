@@ -12,7 +12,7 @@ app.use(express.json())
 
 app.use((req, res, next) => {
   logger.info({
-    msg: 'Incoming request',
+    msg: `Incoming request ${req.path}`,
     method: req.method,
     path: req.path,
     query: req.query,
@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   const originalJson = res.json
   res.json = function (body) {
     logger.info({
-      msg: 'Outgoing response',
+      msg: `Outgoing response ${originalPath}`,
       method: req.method,
       path: originalPath,
       statusCode: res.statusCode,
