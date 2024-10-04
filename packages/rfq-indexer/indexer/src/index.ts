@@ -160,13 +160,19 @@ ponder.on('FastBridgeV2:BridgeProofDisputed', async ({ event, context }) => {
     network: { chainId },
   } = context
 
-  await BridgeProofDisputedEvents.create({
+  await BridgeProofDisputedEvents.upsert({
     id: transactionId,
-    data: {
+    create: {
       transactionId,
       relayer: trim(relayer),
       chainId: Number(chainId),
       chain: getChainName(Number(chainId)),
+      blockNumber: BigInt(blockNumber),
+      blockTimestamp: Number(timestamp),
+      transactionHash: hash,
+    },
+    update: {
+      relayer: trim(relayer),
       blockNumber: BigInt(blockNumber),
       blockTimestamp: Number(timestamp),
       transactionHash: hash,
