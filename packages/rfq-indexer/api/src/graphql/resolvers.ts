@@ -97,8 +97,8 @@ const qDisputes = () => {
       'BridgeProofDisputedEvents.blockNumber as blockNumber_dispute',
       'BridgeProofDisputedEvents.blockTimestamp as blockTimestamp_dispute',
       'BridgeProofDisputedEvents.transactionHash as transactionHash_dispute',
-      'BridgeProofDisputedEvents.originChainId as originChainId_dispute',
-      'BridgeProofDisputedEvents.originChain as originChain_dispute',
+      'BridgeProofDisputedEvents.chainId as originChainId_dispute',
+      'BridgeProofDisputedEvents.chain as originChain_dispute',
     ])
 }
 
@@ -243,8 +243,8 @@ const resolvers = {
               'BridgeProofDisputedEvents.blockNumber',
               'BridgeProofDisputedEvents.blockTimestamp',
               'BridgeProofDisputedEvents.transactionHash',
-              'BridgeProofDisputedEvents.originChainId',
-              'BridgeProofDisputedEvents.originChain',
+              'BridgeProofDisputedEvents.chainId',
+              'BridgeProofDisputedEvents.chain',
             ])
         )
 

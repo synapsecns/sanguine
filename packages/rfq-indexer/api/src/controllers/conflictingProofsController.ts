@@ -13,7 +13,7 @@ export const conflictingProofsController = async (
     const query = db
       .with('deposits', () => qDeposits())
       .with('relays', () => qRelays())
-      .with('proofs', () => qProofs())
+      .with('proofs', () => qProofs({activeOnly: true}))
       .with('combined', (qb) =>
         qb
           .selectFrom('deposits')
@@ -41,10 +41,10 @@ export const conflictingProofsController = async (
     if (conflictingProofs && conflictingProofs.length > 0) {
       res.json(conflictingProofs)
     } else {
-      res.status(200).json({ message: 'No conflicting proofs found' })
+      res.status(200).json({ message: 'No active conflicting proofs found' })
     }
   } catch (error) {
-    console.error('Error fetching conflicting proofs:', error)
+    console.error('Error fetching active conflicting proofs:', error)
     res.status(500).json({ message: 'Internal server error' })
   }
 }

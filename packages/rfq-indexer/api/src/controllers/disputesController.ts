@@ -7,7 +7,7 @@ import { nest_results } from '../utils/nestResults'
 export const disputesController = async (req: Request, res: Response) => {
   try {
     const query = db
-      .with('disputes', () => qDisputes())
+      .with('disputes', () => qDisputes({activeOnly: true}))
       .selectFrom('disputes')
       .selectAll()
       .orderBy('blockTimestamp_dispute', 'desc')
@@ -18,10 +18,10 @@ export const disputesController = async (req: Request, res: Response) => {
     if (disputes && disputes.length > 0) {
       res.json(disputes)
     } else {
-      res.status(200).json({ message: 'No disputes found' })
+      res.status(200).json({ message: 'No active disputes found' })
     }
   } catch (error) {
-    console.error('Error fetching disputes:', error)
+    console.error('Error fetching active disputes:', error)
     res.status(500).json({ message: 'Internal server error' })
   }
 }
