@@ -11,7 +11,8 @@ const port = process.env.PORT || 3000
 app.use(express.json())
 
 app.use((req, res, next) => {
-  logger.info('Incoming request', {
+  logger.info({
+    msg: 'Incoming request',
     method: req.method,
     path: req.path,
     query: req.query,
@@ -22,7 +23,8 @@ app.use((req, res, next) => {
 
   const originalJson = res.json
   res.json = function (body) {
-    logger.info('Outgoing response', {
+    logger.info({
+      msg: 'Outgoing response',
       method: req.method,
       path: originalPath,
       statusCode: res.statusCode,
