@@ -1,7 +1,14 @@
 import { Request, Response } from 'express'
 
 import { db } from '../db'
-import { qDeposits, qRelays, qProofs, qClaims, qRefunds } from '../queries'
+import {
+  qDeposits,
+  qRelays,
+  qProofs,
+  qClaims,
+  qRefunds,
+  qDisputes,
+} from '../queries'
 import { nest_results } from '../utils/nestResults'
 
 const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60
@@ -47,7 +54,6 @@ export const pendingTransactionsMissingClaimController = async (
   }
 }
 
-
 export const pendingTransactionsMissingProofController = async (
   req: Request,
   res: Response
@@ -57,14 +63,23 @@ export const pendingTransactionsMissingProofController = async (
       .with('deposits', () => qDeposits())
       .with('relays', () => qRelays())
       .with('proofs', () => qProofs())
+      .with('disputes', () => qDisputes())
       .with('combined', (qb) =>
         qb
           .selectFrom('deposits')
           .innerJoin('relays', 'transactionId_deposit', 'transactionId_relay')
           .leftJoin('proofs', 'transactionId_deposit', 'transactionId_proof')
+          .leftJoin(
+            'disputes',
+            'transactionId_deposit',
+            'transactionId_dispute'
+          )
           .selectAll('deposits')
           .selectAll('relays')
           .where('transactionId_proof', 'is', null)
+          .where((eb) =>
+            eb('blockTimestamp_dispute', '>', eb.ref('blockTimestamp_proof'))
+          )
       )
       .selectFrom('combined')
       .selectAll()
