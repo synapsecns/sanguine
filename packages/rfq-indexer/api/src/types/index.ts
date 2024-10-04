@@ -81,6 +81,15 @@ export interface BridgeDepositClaimedEvents {
   amountFormatted: ColumnType<string>
 }
 
+export interface BridgeProofDisputedEvents {
+  id: ColumnType<string>
+  transactionId: ColumnType<string>
+  blockNumber: ColumnType<bigint>
+  blockTimestamp: ColumnType<number>
+  transactionHash: ColumnType<string>
+  originChainId: ColumnType<number>
+  originChain: ColumnType<string>
+}
 // Add any other shared types used across the API
 export type EventType =
   | 'REQUEST'
@@ -88,7 +97,7 @@ export type EventType =
   | 'PROOF_PROVIDED'
   | 'DEPOSIT_REFUNDED'
   | 'DEPOSIT_CLAIMED'
-
+  | 'DISPUTE'
 export interface EventFilter {
   type?: EventType
   transactionId?: string

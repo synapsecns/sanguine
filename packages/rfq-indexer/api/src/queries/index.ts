@@ -1,5 +1,6 @@
 export { qClaims } from './claimsQueries'
 export { qDeposits } from './depositsQueries'
+export { qDisputes } from './disputesQueries'
 export { qProofs } from './proofsQueries'
 export { qRefunds } from './refundsQueries'
 export { qRelays } from './relaysQueries'
