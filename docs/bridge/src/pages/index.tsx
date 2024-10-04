@@ -45,4 +45,4 @@ import { Redirect } from '@docusaurus/router'
 //   )
 // }
 
-export default () => <Redirect to={'/docs/About'} />
+export default () => <Redirect to='/docs/About/index' />
