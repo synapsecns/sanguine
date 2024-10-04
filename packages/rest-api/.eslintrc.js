@@ -12,6 +12,8 @@ module.exports = {
       rules: {
         'guard-for-in': 'off',
         'jsdoc/check-indentation': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
       },
     },
   ],

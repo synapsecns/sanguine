@@ -1,8 +1,8 @@
 ---
-sidebar_label: Examples
+sidebar_label: Sample Code
 ---
 
-# Example Code
+# Sample Code
 
 Example SDK & API implementations
 
