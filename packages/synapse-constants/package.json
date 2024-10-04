@@ -14,6 +14,9 @@
     "url": "git+https://github.com/synapsecns/sanguine.git"
   },
   "homepage": "https://github.com/synapsecns/sanguine/blob/master/packages/synapse-constants/README.md",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test:coverage": "echo 'No tests defined.'",
     "ci:lint": " ",
