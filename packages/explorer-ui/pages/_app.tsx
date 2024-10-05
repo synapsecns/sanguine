@@ -13,7 +13,7 @@ const App = ({ Component, pageProps }) => {
       <Head>
         <title>Synapse Explorer</title>
       </Head>
-      <GoogleAnalytics trackPageViews />
+      <GoogleAnalytics trackPageViews gaMeasurementId={'G-BBC13LQXBD'} />
       <ApolloProvider client={client}>
         <PageWrapper>
           <Component {...pageProps} />
