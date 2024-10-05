@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { CHAINS } from 'synapse-constants'
+import { CHAINS } from '@synapsecns/synapse-constants'
 
 const ChainId = CHAINS.ChainId
 
@@ -155,7 +155,7 @@ const makeMultiChainObj = (valOrObj) => {
   } else {
     const obj = {}
     for (const [chainName, chainId] of _.entries(ChainId)) {
-      obj[chainId] = valOrObj
+      obj[chainId as number] = valOrObj
     }
     return obj
   }

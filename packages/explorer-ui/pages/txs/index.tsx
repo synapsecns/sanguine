@@ -1,4 +1,4 @@
-import { CHAINS } from 'synapse-constants'
+import { CHAINS } from '@synapsecns/synapse-constants'
 import { useState, useEffect } from 'react'
 import { useLazyQuery } from '@apollo/client'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
