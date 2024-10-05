@@ -1,4 +1,4 @@
-import { TOKEN_HASH_MAP, CHAINS } from 'synapse-constants'
+import { TOKEN_HASH_MAP, CHAINS } from '@synapsecns/synapse-constants'
 import { getCoinTextColor } from '@utils/styles/coins'
 import { getNetworkTextColor } from '@utils/styles/networks'
 import { Grid } from '@components/tailwind/Grid'

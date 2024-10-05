@@ -5,6 +5,7 @@ import { themes as prismThemes } from 'prism-react-renderer'
 import type { Config } from '@docusaurus/types'
 import type * as Preset from '@docusaurus/preset-classic'
 import { codecovWebpackPlugin } from '@codecov/webpack-plugin'
+import searchPlugin from '@easyops-cn/docusaurus-search-local'
 
 const options = {
   id: 'api', // plugin id
@@ -73,6 +74,9 @@ const config: Config = {
   ],
 
   themeConfig: {
+    colorMode: {
+      respectPrefersColorScheme: true,
+    },
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     announcementBar: {
@@ -143,6 +147,13 @@ const config: Config = {
   themes: ['docusaurus-theme-openapi-docs'], // export theme components
   plugins: [
     ['docusaurus-plugin-openapi-docs', options],
+    [
+      searchPlugin,
+      {
+        hashed: true,
+        language: ['en'],
+      },
+    ],
     // please see: https://github.com/facebook/docusaurus/issues/8091#issuecomment-1269112001 for an explanation.
     function () {
       return {
