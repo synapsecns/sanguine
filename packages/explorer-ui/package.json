@@ -15,6 +15,7 @@
     "@heroicons/react": "^1.0.6",
     "@mui/material": "^5.11.8",
     "@mui/x-date-pickers": "^5.0.17",
+    "@next/third-parties": "^14.2.14",
     "@popperjs/core": "^2.11.5",
     "@synapsecns/synapse-constants": "^1.6.0",
     "@testing-library/jest-dom": "^5.16.4",

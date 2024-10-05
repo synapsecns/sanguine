@@ -24,6 +24,7 @@
     "@docusaurus/logger": "3.5.2",
     "@docusaurus/module-type-aliases": "3.5.2",
     "@docusaurus/plugin-content-docs": "3.5.2",
+    "@docusaurus/plugin-google-gtag": "^3.5.2",
     "@docusaurus/preset-classic": "3.5.2",
     "@docusaurus/theme-common": "3.5.2",
     "@docusaurus/tsconfig": "3.5.2",
