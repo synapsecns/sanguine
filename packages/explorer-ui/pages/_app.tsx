@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { ApolloProvider } from '@apollo/client'
 import { PageWrapper } from '@components/layouts//MainLayout'
-import { GoogleAnalytics } from 'nextjs-google-analytics'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import { Analytics } from '@vercel/analytics/react'
 
 import client from '../apollo-client'
@@ -13,7 +13,7 @@ const App = ({ Component, pageProps }) => {
       <Head>
         <title>Synapse Explorer</title>
       </Head>
-      <GoogleAnalytics trackPageViews gaMeasurementId={'G-BBC13LQXBD'} />
+      <GoogleAnalytics gaId={'G-BBC13LQXBD'} />
       <ApolloProvider client={client}>
         <PageWrapper>
           <Component {...pageProps} />
