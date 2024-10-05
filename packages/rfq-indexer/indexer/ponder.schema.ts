@@ -85,8 +85,13 @@ export default createSchema((p) => ({
     id: p.string(),
     transactionId: p.string(),
     relayer: p.string(),
+<<<<<<< HEAD
     originChainId: p.int(),
     originChain: p.string(),
+=======
+    chainId: p.int(),
+    chain: p.string(),
+>>>>>>> master
     blockNumber: p.bigint(),
     blockTimestamp: p.int(),
     transactionHash: p.string(),

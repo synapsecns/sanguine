@@ -1,4 +1,4 @@
-import { BRIDGABLE_TOKENS, CHAINS } from 'synapse-constants'
+import { BRIDGABLE_TOKENS, CHAINS } from '@synapsecns/synapse-constants'
 
 const CHAINS_BY_ID = {}
 

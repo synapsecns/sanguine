@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.40.5",
+  "version": "0.40.6",
   "private": true,
   "engines": {
     "node": ">=18.18.0"
@@ -32,6 +32,7 @@
     "@ethersproject/units": "5.7.0",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "1.0.6",
+    "@next/third-parties": "^14.2.14",
     "@popperjs/core": "^2.11.5",
     "@rainbow-me/rainbowkit": "^2.1.6",
     "@reduxjs/toolkit": "^1.9.5",

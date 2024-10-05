@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { CHAINS } from 'synapse-constants'
+import { CHAINS } from '@synapsecns/synapse-constants'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,

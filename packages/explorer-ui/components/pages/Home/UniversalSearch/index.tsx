@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CHAINS } from 'synapse-constants'
+import { CHAINS } from '@synapsecns/synapse-constants'
 import TextField from '@mui/material/TextField'
 import {
   inputStyle,
@@ -303,7 +303,7 @@ export const UniversalSearch = ({
                       onChange: (e) => handleChains(e),
                     }}
                   >
-                    {Object.values(CHAIN_ENUM_BY_ID).map((chain) => (
+                    {Object.values(CHAIN_ENUM_BY_ID).map((chain: string) => (
                       <MenuItem key={chain} value={chain}>
                         {chain.charAt(0).toUpperCase() + chain.slice(1)}
                       </MenuItem>
