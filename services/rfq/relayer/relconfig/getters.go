@@ -541,9 +541,9 @@ func (c Config) GetOmniRPCURL() string {
 	return c.OmniRPCURL
 }
 
-// GetRfqAPIURL returns the RFQ API URL.
-func (c Config) GetRfqAPIURL() string {
-	return c.RfqAPIURL
+// GetRFQAPIURL returns the RFQ API URL.
+func (c Config) GetRFQAPIURL() string {
+	return c.RFQAPIURL
 }
 
 // GetDatabase returns the database config.

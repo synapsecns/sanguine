@@ -3,23 +3,28 @@ package rest
 
 import (
 	"context"
+	"encoding/json"
 
 	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ipfs/go-log"
+	"github.com/puzpuzpuz/xsync"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
@@ -48,6 +53,7 @@ type QuoterAPIServer struct {
 	cfg                 config.Config
 	db                  db.APIDB
 	engine              *gin.Engine
+	upgrader            websocket.Upgrader
 	omnirpcClient       omniClient.RPCClient
 	handler             metrics.Handler
 	meter               metric.Meter
@@ -58,8 +64,11 @@ type QuoterAPIServer struct {
 	relayAckCache *ttlcache.Cache[string, string]
 	// ackMux is a mutex used to ensure that only one transaction id can be acked at a time.
 	ackMux sync.Mutex
-	// latestQuoteAgeGauge is a gauge that records the age of the latest quote
+	// latestQuoteAgeGauge is a gauge that records the age of the latest quote.
 	latestQuoteAgeGauge metric.Float64ObservableGauge
+	// wsClients maintains a mapping of connection ID to a channel for sending quote requests.
+	wsClients     *xsync.MapOf[string, WsClient]
+	pubSubManager PubSubManager
 }
 
 // NewAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
@@ -131,6 +140,8 @@ func NewAPI(
 		roleCache:           roles,
 		relayAckCache:       relayAckCache,
 		ackMux:              sync.Mutex{},
+		wsClients:           xsync.NewMapOf[WsClient](),
+		pubSubManager:       NewPubSubManager(),
 	}
 
 	// Prometheus metrics setup
@@ -157,14 +168,21 @@ const (
 	AckRoute = "/ack"
 	// ContractsRoute is the API endpoint for returning a list fo contracts.
 	ContractsRoute = "/contracts"
-	cacheInterval  = time.Minute
+	// RFQStreamRoute is the API endpoint for handling active quote requests via websocket.
+	RFQStreamRoute = "/rfq_stream"
+	// RFQRoute is the API endpoint for handling RFQ requests.
+	RFQRoute = "/rfq"
+	// ChainsHeader is the header for specifying chains during a websocket handshake.
+	ChainsHeader = "Chains"
+	// AuthorizationHeader is the header for specifying the authorization.
+	AuthorizationHeader = "Authorization"
+	cacheInterval       = time.Minute
 )
 
 var logger = log.Logger("rfq-api")
 
 // Run runs the quoter api server.
 func (r *QuoterAPIServer) Run(ctx context.Context) error {
-	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
 	h := NewHandler(r.db, r.cfg)
 
@@ -175,7 +193,7 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	engine.Use(APIVersionMiddleware(versionNumber))
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	// Apply AuthMiddleware only to the PUT routes
+	// Authenticated routes
 	quotesPut := engine.Group(QuoteRoute)
 	quotesPut.Use(r.AuthMiddleware())
 	quotesPut.PUT("", h.ModifyQuote)
@@ -185,17 +203,35 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	ackPut := engine.Group(AckRoute)
 	ackPut.Use(r.AuthMiddleware())
 	ackPut.PUT("", r.PutRelayAck)
+	openQuoteRequestsGet := engine.Group(RFQRoute)
+	openQuoteRequestsGet.Use(r.AuthMiddleware())
+	openQuoteRequestsGet.GET("", h.GetOpenQuoteRequests)
 
-	// GET routes without the AuthMiddleware
-	// engine.PUT("/quotes", h.ModifyQuote)
+	// WebSocket route
+	wsRoute := engine.Group(RFQStreamRoute)
+	wsRoute.Use(r.AuthMiddleware())
+	wsRoute.GET("", func(c *gin.Context) {
+		r.GetActiveRFQWebsocket(ctx, c)
+	})
+
+	// Unauthenticated routes
 	engine.GET(QuoteRoute, h.GetQuotes)
-
 	engine.GET(ContractsRoute, h.GetContracts)
+	engine.PUT(RFQRoute, r.PutRFQRequest)
+
+	// WebSocket upgrader
+	r.upgrader = websocket.Upgrader{
+		CheckOrigin: func(_ *http.Request) bool {
+			return true // TODO: Implement a more secure check
+		},
+	}
 
 	r.engine = engine
 
+	// Start the main HTTP server
 	connection := baseServer.Server{}
 	fmt.Printf("starting api at http://localhost:%s\n", r.cfg.Port)
+
 	err := connection.ListenAndServe(ctx, fmt.Sprintf(":%s", r.cfg.Port), r.engine)
 	if err != nil {
 		return fmt.Errorf("could not start rest api server: %w", err)
@@ -205,6 +241,8 @@ func (r *QuoterAPIServer) Run(ctx context.Context) error {
 }
 
 // AuthMiddleware is the Gin authentication middleware that authenticates requests using EIP191.
+//
+//nolint:gosec
 func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var loggedRequest interface{}
@@ -214,7 +252,7 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 		// Parse the dest chain id from the request
 		switch c.Request.URL.Path {
 		case QuoteRoute:
-			var req model.PutQuoteRequest
+			var req model.PutRelayerQuoteRequest
 			err = c.BindJSON(&req)
 			if err == nil {
 				destChainIDs = append(destChainIDs, uint32(req.DestChainID))
@@ -235,6 +273,17 @@ func (r *QuoterAPIServer) AuthMiddleware() gin.HandlerFunc {
 			if err == nil {
 				destChainIDs = append(destChainIDs, uint32(req.DestChainID))
 				loggedRequest = &req
+			}
+		case RFQRoute, RFQStreamRoute:
+			chainsHeader := c.GetHeader(ChainsHeader)
+			if chainsHeader != "" {
+				var chainIDs []int
+				err = json.Unmarshal([]byte(chainsHeader), &chainIDs)
+				if err == nil {
+					for _, chainID := range chainIDs {
+						destChainIDs = append(destChainIDs, uint32(chainID))
+					}
+				}
 			}
 		default:
 			err = fmt.Errorf("unexpected request path: %s", c.Request.URL.Path)
@@ -325,7 +374,7 @@ func (r *QuoterAPIServer) checkRole(c *gin.Context, destChainID uint32) (address
 // @Summary Relay ack
 // @Schemes
 // @Description cache an ack request to synchronize relayer actions.
-// @Param request body model.PutQuoteRequest true "query params"
+// @Param request body model.PutRelayerQuoteRequest true "query params"
 // @Tags ack
 // @Accept json
 // @Produce json
@@ -370,6 +419,159 @@ func (r *QuoterAPIServer) PutRelayAck(c *gin.Context) {
 		TxID:           ackReq.TxID,
 		ShouldRelay:    shouldRelay,
 		RelayerAddress: relayerAddr,
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+// GetActiveRFQWebsocket handles the WebSocket connection for active quote requests.
+// GET /rfq_stream.
+// @Summary Handle WebSocket connection for active quote requests
+// @Schemes
+// @Description Establish a WebSocket connection to receive active quote requests.
+// @Tags quotes
+// @Produce json
+// @Success 101 {string} string "Switching Protocols"
+// @Header 101 {string} X-Api-Version "API Version Number - See docs for more info"
+// @Router /rfq_stream [get].
+func (r *QuoterAPIServer) GetActiveRFQWebsocket(ctx context.Context, c *gin.Context) {
+	ctx, span := r.handler.Tracer().Start(ctx, "GetActiveRFQWebsocket")
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
+	ws, err := r.upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		logger.Error("Failed to set websocket upgrade", "error", err)
+		return
+	}
+
+	// use the relayer address as the ID for the connection
+	rawRelayerAddr, exists := c.Get("relayerAddr")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No relayer address recovered from signature"})
+		return
+	}
+	relayerAddr, ok := rawRelayerAddr.(string)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid relayer address type"})
+		return
+	}
+
+	span.SetAttributes(
+		attribute.String("relayer_address", relayerAddr),
+	)
+
+	// only one connection per relayer allowed
+	_, ok = r.wsClients.Load(relayerAddr)
+	if ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "relayer already connected"})
+		return
+	}
+
+	defer func() {
+		// cleanup ws registry
+		r.wsClients.Delete(relayerAddr)
+	}()
+
+	client := newWsClient(relayerAddr, ws, r.pubSubManager, r.handler)
+	r.wsClients.Store(relayerAddr, client)
+	span.AddEvent("registered ws client")
+	err = client.Run(ctx)
+	if err != nil {
+		logger.Error("Error running websocket client", "error", err)
+	}
+}
+
+const (
+	quoteTypeActive  = "active"
+	quoteTypePassive = "passive"
+)
+
+// PutRFQRequest handles a user request for a quote.
+// PUT /rfq.
+// @Summary Handle user quote request
+// @Schemes
+// @Description Handle user quote request and return the best quote available.
+// @Param request body model.PutRFQRequest true "User quote request"
+// @Tags quotes
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.PutRFQResponse
+// @Header 200 {string} X-Api-Version "API Version Number - See docs for more info"
+// @Router /rfq [put].
+//
+//nolint:cyclop
+func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
+	var req model.PutRFQRequest
+	err := c.BindJSON(&req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	requestID := uuid.New().String()
+	ctx, span := r.handler.Tracer().Start(c.Request.Context(), "PutRFQRequest", trace.WithAttributes(
+		attribute.String("request_id", requestID),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
+	err = r.db.InsertActiveQuoteRequest(ctx, &req, requestID)
+	if err != nil {
+		logger.Warnf("Error inserting active quote request: %w", err)
+	}
+
+	var isActiveRFQ bool
+	for _, quoteType := range req.QuoteTypes {
+		if quoteType == quoteTypeActive {
+			isActiveRFQ = true
+			break
+		}
+	}
+	span.SetAttributes(attribute.Bool("is_active_rfq", isActiveRFQ))
+
+	// if specified, fetch the active quote. always consider passive quotes
+	var activeQuote *model.QuoteData
+	if isActiveRFQ {
+		activeQuote = r.handleActiveRFQ(ctx, &req, requestID)
+		if activeQuote != nil && activeQuote.DestAmount != nil {
+			span.SetAttributes(attribute.String("active_quote_dest_amount", *activeQuote.DestAmount))
+		}
+	}
+	passiveQuote, err := r.handlePassiveRFQ(ctx, &req)
+	if err != nil {
+		logger.Error("Error handling passive RFQ", "error", err)
+	}
+	if passiveQuote != nil && passiveQuote.DestAmount != nil {
+		span.SetAttributes(attribute.String("passive_quote_dest_amount", *passiveQuote.DestAmount))
+	}
+	quote := getBestQuote(activeQuote, passiveQuote)
+
+	// construct the response
+	var resp model.PutRFQResponse
+	if quote == nil {
+		span.AddEvent("no quotes found")
+		resp = model.PutRFQResponse{
+			Success: false,
+			Reason:  "no quotes found",
+		}
+	} else {
+		quoteType := quoteTypeActive
+		if activeQuote == nil {
+			quoteType = quoteTypePassive
+		}
+		span.SetAttributes(
+			attribute.String("quote_type", quoteType),
+			attribute.String("quote_dest_amount", *quote.DestAmount),
+		)
+		resp = model.PutRFQResponse{
+			Success:        true,
+			QuoteType:      quoteType,
+			QuoteID:        quote.QuoteID,
+			DestAmount:     *quote.DestAmount,
+			RelayerAddress: *quote.RelayerAddress,
+		}
 	}
 	c.JSON(http.StatusOK, resp)
 }

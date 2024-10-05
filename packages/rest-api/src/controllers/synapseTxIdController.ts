@@ -1,6 +1,7 @@
 import { validationResult } from 'express-validator'
 
 import { Synapse } from '../services/synapseService'
+import { logger } from '../middleware/logger'
 
 export const synapseTxIdController = async (req, res) => {
   const errors = validationResult(req)
@@ -17,8 +18,21 @@ export const synapseTxIdController = async (req, res) => {
       txHash
     )
 
-    res.json({ synapseTxId })
+    const payload = {
+      synapseTxId,
+    }
+
+    logger.info(`Successful synapseTxIdController response`, {
+      query: req.query,
+      payload,
+    })
+    res.json(payload)
   } catch (err) {
+    logger.error(`Error in synapseTxIdController`, {
+      query: req.query,
+      error: err.message,
+      stack: err.stack,
+    })
     res.status(500).json({
       error:
         'An unexpected error occurred in /synapseTxId. Please try again later.',

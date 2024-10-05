@@ -4,7 +4,7 @@ import { ChainInfo } from '@components/misc/ChainInfo'
 import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
-import { CHAINS } from 'synapse-constants'
+import { CHAINS } from '@synapsecns/synapse-constants'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import { API_URL } from '@graphql'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
@@ -39,12 +39,11 @@ export const BridgeTransaction = ({ queryResult }) => {
 
   // Get time taken to complete tx w/ appropriate units.
   const getTimeElapsedStr = (start, end) => {
-    const diff = end - start;
+    const diff = end - start
     if (diff <= 0) {
-      return '1 second';
+      return '1 second'
     }
-    return diff === 1 ? '1 second' : `${diff} seconds`;
-
+    return diff === 1 ? '1 second' : `${diff} seconds`
   }
   let content
 

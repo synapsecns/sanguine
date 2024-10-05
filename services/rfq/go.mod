@@ -16,11 +16,13 @@ require (
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
 	github.com/go-resty/resty/v2 v2.13.1
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/ipfs/go-log v1.0.5
 	github.com/jellydator/ttlcache/v3 v3.1.1
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/lmittmann/w3 v0.10.0
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
+	github.com/puzpuzpuz/xsync v1.5.2
 	github.com/puzpuzpuz/xsync/v2 v2.5.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.9.0
@@ -176,7 +178,6 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.4 // indirect
-	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grafana/otel-profiling-go v0.5.1 // indirect
 	github.com/grafana/pyroscope-go v1.1.1 // indirect
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.7 // indirect
@@ -251,7 +252,6 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.54.0 // indirect
 	github.com/prometheus/procfs v0.15.0 // indirect
-	github.com/puzpuzpuz/xsync v1.5.2 // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
 	github.com/richardwilkes/toolbox v1.74.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect

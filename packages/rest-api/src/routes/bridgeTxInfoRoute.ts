@@ -56,6 +56,12 @@ const router = express.Router()
  *         schema:
  *           type: string
  *         description: The destination address for the bridged tokens
+ *       - in: query
+ *         name: originUserAddress
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The address of the user on the origin chain
  *     responses:
  *       200:
  *         description: Successful response
@@ -171,6 +177,10 @@ router.get(
         return validateRouteExists(fromChain, fromToken, toChain, toToken)
       })
       .withMessage('No valid route exists for the chain/token combination'),
+    check('originUserAddress')
+      .optional()
+      .custom((value) => isAddress(value))
+      .withMessage('Invalid originUserAddress address'),
   ],
   showFirstValidationError,
   bridgeTxInfoController

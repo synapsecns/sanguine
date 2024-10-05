@@ -3,6 +3,62 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.9...@synapsecns/explorer-ui@0.3.10) (2024-10-05)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.3.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.8...@synapsecns/explorer-ui@0.3.9) (2024-10-05)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.3.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.7...@synapsecns/explorer-ui@0.3.8) (2024-10-01)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.3.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.6...@synapsecns/explorer-ui@0.3.7) (2024-10-01)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.3.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.5...@synapsecns/explorer-ui@0.3.6) (2024-10-01)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.3.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.4...@synapsecns/explorer-ui@0.3.5) (2024-10-01)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
+## [0.3.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.3...@synapsecns/explorer-ui@0.3.4) (2024-09-30)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
 ## [0.3.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.2...@synapsecns/explorer-ui@0.3.3) (2024-09-26)
 
 **Note:** Version bump only for package @synapsecns/explorer-ui

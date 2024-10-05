@@ -1,5 +1,6 @@
 import Image from 'next/image'
-import { TOKEN_HASH_MAP, AVWETH, USDC } from 'synapse-constants'
+
+import { TOKEN_HASH_MAP, AVWETH, USDC } from '@synapsecns/synapse-constants'
 import { getTokenAddressUrl } from '@urls'
 
 export const AssetImage = ({ tokenAddress, chainId, className }) => {
@@ -11,7 +12,13 @@ export const AssetImage = ({ tokenAddress, chainId, className }) => {
         <div className="relative w-full">
           <div className="flex justify-between ">
             <div className="flex flex-row w-[90%] items-center">
-              <Image className={`${className}`} src={t?.icon} alt="" />
+              <Image
+                className={`${className}`}
+                src={t?.icon}
+                alt=""
+                height={16}
+                width={16}
+              />
             </div>
           </div>
         </div>
@@ -29,13 +36,21 @@ export const AssetImage = ({ tokenAddress, chainId, className }) => {
           className={`inline mr-[.5rem] rounded-full ${className}`}
           src={t?.icon}
           alt=""
+          height={16}
+          width={16}
         />
       </a>
     )
   } else {
     return (
       // temporary fix until either symbolToToken works better as a function or explorer indexer has the right token addresses
-      <Image className={`${className}`} src={USDC?.icon} alt="" />
+      <Image
+        className={`${className}`}
+        src={USDC?.icon}
+        alt=""
+        height={16}
+        width={16}
+      />
       // <QuestionMarkCircleIcon
       //   className={`inline w-5 h-5 mr-2 rounded-md ${className}`}
       //   strokeWidth={2}

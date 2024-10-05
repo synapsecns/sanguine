@@ -1,81 +1,77 @@
-# Swap/Bridge REST API Quoter
+# Synapse REST API
+To make requests, use https://api.synapseprotocol.com/
+
 
 To run locally:
-\`npm start\`
+```bash
+yarn dev
+```
 
-To make requests, use https://synapse-rest-api-v2.herokuapp.com/
+# Documentation
+[Swagger Documentation](https://api.synapseprotocol.com/api-docs/)
 
-The Synapse Rest API supports four main functions
+[GitBook Documentation](https://docs.synapseprotocol.com/developers/rest-api)
 
-## /swap
+## REST API
+The Synapse REST API provides a set of endpoints for quoting and executing cross-chain token swaps and bridges. It supports various functions including swap quotes, bridge quotes, transaction information retrieval, and token list management.
 
-which returns the following
+## Formatting Requests
+Here's an example of how to format a bridge request:
 
-- \`routerAddress\` (string) - The address of the router contract
-- \`maxAmountOut\` (object) - The maximum amount of tokens that can be swapped out. Contains:
-  - \`type\` (string) - The data type
-  - \`hex\` (string) - The amount encoded in hexidecimal
-- \`query\` (object) - Parameters for the swap query:
-  - \`0\` (string) - Router contract address
-  - \`1\` (string) - Address of tokenIn
-  - \`2\` (object) - Amount of tokenIn to swap (same structure as maxAmountOut)
-  - \`3\` (object) - Minimum amount of tokenOut requested (same structure as maxAmountOut)
-  - \`4\` (string) - Encoded params for swap routing
-  - \`swapAdapter\` (string) - Address of the swap adapter contract
-  - \`tokenOut\` (string) - Address of tokenOut
-  - \`minAmountOut\` (object) - Minimum amount of tokenOut required (same structure as maxAmountOut)
-  - \`deadline\` (object) - Deadline parameter for the swap (same structure as maxAmountOut)
-  - \`rawParams\` (string) - Encoded hex string containing swap parameters
-- \`maxAmountOutStr\` (string) - The maxAmountOut value formatted as a decimal string
+```bash
+/bridge?fromChain=1&toChain=42161&fromToken=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&toToken=0xaf88d065e77c8cC2239327C5EDb3A432268e5831&amount=100
+```
 
-All \`/swap\` requests should be formatted like such:
+To use this in a basic application:
 
-\`/swap?chain=1&fromToken=USDC&toToken=DAI&amount=100\`
+```javascript
+async function getBridgeQuote() {
+  const response = await fetch('https://api.synapseprotocol.com/bridge?fromChain=1&toChain=42161&fromToken=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&toToken=0xaf88d065e77c8cC2239327C5EDb3A432268e5831&amount=100');
+  const data = await response.json();
+  console.log(data);
+}
+getBridgeQuote();
+```
 
-## /bridge
 
-which returns all transaction information
+## Bridging
 
-- \`feeAmount\` (object) - The fee amount for the swap. Contains:
-  - \`type\` (string) - Data type
-  - \`hex\` (string) - Fee amount encoded in hex
-- \`feeConfig\` (array) - Fee configuration parameters, contains:
-  - \`0\` (number) - Gas price
-  - \`1\` (object) - Fee percentage denominator (hex encoded BigNumber)
-  - \`2\` (object) - Protocol fee percentage numerator (hex encoded BigNumber)
-- \`routerAddress\` (string) - Address of the router contract
-- \`maxAmountOut\` (object) - Maximum amount receivable from swap, structure same as above
-- \`originQuery\` (object) - Original swap query parameters, contains:
-  - \`swapAdapter\` (string) - Swap adapter address
-  - \`tokenOut\` (string) - Address of output token
-  - \`minAmountOut\` (object) - Minimum output token amount
-  - \`deadline\` (object) - Expiry time
-  - \`rawParams\` (string) - Encoded hex params
-- \`destQuery\` (object) - Destination swap query parameters, structure similar to originQuery above.
-- \`maxAmountOutStr\` (string) - maxAmountOut as a decimal string.
+1. Get a Bridge Quote to confirm the expected amount out and the bridge route
 
-All \`/bridge\` requests should be formatted like such:
+```javascript
+const quoteResponse = await fetch('https://api.synapseprotocol.com/bridge?fromChain=1&toChain=42161&fromToken=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&toToken=0xaf88d065e77c8cC2239327C5EDb3A432268e5831&amount=100');
+const quoteData = await quoteResponse.json();
+```
 
-\`/bridge?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000\`
+2. Get the structured transaction information
 
-## /swapTxInfo
+```javascript
+const txInfoResponse = await fetch('https://api.synapseprotocol.com/bridgeTxInfo?fromChain=1&toChain=42161&fromToken=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&toToken=0xaf88d065e77c8cC2239327C5EDb3A432268e5831&amount=100&destAddress=0xcc78d2f004c9de9694ff6a9bbdee4793d30f3842');
+const txInfoData = await txInfoResponse.json();
+```
 
-which returns the following
+3. Execute the transaction
 
-- \`'data'\`: The binary data that forms the input to the transaction.
-- \`'to'\`: The address of the Synapse Router (the synapse bridge contract)
+```javascript
+const provider = new ethers.providers.Web3Provider(window.ethereum);
+const signer = provider.getSigner();
+const transaction = await signer.sendTransaction(txInfoData);
+const receipt = await transaction.wait();
+```
 
-All \`/swapTxInfo\` requests should be formatted like such:
+## Other Functions:
+1. `/destinationTokens`: This endpoint provides information about possible destination tokens for a given source chain and token. It's useful for showing users their options when initiating a cross-chain transfer.
 
-\`/swap?chain=1&fromToken=USDC&toToken=DAI&amount=100\`
+```javascript
+const response = await fetch('https://api.synapseprotocol.com/destinationTokens?fromChain=1&fromToken=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48');
+const destinationTokens = await response.json();
+```
 
-## /bridgeTxInfo
+2. `/bridgeLimits`: This endpoint returns the minimum and maximum amounts that can be bridged for a specific token pair. It's helpful for validating user input and displaying available limits.
 
-which returns the following
+```javascript
+const limitsResponse = await fetch('https://api.synapseprotocol.com/bridgeLimits?fromChain=1&toChain=42161&fromToken=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&toToken=0xaf88d065e77c8cC2239327C5EDb3A432268e5831');
+const limitsData = await limitsResponse.json();
+```
 
-- \`'data'\`: The binary data that forms the input to the transaction.
-- \`'to'\`: The address of the Synapse Router (the synapse bridge contract)
-
-All \`/bridgeTxInfo\` requests should be formatted like such:
-
-\`/bridgeTxInfo?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000&destAddress=0xcc78d2f004c9de9694ff6a9bbdee4793d30f3842\`
+There are other additional functions that are included and documented in the Swagger documentation. Suggested changes to the API can be made by creating a new branch, making the changes, and opening a pull request. Any changes should include the appropriate test coverage and update the relevant documentation (this README, Swagger, and GitBook).

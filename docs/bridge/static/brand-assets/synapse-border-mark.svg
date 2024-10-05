@@ -1,0 +1,22 @@
+<svg width="108" height="108" fill="url(#synGrad)" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="synGrad" fx="0%">
+            <stop offset="0%" stop-color="hsl(285deg 100% 65%)" />
+            <stop offset="100%" stop-color="hsl(265deg 100% 75%)" />
+        </linearGradient>
+        <linearGradient id="synBorder" gradientTransform="rotate(45)">
+            <stop offset="0%" stop-color="hsl(300deg 100% 50%)" />
+            <stop offset="100%" stop-color="hsl(256deg 87% 61%)" />
+        </linearGradient>
+        <mask id="synMask">
+            <rect x="-50%" y="-50%" width="100%" height="100%" fill="white" />
+            <circle r="36" fill="black" />
+        </mask>
+    </defs>
+    <rect x="-50%" y="-50%" width="100%" height="100%" fill="url(#synBorder)" mask="url(#synMask)" />
+    <path d="M0 18 18 0 H-18 L0 -18" stroke="url(#synGrad)" stroke-width="5.5" stroke-linejoin="bevel" opacity=".5" fill="none" />
+    <circle cy="18" r="6" />
+    <circle cx="18" r="6" />
+    <circle cx="-18" r="6" />
+    <circle cy="-18" r="6" />
+</svg>

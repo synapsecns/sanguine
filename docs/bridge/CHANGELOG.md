@@ -3,6 +3,73 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.3.6...@synapsecns/bridge-docs@0.3.7) (2024-10-05)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.3.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.3.5...@synapsecns/bridge-docs@0.3.6) (2024-10-05)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.3.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.3.4...@synapsecns/bridge-docs@0.3.5) (2024-10-04)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.3.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.3.3...@synapsecns/bridge-docs@0.3.4) (2024-10-04)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.3.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.3.2...@synapsecns/bridge-docs@0.3.3) (2024-10-04)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.3.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.3.1...@synapsecns/bridge-docs@0.3.2) (2024-10-03)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.3.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.3.0...@synapsecns/bridge-docs@0.3.1) (2024-10-03)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+# [0.3.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.2.4...@synapsecns/bridge-docs@0.3.0) (2024-10-02)
+
+
+### Features
+
+* **rfq:** relay rate limiting ([#2933](https://github.com/synapsecns/sanguine/issues/2933)) [SLT-149] ([a240292](https://github.com/synapsecns/sanguine/commit/a2402928f7e56369ce39cc6f211c3e3b3dfd404e))
+
+
+
+
+
 ## [0.2.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.2.3...@synapsecns/bridge-docs@0.2.4) (2024-09-09)
 
 **Note:** Version bump only for package @synapsecns/bridge-docs

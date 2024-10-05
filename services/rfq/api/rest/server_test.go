@@ -125,9 +125,6 @@ func (c *ServerSuite) TestEIP191_UnsuccessfulSignature() {
 		err = resp.Body.Close()
 		c.Require().NoError(err)
 	}()
-	// Log the response body for debugging.
-	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
 
 	// Assert that the response status code is HTTP 400 Bad Request.
 	c.Equal(http.StatusBadRequest, resp.StatusCode)
@@ -151,11 +148,6 @@ func (c *ServerSuite) TestEIP191_SuccessfulPutSubmission() {
 
 	// Check for X-Api-Version on the response
 	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
-
-	// Log the response body for debugging.
-	body, err := io.ReadAll(resp.Body)
-	c.Require().NoError(err)
-	fmt.Println(string(body))
 
 	// Assert that the response status code is HTTP 200 OK.
 	c.Assert().Equal(http.StatusOK, resp.StatusCode)
@@ -207,6 +199,87 @@ func (c *ServerSuite) TestPutAndGetQuote() {
 		}
 	}
 	c.Assert().True(found, "Newly added quote not found")
+}
+
+func (c *ServerSuite) TestGetOpenQuoteRequests() {
+	// Start the API server
+	c.startQuoterAPIServer()
+
+	// Insert some test quote requests
+	testRequests := []*model.PutRFQRequest{
+		{
+			Data: model.QuoteData{
+				OriginChainID:    1,
+				DestChainID:      42161,
+				OriginTokenAddr:  "0xOriginTokenAddr",
+				DestTokenAddr:    "0xDestTokenAddr",
+				OriginAmount:     "100.0",
+				ExpirationWindow: 100,
+			},
+		},
+		{
+			Data: model.QuoteData{
+				OriginChainID:    1,
+				DestChainID:      42161,
+				OriginTokenAddr:  "0xOriginTokenAddr",
+				DestTokenAddr:    "0xDestTokenAddr",
+				OriginAmount:     "100.0",
+				ExpirationWindow: 100,
+			},
+		},
+		{
+			Data: model.QuoteData{
+				OriginChainID:    1,
+				DestChainID:      42161,
+				OriginTokenAddr:  "0xOriginTokenAddr",
+				DestTokenAddr:    "0xDestTokenAddr",
+				OriginAmount:     "100.0",
+				ExpirationWindow: 100,
+			},
+		},
+	}
+
+	statuses := []db.ActiveQuoteRequestStatus{db.Received, db.Pending, db.Expired}
+	for i, req := range testRequests {
+		err := c.database.InsertActiveQuoteRequest(c.GetTestContext(), req, strconv.Itoa(i))
+		c.Require().NoError(err)
+		err = c.database.UpdateActiveQuoteRequestStatus(c.GetTestContext(), strconv.Itoa(i), nil, statuses[i])
+		c.Require().NoError(err)
+	}
+
+	// Prepare the authorization header
+	header, err := c.prepareAuthHeader(c.testWallet)
+	c.Require().NoError(err)
+
+	// Send GET request to fetch open quote requests
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(c.GetTestContext(), http.MethodGet, fmt.Sprintf("http://localhost:%d%s", c.port, rest.RFQRoute), nil)
+	c.Require().NoError(err)
+	req.Header.Add("Authorization", header)
+	chainIDsJSON, err := json.Marshal([]uint64{1, 42161})
+	c.Require().NoError(err)
+	req.Header.Add("Chains", string(chainIDsJSON))
+
+	resp, err := client.Do(req)
+	c.Require().NoError(err)
+	defer func() {
+		err = resp.Body.Close()
+		c.Require().NoError(err)
+	}()
+
+	// Check the response status code
+	c.Assert().Equal(http.StatusOK, resp.StatusCode)
+
+	// Check for X-Api-Version on the response
+	c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
+
+	// Parse the response body
+	var openRequests []*model.GetOpenQuoteRequestsResponse
+	err = json.NewDecoder(resp.Body).Decode(&openRequests)
+	c.Require().NoError(err)
+
+	// Verify the number of open requests (should be 2: Received and Pending)
+	c.Assert().Len(openRequests, 2)
 }
 
 func (c *ServerSuite) TestPutAndGetQuoteByRelayer() {
@@ -284,9 +357,6 @@ func (c *ServerSuite) TestMultiplePutRequestsWithIncorrectAuth() {
 
 		// Check for X-Api-Version on the response
 		c.Equal(resp.Header.Get("X-Api-Version"), rest.APIversions.Versions[0].Version)
-
-		// Log the response body for debugging
-		fmt.Printf("Request %d response: Status: %d, Body: %s\n", i+1, resp.StatusCode, string(body))
 
 		switch resp.StatusCode {
 		case http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden:
@@ -401,9 +471,7 @@ func (c *ServerSuite) prepareAuthHeader(wallet wallet.Wallet) (string, error) {
 func (c *ServerSuite) sendPutQuoteRequest(header string) (*http.Response, error) {
 	// Prepare the PUT request with JSON data.
 	client := &http.Client{}
-	putData := model.PutQuoteRequest{
-		OriginChainID:   1,
-		OriginTokenAddr: "0xOriginTokenAddr",
+	putData := model.PutRelayerQuoteRequest{
 		DestChainID:     42161,
 		DestTokenAddr:   "0xDestTokenAddr",
 		DestAmount:      "100.0",

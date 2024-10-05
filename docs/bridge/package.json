@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/bridge-docs",
-  "version": "0.2.4",
+  "version": "0.3.7",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -20,26 +20,29 @@
   },
   "dependencies": {
     "@codecov/webpack-plugin": "^0.0.1-beta.10",
-    "@docusaurus/core": "3.1.1",
-    "@docusaurus/logger": "3.1.1",
-    "@docusaurus/plugin-content-docs": "3.1.1",
-    "@docusaurus/preset-classic": "3.1.1",
-    "@docusaurus/theme-common": "3.1.1",
-    "@docusaurus/utils": "3.1.1",
-    "@docusaurus/utils-common": "3.1.1",
-    "@docusaurus/utils-validation": "3.1.1",
+    "@docusaurus/core": "3.5.2",
+    "@docusaurus/logger": "3.5.2",
+    "@docusaurus/module-type-aliases": "3.5.2",
+    "@docusaurus/plugin-content-docs": "3.5.2",
+    "@docusaurus/plugin-google-gtag": "^3.5.2",
+    "@docusaurus/preset-classic": "3.5.2",
+    "@docusaurus/theme-common": "3.5.2",
+    "@docusaurus/tsconfig": "3.5.2",
+    "@docusaurus/types": "3.5.2",
+    "@docusaurus/utils": "3.5.2",
+    "@docusaurus/utils-common": "3.5.2",
+    "@docusaurus/utils-validation": "3.5.2",
+    "@easyops-cn/docusaurus-search-local": "^0.44.5",
     "@mdx-js/react": "^3.0.0",
+    "@synapsecns/synapse-constants": "^1.6.0",
     "clsx": "^2.0.0",
-    "docusaurus-plugin-openapi-docs": "3.0.0-beta.10",
-    "docusaurus-theme-openapi-docs": "3.0.0-beta.10",
+    "docusaurus-plugin-openapi-docs": "^4.0.1",
+    "docusaurus-theme-openapi-docs": "^4.0.1",
     "prism-react-renderer": "^2.3.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.2.1",
-    "@docusaurus/tsconfig": "3.2.1",
-    "@docusaurus/types": "3.2.1",
     "typescript": "~5.2.2"
   },
   "browserslist": {
