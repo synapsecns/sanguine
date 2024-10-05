@@ -32,7 +32,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }} # Optional
           filesizelimit: 15MB
 
-      - name: Add 'fe-release' label if branch target is 'fe-release'
+      - name: Add 'fe-release' label
         if: github.event.pull_request.base.ref == 'fe-release'
         uses: actions-ecosystem/action-add-labels@v1
         with:
