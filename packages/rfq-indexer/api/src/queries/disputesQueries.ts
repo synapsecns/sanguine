@@ -14,8 +14,8 @@ export const qDisputes = ({ activeOnly }: { activeOnly: boolean } = { activeOnly
       'BridgeProofDisputedEvents.blockNumber as blockNumber_dispute',
       'BridgeProofDisputedEvents.blockTimestamp as blockTimestamp_dispute',
       'BridgeProofDisputedEvents.transactionHash as transactionHash_dispute',
-      'BridgeProofDisputedEvents.chainId as originChainId_dispute',
-      'BridgeProofDisputedEvents.chain as originChain_dispute',
+      'BridgeProofDisputedEvents.originChainId as originChainId_dispute',
+      'BridgeProofDisputedEvents.originChain as originChain_dispute',
     ]);
 
   if (activeOnly) {

@@ -86,6 +86,6 @@ scalar BigInt
     blockNumber: BigInt!
     blockTimestamp: Int!
     transactionHash: String!
-    chainId: Int!
-    chain: String!
+    originChainId: Int!
+    originChain: String!
   }
