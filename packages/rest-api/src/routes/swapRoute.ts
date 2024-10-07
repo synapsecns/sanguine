@@ -169,7 +169,7 @@ router.get(
 
         return validSwap(chain, fromToken, toToken)
       })
-      .withMessage('Swap not supported'),
+      .withMessage('Swap not supported for given tokens'),
   ],
   showFirstValidationError,
   swapController
