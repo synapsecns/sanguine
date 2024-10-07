@@ -112,14 +112,21 @@ type ConflictingProof {
   BridgeProof: Proof!
 }
 
+type DisputedRelay {
+  Bridge: Transaction!
+  BridgeProof: Proof!
+}
+
 type Query {
   pendingTransactionsMissingRelay: [PendingTransactionMissingRelay!]!
+  pendingTransactionsMissingRelayExceedDeadline: [PendingTransactionMissingRelay!]!
   pendingTransactionsMissingProof: [PendingTransactionMissingProof!]!
   pendingTransactionsMissingClaim: [PendingTransactionMissingClaim!]!
   transactionById(transactionId: String!): [CompleteTransaction!]!
   recentInvalidRelays: [InvalidRelay!]!
   refundedAndRelayedTransactions: [RefundedAndRelayedTransaction!]!
   conflictingProofs: [ConflictingProof!]!
+  disputedRelays: [DisputedRelay!]!
 }
 
 

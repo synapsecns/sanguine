@@ -19,7 +19,7 @@ scalar BigInt
     destChain: String!
     sendChainGas: Boolean!
   }
-  
+
   type BridgeRelayedEvent {
     id:  String!
     transactionId: String!
@@ -39,7 +39,7 @@ scalar BigInt
     destChainId: Int!
     destChain: String!
   }
-  
+
   type BridgeProofProvidedEvent {
     id:  String!
     transactionId: String!
@@ -50,7 +50,7 @@ scalar BigInt
     originChain: String!
     relayer: String!
   }
-  
+
   type BridgeDepositRefundedEvent {
     id: String!
     transactionId: String!
@@ -64,7 +64,7 @@ scalar BigInt
     amount: BigInt!
     amountFormatted: String!
   }
-  
+
   type BridgeDepositClaimedEvent {
     id:  String!
     transactionId: String!
@@ -78,4 +78,14 @@ scalar BigInt
     token: String!
     amount: BigInt!
     amountFormatted: String!
+}
+
+  type BridgeProofDisputedEvent {
+    id: String!
+    transactionId: String!
+    blockNumber: BigInt!
+    blockTimestamp: Int!
+    transactionHash: String!
+    originChainId: Int!
+    originChain: String!
   }

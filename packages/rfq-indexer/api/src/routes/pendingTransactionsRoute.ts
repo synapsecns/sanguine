@@ -3,7 +3,8 @@ import express from 'express'
 import {
   pendingTransactionsMissingClaimController,
   pendingTransactionsMissingProofController,
-  pendingTransactionsMissingRelayController
+  pendingTransactionsMissingRelayController,
+  pendingTransactionsMissingRelayExceedDeadlineController
 } from '../controllers/pendingTransactionsController'
 
 const router = express.Router()
@@ -145,5 +146,47 @@ router.get('/missing-proof', pendingTransactionsMissingProofController)
  *                   type: string
  */
 router.get('/missing-relay', pendingTransactionsMissingRelayController)
+
+/**
+ * @openapi
+ * /pending-transactions/exceed-deadline:
+ *   get:
+ *     summary: Get pending transactions exceed deadline
+ *     description: Retrieves a list of transactions that have been deposited, but not yet relayed or refunded and have exceeded the deadline
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   deposit:
+ *                     type: object
+ *       404:
+ *         description: No pending transactionst that exceed the deadline found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.get(
+  '/exceed-deadline',
+  pendingTransactionsMissingRelayExceedDeadlineController
+)
 
 export default router
