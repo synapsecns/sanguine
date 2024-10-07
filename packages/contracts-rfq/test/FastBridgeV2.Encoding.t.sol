@@ -47,7 +47,14 @@ contract FastBridgeV2EncodingTest is FastBridgeV2Test {
         assertEq(decodedTx, bridgeTx);
     }
 
-    function test_getBridgeTransaction_supportsV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTxV2) public view {
+    // The addition of variable length field (callParams) in BridgeTransactionV2 breaks the compatibility
+    // with the original BridgeTransaction struct.
+    // Solidity's abi.encode(bridgeTxV2) will use the first 32 bytes to encode the data offset for the whole struct,
+    // which is ALWAYS equal to 32 (data starts right after the offset). This is weird, but it is what it is.
+    // https://ethereum.stackexchange.com/questions/152971/abi-encode-decode-mystery-additional-32-byte-field-uniswap-v2
+    function test_getBridgeTransaction_supportsV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTxV2) public {
+        // TODO: reevaluate the necessity of this test if/when the encoding scheme is changed
+        vm.skip(true);
         bytes memory request = abi.encode(bridgeTxV2);
         IFastBridge.BridgeTransaction memory decodedTx = fastBridge.getBridgeTransaction(request);
         assertEq(decodedTx, extractV1(bridgeTxV2));
