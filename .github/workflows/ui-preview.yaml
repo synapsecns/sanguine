@@ -63,12 +63,6 @@ jobs:
           cache: 'npm'
           install_dependencies: 'false'
           cache-path: ''
-      - name: Build synapse-constants
-        run: |
-          cd packages/synapse-constants
-          yarn install
-          yarn build
-        working-directory: ${{ github.workspace }}
       - name: Get Project ID
         id: project_id
         # see: https://stackoverflow.com/a/75231888 for details
