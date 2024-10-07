@@ -340,13 +340,25 @@ func (m *Manager) generateActiveRFQ(ctx context.Context, msg *model.ActiveRFQMes
 	if err != nil {
 		return nil, fmt.Errorf("error generating quote: %w", err)
 	}
-	span.SetAttributes(attribute.String("dest_amount", rawQuote.DestAmount))
+	fixedFee, ok := new(big.Int).SetString(rawQuote.FixedFee, 10)
+	if !ok {
+		return nil, fmt.Errorf("error parsing fixed fee: %s", rawQuote.FixedFee)
+	}
+	rawDestAmount, ok := new(big.Int).SetString(rawQuote.DestAmount, 10)
+	if !ok {
+		return nil, fmt.Errorf("error parsing dest amount: %s", rawQuote.DestAmount)
+	}
+	destAmountNet := new(big.Int).Sub(rawDestAmount, fixedFee)
+	span.SetAttributes(
+		attribute.String("dest_amount", rawQuote.DestAmount),
+		attribute.String("fixed_fee", rawQuote.FixedFee),
+		attribute.String("dest_amount_net", destAmountNet.String()),
+	)
 
 	rfqResp := model.WsRFQResponse{
 		RequestID:  rfqRequest.RequestID,
-		DestAmount: rawQuote.DestAmount,
+		DestAmount: destAmountNet.String(),
 	}
-	span.SetAttributes(attribute.String("dest_amount", rawQuote.DestAmount))
 	respBytes, err := json.Marshal(rfqResp)
 	if err != nil {
 		return nil, fmt.Errorf("error serializing response: %w", err)
