@@ -127,6 +127,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridge
     function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory) {
+        // TODO: the note below isn't true anymore with the BridgeTransactionV2 struct
+        // since the variable length `callParams` was added. This needs to be fixed/acknowledged.
+
         // Note: when passing V2 request, this will decode the V1 fields correctly since the new fields were
         // added as the last fields of the struct and hence the ABI decoder will simply ignore the extra data.
         return abi.decode(request, (BridgeTransaction));
