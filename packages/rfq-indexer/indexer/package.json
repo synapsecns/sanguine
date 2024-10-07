@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/rfq-indexer",
   "private": true,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

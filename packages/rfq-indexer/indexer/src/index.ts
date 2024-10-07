@@ -165,8 +165,8 @@ ponder.on('FastBridgeV2:BridgeProofDisputed', async ({ event, context }) => {
     create: {
       transactionId,
       relayer: trim(relayer),
-      chainId: Number(chainId),
-      chain: getChainName(Number(chainId)),
+      originChainId: Number(chainId),
+      originChain: getChainName(Number(chainId)),
       blockNumber: BigInt(blockNumber),
       blockTimestamp: Number(timestamp),
       transactionHash: hash,

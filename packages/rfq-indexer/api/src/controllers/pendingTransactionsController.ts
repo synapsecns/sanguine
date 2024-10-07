@@ -1,8 +1,17 @@
 import { Request, Response } from 'express'
 
 import { db } from '../db'
-import { qDeposits, qRelays, qProofs, qClaims, qRefunds } from '../queries'
+import {
+  qDeposits,
+  qRelays,
+  qProofs,
+  qClaims,
+  qRefunds,
+  qDisputes,
+} from '../queries'
 import { nest_results } from '../utils/nestResults'
+
+const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60
 
 export const pendingTransactionsMissingClaimController = async (
   req: Request,
@@ -12,7 +21,7 @@ export const pendingTransactionsMissingClaimController = async (
     const query = db
       .with('deposits', () => qDeposits())
       .with('relays', () => qRelays())
-      .with('proofs', () => qProofs())
+      .with('proofs', () => qProofs({activeOnly: true}))
       .with('claims', () => qClaims())
       .with('combined', (qb) =>
         qb
@@ -45,7 +54,6 @@ export const pendingTransactionsMissingClaimController = async (
   }
 }
 
-
 export const pendingTransactionsMissingProofController = async (
   req: Request,
   res: Response
@@ -54,7 +62,7 @@ export const pendingTransactionsMissingProofController = async (
     const query = db
       .with('deposits', () => qDeposits())
       .with('relays', () => qRelays())
-      .with('proofs', () => qProofs())
+      .with('proofs', () => qProofs({activeOnly: true}))
       .with('combined', (qb) =>
         qb
           .selectFrom('deposits')
@@ -111,6 +119,52 @@ export const pendingTransactionsMissingRelayController = async (
       .selectFrom('combined')
       .selectAll()
       .orderBy('blockTimestamp_deposit', 'desc')
+      .where('blockTimestamp_deposit', '>', sevenDaysAgo)
+
+    const results = await query.execute()
+    const nestedResults = nest_results(results)
+
+    if (nestedResults && nestedResults.length > 0) {
+      res.json(nestedResults)
+    } else {
+      res
+        .status(404)
+        .json({ message: 'No pending transactions missing relay found' })
+    }
+  } catch (error) {
+    console.error('Error fetching pending transactions missing relay:', error)
+    res.status(500).json({ message: 'Internal server error' })
+  }
+}
+
+export const pendingTransactionsMissingRelayExceedDeadlineController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const query = db
+      .with('deposits', () => qDeposits())
+      .with('relays', () => qRelays())
+      .with('refunds', () => qRefunds())
+      .with(
+        'combined',
+        (qb) =>
+          qb
+            .selectFrom('deposits')
+            .selectAll('deposits')
+            .leftJoin('relays', 'transactionId_deposit', 'transactionId_relay')
+            .leftJoin(
+              'refunds',
+              'transactionId_deposit',
+              'transactionId_refund'
+            )
+            .where('transactionId_relay', 'is', null) // is not relayed
+            .where('transactionId_refund', 'is', null) // is not refunded
+      )
+      .selectFrom('combined')
+      .selectAll()
+      .orderBy('blockTimestamp_deposit', 'desc')
+      .where('blockTimestamp_deposit', '<=', sevenDaysAgo)
 
     const results = await query.execute()
     const nestedResults = nest_results(results)

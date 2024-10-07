@@ -7,6 +7,7 @@ import type {
   BridgeProofProvidedEvents,
   BridgeDepositRefundedEvents,
   BridgeDepositClaimedEvents,
+  BridgeProofDisputedEvents,
 } from '../types'
 
 const { DATABASE_URL } = process.env
@@ -21,6 +22,7 @@ export interface Database {
   BridgeProofProvidedEvents: BridgeProofProvidedEvents
   BridgeDepositRefundedEvents: BridgeDepositRefundedEvents
   BridgeDepositClaimedEvents: BridgeDepositClaimedEvents
+  BridgeProofDisputedEvents: BridgeProofDisputedEvents
 }
 
 export const db = new Kysely<Database>({ dialect })
