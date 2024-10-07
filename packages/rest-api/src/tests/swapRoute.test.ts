@@ -87,10 +87,7 @@ describe('Swap Route with Real Synapse Service', () => {
     })
 
     expect(response.status).toBe(400)
-    expect(response.body.error).toHaveProperty(
-      'message',
-      'Swap route not supported'
-    )
+    expect(response.body.error).toHaveProperty('message', 'Swap not supported')
   })
 
   it('should return 400 for token not supported on specified chain', async () => {
