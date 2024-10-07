@@ -11,7 +11,7 @@ for (const { chainImg, id, name } of Object.values(CHAINS)) {
 export default () =>
   Object.entries(BRIDGABLE_TOKENS).map(([id, tokens]) => {
     const chain = CHAINS_BY_ID[id]
-    const chainImg = chain.chainImg({ width: 28, height: 28 })
+    const chainImg = chain.chainImg
     return (
       <section key={id}>
         <h2
@@ -22,7 +22,8 @@ export default () =>
             alignItems: 'center',
           }}
         >
-          {chainImg} {chain.name} <code>{id}</code>
+          <img width="28" height="28" src={chainImg} alt={chain.name} />
+          {chain.name} <code>{id}</code>
         </h2>
         {Object.values(tokens).map((token) => {
           const tokenImg =
