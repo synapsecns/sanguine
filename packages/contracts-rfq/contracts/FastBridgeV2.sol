@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 
@@ -9,6 +10,7 @@ import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
 import {IFastBridgeV2Errors} from "./interfaces/IFastBridgeV2Errors.sol";
+import {IFastBridgeRecipient} from "./interfaces/IFastBridgeRecipient.sol";
 
 /// @notice FastBridgeV2 is a contract for bridging tokens across chains.
 contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
@@ -23,6 +25,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @notice Minimum deadline period to relay a requested bridge transaction
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
+
+    /// @notice Maximum length of accepted callParams
+    uint256 public constant MAX_CALL_PARAMS_LENGTH = 2 ** 16 - 1;
 
     /// @notice Status of the bridge tx on origin chain
     mapping(bytes32 => BridgeTxDetails) public bridgeTxDetails;
@@ -45,7 +50,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function bridge(BridgeParams memory params) external payable {
         bridge({
             params: params,
-            paramsV2: BridgeParamsV2({quoteRelayer: address(0), quoteExclusivitySeconds: 0, quoteId: bytes("")})
+            paramsV2: BridgeParamsV2({
+                quoteRelayer: address(0),
+                quoteExclusivitySeconds: 0,
+                quoteId: bytes(""),
+                callParams: bytes("")
+            })
         });
     }
 
@@ -117,6 +127,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridge
     function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory) {
+        // TODO: the note below isn't true anymore with the BridgeTransactionV2 struct
+        // since the variable length `callParams` was added. This needs to be fixed/acknowledged.
+
         // Note: when passing V2 request, this will decode the V1 fields correctly since the new fields were
         // added as the last fields of the struct and hence the ABI decoder will simply ignore the extra data.
         return abi.decode(request, (BridgeTransaction));
@@ -132,6 +145,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
         if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
+        if (paramsV2.callParams.length > MAX_CALL_PARAMS_LENGTH) revert CallParamsLengthAboveMax();
         int256 exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
         // exclusivityEndTime must be in range (0 .. params.deadline]
         if (exclusivityEndTime <= 0 || exclusivityEndTime > int256(params.deadline)) {
@@ -163,7 +177,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 nonce: senderNonces[params.sender]++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
                 // We checked exclusivityEndTime to be in range (0 .. params.deadline] above, so can safely cast
-                exclusivityEndTime: uint256(exclusivityEndTime)
+                exclusivityEndTime: uint256(exclusivityEndTime),
+                callParams: paramsV2.callParams
             })
         );
         bytes32 transactionId = keccak256(request);
@@ -214,18 +229,32 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
 
-        uint256 rebate = chainGasAmount;
-        if (!transaction.sendChainGas) {
-            // forward erc20
-            rebate = 0;
+        // All state changes have been done at this point, can proceed to the external calls.
+        // This follows the checks-effects-interactions pattern to mitigate potential reentrancy attacks.
+        if (transaction.callParams.length == 0) {
+            // No arbitrary call requested, so we just pull the tokens from the Relayer to the recipient,
+            // or transfer ETH to the recipient (if token is ETH_ADDRESS)
             _pullToken(to, token, amount);
-        } else if (token == UniversalTokenLib.ETH_ADDRESS) {
-            // lump in gas rebate into amount in native gas token
-            _pullToken(to, token, amount + rebate);
+        } else if (token != UniversalTokenLib.ETH_ADDRESS) {
+            // Arbitrary call requested with ERC20: pull the tokens from the Relayer to the recipient first
+            _pullToken(to, token, amount);
+            // Follow up with the hook function call
+            _checkedCallRecipient({
+                recipient: to,
+                msgValue: 0,
+                token: token,
+                amount: amount,
+                callParams: transaction.callParams
+            });
         } else {
-            // forward erc20 then forward gas rebate in native gas token
-            _pullToken(to, token, amount);
-            _pullToken(to, UniversalTokenLib.ETH_ADDRESS, rebate);
+            // Arbitrary call requested with ETH: combine the ETH transfer with the call
+            _checkedCallRecipient({
+                recipient: to,
+                msgValue: amount,
+                token: token,
+                amount: amount,
+                callParams: transaction.callParams
+            });
         }
 
         emit BridgeRelayed(
@@ -237,7 +266,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             transaction.destToken,
             transaction.originAmount,
             transaction.destAmount,
-            rebate
+            // chainGasAmount is 0 since the gas rebate function is deprecated
+            0
         );
     }
 
@@ -324,6 +354,31 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             if (recipient != address(this)) token.universalTransfer(recipient, amount);
             // We will forward msg.value in the external call later, if recipient is not this contract
             amountPulled = msg.value;
+        }
+    }
+
+    /// @notice Calls the Recipient's hook function with the specified callParams and performs
+    /// all the necessary checks for the returned value.
+    function _checkedCallRecipient(
+        address recipient,
+        uint256 msgValue,
+        address token,
+        uint256 amount,
+        bytes memory callParams
+    )
+        internal
+    {
+        bytes memory hookData =
+            abi.encodeCall(IFastBridgeRecipient.fastBridgeTransferReceived, (token, amount, callParams));
+        // This will bubble any revert messages from the hook function
+        bytes memory returnData = Address.functionCallWithValue({target: recipient, data: hookData, value: msgValue});
+        // Explicit revert if no return data at all
+        if (returnData.length == 0) revert RecipientNoReturnValue();
+        // Check that exactly a single return value was returned
+        if (returnData.length != 32) revert RecipientIncorrectReturnValue();
+        // Return value should be abi-encoded hook function selector
+        if (bytes32(returnData) != bytes32(IFastBridgeRecipient.fastBridgeTransferReceived.selector)) {
+            revert RecipientIncorrectReturnValue();
         }
     }
 

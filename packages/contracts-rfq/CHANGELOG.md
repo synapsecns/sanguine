@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.6.2...@synapsecns/contracts-rfq@0.7.0) (2024-10-07)
+
+
+### Features
+
+* **contracts-rfq:** arbitrary calls without additional native value [SLT-233] ([#3215](https://github.com/synapsecns/sanguine/issues/3215)) ([6dc151c](https://github.com/synapsecns/sanguine/commit/6dc151c709970e2a891a56d10c8ffc67bdf95522))
+
+
+
+
+
 ## [0.6.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.6.1...@synapsecns/contracts-rfq@0.6.2) (2024-10-03)
 
 

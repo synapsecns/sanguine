@@ -6,33 +6,39 @@ To make requests, use:  https://triumphant-magic-production.up.railway.app , and
 
 ## API Calls
 
-1. GET /api/hello
-   - Description: A simple hello world endpoint
-   - Example: `curl http://localhost:3001/api/hello`
 
-2. GET /api/pending-transactions-missing-relay
+All API calls can be viewed in Swagger:
+
+[Swagger Documentation](http://localhost:3001/api-docs)
+
+1. GET /api/pending-transactions-missing-relay
    - Description: Retrieves pending transactions that are missing relay events
    - Example:
      ```
-     curl http://localhost:3001/api/pending-transactions-missing-relay
+     curl http://localhost:3001/api/pending-transactions/missing-relay
      ```
 
-3. GET /api/pending-transactions-missing-proof
+2. GET /api/pending-transactions-missing-proof
    - Description: Retrieves pending transactions that are missing proof events
    - Example:
      ```
-     curl http://localhost:3001/api/pending-transactions-missing-proof
+     curl http://localhost:3001/api/pending-transactions/missing-proof
      ```
 
-4. GET /api/pending-transactions-missing-claim
+3. GET /api/pending-transactions-missing-claim
    - Description: Retrieves pending transactions that are missing claim events
    - Example:
      ```
-     curl http://localhost:3001/api/pending-transactions-missing-claim
+     curl http://localhost:3001/api/pending-transactions/missing-claim
      ```
 
-5. GraphQL endpoint: /graphql
+4. GraphQL endpoint: /graphql
    - Description: Provides a GraphQL interface for querying indexed data, the user is surfaced an interface to query the data via GraphiQL
+
+## Env Vars
+
+- **NODE_ENV**: Set to `"development"` for localhost testing.
+- **DATABASE_URL**: PostgreSQL connection URL for the ponder index.
 
 ## Important Scripts
 

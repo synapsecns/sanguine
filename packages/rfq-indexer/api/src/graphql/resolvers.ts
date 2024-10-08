@@ -88,6 +88,20 @@ const qRefunds = () => {
     ])
 }
 
+// typical fields to return for a BridgeProofDisputed event when it is joined to a BridgeRequest
+const qDisputes = () => {
+  return db
+    .selectFrom('BridgeProofDisputedEvents')
+    .select([
+      'BridgeProofDisputedEvents.transactionId as transactionId_dispute',
+      'BridgeProofDisputedEvents.blockNumber as blockNumber_dispute',
+      'BridgeProofDisputedEvents.blockTimestamp as blockTimestamp_dispute',
+      'BridgeProofDisputedEvents.transactionHash as transactionHash_dispute',
+      'BridgeProofDisputedEvents.originChainId as originChainId_dispute',
+      'BridgeProofDisputedEvents.originChain as originChain_dispute',
+    ])
+}
+
 // using the suffix of a field, move it into a nested sub-object. This is a cleaner final resultset
 // example: transactionHash_deposit:0xyz would get moved into BridgeRequest{transactionHash:0xyz}
 //
@@ -218,6 +232,19 @@ const resolvers = {
               'BridgeDepositClaimedEvents.transactionHash',
               'BridgeDepositClaimedEvents.originChainId',
               'BridgeDepositClaimedEvents.originChain',
+            ])
+        )
+        .unionAll(
+          db
+            .selectFrom('BridgeProofDisputedEvents')
+            .select([
+              'BridgeProofDisputedEvents.id',
+              'BridgeProofDisputedEvents.transactionId',
+              'BridgeProofDisputedEvents.blockNumber',
+              'BridgeProofDisputedEvents.blockTimestamp',
+              'BridgeProofDisputedEvents.transactionHash',
+              'BridgeProofDisputedEvents.originChainId',
+              'BridgeProofDisputedEvents.originChain',
             ])
         )
 
@@ -462,6 +489,29 @@ const resolvers = {
               'relayer_proof'
             )})`
         )
+        .orderBy('blockTimestamp_proof', 'desc')
+
+      return nest_results(await query.execute())
+    },
+    disputedRelays: async () => {
+      const query = db
+        .with('deposits', () => qDeposits())
+        .with('relays', () => qRelays())
+        .with('proofs', () => qProofs())
+        .with('disputes', () => qDisputes())
+        .with('combined', (qb) =>
+          qb
+            .selectFrom('proofs')
+            .leftJoin(
+              'disputes',
+              'transactionId_proof',
+              'transactionId_dispute'
+            )
+            .selectAll('proofs')
+            .selectAll('disputes')
+        )
+        .selectFrom('combined')
+        .selectAll()
         .orderBy('blockTimestamp_proof', 'desc')
 
       return nest_results(await query.execute())

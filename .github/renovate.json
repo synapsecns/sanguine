@@ -17,6 +17,7 @@
   "draftPR": true,
   "cloneSubmodules": true,
   "forkProcessing": "enabled",
+  "ignorePaths": ["packages/contracts-core/**"],
   "packageRules": [
     {
       "matchUpdateTypes": [
