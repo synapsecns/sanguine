@@ -30,7 +30,7 @@ interface IFastBridgeV2 is IFastBridge {
     /// for backwards compatibility.
     /// Note: quoteRelayer and quoteExclusivitySeconds are either both zero (indicating no exclusivity)
     /// or both non-zero (indicating exclusivity for the given period).
-    /// Note: callValue > 0 could NOT be used with destToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE (ETH_ADDRESS)
+    /// Note: callValue > 0 can NOT be used with destToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE (ETH_ADDRESS)
     /// @param quoteRelayer             Relayer that provided the quote for the transaction
     /// @param quoteExclusivitySeconds  Period of time the quote relayer is guaranteed exclusivity after user's deposit
     /// @param quoteId                  Unique quote identifier used for tracking the quote
@@ -70,7 +70,7 @@ interface IFastBridgeV2 is IFastBridge {
     /// @notice Initiates bridge on origin chain to be relayed by off-chain relayer, with the ability
     /// to provide temporary exclusivity fill rights for the quote relayer.
     /// @param params   The parameters required to bridge
-    /// @param paramsV2 The parameters for exclusivity fill rights (optional, could be left empty)
+    /// @param paramsV2 The parameters for exclusivity fill rights (optional, can be left empty)
     function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) external payable;
 
     /// @notice Relays destination side of bridge transaction by off-chain relayer
