@@ -22,6 +22,7 @@ import (
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	guardService "github.com/synapsecns/sanguine/services/rfq/guard/service"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -166,11 +167,12 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	// now we can send the money
 	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
-	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
+	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
 		DstChainId:   uint32(i.destBackend.GetChainID()),
+		Sender:       i.userWallet.Address(),
 		To:           i.userWallet.Address(),
 		OriginToken:  originUSDC.Address(),
-		SendChainGas: true,
+		SendChainGas: false,
 		DestToken:    destUSDC.Address(),
 		OriginAmount: realRFQAmount,
 		DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(10_000_000)),
@@ -320,8 +322,9 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	auth.TransactOpts.Value = realWantAmount
 	// we want 499 ETH for 500 requested within a day
-	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
+	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
 		DstChainId:   uint32(i.destBackend.GetChainID()),
+		Sender:       i.userWallet.Address(),
 		To:           i.userWallet.Address(),
 		OriginToken:  util.EthAddress,
 		SendChainGas: true,
@@ -430,8 +433,9 @@ func (i *IntegrationSuite) TestDispute() {
 	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	// we want 499 usdc for 500 requested within a day
-	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
+	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
 		DstChainId:   uint32(i.destBackend.GetChainID()),
+		Sender:       i.userWallet.Address(),
 		To:           i.userWallet.Address(),
 		OriginToken:  originUSDC.Address(),
 		SendChainGas: true,
@@ -445,7 +449,6 @@ func (i *IntegrationSuite) TestDispute() {
 
 	// fetch the txid and raw request
 	var txID [32]byte
-	var rawRequest []byte
 	parser, err := fastbridge.NewParser(originFastBridge.Address())
 	i.NoError(err)
 	i.Eventually(func() bool {
@@ -458,7 +461,6 @@ func (i *IntegrationSuite) TestDispute() {
 			}
 			event, ok := parsedEvent.(*fastbridge.FastBridgeBridgeRequested)
 			if ok {
-				rawRequest = event.Request
 				txID = event.TransactionId
 				return true
 			}
@@ -469,7 +471,7 @@ func (i *IntegrationSuite) TestDispute() {
 	// call prove() from the relayer wallet before relay actually occurred on dest
 	relayerAuth := i.originBackend.GetTxContext(i.GetTestContext(), i.relayerWallet.AddressPtr())
 	fakeHash := common.HexToHash("0xdeadbeef")
-	tx, err = originFastBridge.Prove(relayerAuth.TransactOpts, rawRequest, fakeHash)
+	tx, err = originFastBridge.Prove(relayerAuth.TransactOpts, txID, fakeHash, relayerAuth.From)
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -561,8 +563,9 @@ func (i *IntegrationSuite) TestConcurrentBridges() {
 		txMux.Lock()
 		auth.TransactOpts.Nonce = nonce
 		defer txMux.Unlock()
-		tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
+		tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridgev2.IFastBridgeBridgeParams{
 			DstChainId:   uint32(i.destBackend.GetChainID()),
+			Sender:       i.userWallet.Address(),
 			To:           i.userWallet.Address(),
 			OriginToken:  originUSDC.Address(),
 			SendChainGas: true,
