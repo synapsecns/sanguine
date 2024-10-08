@@ -127,13 +127,32 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridge
-    function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory) {
-        // TODO: the note below isn't true anymore with the BridgeTransactionV2 struct
-        // since the variable length `callParams` was added. This needs to be fixed/acknowledged.
-
-        // Note: when passing V2 request, this will decode the V1 fields correctly since the new fields were
-        // added as the last fields of the struct and hence the ABI decoder will simply ignore the extra data.
-        return abi.decode(request, (BridgeTransaction));
+    /// @dev This method is added to achieve backwards compatibility with decoding requests into V1 structs:
+    /// - `callValue` is partially reported as a zero/non-zero flag
+    /// - `callParams` is ignored
+    /// In order to process all kinds of requests use getBridgeTransactionV2 instead.
+    function getBridgeTransaction(bytes memory request) external view returns (BridgeTransaction memory) {
+        // Try decoding into V2 struct first. This will revert if V1 struct is passed
+        try this.getBridgeTransactionV2(request) returns (BridgeTransactionV2 memory txV2) {
+            // Note: we entirely ignore the callParams field, as it was not present in V1
+            return BridgeTransaction({
+                originChainId: txV2.originChainId,
+                destChainId: txV2.destChainId,
+                originSender: txV2.originSender,
+                destRecipient: txV2.destRecipient,
+                originToken: txV2.originToken,
+                destToken: txV2.destToken,
+                originAmount: txV2.originAmount,
+                destAmount: txV2.destAmount,
+                originFeeAmount: txV2.originFeeAmount,
+                sendChainGas: txV2.callValue != 0,
+                deadline: txV2.deadline,
+                nonce: txV2.nonce
+            });
+        } catch {
+            // Fallback to V1 struct
+            return abi.decode(request, (BridgeTransaction));
+        }
     }
 
     /// @inheritdoc IFastBridgeV2
