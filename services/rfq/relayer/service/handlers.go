@@ -13,7 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
@@ -31,7 +31,7 @@ var (
 // This is the first event emitted in the bridge process. It is emitted when a user calls bridge on chain.
 // To process it, we decode the bridge transaction and store all the data, marking it as seen.
 // This marks the event as seen.
-func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRequested, chainID uint64) (err error) {
+func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastbridgev2.FastBridgeV2BridgeRequested, chainID uint64) (err error) {
 	ctx, span := r.metrics.Tracer().Start(parentCtx, "handleBridgeRequestedLog", trace.WithAttributes(
 		attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:])),
 	))
@@ -68,14 +68,14 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return fmt.Errorf("could not get correct omnirpc client: %w", err)
 	}
 
-	fastBridge, err := fastbridge.NewFastBridgeRef(req.Raw.Address, originClient)
+	fastBridge, err := fastbridgev2.NewFastBridgeV2Ref(req.Raw.Address, originClient)
 	if err != nil {
 		return fmt.Errorf("could not get correct fast bridge: %w", err)
 	}
 
-	var bridgeTx fastbridge.IFastBridgeBridgeTransaction
+	var bridgeTx fastbridgev2.IFastBridgeV2BridgeTransactionV2
 	call := func(ctx context.Context) error {
-		bridgeTx, err = fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
+		bridgeTx, err = fastBridge.GetBridgeTransactionV2(&bind.CallOpts{Context: ctx}, req.Request)
 		if err != nil {
 			return fmt.Errorf("could not get bridge transaction: %w", err)
 		}
@@ -312,10 +312,10 @@ func (q *QuoteRequestHandler) handleCommitPending(ctx context.Context, span trac
 		return fmt.Errorf("could not make contract call: %w", err)
 	}
 
-	span.AddEvent("status_check", trace.WithAttributes(attribute.String("chain_bridge_status", fastbridge.BridgeStatus(bs).String())))
+	span.AddEvent("status_check", trace.WithAttributes(attribute.String("chain_bridge_status", fastbridgev2.BridgeStatus(bs).String())))
 
 	// sanity check to make sure it's still requested.
-	if bs != fastbridge.REQUESTED.Int() {
+	if bs != fastbridgev2.REQUESTED.Int() {
 		return nil
 	}
 
@@ -368,7 +368,7 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, span tr
 //
 // This is the fifth step in the bridge process. Here we check if the relay has been completed on the destination chain.
 // Notably, this is polled from the chain listener rather than the database since we wait for the log to show up.
-func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridge.FastBridgeBridgeRelayed) (err error) {
+func (r *Relayer) handleRelayLog(parentCtx context.Context, req *fastbridgev2.FastBridgeV2BridgeRelayed) (err error) {
 	ctx, span := r.metrics.Tracer().Start(parentCtx, "handleRelayLog",
 		trace.WithAttributes(attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:]))),
 	)
@@ -470,7 +470,7 @@ func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request r
 	if err != nil {
 		return blockNumber, fmt.Errorf("could not get receipt: %w", err)
 	}
-	parser, err := fastbridge.NewParser(q.Dest.Bridge.Address())
+	parser, err := fastbridgev2.NewParser(q.Dest.Bridge.Address())
 	if err != nil {
 		return blockNumber, fmt.Errorf("could not create parser: %w", err)
 	}
@@ -484,7 +484,7 @@ func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request r
 		if !ok {
 			continue
 		}
-		_, ok = parsedEvent.(*fastbridge.FastBridgeBridgeRelayed)
+		_, ok = parsedEvent.(*fastbridgev2.FastBridgeV2BridgeRelayed)
 		if ok {
 			return receipt.BlockNumber.Uint64(), nil
 		}
@@ -497,7 +497,7 @@ func (q *QuoteRequestHandler) getRelayBlockNumber(ctx context.Context, request r
 // Step 7: ProvePosted
 //
 // This is the seventh step in the bridge process. Here we process the event that the proof was posted on chain.
-func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridge.FastBridgeBridgeProofProvided) (err error) {
+func (r *Relayer) handleProofProvided(ctx context.Context, req *fastbridgev2.FastBridgeV2BridgeProofProvided) (err error) {
 	if req.Relayer != r.signer.Address() {
 		return nil
 	}
@@ -538,9 +538,9 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.
 		return fmt.Errorf("could not make contract call: %w", err)
 	}
 	switch bs {
-	case fastbridge.RelayerProved.Int():
+	case fastbridgev2.RelayerProved.Int():
 		// no op
-	case fastbridge.RelayerClaimed.Int():
+	case fastbridgev2.RelayerClaimed.Int():
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimCompleted, &request.Status)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)

@@ -26,7 +26,7 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	rfqAPIClient "github.com/synapsecns/sanguine/services/rfq/api/client"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guardconfig"
 	serviceGuard "github.com/synapsecns/sanguine/services/rfq/guard/service"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
@@ -99,7 +99,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		contract, err := fastbridge.NewFastBridgeRef(rfqAddr, chainClient)
+		contract, err := fastbridgev2.NewFastBridgeV2Ref(rfqAddr, chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not create fast bridge contract at address %s: %w", contract.Address(), err)
 		}

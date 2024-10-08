@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/shopspring/decimal"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
@@ -76,6 +76,10 @@ type RequestForQuote struct {
 	DestAmountOriginal string
 	// DestAmountOriginal is the original destination amount
 	DestAmount decimal.Decimal `gorm:"index"`
+	// OriginFeeAmount is the origin fee amount
+	OriginFeeAmount decimal.Decimal
+	// CallValue is the call value
+	CallValue decimal.Decimal
 	// DestTxHash is the destination tx hash
 	DestTxHash sql.NullString
 	// Deadline is the deadline for the relay
@@ -83,14 +87,18 @@ type RequestForQuote struct {
 	// OriginNonce is the nonce on the origin chain in the app.
 	// this is not effected by the message.sender nonce.
 	OriginNonce int `gorm:"index"`
+	// ExclusivityRelayer is the exclusivity relayer
+	ExclusivityRelayer string
+	// ExclusivityEndTime is the exclusivity end time
+	ExclusivityEndTime time.Time
+	// CallParams is the call params
+	CallParams []byte
 	// Status is the current status of the event
 	Status reldb.QuoteRequestStatus
 	// BlockNumber is the block number of the event
 	BlockNumber uint64
 	// RawRequest is the raw request, hex encoded.
 	RawRequest string
-	// SendChainGas is true if the chain should send gas
-	SendChainGas bool
 	// RelayNonce is the nonce for the relay transaction.
 	RelayNonce uint64
 }
@@ -124,7 +132,8 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		OriginTokenDecimals:  request.OriginTokenDecimals,
 		OriginTxHash:         stringToNullString(request.OriginTxHash.String()),
 		RawRequest:           hexutil.Encode(request.RawRequest),
-		SendChainGas:         request.Transaction.SendChainGas,
+		ExclusivityRelayer:   request.Transaction.ExclusivityRelayer.String(),
+		ExclusivityEndTime:   time.Unix(int64(request.Transaction.ExclusivityEndTime.Uint64()), 0),
 		DestTokenDecimals:    request.DestTokenDecimals,
 		DestToken:            request.Transaction.DestToken.String(),
 		DestTxHash:           stringToNullString(request.DestTxHash.String()),
@@ -132,6 +141,9 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		OriginAmount:         decimal.NewFromBigInt(request.Transaction.OriginAmount, int32(request.OriginTokenDecimals)),
 		DestAmountOriginal:   request.Transaction.DestAmount.String(),
 		DestAmount:           decimal.NewFromBigInt(request.Transaction.DestAmount, int32(request.DestTokenDecimals)),
+		OriginFeeAmount:      decimal.NewFromBigInt(request.Transaction.OriginFeeAmount, int32(request.OriginTokenDecimals)),
+		CallValue:            decimal.NewFromBigInt(request.Transaction.CallValue, int32(request.OriginTokenDecimals)),
+		CallParams:           request.Transaction.CallParams,
 		Deadline:             time.Unix(int64(request.Transaction.Deadline.Uint64()), 0),
 		OriginNonce:          int(request.Transaction.Nonce.Uint64()),
 		Status:               request.Status,
@@ -207,19 +219,22 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 		RawRequest:          req,
 		Sender:              common.HexToAddress(r.OriginSender),
 		BlockNumber:         r.BlockNumber,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
-			OriginChainId: r.OriginChainID,
-			DestChainId:   r.DestChainID,
-			OriginSender:  common.HexToAddress(r.OriginSender),
-			DestRecipient: common.HexToAddress(r.DestRecipient),
-			OriginToken:   common.HexToAddress(r.OriginToken),
-			SendChainGas:  r.SendChainGas,
-			DestToken:     common.HexToAddress(r.DestToken),
-			OriginAmount:  new(big.Int).Div(r.OriginAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.OriginTokenDecimals))))),
-			// OriginAmount: new(big.Int).Div(r.OriginAmount.BigInt(), big.NewInt(int64(r.OriginTokenDecimals))),
-			DestAmount: new(big.Int).Div(r.DestAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.DestTokenDecimals))))),
-			Deadline:   big.NewInt(r.Deadline.Unix()),
-			Nonce:      big.NewInt(int64(r.OriginNonce)),
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+			OriginChainId:      r.OriginChainID,
+			DestChainId:        r.DestChainID,
+			OriginSender:       common.HexToAddress(r.OriginSender),
+			DestRecipient:      common.HexToAddress(r.DestRecipient),
+			OriginToken:        common.HexToAddress(r.OriginToken),
+			DestToken:          common.HexToAddress(r.DestToken),
+			OriginAmount:       new(big.Int).Div(r.OriginAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.OriginTokenDecimals))))),
+			DestAmount:         new(big.Int).Div(r.DestAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.DestTokenDecimals))))),
+			OriginFeeAmount:    new(big.Int).Div(r.OriginFeeAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.OriginTokenDecimals))))),
+			CallValue:          new(big.Int).Div(r.CallValue.BigInt(), big.NewInt(int64(math.Pow10(int(r.OriginTokenDecimals))))),
+			ExclusivityRelayer: common.HexToAddress(r.ExclusivityRelayer),
+			ExclusivityEndTime: big.NewInt(r.ExclusivityEndTime.Unix()),
+			CallParams:         r.CallParams,
+			Deadline:           big.NewInt(r.Deadline.Unix()),
+			Nonce:              big.NewInt(int64(r.OriginNonce)),
 		},
 		Status:       r.Status,
 		OriginTxHash: common.HexToHash(r.OriginTxHash.String),
