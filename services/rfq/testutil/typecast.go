@@ -6,7 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/manager"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/dai"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
@@ -16,10 +16,10 @@ import (
 )
 
 // GetFastBridge gets the pre-created fast bridge contract.
-func (d *DeployManager) GetFastBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *fastbridge.FastBridgeRef) {
+func (d *DeployManager) GetFastBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *fastbridgev2.FastBridgeV2Ref) {
 	d.T().Helper()
 
-	return manager.GetContract[*fastbridge.FastBridgeRef](ctx, d.T(), d, backend, FastBridgeType)
+	return manager.GetContract[*fastbridgev2.FastBridgeV2Ref](ctx, d.T(), d, backend, FastBridgeType)
 }
 
 // GetMockERC20 gets a mock erc20 deployed on a chain.
