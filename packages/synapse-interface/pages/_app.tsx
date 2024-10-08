@@ -13,6 +13,7 @@ import setupLogRocketReact from 'logrocket-react'
 import { NextIntlClientProvider } from 'next-intl'
 import { useRouter } from 'next/router'
 
+import { GoogleAnalytics } from '@next/third-parties/google'
 import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 import { UserProvider } from '@/contexts/UserProvider'
 import { BackgroundListenerProvider } from '@/contexts/BackgroundListenerProvider'
@@ -60,6 +61,7 @@ function App({ Component, pageProps }: AppProps) {
               <SynapseProvider chains={supportedChains}>
                 <Provider store={store}>
                   <PersistGate loading={null} persistor={persistor}>
+                    <GoogleAnalytics gaId={'G-BBC13LQXBD'} />
                     <SegmentAnalyticsProvider>
                       <UserProvider>
                         <BackgroundListenerProvider>

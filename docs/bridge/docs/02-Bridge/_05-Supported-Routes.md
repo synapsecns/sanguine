@@ -6,7 +6,7 @@ import Routes from '@site/src/components/Routes'
 
 # Supported Routes
 
-Supported tokens for each chain. 
+Supported tokens for each chain.
 
 :::tip Routes
 

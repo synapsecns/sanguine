@@ -1,5 +1,6 @@
 import Image from 'next/image'
-import { TOKEN_HASH_MAP, AVWETH, USDC } from 'synapse-constants'
+
+import { TOKEN_HASH_MAP, AVWETH, USDC } from '@synapsecns/synapse-constants'
 import { getTokenAddressUrl } from '@urls'
 
 export const AssetImage = ({ tokenAddress, chainId, className }) => {

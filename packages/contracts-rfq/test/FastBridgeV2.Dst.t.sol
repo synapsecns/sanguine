@@ -3,6 +3,12 @@ pragma solidity ^0.8.20;
 
 import {FastBridgeV2DstBaseTest, IFastBridgeV2} from "./FastBridgeV2.Dst.Base.t.sol";
 
+import {ExcessiveReturnValueRecipient} from "./mocks/ExcessiveReturnValueRecipient.sol";
+import {IncorrectReturnValueRecipient} from "./mocks/IncorrectReturnValueRecipient.sol";
+import {NoOpContract} from "./mocks/NoOpContract.sol";
+import {NoReturnValueRecipient} from "./mocks/NoReturnValueRecipient.sol";
+import {NonPayableRecipient} from "./mocks/NonPayableRecipient.sol";
+
 // solhint-disable func-name-mixedcase, ordering
 contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
     event BridgeRelayed(
@@ -17,12 +23,49 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         uint256 chainGasAmount
     );
 
+    address public excessiveReturnValueRecipient;
+    address public incorrectReturnValueRecipient;
+    address public noOpRecipient;
+    address public noReturnValueRecipient;
+    address public nonPayableRecipient;
+
+    function setUp() public virtual override {
+        super.setUp();
+        excessiveReturnValueRecipient = address(new ExcessiveReturnValueRecipient());
+        vm.label(excessiveReturnValueRecipient, "ExcessiveReturnValueRecipient");
+        incorrectReturnValueRecipient = address(new IncorrectReturnValueRecipient());
+        vm.label(incorrectReturnValueRecipient, "IncorrectReturnValueRecipient");
+        noOpRecipient = address(new NoOpContract());
+        vm.label(noOpRecipient, "NoOpRecipient");
+        noReturnValueRecipient = address(new NoReturnValueRecipient());
+        vm.label(noReturnValueRecipient, "NoReturnValueRecipient");
+        nonPayableRecipient = address(new NonPayableRecipient());
+        vm.label(nonPayableRecipient, "NonPayableRecipient");
+    }
+
+    function setTokenTestRecipient(address recipient) public {
+        userB = recipient;
+        tokenParams.to = recipient;
+        tokenTx.destRecipient = recipient;
+    }
+
+    function setEthTestRecipient(address recipient) public {
+        userB = recipient;
+        ethParams.to = recipient;
+        ethTx.destRecipient = recipient;
+    }
+
+    function assertEmptyCallParams(bytes memory callParams) public pure {
+        assertEq(callParams.length, 0, "Invalid setup: callParams are not empty");
+    }
+
     function expectBridgeRelayed(
         IFastBridgeV2.BridgeTransactionV2 memory bridgeTx,
         bytes32 txId,
         address relayer
     )
         public
+        virtual
     {
         vm.expectEmit(address(fastBridge));
         emit BridgeRelayed({
@@ -107,6 +150,160 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
         assertEq(relayerA.balance, LEFTOVER_BALANCE);
         assertEq(address(fastBridge).balance, 0);
     }
+
+    // ═════════════════════════════════════ EXCESSIVE RETURN VALUE RECIPIENT ══════════════════════════════════════════
+
+    // Note: in this test, the callParams are not present, and the below test functions succeed.
+    // Override them in the derived tests where callParams are present to check for a revert.
+
+    function test_relay_token_excessiveReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestRecipient(excessiveReturnValueRecipient);
+        test_relay_token();
+    }
+
+    function test_relay_token_withRelayerAddress_excessiveReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+    {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestRecipient(excessiveReturnValueRecipient);
+        test_relay_token_withRelayerAddress();
+    }
+
+    function test_relay_eth_excessiveReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(ethTx.callParams);
+        setEthTestRecipient(excessiveReturnValueRecipient);
+        test_relay_eth();
+    }
+
+    function test_relay_eth_withRelayerAddress_excessiveReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+    {
+        assertEmptyCallParams(ethTx.callParams);
+        setEthTestRecipient(excessiveReturnValueRecipient);
+        test_relay_eth_withRelayerAddress();
+    }
+
+    // ═════════════════════════════════════ INCORRECT RETURN VALUE RECIPIENT ══════════════════════════════════════════
+
+    // Note: in this test, the callParams are not present, and the below test functions succeed.
+    // Override them in the derived tests where callParams are present to check for a revert.
+
+    function test_relay_token_incorrectReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestRecipient(incorrectReturnValueRecipient);
+        test_relay_token();
+    }
+
+    function test_relay_token_withRelayerAddress_incorrectReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+    {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestRecipient(incorrectReturnValueRecipient);
+        test_relay_token_withRelayerAddress();
+    }
+
+    function test_relay_eth_incorrectReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(ethTx.callParams);
+        setEthTestRecipient(incorrectReturnValueRecipient);
+        test_relay_eth();
+    }
+
+    function test_relay_eth_withRelayerAddress_incorrectReturnValueRecipient_revertWhenCallParamsPresent()
+        public
+        virtual
+    {
+        assertEmptyCallParams(ethTx.callParams);
+        setEthTestRecipient(incorrectReturnValueRecipient);
+        test_relay_eth_withRelayerAddress();
+    }
+
+    // ═══════════════════════════════════════════ NON PAYABLE RECIPIENT ═══════════════════════════════════════════════
+
+    /// @notice Should not affect the ERC20 transfer
+    function test_relay_token_nonPayableRecipient() public {
+        setTokenTestRecipient(nonPayableRecipient);
+        test_relay_token();
+    }
+
+    function test_relay_token_withRelayerAddress_nonPayableRecipient() public {
+        setTokenTestRecipient(nonPayableRecipient);
+        test_relay_token_withRelayerAddress();
+    }
+
+    function test_relay_eth_revert_nonPayableRecipient() public {
+        setEthTestRecipient(nonPayableRecipient);
+        vm.expectRevert();
+        relay({caller: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
+    }
+
+    function test_relay_eth_withRelayerAddress_revert_nonPayableRecipient() public {
+        setEthTestRecipient(nonPayableRecipient);
+        vm.expectRevert();
+        relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
+    }
+
+    // ══════════════════════════════════════════════ NO-OP RECIPIENT ══════════════════════════════════════════════════
+
+    // Note: in this test, the callParams are not present, and the below test functions succeed.
+    // Override them in the derived tests where callParams are present to check for a revert.
+
+    function test_relay_token_noOpRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestRecipient(noOpRecipient);
+        test_relay_token();
+    }
+
+    function test_relay_token_withRelayerAddress_noOpRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestRecipient(noOpRecipient);
+        test_relay_token_withRelayerAddress();
+    }
+
+    function test_relay_eth_noOpRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(ethTx.callParams);
+        setEthTestRecipient(noOpRecipient);
+        test_relay_eth();
+    }
+
+    function test_relay_eth_withRelayerAddress_noOpRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(ethTx.callParams);
+        setEthTestRecipient(noOpRecipient);
+        test_relay_eth_withRelayerAddress();
+    }
+
+    // ═════════════════════════════════════════ NO RETURN VALUE RECIPIENT ═════════════════════════════════════════════
+
+    // Note: in this test, the callParams are not present, and the below test functions succeed.
+    // Override them in the derived tests where callParams are present to check for a revert.
+
+    function test_relay_token_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestRecipient(noReturnValueRecipient);
+        test_relay_token();
+    }
+
+    function test_relay_token_withRelayerAddress_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(tokenTx.callParams);
+        setTokenTestRecipient(noReturnValueRecipient);
+        test_relay_token_withRelayerAddress();
+    }
+
+    function test_relay_eth_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(ethTx.callParams);
+        setEthTestRecipient(noReturnValueRecipient);
+        test_relay_eth();
+    }
+
+    function test_relay_eth_withRelayerAddress_noReturnValueRecipient_revertWhenCallParamsPresent() public virtual {
+        assertEmptyCallParams(ethTx.callParams);
+        setEthTestRecipient(noReturnValueRecipient);
+        test_relay_eth_withRelayerAddress();
+    }
+
     // ══════════════════════════════════════════════════ REVERTS ══════════════════════════════════════════════════════
 
     function test_relay_revert_usedRequestV1() public {

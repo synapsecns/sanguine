@@ -1,4 +1,4 @@
-import { USDC } from 'synapse-constants'
+import { USDC } from '@synapsecns/synapse-constants'
 console.log(0, USDC)
 
 export const Test = () => {
