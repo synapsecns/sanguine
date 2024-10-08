@@ -5,6 +5,7 @@ This website is built using [Docusaurus](https://docusaurus.io/), a modern stati
 ## Generating API Docs
 
 <!--TODO: needs to be done from ci to ensure regenration is done.-->
+
 `yarn docusaurus gen-api-docs all`.
 
 ### Installation
@@ -20,6 +21,12 @@ $ yarn start
 ```
 
 This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+
+### Ensure search is indexed to latest version
+
+```
+$ yarn serve
+```
 
 ### Build
 
