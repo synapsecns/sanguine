@@ -25,7 +25,7 @@ const options = {
 }
 
 const config: Config = {
-  title: 'Synapse Bridge Docs',
+  title: 'Synapse Docs',
   tagline: 'The future is cross-chain.',
   favicon: 'brand-assets/synapse-mark.svg',
 
@@ -93,10 +93,10 @@ const config: Config = {
     announcementBar: {
       id: 'announcementBar-v3.2', // Increment on change
       // content: `⭐️ If you like Docusaurus, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/facebook/docusaurus">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/docusaurus">Twitter ${TwitterSvg}</a>`,
-      content: `⚠️️ <b>Caution! These docs are a work in progress. Information may be incorrect or incomplete. For the current docs, please see <a href="https://docs.synapseprotocol.com/">here</a> </b>`,
+      content: `New! Synapse Docs have been refreshed. For the previous version, click <a href="https://docs.synapseprotocol.com/">here</a>`,
     },
     navbar: {
-      title: 'Synapse Bridge Docs',
+      title: 'Synapse Docs',
       logo: {
         alt: 'Synapse logo mark',
         src: 'brand-assets/synapse-mark.svg',
