@@ -5,8 +5,9 @@ title: Announcing the Synapse REST API
 tags: [api, update]
 ---
 
-We are excited to announce the launch of the **Synapse REST API**.
+import { APIFlow } from '@site/src/components/APIFlow'
 
+We are excited to announce the launch of the **Synapse REST API**.
 
 Last week, we launched the Synapse REST API: [api.synapseprotocol.com](https://api.synapseprotocol.com). The new update is key in making Synapse easier to integrate for applications.
 
@@ -14,9 +15,12 @@ Last week, we launched the Synapse REST API: [api.synapseprotocol.com](https://a
 
 ## Summary
 
-![REST API flor](./rest-api-flow.png)
-
 The REST API is a restful interface for applications to query, construct, and initiate cross-chain transactions. The service comes with supporting modules for querying liquidity, transaction status, and more. The aim of the API is to enable applications to integrate cross-chain functionality through an API call.
+
+<figure>
+	<APIFlow />
+	<figcaption>API flow: get Quote, get txData, sign transaction</figcaption>
+</figure>
 
 ## Why it Matters
 
