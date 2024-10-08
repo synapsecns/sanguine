@@ -1,5 +1,5 @@
 ---
-sidebar_label: Supported Rotues
+sidebar_label: Supported Routes
 ---
 
 import Routes from '@site/src/components/Routes'

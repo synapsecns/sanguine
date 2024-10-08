@@ -1,5 +1,5 @@
 ---
-sidebar_label: Supported Rotues
+sidebar_label: Supported Routes
 ---
 
 # Supported Routes
