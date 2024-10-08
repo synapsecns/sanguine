@@ -60,15 +60,26 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/synapsecns/sanguine/tree/master/docs/bridge/',
+            'https://github.com/synapsecns/sanguine/edit/master/docs/bridge/blog-posts/',
           docRootComponent: '@theme/DocRoot',
           docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
           // docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
+          routeBasePath: 'docs',
+          path: 'docs',
+        },
+        blog: {
+          showReadingTime: true,
+          editUrl:
+            'https://github.com/synapsecns/sanguine/tree/master/docs/bridge/',
+          blogSidebarTitle: 'All posts',
+          blogSidebarCount: 'ALL',
+          path: 'blog-posts',
+          routeBasePath: 'blog',
+          // authorsMapPath: 'blog-posts/authors.yml',
         },
         theme: {
           customCss: './src/css/custom.css',
         },
-        blog: false,
       } satisfies Preset.Options,
     ],
   ],
@@ -91,6 +102,13 @@ const config: Config = {
         src: 'brand-assets/synapse-mark.svg',
       },
       items: [
+        {
+          type: 'doc',
+          docId: 'About/index',
+          position: 'left',
+          label: 'Docs',
+        },
+        {to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://github.com/synapsecns/sanguine',
           label: 'GitHub',
