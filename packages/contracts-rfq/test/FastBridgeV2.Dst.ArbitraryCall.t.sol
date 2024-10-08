@@ -195,6 +195,8 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
 
     // ══════════════════════════════════════════════ NO-OP RECIPIENT ══════════════════════════════════════════════════
 
+    // Note: in these tests NoOpRecipient doesn't implement hook function, so we expect a generic OZ library revert.
+
     function test_relay_token_noOpRecipient_revertWhenCallParamsPresent() public virtual override {
         setTokenTestRecipient(noOpRecipient);
         vm.expectRevert(Address.FailedInnerCall.selector);
@@ -336,6 +338,8 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
     function test_relay_eth_noCallParams_revert_recipientReverts() public {
         setEthTestCallParams("");
         vm.mockCallRevert({callee: userB, data: "", revertData: bytes(REVERT_MSG)});
+        // Note: OZ library doesn't bubble the revert message for just sending ETH
+        // (as opposed to doing an external hook call). Therefore we expect a generic library revert.
         vm.expectRevert(Address.FailedInnerCall.selector);
         relay({caller: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
     }
@@ -343,6 +347,8 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
     function test_relay_eth_withRelayerAddress_noCallParams_revert_recipientReverts() public {
         setEthTestCallParams("");
         vm.mockCallRevert({callee: userB, data: "", revertData: bytes(REVERT_MSG)});
+        // Note: OZ library doesn't bubble the revert message for just sending ETH
+        // (as opposed to doing an external hook call). Therefore we expect a generic library revert.
         vm.expectRevert(Address.FailedInnerCall.selector);
         relayWithAddress({caller: relayerA, relayer: relayerB, msgValue: ethParams.destAmount, bridgeTx: ethTx});
     }
