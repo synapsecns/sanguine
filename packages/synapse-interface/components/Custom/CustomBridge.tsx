@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Address } from 'viem'
-import { useAccount, useSwitchChain } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
 import { getWalletClient, waitForTransactionReceipt } from '@wagmi/core'
 import { useTranslations } from 'next-intl'
@@ -42,9 +42,10 @@ import { CustomAmountInput } from './components/CustomAmountInput'
 import { USDC } from '@/constants/tokens/bridgeable'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { TransactionSummary } from './components/TransactionSummary'
-import { ImageOverlayComponent } from './components/ImageOverlay'
+import { CustomTransactionButton } from './components/CustomTransactionButton'
+import { ToBridgeSection } from './components/ToBridgeSection'
+import { CustomBridgeReceipt } from './components/CustomBridgeReceipt'
 
 export const CustomBridge = () => {
   const dispatch = useAppDispatch()
@@ -328,38 +329,11 @@ export const CustomBridge = () => {
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col space-y-3">
         <TransactionSummary />
-
-        <div className="rounded-md bg-zinc-100 dark:bg-bgBase">
-          <div className="flex items-center p-3 space-x-2 text-lg">
-            <img
-              src={fromToken?.icon.src}
-              alt={fromToken?.symbol}
-              className="w-6 h-6"
-            />
-            <div>To Bridge</div>
-          </div>
-          <div className="border-b border-zinc-200 dark:border-zinc-700"></div>
-          {isConnected ? (
-            <div className="flex items-center p-3 space-x-3 text-lg">
-              <ImageOverlayComponent
-                bigImageSrc={fromToken?.icon.src}
-                smallImageSrc={CHAINS_BY_ID[fromChainId]?.chainImg.src}
-                altTextBig={fromToken?.symbol}
-                altTextSmall={CHAINS_BY_ID[fromChainId]?.name}
-              />
-              <div className="text-sm opacity-75">
-                {fromTokenBalance}/{fromToken.symbol} from{' '}
-                {CHAINS_BY_ID[fromChainId].name} to{' '}
-                {CHAINS_BY_ID[toChainId].name}
-              </div>
-            </div>
-          ) : (
-            <div className="p-3 opacity-75">
-              Connect your wallet to see bridgeable tokens
-            </div>
-          )}
-        </div>
-
+        <ToBridgeSection
+          fromChainId={fromChainId}
+          fromToken={fromToken}
+          toChainId={toChainId}
+        />
         <div className="rounded-md bg-zinc-100 dark:bg-bgBase">
           <div className="p-3 text-lg">
             Bridge to {CHAINS_BY_ID[toChainId].name}
@@ -398,27 +372,9 @@ export const CustomBridge = () => {
                 'Not connected'
               )}
             </div>
-            {bridgeQuote?.outputAmountString !== '' && (
-              <div className="flex justify-end mt-3 text-sm">
-                <div>
-                  <div className="opacity-75">
-                    {bridgeQuote?.estimatedTime} seconds via{' '}
-                    {bridgeQuote?.bridgeModuleName}
-                  </div>
-                  <div className="flex justify-end space-x-2">
-                    <div className="opacity-75">Receive:</div>
-                    <div>
-                      {bridgeQuote?.outputAmountString} {toToken?.symbol}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="flex justify-end mt-3 text-sm">
-              Powered by Synapse
-            </div>
+            <CustomBridgeReceipt bridgeQuote={bridgeQuote} toToken={toToken} />
             <div className="mt-5">
-              <TransactionButton
+              <CustomTransactionButton
                 fromChainId={fromChainId}
                 fromToken={fromToken}
                 toChainId={toChainId}
@@ -434,123 +390,5 @@ export const CustomBridge = () => {
         </div>
       </div>
     </div>
-  )
-}
-
-const TransactionButton = ({
-  fromChainId,
-  toChainId,
-  fromToken,
-  bridgeQuote,
-  fromValue,
-  fromTokenBalance,
-  isLoading,
-  approveTxn,
-  executeBridge,
-}) => {
-  const { chain, isConnected } = useAccount()
-  const { openConnectModal } = useConnectModal()
-  const { switchChain } = useSwitchChain()
-
-  const [isApproving, setIsApproving] = useState(false)
-  const [isBridging, setIsBridging] = useState(false)
-
-  const buttonClassName = `
-    p-2 mb-2
-    text-lg font-sans font-medium tracking-wide w-full
-    shadow-[0_0_0_2px_#00C185,0_0_0_4px_#FF8736,0_0_0_6px_#FFC100] 
-  `
-
-  const comparableFromTokenBalance = stringToBigInt(
-    fromTokenBalance,
-    fromToken.decimals[fromChainId]
-  )
-  const comparableFromValue = stringToBigInt(
-    fromValue,
-    fromToken.decimals[fromChainId]
-  )
-
-  const isApproved = useMemo(() => {
-    return (
-      fromToken &&
-      bridgeQuote?.allowance &&
-      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) <=
-        bridgeQuote.allowance
-    )
-  }, [bridgeQuote, fromToken, fromValue, fromChainId])
-
-  const handleApproveTxn = async () => {
-    setIsApproving(true)
-    try {
-      await approveTxn()
-    } catch (error) {
-      console.error('Approval failed', error)
-    } finally {
-      setIsApproving(false)
-    }
-  }
-
-  const handleBridgeTxn = async () => {
-    setIsBridging(true)
-    try {
-      await executeBridge()
-    } catch (error) {
-      console.error('Bridge failed', error)
-    } finally {
-      setIsBridging(false)
-    }
-  }
-
-  if (isLoading) {
-    return <button className={buttonClassName}>Loading quote...</button>
-  }
-
-  if (!isConnected) {
-    return (
-      <button className={buttonClassName} onClick={openConnectModal}>
-        Connect Wallet
-      </button>
-    )
-  }
-
-  if (isConnected && chain.id !== fromChainId) {
-    return (
-      <button
-        className={buttonClassName}
-        onClick={() => switchChain({ chainId: fromChainId })}
-      >
-        Switch to {CHAINS_BY_ID[fromChainId].name}
-      </button>
-    )
-  }
-
-  if (fromValue === '' || fromValue === '0') {
-    return <button className={buttonClassName}>Enter an amount</button>
-  }
-
-  if (comparableFromValue > comparableFromTokenBalance) {
-    return <button className={buttonClassName}>Insufficient balance</button>
-  }
-
-  if (!isApproved) {
-    return (
-      <button
-        className={buttonClassName}
-        onClick={handleApproveTxn}
-        disabled={isApproving}
-      >
-        {isApproving ? 'Approving...' : 'Approve'}
-      </button>
-    )
-  }
-
-  return (
-    <button
-      className={buttonClassName}
-      onClick={handleBridgeTxn}
-      disabled={isBridging}
-    >
-      {isBridging ? 'Bridging...' : 'Bridge'}
-    </button>
   )
 }
