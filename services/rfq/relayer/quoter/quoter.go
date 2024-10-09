@@ -713,13 +713,23 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 		}
 	}
 
-	// Finally, clip the quoteAmount by the dest balance
+	// Clip the quoteAmount by the dest balance
 	if quoteAmount.Cmp(input.DestBalance) > 0 {
 		span.AddEvent("quote amount greater than destination balance", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
 			attribute.String("balance", input.DestBalance.String()),
 		))
 		quoteAmount = input.DestBalance
+	}
+
+	// Clip the quoteAmount by the maxQuoteAmount
+	maxQuoteAmount := m.config.GetMaxQuoteAmount(input.DestChainID, input.DestTokenAddr)
+	if maxQuoteAmount != nil && quoteAmount.Cmp(maxQuoteAmount) > 0 {
+		span.AddEvent("quote amount greater than max quote amount", trace.WithAttributes(
+			attribute.String("quote_amount", quoteAmount.String()),
+			attribute.String("max_quote_amount", maxQuoteAmount.String()),
+		))
+		quoteAmount = maxQuoteAmount
 	}
 
 	// Deduct gas cost from the quote amount, if necessary
