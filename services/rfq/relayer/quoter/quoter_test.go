@@ -178,15 +178,18 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 		quoteOffset    float64
 		minQuoteAmount string
 		maxBalance     string
+		maxQuoteAmount string
 	}
 
 	setQuoteParams := func(params quoteParams) {
 		s.config.BaseChainConfig.QuotePct = &params.quotePct
 		destTokenCfg := s.config.Chains[dest].Tokens["USDC"]
 		destTokenCfg.MinQuoteAmount = params.minQuoteAmount
+		destTokenCfg.MaxQuoteAmount = params.maxQuoteAmount
 		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
 		originTokenCfg.QuoteOffsetBps = params.quoteOffset
 		originTokenCfg.MaxBalance = &params.maxBalance
+		originTokenCfg.MaxQuoteAmount = params.maxQuoteAmount
 		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
 		s.config.Chains[origin].Tokens["USDC"] = originTokenCfg
 		s.manager.SetConfig(s.config)
@@ -265,6 +268,19 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(1000_000_000)
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Set QuotePct to 100 with MinQuoteAmount of 0 and MaxQuoteAmount of 500; should be 500.
+	setQuoteParams(quoteParams{
+		quotePct:       100,
+		quoteOffset:    0,
+		minQuoteAmount: "0",
+		maxBalance:     "0",
+		maxQuoteAmount: "500",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 1500 and MaxBalance of 1200; should be 200.
