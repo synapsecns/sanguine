@@ -108,6 +108,16 @@ func isNilOrZero(value interface{}) bool {
 	return reflect.DeepEqual(value, reflect.Zero(val.Type()).Interface())
 }
 
+// AnyMulticallEnabled returns true if any chain has multicall enabled.
+func (c Config) AnyMulticallEnabled() bool {
+	for _, chainCfg := range c.Chains {
+		if chainCfg.MulticallEnabled {
+			return true
+		}
+	}
+	return false
+}
+
 // GetRFQAddress returns the RFQ address for the given chainID.
 func (c Config) GetRFQAddress(chainID int) (value common.Address, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "RFQAddress")

@@ -151,25 +151,31 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get otel recorder: %w", err)
 	}
 
+	var multicallDispatcher MulticallDispatcher
+	if cfg.AnyMulticallEnabled() {
+		multicallDispatcher = NewMulticallDispatcher(cfg, metricHandler, sm)
+	}
+
 	cache := ttlcache.New[common.Hash, bool](ttlcache.WithTTL[common.Hash, bool](time.Second * 30))
 	rel := Relayer{
-		db:             store,
-		client:         omniClient,
-		quoter:         q,
-		metrics:        metricHandler,
-		claimCache:     cache,
-		decimalsCache:  xsync.NewMapOf[*uint8](),
-		cfg:            cfg,
-		inventory:      im,
-		submitter:      sm,
-		signer:         sg,
-		chainListeners: chainListeners,
-		apiServer:      apiServer,
-		apiClient:      apiClient,
-		semaphore:      semaphore.NewWeighted(maxConcurrentRequests),
-		handlerMtx:     mapmutex.NewStringMapMutex(),
-		balanceMtx:     mapmutex.NewStringMapMutex(),
-		otelRecorder:   otelRecorder,
+		db:                  store,
+		client:              omniClient,
+		quoter:              q,
+		metrics:             metricHandler,
+		claimCache:          cache,
+		decimalsCache:       xsync.NewMapOf[*uint8](),
+		cfg:                 cfg,
+		inventory:           im,
+		submitter:           sm,
+		signer:              sg,
+		chainListeners:      chainListeners,
+		apiServer:           apiServer,
+		apiClient:           apiClient,
+		semaphore:           semaphore.NewWeighted(maxConcurrentRequests),
+		handlerMtx:          mapmutex.NewStringMapMutex(),
+		balanceMtx:          mapmutex.NewStringMapMutex(),
+		multicallDispatcher: multicallDispatcher,
+		otelRecorder:        otelRecorder,
 	}
 	return &rel, nil
 }
@@ -230,6 +236,16 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		})
 	}
 
+	if r.cfg.AnyMulticallEnabled() {
+		g.Go(func() error {
+			err = r.multicallDispatcher.Start(ctx)
+			if err != nil {
+				return fmt.Errorf("could not start multicall dispatcher: %w", err)
+			}
+			return nil
+		})
+	}
+
 	g.Go(func() error {
 		for {
 			select {
@@ -281,14 +297,6 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		err := r.inventory.Start(ctx)
 		if err != nil {
 			return fmt.Errorf("could not start inventory manager: %w", err)
-		}
-		return nil
-	})
-
-	g.Go(func() error {
-		err = r.multicallDispatcher.Start(ctx)
-		if err != nil {
-			return fmt.Errorf("could not start multicall dispatcher: %w", err)
 		}
 		return nil
 	})
