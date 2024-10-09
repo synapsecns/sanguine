@@ -16,13 +16,9 @@ export const ChainOption = ({
       key={option.id}
       className={`
       pl-2.5 pr-2.5 py-2.5 rounded-[.1875rem] border border-solid
-      hover:border-[--synapse-focus] active:opacity-40
+       active:opacity-40
       cursor-pointer whitespace-nowrap group flex justify-between items-center
-      ${
-        isSelected
-          ? 'border-[--synapse-focus] hover:opacity-70'
-          : 'border-transparent'
-      }
+      ${isSelected ? 'hover:opacity-70' : 'border-transparent'}
     `}
       onClick={() => onSelect(option)}
     >

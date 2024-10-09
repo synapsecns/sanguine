@@ -18,6 +18,7 @@ import { MenuItem } from './MenuItem'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { AnimatedProgressBar } from './AnimatedProgressBar'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
+import { getSignificantDecimals } from '@/utils/getSignificantDecimals'
 
 export const Transaction = ({
   connectedAddress,
@@ -185,7 +186,10 @@ const TransactionBridgeDetail = ({
   originTokenSymbol: string
   destinationChain: Chain
 }) => {
-  const showAmount = parseFloat(tokenAmount)?.toFixed(6)
+  const sigFigs = getSignificantDecimals(tokenAmount)
+  const showAmount = parseFloat(tokenAmount)?.toFixed(
+    sigFigs === 1 ? 2 : sigFigs
+  )
 
   return (
     <div className="flex">
@@ -209,8 +213,8 @@ export const TransactionSupport = () => {
           href={TRANSACTION_SUPPORT_URL}
           target="_blank"
           className={`
-            px-2 py-1 underline text-[--synapse-text]
-            hover:rounded hover:bg-[--synapse-select-bg] hover:no-underline
+            px-2 py-1 underline 
+            hover:opacity-75 hover:no-underline
           `}
         >
           F.A.Q
@@ -220,8 +224,8 @@ export const TransactionSupport = () => {
           href="https://discord.gg/synapseprotocol"
           target="_blank"
           className={`
-            px-2 py-1 underline text-[--synapse-text]
-            hover:rounded hover:bg-[--synapse-select-bg] hover:no-underline
+            px-2 py-1 underline 
+            hover:opacity-75 hover:no-underline
             min-[360px]:after:content-['_(Discord)']
           `}
         >

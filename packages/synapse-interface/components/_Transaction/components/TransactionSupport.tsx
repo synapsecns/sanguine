@@ -28,7 +28,7 @@ export const TransactionSupport = ({
           href={TRANSACTION_SUPPORT_URL}
           target="_blank"
           className={`
-            px-2 py-1 underline text-[--synapse-text]
+            px-2 py-1 underline 
             hover:rounded hover:bg-zinc-700 hover:no-underline
           `}
         >
@@ -39,7 +39,7 @@ export const TransactionSupport = ({
           href={DISCORD_URL}
           target="_blank"
           className={`
-            px-2 py-1 underline text-[--synapse-text]
+            px-2 py-1 underline
             hover:rounded hover:bg-zinc-700 hover:no-underline
           `}
         >

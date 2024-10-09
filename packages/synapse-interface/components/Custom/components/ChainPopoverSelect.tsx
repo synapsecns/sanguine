@@ -38,9 +38,9 @@ export const ChainPopoverSelect = ({
         onClick={() => togglePopover()}
         className={`
           flex px-2.5 py-1.5 gap-2 items-center rounded
-          text-[--synapse-select-text] whitespace-nowrap
+           whitespace-nowrap
           border border-solid border-zinc-200 dark:border-zinc-700
-          cursor-pointer hover:border-[--synapse-focus]
+          cursor-pointer 
           w-[150px]
         `}
       >
