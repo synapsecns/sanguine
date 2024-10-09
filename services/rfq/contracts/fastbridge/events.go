@@ -1,10 +1,11 @@
-package fastbridge
+package fastbridgemulti
 
 import (
 	"bytes"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"strings"
 )
 
 // TODO: consider not exporting to avoid accidental mutation.
