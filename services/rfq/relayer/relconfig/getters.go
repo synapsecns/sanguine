@@ -746,6 +746,41 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	return quoteAmountScaled
 }
 
+var defaultMaxQuoteAmount *big.Int // nil
+
+// GetMaxQuoteAmount returns the quote amount for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+func (c Config) GetMaxQuoteAmount(chainID int, addr common.Address) *big.Int {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return defaultMaxQuoteAmount
+	}
+
+	var tokenCfg *TokenConfig
+	for _, cfg := range chainCfg.Tokens {
+		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
+			cfgCopy := cfg
+			tokenCfg = &cfgCopy
+			break
+		}
+	}
+	if tokenCfg == nil {
+		return defaultMaxQuoteAmount
+	}
+	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxQuoteAmount)
+	if !ok {
+		return defaultMaxQuoteAmount
+	}
+	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
+		return defaultMaxQuoteAmount
+	}
+
+	// Scale the minQuoteAmount by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return quoteAmountScaled
+}
+
 var defaultMinRebalanceAmount = big.NewInt(1000)
 
 // GetMinRebalanceAmount returns the min rebalance amount for the given chain and address.
