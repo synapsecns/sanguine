@@ -19,12 +19,12 @@ import (
 // MulticallDispatcher is a dispatcher that can dispatch multicalls.
 type MulticallDispatcher interface {
 	Start(ctx context.Context) error
-	Dispatch(ctx context.Context, tx *types.Transaction) error
+	Dispatch(ctx context.Context, chainID int, callData []byte) error
 }
 
 type multicallDispatcher struct {
 	cfg           relconfig.Config
-	txChans       map[int]chan *types.Transaction
+	callChans     map[int]chan []byte
 	metricHandler metrics.Handler
 	omniClient    omniClient.RPCClient
 	submitter     submitter.TransactionSubmitter
@@ -34,14 +34,14 @@ const chanSize = 10_000
 
 // NewMulticallDispatcher creates a new multicall dispatcher.
 func NewMulticallDispatcher(cfg relconfig.Config, metricHandler metrics.Handler, submitter submitter.TransactionSubmitter) MulticallDispatcher {
-	txChans := make(map[int]chan *types.Transaction)
+	callChans := make(map[int]chan []byte)
 	for chainID := range cfg.Chains {
-		txChans[chainID] = make(chan *types.Transaction, chanSize)
+		callChans[chainID] = make(chan []byte, chanSize)
 	}
 	client := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
 	return &multicallDispatcher{
 		cfg:           cfg,
-		txChans:       txChans,
+		callChans:     callChans,
 		metricHandler: metricHandler,
 		omniClient:    client,
 		submitter:     submitter,
@@ -69,13 +69,13 @@ func (m *multicallDispatcher) Start(ctx context.Context) error {
 	return nil
 }
 
-func (m *multicallDispatcher) Dispatch(ctx context.Context, tx *types.Transaction) error {
-	txChan, ok := m.txChans[int(tx.ChainId().Int64())]
+func (m *multicallDispatcher) Dispatch(ctx context.Context, chainID int, callData []byte) error {
+	callChan, ok := m.callChans[chainID]
 	if !ok {
-		return fmt.Errorf("no tx channel for chain id %d", tx.ChainId().Int64())
+		return fmt.Errorf("no tx channel for chain id %d", chainID)
 	}
 	select {
-	case txChan <- tx:
+	case callChan <- callData:
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()
@@ -87,7 +87,7 @@ var dispatchInterval = 30 * time.Second
 var maxBatchSize = 100
 
 func (m *multicallDispatcher) runQueue(ctx context.Context, chainID int) error {
-	txChan, ok := m.txChans[chainID]
+	callChan, ok := m.callChans[chainID]
 	if !ok {
 		return fmt.Errorf("no tx channel for chain id %d", chainID)
 	}
@@ -113,8 +113,8 @@ func (m *multicallDispatcher) runQueue(ctx context.Context, chainID int) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case tx := <-txChan:
-			callQueue = append(callQueue, tx.Data())
+		case call := <-callChan:
+			callQueue = append(callQueue, call)
 			if len(callQueue) >= maxBatchSize {
 				if err := m.multicall(ctx, contract, chainID, callQueue); err != nil {
 					return fmt.Errorf("could not multicall: %w", err)

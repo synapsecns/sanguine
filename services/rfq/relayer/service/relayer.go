@@ -64,8 +64,9 @@ type Relayer struct {
 	// handlerMtx is used to synchronize handling of relay requests, keyed on transaction ID
 	handlerMtx mapmutex.StringMapMutex
 	// balanceMtx is used to synchronize balance requests, keyed on a chainID and tokenAddress pair
-	balanceMtx   mapmutex.StringMapMutex
-	otelRecorder iOtelRecorder
+	balanceMtx          mapmutex.StringMapMutex
+	multicallDispatcher MulticallDispatcher
+	otelRecorder        iOtelRecorder
 }
 
 var logger = log.Logger("relayer")
@@ -280,6 +281,14 @@ func (r *Relayer) Start(ctx context.Context) (err error) {
 		err := r.inventory.Start(ctx)
 		if err != nil {
 			return fmt.Errorf("could not start inventory manager: %w", err)
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		err = r.multicallDispatcher.Start(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start multicall dispatcher: %w", err)
 		}
 		return nil
 	})

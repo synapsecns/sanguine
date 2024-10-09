@@ -112,6 +112,8 @@ type ChainConfig struct {
 	RebalanceConfigs RebalanceConfigs `yaml:"rebalance_configs"`
 	// LimitConfirmations is the number of confirmations to wait for before processing a quote.
 	LimitConfirmations uint64 `yaml:"limit_confirmations"`
+	// MulticallEnabled enables the use of multicalls for the chain.
+	MulticallEnabled bool `yaml:"multicall_enabled"`
 }
 
 // TokenConfig represents the configuration for a token.

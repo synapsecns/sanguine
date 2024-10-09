@@ -436,6 +436,35 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 		return nil
 	}
 
+	err = q.submitProve(ctx, request)
+	if err != nil {
+		return fmt.Errorf("could not submit prove: %w", err)
+	}
+
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ProvePosting, &request.Status)
+	if err != nil {
+		return fmt.Errorf("could not update request status: %w", err)
+	}
+	return nil
+}
+
+func (q *QuoteRequestHandler) submitProve(ctx context.Context, request reldb.QuoteRequest) (err error) {
+	if q.cfg.Chains[int(q.Origin.ChainID)].MulticallEnabled {
+		bridgeABI, err := fastbridge.FastBridgeMetaData.GetAbi()
+		if err != nil {
+			return fmt.Errorf("could not get bridge ABI: %w", err)
+		}
+		callData, err := bridgeABI.Pack("prove", request.RawRequest, request.DestTxHash)
+		if err != nil {
+			return fmt.Errorf("could not pack prove method: %w", err)
+		}
+		err = q.multicallDispatcher.Dispatch(ctx, int(q.Origin.ChainID), callData)
+		if err != nil {
+			return fmt.Errorf("could not dispatch multicall: %w", err)
+		}
+		return nil
+	}
+
 	// relay has been finalized, it's time to go back to the origin chain and try to prove
 	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = q.Origin.Bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
@@ -449,10 +478,6 @@ func (q *QuoteRequestHandler) handleRelayCompleted(ctx context.Context, span tra
 		return fmt.Errorf("could not submit transaction: %w", err)
 	}
 
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ProvePosting, &request.Status)
-	if err != nil {
-		return fmt.Errorf("could not update request status: %w", err)
-	}
 	return nil
 }
 
@@ -582,10 +607,38 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.
 	if !canClaim {
 		return nil
 	}
-	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		tx, err = q.Origin.Bridge.Claim(transactor, request.RawRequest, transactor.From)
+	err = q.submitClaim(ctx, request)
+	if err != nil {
+		return fmt.Errorf("could not submit claim: %w", err)
+	}
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimPending, &request.Status)
+	if err != nil {
+		return fmt.Errorf("could not update request status: %w", err)
+	}
+	return nil
+}
+
+func (q *QuoteRequestHandler) submitClaim(ctx context.Context, request reldb.QuoteRequest) (err error) {
+	if q.cfg.Chains[int(q.Origin.ChainID)].MulticallEnabled {
+		bridgeABI, err := fastbridge.FastBridgeMetaData.GetAbi()
 		if err != nil {
-			return nil, fmt.Errorf("could not relay: %w", err)
+			return fmt.Errorf("could not get bridge ABI: %w", err)
+		}
+		callData, err := bridgeABI.Pack("claim", request.TransactionID[:], q.RelayerAddress)
+		if err != nil {
+			return fmt.Errorf("could not pack claim method: %w", err)
+		}
+		err = q.multicallDispatcher.Dispatch(ctx, int(q.Origin.ChainID), callData)
+		if err != nil {
+			return fmt.Errorf("could not dispatch multicall: %w", err)
+		}
+		return nil
+	}
+
+	_, err = q.Origin.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		tx, err = q.Origin.Bridge.Claim(transactor, request.TransactionID[:], transactor.From)
+		if err != nil {
+			return nil, fmt.Errorf("could not claim: %w", err)
 		}
 		return tx, nil
 	})
@@ -593,10 +646,6 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, span trace.
 		return fmt.Errorf("could not submit transaction: %w", err)
 	}
 
-	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimPending, &request.Status)
-	if err != nil {
-		return fmt.Errorf("could not update request status: %w", err)
-	}
 	return nil
 }
 
