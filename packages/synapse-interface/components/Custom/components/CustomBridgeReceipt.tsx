@@ -10,7 +10,7 @@ export const CustomBridgeReceipt = ({ bridgeQuote, toToken }) => {
             </div>
             <div className="flex justify-end space-x-2">
               <div className="opacity-75">Receive:</div>
-              <div>
+              <div className="font-medium">
                 {bridgeQuote?.outputAmountString} {toToken?.symbol}
               </div>
             </div>

@@ -11,7 +11,7 @@ export const MenuItem = ({
     <li
       className={`
         rounded cursor-pointer
-        border border-solid border-transparent
+        border border-solid border-transparent hover:border-black hover:dark:border-white
         active:opacity-40
       `}
     >
