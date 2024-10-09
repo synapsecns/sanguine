@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.7.1...@synapsecns/contracts-rfq@0.7.2) (2024-10-09)
+
+
+### Bug Fixes
+
+* **contracts-rfq:** add bridge/relay revert tests [SLT-322] ([#3251](https://github.com/synapsecns/sanguine/issues/3251)) ([6dd94ca](https://github.com/synapsecns/sanguine/commit/6dd94ca5c4e9c8ec1263940d7ffff78096d90b2b))
+
+
+
+
+
+## [0.7.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.7.0...@synapsecns/contracts-rfq@0.7.1) (2024-10-09)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
 # [0.7.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.6.2...@synapsecns/contracts-rfq@0.7.0) (2024-10-07)
 
 

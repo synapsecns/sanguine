@@ -3,7 +3,7 @@ import express from 'express'
 
 import swapRoute from '../routes/swapRoute'
 import { NativeGasAddress, ZeroAddress } from '../constants'
-import { DAI, NETH, USDC } from '../constants/bridgeable'
+import { DAI, ETH, NETH, USDC } from '../constants/bridgeable'
 
 const app = express()
 app.use('/swap', swapRoute)
@@ -77,6 +77,21 @@ describe('Swap Route with Real Synapse Service', () => {
       'Invalid toToken address'
     )
   }, 10_000)
+
+  it('should return 400 for invalid fromToken + toToken combo', async () => {
+    const response = await request(app).get('/swap').query({
+      chain: '1',
+      fromToken: ETH.addresses[1],
+      toToken: USDC.addresses[1],
+      amount: '1000',
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toHaveProperty(
+      'message',
+      'Swap not supported for given tokens'
+    )
+  })
 
   it('should return 400 for token not supported on specified chain', async () => {
     const response = await request(app).get('/swap').query({

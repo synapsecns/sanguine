@@ -340,10 +340,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function _pullToken(address recipient, address token, uint256 amount) internal returns (uint256 amountPulled) {
         if (token != UniversalTokenLib.ETH_ADDRESS) {
             token.assertIsContract();
-            // Record token balance before transfer
-            amountPulled = IERC20(token).balanceOf(recipient);
             // Token needs to be pulled only if msg.value is zero
             // This way user can specify WETH as the origin asset
+            if (msg.value != 0) revert MsgValueIncorrect();
+            // Record token balance before transfer
+            amountPulled = IERC20(token).balanceOf(recipient);
             IERC20(token).safeTransferFrom(msg.sender, recipient, amount);
             // Use the difference between the recorded balance and the current balance as the amountPulled
             amountPulled = IERC20(token).balanceOf(recipient) - amountPulled;
