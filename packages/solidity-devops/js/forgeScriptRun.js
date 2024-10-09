@@ -18,7 +18,7 @@ const { logInfo } = require('./utils/logger.js')
 const {
   parseCommandLineArgs,
   isBroadcasted,
-  addVerifyOptions,
+  addVerifyIfNotPresent,
   addOptions,
 } = require('./utils/options.js')
 const { assertCondition } = require('./utils/utils.js')
@@ -47,7 +47,7 @@ let forgeOptions = addOptions(
 forgeOptions = addOptions(forgeOptions, readChainSpecificOptions(chainName))
 forgeOptions = addOptions(forgeOptions, options)
 if (isBroadcast && isVerifierEnabled(chainName)) {
-  forgeOptions = addVerifyOptions(forgeOptions)
+  forgeOptions = addVerifyIfNotPresent(forgeOptions)
 }
 
 const currentTimestamp = Date.now()
