@@ -44,6 +44,7 @@ import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { TransactionSummary } from './components/TransactionSummary'
+import { ImageOverlayComponent } from './components/ImageOverlay'
 
 export const CustomBridge = () => {
   const dispatch = useAppDispatch()
@@ -338,11 +339,12 @@ export const CustomBridge = () => {
               <div>To Bridge</div>
             </div>
             <div className="border-b border-zinc-200 dark:border-zinc-700"></div>
-            <div className="flex items-center p-3 space-x-2 text-lg">
-              <img
-                src={fromToken?.icon.src}
-                alt={fromToken?.symbol}
-                className="w-5 h-5"
+            <div className="flex items-center p-3 space-x-3 text-lg">
+              <ImageOverlayComponent
+                bigImageSrc={fromToken?.icon.src}
+                smallImageSrc={CHAINS_BY_ID[fromChainId]?.chainImg.src}
+                altTextBig={fromToken?.symbol}
+                altTextSmall={CHAINS_BY_ID[fromChainId]?.name}
               />
               <div className="text-sm opacity-75">
                 {fromTokenBalance}/{fromToken.symbol} from{' '}
