@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
@@ -68,39 +69,13 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return fmt.Errorf("could not get correct omnirpc client: %w", err)
 	}
 
-	fastBridge, err := fastbridgev2.NewFastBridgeV2Ref(req.Raw.Address, originClient)
+	txV1, txV2, err := r.getBridgeTxs(ctx, req, originClient)
 	if err != nil {
-		return fmt.Errorf("could not get correct fast bridge: %w", err)
-	}
-
-	var bridgeTx fastbridgev2.IFastBridgeV2BridgeTransactionV2
-	call := func(ctx context.Context) error {
-		bridgeTx, err = fastBridge.GetBridgeTransactionV2(&bind.CallOpts{Context: ctx}, req.Request)
-		if err != nil {
-			return fmt.Errorf("could not get bridge transaction: %w", err)
-		}
-		return nil
-	}
-	err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
-	if err != nil {
-		return fmt.Errorf("could not make call: %w", err)
-	}
-
-	var bridgeTxV1 fastbridgev2.IFastBridgeBridgeTransaction
-	call = func(ctx context.Context) error {
-		bridgeTxV1, err = fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
-		if err != nil {
-			return fmt.Errorf("could not get bridge transaction: %w", err)
-		}
-		return nil
-	}
-	err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
-	if err != nil {
-		return fmt.Errorf("could not make call: %w", err)
+		return fmt.Errorf("could not get bridge txs: %w", err)
 	}
 
 	// TODO: you can just pull these out of inventory. If they don't exist mark as invalid.
-	originDecimals, destDecimals, err := r.getDecimalsFromBridgeTx(ctx, bridgeTx)
+	originDecimals, destDecimals, err := r.getDecimalsFromBridgeTx(ctx, txV2)
 	// can't use errors.is here
 	if err != nil && strings.Contains(err.Error(), "no contract code at given address") {
 		logger.Warnf("invalid token, skipping")
@@ -118,8 +93,8 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		DestTokenDecimals:   *destDecimals,
 		TransactionID:       req.TransactionId,
 		Sender:              req.Sender,
-		TransactionV1:       bridgeTxV1,
-		Transaction:         bridgeTx,
+		TransactionV1:       txV1,
+		Transaction:         txV2,
 		Status:              reldb.Seen,
 		OriginTxHash:        req.Raw.TxHash,
 	}
@@ -142,6 +117,39 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	}
 
 	return nil
+}
+
+func (r *Relayer) getBridgeTxs(ctx context.Context, req *fastbridgev2.FastBridgeV2BridgeRequested, originClient client.EVM) (txV1 fastbridgev2.IFastBridgeBridgeTransaction, txV2 fastbridgev2.IFastBridgeV2BridgeTransactionV2, err error) {
+	fastBridge, err := fastbridgev2.NewFastBridgeV2Ref(req.Raw.Address, originClient)
+	if err != nil {
+		return txV1, txV2, fmt.Errorf("could not get correct fast bridge: %w", err)
+	}
+
+	calls := []func(ctx context.Context) error{
+		func(ctx context.Context) error {
+			txV1, err = fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
+			if err != nil {
+				return fmt.Errorf("could not get bridge transaction: %w", err)
+			}
+			return nil
+		},
+		func(ctx context.Context) error {
+			txV2, err = fastBridge.GetBridgeTransactionV2(&bind.CallOpts{Context: ctx}, req.Request)
+			if err != nil {
+				return fmt.Errorf("could not get bridge transaction: %w", err)
+			}
+			return nil
+		},
+	}
+
+	for _, call := range calls {
+		err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
+		if err != nil {
+			return txV1, txV2, fmt.Errorf("could not make call: %w", err)
+		}
+	}
+
+	return txV1, txV2, nil
 }
 
 // handleSeen handles the seen status.
