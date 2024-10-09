@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -21,10 +20,10 @@ import (
 	"github.com/hako/durafmt"
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
+	"github.com/synapsecns/sanguine/contrib/opbot/internal"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
-	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	rfqClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
@@ -164,57 +163,14 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 			"rfq 0x30f96b45ba689c809f7e936c140609eb31c99b182bef54fccf49778716a7e1ca",
 		},
 		Handler: func(ctx *slacker.CommandContext) {
-			type Status struct {
-				relayer string
-				*relapi.GetQuoteRequestResponse
-			}
-
-			var statuses []Status
-			var sliceMux sync.Mutex
-
-			if len(b.cfg.RelayerURLS) == 0 {
-				_, err := ctx.Response().Reply("no relayer urls configured")
-				if err != nil {
-					log.Println(err)
-				}
-				return
-			}
-
 			tx := stripLinks(ctx.Request().Param("tx"))
 
-			var wg sync.WaitGroup
-			// 2 routines per relayer, one for tx hashh one for tx id
-			wg.Add(len(b.cfg.RelayerURLS) * 2)
-			for _, relayer := range b.cfg.RelayerURLS {
-				client := relapi.NewRelayerClient(b.handler, relayer)
-				go func() {
-					defer wg.Done()
-					res, err := client.GetQuoteRequestByTxHash(ctx.Context(), tx)
-					if err != nil {
-						log.Printf("error fetching quote request status by tx hash: %v\n", err)
-						return
-					}
-					sliceMux.Lock()
-					defer sliceMux.Unlock()
-					statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestResponse: res})
-				}()
+			rfqClient := internal.NewRFQClient(b.handler, b.cfg.RFQIndexerAPIURL)
 
-				go func() {
-					defer wg.Done()
-					res, err := client.GetQuoteRequestByTXID(ctx.Context(), tx)
-					if err != nil {
-						log.Printf("error fetching quote request status by tx id: %v\n", err)
-						return
-					}
-					sliceMux.Lock()
-					defer sliceMux.Unlock()
-					statuses = append(statuses, Status{relayer: relayer, GetQuoteRequestResponse: res})
-				}()
-			}
-			wg.Wait()
-
-			if len(statuses) == 0 {
-				_, err := ctx.Response().Reply("no quote request found")
+			res, status, err := rfqClient.GetRFQByTxID(ctx.Context(), tx)
+			if err != nil {
+				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
+				_, err := ctx.Response().Reply("error fetching quote request")
 				if err != nil {
 					log.Println(err)
 				}
@@ -223,51 +179,44 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 
 			var slackBlocks []slack.Block
 
-			for _, status := range statuses {
-				client, err := b.rpcClient.GetChainClient(ctx.Context(), int(status.OriginChainID))
-				if err != nil {
-					log.Printf("error getting chain client: %v\n", err)
-				}
-
-				objects := []*slack.TextBlockObject{
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Relayer*: %s", status.relayer),
-					},
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Status*: %s", status.Status),
-					},
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*TxID*: %s", toExplorerSlackLink(status.TxID)),
-					},
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*OriginTxHash*: %s", toTXSlackLink(status.OriginTxHash, status.OriginChainID)),
-					},
-					{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*Estimated Tx Age*: %s", getTxAge(ctx.Context(), client, status.GetQuoteRequestResponse)),
-					},
-				}
-
-				if status.DestTxHash == (common.Hash{}).String() {
-					objects = append(objects, &slack.TextBlockObject{
-						Type: slack.MarkdownType,
-						Text: "*DestTxHash*: not available",
-					})
-				} else {
-					objects = append(objects, &slack.TextBlockObject{
-						Type: slack.MarkdownType,
-						Text: fmt.Sprintf("*DestTxHash*: %s", toTXSlackLink(status.DestTxHash, status.DestChainID)),
-					})
-				}
-
-				slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, objects, nil))
+			objects := []*slack.TextBlockObject{
+				{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf("*Relayer*: %s", res.BridgeRelay.Relayer),
+				},
+				{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf("*Status*: %s", status),
+				},
+				{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf("*TxID*: %s", toExplorerSlackLink(res.Bridge.TransactionID)),
+				},
+				{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf("*OriginTxHash*: %s", toTXSlackLink(res.BridgeRequest.TransactionHash, uint32(res.Bridge.OriginChainID))),
+				},
+				{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf("*Estimated Tx Age*: %s", getTxAge(res.BridgeRelay.BlockTimestamp)),
+				},
 			}
 
-			_, err := ctx.Response().ReplyBlocks(slackBlocks, slacker.WithUnfurlLinks(false))
+			if status == "Requested" {
+				objects = append(objects, &slack.TextBlockObject{
+					Type: slack.MarkdownType,
+					Text: "*DestTxHash*: not available",
+				})
+			} else {
+				objects = append(objects, &slack.TextBlockObject{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf("*DestTxHash*: %s", toTXSlackLink(res.BridgeRelay.TransactionHash, uint32(res.Bridge.DestChainID))),
+				})
+			}
+
+			slackBlocks = append(slackBlocks, slack.NewSectionBlock(nil, objects, nil))
+
+			_, err = ctx.Response().ReplyBlocks(slackBlocks, slacker.WithUnfurlLinks(false))
 			if err != nil {
 				log.Println(err)
 			}
@@ -405,18 +354,8 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 	return fastBridgeHandle, nil
 }
 
-func getTxAge(ctx context.Context, client client.EVM, res *relapi.GetQuoteRequestResponse) string {
-	// TODO: add CreatedAt field to GetQuoteRequestStatusResponse so we don't need to make network calls?
-	receipt, err := client.TransactionReceipt(ctx, common.HexToHash(res.OriginTxHash))
-	if err != nil {
-		return "unknown time ago"
-	}
-	txBlock, err := client.HeaderByHash(ctx, receipt.BlockHash)
-	if err != nil {
-		return "unknown time ago"
-	}
-
-	return humanize.Time(time.Unix(int64(txBlock.Time), 0))
+func getTxAge(timestamp int64) string {
+	return fmt.Sprintf("The block was created %s.\n", humanize.Time(time.Unix(timestamp, 0)))
 }
 
 func toExplorerSlackLink(ogHash string) string {
