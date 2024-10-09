@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/dai"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/recipientmock"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdc"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdt"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/weth9"
@@ -34,6 +35,13 @@ func (d *DeployManager) GetMockFastBridge(ctx context.Context, backend backends.
 	d.T().Helper()
 
 	return manager.GetContract[*fastbridgemock.FastBridgeMockRef](ctx, d.T(), d, backend, FastBridgeMockType)
+}
+
+// GetMockRecipient gets the mock recipient.
+func (d *DeployManager) GetRecipientMock(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *recipientmock.RecipientMockRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*recipientmock.RecipientMockRef](ctx, d.T(), d, backend, RecipientMockType)
 }
 
 // GetWETH9 gets the weth9 contract.
