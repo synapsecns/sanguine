@@ -129,9 +129,9 @@ jobs:
       fail-fast: false
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
-        # Slither is irrelevant for solidity-devops, as it only contains devops scripts rather than deployed contracts
-        exclude:
-          - package: solidity-devops
+      # Slither is irrelevant for solidity-devops, as it only contains devops scripts rather than deployed contracts
+      exclude:
+        - package: solidity-devops
     permissions:
       # always required
       security-events: write
@@ -246,8 +246,8 @@ jobs:
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
         # Gas diff is irrelevant for solidity-devops, as it only contains devops scripts rather than deployed contracts
-        exclude:
-          - package: solidity-devops
+      exclude:
+        - package: solidity-devops
     steps:
       - uses: actions/checkout@v4
         with:
@@ -296,9 +296,9 @@ jobs:
       fail-fast: false
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
-        # Size check is irrelevant for solidity-devops, as it only contains devops scripts rather than deployed contracts
-        exclude:
-          - package: solidity-devops
+      # Size check is irrelevant for solidity-devops, as it only contains devops scripts rather than deployed contracts
+      exclude:
+        - package: solidity-devops
     steps:
       - uses: actions/checkout@v4
         with:
