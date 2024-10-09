@@ -3,7 +3,7 @@ import React, { useCallback } from 'react'
 import { NumericFormat } from 'react-number-format'
 import { joinClassNames } from '@/utils/joinClassNames'
 
-interface AmountInputTypes {
+interface CustomAmountInputTypes {
   inputRef?: React.RefObject<HTMLInputElement>
   disabled?: boolean
   showValue: string
@@ -12,14 +12,14 @@ interface AmountInputTypes {
   className?: string
 }
 
-export function AmountInput({
+export function CustomAmountInput({
   inputRef,
   disabled = false,
   showValue,
   handleFromValueChange,
   setIsTyping,
   className,
-}: AmountInputTypes) {
+}: CustomAmountInputTypes) {
   const debouncedSetIsTyping = useCallback(
     debounce((value: boolean) => setIsTyping?.(value), 600),
     [setIsTyping]

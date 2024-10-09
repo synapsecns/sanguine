@@ -38,7 +38,7 @@ import { useBridgeValidations } from '@/components/StateManagedBridge/hooks/useB
 import { useStaleQuoteUpdater } from '@/components/StateManagedBridge/hooks/useStaleQuoteUpdater'
 import { ChainSelect } from './components/ChainSelect'
 import { OPTIMISM } from '@/constants/chains/master'
-import { AmountInput } from './components/AmountInput'
+import { CustomAmountInput } from './components/CustomAmountInput'
 import { USDC } from '@/constants/tokens/bridgeable'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
@@ -363,7 +363,7 @@ export const CustomBridge = () => {
               chain={OPTIMISM}
             />
             <div className="flex items-center justify-between pb-1 mt-5 border-b border-zinc-200 dark:border-zinc-700">
-              <AmountInput
+              <CustomAmountInput
                 showValue={fromValue}
                 handleFromValueChange={handleFromValueChange}
               />
