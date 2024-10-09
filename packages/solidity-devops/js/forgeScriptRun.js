@@ -3,6 +3,7 @@ const fs = require('fs')
 
 const {
   readChainSpecificOptions,
+  readChainVerificationOptions,
   logWallet,
   isVerifierEnabled,
 } = require('./utils/chain.js')
@@ -47,6 +48,10 @@ let forgeOptions = addOptions(
 forgeOptions = addOptions(forgeOptions, readChainSpecificOptions(chainName))
 forgeOptions = addOptions(forgeOptions, options)
 if (isBroadcast && isVerifierEnabled(chainName)) {
+  forgeOptions = addOptions(
+    forgeOptions,
+    readChainVerificationOptions(chainName)
+  )
   forgeOptions = addVerifyIfNotPresent(forgeOptions)
 }
 
