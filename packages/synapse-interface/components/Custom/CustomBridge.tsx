@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Address } from 'viem'
-import { useAccount } from 'wagmi'
+import { useAccount, useSwitchChain } from 'wagmi'
 import { useRouter } from 'next/router'
 import { getWalletClient, waitForTransactionReceipt } from '@wagmi/core'
 import { useTranslations } from 'next-intl'
@@ -432,8 +432,9 @@ const TransactionButton = ({
   approveTxn,
   executeBridge,
 }) => {
-  const { isConnected } = useAccount()
+  const { chain, isConnected } = useAccount()
   const { openConnectModal } = useConnectModal()
+  const { switchChain } = useSwitchChain()
 
   const [isApproving, setIsApproving] = useState(false)
   const [isBridging, setIsBridging] = useState(false)
@@ -492,6 +493,17 @@ const TransactionButton = ({
     return (
       <button className={buttonClassName} onClick={openConnectModal}>
         Connect Wallet
+      </button>
+    )
+  }
+
+  if (isConnected && chain.id !== fromChainId) {
+    return (
+      <button
+        className={buttonClassName}
+        onClick={() => switchChain({ chainId: fromChainId })}
+      >
+        Switch to {CHAINS_BY_ID[fromChainId].name}
       </button>
     )
   }
