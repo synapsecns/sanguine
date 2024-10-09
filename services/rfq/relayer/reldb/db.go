@@ -81,7 +81,10 @@ type QuoteRequest struct {
 	DestTokenDecimals   uint8
 	TransactionID       [32]byte
 	Sender              common.Address
-	Transaction         fastbridgev2.IFastBridgeV2BridgeTransactionV2
+	// For now, SendChainGas is the only distinction between v1 and v2,
+	// so no need to duplicate other fields within TransactionV1.
+	TransactionV1 fastbridgev2.IFastBridgeBridgeTransaction
+	Transaction   fastbridgev2.IFastBridgeV2BridgeTransactionV2
 	// Status is the quote request status
 	Status       QuoteRequestStatus
 	OriginTxHash common.Hash

@@ -86,6 +86,19 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return fmt.Errorf("could not make call: %w", err)
 	}
 
+	var bridgeTxV1 fastbridgev2.IFastBridgeBridgeTransaction
+	call = func(ctx context.Context) error {
+		bridgeTxV1, err = fastBridge.GetBridgeTransaction(&bind.CallOpts{Context: ctx}, req.Request)
+		if err != nil {
+			return fmt.Errorf("could not get bridge transaction: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, call, retry.WithMaxTotalTime(maxRPCRetryTime))
+	if err != nil {
+		return fmt.Errorf("could not make call: %w", err)
+	}
+
 	// TODO: you can just pull these out of inventory. If they don't exist mark as invalid.
 	originDecimals, destDecimals, err := r.getDecimalsFromBridgeTx(ctx, bridgeTx)
 	// can't use errors.is here
@@ -105,6 +118,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		DestTokenDecimals:   *destDecimals,
 		TransactionID:       req.TransactionId,
 		Sender:              req.Sender,
+		TransactionV1:       bridgeTxV1,
 		Transaction:         bridgeTx,
 		Status:              reldb.Seen,
 		OriginTxHash:        req.Raw.TxHash,

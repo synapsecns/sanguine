@@ -79,8 +79,12 @@ func (c Chain) SubmitRelay(ctx context.Context, request reldb.QuoteRequest) (uin
 		gasAmount = request.Transaction.DestAmount
 	} else if request.Transaction.CallValue != nil {
 		gasAmount = request.Transaction.CallValue
+	} else if request.TransactionV1.SendChainGas {
+		gasAmount, err = c.Bridge.ChainGasAmount(&bind.CallOpts{Context: ctx})
+		if err != nil {
+			return 0, nil, fmt.Errorf("could not get chain gas amount: %w", err)
+		}
 	}
-	//TODO: handle SendChainGas case when TransactionV1 is in QuoteRequest
 
 	nonce, err := c.SubmitTransaction(ctx, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.Value = core.CopyBigInt(gasAmount)

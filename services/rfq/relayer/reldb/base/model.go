@@ -93,6 +93,8 @@ type RequestForQuote struct {
 	ExclusivityEndTime time.Time
 	// CallParams is the call params
 	CallParams []byte
+	// SendChainGas is whether the relay should send gas to the destination chain
+	SendChainGas bool
 	// Status is the current status of the event
 	Status reldb.QuoteRequestStatus
 	// BlockNumber is the block number of the event
@@ -146,6 +148,7 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		CallParams:           request.Transaction.CallParams,
 		Deadline:             time.Unix(int64(request.Transaction.Deadline.Uint64()), 0),
 		OriginNonce:          int(request.Transaction.Nonce.Uint64()),
+		SendChainGas:         request.TransactionV1.SendChainGas,
 		Status:               request.Status,
 		BlockNumber:          request.BlockNumber,
 		RelayNonce:           request.RelayNonce,
@@ -219,6 +222,9 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 		RawRequest:          req,
 		Sender:              common.HexToAddress(r.OriginSender),
 		BlockNumber:         r.BlockNumber,
+		TransactionV1: fastbridgev2.IFastBridgeBridgeTransaction{
+			SendChainGas: r.SendChainGas,
+		},
 		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 			OriginChainId:      r.OriginChainID,
 			DestChainId:        r.DestChainID,
