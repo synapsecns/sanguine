@@ -28,7 +28,7 @@ const isBroadcasted = (options) => {
   return options.includes('--broadcast')
 }
 
-const addVerifyOptions = (options) => {
+const addVerifyIfNotPresent = (options) => {
   return options.includes('--verify') ? options : `${options} --verify`
 }
 
@@ -39,6 +39,6 @@ const addOptions = (options, newOptions) => {
 module.exports = {
   parseCommandLineArgs,
   isBroadcasted,
-  addVerifyOptions,
+  addVerifyIfNotPresent,
   addOptions,
 }

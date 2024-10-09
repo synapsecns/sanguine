@@ -8,6 +8,7 @@ import { isTokenAddress } from '../utils/isTokenAddress'
 import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 import { checksumAddresses } from '../middleware/checksumAddresses'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
+import { validSwap } from '../validations/validSwap'
 
 const router = express.Router()
 
@@ -162,6 +163,13 @@ router.get(
       )
       .withMessage('Token not supported on specified chain'),
     check('amount').exists().withMessage('amount is required').isNumeric(),
+    check()
+      .custom((_value, { req }) => {
+        const { chain, fromToken, toToken } = req.query
+
+        return validSwap(chain, fromToken, toToken)
+      })
+      .withMessage('Swap not supported for given tokens'),
   ],
   showFirstValidationError,
   swapController

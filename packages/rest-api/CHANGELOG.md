@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.4.4...@synapsecns/rest-api@1.4.5) (2024-10-09)
+
+
+### Bug Fixes
+
+* **rest-api:** Adds validSwap validation [SLT-321] ([#3247](https://github.com/synapsecns/sanguine/issues/3247)) ([0738536](https://github.com/synapsecns/sanguine/commit/073853692ac6918a9bd0fae87c26e465c75ff8b3))
+
+
+
+
+
 ## [1.4.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.4.3...@synapsecns/rest-api@1.4.4) (2024-10-04)
 
 **Note:** Version bump only for package @synapsecns/rest-api
