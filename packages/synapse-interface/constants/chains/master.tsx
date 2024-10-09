@@ -563,7 +563,6 @@ export const SCROLL: Chain = {
     icon: scrollImg,
   },
   color: 'orange',
-  isNew: false,
 }
 
 export const LINEA: Chain = {
