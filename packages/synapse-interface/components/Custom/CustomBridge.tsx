@@ -108,7 +108,8 @@ export const CustomBridge = () => {
       fromToken &&
       toToken &&
       fromToken?.decimals[fromChainId] &&
-      stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) > 0n
+      stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) > 0n &&
+      isTyping === false
     ) {
       console.log('trying to set bridge quote')
       getAndSetBridgeQuote()
@@ -308,17 +309,14 @@ export const CustomBridge = () => {
     }
   }
 
-  const handleFromValueChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const swapFromValueString: string = cleanNumberInput(event.target.value)
+  const handleFromValueChange = (inputValue: string) => {
+    const cleanedValue: string = cleanNumberInput(inputValue)
     try {
-      setFromValue(swapFromValueString)
+      setFromValue(cleanedValue)
     } catch (error) {
       console.error('Invalid value for conversion to BigInteger')
-      const inputValue = event.target.value
-      const regex = /^[0-9]*[.,]?[0-9]*$/
 
+      const regex = /^[0-9]*[.,]?[0-9]*$/
       if (regex.test(inputValue) || inputValue === '') {
         setFromValue(inputValue)
       }
@@ -350,6 +348,7 @@ export const CustomBridge = () => {
               <CustomAmountInput
                 showValue={fromValue}
                 handleFromValueChange={handleFromValueChange}
+                setIsTyping={setIsTyping}
               />
               <div className="flex items-center flex-shrink-0 space-x-2">
                 <img
