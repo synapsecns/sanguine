@@ -9,6 +9,7 @@ import {SynapseBaseScript} from "./base/SynapseBaseScript.sol";
 import {StringUtils} from "./libs/StringUtils.sol";
 import {stdJson} from "forge-std/Script.sol";
 
+// TODO: remove this temp comment
 abstract contract SynapseScript is SynapseBaseScript {
     /// @notice Should return "💬"
     function getInfoEmoji() internal pure virtual override returns (string memory) {
