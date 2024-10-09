@@ -328,17 +328,18 @@ export const CustomBridge = () => {
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col space-y-3">
         <TransactionSummary />
-        {isConnected && (
-          <div className="rounded-md bg-zinc-100 dark:bg-bgBase">
-            <div className="flex items-center p-3 space-x-2 text-lg">
-              <img
-                src={fromToken?.icon.src}
-                alt={fromToken?.symbol}
-                className="w-6 h-6"
-              />
-              <div>To Bridge</div>
-            </div>
-            <div className="border-b border-zinc-200 dark:border-zinc-700"></div>
+
+        <div className="rounded-md bg-zinc-100 dark:bg-bgBase">
+          <div className="flex items-center p-3 space-x-2 text-lg">
+            <img
+              src={fromToken?.icon.src}
+              alt={fromToken?.symbol}
+              className="w-6 h-6"
+            />
+            <div>To Bridge</div>
+          </div>
+          <div className="border-b border-zinc-200 dark:border-zinc-700"></div>
+          {isConnected ? (
             <div className="flex items-center p-3 space-x-3 text-lg">
               <ImageOverlayComponent
                 bigImageSrc={fromToken?.icon.src}
@@ -352,8 +353,13 @@ export const CustomBridge = () => {
                 {CHAINS_BY_ID[toChainId].name}
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="p-3 opacity-75">
+              Connect your wallet to see bridgeable tokens
+            </div>
+          )}
+        </div>
+
         <div className="rounded-md bg-zinc-100 dark:bg-bgBase">
           <div className="p-3 text-lg">
             Bridge to {CHAINS_BY_ID[toChainId].name}
