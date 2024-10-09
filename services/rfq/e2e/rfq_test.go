@@ -393,7 +393,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	})
 }
 
-func (i *IntegrationSuite) TestUSDCtoUSDCWithCallData() {
+func (i *IntegrationSuite) TestArbitraryCall() {
 	// start the relayer and guard
 	go func() {
 		_ = i.relayer.Start(i.GetTestContext())
