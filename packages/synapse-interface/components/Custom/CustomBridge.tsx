@@ -43,6 +43,7 @@ import { USDC } from '@/constants/tokens/bridgeable'
 import { useMaintenance } from '@/components/Maintenance/Maintenance'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { TransactionSummary } from './components/TransactionSummary'
 
 export const CustomBridge = () => {
   const dispatch = useAppDispatch()
@@ -325,6 +326,7 @@ export const CustomBridge = () => {
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col space-y-3">
+        <TransactionSummary />
         {isConnected && (
           <div className="rounded-md bg-zinc-100 dark:bg-bgBase">
             <div className="flex items-center p-3 space-x-2 text-lg">
