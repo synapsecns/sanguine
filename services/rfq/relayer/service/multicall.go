@@ -13,6 +13,7 @@ import (
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgemulti"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"golang.org/x/sync/errgroup"
 )
 
 // MulticallDispatcher is a dispatcher that can dispatch multicalls.
@@ -48,6 +49,23 @@ func NewMulticallDispatcher(cfg relconfig.Config, metricHandler metrics.Handler,
 }
 
 func (m *multicallDispatcher) Start(ctx context.Context) error {
+	g, gctx := errgroup.WithContext(ctx)
+	for c := range m.cfg.Chains {
+		chainID := c
+		g.Go(func() error {
+			err := m.runQueue(gctx, chainID)
+			if err != nil {
+				return fmt.Errorf("could not run dispatch: %w", err)
+			}
+			return nil
+		})
+	}
+
+	err := g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not start multicall dispatcher: %w", err)
+	}
+
 	return nil
 }
 
@@ -68,7 +86,7 @@ func (m *multicallDispatcher) Dispatch(ctx context.Context, tx *types.Transactio
 var dispatchInterval = 30 * time.Second
 var maxBatchSize = 100
 
-func (m *multicallDispatcher) runDispatch(ctx context.Context, chainID int) error {
+func (m *multicallDispatcher) runQueue(ctx context.Context, chainID int) error {
 	txChan, ok := m.txChans[chainID]
 	if !ok {
 		return fmt.Errorf("no tx channel for chain id %d", chainID)
