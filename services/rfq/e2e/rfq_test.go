@@ -393,6 +393,131 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	})
 }
 
+func (i *IntegrationSuite) TestUSDCtoUSDCWithCallData() {
+	// start the relayer and guard
+	go func() {
+		_ = i.relayer.Start(i.GetTestContext())
+	}()
+	go func() {
+		_ = i.guard.Start(i.GetTestContext())
+	}()
+
+	// load token contracts
+	const startAmount = 1000
+	const rfqAmount = 900
+	opts := i.destBackend.GetTxContext(i.GetTestContext(), nil)
+	destUSDC, destUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
+	realStartAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(startAmount), destUSDC.ContractHandle())
+	i.NoError(err)
+	realRFQAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(rfqAmount), destUSDC.ContractHandle())
+	i.NoError(err)
+
+	// add initial usdc to relayer on destination
+	tx, err := destUSDCHandle.MintPublic(opts.TransactOpts, i.relayerWallet.Address(), realStartAmount)
+	i.Nil(err)
+	i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.destBackend, destUSDC, i.relayerWallet)
+
+	// add initial USDC to relayer on origin
+	optsOrigin := i.originBackend.GetTxContext(i.GetTestContext(), nil)
+	originUSDC, originUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.relayerWallet.Address(), realStartAmount)
+	i.Nil(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.originBackend, originUSDC, i.relayerWallet)
+
+	// add initial USDC to user on origin
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realRFQAmount)
+	i.Nil(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.originBackend, originUSDC, i.userWallet)
+
+	// non decimal adjusted user want amount
+	// now our friendly user is going to check the quote and send us some USDC on the origin chain.
+	i.Eventually(func() bool {
+		// first he's gonna check the quotes.
+		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
+		i.NoError(err)
+
+		allQuotes, err := userAPIClient.GetAllQuotes(i.GetTestContext())
+		i.NoError(err)
+
+		// let's figure out the amount of usdc we need
+		for _, quote := range allQuotes {
+			if common.HexToAddress(quote.DestTokenAddr) == destUSDC.Address() {
+				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
+				if destAmountBigInt.Cmp(realRFQAmount) > 0 {
+					// we found our quote!
+					// now we can move on
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	// now we can send the money
+	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
+	_, destRecipient := i.manager.GetRecipientMock(i.GetTestContext(), i.destBackend)
+	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
+	params := fastbridgev2.IFastBridgeBridgeParams{
+		DstChainId:   uint32(i.destBackend.GetChainID()),
+		Sender:       i.userWallet.Address(),
+		To:           destRecipient.Address(),
+		OriginToken:  originUSDC.Address(),
+		SendChainGas: true,
+		DestToken:    destUSDC.Address(),
+		OriginAmount: realRFQAmount,
+		DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(10_000_000)),
+		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
+	}
+	paramsV2 := fastbridgev2.IFastBridgeV2BridgeParamsV2{
+		QuoteRelayer:            i.relayerWallet.Address(),
+		QuoteExclusivitySeconds: new(big.Int).SetInt64(30),
+		CallParams:              []byte("Hello, world!"),
+		CallValue:               big.NewInt(1_337_420),
+	}
+	tx, err = originFastBridge.Bridge0(auth.TransactOpts, params, paramsV2)
+	i.NoError(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	// TODO: this, but cleaner
+	anvilClient, err := anvil.Dial(i.GetTestContext(), i.originBackend.RPCAddress())
+	i.NoError(err)
+
+	go func() {
+		for {
+			select {
+			case <-i.GetTestContext().Done():
+				return
+			case <-time.After(time.Second * 4):
+				// increase time by 30 mintutes every second, should be enough to get us a fastish e2e test
+				// we don't need to worry about deadline since we're only doing this on origin
+				err = anvilClient.IncreaseTime(i.GetTestContext(), 60*30)
+				i.NoError(err)
+
+				// because can claim works on last block timestamp, we need to do something
+				err = anvilClient.Mine(i.GetTestContext(), 1)
+				i.NoError(err)
+			}
+		}
+
+	}()
+
+	i.Eventually(func() bool {
+		destUSDCBalance, err := destUSDCHandle.BalanceOf(&bind.CallOpts{Context: i.GetTestContext()}, destRecipient.Address())
+		i.NoError(err)
+		return destUSDCBalance.Cmp(big.NewInt(0)) > 0
+	})
+
+	// i.Eventually(func() bool {
+	// 	// verify that the guard has marked the tx as validated
+	// 	results, err := i.guardStore.GetPendingProvensByStatus(i.GetTestContext(), guarddb.Validated)
+	// 	i.NoError(err)
+	// 	return len(results) == 1
+	// })
+}
+
 func (i *IntegrationSuite) TestDispute() {
 	// start the guard
 	go func() {
