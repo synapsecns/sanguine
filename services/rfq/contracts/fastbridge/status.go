@@ -1,4 +1,4 @@
-package fastbridge
+package fastbridgemulti
 
 // BridgeStatus is an enum for the on-chain status of a request
 //
