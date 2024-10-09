@@ -362,7 +362,7 @@ export const CustomBridge = () => {
               onChange={() => {}}
               chain={OPTIMISM}
             />
-            <div className="flex items-center justify-between mt-5 border-b border-zinc-200 dark:border-zinc-700">
+            <div className="flex items-center justify-between pb-1 mt-5 border-b border-zinc-200 dark:border-zinc-700">
               <AmountInput
                 showValue={fromValue}
                 handleFromValueChange={handleFromValueChange}
@@ -376,31 +376,37 @@ export const CustomBridge = () => {
                 <div className="text-lg">{fromToken?.symbol}</div>
               </div>
             </div>
-            {isConnected && (
-              <div className="flex justify-end mt-2 text-sm opacity-75">
+            <div className="flex justify-end mt-2 text-sm opacity-75">
+              {isConnected ? (
                 <button
                   className="hover:underline"
                   onClick={() => setFromValue(fromTokenBalance)}
                 >
                   {fromTokenBalance} available
                 </button>
-              </div>
-            )}
+              ) : (
+                'Not connected'
+              )}
+            </div>
             {bridgeQuote?.outputAmountString !== '' && (
-              <div className="flex justify-end mt-5 text-sm">
+              <div className="flex justify-end mt-3 text-sm">
                 <div>
                   <div className="opacity-75">
                     {bridgeQuote?.estimatedTime} seconds via{' '}
                     {bridgeQuote?.bridgeModuleName}
                   </div>
-                  <div className="">
-                    <span className="opacity-75">Receive:</span>
-                    {'  '}
-                    {bridgeQuote?.outputAmountString} {toToken?.symbol}
+                  <div className="flex justify-end space-x-2">
+                    <div className="opacity-75">Receive:</div>
+                    <div>
+                      {bridgeQuote?.outputAmountString} {toToken?.symbol}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
+            <div className="flex justify-end mt-3 text-sm">
+              Powered by Synapse
+            </div>
             <div className="mt-5">
               <TransactionButton
                 fromChainId={fromChainId}
