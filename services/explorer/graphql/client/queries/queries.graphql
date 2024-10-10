@@ -155,6 +155,7 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     blast
     scroll
     linea
+    worldchain
     total
   }
 }
