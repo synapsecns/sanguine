@@ -82,16 +82,16 @@ func (r *rfqClientImpl) GetRFQByTxID(ctx context.Context, txID string) (*GetRFQB
 
 // GetRFQByTxHash gets a quote request by transaction hash.
 func (r *rfqClientImpl) GetRFQByTxHash(ctx context.Context, txHash string) (*relapi.GetQuoteRequestResponse, error) {
-	var resp *relapi.GetQuoteRequestResponse
-	var err error
+	var errs []error
 	for _, relayerClient := range r.relayerClients {
-		resp, err = relayerClient.GetQuoteRequestByTxHash(ctx, txHash)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get quote request by tx hash: %w", err)
+		resp, err := relayerClient.GetQuoteRequestByTxHash(ctx, txHash)
+		if err == nil {
+			return resp, nil
 		}
+		errs = append(errs, fmt.Errorf("could not get quote request by tx hash: %w", err))
 	}
 
-	return resp, nil
+	return nil, fmt.Errorf("could not get quote request by tx hash: %v", errs)
 }
 
 var _ RFQClient = &rfqClientImpl{}
