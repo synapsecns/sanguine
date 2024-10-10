@@ -1,3 +1,4 @@
+// Package internal provides the RFQ client implementation.
 package internal
 
 import (
@@ -63,20 +64,20 @@ func (r *rfqClientImpl) GetRFQByTxID(ctx context.Context, txID string) (*GetRFQB
 	}
 
 	var status string
-	if res.BridgeClaim != (BridgeClaim{}) {
+	switch {
+	case res.BridgeClaim != (BridgeClaim{}):
 		status = "Claimed"
-	} else if res.BridgeProof != (BridgeProof{}) {
+	case res.BridgeProof != (BridgeProof{}):
 		status = "Proven"
-	} else if res.BridgeRelay != (BridgeRelay{}) {
+	case res.BridgeRelay != (BridgeRelay{}):
 		status = "Relayed"
-	} else if res.BridgeRequest != (BridgeRequest{}) {
+	case res.BridgeRequest != (BridgeRequest{}):
 		status = "Requested"
-	} else {
+	default:
 		status = "Unknown"
 	}
 
 	return &res, status, nil
-
 }
 
 // GetRFQByTxHash gets a quote request by transaction hash.

@@ -1,5 +1,6 @@
 package internal
 
+// GetRFQByTxIDResponse is the response for GetRFQByTxID.
 type GetRFQByTxIDResponse struct {
 	Bridge        Bridge        `json:"Bridge"`
 	BridgeRequest BridgeRequest `json:"BridgeRequest"`
@@ -8,6 +9,7 @@ type GetRFQByTxIDResponse struct {
 	BridgeClaim   BridgeClaim   `json:"BridgeClaim"`
 }
 
+// Bridge contains the bridge information.
 type Bridge struct {
 	TransactionID         string `json:"transactionId"`
 	OriginChain           string `json:"originChain"`
@@ -22,12 +24,14 @@ type Bridge struct {
 	SendChainGas          int    `json:"sendChainGas"`
 }
 
+// BridgeRequest contains the bridge request information.
 type BridgeRequest struct {
 	BlockNumber     string `json:"blockNumber"`
 	BlockTimestamp  int64  `json:"blockTimestamp"`
 	TransactionHash string `json:"transactionHash"`
 }
 
+// BridgeRelay contains the bridge relay information.
 type BridgeRelay struct {
 	BlockNumber     string `json:"blockNumber"`
 	BlockTimestamp  int64  `json:"blockTimestamp"`
@@ -36,6 +40,7 @@ type BridgeRelay struct {
 	To              string `json:"to"`
 }
 
+// BridgeProof contains the bridge proof information.
 type BridgeProof struct {
 	BlockNumber     string `json:"blockNumber"`
 	BlockTimestamp  int64  `json:"blockTimestamp"`
@@ -43,6 +48,7 @@ type BridgeProof struct {
 	Relayer         string `json:"relayer"`
 }
 
+// BridgeClaim contains the bridge claim information.
 type BridgeClaim struct {
 	BlockNumber     string `json:"blockNumber"`
 	BlockTimestamp  int64  `json:"blockTimestamp"`

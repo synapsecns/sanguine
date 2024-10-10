@@ -191,6 +191,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				},
 				{
 					Type: slack.MarkdownType,
+					//nolint: gosec
 					Text: fmt.Sprintf("*OriginTxHash*: %s", toTXSlackLink(res.BridgeRequest.TransactionHash, uint32(res.Bridge.OriginChainID))),
 				},
 				{
@@ -205,6 +206,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 					Text: "*DestTxHash*: not available",
 				})
 			} else {
+				//nolint: gosec
 				objects = append(objects, &slack.TextBlockObject{
 					Type: slack.MarkdownType,
 					Text: fmt.Sprintf("*DestTxHash*: %s", toTXSlackLink(res.BridgeRelay.TransactionHash, uint32(res.Bridge.DestChainID))),
