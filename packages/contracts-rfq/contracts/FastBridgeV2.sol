@@ -4,6 +4,7 @@ pragma solidity 0.8.24;
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
+import {BridgeTransactionV2Lib} from "./libs/BridgeTransactionV2.sol";
 import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 
 import {Admin} from "./Admin.sol";
@@ -95,7 +96,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
 
-        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
+        BridgeTransactionV2 memory transaction = BridgeTransactionV2Lib.decodeV2(request);
 
         if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
 
@@ -156,6 +157,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridgeV2
+    function getBridgeTransactionV2(bytes memory request) external pure returns (BridgeTransactionV2 memory) {
+        return BridgeTransactionV2Lib.decodeV2(request);
+    }
+
+    /// @inheritdoc IFastBridgeV2
     function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
         int256 exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
         _validateBridgeParams(params, paramsV2, exclusivityEndTime);
@@ -170,7 +176,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
 
         // set status to requested
-        bytes memory request = abi.encode(
+        bytes memory request = BridgeTransactionV2Lib.encodeV2(
             BridgeTransactionV2({
                 originChainId: uint32(block.chainid),
                 destChainId: params.dstChainId,
@@ -210,7 +216,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @inheritdoc IFastBridgeV2
     function relay(bytes memory request, address relayer) public payable {
         bytes32 transactionId = keccak256(request);
-        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
+        BridgeTransactionV2 memory transaction = BridgeTransactionV2Lib.decodeV2(request);
         _validateRelayParams(transaction, transactionId, relayer);
         // mark bridge transaction as relayed
         bridgeRelayDetails[transactionId] =
@@ -277,7 +283,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @inheritdoc IFastBridge
     function claim(bytes memory request, address to) public {
         bytes32 transactionId = keccak256(request);
-        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
+        BridgeTransactionV2 memory transaction = BridgeTransactionV2Lib.decodeV2(request);
 
         // update bridge tx status if able to claim origin collateral
         if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
@@ -319,11 +325,6 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function bridgeRelays(bytes32 transactionId) public view returns (bool) {
         // has this transactionId been relayed?
         return bridgeRelayDetails[transactionId].relayer != address(0);
-    }
-
-    /// @inheritdoc IFastBridgeV2
-    function getBridgeTransactionV2(bytes memory request) public pure returns (BridgeTransactionV2 memory) {
-        return abi.decode(request, (BridgeTransactionV2));
     }
 
     /// @notice Takes the bridged asset from the user into FastBridgeV2 custody. It will be later
