@@ -147,7 +147,7 @@ func (r *receiptsProxyImpl) processRequest(ctx context.Context, rpcRequest rpc.R
 	req := r.client.NewRequest()
 	body, err := json.Marshal(rpcRequest)
 
-	span.AddEvent("request marshalled", trace.WithAttributes(attribute.String("body", string(body))))
+	span.AddEvent("request marshaled", trace.WithAttributes(attribute.String("body", string(body))))
 
 	//nolint: exhaustive
 	switch client.RPCMethod(rpcRequest.Method) {
