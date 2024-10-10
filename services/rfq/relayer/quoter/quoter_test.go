@@ -136,6 +136,13 @@ func (s *QuoterSuite) TestShouldProcess() {
 	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
 	s.manager.SetRelayPaused(false)
 	s.True(s.manager.ShouldProcess(s.GetTestContext(), quote))
+
+	// Set max relay amount
+	originTokenCfg := s.config.Chains[int(s.origin)].Tokens["USDC"]
+	originTokenCfg.MaxRelayAmount = "900" // less than balance
+	s.config.Chains[int(s.origin)].Tokens["USDC"] = originTokenCfg
+	s.manager.SetConfig(s.config)
+	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
 }
 
 func (s *QuoterSuite) TestIsProfitable() {
