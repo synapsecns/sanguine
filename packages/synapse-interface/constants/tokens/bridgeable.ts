@@ -42,6 +42,7 @@ import usdtLogo from '@assets/icons/usdt.svg'
 import vstaLogo from '@assets/icons/vsta.svg'
 import wbtcLogo from '@assets/icons/wbtc.svg'
 import wethLogo from '@assets/icons/weth.svg'
+import wldLogo from '@assets/icons/wld.svg'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
@@ -1231,4 +1232,23 @@ export const METIS = new Token({
   logo: metisLogo,
   color: 'blue',
   routeSymbol: 'Metis',
+})
+
+export const WLD = new Token({
+  visibilityRank: 106,
+  addresses: {
+    [CHAINS.OPTIMISM.id]: '0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1',
+    [CHAINS.WORLDCHAIN.id]: '0x2cFc85d8E48F8EAB294be644d9E25C3030863003',
+  },
+  decimals: {
+    [CHAINS.OPTIMISM.id]: 18,
+    [CHAINS.WORLDCHAIN.id]: 18,
+  },
+  symbol: 'WLD',
+  name: 'Worldcoin',
+  logo: wldLogo,
+  swapableType: 'WLD',
+  color: 'gray',
+  priorityRank: 106,
+  routeSymbol: 'WLD',
 })
