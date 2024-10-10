@@ -36,7 +36,7 @@ func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
 	}
 
 	bin, err := transaction.MarshalBinary()
-	if  err != nil {
+	if err != nil {
 		bin = []byte(fmt.Sprintf("could not be marshalled: %v", err))
 	}
 
@@ -53,7 +53,7 @@ func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
 		// nolint: gosec
 		attribute.Int64(gasLimitAttr, int64(transaction.Gas())),
 		attribute.String(chainIDAttr, BigPtrToString(transaction.ChainId())),
-		attribute.String(txRawAttr, common.Bytes2Hex(bin))),
+		attribute.String(txRawAttr, common.Bytes2Hex(bin)),
 	}
 
 	if transaction.Type() == types.LegacyTxType && transaction.GasPrice() != nil {
