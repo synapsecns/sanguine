@@ -12,7 +12,7 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Syanpse Protocol REST API',
+      title: 'Synapse Protocol REST API',
       version: packageJson.version,
       description: 'API documentation for the Synapse Protocol REST API',
     },
