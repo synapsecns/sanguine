@@ -162,7 +162,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
         // transfer tokens to bridge contract
         /// @dev use returned originAmount in request in case of transfer fees
-        uint256 originAmount = _pullToken(params.originToken, params.originAmount);
+        uint256 originAmount = _takeBridgedUserAsset(params.originToken, params.originAmount);
 
         // track amount of origin token owed to protocol
         uint256 originFeeAmount;
@@ -324,22 +324,24 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         return abi.decode(request, (BridgeTransactionV2));
     }
 
-    /// @notice Pulls a requested token from the user to this contract.
-    function _pullToken(address token, uint256 amount) internal returns (uint256 amountPulled) {
+    /// @notice Takes the bridged asset from the user into FastBridgeV2 custody. It will be later
+    /// claimed by the relayer who completed the relay on destination chain, or refunded back to the user,
+    /// should no one complete the relay.
+    function _takeBridgedUserAsset(address token, uint256 amount) internal returns (uint256 amountTaken) {
         if (token == UniversalTokenLib.ETH_ADDRESS) {
-            // For ETH we just need to check that the supplied msg.value is correct
+            // For ETH we just need to check that the supplied msg.value is correct.
+            // Supplied `msg.value` is already in FastBridgeV2 custody.
             if (amount != msg.value) revert MsgValueIncorrect();
-            amountPulled = msg.value;
+            amountTaken = msg.value;
         } else {
+            // For ERC20s, token is explicitly transferred from the user to FastBridgeV2.
+            // We don't allow non-zero `msg.value` to avoid extra funds from being stuck in FastBridgeV2.
             token.assertIsContract();
-            // Token needs to be pulled only if msg.value is zero
-            // This way user can specify WETH as the origin asset
             if (msg.value != 0) revert MsgValueIncorrect();
-            // Record token balance before transfer
-            amountPulled = IERC20(token).balanceOf(address(this));
+            amountTaken = IERC20(token).balanceOf(address(this));
             IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
-            // Use the difference between the recorded balance and the current balance as the amountPulled
-            amountPulled = IERC20(token).balanceOf(address(this)) - amountPulled;
+            // Use the balance difference as the amount taken in case of fee on transfer tokens.
+            amountTaken = IERC20(token).balanceOf(address(this)) - amountTaken;
         }
     }
 
