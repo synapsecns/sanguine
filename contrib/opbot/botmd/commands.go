@@ -20,7 +20,6 @@ import (
 	"github.com/hako/durafmt"
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
-	"github.com/synapsecns/sanguine/contrib/opbot/internal"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
@@ -165,12 +164,10 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 		Handler: func(ctx *slacker.CommandContext) {
 			tx := stripLinks(ctx.Request().Param("tx"))
 
-			rfqClient := internal.NewRFQClient(b.handler, b.cfg.RFQIndexerAPIURL)
-
-			res, status, err := rfqClient.GetRFQByTxID(ctx.Context(), tx)
+			res, status, err := b.rfqClient.GetRFQByTxID(ctx.Context(), tx)
 			if err != nil {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
-				_, err := ctx.Response().Reply("error fetching quote request")
+				_, err := ctx.Response().Reply(fmt.Sprintf("error fetching quote request %s", err.Error()))
 				if err != nil {
 					log.Println(err)
 				}
@@ -241,16 +238,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			var rawRequest *relapi.GetQuoteRequestResponse
-			var err error
-			var relClient relapi.RelayerClient
-			for _, relayer := range b.cfg.RelayerURLS {
-				relClient = relapi.NewRelayerClient(b.handler, relayer)
-				rawRequest, err = getQuoteRequest(ctx.Context(), relClient, tx)
-				if err == nil {
-					break
-				}
-			}
+			rawRequest, err := b.rfqClient.GetRFQByTxHash(ctx.Context(), tx)
 			if err != nil {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				_, err := ctx.Response().Reply("error fetching quote request")
@@ -313,12 +301,14 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			)
 			if err != nil {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
-				_, err := ctx.Response().Reply(fmt.Sprintf("error fetching explorer link to refund, but nonce is %d", nonce))
-				log.Printf("error fetching quote request: %v\n", err)
+				_, err := ctx.Response().Reply(fmt.Sprintf("refund submitted with nonce %d", nonce))
+				if err != nil {
+					log.Println(err)
+				}
 				return
 			}
 
-			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toExplorerSlackLink(status.TxHash().String())))
+			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toTXSlackLink(status.TxHash().String(), rawRequest.OriginChainID)))
 			if err != nil {
 				log.Println(err)
 			}
@@ -355,13 +345,13 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 }
 
 func getTxAge(timestamp int64) string {
-	return fmt.Sprintf("The block was created %s.\n", humanize.Time(time.Unix(timestamp, 0)))
+	return humanize.Time(time.Unix(timestamp, 0))
 }
 
 func toExplorerSlackLink(ogHash string) string {
 	rfqHash := strings.ToUpper(ogHash)
 	// cut off 0x
-	if strings.HasPrefix(rfqHash, "0x") {
+	if strings.HasPrefix(rfqHash, "0X") {
 		rfqHash = strings.ToLower(rfqHash[2:])
 	}
 
@@ -382,17 +372,4 @@ func toTXSlackLink(txHash string, chainID uint32) string {
 func stripLinks(input string) string {
 	linkRegex := regexp.MustCompile(`<https?://[^|>]+\|([^>]+)>`)
 	return linkRegex.ReplaceAllString(input, "$1")
-}
-
-func getQuoteRequest(ctx context.Context, client relapi.RelayerClient, tx string) (qr *relapi.GetQuoteRequestResponse, err error) {
-	if qr, err = client.GetQuoteRequestByTxHash(ctx, tx); err == nil {
-		return qr, nil
-	}
-
-	// look up quote request
-	if qr, err = client.GetQuoteRequestByTXID(ctx, tx); err == nil {
-		return qr, nil
-	}
-
-	return nil, fmt.Errorf("error fetching quote request: %w", err)
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/go-http-utils/headers"
 	"github.com/go-resty/resty/v2"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/valyala/fastjson"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 )
 
 const (
@@ -20,22 +20,31 @@ const (
 type RFQClient interface {
 	// GetRFQByTxID gets a quote request by transaction ID.
 	GetRFQByTxID(ctx context.Context, txID string) (resp *GetRFQByTxIDResponse, status string, err error)
+	// GetRFQByTxHash gets a quote request by transaction hash.
+	GetRFQByTxHash(ctx context.Context, txHash string) (resp *relapi.GetQuoteRequestResponse, err error)
 }
 
 type rfqClientImpl struct {
-	client *resty.Client
+	client         *resty.Client
+	relayerClients []relapi.RelayerClient
 }
 
 // NewRFQClient creates a new RFQClient.
-func NewRFQClient(handler metrics.Handler, url string) RFQClient {
+func NewRFQClient(handler metrics.Handler, indexerURL string, relayerURLs []string) RFQClient {
 	client := resty.New()
-	client.SetBaseURL(url)
+	client.SetBaseURL(indexerURL)
 	client.SetHeader(headers.UserAgent, "rfq-client")
 
 	otelresty.TraceClient(client, otelresty.WithTracerProvider(handler.GetTracerProvider()))
 
+	var relayerClients []relapi.RelayerClient
+	for _, url := range relayerURLs {
+		relayerClients = append(relayerClients, relapi.NewRelayerClient(handler, url))
+	}
+
 	return &rfqClientImpl{
-		client: client,
+		client:         client,
+		relayerClients: relayerClients,
 	}
 }
 
@@ -43,7 +52,6 @@ func NewRFQClient(handler metrics.Handler, url string) RFQClient {
 func (r *rfqClientImpl) GetRFQByTxID(ctx context.Context, txID string) (*GetRFQByTxIDResponse, string, error) {
 	var res GetRFQByTxIDResponse
 	resp, err := r.client.R().SetContext(ctx).
-		SetQueryParam("hash", txID).
 		SetResult(&res).
 		Get(fmt.Sprintf(getRequestByTxHash, txID))
 	if err != nil {
@@ -55,13 +63,13 @@ func (r *rfqClientImpl) GetRFQByTxID(ctx context.Context, txID string) (*GetRFQB
 	}
 
 	var status string
-	if fastjson.GetString(resp.Body(), "BridgeClaim") != "" {
+	if res.BridgeClaim != (BridgeClaim{}) {
 		status = "Claimed"
-	} else if fastjson.GetString(resp.Body(), "BridgeProof") != "" {
+	} else if res.BridgeProof != (BridgeProof{}) {
 		status = "Proven"
-	} else if fastjson.GetString(resp.Body(), "BridgeRelay") != "" {
+	} else if res.BridgeRelay != (BridgeRelay{}) {
 		status = "Relayed"
-	} else if fastjson.GetString(resp.Body(), "BridgeRequest") != "" {
+	} else if res.BridgeRequest != (BridgeRequest{}) {
 		status = "Requested"
 	} else {
 		status = "Unknown"
@@ -69,6 +77,20 @@ func (r *rfqClientImpl) GetRFQByTxID(ctx context.Context, txID string) (*GetRFQB
 
 	return &res, status, nil
 
+}
+
+// GetRFQByTxHash gets a quote request by transaction hash.
+func (r *rfqClientImpl) GetRFQByTxHash(ctx context.Context, txHash string) (*relapi.GetQuoteRequestResponse, error) {
+	var resp *relapi.GetQuoteRequestResponse
+	var err error
+	for _, relayerClient := range r.relayerClients {
+		resp, err = relayerClient.GetQuoteRequestByTxHash(ctx, txHash)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get quote request by tx hash: %w", err)
+		}
+	}
+
+	return resp, nil
 }
 
 var _ RFQClient = &rfqClientImpl{}
