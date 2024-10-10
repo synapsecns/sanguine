@@ -136,6 +136,13 @@ func (s *QuoterSuite) TestShouldProcess() {
 	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
 	s.manager.SetRelayPaused(false)
 	s.True(s.manager.ShouldProcess(s.GetTestContext(), quote))
+
+	// Set max relay amount
+	originTokenCfg := s.config.Chains[int(s.origin)].Tokens["USDC"]
+	originTokenCfg.MaxRelayAmount = "900" // less than balance
+	s.config.Chains[int(s.origin)].Tokens["USDC"] = originTokenCfg
+	s.manager.SetConfig(s.config)
+	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
 }
 
 func (s *QuoterSuite) TestIsProfitable() {
@@ -173,13 +180,23 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 	originAddr := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
-	setQuoteParams := func(quotePct, quoteOffset float64, minQuoteAmount, maxBalance string) {
-		s.config.BaseChainConfig.QuotePct = &quotePct
+	type quoteParams struct {
+		quotePct       float64
+		quoteOffset    float64
+		minQuoteAmount string
+		maxBalance     string
+		maxQuoteAmount string
+	}
+
+	setQuoteParams := func(params quoteParams) {
+		s.config.BaseChainConfig.QuotePct = &params.quotePct
 		destTokenCfg := s.config.Chains[dest].Tokens["USDC"]
-		destTokenCfg.MinQuoteAmount = minQuoteAmount
+		destTokenCfg.MinQuoteAmount = params.minQuoteAmount
+		destTokenCfg.MaxRelayAmount = params.maxQuoteAmount
 		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
-		originTokenCfg.QuoteOffsetBps = quoteOffset
-		originTokenCfg.MaxBalance = &maxBalance
+		originTokenCfg.QuoteOffsetBps = params.quoteOffset
+		originTokenCfg.MaxBalance = &params.maxBalance
+		originTokenCfg.MaxRelayAmount = params.maxQuoteAmount
 		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
 		s.config.Chains[origin].Tokens["USDC"] = originTokenCfg
 		s.manager.SetConfig(s.config)
@@ -201,42 +218,85 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with MinQuoteAmount of 0; should be 50% of balance.
-	setQuoteParams(50, 0, "0", "0")
+	setQuoteParams(quoteParams{
+		quotePct:       50,
+		quoteOffset:    0,
+		minQuoteAmount: "0",
+		maxBalance:     "0",
+	})
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 50 with QuoteOffset of -1%. Should be 1% less than 50% of balance.
-	setQuoteParams(50, -100, "0", "0")
+	setQuoteParams(quoteParams{
+		quotePct:       50,
+		quoteOffset:    -100,
+		minQuoteAmount: "0",
+		maxBalance:     "0",
+	})
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(495_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
-	setQuoteParams(25, 0, "500", "0")
+	setQuoteParams(quoteParams{
+		quotePct:       25,
+		quoteOffset:    0,
+		minQuoteAmount: "500",
+		maxBalance:     "0",
+	})
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
-	setQuoteParams(25, 0, "500", "0")
+	setQuoteParams(quoteParams{
+		quotePct:       25,
+		quoteOffset:    0,
+		minQuoteAmount: "500",
+		maxBalance:     "0",
+	})
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
 	// Set QuotePct to 25 with MinQuoteAmount of 1500; should be total balance.
-	setQuoteParams(25, 0, "1500", "0")
+	setQuoteParams(quoteParams{
+		quotePct:       25,
+		quoteOffset:    0,
+		minQuoteAmount: "1500",
+		maxBalance:     "0",
+	})
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(1000_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
+	// Set QuotePct to 100 with MinQuoteAmount of 0 and MaxRelayAmount of 500; should be 500.
+	setQuoteParams(quoteParams{
+		quotePct:       100,
+		quoteOffset:    0,
+		minQuoteAmount: "0",
+		maxBalance:     "0",
+		maxQuoteAmount: "500",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(500_000_000)
+	s.Equal(expectedAmount, quoteAmount)
+
 	// Set QuotePct to 25 with MinQuoteAmount of 1500 and MaxBalance of 1200; should be 200.
-	setQuoteParams(25, 0, "1500", "1200")
+	setQuoteParams(quoteParams{
+		quotePct:       25,
+		quoteOffset:    0,
+		minQuoteAmount: "1500",
+		maxBalance:     "1200",
+	})
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(200_000_000)
