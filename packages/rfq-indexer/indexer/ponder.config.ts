@@ -73,8 +73,8 @@ const configByChainId = {
   [480]: {
     transport: http(process.env.WORLDCHAIN_MAINNET_RPC),
     chainName: 'worldchain',
-    FastBridgeV2Address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
-    FastBridgeV2StartBlock: 4616214, // first block and new block
+    FastBridgeV2Address: '0x05C62156C7C47E76223A560210EA648De5e6B53B',
+    FastBridgeV2StartBlock: 4598830, // first block and new block
   },
   disableCache: true,
 }

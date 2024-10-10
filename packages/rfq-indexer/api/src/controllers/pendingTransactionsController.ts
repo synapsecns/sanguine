@@ -1,14 +1,7 @@
 import { Request, Response } from 'express'
 
 import { db } from '../db'
-import {
-  qDeposits,
-  qRelays,
-  qProofs,
-  qClaims,
-  qRefunds,
-  qDisputes,
-} from '../queries'
+import { qDeposits, qRelays, qProofs, qClaims, qRefunds } from '../queries'
 import { nest_results } from '../utils/nestResults'
 
 const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60
@@ -21,7 +14,7 @@ export const pendingTransactionsMissingClaimController = async (
     const query = db
       .with('deposits', () => qDeposits())
       .with('relays', () => qRelays())
-      .with('proofs', () => qProofs({activeOnly: true}))
+      .with('proofs', () => qProofs({ activeOnly: true }))
       .with('claims', () => qClaims())
       .with('combined', (qb) =>
         qb
