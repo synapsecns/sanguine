@@ -170,13 +170,13 @@ func (p *RFQParser) applyPriceData(ctx context.Context, rfqEvent *model.RFQEvent
 	if rfqEvent.EventType == rfqTypes.BridgeRequestedEvent.Int() {
 		amountUSD := GetAmountUSD(rfqEvent.OriginAmount, *rfqEvent.TokenDecimal, tokenPrice)
 		if amountUSD != nil {
-			logger.Warnf("RFQ GetAmountUSD properly found the token price for coingecko token: %s", coinGeckoID)
+			logger.Infof("RFQ GetAmountUSD properly found the token price for coingecko token: %s", coinGeckoID)
 			rfqEvent.AmountUSD = *amountUSD
 		}
 	} else if rfqEvent.EventType == rfqTypes.BridgeRelayedEvent.Int() {
 		amountUSD := GetAmountUSD(rfqEvent.DestinationAmount, *rfqEvent.TokenDecimal, tokenPrice)
 		if amountUSD != nil {
-			logger.Warnf("RFQ GetAmountUSD properly found the token price for coingecko token: %s", coinGeckoID)
+			logger.Infof("RFQ GetAmountUSD properly found the token price for coingecko token: %s", coinGeckoID)
 			rfqEvent.AmountUSD = *amountUSD
 		}
 	}

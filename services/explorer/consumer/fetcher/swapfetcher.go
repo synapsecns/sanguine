@@ -44,23 +44,24 @@ func NewSwapFetcher(swapAddress common.Address, backend bind.ContractBackend, is
 	return &swapFetcher{swap, nil, backend, swapAddress}, nil
 }
 func (s *swapFetcher) GetTokenAddress(ctx context.Context, tokenIndex uint8) (*common.Address, error) {
+	var tokenAddress common.Address
+	var err error
+	var contractType string
+
 	if s.metaSwap != nil {
-		tokenAddress, err := s.metaSwap.GetToken(&bind.CallOpts{
-			Context: ctx,
-		}, tokenIndex)
-		if err != nil {
-			logger.Errorf("could not get metaswap token address %s", s.metaSwap.Address())
-			return nil, fmt.Errorf("could not get metaswap token address  %s", s.metaSwap.Address())
-		}
-		return &tokenAddress, nil
+		contractType = "metaswap"
+		tokenAddress, err = s.metaSwap.GetToken(&bind.CallOpts{Context: ctx}, tokenIndex)
+	} else {
+		contractType = "swap"
+		tokenAddress, err = s.swap.GetToken(&bind.CallOpts{Context: ctx}, tokenIndex)
 	}
-	tokenAddress, err := s.swap.GetToken(&bind.CallOpts{
-		Context: ctx,
-	}, tokenIndex)
+
 	if err != nil {
-		logger.Errorf("could not get token address %s", s.swap.Address())
-		return nil, fmt.Errorf("could not get token address  %s", s.swap.Address())
+		contractAddress := s.swapAddress.Hex()
+		logger.Errorf("could not get %s token address for index %d from contract %s: %v", contractType, tokenIndex, contractAddress, err)
+		return nil, fmt.Errorf("could not get %s token address for index %d from contract %s: %w", contractType, tokenIndex, contractAddress, err)
 	}
+
 	return &tokenAddress, nil
 }
 
