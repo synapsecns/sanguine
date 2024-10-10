@@ -807,6 +807,7 @@ export const ETH: BridgeableToken = {
     [CHAINS.BLAST.id]: NativeTokenAddress,
     [CHAINS.SCROLL.id]: NativeTokenAddress,
     [CHAINS.LINEA.id]: NativeTokenAddress,
+    [CHAINS.WORLDCHAIN.id]: NativeTokenAddress,
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 18,
@@ -819,6 +820,7 @@ export const ETH: BridgeableToken = {
     [CHAINS.BLAST.id]: 18,
     [CHAINS.SCROLL.id]: 18,
     [CHAINS.LINEA.id]: 18,
+    [CHAINS.WORLDCHAIN.id]: 18,
   },
   symbol: 'ETH',
   name: 'Ethereum',
@@ -995,12 +997,15 @@ export const USDCe: BridgeableToken = {
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
     [CHAINS.AURORA.id]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
     [CHAINS.POLYGON.id]: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+    [CHAINS.WORLDCHAIN.id]: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
   },
   decimals: {
     [CHAINS.OPTIMISM.id]: 6,
     [CHAINS.AVALANCHE.id]: 6,
     [CHAINS.ARBITRUM.id]: 6,
     [CHAINS.AURORA.id]: 6,
+    [CHAINS.POLYGON.id]: 6,
+    [CHAINS.WORLDCHAIN.id]: 6,
   },
   symbol: 'USDC.e',
   name: 'Bridged USDC',
@@ -1389,4 +1394,23 @@ export const SPECTRAL: BridgeableToken = {
   routeSymbol: 'SPEC',
   imgUrl:
     'https://105bc697.sanguine-fe.pages.dev/_next/static/media/spectral.6d51750c.svg',
+}
+
+export const WLD: BridgeableToken = {
+  priorityRank: 106,
+  addresses: {
+    [CHAINS.OPTIMISM.id]: '0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1',
+    [CHAINS.WORLDCHAIN.id]: '0x2cFc85d8E48F8EAB294be644d9E25C3030863003',
+  },
+  decimals: {
+    [CHAINS.OPTIMISM.id]: 18,
+    [CHAINS.WORLDCHAIN.id]: 18,
+  },
+  symbol: 'WLD',
+  name: 'Worldcoin',
+  swapableType: 'WLD',
+  color: 'gray',
+  routeSymbol: 'WLD',
+  imgUrl:
+    'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
 }
