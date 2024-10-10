@@ -3,6 +3,7 @@ const fs = require('fs')
 
 const {
   readChainSpecificOptions,
+  readChainVerificationOptions,
   logWallet,
   isVerifierEnabled,
 } = require('./utils/chain.js')
@@ -18,7 +19,7 @@ const { logInfo } = require('./utils/logger.js')
 const {
   parseCommandLineArgs,
   isBroadcasted,
-  addVerifyOptions,
+  addVerifyIfNotPresent,
   addOptions,
 } = require('./utils/options.js')
 const { assertCondition } = require('./utils/utils.js')
@@ -47,7 +48,11 @@ let forgeOptions = addOptions(
 forgeOptions = addOptions(forgeOptions, readChainSpecificOptions(chainName))
 forgeOptions = addOptions(forgeOptions, options)
 if (isBroadcast && isVerifierEnabled(chainName)) {
-  forgeOptions = addVerifyOptions(forgeOptions)
+  forgeOptions = addOptions(
+    forgeOptions,
+    readChainVerificationOptions(chainName)
+  )
+  forgeOptions = addVerifyIfNotPresent(forgeOptions)
 }
 
 const currentTimestamp = Date.now()

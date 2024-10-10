@@ -332,10 +332,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             amountPulled = msg.value;
         } else {
             token.assertIsContract();
-            // Record token balance before transfer
-            amountPulled = IERC20(token).balanceOf(address(this));
             // Token needs to be pulled only if msg.value is zero
             // This way user can specify WETH as the origin asset
+            if (msg.value != 0) revert MsgValueIncorrect();
+            // Record token balance before transfer
+            amountPulled = IERC20(token).balanceOf(address(this));
             IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
             // Use the difference between the recorded balance and the current balance as the amountPulled
             amountPulled = IERC20(token).balanceOf(address(this)) - amountPulled;

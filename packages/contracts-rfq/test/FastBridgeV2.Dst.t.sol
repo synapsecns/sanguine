@@ -535,4 +535,38 @@ contract FastBridgeV2DstTest is FastBridgeV2DstBaseTest {
             bridgeTx: ethTx
         });
     }
+
+    function test_relay_token_revert_approvedZero() public {
+        vm.prank(relayerA);
+        dstToken.approve(address(fastBridge), 0);
+        vm.expectRevert();
+        relay({caller: relayerA, msgValue: 0, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_revert_approvedNotEnough() public {
+        vm.prank(relayerA);
+        dstToken.approve(address(fastBridge), tokenParams.destAmount - 1);
+        vm.expectRevert();
+        relay({caller: relayerA, msgValue: 0, bridgeTx: tokenTx});
+    }
+
+    function test_relay_token_revert_nonZeroMsgValue() public {
+        vm.expectRevert();
+        relay({caller: relayerA, msgValue: tokenParams.destAmount, bridgeTx: tokenTx});
+    }
+
+    function test_relay_eth_revert_lowerMsgValue() public {
+        vm.expectRevert();
+        relay({caller: relayerA, msgValue: ethParams.destAmount - 1, bridgeTx: ethTx});
+    }
+
+    function test_relay_eth_revert_higherMsgValue() public {
+        vm.expectRevert();
+        relay({caller: relayerA, msgValue: ethParams.destAmount + 1, bridgeTx: ethTx});
+    }
+
+    function test_relay_eth_revert_zeroMsgValue() public {
+        vm.expectRevert();
+        relay({caller: relayerA, msgValue: 0, bridgeTx: ethTx});
+    }
 }

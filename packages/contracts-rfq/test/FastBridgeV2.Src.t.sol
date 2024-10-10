@@ -177,6 +177,25 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         checkEthBalancesAfterBridge(userB);
     }
 
+    function test_bridge_token_revert_approvedZero() public {
+        vm.prank(userA);
+        srcToken.approve(address(fastBridge), 0);
+        vm.expectRevert();
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_token_revert_approvedNotEnough() public {
+        vm.prank(userA);
+        srcToken.approve(address(fastBridge), tokenParams.originAmount - 1);
+        vm.expectRevert();
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_token_revert_nonZeroMsgValue() public {
+        vm.expectRevert();
+        bridge({caller: userA, msgValue: tokenParams.originAmount, params: tokenParams});
+    }
+
     function test_bridge_eth_revert_lowerMsgValue() public {
         vm.expectRevert(MsgValueIncorrect.selector);
         bridge({caller: userA, msgValue: ethParams.originAmount - 1, params: ethParams});
