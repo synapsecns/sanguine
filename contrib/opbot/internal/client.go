@@ -16,7 +16,7 @@ const (
 	getRequestByTxHash = "/api/transaction-id/%s"
 )
 
-// GetRFQByTxIDResponse represents the response of a quote request by transaction ID.
+// RFQClient is the interface for the RFQ client.
 type RFQClient interface {
 	// GetRFQByTxID gets a quote request by transaction ID.
 	GetRFQByTxID(ctx context.Context, txID string) (resp *GetRFQByTxIDResponse, status string, err error)
