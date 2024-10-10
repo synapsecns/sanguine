@@ -16,7 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgev2mock"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
@@ -60,8 +60,8 @@ func (r *RelayerTestSuite) SetupTest() {
 
 	serverURL := omnirpcHelper.NewOmnirpcServer(r.GetTestContext(), r.T(), r.destBackend, r.originBackend)
 
-	originContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
-	destContract, _ := r.manager.GetMockFastBridge(r.GetTestContext(), r.destBackend)
+	originContract, _ := r.manager.GetMockFastBridgeV2(r.GetTestContext(), r.originBackend)
+	destContract, _ := r.manager.GetMockFastBridgeV2(r.GetTestContext(), r.destBackend)
 	r.cfg = relconfig.Config{
 		Database: relconfig.DatabaseConfig{
 			Type: dbcommon.Sqlite.String(),
@@ -89,7 +89,7 @@ func (r *RelayerTestSuite) TestStore() {
 		r.NoError(rel.StartChainParser(r.GetTestContext()))
 	}()
 
-	_, oc := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
+	_, oc := r.manager.GetMockFastBridgeV2(r.GetTestContext(), r.originBackend)
 
 	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
 
@@ -100,7 +100,7 @@ func (r *RelayerTestSuite) TestStore() {
 	r.NoError(err)
 
 	//nolint: typecheck
-	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
+	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgev2mock.IFastBridgeV2BridgeParams{
 		DstChainId:   uint32(r.destBackend.GetChainID()),
 		To:           mocks.MockAddress(),
 		OriginToken:  originToken.Address(),
@@ -126,7 +126,7 @@ func (r *RelayerTestSuite) TestCommit() {
 		r.NoError(rel.StartChainParser(r.GetTestContext()))
 	}()
 
-	_, oc := r.manager.GetMockFastBridge(r.GetTestContext(), r.originBackend)
+	_, oc := r.manager.GetMockFastBridgeV2(r.GetTestContext(), r.originBackend)
 
 	auth := r.originBackend.GetTxContext(r.GetTestContext(), nil)
 
@@ -137,7 +137,7 @@ func (r *RelayerTestSuite) TestCommit() {
 	r.NoError(err)
 
 	//nolint: typecheck
-	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
+	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgev2mock.IFastBridgeV2BridgeParams{
 		DstChainId:   uint32(r.destBackend.GetChainID()),
 		To:           mocks.MockAddress(),
 		OriginToken:  originToken.Address(),
