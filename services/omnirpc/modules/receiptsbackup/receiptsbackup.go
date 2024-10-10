@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/omnirpc/modules/mixins"
 	"io"
 	"net/http"
 	"time"
@@ -136,6 +137,8 @@ func (r *receiptsProxyImpl) ProxyRequest(c *gin.Context) (err error) {
 }
 
 func (r *receiptsProxyImpl) processRequest(ctx context.Context, rpcRequest rpc.Request, requestID []byte) (resp omniHTTP.Response, err error) {
+	mixins.TxSubmitMixin(ctx, r.handler, rpcRequest)
+
 	req := r.client.NewRequest()
 	body, err := json.Marshal(rpcRequest)
 
