@@ -109,6 +109,10 @@ func (u *UtilSuite) TestTxToAttributesDynamicTX() {
 
 	u.Require().Equal(mapAttr[util.GasFeeCapAttr].AsString(), mockTX.GasFeeCap().String())
 	u.Require().Equal(mapAttr[util.GasTipCapAttr].AsString(), mockTX.GasTipCap().String())
+	marshaled, err := mockTX.MarshalBinary()
+	u.Require().NoError(err)
+
+	u.Require().Equal(mapAttr[util.TxRawAttr].AsString(), common.Bytes2Hex(marshaled))
 	_, hasGasPrice := mapAttr[util.GasPriceAttr]
 	u.Require().False(hasGasPrice)
 	u.Require().NotNil(mapAttr[util.FromAttr])

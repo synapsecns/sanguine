@@ -37,7 +37,7 @@ func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
 
 	bin, err := transaction.MarshalBinary()
 	if err != nil {
-		bin = []byte(fmt.Sprintf("could not be marshalled: %v", err))
+		bin = []byte(fmt.Sprintf("could not be marshaled: %v", err))
 	}
 
 	var attributes = []attribute.KeyValue{
