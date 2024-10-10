@@ -422,7 +422,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (relayer == address(0)) revert ZeroAddress();
         // Check if the transaction has already been relayed
         if (bridgeRelays(transactionId)) revert TransactionRelayed();
-        if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
+        if (transaction.destChainId != block.chainid) revert ChainIncorrect();
         // Check the deadline for relay to happen
         if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
         // Check the exclusivity period, if it is still ongoing
