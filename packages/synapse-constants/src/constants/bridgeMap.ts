@@ -897,8 +897,8 @@ export const BRIDGE_MAP = {
     '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1': {
       decimals: 6,
       symbol: 'USDC.e',
-      origin: ['RFQ.USDC.e'],
-      destination: ['RFQ.USDC.e'],
+      origin: ['RFQ.USDC'],
+      destination: ['RFQ.USDC'],
       swappable: [],
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
