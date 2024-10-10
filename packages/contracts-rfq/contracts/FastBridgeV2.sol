@@ -222,6 +222,19 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         uint256 amount = transaction.destAmount;
         uint256 callValue = transaction.callValue;
 
+        // Emit the event before any external calls
+        emit BridgeRelayed({
+            transactionId: transactionId,
+            relayer: relayer,
+            to: to,
+            originChainId: transaction.originChainId,
+            originToken: transaction.originToken,
+            destToken: token,
+            originAmount: transaction.originAmount,
+            destAmount: amount,
+            chainGasAmount: callValue
+        });
+
         // All state changes have been done at this point, can proceed to the external calls.
         // This follows the checks-effects-interactions pattern to mitigate potential reentrancy attacks.
         if (token == UniversalTokenLib.ETH_ADDRESS) {
@@ -247,18 +260,6 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             // or a non-zero callValue request with an ERC20. In both cases, transfer the ETH to the recipient.
             Address.sendValue(payable(to), msg.value);
         }
-
-        emit BridgeRelayed({
-            transactionId: transactionId,
-            relayer: relayer,
-            to: to,
-            originChainId: transaction.originChainId,
-            originToken: transaction.originToken,
-            destToken: token,
-            originAmount: transaction.originAmount,
-            destAmount: amount,
-            chainGasAmount: callValue
-        });
     }
 
     /// @inheritdoc IFastBridgeV2
