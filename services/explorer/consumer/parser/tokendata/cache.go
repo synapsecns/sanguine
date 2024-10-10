@@ -292,5 +292,5 @@ var tokenDataMap = map[string]TokenData{
 	"480_0x79A02482A880bCE3F13e09Da970dC34db4CD24d1":   {"USDC.e", 6, "0x79A02482A880bCE3F13e09Da970dC34db4CD24d1"},
 	"480_0x4200000000000000000000000000000000000006":   {"WETH", 18, "0x4200000000000000000000000000000000000006"},
 	"1_0x163f8c2467924be0ae7b5347228cabf260318753":     {"WLD", 18, "0x163f8c2467924be0ae7b5347228cabf260318753"},
-	// Add additional tokens that are not part of the cache yet (and not by nature in bridge config) here
+	// Add additional tokens that are not part of the cache yet (and is not by nature in bridge config) here
 }
