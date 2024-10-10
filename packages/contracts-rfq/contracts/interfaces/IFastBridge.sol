@@ -97,7 +97,7 @@ interface IFastBridge {
 
     /// @notice Decodes bridge request into a bridge transaction
     /// @param request The bridge request to decode
-    function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory);
+    function getBridgeTransaction(bytes memory request) external view returns (BridgeTransaction memory);
 
     /// @notice Checks if the dispute period has passed so bridge deposit can be claimed
     /// @param transactionId The transaction id associated with the encoded bridge transaction to check
