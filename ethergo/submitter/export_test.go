@@ -12,17 +12,11 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 // CopyTransactOpts exports copyTransactOpts for testing.
 func CopyTransactOpts(opts *bind.TransactOpts) *bind.TransactOpts {
 	return copyTransactOpts(opts)
-}
-
-// txToAttributes exports txToAttributes for testing.
-func TxToAttributesUUID(transaction *types.Transaction, UUID string) []attribute.KeyValue {
-	return txToAttributes(transaction, UUID)
 }
 
 // SortTxes exports sortTxesByChainID for testing.

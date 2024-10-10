@@ -78,7 +78,9 @@ func (u *UtilSuite) TestTxToAttributesLegacyTX() {
 	mapAttr := makeAttrMap(mockTX)
 
 	u.Require().Equal(mapAttr[util.HashAttr].AsString(), mockTX.Hash().String())
+	// nolint: gosec
 	u.Require().Equal(mapAttr[util.NonceAttr].AsInt64(), int64(mockTX.Nonce()))
+	// nolint: gosec
 	u.Require().Equal(mapAttr[util.GasLimitAttr].AsInt64(), int64(mockTX.Gas()))
 	u.Require().Equal(mapAttr[util.ToAttr].AsString(), mockTX.To().String())
 	u.Require().Equal(mapAttr[util.ValueAttr].AsString(), mockTX.Value().String())
@@ -97,7 +99,9 @@ func (u *UtilSuite) TestTxToAttributesDynamicTX() {
 	mapAttr := makeAttrMap(mockTX)
 
 	u.Require().Equal(mapAttr[util.HashAttr].AsString(), mockTX.Hash().String())
+	// nolint: gosec
 	u.Require().Equal(mapAttr[util.NonceAttr].AsInt64(), int64(mockTX.Nonce()))
+	// nolint: gosec
 	u.Require().Equal(mapAttr[util.GasLimitAttr].AsInt64(), int64(mockTX.Gas()))
 	u.Require().Equal(mapAttr[util.ToAttr].AsString(), mockTX.To().String())
 	u.Require().Equal(mapAttr[util.ValueAttr].AsString(), mockTX.Value().String())

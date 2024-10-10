@@ -41,7 +41,9 @@ func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
 		attribute.String(valueAttr, BigPtrToString(transaction.Value())),
 		// TODO: this could be downcast to int64, but it's unclear how we should handle overflows.
 		// since this is only for tracing, we can probably ignore it for now.
+		// nolint: gosec
 		attribute.Int64(nonceAttr, int64(transaction.Nonce())),
+		// nolint: gosec
 		attribute.Int64(gasLimitAttr, int64(transaction.Gas())),
 		attribute.String(chainIDAttr, BigPtrToString(transaction.ChainId())),
 	}
