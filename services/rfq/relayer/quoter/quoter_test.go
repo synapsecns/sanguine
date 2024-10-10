@@ -185,11 +185,11 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 		s.config.BaseChainConfig.QuotePct = &params.quotePct
 		destTokenCfg := s.config.Chains[dest].Tokens["USDC"]
 		destTokenCfg.MinQuoteAmount = params.minQuoteAmount
-		destTokenCfg.MaxQuoteAmount = params.maxQuoteAmount
+		destTokenCfg.MaxRelayAmount = params.maxQuoteAmount
 		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
 		originTokenCfg.QuoteOffsetBps = params.quoteOffset
 		originTokenCfg.MaxBalance = &params.maxBalance
-		originTokenCfg.MaxQuoteAmount = params.maxQuoteAmount
+		originTokenCfg.MaxRelayAmount = params.maxQuoteAmount
 		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
 		s.config.Chains[origin].Tokens["USDC"] = originTokenCfg
 		s.manager.SetConfig(s.config)
@@ -270,7 +270,7 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 	expectedAmount = big.NewInt(1000_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
-	// Set QuotePct to 100 with MinQuoteAmount of 0 and MaxQuoteAmount of 500; should be 500.
+	// Set QuotePct to 100 with MinQuoteAmount of 0 and MaxRelayAmount of 500; should be 500.
 	setQuoteParams(quoteParams{
 		quotePct:       100,
 		quoteOffset:    0,

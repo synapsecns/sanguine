@@ -746,14 +746,14 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	return quoteAmountScaled
 }
 
-var defaultMaxQuoteAmount *big.Int // nil
+var defaultMaxRelayAmount *big.Int // nil
 
-// GetMaxQuoteAmount returns the quote amount for the given chain and address.
+// GetMaxRelayAmount returns the quote amount for the given chain and address.
 // Note that this getter returns the value in native token decimals.
-func (c Config) GetMaxQuoteAmount(chainID int, addr common.Address) *big.Int {
+func (c Config) GetMaxRelayAmount(chainID int, addr common.Address) *big.Int {
 	chainCfg, ok := c.Chains[chainID]
 	if !ok {
-		return defaultMaxQuoteAmount
+		return defaultMaxRelayAmount
 	}
 
 	var tokenCfg *TokenConfig
@@ -765,14 +765,14 @@ func (c Config) GetMaxQuoteAmount(chainID int, addr common.Address) *big.Int {
 		}
 	}
 	if tokenCfg == nil {
-		return defaultMaxQuoteAmount
+		return defaultMaxRelayAmount
 	}
-	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxQuoteAmount)
+	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxRelayAmount)
 	if !ok {
-		return defaultMaxQuoteAmount
+		return defaultMaxRelayAmount
 	}
 	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
-		return defaultMaxQuoteAmount
+		return defaultMaxRelayAmount
 	}
 
 	// Scale the minQuoteAmount by the token decimals.

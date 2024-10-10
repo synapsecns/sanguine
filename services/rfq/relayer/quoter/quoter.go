@@ -723,7 +723,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	}
 
 	// Clip the quoteAmount by the maxQuoteAmount
-	maxQuoteAmount := m.config.GetMaxQuoteAmount(input.DestChainID, input.DestTokenAddr)
+	maxQuoteAmount := m.config.GetMaxRelayAmount(input.DestChainID, input.DestTokenAddr)
 	if maxQuoteAmount != nil && quoteAmount.Cmp(maxQuoteAmount) > 0 {
 		span.AddEvent("quote amount greater than max quote amount", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
