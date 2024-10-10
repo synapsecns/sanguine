@@ -22,6 +22,7 @@ const (
 	gasPriceAttr  = "tx.GasPrice"
 	gasFeeCapAttr = "tx.GasFeeCap"
 	gasTipCapAttr = "tx.GasTipCap"
+	txRawAttr     = "tx.Raw"
 )
 
 // TxToAttributes converts a transaction to a slice of attribute.KeyValue.
@@ -33,6 +34,12 @@ func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
 	} else {
 		from = call.From.Hex()
 	}
+
+	bin, err := transaction.MarshalBinary()
+	if err != nil {
+		bin = []byte(fmt.Sprintf("could not be marshaled: %v", err))
+	}
+
 	var attributes = []attribute.KeyValue{
 		attribute.String(hashAttr, transaction.Hash().Hex()),
 		attribute.String(fromAttr, from),
@@ -46,6 +53,7 @@ func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
 		// nolint: gosec
 		attribute.Int64(gasLimitAttr, int64(transaction.Gas())),
 		attribute.String(chainIDAttr, BigPtrToString(transaction.ChainId())),
+		attribute.String(txRawAttr, common.Bytes2Hex(bin)),
 	}
 
 	if transaction.Type() == types.LegacyTxType && transaction.GasPrice() != nil {

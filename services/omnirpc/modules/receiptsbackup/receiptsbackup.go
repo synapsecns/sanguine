@@ -137,10 +137,17 @@ func (r *receiptsProxyImpl) ProxyRequest(c *gin.Context) (err error) {
 }
 
 func (r *receiptsProxyImpl) processRequest(ctx context.Context, rpcRequest rpc.Request, requestID []byte) (resp omniHTTP.Response, err error) {
+	ctx, span := r.handler.Tracer().Start(ctx, "proxyrequest")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	mixins.TxSubmitMixin(ctx, r.handler, rpcRequest)
 
 	req := r.client.NewRequest()
 	body, err := json.Marshal(rpcRequest)
+
+	span.AddEvent("request marshaled", trace.WithAttributes(attribute.String("body", string(body))))
 
 	//nolint: exhaustive
 	switch client.RPCMethod(rpcRequest.Method) {
@@ -191,6 +198,8 @@ func (r *receiptsProxyImpl) processRequest(ctx context.Context, rpcRequest rpc.R
 		if err != nil {
 			return nil, fmt.Errorf("could not get response from RPC %s: %w", r.proxyURL, err)
 		}
+
+		span.AddEvent("response returned", trace.WithAttributes(attribute.String("body", string(resp.Body()))))
 
 		return resp, nil
 	}

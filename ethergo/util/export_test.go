@@ -72,4 +72,6 @@ const (
 	GasFeeCapAttr = gasFeeCapAttr
 	// GasTipCapAttr exports gasTipCapAttr for testing.
 	GasTipCapAttr = gasTipCapAttr
+	// TxRawAttr exports txRawAttr for testing.
+	TxRawAttr = txRawAttr
 )
