@@ -591,7 +591,7 @@ export const BRIDGE_MAP = {
     },
     '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270': {
       decimals: 18,
-      symbol: 'WMATIC',
+      symbol: 'WPOL',
       origin: ['MATIC'],
       destination: ['MATIC'],
       swappable: [],
@@ -670,7 +670,7 @@ export const BRIDGE_MAP = {
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
-      symbol: 'MATIC',
+      symbol: 'POL',
       origin: ['MATIC'],
       destination: ['MATIC'],
       swappable: [],
@@ -872,6 +872,22 @@ export const BRIDGE_MAP = {
       ],
     },
   },
+  '480': {
+    '0x4200000000000000000000000000000000000006': {
+      decimals: 18,
+      symbol: 'WETH',
+      origin: ['RFQ.ETH'],
+      destination: [],
+      swappable: [],
+    },
+    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
+      decimals: 18,
+      symbol: 'ETH',
+      origin: ['RFQ.ETH'],
+      destination: ['RFQ.ETH'],
+      swappable: [],
+    },
+  },
   '1088': {
     '0x17C09cfC96C865CF546d73365Cedb6dC66986963': {
       decimals: 18,
@@ -896,7 +912,7 @@ export const BRIDGE_MAP = {
     },
     '0x75cb093E4D61d2A2e65D8e0BBb01DE8d89b53481': {
       decimals: 18,
-      symbol: 'WMETIS',
+      symbol: 'WMetis',
       origin: ['Metis'],
       destination: ['Metis'],
       swappable: [],
