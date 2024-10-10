@@ -56,7 +56,7 @@ func (r *rfqClientImpl) GetRFQByTxID(ctx context.Context, txID string) (*GetRFQB
 		SetResult(&res).
 		Get(fmt.Sprintf(getRequestByTxHash, txID))
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to get quote request by tx hash: %w", err)
+		return nil, "", fmt.Errorf("failed to get quote request by tx ID: %w", err)
 	}
 
 	if resp.StatusCode() != http.StatusOK {
