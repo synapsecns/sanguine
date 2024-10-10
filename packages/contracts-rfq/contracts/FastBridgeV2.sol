@@ -220,17 +220,18 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         address to = transaction.destRecipient;
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
+        uint256 callValue = transaction.callValue;
 
         // All state changes have been done at this point, can proceed to the external calls.
         // This follows the checks-effects-interactions pattern to mitigate potential reentrancy attacks.
         if (token == UniversalTokenLib.ETH_ADDRESS) {
             // For ETH non-zero callValue is not allowed
-            if (transaction.callValue != 0) revert NativeTokenCallValueNotSupported();
+            if (callValue != 0) revert NativeTokenCallValueNotSupported();
             // Check that the correct msg.value was sent
             if (msg.value != amount) revert MsgValueIncorrect();
         } else {
             // For ERC20s, we check that the correct msg.value was sent
-            if (msg.value != transaction.callValue) revert MsgValueIncorrect();
+            if (msg.value != callValue) revert MsgValueIncorrect();
             // We need to transfer the tokens from the Relayer to the recipient first before performing an
             // optional post-transfer arbitrary call.
             IERC20(token).safeTransferFrom(msg.sender, to, amount);
@@ -253,10 +254,10 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             to: to,
             originChainId: transaction.originChainId,
             originToken: transaction.originToken,
-            destToken: transaction.destToken,
+            destToken: token,
             originAmount: transaction.originAmount,
-            destAmount: transaction.destAmount,
-            chainGasAmount: transaction.callValue
+            destAmount: amount,
+            chainGasAmount: callValue
         });
     }
 
