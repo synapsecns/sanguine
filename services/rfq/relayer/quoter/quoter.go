@@ -207,6 +207,15 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		return false, nil
 	}
 
+	// check relay amount
+	maxRelayAmount := m.config.GetMaxRelayAmount(int(quote.Transaction.OriginChainId), quote.Transaction.OriginToken)
+	if maxRelayAmount != nil {
+		if quote.Transaction.OriginAmount.Cmp(maxRelayAmount) > 0 {
+			span.AddEvent("origin amount is greater than max relay amount")
+			return false, nil
+		}
+	}
+
 	// all checks have passed
 	return true, nil
 }
