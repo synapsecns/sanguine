@@ -62,7 +62,7 @@ export const pendingTransactionsMissingProofController = async (
     const query = db
       .with('deposits', () => qDeposits())
       .with('relays', () => qRelays())
-      .with('proofs', () => qProofs({activeOnly: true}))
+      .with('proofs', () => qProofs({ activeOnly: true }))
       .with('combined', (qb) =>
         qb
           .selectFrom('deposits')

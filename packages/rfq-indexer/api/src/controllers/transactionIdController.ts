@@ -13,8 +13,8 @@ export const getTransactionById = async (req: Request, res: Response) => {
         qDeposits().where('transactionId', '=', transactionId as string)
       )
       .with('relays', () => qRelays())
-      .with('proofs', () => qProofs({activeOnly: false})) // display proofs even if they have been invalidated/replaced by a dispute
-      .with('disputes', () => qDisputes({activeOnly: true})) // do not show disputes that have been invalidated/replaced by a proof
+      .with('proofs', () => qProofs({ activeOnly: false })) // display proofs even if they have been invalidated/replaced by a dispute
+      .with('disputes', () => qDisputes({ activeOnly: true })) // do not show disputes that have been invalidated/replaced by a proof
       .with('claims', () => qClaims())
       .with('refunds', () => qRefunds())
       .with('combined', (qb) =>
