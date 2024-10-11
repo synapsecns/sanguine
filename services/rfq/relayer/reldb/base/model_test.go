@@ -9,7 +9,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/base"
 )
@@ -23,7 +23,7 @@ func TestRoundtripBetweenFromQuoteRequestAndToQuoteRequest(t *testing.T) {
 		TransactionID:       [32]byte{},
 		RawRequest:          []byte(gofakeit.Paragraph(1, 2, 3, " ")),
 		Sender:              common.Address{},
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 			OriginChainId: 1,
 			DestChainId:   2,
 			OriginSender:  common.Address{},

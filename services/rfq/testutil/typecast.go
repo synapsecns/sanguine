@@ -8,7 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/dai"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemockv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/recipientmock"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdc"
@@ -31,10 +31,10 @@ func (d *DeployManager) GetMockERC20(ctx context.Context, backend backends.Simul
 }
 
 // GetMockFastBridge gets the mock fast bridge.
-func (d *DeployManager) GetMockFastBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *fastbridgemock.FastBridgeMockRef) {
+func (d *DeployManager) GetMockFastBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *fastbridgemockv2.FastBridgeMockRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*fastbridgemock.FastBridgeMockRef](ctx, d.T(), d, backend, FastBridgeMockType)
+	return manager.GetContract[*fastbridgemockv2.FastBridgeMockRef](ctx, d.T(), d, backend, FastBridgeMockType)
 }
 
 // GetMockRecipient gets the mock recipient.

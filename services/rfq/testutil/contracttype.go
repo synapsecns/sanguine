@@ -6,7 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/dai"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemockv2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/mockerc20"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/recipientmock"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/usdc"
@@ -97,7 +97,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case MockERC20Type:
 		return mockerc20.Contracts["solidity/MockERC20.sol:MockERC20"]
 	case FastBridgeMockType:
-		return fastbridgemock.Contracts["solidity/FastBridgeMock.sol:FastBridgeMock"]
+		return fastbridgemockv2.Contracts["solidity/FastBridgeMock.sol:FastBridgeMock"]
 	case RecipientMockType:
 		return recipientmock.Contracts["solidity/RecipientMock.sol:RecipientMock"]
 	case WETH9Type:

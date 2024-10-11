@@ -10,7 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/api/model"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	inventoryMocks "github.com/synapsecns/sanguine/services/rfq/relayer/inventory/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
@@ -115,7 +115,7 @@ func (s *QuoterSuite) TestShouldProcess() {
 		BlockNumber:         1,
 		OriginTokenDecimals: 6,
 		DestTokenDecimals:   6,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 			OriginChainId: s.origin,
 			DestChainId:   s.destination,
 			OriginToken:   common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"),
@@ -146,7 +146,7 @@ func (s *QuoterSuite) TestIsProfitable() {
 		BlockNumber:         1,
 		OriginTokenDecimals: 6,
 		DestTokenDecimals:   6,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 			OriginChainId: s.origin,
 			DestChainId:   s.destination,
 			OriginToken:   common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"),

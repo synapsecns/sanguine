@@ -17,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core/retry"
 	submitterdb "github.com/synapsecns/sanguine/ethergo/submitter/db"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
@@ -202,7 +202,7 @@ func (c *RelayerServerSuite) getTestQuoteRequest(status reldb.QuoteRequestStatus
 		DestTokenDecimals:   6,
 		TransactionID:       txID,
 		Status:              status,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 			OriginChainId: c.originChainID,
 			DestChainId:   c.destChainID,
 			OriginAmount:  big.NewInt(100),

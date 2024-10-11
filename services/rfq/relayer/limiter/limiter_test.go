@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/mock"
 	listenerMock "github.com/synapsecns/sanguine/ethergo/listener/mocks"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/limiter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -22,7 +22,7 @@ func (l *LimiterSuite) TestOverLimitEnoughConfirmations() {
 
 	quote := reldb.QuoteRequest{
 		BlockNumber: 5,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 			OriginChainId: 1,
 			DestChainId:   2,
 			OriginToken:   util.EthAddress,
@@ -46,7 +46,7 @@ func (l *LimiterSuite) TestUnderLimitEnoughConfirmations() {
 
 	quote := reldb.QuoteRequest{
 		BlockNumber: 5,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 			OriginChainId: 1,
 			DestChainId:   2,
 			OriginToken:   util.EthAddress,
@@ -67,7 +67,7 @@ func (l *LimiterSuite) TestUnderLimitNotEnoughConfirmations() {
 
 	quote := reldb.QuoteRequest{
 		BlockNumber: 1, // same block number,but shouldnt matter
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 			OriginChainId: 1,
 			DestChainId:   2,
 			OriginToken:   util.EthAddress,
@@ -92,7 +92,7 @@ func (l *LimiterSuite) TestOverLimitNotEnoughConfirmations() {
 
 	quote := reldb.QuoteRequest{
 		BlockNumber: 4,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 			OriginChainId: 1,
 			DestChainId:   2,
 			OriginToken:   util.EthAddress,
