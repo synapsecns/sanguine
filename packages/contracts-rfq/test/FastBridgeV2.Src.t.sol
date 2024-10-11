@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {BridgeTransactionV2Lib} from "../contracts/libs/BridgeTransactionV2.sol";
+
 import {FastBridgeV2SrcBaseTest, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.Src.Base.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
@@ -36,7 +38,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         emit BridgeRequested({
             transactionId: txId,
             sender: bridgeTx.originSender,
-            request: abi.encode(bridgeTx),
+            request: BridgeTransactionV2Lib.encodeV2(bridgeTx),
             destChainId: bridgeTx.destChainId,
             originToken: bridgeTx.originToken,
             destToken: bridgeTx.destToken,

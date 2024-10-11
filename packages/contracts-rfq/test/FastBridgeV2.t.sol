@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {BridgeTransactionV2Lib} from "../contracts/libs/BridgeTransactionV2.sol";
+
 import {IFastBridge} from "../contracts/interfaces/IFastBridge.sol";
 
 // solhint-disable-next-line no-unused-import
@@ -231,7 +233,7 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     }
 
     function getTxId(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public pure returns (bytes32) {
-        return keccak256(abi.encode(bridgeTx));
+        return keccak256(BridgeTransactionV2Lib.encodeV2(bridgeTx));
     }
 
     function expectUnauthorized(address caller, bytes32 role) public {
