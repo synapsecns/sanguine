@@ -52,14 +52,6 @@ library BridgeTransactionV2Lib {
     }
 
     function encodeV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) internal pure returns (bytes memory) {
-        return abi.encode(bridgeTx);
-    }
-
-    function decodeV2(bytes memory encodedTx) internal pure returns (IFastBridgeV2.BridgeTransactionV2 memory) {
-        return abi.decode(encodedTx, (IFastBridgeV2.BridgeTransactionV2));
-    }
-
-    function encode(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) internal pure returns (bytes memory) {
         // We split the encoding into two parts to avoid stack-too-deep error
         bytes memory firstPart = abi.encodePacked(
             VERSION,
@@ -84,7 +76,7 @@ library BridgeTransactionV2Lib {
         );
     }
 
-    function decode(bytes calldata encodedTx)
+    function decodeV2(bytes calldata encodedTx)
         internal
         pure
         returns (IFastBridgeV2.BridgeTransactionV2 memory bridgeTx)

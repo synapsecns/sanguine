@@ -8,16 +8,8 @@ contract BridgeTransactionV2Harness {
         return BridgeTransactionV2Lib.encodeV2(bridgeTx);
     }
 
-    function decodeV2(bytes memory encodedTx) public pure returns (IFastBridgeV2.BridgeTransactionV2 memory) {
+    function decodeV2(bytes calldata encodedTx) public pure returns (IFastBridgeV2.BridgeTransactionV2 memory) {
         return BridgeTransactionV2Lib.decodeV2(encodedTx);
-    }
-
-    function encode(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public pure returns (bytes memory) {
-        return BridgeTransactionV2Lib.encode(bridgeTx);
-    }
-
-    function decode(bytes calldata encodedTx) public pure returns (IFastBridgeV2.BridgeTransactionV2 memory) {
-        return BridgeTransactionV2Lib.decode(encodedTx);
     }
 
     function version(bytes calldata encodedTx) public pure returns (uint16) {

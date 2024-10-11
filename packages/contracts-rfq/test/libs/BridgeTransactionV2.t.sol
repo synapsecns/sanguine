@@ -38,7 +38,7 @@ contract BridgeTransactionV2Test is Test {
     }
 
     function test_roundtrip(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public view {
-        bytes memory encodedTx = harness.encode(bridgeTx);
+        bytes memory encodedTx = harness.encodeV2(bridgeTx);
         assertEq(harness.version(encodedTx), 2);
         assertEq(harness.originChainId(encodedTx), bridgeTx.originChainId);
         assertEq(harness.destChainId(encodedTx), bridgeTx.destChainId);
@@ -55,12 +55,6 @@ contract BridgeTransactionV2Test is Test {
         assertEq(harness.exclusivityRelayer(encodedTx), bridgeTx.exclusivityRelayer);
         assertEq(harness.exclusivityEndTime(encodedTx), bridgeTx.exclusivityEndTime);
         assertEq(harness.callParams(encodedTx), bridgeTx.callParams);
-    }
-
-    function test_roundtrip_decode(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public view {
-        bytes memory encodedTx = harness.encode(bridgeTx);
-        IFastBridgeV2.BridgeTransactionV2 memory decodedTx = harness.decode(encodedTx);
-        assertEq(decodedTx, bridgeTx);
     }
 
     function test_roundtrip_decodeV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public view {

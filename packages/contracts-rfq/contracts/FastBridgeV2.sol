@@ -15,6 +15,7 @@ import {IFastBridgeRecipient} from "./interfaces/IFastBridgeRecipient.sol";
 
 /// @notice FastBridgeV2 is a contract for bridging tokens across chains.
 contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
+    using BridgeTransactionV2Lib for bytes;
     using SafeERC20 for IERC20;
     using UniversalTokenLib for address;
 
@@ -62,17 +63,20 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridge
-    function relay(bytes memory request) external payable {
+    function relay(bytes calldata request) external payable {
+        // relay override will validate the request
         relay({request: request, relayer: msg.sender});
     }
 
     /// @inheritdoc IFastBridge
-    function prove(bytes memory request, bytes32 destTxHash) external {
+    function prove(bytes calldata request, bytes32 destTxHash) external {
+        request.validateV2();
         prove({transactionId: keccak256(request), destTxHash: destTxHash, relayer: msg.sender});
     }
 
     /// @inheritdoc IFastBridgeV2
-    function claim(bytes memory request) external {
+    function claim(bytes calldata request) external {
+        // claim override will validate the request
         claim({request: request, to: address(0)});
     }
 
@@ -93,7 +97,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridge
-    function refund(bytes memory request) external {
+    function refund(bytes calldata request) external {
+        request.validateV2();
         bytes32 transactionId = keccak256(request);
 
         BridgeTransactionV2 memory transaction = BridgeTransactionV2Lib.decodeV2(request);
@@ -132,7 +137,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// - `callValue` is partially reported as a zero/non-zero flag
     /// - `callParams` is ignored
     /// In order to process all kinds of requests use getBridgeTransactionV2 instead.
-    function getBridgeTransaction(bytes memory request) external view returns (BridgeTransaction memory) {
+    function getBridgeTransaction(bytes calldata request) external view returns (BridgeTransaction memory) {
         // Try decoding into V2 struct first. This will revert if V1 struct is passed
         try this.getBridgeTransactionV2(request) returns (BridgeTransactionV2 memory txV2) {
             // Note: we entirely ignore the callParams field, as it was not present in V1
@@ -157,7 +162,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridgeV2
-    function getBridgeTransactionV2(bytes memory request) external pure returns (BridgeTransactionV2 memory) {
+    function getBridgeTransactionV2(bytes calldata request) external pure returns (BridgeTransactionV2 memory) {
+        request.validateV2();
         return BridgeTransactionV2Lib.decodeV2(request);
     }
 
@@ -214,7 +220,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridgeV2
-    function relay(bytes memory request, address relayer) public payable {
+    function relay(bytes calldata request, address relayer) public payable {
+        request.validateV2();
         bytes32 transactionId = keccak256(request);
         BridgeTransactionV2 memory transaction = BridgeTransactionV2Lib.decodeV2(request);
         _validateRelayParams(transaction, transactionId, relayer);
@@ -281,7 +288,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @inheritdoc IFastBridge
-    function claim(bytes memory request, address to) public {
+    function claim(bytes calldata request, address to) public {
+        request.validateV2();
         bytes32 transactionId = keccak256(request);
         BridgeTransactionV2 memory transaction = BridgeTransactionV2Lib.decodeV2(request);
 
