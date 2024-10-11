@@ -101,25 +101,19 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         request.validateV2();
         bytes32 transactionId = keccak256(request);
 
-        BridgeTransactionV2 memory transaction = BridgeTransactionV2Lib.decodeV2(request);
-
         if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
 
-        if (hasRole(REFUNDER_ROLE, msg.sender)) {
-            // Refunder can refund if deadline has passed
-            if (block.timestamp <= transaction.deadline) revert DeadlineNotExceeded();
-        } else {
-            // Permissionless refund is allowed after REFUND_DELAY
-            if (block.timestamp <= transaction.deadline + REFUND_DELAY) revert DeadlineNotExceeded();
-        }
-
+        uint256 deadline = request.deadline();
+        // Permissionless refund is allowed after REFUND_DELAY
+        if (!hasRole(REFUNDER_ROLE, msg.sender)) deadline += REFUND_DELAY;
+        if (block.timestamp <= deadline) revert DeadlineNotExceeded();
         // if all checks passed, set to REFUNDED status
         bridgeTxDetails[transactionId].status = BridgeStatus.REFUNDED;
 
         // transfer origin collateral back to original sender
-        address to = transaction.originSender;
-        address token = transaction.originToken;
-        uint256 amount = transaction.originAmount + transaction.originFeeAmount;
+        address to = request.originSender();
+        address token = request.originToken();
+        uint256 amount = request.originAmount() + request.originFeeAmount();
         token.universalTransfer(to, amount);
 
         emit BridgeDepositRefunded(transactionId, to, token, amount);
