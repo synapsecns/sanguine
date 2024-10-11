@@ -291,8 +291,6 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function claim(bytes calldata request, address to) public {
         request.validateV2();
         bytes32 transactionId = keccak256(request);
-        BridgeTransactionV2 memory transaction = BridgeTransactionV2Lib.decodeV2(request);
-
         // update bridge tx status if able to claim origin collateral
         if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
 
@@ -310,11 +308,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         bridgeTxDetails[transactionId].status = BridgeStatus.RELAYER_CLAIMED;
 
         // update protocol fees if origin fee amount exists
-        if (transaction.originFeeAmount > 0) protocolFees[transaction.originToken] += transaction.originFeeAmount;
+        address token = request.originToken();
+        uint256 amount = request.originAmount();
+        uint256 originFeeAmount = request.originFeeAmount();
+        if (originFeeAmount > 0) protocolFees[token] += originFeeAmount;
 
         // transfer origin collateral less fee to specified address
-        address token = transaction.originToken;
-        uint256 amount = transaction.originAmount;
         token.universalTransfer(to, amount);
 
         emit BridgeDepositClaimed(transactionId, bridgeTxDetails[transactionId].proofRelayer, to, token, amount);
