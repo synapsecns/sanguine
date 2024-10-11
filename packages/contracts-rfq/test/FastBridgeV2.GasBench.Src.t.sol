@@ -67,10 +67,10 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
     }
 
     function initExistingTxs() public {
-        bridge({caller: userA, msgValue: 0, params: tokenParams});
-        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
-        bridge({caller: userA, msgValue: 0, params: tokenParams});
-        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
+        bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
         skipBlocksExactly(1);
         prove({caller: relayerA, bridgeTx: provenTokenTx, destTxHash: hex"01"});
         prove({caller: relayerB, transactionId: getTxId(provenEthTx), destTxHash: hex"02", relayer: relayerA});
@@ -103,12 +103,6 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
     }
 
     function test_bridge_token() public {
-        bridge({caller: userA, msgValue: 0, params: tokenParams});
-        checkAfterBridgeToken();
-    }
-
-    function test_bridge_token_withArbitraryCall() public {
-        setTokenTestCallParams(abi.encode(userB));
         bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
         checkAfterBridgeToken();
     }
@@ -192,12 +186,6 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
     }
 
     function test_bridge_eth() public {
-        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
-        checkAfterBridgeEth();
-    }
-
-    function test_bridge_eth_withArbitraryCall() public {
-        setEthTestCallParams(abi.encode(userB));
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
         checkAfterBridgeEth();
     }
