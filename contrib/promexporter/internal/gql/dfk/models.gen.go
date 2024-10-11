@@ -1247,6 +1247,7 @@ type Hero struct {
 	DarkSummoned          *bool      `json:"darkSummoned,omitempty"`
 	DarkSummonLevels      *int64     `json:"darkSummonLevels,omitempty"`
 	HasValidCraftingGenes *bool      `json:"hasValidCraftingGenes,omitempty"`
+	State                 *int64     `json:"state,omitempty"`
 	MainClassStr          string     `json:"mainClassStr"`
 	SubClassStr           string     `json:"subClassStr"`
 	ProfessionStr         string     `json:"professionStr"`
@@ -2333,6 +2334,14 @@ type HeroFilter struct {
 	ProfessionStrNotStartsWith         *string   `json:"professionStr_not_starts_with,omitempty"`
 	ProfessionStrEndsWith              *string   `json:"professionStr_ends_with,omitempty"`
 	ProfessionStrNotEndsWith           *string   `json:"professionStr_not_ends_with,omitempty"`
+	State                              *int64    `json:"state,omitempty"`
+	StateNot                           *int64    `json:"state_not,omitempty"`
+	StateGt                            *int64    `json:"state_gt,omitempty"`
+	StateLt                            *int64    `json:"state_lt,omitempty"`
+	StateGte                           *int64    `json:"state_gte,omitempty"`
+	StateLte                           *int64    `json:"state_lte,omitempty"`
+	StateIn                            []*int64  `json:"state_in,omitempty"`
+	StateNotIn                         []*int64  `json:"state_not_in,omitempty"`
 }
 
 type Pet struct {
@@ -3896,6 +3905,7 @@ const (
 	HeroOrderBySubClassStr           HeroOrderBy = "subClassStr"
 	HeroOrderByProfessionStr         HeroOrderBy = "professionStr"
 	HeroOrderByPet                   HeroOrderBy = "pet"
+	HeroOrderByState                 HeroOrderBy = "state"
 )
 
 var AllHeroOrderBy = []HeroOrderBy{
@@ -4002,11 +4012,12 @@ var AllHeroOrderBy = []HeroOrderBy{
 	HeroOrderBySubClassStr,
 	HeroOrderByProfessionStr,
 	HeroOrderByPet,
+	HeroOrderByState,
 }
 
 func (e HeroOrderBy) IsValid() bool {
 	switch e {
-	case HeroOrderByID, HeroOrderByNumberID, HeroOrderByOwner, HeroOrderByPreviousOwner, HeroOrderByCreator, HeroOrderByStatGenes, HeroOrderByVisualGenes, HeroOrderByRarity, HeroOrderByShiny, HeroOrderByGeneration, HeroOrderByFirstName, HeroOrderByLastName, HeroOrderByShinyStyle, HeroOrderByMainClass, HeroOrderBySubClass, HeroOrderBySummonedTime, HeroOrderByNextSummonTime, HeroOrderBySummonerID, HeroOrderByAssistantID, HeroOrderBySummons, HeroOrderByMaxSummons, HeroOrderByStaminaFullAt, HeroOrderByHpFullAt, HeroOrderByMpFullAt, HeroOrderByLevel, HeroOrderByXp, HeroOrderByCurrentQuest, HeroOrderBySp, HeroOrderByStatus, HeroOrderByStrength, HeroOrderByIntelligence, HeroOrderByWisdom, HeroOrderByLuck, HeroOrderByAgility, HeroOrderByVitality, HeroOrderByEndurance, HeroOrderByDexterity, HeroOrderByHp, HeroOrderByMp, HeroOrderByStamina, HeroOrderByStrengthGrowthP, HeroOrderByIntelligenceGrowthP, HeroOrderByWisdomGrowthP, HeroOrderByLuckGrowthP, HeroOrderByAgilityGrowthP, HeroOrderByVitalityGrowthP, HeroOrderByEnduranceGrowthP, HeroOrderByDexterityGrowthP, HeroOrderByStrengthGrowthS, HeroOrderByIntelligenceGrowthS, HeroOrderByWisdomGrowthS, HeroOrderByLuckGrowthS, HeroOrderByAgilityGrowthS, HeroOrderByVitalityGrowthS, HeroOrderByEnduranceGrowthS, HeroOrderByDexterityGrowthS, HeroOrderByHpSmGrowth, HeroOrderByHpRgGrowth, HeroOrderByHpLgGrowth, HeroOrderByMpSmGrowth, HeroOrderByMpRgGrowth, HeroOrderByMpLgGrowth, HeroOrderByMining, HeroOrderByGardening, HeroOrderByForaging, HeroOrderByFishing, HeroOrderByProfession, HeroOrderByPassive1, HeroOrderByPassive2, HeroOrderByActive1, HeroOrderByActive2, HeroOrderByStatBoost1, HeroOrderByStatBoost2, HeroOrderByStatsUnknown1, HeroOrderByElement, HeroOrderByStatsUnknown2, HeroOrderByGender, HeroOrderByHeadAppendage, HeroOrderByBackAppendage, HeroOrderByBackground, HeroOrderByHairStyle, HeroOrderByHairColor, HeroOrderByVisualUnknown1, HeroOrderByEyeColor, HeroOrderBySkinColor, HeroOrderByAppendageColor, HeroOrderByBackAppendageColor, HeroOrderByVisualUnknown2, HeroOrderByAssistingAuction, HeroOrderByAssistingPrice, HeroOrderBySaleAuction, HeroOrderBySalePrice, HeroOrderByPrivateAuctionProfile, HeroOrderBySummonsRemaining, HeroOrderByPjStatus, HeroOrderByPjLevel, HeroOrderByDarkSummoned, HeroOrderByDarkSummonLevels, HeroOrderByHasValidCraftingGenes, HeroOrderByMainClassStr, HeroOrderBySubClassStr, HeroOrderByProfessionStr, HeroOrderByPet:
+	case HeroOrderByID, HeroOrderByNumberID, HeroOrderByOwner, HeroOrderByPreviousOwner, HeroOrderByCreator, HeroOrderByStatGenes, HeroOrderByVisualGenes, HeroOrderByRarity, HeroOrderByShiny, HeroOrderByGeneration, HeroOrderByFirstName, HeroOrderByLastName, HeroOrderByShinyStyle, HeroOrderByMainClass, HeroOrderBySubClass, HeroOrderBySummonedTime, HeroOrderByNextSummonTime, HeroOrderBySummonerID, HeroOrderByAssistantID, HeroOrderBySummons, HeroOrderByMaxSummons, HeroOrderByStaminaFullAt, HeroOrderByHpFullAt, HeroOrderByMpFullAt, HeroOrderByLevel, HeroOrderByXp, HeroOrderByCurrentQuest, HeroOrderBySp, HeroOrderByStatus, HeroOrderByStrength, HeroOrderByIntelligence, HeroOrderByWisdom, HeroOrderByLuck, HeroOrderByAgility, HeroOrderByVitality, HeroOrderByEndurance, HeroOrderByDexterity, HeroOrderByHp, HeroOrderByMp, HeroOrderByStamina, HeroOrderByStrengthGrowthP, HeroOrderByIntelligenceGrowthP, HeroOrderByWisdomGrowthP, HeroOrderByLuckGrowthP, HeroOrderByAgilityGrowthP, HeroOrderByVitalityGrowthP, HeroOrderByEnduranceGrowthP, HeroOrderByDexterityGrowthP, HeroOrderByStrengthGrowthS, HeroOrderByIntelligenceGrowthS, HeroOrderByWisdomGrowthS, HeroOrderByLuckGrowthS, HeroOrderByAgilityGrowthS, HeroOrderByVitalityGrowthS, HeroOrderByEnduranceGrowthS, HeroOrderByDexterityGrowthS, HeroOrderByHpSmGrowth, HeroOrderByHpRgGrowth, HeroOrderByHpLgGrowth, HeroOrderByMpSmGrowth, HeroOrderByMpRgGrowth, HeroOrderByMpLgGrowth, HeroOrderByMining, HeroOrderByGardening, HeroOrderByForaging, HeroOrderByFishing, HeroOrderByProfession, HeroOrderByPassive1, HeroOrderByPassive2, HeroOrderByActive1, HeroOrderByActive2, HeroOrderByStatBoost1, HeroOrderByStatBoost2, HeroOrderByStatsUnknown1, HeroOrderByElement, HeroOrderByStatsUnknown2, HeroOrderByGender, HeroOrderByHeadAppendage, HeroOrderByBackAppendage, HeroOrderByBackground, HeroOrderByHairStyle, HeroOrderByHairColor, HeroOrderByVisualUnknown1, HeroOrderByEyeColor, HeroOrderBySkinColor, HeroOrderByAppendageColor, HeroOrderByBackAppendageColor, HeroOrderByVisualUnknown2, HeroOrderByAssistingAuction, HeroOrderByAssistingPrice, HeroOrderBySaleAuction, HeroOrderBySalePrice, HeroOrderByPrivateAuctionProfile, HeroOrderBySummonsRemaining, HeroOrderByPjStatus, HeroOrderByPjLevel, HeroOrderByDarkSummoned, HeroOrderByDarkSummonLevels, HeroOrderByHasValidCraftingGenes, HeroOrderByMainClassStr, HeroOrderBySubClassStr, HeroOrderByProfessionStr, HeroOrderByPet, HeroOrderByState:
 		return true
 	}
 	return false
