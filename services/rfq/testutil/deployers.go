@@ -128,7 +128,7 @@ type MockFastBridgeDeployer struct {
 // NewMockFastBridgeDeployer deploys a mock fast bridge contract.
 func NewMockFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return MockFastBridgeDeployer{
-		deployer.NewSimpleDeployer(registry, backend, RecipientMockType),
+		deployer.NewSimpleDeployer(registry, backend, FastBridgeMockType),
 	}
 }
 
