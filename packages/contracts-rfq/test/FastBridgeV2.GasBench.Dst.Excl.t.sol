@@ -13,6 +13,7 @@ contract FastBridgeV2GasBenchmarkDstExclusivityTest is FastBridgeV2GasBenchmarkD
     }
 
     function createFixturesV2() public virtual override {
+        super.createFixturesV2();
         setTokenTestExclusivityParams(relayerA, EXCLUSIVITY_PERIOD);
         setEthTestExclusivityParams(relayerA, EXCLUSIVITY_PERIOD);
     }
