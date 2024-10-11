@@ -1,6 +1,6 @@
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 
-export const validSwap = (
+export const validSwapTokens = (
   chain: number | string,
   fromToken: string,
   toToken: string

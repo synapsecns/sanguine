@@ -463,9 +463,9 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		span.SetAttributes(
 			attribute.Int(metrics.ChainID, chainID),
 			attribute.Bool("use_dynamic", useDynamic),
-			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
-			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
-			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
+			attribute.String("gas_price", util.BigPtrToString(transactor.GasPrice)),
+			attribute.String("gas_fee_cap", util.BigPtrToString(transactor.GasFeeCap)),
+			attribute.String("gas_tip_cap", util.BigPtrToString(transactor.GasTipCap)),
 		)
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -501,9 +501,9 @@ func (t *txSubmitterImpl) bumpGasFromPrevTx(ctx context.Context, transactor *bin
 
 	defer func() {
 		span.SetAttributes(
-			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
-			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
-			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
+			attribute.String("gas_price", util.BigPtrToString(transactor.GasPrice)),
+			attribute.String("gas_fee_cap", util.BigPtrToString(transactor.GasFeeCap)),
+			attribute.String("gas_tip_cap", util.BigPtrToString(transactor.GasTipCap)),
 		)
 		metrics.EndSpan(span)
 	}()
@@ -537,9 +537,9 @@ func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.Tr
 
 	defer func() {
 		span.SetAttributes(
-			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
-			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
-			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
+			attribute.String("gas_price", util.BigPtrToString(transactor.GasPrice)),
+			attribute.String("gas_fee_cap", util.BigPtrToString(transactor.GasFeeCap)),
+			attribute.String("gas_tip_cap", util.BigPtrToString(transactor.GasTipCap)),
 		)
 		metrics.EndSpan(span)
 	}()
@@ -578,10 +578,10 @@ func (t *txSubmitterImpl) applyGasFromOracle(ctx context.Context, transactor *bi
 		}
 		transactor.GasTipCap = maxOfBig(transactor.GasTipCap, suggestedGasTipCap)
 		span.SetAttributes(
-			attribute.String("suggested_gas_fee_cap", bigPtrToString(suggestedGasFeeCap)),
-			attribute.String("suggested_gas_tip_cap", bigPtrToString(suggestedGasTipCap)),
-			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
-			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
+			attribute.String("suggested_gas_fee_cap", util.BigPtrToString(suggestedGasFeeCap)),
+			attribute.String("suggested_gas_tip_cap", util.BigPtrToString(suggestedGasTipCap)),
+			attribute.String("gas_fee_cap", util.BigPtrToString(transactor.GasFeeCap)),
+			attribute.String("gas_tip_cap", util.BigPtrToString(transactor.GasTipCap)),
 		)
 	} else {
 		suggestedGasPrice, err := client.SuggestGasPrice(ctx)
@@ -590,8 +590,8 @@ func (t *txSubmitterImpl) applyGasFromOracle(ctx context.Context, transactor *bi
 		}
 		transactor.GasPrice = maxOfBig(transactor.GasPrice, suggestedGasPrice)
 		span.SetAttributes(
-			attribute.String("suggested_gas_price", bigPtrToString(suggestedGasPrice)),
-			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
+			attribute.String("suggested_gas_price", util.BigPtrToString(suggestedGasPrice)),
+			attribute.String("gas_price", util.BigPtrToString(transactor.GasPrice)),
 		)
 	}
 	return nil
@@ -605,7 +605,7 @@ func (t *txSubmitterImpl) applyGasCeil(ctx context.Context, transactor *bind.Tra
 	maxPrice := t.config.GetMaxGasPrice(chainID)
 
 	defer func() {
-		span.SetAttributes(attribute.String("max_price", bigPtrToString(maxPrice)))
+		span.SetAttributes(attribute.String("max_price", util.BigPtrToString(maxPrice)))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
@@ -661,7 +661,7 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 		if ok {
 			span.AddEvent("could not get gas block; using cached value", trace.WithAttributes(
 				attribute.String("error", err.Error()),
-				attribute.String("blockNumber", bigPtrToString(gasBlock.Number)),
+				attribute.String("blockNumber", util.BigPtrToString(gasBlock.Number)),
 			))
 		} else {
 			return nil, fmt.Errorf("could not get gas block: %w", err)

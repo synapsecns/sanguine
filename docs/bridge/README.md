@@ -5,17 +5,18 @@ This website is built using [Docusaurus](https://docusaurus.io/), a modern stati
 ## Generating API Docs
 
 <!--TODO: needs to be done from ci to ensure regenration is done.-->
+
 `yarn docusaurus gen-api-docs all`.
 
 ### Installation
 
-```
+```bash
 $ yarn
 ```
 
 ### Local Development
 
-```
+```bash
 $ yarn start
 ```
 
@@ -23,8 +24,16 @@ This command starts a local development server and opens up a browser window. Mo
 
 ### Build
 
-```
+```bash
 $ yarn build
 ```
 
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
+
+### Serve
+
+This step is needed to create a searchable index.
+
+```bash
+$ yarn serve
+```
