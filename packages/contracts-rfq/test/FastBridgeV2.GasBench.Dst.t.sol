@@ -6,7 +6,7 @@ import {FastBridgeV2DstBaseTest} from "./FastBridgeV2.Dst.Base.t.sol";
 // solhint-disable func-name-mixedcase, ordering
 /// @notice This test is used to estimate the gas cost of FastBridgeV2 destination chain functions.
 /// Very little state checks are performed, make sure to do full coverage in different tests.
-contract FastBridgeV2DstGasBenchmarkTest is FastBridgeV2DstBaseTest {
+contract FastBridgeV2GasBenchmarkDstTest is FastBridgeV2DstBaseTest {
     uint256 public constant INITIAL_USER_BALANCE = 100 ether;
 
     function mintTokens() public virtual override {
