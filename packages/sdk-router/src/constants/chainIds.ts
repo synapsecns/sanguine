@@ -6,6 +6,7 @@ export enum SupportedChainId {
   POLYGON = 137,
   FANTOM = 250,
   BOBA = 288,
+  WORLDCHAIN = 480,
   METIS = 1088,
   MOONBEAM = 1284,
   MOONRIVER = 1285,
@@ -29,6 +30,7 @@ export enum SupportedChainId {
 const UNSUPPORTED_BRIDGE_CHAIN_IDS: number[] = [
   SupportedChainId.LINEA,
   SupportedChainId.SCROLL,
+  SupportedChainId.WORLDCHAIN,
 ]
 
 /**
@@ -62,6 +64,7 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.ETH,
   SupportedChainId.OPTIMISM,
   SupportedChainId.BSC,
+  SupportedChainId.WORLDCHAIN,
   SupportedChainId.BASE,
   SupportedChainId.ARBITRUM,
   SupportedChainId.LINEA,
