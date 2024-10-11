@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import {FastBridgeV2SrcBaseTest} from "./FastBridgeV2.Src.Base.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2GasBenchmarkSrcProtocolFeesTest is FastBridgeV2SrcBaseTest {
+contract FastBridgeV2GasBenchmarkEncodingTest is FastBridgeV2SrcBaseTest {
     // TODO: add more tests with variable length requests once arbitrary call is done
 
     function test_getBridgeTransaction() public view {

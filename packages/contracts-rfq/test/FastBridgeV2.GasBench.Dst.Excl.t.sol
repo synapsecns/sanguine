@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {FastBridgeV2DstGasBenchmarkTest} from "./FastBridgeV2.GasBench.Dst.t.sol";
+import {FastBridgeV2GasBenchmarkDstTest} from "./FastBridgeV2.GasBench.Dst.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2DstExclusivityTest is FastBridgeV2DstGasBenchmarkTest {
+contract FastBridgeV2GasBenchmarkDstExclusivityTest is FastBridgeV2GasBenchmarkDstTest {
     uint256 public constant EXCLUSIVITY_PERIOD = 60 seconds;
 
     function setUp() public virtual override {
