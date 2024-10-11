@@ -96,27 +96,27 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
 
     // ═══════════════════════════════════════════════════ TOKEN ═══════════════════════════════════════════════════════
 
-    function test_bridge_token() public {
-        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    function checkAfterBridgeToken() public view {
         assertEq(fastBridge.bridgeStatuses(getTxId(tokenTx)), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(srcToken.balanceOf(userA), initialUserBalanceToken - tokenParams.originAmount);
         assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken + tokenParams.originAmount);
+    }
+
+    function test_bridge_token() public {
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+        checkAfterBridgeToken();
     }
 
     function test_bridge_token_withArbitraryCall() public {
         setTokenTestCallParams(abi.encode(userB));
         bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
-        assertEq(fastBridge.bridgeStatuses(getTxId(tokenTx)), IFastBridgeV2.BridgeStatus.REQUESTED);
-        assertEq(srcToken.balanceOf(userA), initialUserBalanceToken - tokenParams.originAmount);
-        assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken + tokenParams.originAmount);
+        checkAfterBridgeToken();
     }
 
     function test_bridge_token_withExclusivity() public {
         setTokenTestExclusivityParams(relayerA, EXCLUSIVITY_PERIOD);
         bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
-        assertEq(fastBridge.bridgeStatuses(getTxId(tokenTx)), IFastBridgeV2.BridgeStatus.REQUESTED);
-        assertEq(srcToken.balanceOf(userA), initialUserBalanceToken - tokenParams.originAmount);
-        assertEq(srcToken.balanceOf(address(fastBridge)), initialFastBridgeBalanceToken + tokenParams.originAmount);
+        checkAfterBridgeToken();
     }
 
     function test_prove_token() public {
@@ -185,27 +185,27 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
 
     // ════════════════════════════════════════════════════ ETH ════════════════════════════════════════════════════════
 
-    function test_bridge_eth() public {
-        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+    function checkAfterBridgeEth() public view {
         assertEq(fastBridge.bridgeStatuses(getTxId(ethTx)), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(userA.balance, initialUserBalanceEth - ethParams.originAmount);
         assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth + ethParams.originAmount);
+    }
+
+    function test_bridge_eth() public {
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
+        checkAfterBridgeEth();
     }
 
     function test_bridge_eth_withArbitraryCall() public {
         setEthTestCallParams(abi.encode(userB));
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
-        assertEq(fastBridge.bridgeStatuses(getTxId(ethTx)), IFastBridgeV2.BridgeStatus.REQUESTED);
-        assertEq(userA.balance, initialUserBalanceEth - ethParams.originAmount);
-        assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth + ethParams.originAmount);
+        checkAfterBridgeEth();
     }
 
     function test_bridge_eth_withExclusivity() public {
         setEthTestExclusivityParams(relayerA, EXCLUSIVITY_PERIOD);
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
-        assertEq(fastBridge.bridgeStatuses(getTxId(ethTx)), IFastBridgeV2.BridgeStatus.REQUESTED);
-        assertEq(userA.balance, initialUserBalanceEth - ethParams.originAmount);
-        assertEq(address(fastBridge).balance, initialFastBridgeBalanceEth + ethParams.originAmount);
+        checkAfterBridgeEth();
     }
 
     function test_prove_eth() public {
