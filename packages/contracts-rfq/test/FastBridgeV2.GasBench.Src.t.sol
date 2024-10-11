@@ -38,13 +38,14 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
         bridgedEthTx = ethTx;
         provenEthTx = ethTx;
 
-        bridgedTokenTx.nonce = 0;
-        bridgedEthTx.nonce = 1;
-        provenTokenTx.nonce = 2;
-        provenEthTx.nonce = 3;
-        // Next nonce for userA tx would be 4 (either token or eth)
-        tokenTx.nonce = 4;
-        ethTx.nonce = 4;
+        // See initExistingTxs for why these start from 1, not 0
+        bridgedTokenTx.nonce = 1;
+        bridgedEthTx.nonce = 2;
+        provenTokenTx.nonce = 3;
+        provenEthTx.nonce = 4;
+        // Next nonce for userA tx would be 5 (either token or eth)
+        tokenTx.nonce = 5;
+        ethTx.nonce = 5;
     }
 
     function createFixturesV2() public virtual override {
@@ -67,6 +68,9 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
     }
 
     function initExistingTxs() public {
+        // Set userA nonce to 1 so that the first bridge tx doesn't have inflated gas costs due to
+        // the storage write from the zero initial value
+        cheatSenderNonce(userA, 1);
         bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
         bridge({caller: userA, msgValue: 0, params: tokenParams, paramsV2: tokenParamsV2});
