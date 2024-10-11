@@ -53,10 +53,10 @@ const (
 	FastBridgeType contractTypeImpl = iota + 1 // FastBridge
 	// MockERC20Type is a mock erc20 contract.
 	MockERC20Type // MockERC20
-	// FastBridgeMockType is a mock contract for testing fast bridge interactions
-	// TODO: rename  contract to MockFastBridge.
+	// FastBridgeMockType is a mock contract for testing fast bridge interactions.
+	// TODO: rename contract to MockFastBridge.
 	FastBridgeMockType // FastBridgeMock
-	// RecipientMockType is a mock contract for testing fast bridge interactions
+	// RecipientMockType is a mock contract for testing fast bridge interactions.
 	RecipientMockType // RecipientMock
 	// WETH9Type  is the weth 9 contract.
 	WETH9Type // WETH9

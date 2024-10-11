@@ -32,6 +32,8 @@ var (
 // This is the first event emitted in the bridge process. It is emitted when a user calls bridge on chain.
 // To process it, we decode the bridge transaction and store all the data, marking it as seen.
 // This marks the event as seen.
+//
+//nolint:cyclop
 func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastbridgev2.FastBridgeV2BridgeRequested, chainID uint64) (err error) {
 	ctx, span := r.metrics.Tracer().Start(parentCtx, "handleBridgeRequestedLog", trace.WithAttributes(
 		attribute.String("transaction_id", hexutil.Encode(req.TransactionId[:])),

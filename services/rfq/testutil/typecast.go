@@ -37,7 +37,7 @@ func (d *DeployManager) GetMockFastBridge(ctx context.Context, backend backends.
 	return manager.GetContract[*fastbridgemockv2.FastBridgeMockRef](ctx, d.T(), d, backend, FastBridgeMockType)
 }
 
-// GetMockRecipient gets the mock recipient.
+// GetRecipientMock gets the mock recipient.
 func (d *DeployManager) GetRecipientMock(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *recipientmock.RecipientMockRef) {
 	d.T().Helper()
 

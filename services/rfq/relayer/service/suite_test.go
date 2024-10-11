@@ -109,6 +109,7 @@ func (r *RelayerTestSuite) TestStore() {
 		DestAmount:   big.NewInt(2),
 		Deadline:     big.NewInt(3),
 	})
+	r.NoError(err)
 	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
 
 	r.T().Skip("TODO, test storage")
@@ -146,6 +147,7 @@ func (r *RelayerTestSuite) TestCommit() {
 		DestAmount:   big.NewInt(2),
 		Deadline:     big.NewInt(3),
 	})
+	r.NoError(err)
 	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
 
 	r.T().Skip("TODO, test storage")

@@ -91,7 +91,6 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 			return noOpEvent, nil, false
 		}
 		return eventType, disputed, true
-
 	}
 
 	return eventType, nil, true

@@ -123,6 +123,8 @@ type Rebalance struct {
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
 // TODO: add validation for deadline > uint64
 // TODO: roundtripper test.
+//
+//nolint:gosec
 func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 	return RequestForQuote{
 		TransactionID:        hexutil.Encode(request.TransactionID[:]),

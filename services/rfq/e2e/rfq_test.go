@@ -393,6 +393,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	})
 }
 
+//nolint:gosec
 func (i *IntegrationSuite) TestArbitraryCall() {
 	// start the relayer and guard
 	go func() {
@@ -501,7 +502,6 @@ func (i *IntegrationSuite) TestArbitraryCall() {
 				i.NoError(err)
 			}
 		}
-
 	}()
 
 	i.Eventually(func() bool {
