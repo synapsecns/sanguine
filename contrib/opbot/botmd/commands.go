@@ -196,7 +196,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 				},
 				{
 					Type: slack.MarkdownType,
-					Text: fmt.Sprintf("*Estimated Tx Age*: %s", getTxAge(res.BridgeRelay.BlockTimestamp)),
+					Text: fmt.Sprintf("*Estimated Tx Age*: %s", humanize.Time(time.Unix(res.BridgeRelay.BlockTimestamp, 0))),
 				},
 			}
 
@@ -344,10 +344,6 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 		return nil, fmt.Errorf("error creating fast bridge: %w", err)
 	}
 	return fastBridgeHandle, nil
-}
-
-func getTxAge(timestamp int64) string {
-	return humanize.Time(time.Unix(timestamp, 0))
 }
 
 func toExplorerSlackLink(ogHash string) string {
