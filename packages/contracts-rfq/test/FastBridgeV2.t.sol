@@ -46,11 +46,29 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     IFastBridgeV2.BridgeParamsV2 internal tokenParamsV2;
     IFastBridgeV2.BridgeParamsV2 internal ethParamsV2;
 
+    bytes internal mockRequestV1;
+    bytes internal invalidRequestV2;
+    bytes internal mockRequestV3;
+
+    function createInvalidRequestV2(bytes calldata requestV2) external pure returns (bytes memory) {
+        // Cut the last 1 byte
+        return requestV2[:requestV2.length - 1];
+    }
+
+    function createMockRequestV3(bytes calldata requestV2) external pure returns (bytes memory) {
+        return abi.encodePacked(uint16(3), requestV2[2:]);
+    }
+
     function setUp() public virtual {
         srcToken = new MockERC20("SrcToken", 6);
         dstToken = new MockERC20("DstToken", 6);
         createFixtures();
+        mockRequestV1 = abi.encode(extractV1(tokenTx));
+        // Invalid V2 request is formed before `createFixturesV2` to ensure it's not using callParams
+        invalidRequestV2 = this.createInvalidRequestV2(BridgeTransactionV2Lib.encodeV2(tokenTx));
         createFixturesV2();
+        // Mock V3 request is formed after `createFixturesV2` to ensure it's using callParams if needed
+        mockRequestV3 = this.createMockRequestV3(BridgeTransactionV2Lib.encodeV2(ethTx));
         fastBridge = deployFastBridge();
         configureFastBridge();
         mintTokens();
@@ -238,6 +256,16 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
 
     function expectUnauthorized(address caller, bytes32 role) public {
         vm.expectRevert(abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, caller, role));
+    }
+
+    function expectRevertInvalidEncodedTx() public {
+        vm.expectRevert(BridgeTransactionV2Lib.BridgeTransactionV2__InvalidEncodedTx.selector);
+    }
+
+    function expectRevertUnsupportedVersion(uint16 version) public {
+        vm.expectRevert(
+            abi.encodeWithSelector(BridgeTransactionV2Lib.BridgeTransactionV2__UnsupportedVersion.selector, version)
+        );
     }
 
     function cheatCollectedProtocolFees(address token, uint256 amount) public {
