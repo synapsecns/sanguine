@@ -27,10 +27,10 @@ contract FastBridgeV2GasBenchmarkSrcProtocolFeesTest is FastBridgeV2GasBenchmark
         provenTokenTx = tokenTx;
         bridgedEthTx = ethTx;
         provenEthTx = ethTx;
-
-        bridgedTokenTx.nonce = 0;
-        bridgedEthTx.nonce = 1;
-        provenTokenTx.nonce = 2;
-        provenEthTx.nonce = 3;
+        // See FastBridgeV2GasBenchmarkSrcTest.initExistingTxs for why these start from 1, not 0
+        bridgedTokenTx.nonce = 1;
+        bridgedEthTx.nonce = 2;
+        provenTokenTx.nonce = 3;
+        provenEthTx.nonce = 4;
     }
 }
