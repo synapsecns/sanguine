@@ -223,27 +223,26 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function relay(bytes calldata request, address relayer) public payable {
         request.validateV2();
         bytes32 transactionId = keccak256(request);
-        BridgeTransactionV2 memory transaction = BridgeTransactionV2Lib.decodeV2(request);
-        _validateRelayParams(transaction, transactionId, relayer);
+        _validateRelayParams(request, transactionId, relayer);
         // mark bridge transaction as relayed
         bridgeRelayDetails[transactionId] =
             BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
         // transfer tokens to recipient on destination chain and do an arbitrary call if requested
-        address to = transaction.destRecipient;
-        address token = transaction.destToken;
-        uint256 amount = transaction.destAmount;
-        uint256 callValue = transaction.callValue;
+        address to = request.destRecipient();
+        address token = request.destToken();
+        uint256 amount = request.destAmount();
+        uint256 callValue = request.callValue();
 
         // Emit the event before any external calls
         emit BridgeRelayed({
             transactionId: transactionId,
             relayer: relayer,
             to: to,
-            originChainId: transaction.originChainId,
-            originToken: transaction.originToken,
+            originChainId: request.originChainId(),
+            originToken: request.originToken(),
             destToken: token,
-            originAmount: transaction.originAmount,
+            originAmount: request.originAmount(),
             destAmount: amount,
             chainGasAmount: callValue
         });
@@ -263,11 +262,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             IERC20(token).safeTransferFrom(msg.sender, to, amount);
         }
 
-        if (transaction.callParams.length != 0) {
+        bytes calldata callParams = request.callParams();
+        if (callParams.length != 0) {
             // Arbitrary call requested, perform it while supplying full msg.value to the recipient
             // Note: if token has a fee on transfers, the recipient will have received less than `amount`.
             // This is a very niche edge case and should be handled by the recipient contract.
-            _checkedCallRecipient({recipient: to, token: token, amount: amount, callParams: transaction.callParams});
+            _checkedCallRecipient({recipient: to, token: token, amount: amount, callParams: callParams});
         } else if (msg.value != 0) {
             // No arbitrary call requested, but msg.value was sent. This is either a relay with ETH,
             // or a non-zero callValue request with an ERC20. In both cases, transfer the ETH to the recipient.
@@ -361,7 +361,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         address recipient,
         address token,
         uint256 amount,
-        bytes memory callParams
+        bytes calldata callParams
     )
         internal
     {
@@ -421,27 +421,16 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     /// @notice Performs all the necessary checks for a relay to happen.
-    function _validateRelayParams(
-        BridgeTransactionV2 memory transaction,
-        bytes32 transactionId,
-        address relayer
-    )
-        internal
-        view
-    {
+    function _validateRelayParams(bytes calldata request, bytes32 transactionId, address relayer) internal view {
         if (relayer == address(0)) revert ZeroAddress();
         // Check if the transaction has already been relayed
         if (bridgeRelays(transactionId)) revert TransactionRelayed();
-        if (transaction.destChainId != block.chainid) revert ChainIncorrect();
+        if (request.destChainId() != block.chainid) revert ChainIncorrect();
         // Check the deadline for relay to happen
-        if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
+        if (block.timestamp > request.deadline()) revert DeadlineExceeded();
         // Check the exclusivity period, if it is still ongoing
-        // forgefmt: disable-next-item
-        if (
-            transaction.exclusivityRelayer != address(0) &&
-            transaction.exclusivityRelayer != relayer &&
-            block.timestamp <= transaction.exclusivityEndTime
-        ) {
+        address exclRelayer = request.exclusivityRelayer();
+        if (exclRelayer != address(0) && exclRelayer != relayer && block.timestamp <= request.exclusivityEndTime()) {
             revert ExclusivityPeriodNotPassed();
         }
     }
