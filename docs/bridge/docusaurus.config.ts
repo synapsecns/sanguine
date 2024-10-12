@@ -55,12 +55,16 @@ const config: Config = {
     [
       'classic',
       {
+        gtag: {
+          trackingID: 'G-BBC13LQXBD',
+          anonymizeIP: true,
+        },
         docs: {
           sidebarPath: './sidebars.ts',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/synapsecns/sanguine/edit/master/docs/bridge/blog-posts/',
+            'https://github.com/synapsecns/sanguine/edit/master/docs/bridge/',
           docRootComponent: '@theme/DocRoot',
           docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
           // docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
@@ -90,10 +94,10 @@ const config: Config = {
     },
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
-    announcementBar: {
-      // id: 'announcementBar-v3.2', // Increment on change
-      // content: `⭐️ If you like Docusaurus, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/facebook/docusaurus">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/docusaurus">Twitter ${TwitterSvg}</a>`,
-    },
+    // announcementBar: {
+    //   id: 'announcementBar-v3.2', // Increment on change
+    //   content: `⭐️ If you like Docusaurus, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/facebook/docusaurus">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/docusaurus">Twitter ${TwitterSvg}</a>`,
+    // },
     navbar: {
       title: 'Synapse Docs',
       logo: {
