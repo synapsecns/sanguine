@@ -90,10 +90,10 @@ const config: Config = {
     },
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
-    announcementBar: {
-      // id: 'announcementBar-v3.2', // Increment on change
-      // content: `⭐️ If you like Docusaurus, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/facebook/docusaurus">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/docusaurus">Twitter ${TwitterSvg}</a>`,
-    },
+    // announcementBar: {
+    //   id: 'announcementBar-v3.2', // Increment on change
+    //   content: `⭐️ If you like Docusaurus, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/facebook/docusaurus">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/docusaurus">Twitter ${TwitterSvg}</a>`,
+    // },
     navbar: {
       title: 'Synapse Docs',
       logo: {
