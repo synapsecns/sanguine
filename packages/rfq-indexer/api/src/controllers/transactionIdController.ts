@@ -10,7 +10,12 @@ export const getTransactionById = async (req: Request, res: Response) => {
   try {
     const query = db
       .with('deposits', () =>
-        qDeposits().where('transactionId', '=', transactionId as string)
+        qDeposits().where((eb) =>
+          eb.or([
+            eb('transactionId', '=', transactionId as string),
+            eb('transactionHash', '=', transactionId as string)
+          ])
+        )
       )
       .with('relays', () => qRelays())
       .with('proofs', () => qProofs({activeOnly: false})) // display proofs even if they have been invalidated/replaced by a dispute
