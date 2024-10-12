@@ -93,7 +93,6 @@ const config: Config = {
     announcementBar: {
       // id: 'announcementBar-v3.2', // Increment on change
       // content: `⭐️ If you like Docusaurus, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/facebook/docusaurus">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/docusaurus">Twitter ${TwitterSvg}</a>`,
-      content: `<!--New! Synapse Docs have been refreshed. For the previous version, click <a href="https://docs.synapseprotocol.com/">here</a>-->`,
     },
     navbar: {
       title: 'Synapse Docs',
