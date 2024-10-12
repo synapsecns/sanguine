@@ -60,7 +60,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/synapsecns/sanguine/edit/master/docs/bridge/blog-posts/',
+            'https://github.com/synapsecns/sanguine/edit/master/docs/bridge/',
           docRootComponent: '@theme/DocRoot',
           docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
           // docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
