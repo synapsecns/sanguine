@@ -455,6 +455,13 @@ export const BRIDGE_MAP = {
       destination: ['L2DAO'],
       swappable: [],
     },
+    '0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1': {
+      decimals: 18,
+      symbol: 'WLD',
+      origin: ['RFQ.WLD'],
+      destination: ['RFQ.WLD'],
+      swappable: [],
+    },
   },
   '25': {
     '0x396c9c192dd323995346632581BEF92a31AC623b': {
@@ -591,7 +598,7 @@ export const BRIDGE_MAP = {
     },
     '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270': {
       decimals: 18,
-      symbol: 'WMATIC',
+      symbol: 'WPOL',
       origin: ['MATIC'],
       destination: ['MATIC'],
       swappable: [],
@@ -670,7 +677,7 @@ export const BRIDGE_MAP = {
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
-      symbol: 'MATIC',
+      symbol: 'POL',
       origin: ['MATIC'],
       destination: ['MATIC'],
       swappable: [],
@@ -872,6 +879,36 @@ export const BRIDGE_MAP = {
       ],
     },
   },
+  '480': {
+    '0x2cFc85d8E48F8EAB294be644d9E25C3030863003': {
+      decimals: 18,
+      symbol: 'WLD',
+      origin: ['RFQ.WLD'],
+      destination: ['RFQ.WLD'],
+      swappable: [],
+    },
+    '0x4200000000000000000000000000000000000006': {
+      decimals: 18,
+      symbol: 'WETH',
+      origin: ['RFQ.ETH'],
+      destination: [],
+      swappable: [],
+    },
+    '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1': {
+      decimals: 6,
+      symbol: 'USDC.e',
+      origin: ['RFQ.USDC'],
+      destination: ['RFQ.USDC'],
+      swappable: [],
+    },
+    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
+      decimals: 18,
+      symbol: 'ETH',
+      origin: ['RFQ.ETH'],
+      destination: ['RFQ.ETH'],
+      swappable: [],
+    },
+  },
   '1088': {
     '0x17C09cfC96C865CF546d73365Cedb6dC66986963': {
       decimals: 18,
@@ -896,7 +933,7 @@ export const BRIDGE_MAP = {
     },
     '0x75cb093E4D61d2A2e65D8e0BBb01DE8d89b53481': {
       decimals: 18,
-      symbol: 'WMETIS',
+      symbol: 'WMetis',
       origin: ['Metis'],
       destination: ['Metis'],
       swappable: [],
