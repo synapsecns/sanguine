@@ -1,0 +1,69 @@
+
+# create & fund however many wallets you want to test with. 
+# only supports native ETH bridges on chains that use ETH as gas.
+# if you only fund ETH on one of the test chains it will auto-rebalance the funds to the others before beginning tests.
+
+# Startup example w/ pyRepeater to auto-restart the process if anything kills it
+# python3 pyRepeater.py "node index.js --configFile ../config-prod.yaml --pKeyIndex 1"
+
+PRIVATE_KEY_1: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
+PRIVATE_KEY_2: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
+PRIVATE_KEY_3: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
+PRIVATE_KEY_4: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
+PRIVATE_KEY_5: "0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd"
+
+# these settings are a pace of about 100K deposits per day 
+#
+# how long to wait in btwn each volley?
+VOLLEY_MILLISECONDS_BETWEEN: 5500
+# each volley sends a batch of between {min} and {max} transactions
+VOLLEY_MIN_COUNT: 1
+VOLLEY_MAX_COUNT: 5
+
+# these settings are a pace of about 150K deposits per day 
+#VOLLEY_MILLISECONDS_BETWEEN: 5500
+#VOLLEY_MIN_COUNT: 1
+#VOLLEY_MAX_COUNT: 5
+
+# approx how much ETH to send on each test bridge? 0.00007
+TEST_BRIDGE_AMOUNT_UNITS: 0.00007
+
+# trigger a rebalance when gas reaches this value or lower
+MINIMUM_GAS_UNITS: 0.003
+
+# when a rebalance is triggered, resupply the deficit chain to this amount
+REBALANCE_TO_UNITS: 0.01
+
+CHAINS:
+  10: 
+    FastRouterAddr: '0x00cd000000003f7f682be4813200893d4e690000'
+    # urls used for Reading / Tx Simulation / Tx Submit -- respectively. Change to others as needed.
+    rpcUrl_Read: 'https://mainnet.optimism.io'
+    rpcUrl_Sim: 'https://mainnet.optimism.io'
+    rpcUrl_Write: 'https://mainnet.optimism.io'
+  8453:
+    FastRouterAddr: '0x00cd000000003f7f682be4813200893d4e690000'
+    # urls used for Reading / Tx Simulation / Tx Submit -- respectively. Change to others as needed.
+    rpcUrl_Read: 'https://mainnet.base.org'
+    rpcUrl_Sim: 'https://mainnet.base.org'
+    rpcUrl_Write: 'https://mainnet.base.org'
+  480:
+    FastRouterAddr: '0x00cd000000003f7f682be4813200893d4e690000'
+    # urls used for Reading / Tx Simulation / Tx Submit -- respectively. Change to others as needed.
+    rpcUrl_Read: 'https://worldchain-mainnet.g.alchemy.com/public'
+    rpcUrl_Sim: 'https://worldchain-mainnet.g.alchemy.com/public'
+    rpcUrl_Write: 'https://worldchain-mainnet.g.alchemy.com/public'
+
+TEST_ROUTES:
+  480>10: 
+    fromChainId: 480
+    toChainId: 10
+    testDistributionPercentage: 70
+  10>480:
+    fromChainId: 10
+    toChainId: 480
+    testDistributionPercentage: 15
+  8453>480:
+    fromChainId: 8453
+    toChainId: 480
+    testDistributionPercentage: 15
