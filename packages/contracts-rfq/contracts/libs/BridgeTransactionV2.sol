@@ -46,13 +46,18 @@ library BridgeTransactionV2Lib {
     error BridgeTransactionV2__InvalidEncodedTx();
     error BridgeTransactionV2__UnsupportedVersion(uint16 version);
 
-    /// @notice Validates the encoded transaction to be a valid encoded payload for BridgeTransactionV2.
+    /// @notice Validates the encoded transaction to be a tightly packed encoded payload for BridgeTransactionV2.
     /// @dev Checks the minimum length and the version, use this function before decoding any of the fields.
     function validateV2(bytes calldata encodedTx) internal pure {
+        // Check the minimum length: must at least include all static fields.
         if (encodedTx.length < OFFSET_CALL_PARAMS) revert BridgeTransactionV2__InvalidEncodedTx();
-        if (version(encodedTx) != VERSION) revert BridgeTransactionV2__UnsupportedVersion(version(encodedTx));
+        // Once we validated the length, we can be sure that the version field is present.
+        uint16 version_ = version(encodedTx);
+        if (version_ != VERSION) revert BridgeTransactionV2__UnsupportedVersion(version_);
     }
 
+    /// @notice Encodes the BridgeTransactionV2 struct by tightly packing the fields.
+    /// @dev `abi.decode` will not work as a result of the tightly packed fields. Use `decodeV2` to decode instead.
     function encodeV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) internal pure returns (bytes memory) {
         // We split the encoding into two parts to avoid stack-too-deep error
         bytes memory firstPart = abi.encodePacked(
@@ -78,6 +83,9 @@ library BridgeTransactionV2Lib {
         );
     }
 
+    /// @notice Decodes the BridgeTransactionV2 struct from the encoded transaction.
+    /// @dev Encoded BridgeTransactionV2 struct must be tightly packed.
+    /// Use `validateV2` before decoding to ensure the encoded transaction is valid.
     function decodeV2(bytes calldata encodedTx)
         internal
         pure
