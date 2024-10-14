@@ -5,7 +5,13 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cp src/pyRepeater.py dist/ && tsc"
+    "build": "cp src/pyRepeater.py dist/ && tsc",
+    "lint": "eslint .",
+    "ci:lint": "eslint .",
+    "typecheck": "tsc",
+    "test:coverage": "echo 'No tests defined.'",
+    "build:go": " ",
+    "build:slither": " "
   },
   "keywords": [],
   "author": "",
