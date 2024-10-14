@@ -7,6 +7,7 @@ interface IFastBridgeV2Errors {
     error ChainIncorrect();
     error ExclusivityParamsIncorrect();
     error MsgValueIncorrect();
+    error NativeTokenCallValueNotSupported();
     error SenderIncorrect();
     error StatusIncorrect();
     error ZeroAddress();
