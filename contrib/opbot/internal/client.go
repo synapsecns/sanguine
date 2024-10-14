@@ -14,15 +14,13 @@ import (
 )
 
 const (
-	getRequestByTxHash = "/api/transaction-id/%s"
+	getRFQRoute = "/api/transaction-id/%s"
 )
 
 // RFQClient is the interface for the RFQ client.
 type RFQClient interface {
-	// GetRFQByTxID gets a quote request by transaction ID.
-	GetRFQByTxID(ctx context.Context, txID string) (resp *GetRFQByTxIDResponse, status string, err error)
-	// GetRFQByTxHash gets a quote request by transaction hash.
-	GetRFQByTxHash(ctx context.Context, txHash string) (resp *relapi.GetQuoteRequestResponse, err error)
+	// GetRFQ gets a quote request by transaction ID.
+	GetRFQ(ctx context.Context, txIdentifier string) (resp *GetRFQByTxIDResponse, status string, err error)
 }
 
 type rfqClientImpl struct {
@@ -49,12 +47,12 @@ func NewRFQClient(handler metrics.Handler, indexerURL string, relayerURLs []stri
 	}
 }
 
-// GetRFQByTxID gets a quote request by transaction ID.
-func (r *rfqClientImpl) GetRFQByTxID(ctx context.Context, txID string) (*GetRFQByTxIDResponse, string, error) {
+// GetRFQByTxID gets a quote request by transaction ID or transaction hash.
+func (r *rfqClientImpl) GetRFQ(ctx context.Context, txIdentifier string) (*GetRFQByTxIDResponse, string, error) {
 	var res GetRFQByTxIDResponse
 	resp, err := r.client.R().SetContext(ctx).
 		SetResult(&res).
-		Get(fmt.Sprintf(getRequestByTxHash, txID))
+		Get(fmt.Sprintf(getRFQRoute, txIdentifier))
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to get quote request by tx ID: %w", err)
 	}
@@ -79,19 +77,3 @@ func (r *rfqClientImpl) GetRFQByTxID(ctx context.Context, txID string) (*GetRFQB
 
 	return &res, status, nil
 }
-
-// GetRFQByTxHash gets a quote request by transaction hash.
-func (r *rfqClientImpl) GetRFQByTxHash(ctx context.Context, txHash string) (*relapi.GetQuoteRequestResponse, error) {
-	var errs []error
-	for _, relayerClient := range r.relayerClients {
-		resp, err := relayerClient.GetQuoteRequestByTxHash(ctx, txHash)
-		if err == nil {
-			return resp, nil
-		}
-		errs = append(errs, fmt.Errorf("could not get quote request by tx hash: %w", err))
-	}
-
-	return nil, fmt.Errorf("could not get quote request by tx hash: %v", errs)
-}
-
-var _ RFQClient = &rfqClientImpl{}

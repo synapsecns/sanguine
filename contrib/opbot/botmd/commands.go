@@ -20,13 +20,13 @@ import (
 	"github.com/hako/durafmt"
 	"github.com/slack-go/slack"
 	"github.com/slack-io/slacker"
+	"github.com/synapsecns/sanguine/contrib/opbot/internal"
 	"github.com/synapsecns/sanguine/contrib/opbot/signoz"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chaindata"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	rfqClient "github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
 )
 
 func (b *Bot) requiresSignoz(definition *slacker.CommandDefinition) *slacker.CommandDefinition {
@@ -164,7 +164,7 @@ func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 		Handler: func(ctx *slacker.CommandContext) {
 			tx := stripLinks(ctx.Request().Param("tx"))
 
-			res, status, err := b.rfqClient.GetRFQByTxID(ctx.Context(), tx)
+			res, status, err := b.rfqClient.GetRFQ(ctx.Context(), tx)
 			if err != nil {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				_, err := ctx.Response().Reply(fmt.Sprintf("error fetching quote request %s", err.Error()))
@@ -240,7 +240,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			rawRequest, err := b.rfqClient.GetRFQByTxHash(ctx.Context(), tx)
+			rawRequest, _, err := b.rfqClient.GetRFQ(ctx.Context(), tx)
 			if err != nil {
 				b.logger.Errorf(ctx.Context(), "error fetching quote request: %v", err)
 				_, err := ctx.Response().Reply("error fetching quote request")
@@ -259,7 +259,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			isScreened, err := b.screener.ScreenAddress(ctx.Context(), rawRequest.Sender)
+			isScreened, err := b.screener.ScreenAddress(ctx.Context(), rawRequest.Bridge.Sender)
 			if err != nil {
 				_, err := ctx.Response().Reply("error screening address")
 				if err != nil {
@@ -275,7 +275,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+			nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.Bridge.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 				tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
 				if err != nil {
 					return nil, fmt.Errorf("error submitting refund: %w", err)
@@ -291,7 +291,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 			err = retry.WithBackoff(
 				ctx.Context(),
 				func(ctx context.Context) error {
-					status, err = b.submitter.GetSubmissionStatus(ctx, big.NewInt(int64(rawRequest.OriginChainID)), nonce)
+					status, err = b.submitter.GetSubmissionStatus(ctx, big.NewInt(int64(rawRequest.Bridge.OriginChainID)), nonce)
 					if err != nil || !status.HasTx() {
 						b.logger.Errorf(ctx, "error fetching quote request: %v", err)
 						return fmt.Errorf("error fetching quote request: %w", err)
@@ -310,7 +310,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
-			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toTXSlackLink(status.TxHash().String(), rawRequest.OriginChainID)))
+			_, err = ctx.Response().Reply(fmt.Sprintf("refund submitted: %s", toTXSlackLink(status.TxHash().String(), uint32(rawRequest.Bridge.OriginChainID))))
 			if err != nil {
 				log.Println(err)
 			}
@@ -318,7 +318,7 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 	}
 }
 
-func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestResponse) (*fastbridge.FastBridge, error) {
+func (b *Bot) makeFastBridge(ctx context.Context, req *internal.GetRFQByTxIDResponse) (*fastbridge.FastBridge, error) {
 	client, err := rfqClient.NewUnauthenticatedClient(b.handler, b.cfg.RFQApiURL)
 	if err != nil {
 		return nil, fmt.Errorf("error creating rfq client: %w", err)
@@ -329,12 +329,12 @@ func (b *Bot) makeFastBridge(ctx context.Context, req *relapi.GetQuoteRequestRes
 		return nil, fmt.Errorf("error fetching rfq contracts: %w", err)
 	}
 
-	chainClient, err := b.rpcClient.GetChainClient(ctx, int(req.OriginChainID))
+	chainClient, err := b.rpcClient.GetChainClient(ctx, int(req.Bridge.OriginChainID))
 	if err != nil {
 		return nil, fmt.Errorf("error getting chain client: %w", err)
 	}
 
-	contractAddress, ok := contracts.Contracts[req.OriginChainID]
+	contractAddress, ok := contracts.Contracts[uint32(req.Bridge.OriginChainID)]
 	if !ok {
 		return nil, errors.New("contract address not found")
 	}
