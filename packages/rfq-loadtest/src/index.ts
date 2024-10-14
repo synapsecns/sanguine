@@ -242,6 +242,9 @@ async function checkBals() {
 const minGasUnits = config.MINIMUM_GAS_UNITS
 const rebalToUnits = config.REBALANCE_TO_UNITS
 async function bridgeLooper() {
+
+    let retryCount = 0
+
   for (;;) {
     // Find the chain with the lowest balance below our minimum gas -- if any
     const rebalToChain: any = Object.values(vChains).find(
@@ -259,7 +262,6 @@ async function bridgeLooper() {
 
       print(rebalLabel)
 
-      let retryCount = 0
       // avoid repeating rebal actions. just loop until it lands on-chain.
       if (lastAction === `rebal${rebalFromChain.id}>${rebalToChain.id}`) {
         print(
@@ -277,6 +279,8 @@ async function bridgeLooper() {
         retryCount++
         continue
       }
+
+      retryCount=0
 
       // leave rebalFrom chain with X units
       const rebalAmount = rebalToUnits - rebalToChain.balanceUnits
