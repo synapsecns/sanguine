@@ -38,7 +38,7 @@ export const pendingTransactionsMissingClaimController = async (
       res.json(nestedResults)
     } else {
       res
-        .status(404)
+        .status(200)
         .json({ message: 'No pending transactions missing claim found' })
     }
   } catch (error) {
@@ -76,7 +76,7 @@ export const pendingTransactionsMissingProofController = async (
       res.json(nestedResults)
     } else {
       res
-        .status(404)
+        .status(200)
         .json({ message: 'No pending transactions missing proof found' })
     }
   } catch (error) {
@@ -121,7 +121,7 @@ export const pendingTransactionsMissingRelayController = async (
       res.json(nestedResults)
     } else {
       res
-        .status(404)
+        .status(200)
         .json({ message: 'No pending transactions missing relay found' })
     }
   } catch (error) {
@@ -166,7 +166,7 @@ export const pendingTransactionsMissingRelayExceedDeadlineController = async (
       res.json(nestedResults)
     } else {
       res
-        .status(404)
+        .status(200)
         .json({ message: 'No pending transactions missing relay found' })
     }
   } catch (error) {
