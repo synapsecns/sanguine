@@ -238,15 +238,42 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 		return false, fmt.Errorf("error getting total fee: %w", err)
 	}
 
-	cost := new(big.Int).Add(quote.Transaction.DestAmount, fee)
+	// adjust amounts for our internal offsets on origin / dest token values
+	originAmountAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.OriginChainId, quote.Transaction.OriginToken, quote.Transaction.OriginAmount, true)
+	if err != nil {
+		return false, fmt.Errorf("error getting origin amount with offset: %w", err)
+	}
+	destAmountAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.DestChainId, quote.Transaction.DestToken, quote.Transaction.DestAmount, false)
+	if err != nil {
+		return false, fmt.Errorf("error getting dest amount with offset: %w", err)
+	}
 
-	span.AddEvent("fee", trace.WithAttributes(attribute.String("fee", fee.String())))
-	span.AddEvent("cost", trace.WithAttributes(attribute.String("cost", cost.String())))
-	span.AddEvent("dest_amount", trace.WithAttributes(attribute.String("dest_amount", quote.Transaction.DestAmount.String())))
-	span.AddEvent("origin_amount", trace.WithAttributes(attribute.String("origin_amount", quote.Transaction.OriginAmount.String())))
+	cost := new(big.Int).Add(destAmountAdj, fee)
 
-	// NOTE: this logic assumes that the origin and destination tokens have the same price.
-	return quote.Transaction.OriginAmount.Cmp(cost) >= 0, nil
+	span.SetAttributes(
+		attribute.String("origin_amount_adj", originAmountAdj.String()),
+		attribute.String("dest_amount_adj", destAmountAdj.String()),
+		attribute.String("origin_amount", quote.Transaction.OriginAmount.String()),
+		attribute.String("dest_amount", quote.Transaction.DestAmount.String()),
+		attribute.String("fee", fee.String()),
+		attribute.String("cost", cost.String()),
+	)
+
+	return originAmountAdj.Cmp(cost) >= 0, nil
+}
+
+func (m *Manager) getAmountWithOffset(ctx context.Context, chainID uint32, tokenAddr common.Address, amount *big.Int, isOrigin bool) (*big.Int, error) {
+	tokenName, err := m.config.GetTokenName(uint32(chainID), tokenAddr.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("error getting token name: %w", err)
+	}
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(int(chainID), tokenName, isOrigin)
+	if err != nil {
+		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
+	}
+	amountAdj := m.applyOffset(ctx, quoteOffsetBps, amount)
+
+	return amountAdj, nil
 }
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
