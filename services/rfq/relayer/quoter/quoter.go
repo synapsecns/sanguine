@@ -263,7 +263,7 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 }
 
 func (m *Manager) getAmountWithOffset(ctx context.Context, chainID uint32, tokenAddr common.Address, amount *big.Int) (*big.Int, error) {
-	tokenName, err := m.config.GetTokenName(uint32(chainID), tokenAddr.Hex())
+	tokenName, err := m.config.GetTokenName(chainID, tokenAddr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("error getting token name: %w", err)
 	}
