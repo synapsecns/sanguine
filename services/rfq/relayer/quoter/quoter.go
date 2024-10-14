@@ -237,33 +237,29 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 	if err != nil {
 		return false, fmt.Errorf("error getting total fee: %w", err)
 	}
+	cost := new(big.Int).Add(quote.Transaction.DestAmount, fee)
 
 	// adjust amounts for our internal offsets on origin / dest token values
 	originAmountAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.OriginChainId, quote.Transaction.OriginToken, quote.Transaction.OriginAmount)
 	if err != nil {
 		return false, fmt.Errorf("error getting origin amount with offset: %w", err)
 	}
-	destAmountAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.DestChainId, quote.Transaction.DestToken, quote.Transaction.DestAmount)
+	// assume that fee is denominated in dest token terms
+	costAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.DestChainId, quote.Transaction.DestToken, cost)
 	if err != nil {
-		return false, fmt.Errorf("error getting dest amount with offset: %w", err)
+		return false, fmt.Errorf("error getting cost with offset: %w", err)
 	}
-
-	cost := new(big.Int).Add(destAmountAdj, fee)
 
 	span.SetAttributes(
 		attribute.String("origin_amount_adj", originAmountAdj.String()),
-		attribute.String("dest_amount_adj", destAmountAdj.String()),
+		attribute.String("cost_adj", costAdj.String()),
 		attribute.String("origin_amount", quote.Transaction.OriginAmount.String()),
 		attribute.String("dest_amount", quote.Transaction.DestAmount.String()),
 		attribute.String("fee", fee.String()),
 		attribute.String("cost", cost.String()),
 	)
-	fmt.Printf("originAmountAdj: %s, cost: %s\n", originAmountAdj.String(), cost.String())
-	fmt.Printf("originAmountAdj.Cmp(cost): %d\n", originAmountAdj.Cmp(cost))
-	fmt.Printf("destAmountAdj: %s, quote.Transaction.DestAmount: %s\n", destAmountAdj.String(), quote.Transaction.DestAmount.String())
-	fmt.Printf("destAmountAdj.Cmp(quote.Transaction.DestAmount): %d\n", destAmountAdj.Cmp(quote.Transaction.DestAmount))
 
-	return originAmountAdj.Cmp(cost) >= 0, nil
+	return originAmountAdj.Cmp(costAdj) >= 0, nil
 }
 
 func (m *Manager) getAmountWithOffset(ctx context.Context, chainID uint32, tokenAddr common.Address, amount *big.Int) (*big.Int, error) {

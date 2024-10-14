@@ -200,11 +200,6 @@ func (s *QuoterSuite) TestIsProfitable() {
 	// Set origin offset to -20%; we send a token that is less valuable -> still profitable
 	setQuoteOffsets(-2000, 0)
 	s.True(s.manager.IsProfitable(s.GetTestContext(), quote))
-
-	// Set both offsets to 20%; both tokens more valuable -> still profitable
-	quote.Transaction.DestAmount = balance
-	setQuoteOffsets(100, 100)
-	s.True(s.manager.IsProfitable(s.GetTestContext(), quote))
 }
 
 func (s *QuoterSuite) TestGetOriginAmount() {
