@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-resty/resty/v2"
@@ -114,7 +115,7 @@ func (r *restyRequest) Do() (_ Response, err error) {
 	}()
 	resp, err := r.Request.Post(r.endpoint)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get response from %s: %w", r.endpoint, err)
 	}
 	return resp, nil
 }

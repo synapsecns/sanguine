@@ -158,6 +158,7 @@ func (c *CapturedRequest) Do() (Response, error) {
 	return resp, err
 }
 
+// WithMetrics sets the metrics handler.
 func (c *CapturedRequest) WithMetrics(metrics metrics.Handler) Request {
 	c.Handler = metrics
 	return c
