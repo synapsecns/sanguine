@@ -12,6 +12,7 @@ PRIVATE_KEY_3: '0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456ab
 PRIVATE_KEY_4: '0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd'
 PRIVATE_KEY_5: '0xabcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd'
 
+##### TEST PACE
 # these settings are a pace of about 100K deposits per day
 #
 # how long to wait in btwn each volley?
