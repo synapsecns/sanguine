@@ -345,18 +345,22 @@ func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 func (s *QuoterSuite) TestGetDestAmount() {
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
-	chainID := int(s.destination)
+	origin := int(s.origin)
+	dest := int(s.destination)
 	input := quoter.QuoteInput{
 		OriginChainID: int(s.origin),
 		DestChainID:   int(s.destination),
 		OriginBalance: balance,
 		DestBalance:   balance,
 	}
-	setQuoteParams := func(quoteOffsetBps, quoteWidthBps float64) {
+	setQuoteParams := func(originQuoteOffsetBps, destQuoteOffsetBps, quoteWidthBps float64) {
 		s.config.BaseChainConfig.QuoteWidthBps = quoteWidthBps
-		tokenCfg := s.config.Chains[chainID].Tokens["USDC"]
-		tokenCfg.QuoteOffsetBps = quoteOffsetBps
-		s.config.Chains[chainID].Tokens["USDC"] = tokenCfg
+		tokenCfg := s.config.Chains[origin].Tokens["USDC"]
+		tokenCfg.QuoteOffsetBps = originQuoteOffsetBps
+		s.config.Chains[origin].Tokens["USDC"] = tokenCfg
+		tokenCfg = s.config.Chains[dest].Tokens["USDC"]
+		tokenCfg.QuoteOffsetBps = destQuoteOffsetBps
+		s.config.Chains[dest].Tokens["USDC"] = tokenCfg
 		s.manager.SetConfig(s.config)
 	}
 
@@ -367,37 +371,58 @@ func (s *QuoterSuite) TestGetDestAmount() {
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteWidthBps to 100, should return 99% of balance.
-	setQuoteParams(0, 100)
+	setQuoteParams(0, 0, 100)
 	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(990_000_000)
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteWidthBps to 500, should return 95% of balance.
-	setQuoteParams(0, 500)
+	setQuoteParams(0, 0, 500)
 	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(950_000_000)
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteWidthBps to 500 and QuoteOffsetBps to 100, should return 94% of balance.
-	setQuoteParams(100, 500)
+	setQuoteParams(0, 100, 500)
 	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(940_000_000)
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteWidthBps to 500 and QuoteOffsetBps to -100, should return 96% of balance.
-	setQuoteParams(-100, 500)
+	setQuoteParams(0, -100, 500)
 	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(960_000_000)
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteWidthBps to -100, should default to balance.
-	setQuoteParams(0, -100)
+	setQuoteParams(0, 0, -100)
 	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
 	expectedAmount = balance
+	s.Equal(expectedAmount, destAmount)
+
+	// Set origin offset to 100, should return 101% of balance.
+	setQuoteParams(100, 0, 0)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(1_010_000_000)
+	s.Equal(expectedAmount, destAmount)
+
+	// Set origin offset to -100, should return 99% of balance.
+	setQuoteParams(-100, 0, 0)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(990_000_000)
+	s.Equal(expectedAmount, destAmount)
+
+	// Set origin offset to 100, dest offset to 300, should return 98% of balance.
+	setQuoteParams(100, 300, 0)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(980_000_000)
 	s.Equal(expectedAmount, destAmount)
 }
