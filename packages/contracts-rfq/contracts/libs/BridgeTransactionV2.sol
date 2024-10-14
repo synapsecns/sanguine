@@ -25,21 +25,23 @@ library BridgeTransactionV2Lib {
     // uint256  exclusivityEndTime      [302 .. 334)
     // bytes    callParams              [334 .. ***)
 
-    uint256 private constant OFFSET_ORIGIN_CHAIN_ID = 2;
-    uint256 private constant OFFSET_DEST_CHAIN_ID = 6;
-    uint256 private constant OFFSET_ORIGIN_SENDER = 10;
-    uint256 private constant OFFSET_DEST_RECIPIENT = 30;
-    uint256 private constant OFFSET_ORIGIN_TOKEN = 50;
-    uint256 private constant OFFSET_DEST_TOKEN = 70;
-    uint256 private constant OFFSET_ORIGIN_AMOUNT = 90;
-    uint256 private constant OFFSET_DEST_AMOUNT = 122;
-    uint256 private constant OFFSET_ORIGIN_FEE_AMOUNT = 154;
-    uint256 private constant OFFSET_CALL_VALUE = 186;
-    uint256 private constant OFFSET_DEADLINE = 218;
-    uint256 private constant OFFSET_NONCE = 250;
-    uint256 private constant OFFSET_EXCLUSIVITY_RELAYER = 282;
+    // forgefmt: disable-start
+    uint256 private constant OFFSET_ORIGIN_CHAIN_ID      = 2;
+    uint256 private constant OFFSET_DEST_CHAIN_ID        = 6;
+    uint256 private constant OFFSET_ORIGIN_SENDER        = 10;
+    uint256 private constant OFFSET_DEST_RECIPIENT       = 30;
+    uint256 private constant OFFSET_ORIGIN_TOKEN         = 50;
+    uint256 private constant OFFSET_DEST_TOKEN           = 70;
+    uint256 private constant OFFSET_ORIGIN_AMOUNT        = 90;
+    uint256 private constant OFFSET_DEST_AMOUNT          = 122;
+    uint256 private constant OFFSET_ORIGIN_FEE_AMOUNT    = 154;
+    uint256 private constant OFFSET_CALL_VALUE           = 186;
+    uint256 private constant OFFSET_DEADLINE             = 218;
+    uint256 private constant OFFSET_NONCE                = 250;
+    uint256 private constant OFFSET_EXCLUSIVITY_RELAYER  = 282;
     uint256 private constant OFFSET_EXCLUSIVITY_END_TIME = 302;
-    uint256 private constant OFFSET_CALL_PARAMS = 334;
+    uint256 private constant OFFSET_CALL_PARAMS          = 334;
+    // forgefmt: disable-end
 
     error BridgeTransactionV2__InvalidEncodedTx();
     error BridgeTransactionV2__UnsupportedVersion(uint16 version);
