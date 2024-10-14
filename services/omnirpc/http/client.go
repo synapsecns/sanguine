@@ -3,6 +3,8 @@ package http
 import (
 	"context"
 	"strings"
+
+	"github.com/synapsecns/sanguine/core/metrics"
 )
 
 // Client contains a post client for interacting with json rpc servers.
@@ -26,6 +28,8 @@ type Request interface {
 	SetRequestURI(uri string) Request
 	// Do makes the actual request
 	Do() (Response, error)
+	// WithMetrics sets the metrics for the request
+	WithMetrics(handler metrics.Handler) Request
 }
 
 // Response is a standardized response interface.

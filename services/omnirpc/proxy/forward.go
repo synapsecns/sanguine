@@ -5,6 +5,9 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	goHTTP "net/http"
+	"strings"
+
 	"github.com/ImVexed/fasturl"
 	"github.com/goccy/go-json"
 	"github.com/jftuga/ellipsis"
@@ -14,8 +17,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
-	goHTTP "net/http"
-	"strings"
 )
 
 type rawResponse struct {
@@ -129,7 +130,7 @@ const (
 )
 
 func (f *Forwarder) forwardRequest(parentCtx context.Context, endpoint string) (_ *rawResponse, err error) {
-	ctx, span := f.tracer.Start(parentCtx, "forwardRequest",
+	ctx, span := f.handler.Tracer().Start(parentCtx, "forwardRequest",
 		trace.WithAttributes(attribute.String("endpoint", endpoint)),
 	)
 
@@ -158,6 +159,7 @@ func (f *Forwarder) forwardRequest(parentCtx context.Context, endpoint string) (
 		SetHeaderBytes(http.XForwardedFor, http.OmniRPCValue).
 		SetHeaderBytes(http.ContentType, http.JSONType).
 		SetHeaderBytes(http.Accept, http.JSONType).
+		WithMetrics(f.handler).
 		Do()
 	if err != nil {
 		return nil, fmt.Errorf("could not get response from %s: %w", endpoint, err)

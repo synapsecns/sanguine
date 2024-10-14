@@ -3,19 +3,21 @@ package proxy
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 
+	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/Soft/iter"
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
 	"github.com/puzpuzpuz/xsync"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/threaditer"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
@@ -50,8 +52,8 @@ type Forwarder struct {
 	mux sync.RWMutex
 	// span is the span for the request
 	span trace.Span
-	// tracer is the tracer for the request
-	tracer trace.Tracer
+	// handler is the metrics handler
+	handler metrics.Handler
 }
 
 // Reset resets the forwarder so it can be reused.
@@ -77,9 +79,9 @@ func (r *RPCProxy) AcquireForwarder() *Forwarder {
 	v := r.forwarderPool.Get()
 	if v == nil {
 		return &Forwarder{
-			r:      r,
-			client: r.client,
-			tracer: r.tracer,
+			r:       r,
+			client:  r.client,
+			handler: r.handler,
 		}
 	}
 	//nolint: forcetypeassert

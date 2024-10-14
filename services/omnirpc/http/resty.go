@@ -2,7 +2,9 @@ package http
 
 import (
 	"context"
+
 	"github.com/go-resty/resty/v2"
+	"github.com/synapsecns/sanguine/core/metrics"
 )
 
 // RestyClient is a resty client for making requests to the http client.
@@ -19,6 +21,7 @@ func NewRestyClient() Client {
 type restyRequest struct {
 	*resty.Request
 	endpoint string
+	handler  metrics.Handler
 }
 
 // NewRequest create a new request.
@@ -57,6 +60,11 @@ func (r *restyRequest) SetRequestURI(uri string) Request {
 func (r *restyRequest) Do() (Response, error) {
 	//nolint: wrapcheck
 	return r.Request.Post(r.endpoint)
+}
+
+func (r *restyRequest) WithMetrics(metrics metrics.Handler) Request {
+	r.handler = metrics
+	return r
 }
 
 var _ Client = &RestyClient{}
