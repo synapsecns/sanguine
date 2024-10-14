@@ -1,5 +1,5 @@
 {
-  "name": "rfq-loadtest",
+  "name": "@synapsecns/rfq-loadtest",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
@@ -16,6 +16,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "private": "true",
   "description": "",
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
