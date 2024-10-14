@@ -239,11 +239,11 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 	}
 
 	// adjust amounts for our internal offsets on origin / dest token values
-	originAmountAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.OriginChainId, quote.Transaction.OriginToken, quote.Transaction.OriginAmount, true)
+	originAmountAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.OriginChainId, quote.Transaction.OriginToken, quote.Transaction.OriginAmount)
 	if err != nil {
 		return false, fmt.Errorf("error getting origin amount with offset: %w", err)
 	}
-	destAmountAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.DestChainId, quote.Transaction.DestToken, quote.Transaction.DestAmount, false)
+	destAmountAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.DestChainId, quote.Transaction.DestToken, quote.Transaction.DestAmount)
 	if err != nil {
 		return false, fmt.Errorf("error getting dest amount with offset: %w", err)
 	}
@@ -258,16 +258,21 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 		attribute.String("fee", fee.String()),
 		attribute.String("cost", cost.String()),
 	)
+	fmt.Printf("originAmountAdj: %s, cost: %s\n", originAmountAdj.String(), cost.String())
+	fmt.Printf("originAmountAdj.Cmp(cost): %d\n", originAmountAdj.Cmp(cost))
+	fmt.Printf("destAmountAdj: %s, quote.Transaction.DestAmount: %s\n", destAmountAdj.String(), quote.Transaction.DestAmount.String())
+	fmt.Printf("destAmountAdj.Cmp(quote.Transaction.DestAmount): %d\n", destAmountAdj.Cmp(quote.Transaction.DestAmount))
 
 	return originAmountAdj.Cmp(cost) >= 0, nil
 }
 
-func (m *Manager) getAmountWithOffset(ctx context.Context, chainID uint32, tokenAddr common.Address, amount *big.Int, isOrigin bool) (*big.Int, error) {
+func (m *Manager) getAmountWithOffset(ctx context.Context, chainID uint32, tokenAddr common.Address, amount *big.Int) (*big.Int, error) {
 	tokenName, err := m.config.GetTokenName(uint32(chainID), tokenAddr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("error getting token name: %w", err)
 	}
-	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(int(chainID), tokenName, isOrigin)
+	// apply offset directly to amount without considering origin/dest
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(int(chainID), tokenName, false)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}

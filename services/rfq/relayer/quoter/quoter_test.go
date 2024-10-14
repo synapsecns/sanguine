@@ -171,6 +171,40 @@ func (s *QuoterSuite) TestIsProfitable() {
 	// Set fee to less than breakeven; i.e. destAmount < originAmount - fee.
 	quote.Transaction.DestAmount = balance
 	s.False(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	origin := int(s.origin)
+	dest := int(s.destination)
+	setQuoteOffsets := func(originOffset, destOffset float64) {
+		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
+		originTokenCfg.QuoteOffsetBps = originOffset
+		s.config.Chains[origin].Tokens["USDC"] = originTokenCfg
+		destTokenCfg := s.config.Chains[dest].Tokens["USDC"]
+		destTokenCfg.QuoteOffsetBps = destOffset
+		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
+		s.manager.SetConfig(s.config)
+	}
+	quote.Transaction.DestAmount = new(big.Int).Sub(balance, fee)
+
+	// Set dest offset to 20%; we get a token that is more valuable -> still profitable
+	setQuoteOffsets(0, 2000)
+	s.True(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	// Set dest offset to -20%; we get a token that is less valuable -> no longer profitable
+	setQuoteOffsets(0, -2000)
+	s.False(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	// Set origin offset to 20%; we send a token that is more valuable -> no longer profitable
+	setQuoteOffsets(2000, 0)
+	s.False(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	// Set origin offset to -20%; we send a token that is less valuable -> still profitable
+	setQuoteOffsets(-2000, 0)
+	s.True(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	// Set both offsets to 20%; both tokens more valuable -> still profitable
+	quote.Transaction.DestAmount = balance
+	setQuoteOffsets(100, 100)
+	s.True(s.manager.IsProfitable(s.GetTestContext(), quote))
 }
 
 func (s *QuoterSuite) TestGetOriginAmount() {
