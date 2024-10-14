@@ -608,7 +608,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 	}
 
 	// Build the quote
-	destAmount, err := m.getDestAmount(ctx, originAmount, input.DestChainID, destToken)
+	destAmount, err := m.getDestAmount(ctx, originAmount, destToken, input)
 	if err != nil {
 		logger.Error("Error getting dest amount", "error", err)
 		return nil, fmt.Errorf("error getting dest amount: %w", err)
@@ -707,17 +707,6 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	balanceFlt := new(big.Float).SetInt(input.DestBalance)
 	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
-	// Apply the quoteOffset to origin token.
-	tokenName, err := m.config.GetTokenName(uint32(input.DestChainID), input.DestTokenAddr.Hex())
-	if err != nil {
-		return nil, fmt.Errorf("error getting token name: %w", err)
-	}
-	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(input.OriginChainID, tokenName, true)
-	if err != nil {
-		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
-	}
-	quoteAmount = m.applyOffset(ctx, quoteOffsetBps, quoteAmount)
-
 	// Clip the quoteAmount by the minQuoteAmount
 	minQuoteAmount := m.config.GetMinQuoteAmount(input.DestChainID, input.DestTokenAddr)
 	if quoteAmount.Cmp(minQuoteAmount) < 0 {
@@ -812,7 +801,7 @@ func (m *Manager) deductGasCost(parentCtx context.Context, quoteAmount *big.Int,
 
 var errMinGasExceedsQuoteAmount = errors.New("min gas token exceeds quote amount")
 
-func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int, chainID int, tokenName string) (*big.Int, error) {
+func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int, tokenName string, input QuoteInput) (*big.Int, error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getDestAmount", trace.WithAttributes(
 		attribute.String("quote_amount", originAmount.String()),
 	))
@@ -820,20 +809,27 @@ func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int
 		metrics.EndSpan(span)
 	}()
 
-	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(chainID, tokenName, false)
+	// Apply origin, destination, and quote width offsets
+	originOffsetBps, err := m.config.GetQuoteOffsetBps(input.OriginChainID, tokenName, true)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}
-	quoteWidthBps, err := m.config.GetQuoteWidthBps(chainID)
+	destOffsetBps, err := m.config.GetQuoteOffsetBps(input.DestChainID, tokenName, false)
+	if err != nil {
+		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
+	}
+	quoteWidthBps, err := m.config.GetQuoteWidthBps(input.DestChainID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote width bps: %w", err)
 	}
-	totalOffsetBps := quoteOffsetBps + quoteWidthBps
+	totalOffsetBps := originOffsetBps + destOffsetBps + quoteWidthBps
 	destAmount := m.applyOffset(ctx, totalOffsetBps, originAmount)
 
 	span.SetAttributes(
-		attribute.Float64("quote_offset_bps", quoteOffsetBps),
+		attribute.Float64("origin_offset_bps", originOffsetBps),
+		attribute.Float64("dest_offset_bps", destOffsetBps),
 		attribute.Float64("quote_width_bps", quoteWidthBps),
+		attribute.Float64("total_offset_bps", totalOffsetBps),
 		attribute.String("dest_amount", destAmount.String()),
 	)
 	return destAmount, nil
