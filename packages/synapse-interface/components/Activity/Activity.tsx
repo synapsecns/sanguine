@@ -71,7 +71,7 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {viewingAddress && !isLoading && !hasHistoricalTransactions && (
         <div className="text-secondary">
-          {t('No transactions in last 30 days.')}
+          {t('No transactions in last 30 days')}
           <UserExplorerLink connectedAddress={viewingAddress} />
         </div>
       )}
