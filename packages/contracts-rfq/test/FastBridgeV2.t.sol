@@ -44,6 +44,9 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     IFastBridgeV2.BridgeParamsV2 internal tokenParamsV2;
     IFastBridgeV2.BridgeParamsV2 internal ethParamsV2;
 
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testFastBridgeV2Test() external {}
+
     function setUp() public virtual {
         srcToken = new MockERC20("SrcToken", 6);
         dstToken = new MockERC20("DstToken", 6);
@@ -240,5 +243,9 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
 
     function cheatCollectedProtocolFees(address token, uint256 amount) public {
         stdstore.target(address(fastBridge)).sig("protocolFees(address)").with_key(token).checked_write(amount);
+    }
+
+    function cheatSenderNonce(address sender, uint256 nonce) public {
+        stdstore.target(address(fastBridge)).sig("senderNonces(address)").with_key(sender).checked_write(nonce);
     }
 }

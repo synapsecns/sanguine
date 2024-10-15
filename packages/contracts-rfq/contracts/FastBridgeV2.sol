@@ -162,7 +162,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
         // transfer tokens to bridge contract
         /// @dev use returned originAmount in request in case of transfer fees
-        uint256 originAmount = _pullToken(params.originToken, params.originAmount);
+        uint256 originAmount = _takeBridgedUserAsset(params.originToken, params.originAmount);
 
         // track amount of origin token owed to protocol
         uint256 originFeeAmount;
@@ -220,17 +220,31 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         address to = transaction.destRecipient;
         address token = transaction.destToken;
         uint256 amount = transaction.destAmount;
+        uint256 callValue = transaction.callValue;
+
+        // Emit the event before any external calls
+        emit BridgeRelayed({
+            transactionId: transactionId,
+            relayer: relayer,
+            to: to,
+            originChainId: transaction.originChainId,
+            originToken: transaction.originToken,
+            destToken: token,
+            originAmount: transaction.originAmount,
+            destAmount: amount,
+            chainGasAmount: callValue
+        });
 
         // All state changes have been done at this point, can proceed to the external calls.
         // This follows the checks-effects-interactions pattern to mitigate potential reentrancy attacks.
         if (token == UniversalTokenLib.ETH_ADDRESS) {
             // For ETH non-zero callValue is not allowed
-            if (transaction.callValue != 0) revert NativeTokenCallValueNotSupported();
+            if (callValue != 0) revert NativeTokenCallValueNotSupported();
             // Check that the correct msg.value was sent
             if (msg.value != amount) revert MsgValueIncorrect();
         } else {
             // For ERC20s, we check that the correct msg.value was sent
-            if (msg.value != transaction.callValue) revert MsgValueIncorrect();
+            if (msg.value != callValue) revert MsgValueIncorrect();
             // We need to transfer the tokens from the Relayer to the recipient first before performing an
             // optional post-transfer arbitrary call.
             IERC20(token).safeTransferFrom(msg.sender, to, amount);
@@ -246,18 +260,6 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             // or a non-zero callValue request with an ERC20. In both cases, transfer the ETH to the recipient.
             Address.sendValue(payable(to), msg.value);
         }
-
-        emit BridgeRelayed({
-            transactionId: transactionId,
-            relayer: relayer,
-            to: to,
-            originChainId: transaction.originChainId,
-            originToken: transaction.originToken,
-            destToken: transaction.destToken,
-            originAmount: transaction.originAmount,
-            destAmount: transaction.destAmount,
-            chainGasAmount: transaction.callValue
-        });
     }
 
     /// @inheritdoc IFastBridgeV2
@@ -324,21 +326,24 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         return abi.decode(request, (BridgeTransactionV2));
     }
 
-    /// @notice Pulls a requested token from the user to this contract.
-    function _pullToken(address token, uint256 amount) internal returns (uint256 amountPulled) {
+    /// @notice Takes the bridged asset from the user into FastBridgeV2 custody. It will be later
+    /// claimed by the relayer who completed the relay on destination chain, or refunded back to the user,
+    /// should no one complete the relay.
+    function _takeBridgedUserAsset(address token, uint256 amount) internal returns (uint256 amountTaken) {
         if (token == UniversalTokenLib.ETH_ADDRESS) {
-            // For ETH we just need to check that the supplied msg.value is correct
+            // For ETH we just need to check that the supplied msg.value is correct.
+            // Supplied `msg.value` is already in FastBridgeV2 custody.
             if (amount != msg.value) revert MsgValueIncorrect();
-            amountPulled = msg.value;
+            amountTaken = msg.value;
         } else {
+            // For ERC20s, token is explicitly transferred from the user to FastBridgeV2.
+            // We don't allow non-zero `msg.value` to avoid extra funds from being stuck in FastBridgeV2.
             token.assertIsContract();
-            // Record token balance before transfer
-            amountPulled = IERC20(token).balanceOf(address(this));
-            // Token needs to be pulled only if msg.value is zero
-            // This way user can specify WETH as the origin asset
+            if (msg.value != 0) revert MsgValueIncorrect();
+            amountTaken = IERC20(token).balanceOf(address(this));
             IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
-            // Use the difference between the recorded balance and the current balance as the amountPulled
-            amountPulled = IERC20(token).balanceOf(address(this)) - amountPulled;
+            // Use the balance difference as the amount taken in case of fee on transfer tokens.
+            amountTaken = IERC20(token).balanceOf(address(this)) - amountTaken;
         }
     }
 
@@ -419,7 +424,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (relayer == address(0)) revert ZeroAddress();
         // Check if the transaction has already been relayed
         if (bridgeRelays(transactionId)) revert TransactionRelayed();
-        if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
+        if (transaction.destChainId != block.chainid) revert ChainIncorrect();
         // Check the deadline for relay to happen
         if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
         // Check the exclusivity period, if it is still ongoing

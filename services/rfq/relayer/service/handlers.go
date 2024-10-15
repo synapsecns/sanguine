@@ -50,7 +50,12 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return nil
 	}
 
-	defer unlocker.Unlock()
+	shouldUnlock := true
+	defer func() {
+		if shouldUnlock {
+			unlocker.Unlock()
+		}
+	}()
 
 	_, err = r.db.GetQuoteRequestByID(ctx, req.TransactionId)
 	// expect no results
@@ -111,12 +116,17 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	if err != nil {
 		return fmt.Errorf("could not get quote request handler: %w", err)
 	}
-	// Forward instead of lock since we called lock above.
-	fwdErr := qr.Forward(ctx, dbReq)
-	if fwdErr != nil {
-		logger.Errorf("could not forward to handle seen: %w", fwdErr)
-		span.AddEvent("could not forward to handle seen")
-	}
+
+	// Forward in new goroutine and retain the lock.
+	shouldUnlock = false
+	go func() {
+		defer unlocker.Unlock()
+		fwdErr := qr.Forward(ctx, dbReq)
+		if fwdErr != nil {
+			logger.Errorf("could not forward to handle seen: %w", fwdErr)
+			span.AddEvent(fmt.Sprintf("could not forward to handle seen: %s", fwdErr.Error()))
+		}
+	}()
 
 	return nil
 }

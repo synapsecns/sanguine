@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.11...@synapsecns/explorer-ui@0.4.0) (2024-10-10)
+
+
+### Features
+
+* **synapse-constants:** adds preinstall step ([#3269](https://github.com/synapsecns/sanguine/issues/3269)) ([acd61de](https://github.com/synapsecns/sanguine/commit/acd61de4846d9b23d7aa834b8f2eefcaae486c7d))
+
+
+
+
+
+## [0.3.11](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.10...@synapsecns/explorer-ui@0.3.11) (2024-10-10)
+
+**Note:** Version bump only for package @synapsecns/explorer-ui
+
+
+
+
+
 ## [0.3.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.9...@synapsecns/explorer-ui@0.3.10) (2024-10-05)
 
 **Note:** Version bump only for package @synapsecns/explorer-ui
