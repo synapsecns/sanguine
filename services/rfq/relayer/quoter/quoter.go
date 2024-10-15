@@ -268,7 +268,7 @@ func (m *Manager) getAmountWithOffset(ctx context.Context, chainID uint32, token
 		return nil, fmt.Errorf("error getting token name: %w", err)
 	}
 	// apply offset directly to amount without considering origin/dest
-	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(int(chainID), tokenName, false)
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(int(chainID), tokenName, true)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}
