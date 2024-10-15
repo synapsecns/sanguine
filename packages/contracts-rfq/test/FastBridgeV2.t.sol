@@ -44,6 +44,9 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     IFastBridgeV2.BridgeParamsV2 internal tokenParamsV2;
     IFastBridgeV2.BridgeParamsV2 internal ethParamsV2;
 
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testFastBridgeV2Test() external {}
+
     function setUp() public virtual {
         srcToken = new MockERC20("SrcToken", 6);
         dstToken = new MockERC20("DstToken", 6);
