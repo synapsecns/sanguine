@@ -50,13 +50,23 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     bytes internal invalidRequestV2;
     bytes internal mockRequestV3;
 
-    function createInvalidRequestV2(bytes calldata requestV2) external pure returns (bytes memory) {
-        // Cut the last 1 byte
-        return requestV2[:requestV2.length - 1];
+    function createInvalidRequestV2(bytes memory requestV2) public pure returns (bytes memory result) {
+        // Copy everything but the last byte
+        result = new bytes(requestV2.length - 1);
+        for (uint256 i = 0; i < result.length; i++) {
+            result[i] = requestV2[i];
+        }
     }
 
-    function createMockRequestV3(bytes calldata requestV2) external pure returns (bytes memory) {
-        return abi.encodePacked(uint16(3), requestV2[2:]);
+    function createMockRequestV3(bytes memory requestV2) public pure returns (bytes memory result) {
+        result = new bytes(requestV2.length);
+        // Set the version to 3
+        result[0] = 0x00;
+        result[1] = 0x03;
+        // Copy the rest of the request
+        for (uint256 i = 2; i < result.length; i++) {
+            result[i] = requestV2[i];
+        }
     }
 
     function setUp() public virtual {
@@ -65,10 +75,10 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         createFixtures();
         mockRequestV1 = abi.encode(extractV1(tokenTx));
         // Invalid V2 request is formed before `createFixturesV2` to ensure it's not using callParams
-        invalidRequestV2 = this.createInvalidRequestV2(BridgeTransactionV2Lib.encodeV2(tokenTx));
+        invalidRequestV2 = createInvalidRequestV2(BridgeTransactionV2Lib.encodeV2(tokenTx));
         createFixturesV2();
         // Mock V3 request is formed after `createFixturesV2` to ensure it's using callParams if needed
-        mockRequestV3 = this.createMockRequestV3(BridgeTransactionV2Lib.encodeV2(ethTx));
+        mockRequestV3 = createMockRequestV3(BridgeTransactionV2Lib.encodeV2(ethTx));
         fastBridge = deployFastBridge();
         configureFastBridge();
         mintTokens();
