@@ -1,0 +1,34 @@
+{
+  "name": "@synapsecns/rfq-loadtest",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cp src/pyRepeater.py dist/ && tsc",
+    "lint": "eslint .",
+    "ci:lint": "eslint .",
+    "typecheck": "tsc",
+    "test:coverage": "echo 'No tests defined.'",
+    "build:go": " ",
+    "build:slither": " "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "private": "true",
+  "description": "",
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.7.5",
+    "@types/yargs": "^17.0.33",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "js-yaml": "^4.1.0",
+    "viem": "^2.21.19",
+    "yargs": "^17.7.2"
+  }
+}
