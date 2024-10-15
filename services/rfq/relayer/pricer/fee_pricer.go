@@ -235,6 +235,30 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	if err != nil {
 		return nil, err
 	}
+	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(gasEstimate)))
+
+	feeDenom, err := f.getDenomFee(ctx, gasChain, denomChain, denomToken, feeWei)
+	if err != nil {
+		return nil, err
+	}
+
+	feeScaled, err := f.getFeeWithMultiplier(ctx, gasChain, isQuote, feeDenom)
+	if err != nil {
+		return nil, err
+	}
+
+	span.SetAttributes(
+		attribute.String("gas_price", gasPrice.String()),
+		attribute.String("fee_wei", feeWei.String()),
+		attribute.String("fee_denom", feeDenom.String()),
+		attribute.String("fee_scaled", feeScaled.String()),
+	)
+	return feeScaled, nil
+}
+
+func (f *feePricer) getDenomFee(ctx context.Context, gasChain, denomChain uint32, denomToken string, feeWei *big.Float) (*big.Float, error) {
+	span := trace.SpanFromContext(ctx)
+
 	nativeToken, err := f.config.GetNativeToken(int(gasChain))
 	if err != nil {
 		return nil, err
@@ -255,7 +279,6 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 
 	// Compute the fee.
 	var feeDenom *big.Float
-	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(gasEstimate)))
 	if denomToken == nativeToken {
 		// Denomination token is native token, so no need for unit conversion.
 		feeDenom = feeWei
@@ -272,6 +295,17 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 			attribute.String("fee_usdc", feeUSDC.String()),
 		)
 	}
+	span.SetAttributes(
+		attribute.Float64("native_token_price", nativeTokenPrice),
+		attribute.Float64("denom_token_price", denomTokenPrice),
+		attribute.Int("denom_token_decimals", int(denomTokenDecimals)),
+	)
+
+	return feeDenom, nil
+}
+
+func (f *feePricer) getFeeWithMultiplier(ctx context.Context, gasChain uint32, isQuote bool, feeDenom *big.Float) (feeScaled *big.Int, err error) {
+	span := trace.SpanFromContext(ctx)
 
 	var multiplier float64
 	if isQuote {
@@ -285,22 +319,16 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 			return nil, fmt.Errorf("could not get relay fixed fee multiplier: %w", err)
 		}
 	}
+	span.SetAttributes(
+		attribute.Float64("multiplier", multiplier),
+	)
 
 	// Apply the fixed fee multiplier.
 	// Note that this step rounds towards zero- we may need to apply rounding here if
 	// we want to be conservative and lean towards overestimating fees.
-	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeDenom, new(big.Float).SetFloat64(multiplier)).Int(nil)
-	span.SetAttributes(
-		attribute.String("gas_price", gasPrice.String()),
-		attribute.Float64("native_token_price", nativeTokenPrice),
-		attribute.Float64("denom_token_price", denomTokenPrice),
-		attribute.Float64("multplier", multiplier),
-		attribute.Int("denom_token_decimals", int(denomTokenDecimals)),
-		attribute.String("fee_wei", feeWei.String()),
-		attribute.String("fee_denom", feeDenom.String()),
-		attribute.String("fee_usdc_decimals_scaled", feeUSDCDecimalsScaled.String()),
-	)
-	return feeUSDCDecimalsScaled, nil
+	feeScaled, _ = new(big.Float).Mul(feeDenom, new(big.Float).SetFloat64(multiplier)).Int(nil)
+
+	return feeScaled, nil
 }
 
 // getGasPrice returns the gas price for a given chainID in native units.
