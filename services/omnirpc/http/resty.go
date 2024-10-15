@@ -13,13 +13,14 @@ import (
 
 // RestyClient is a resty client for making requests to the http client.
 type RestyClient struct {
-	client *resty.Client
+	client  *resty.Client
+	metrics metrics.Handler
 }
 
 // NewRestyClient creates a resty client.
 // while much slower than fasthttp, this client requests context cancellation.
-func NewRestyClient() Client {
-	return &RestyClient{client: resty.New()}
+func NewRestyClient(metrics metrics.Handler) Client {
+	return &RestyClient{client: resty.New(), metrics: metrics}
 }
 
 type restyRequest struct {
@@ -32,6 +33,7 @@ type restyRequest struct {
 func (r RestyClient) NewRequest() Request {
 	return &restyRequest{
 		Request: r.client.R(),
+		handler: r.metrics,
 	}
 }
 
@@ -118,11 +120,6 @@ func (r *restyRequest) Do() (_ Response, err error) {
 		return nil, fmt.Errorf("could not get response from %s: %w", r.endpoint, err)
 	}
 	return resp, nil
-}
-
-func (r *restyRequest) WithMetrics(metrics metrics.Handler) Request {
-	r.handler = metrics
-	return r
 }
 
 var _ Client = &RestyClient{}

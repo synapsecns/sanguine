@@ -5,6 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strconv"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -18,10 +23,6 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/http/mocks"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
 	proxyMocks "github.com/synapsecns/sanguine/services/omnirpc/proxy/mocks"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"strconv"
 )
 
 func (p *ProxySuite) TestServeRequestNoChain() {
@@ -84,7 +85,7 @@ func (p *ProxySuite) TestAcquireReleaseForwarder() {
 	forwarder := prxy.AcquireForwarder()
 	forwarder.SetChain(new(chainManagerMocks.Chain))
 	forwarder.SetC(&gin.Context{})
-	forwarder.SetClient(omniHTTP.NewClient(omniHTTP.Resty))
+	forwarder.SetClient(omniHTTP.NewClient(p.metrics, omniHTTP.Resty))
 	forwarder.SetR(prxy)
 	forwarder.SetBody(gofakeit.ImagePng(5, 5))
 	forwarder.SetRequestID([]byte(uuid.New().String()))
@@ -144,12 +145,14 @@ func (p *ProxySuite) TestForwardRequest() {
 		Result:  nil,
 	})
 
-	captureClient := omniHTTP.NewCaptureClient(func(c *omniHTTP.CapturedRequest) (omniHTTP.Response, error) {
-		bodyRes := new(mocks.Response)
-		bodyRes.On("Body").Return(testRes)
-		bodyRes.On("StatusCode").Return(200)
-		return bodyRes, nil
-	})
+	captureClient := omniHTTP.NewCaptureClient(
+		p.metrics,
+		func(c *omniHTTP.CapturedRequest) (omniHTTP.Response, error) {
+			bodyRes := new(mocks.Response)
+			bodyRes.On("Body").Return(testRes)
+			bodyRes.On("StatusCode").Return(200)
+			return bodyRes, nil
+		})
 	prxy.SetClient(captureClient)
 
 	testURL := gofakeit.URL()

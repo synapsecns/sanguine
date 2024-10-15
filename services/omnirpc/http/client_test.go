@@ -1,11 +1,12 @@
 package http_test
 
 import (
-	"github.com/brianvoe/gofakeit/v6"
-	. "github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
+
+	"github.com/brianvoe/gofakeit/v6"
+	. "github.com/stretchr/testify/assert"
 )
 
 var jsonOptions = &gofakeit.JSONOptions{

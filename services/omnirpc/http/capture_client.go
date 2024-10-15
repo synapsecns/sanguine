@@ -14,14 +14,15 @@ import (
 type CaptureClient struct {
 	requests     []*CapturedRequest
 	responseFunc MakeResponseFunc
+	handler      metrics.Handler
 }
 
 // MakeResponseFunc is used for mocking responses.
 type MakeResponseFunc func(c *CapturedRequest) (Response, error)
 
 // NewCaptureClient creates  anew client for testing.
-func NewCaptureClient(responseFunc MakeResponseFunc) *CaptureClient {
-	return &CaptureClient{requests: []*CapturedRequest{}, responseFunc: responseFunc}
+func NewCaptureClient(handler metrics.Handler, responseFunc MakeResponseFunc) *CaptureClient {
+	return &CaptureClient{requests: []*CapturedRequest{}, responseFunc: responseFunc, handler: handler}
 }
 
 // Requests turns a list of sent requests. These are not mutation safe.
@@ -34,6 +35,7 @@ func (c *CaptureClient) NewRequest() Request {
 	request := CapturedRequest{
 		Client:        c,
 		StringHeaders: make(map[string]string),
+		Handler:       c.handler,
 	}
 	c.requests = append(c.requests, &request)
 	return &request
@@ -156,12 +158,6 @@ func (c *CapturedRequest) Do() (Response, error) {
 	span.SetAttributes(attribute.String("response", common.Bytes2Hex(resp.Body())))
 
 	return resp, err
-}
-
-// WithMetrics sets the metrics handler.
-func (c *CapturedRequest) WithMetrics(metrics metrics.Handler) Request {
-	c.Handler = metrics
-	return c
 }
 
 var _ Request = &CapturedRequest{}

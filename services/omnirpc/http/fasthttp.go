@@ -31,6 +31,7 @@ type fastHTTPClient struct {
 	// no longer needed. This allows Request recycling, reduces GC pressure
 	// and usually improves performance.
 	reqPool sync.Pool
+	handler metrics.Handler
 }
 
 // FastClient is an interface for storing both fasthttp.Clients and fasthttp.HostClients.
@@ -47,16 +48,20 @@ var _ FastClient = &fasthttp.HostClient{}
 // while substantially faster than resty, this can be a bad choice in certain cases:
 //   - Context Cancellation not respected: fasthttp does not support context cancellation, so we hardcode a timeout here
 //     this is less than ideal and puts additional load on both the application and rpc servers since we pessimistically fetch
-func NewFastHTTPClient() Client {
-	return &fastHTTPClient{clients: xsync.NewMapOf[FastClient](), defaultClient: &fasthttp.Client{
-		NoDefaultUserAgentHeader:      true,
-		Dial:                          dialer.Dial,
-		DialDualStack:                 false,
-		ReadTimeout:                   time.Second * 30,
-		WriteTimeout:                  time.Second * 30,
-		DisableHeaderNamesNormalizing: true,
-		DisablePathNormalizing:        true,
-	}}
+func NewFastHTTPClient(handler metrics.Handler) Client {
+	return &fastHTTPClient{
+		clients: xsync.NewMapOf[FastClient](),
+		defaultClient: &fasthttp.Client{
+			NoDefaultUserAgentHeader:      true,
+			Dial:                          dialer.Dial,
+			DialDualStack:                 false,
+			ReadTimeout:                   time.Second * 30,
+			WriteTimeout:                  time.Second * 30,
+			DisableHeaderNamesNormalizing: true,
+			DisablePathNormalizing:        true,
+		},
+		handler: handler,
+	}
 }
 
 type rawResponse struct {
@@ -140,10 +145,10 @@ func (f *fastHTTPClient) AcquireRequest() *fastHTTPRequest {
 	v := f.reqPool.Get()
 	if v == nil {
 		return &fastHTTPRequest{
-			&fasthttp.Request{},
-			f,
-			nil,
-			nil,
+			Request: &fasthttp.Request{},
+			client:  f,
+			context: nil,
+			handler: f.handler,
 		}
 	}
 	//nolint: forcetypeassert
@@ -279,11 +284,6 @@ func (f *fastHTTPRequest) Do() (Response, error) {
 	default:
 		return newRawResponse(realResponse, resp.StatusCode()), nil
 	}
-}
-
-func (f *fastHTTPRequest) WithMetrics(metrics metrics.Handler) Request {
-	f.handler = metrics
-	return f
 }
 
 func (f *fastHTTPClient) NewRequest() Request {

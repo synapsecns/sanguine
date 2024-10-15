@@ -159,7 +159,6 @@ func (f *Forwarder) forwardRequest(parentCtx context.Context, endpoint string) (
 		SetHeaderBytes(http.XForwardedFor, http.OmniRPCValue).
 		SetHeaderBytes(http.ContentType, http.JSONType).
 		SetHeaderBytes(http.Accept, http.JSONType).
-		WithMetrics(f.handler).
 		Do()
 	if err != nil {
 		return nil, fmt.Errorf("could not get response from %s: %w", endpoint, err)

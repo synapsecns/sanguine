@@ -1,11 +1,13 @@
 package http_test
 
 import (
+	"testing"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
-	"testing"
 )
 
 // clientSuite defines the basic test suite.
@@ -27,7 +29,7 @@ func (c *HTTPSuite) SetupTest() {
 	c.TestSuite.SetupTest()
 
 	for _, clientType := range http.AllClientTypes {
-		c.clients = append(c.clients, http.NewClient(clientType))
+		c.clients = append(c.clients, http.NewClient(metrics.NewNullHandler(), clientType))
 	}
 }
 

@@ -2,23 +2,27 @@ package http_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/brianvoe/gofakeit/v6"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/http/mocks"
-	"testing"
 )
 
 func TestCaptureClient(t *testing.T) {
 	testRes := gofakeit.ImageJpeg(50, 50)
 	testBody := gofakeit.ImageJpeg(50, 50)
 
-	client := http.NewCaptureClient(func(c *http.CapturedRequest) (http.Response, error) {
-		bodyRes := new(mocks.Response)
-		bodyRes.On("Body").Return(testRes)
+	client := http.NewCaptureClient(
+		metrics.NewNullHandler(),
+		func(c *http.CapturedRequest) (http.Response, error) {
+			bodyRes := new(mocks.Response)
+			bodyRes.On("Body").Return(testRes)
 
-		return bodyRes, nil
-	})
+			return bodyRes, nil
+		})
 
 	testCtx := context.Background()
 

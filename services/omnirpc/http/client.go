@@ -28,8 +28,6 @@ type Request interface {
 	SetRequestURI(uri string) Request
 	// Do makes the actual request
 	Do() (Response, error)
-	// WithMetrics sets the metrics for the request
-	WithMetrics(handler metrics.Handler) Request
 }
 
 // Response is a standardized response interface.
@@ -66,14 +64,14 @@ func init() {
 
 // NewClient creates a client from the client type
 // defaults to fast http.
-func NewClient(clientType ClientType) Client {
+func NewClient(handler metrics.Handler, clientType ClientType) Client {
 	switch clientType {
 	case FastHTTP:
-		return NewFastHTTPClient()
+		return NewFastHTTPClient(handler)
 	case Resty:
-		return NewRestyClient()
+		return NewRestyClient(handler)
 	default:
-		return NewRestyClient()
+		return NewRestyClient(handler)
 	}
 }
 

@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/services/omnirpc/modules/mixins"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/synapsecns/sanguine/services/omnirpc/modules/mixins"
 
 	"github.com/flowchartsman/swaggerui"
 	"github.com/gin-gonic/gin"
@@ -57,7 +58,7 @@ func NewProxy(proxyURL, backupURL string, receiptTimeout time.Duration, handler 
 		backupURL:      backupURL,
 		handler:        handler,
 		port:           uint16(port),
-		client:         omniHTTP.NewRestyClient(),
+		client:         omniHTTP.NewRestyClient(handler),
 		logger:         handler.ExperimentalLogger(),
 		chainID:        chainID,
 		receiptTimeout: receiptTimeout,

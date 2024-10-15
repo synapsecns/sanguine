@@ -54,7 +54,7 @@ func NewHarmonyProxy(proxyURL string, handler metrics.Handler, port int) *Harmon
 		proxyURL: proxyURL,
 		handler:  handler,
 		port:     uint16(port),
-		client:   omniHTTP.NewRestyClient(),
+		client:   omniHTTP.NewRestyClient(handler),
 		tracer:   handler.Tracer(),
 	}
 }
