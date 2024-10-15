@@ -4,7 +4,7 @@ dotenv.config()
 
 export const getOmniRpcUrl = (chainId: number) => {
   if (!process.env.OMNIRPC_BASE_URL) {
-    throw new Error('OMNIRPC_BASE_URL environment variable is not set')
+    return null
   }
   return `${process.env.OMNIRPC_BASE_URL}/${chainId}`
 }
