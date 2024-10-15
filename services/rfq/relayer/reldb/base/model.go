@@ -120,6 +120,8 @@ type Rebalance struct {
 	TokenName       string
 }
 
+const nativeTokenDecimals = 18
+
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
 // TODO: add validation for deadline > uint64
 // TODO: roundtripper test.
@@ -144,7 +146,7 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		OriginAmountOriginal: request.Transaction.OriginAmount.String(),
 		OriginAmount:         decimal.NewFromBigInt(request.Transaction.OriginAmount, int32(request.OriginTokenDecimals)),
 		DestAmountOriginal:   request.Transaction.DestAmount.String(),
-		DestAmount:           decimal.NewFromBigInt(request.Transaction.DestAmount, int32(request.DestTokenDecimals)),
+		DestAmount:           decimal.NewFromBigInt(request.Transaction.DestAmount, int32(nativeTokenDecimals)),
 		OriginFeeAmount:      decimal.NewFromBigInt(request.Transaction.OriginFeeAmount, int32(request.OriginTokenDecimals)),
 		CallValue:            decimal.NewFromBigInt(request.Transaction.CallValue, int32(request.OriginTokenDecimals)),
 		CallParams:           request.Transaction.CallParams,
@@ -237,7 +239,7 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 			OriginAmount:       new(big.Int).Div(r.OriginAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.OriginTokenDecimals))))),
 			DestAmount:         new(big.Int).Div(r.DestAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.DestTokenDecimals))))),
 			OriginFeeAmount:    new(big.Int).Div(r.OriginFeeAmount.BigInt(), big.NewInt(int64(math.Pow10(int(r.OriginTokenDecimals))))),
-			CallValue:          new(big.Int).Div(r.CallValue.BigInt(), big.NewInt(int64(math.Pow10(int(r.OriginTokenDecimals))))),
+			CallValue:          new(big.Int).Div(r.CallValue.BigInt(), big.NewInt(int64(math.Pow10(int(nativeTokenDecimals))))),
 			ExclusivityRelayer: common.HexToAddress(r.ExclusivityRelayer),
 			ExclusivityEndTime: big.NewInt(r.ExclusivityEndTime.Unix()),
 			CallParams:         r.CallParams,
