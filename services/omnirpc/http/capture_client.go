@@ -83,7 +83,7 @@ func (c *CapturedRequest) SetBody(body []byte) Request {
 // SetContext stores the context for testing.
 func (c *CapturedRequest) SetContext(ctx context.Context) Request {
 	_, span := c.Handler.Tracer().Start(
-		c.Context,
+		ctx,
 		"SetContext",
 	)
 	span.AddEvent("SetContext")
