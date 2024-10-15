@@ -43,9 +43,9 @@ func (c *HTTPSuite) TestClient() {
 		}))
 
 		req := client.NewRequest()
+		req.SetContext(c.GetTestContext())
 		req.SetRequestURI(svr.URL)
 		req.SetBody(mockBody)
-		req.SetContext(c.GetTestContext())
 		for key, val := range headers {
 			if gofakeit.Bool() {
 				req.SetHeader(key, val)

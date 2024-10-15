@@ -35,8 +35,8 @@ func TestCaptureClient(t *testing.T) {
 	testURL := gofakeit.URL()
 
 	testReq := client.NewRequest()
-	testReq.SetBody(testBody)
 	testReq.SetContext(testCtx)
+	testReq.SetBody(testBody)
 	testReq.SetHeaderBytes(byteHeaderK, byteHeaderV)
 	testReq.SetHeader(strHeaderK, strHeaderV)
 	testReq.SetRequestURI(testURL)
