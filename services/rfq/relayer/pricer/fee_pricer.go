@@ -7,9 +7,12 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -22,9 +25,9 @@ type FeePricer interface {
 	// GetOriginFee returns the total fee for a given chainID and gas limit, denominated in a given token.
 	GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool) (*big.Int, error)
 	// GetDestinationFee returns the total fee for a given chainID and gas limit, denominated in a given token.
-	GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool) (*big.Int, error)
+	GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) (*big.Int, error)
 	// GetTotalFee returns the total fee for a given origin and destination chainID, denominated in a given token.
-	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool) (*big.Int, error)
+	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) (*big.Int, error)
 	// GetGasPrice returns the gas price for a given chainID in native units.
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
 	// GetTokenPrice returns the price of a token in USD.
@@ -44,10 +47,12 @@ type feePricer struct {
 	handler metrics.Handler
 	// priceFetcher is used to fetch prices from coingecko.
 	priceFetcher CoingeckoPriceFetcher
+	// relayerAddress is the address of the relayer.
+	relayerAddress common.Address
 }
 
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher CoingeckoPriceFetcher, handler metrics.Handler) FeePricer {
+func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher CoingeckoPriceFetcher, handler metrics.Handler, relayerAddress common.Address) FeePricer {
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
 		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GetFeePricer().GasPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
@@ -63,6 +68,7 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 		clientFetcher:   clientFetcher,
 		handler:         handler,
 		priceFetcher:    priceFetcher,
+		relayerAddress:  relayerAddress,
 	}
 }
 
@@ -116,7 +122,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	return fee, nil
 }
 
-func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination uint32, denomToken string, isQuote bool) (*big.Int, error) {
+func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) (*big.Int, error) {
 	var err error
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getDestinationFee", trace.WithAttributes(
 		attribute.Int(metrics.Destination, int(destination)),
@@ -136,6 +142,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	if err != nil {
 		return nil, err
 	}
+	span.SetAttributes(attribute.String("raw_fee", fee.String()))
 
 	// If specified, calculate and add the L1 fee
 	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(destination, false)
@@ -147,11 +154,37 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 		fee = new(big.Int).Add(fee, l1Fee)
 		span.SetAttributes(attribute.String("l1_fee", l1Fee.String()))
 	}
+
+	// If specified, calculate and add the call fee, as well as the call value which will be paid by the relayer
+	if tx != nil {
+		client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
+		if err != nil {
+			return nil, fmt.Errorf("could not get client: %w", err)
+		}
+		callMsg := ethereum.CallMsg{
+			From:  f.relayerAddress,
+			To:    &tx.DestRecipient,
+			Value: tx.CallValue,
+			Data:  tx.CallParams,
+		}
+		gasEstimate, err := client.EstimateGas(ctx, callMsg)
+		if err != nil {
+			return nil, fmt.Errorf("could not estimate gas: %w", err)
+		}
+		callFee, err := f.getFee(ctx, destination, destination, int(gasEstimate), denomToken, isQuote)
+		if err != nil {
+			return nil, err
+		}
+		fee = new(big.Int).Add(fee, callFee)
+		span.SetAttributes(attribute.String("call_fee", callFee.String()))
+
+	}
+
 	span.SetAttributes(attribute.String("destination_fee", fee.String()))
 	return fee, nil
 }
 
-func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool) (_ *big.Int, err error) {
+func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) (_ *big.Int, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getTotalFee", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(origin)),
 		attribute.Int(metrics.Destination, int(destination)),
@@ -170,7 +203,7 @@ func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination u
 		))
 		return nil, err
 	}
-	destFee, err := f.GetDestinationFee(ctx, origin, destination, denomToken, isQuote)
+	destFee, err := f.GetDestinationFee(ctx, origin, destination, denomToken, isQuote, tx)
 	if err != nil {
 		span.AddEvent("could not get destination fee", trace.WithAttributes(
 			attribute.String("error", err.Error()),
