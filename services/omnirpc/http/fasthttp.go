@@ -189,7 +189,7 @@ func (f *fastHTTPRequest) SetBody(body []byte) Request {
 // SetContext does nothing on fasthttp request.
 func (f *fastHTTPRequest) SetContext(ctx context.Context) Request {
 	_, span := f.handler.Tracer().Start(
-		f.context,
+		ctx,
 		"SetContext",
 	)
 	span.AddEvent("SetContext")

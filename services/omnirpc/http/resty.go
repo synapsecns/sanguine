@@ -66,7 +66,7 @@ func (r *restyRequest) SetBody(body []byte) Request {
 
 func (r *restyRequest) SetContext(ctx context.Context) Request {
 	_, span := r.handler.Tracer().Start(
-		r.Request.Context(),
+		ctx,
 		"SetContext",
 	)
 	span.AddEvent("SetContext")
