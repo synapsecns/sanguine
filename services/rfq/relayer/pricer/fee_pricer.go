@@ -178,6 +178,17 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 		fee = new(big.Int).Add(fee, callFee)
 		span.SetAttributes(attribute.String("call_fee", callFee.String()))
 
+		callValueFloat := new(big.Float).SetInt(tx.CallValue)
+		valueDenom, err := f.getDenomFee(ctx, destination, destination, denomToken, callValueFloat)
+		if err != nil {
+			return nil, err
+		}
+		valueScaled, err := f.getFeeWithMultiplier(ctx, destination, isQuote, valueDenom)
+		if err != nil {
+			return nil, err
+		}
+		fee = new(big.Int).Add(fee, valueScaled)
+		span.SetAttributes(attribute.String("value_scaled", valueScaled.String()))
 	}
 
 	span.SetAttributes(attribute.String("destination_fee", fee.String()))
