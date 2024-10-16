@@ -5,7 +5,7 @@ import {FastBridgeV2GasBenchmarkDstTest} from "./FastBridgeV2.GasBench.Dst.t.sol
 import {RecipientMock} from "./mocks/RecipientMock.sol";
 
 // solhint-disable func-name-mixedcase, no-empty-blocks
-contract FastBridgeV2GasBenchmarkDstArbitraryCallTest is FastBridgeV2GasBenchmarkDstTest {
+contract FastBridgeV2GasBenchmarkDstZapTest is FastBridgeV2GasBenchmarkDstTest {
     // To get an idea about how much overhead the Zap adds to the relaying process, we use a mock
     // recipient that has the hook function implemented as a no-op.
     // The mocked zapData are chosen to be similar to the real use cases:
@@ -13,7 +13,7 @@ contract FastBridgeV2GasBenchmarkDstArbitraryCallTest is FastBridgeV2GasBenchmar
     // - some kind of ID to decide what to do with the tokens next
 
     /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
-    function testFastBridgeV2GasBenchmarkDstArbitraryCallTest() external {}
+    function testFastBridgeV2GasBenchmarkDstZapTest() external {}
 
     function setUp() public virtual override {
         // In the inherited tests userB is always used as the recipient of the tokens.

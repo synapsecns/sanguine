@@ -8,7 +8,7 @@ import {RecipientMock} from "./mocks/RecipientMock.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
+contract FastBridgeV2DstZapTest is FastBridgeV2DstExclusivityTest {
     bytes public constant ZAP_DATA = abi.encode("Hello, world!");
     bytes public constant REVERT_MSG = "GM, this is a revert";
 

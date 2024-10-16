@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import {FastBridgeV2SrcExclusivityTest} from "./FastBridgeV2.Src.Exclusivity.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeV2SrcArbitraryCallTest is FastBridgeV2SrcExclusivityTest {
+contract FastBridgeV2SrcZapTest is FastBridgeV2SrcExclusivityTest {
     bytes public constant ZAP_DATA = abi.encode("Hello, World!");
     uint256 public constant ZAP_NATIVE = 1_337_420;
 
