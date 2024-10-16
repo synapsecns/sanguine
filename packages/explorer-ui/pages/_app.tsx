@@ -27,9 +27,9 @@ const App = ({ Component, pageProps }) => {
 
 const Banner = () => {
   return (
-    <div className="flex items-center justify-center w-full h-12 text-white bg-purple-700">
+    <div className="flex items-center justify-center w-full h-12 p-4 text-white bg-purple-700">
       We're updating the explorer at the moment, and some data may be
-      inaccurate.
+      inaccurate. Thank you for your patience.
     </div>
   )
 }
