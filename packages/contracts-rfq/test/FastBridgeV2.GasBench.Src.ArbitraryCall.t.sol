@@ -10,12 +10,12 @@ contract FastBridgeV2GasBenchmarkSrcArbitraryCallTest is FastBridgeV2GasBenchmar
 
     function createFixturesV2() public virtual override {
         super.createFixturesV2();
-        bytes memory mockCallParams = abi.encode(userA, keccak256("Random ID"));
-        setTokenTestCallParams(mockCallParams);
-        setEthTestCallParams(mockCallParams);
-        bridgedTokenTx.callParams = mockCallParams;
-        bridgedEthTx.callParams = mockCallParams;
-        provenTokenTx.callParams = mockCallParams;
-        provenEthTx.callParams = mockCallParams;
+        bytes memory mockZapData = abi.encode(userA, keccak256("Random ID"));
+        setTokenTestZapData(mockZapData);
+        setEthTestZapData(mockZapData);
+        bridgedTokenTx.zapData = mockZapData;
+        bridgedEthTx.zapData = mockZapData;
+        provenTokenTx.zapData = mockZapData;
+        provenEthTx.zapData = mockZapData;
     }
 }

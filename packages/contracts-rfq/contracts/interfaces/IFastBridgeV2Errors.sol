@@ -3,13 +3,13 @@ pragma solidity ^0.8.0;
 
 interface IFastBridgeV2Errors {
     error AmountIncorrect();
-    error CallParamsLengthAboveMax();
     error ChainIncorrect();
     error ExclusivityParamsIncorrect();
     error MsgValueIncorrect();
-    error NativeTokenCallValueNotSupported();
     error SenderIncorrect();
     error StatusIncorrect();
+    error ZapDataLengthAboveMax();
+    error ZapNativeNotSupported();
     error ZeroAddress();
 
     error RecipientIncorrectReturnValue();

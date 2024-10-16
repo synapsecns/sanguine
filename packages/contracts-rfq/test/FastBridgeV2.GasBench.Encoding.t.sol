@@ -18,7 +18,7 @@ contract FastBridgeV2GasBenchmarkEncodingTest is FastBridgeV2SrcBaseTest {
     }
 
     function test_getBridgeTransactionV2_withArbitraryCall() public {
-        setTokenTestCallParams({callParams: abi.encode(userA, keccak256("Random ID"))});
+        setTokenTestZapData({zapData: abi.encode(userA, keccak256("Random ID"))});
         test_getBridgeTransactionV2();
     }
 }

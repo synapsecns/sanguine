@@ -8,7 +8,7 @@ import {RecipientMock} from "./mocks/RecipientMock.sol";
 contract FastBridgeV2GasBenchmarkDstArbitraryCallTest is FastBridgeV2GasBenchmarkDstTest {
     // To get an idea about how much overhead the arbitrary call adds to the relaying process, we use a mock
     // recipient that has the hook function implemented as a no-op.
-    // The mocked callParams are chosen to be similar to the real use cases:
+    // The mocked zapData are chosen to be similar to the real use cases:
     // - user address
     // - some kind of ID to decide what to do with the tokens next
 
@@ -24,8 +24,8 @@ contract FastBridgeV2GasBenchmarkDstArbitraryCallTest is FastBridgeV2GasBenchmar
 
     function createFixturesV2() public virtual override {
         super.createFixturesV2();
-        bytes memory mockCallParams = abi.encode(userA, keccak256("Random ID"));
-        setTokenTestCallParams(mockCallParams);
-        setEthTestCallParams(mockCallParams);
+        bytes memory mockZapData = abi.encode(userA, keccak256("Random ID"));
+        setTokenTestZapData(mockZapData);
+        setEthTestZapData(mockZapData);
     }
 }
