@@ -82,13 +82,15 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             revert DisputePeriodPassed();
         }
 
+        address disputedRelayer = bridgeTxDetails[transactionId].proofRelayer;
+
         // @dev relayer gets slashed effectively if dest relay has gone thru
         bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
         bridgeTxDetails[transactionId].proofRelayer = address(0);
         bridgeTxDetails[transactionId].proofBlockTimestamp = 0;
         bridgeTxDetails[transactionId].proofBlockNumber = 0;
 
-        emit BridgeProofDisputed(transactionId, msg.sender);
+        emit BridgeProofDisputed(transactionId, disputedRelayer);
     }
 
     /// @inheritdoc IFastBridge
@@ -111,12 +113,17 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         bridgeTxDetails[transactionId].status = BridgeStatus.REFUNDED;
 
         // transfer origin collateral back to original sender
+        uint256 amount = transaction.originAmount + transaction.originFeeAmount;
         address to = transaction.originSender;
         address token = transaction.originToken;
-        uint256 amount = transaction.originAmount + transaction.originFeeAmount;
-        token.universalTransfer(to, amount);
 
-        emit BridgeDepositRefunded(transactionId, to, token, amount);
+        if (token == UniversalTokenLib.ETH_ADDRESS) {
+            Address.sendValue(payable(to), amount);
+        } else {
+            IERC20(token).safeTransfer(to, amount);
+        }
+
+        emit BridgeDepositRefunded(transactionId, transaction.originSender, transaction.originToken, amount);
     }
 
     /// @inheritdoc IFastBridge
@@ -166,8 +173,10 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
         // track amount of origin token owed to protocol
         uint256 originFeeAmount;
-        if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
-        originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
+        if (protocolFeeRate > 0) {
+            originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
+            originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
+        }
 
         // set status to requested
         bytes memory request = abi.encode(
@@ -298,12 +307,23 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // update protocol fees if origin fee amount exists
         if (transaction.originFeeAmount > 0) protocolFees[transaction.originToken] += transaction.originFeeAmount;
 
-        // transfer origin collateral less fee to specified address
         address token = transaction.originToken;
         uint256 amount = transaction.originAmount;
-        token.universalTransfer(to, amount);
 
-        emit BridgeDepositClaimed(transactionId, bridgeTxDetails[transactionId].proofRelayer, to, token, amount);
+        // transfer origin collateral to specified address (protocol fee was pre-deducted at deposit)
+        if (token == UniversalTokenLib.ETH_ADDRESS) {
+            Address.sendValue(payable(to), amount);
+        } else {
+            IERC20(token).safeTransfer(to, amount);
+        }
+
+        emit BridgeDepositClaimed(
+            transactionId,
+            bridgeTxDetails[transactionId].proofRelayer,
+            to,
+            transaction.originToken,
+            transaction.originAmount
+        );
     }
 
     function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status) {
