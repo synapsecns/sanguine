@@ -35,7 +35,7 @@ interface IFastBridgeV2 is IFastBridge {
     /// @param quoteExclusivitySeconds  Period of time the quote relayer is guaranteed exclusivity after user's deposit
     /// @param quoteId                  Unique quote identifier used for tracking the quote
     /// @param zapNative                ETH value to send to the recipient (if any)
-    /// @param zapData                  Parameters for the arbitrary call to the destination recipient (if any)
+    /// @param zapData                  Parameters for the Zap to the destination recipient (if any)
     struct BridgeParamsV2 {
         address quoteRelayer;
         int256 quoteExclusivitySeconds;
