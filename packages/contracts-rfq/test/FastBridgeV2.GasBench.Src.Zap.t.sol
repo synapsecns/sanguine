@@ -4,9 +4,9 @@ pragma solidity ^0.8.20;
 import {FastBridgeV2GasBenchmarkSrcTest} from "./FastBridgeV2.GasBench.Src.t.sol";
 
 // solhint-disable func-name-mixedcase, no-empty-blocks
-contract FastBridgeV2GasBenchmarkSrcArbitraryCallTest is FastBridgeV2GasBenchmarkSrcTest {
+contract FastBridgeV2GasBenchmarkSrcZapTest is FastBridgeV2GasBenchmarkSrcTest {
     /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
-    function testFastBridgeV2GasBenchmarkSrcArbitraryCallTest() external {}
+    function testFastBridgeV2GasBenchmarkSrcZapTest() external {}
 
     function createFixturesV2() public virtual override {
         super.createFixturesV2();
