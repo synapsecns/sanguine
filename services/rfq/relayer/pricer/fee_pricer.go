@@ -157,38 +157,42 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 
 	// If specified, calculate and add the call fee, as well as the call value which will be paid by the relayer
 	if tx != nil {
-		client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
-		if err != nil {
-			return nil, fmt.Errorf("could not get client: %w", err)
+		if tx.CallParams != nil {
+			client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
+			if err != nil {
+				return nil, fmt.Errorf("could not get client: %w", err)
+			}
+			callMsg := ethereum.CallMsg{
+				From:  f.relayerAddress,
+				To:    &tx.DestRecipient,
+				Value: tx.CallValue,
+				Data:  tx.CallParams,
+			}
+			gasEstimate, err := client.EstimateGas(ctx, callMsg)
+			if err != nil {
+				return nil, fmt.Errorf("could not estimate gas: %w", err)
+			}
+			callFee, err := f.getFee(ctx, destination, destination, int(gasEstimate), denomToken, isQuote)
+			if err != nil {
+				return nil, err
+			}
+			fee = new(big.Int).Add(fee, callFee)
+			span.SetAttributes(attribute.String("call_fee", callFee.String()))
 		}
-		callMsg := ethereum.CallMsg{
-			From:  f.relayerAddress,
-			To:    &tx.DestRecipient,
-			Value: tx.CallValue,
-			Data:  tx.CallParams,
-		}
-		gasEstimate, err := client.EstimateGas(ctx, callMsg)
-		if err != nil {
-			return nil, fmt.Errorf("could not estimate gas: %w", err)
-		}
-		callFee, err := f.getFee(ctx, destination, destination, int(gasEstimate), denomToken, isQuote)
-		if err != nil {
-			return nil, err
-		}
-		fee = new(big.Int).Add(fee, callFee)
-		span.SetAttributes(attribute.String("call_fee", callFee.String()))
 
-		callValueFloat := new(big.Float).SetInt(tx.CallValue)
-		valueDenom, err := f.getDenomFee(ctx, destination, destination, denomToken, callValueFloat)
-		if err != nil {
-			return nil, err
+		if tx.CallValue != nil {
+			callValueFloat := new(big.Float).SetInt(tx.CallValue)
+			valueDenom, err := f.getDenomFee(ctx, destination, destination, denomToken, callValueFloat)
+			if err != nil {
+				return nil, err
+			}
+			valueScaled, err := f.getFeeWithMultiplier(ctx, destination, isQuote, valueDenom)
+			if err != nil {
+				return nil, err
+			}
+			fee = new(big.Int).Add(fee, valueScaled)
+			span.SetAttributes(attribute.String("value_scaled", valueScaled.String()))
 		}
-		valueScaled, err := f.getFeeWithMultiplier(ctx, destination, isQuote, valueDenom)
-		if err != nil {
-			return nil, err
-		}
-		fee = new(big.Int).Add(fee, valueScaled)
-		span.SetAttributes(attribute.String("value_scaled", valueScaled.String()))
 	}
 
 	span.SetAttributes(attribute.String("destination_fee", fee.String()))

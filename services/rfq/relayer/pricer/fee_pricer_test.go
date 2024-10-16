@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
@@ -209,10 +210,10 @@ func (s *PricerSuite) TestGetTotalFee() {
 	clientDestination := new(clientMocks.EVM)
 	headerOrigin := big.NewInt(100_000_000_000)      // 100 gwei
 	headerDestination := big.NewInt(500_000_000_000) // 500 gwei
-	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.SuggestGasPrice), mock.Anything).Once().Return(headerOrigin, nil)
-	clientDestination.On(testsuite.GetFunctionName(clientDestination.SuggestGasPrice), mock.Anything).Once().Return(headerDestination, nil)
-	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.origin))).Once().Return(clientOrigin, nil)
-	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.destination))).Once().Return(clientDestination, nil)
+	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.SuggestGasPrice), mock.Anything).Return(headerOrigin, nil)
+	clientDestination.On(testsuite.GetFunctionName(clientDestination.SuggestGasPrice), mock.Anything).Return(headerDestination, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.origin))).Return(clientOrigin, nil)
+	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, big.NewInt(int64(s.destination))).Return(clientDestination, nil)
 	priceFetcher := getPriceFetcher(nil)
 	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler(), relayerAddress)
 	go func() { feePricer.Start(s.GetTestContext()) }()
@@ -223,6 +224,32 @@ func (s *PricerSuite) TestGetTotalFee() {
 
 	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_250_000.
 	expectedFee := big.NewInt(100_250_000) // 100.25 usd
+	s.Equal(expectedFee, fee)
+
+	// Calculate the total fee with v2 call value.
+	tx := &fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+		CallValue: big.NewInt(1 * 1e18),
+	}
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true, tx)
+	s.NoError(err)
+
+	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_750_000,
+	// plus the call value of 1 MATIC * 0.5 USD.
+	expectedFee = big.NewInt(100_750_000) // 100.75 usd
+	s.Equal(expectedFee, fee)
+
+	// Calculate the total fee with v2 call value and call params.
+	tx = &fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+		CallValue:  big.NewInt(1 * 1e18),
+		CallParams: []byte{},
+	}
+	clientDestination.On(testsuite.GetFunctionName(clientDestination.EstimateGas), mock.Anything, mock.Anything).Once().Return(uint64(1_000_000), nil)
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true, tx)
+	s.NoError(err)
+
+	// The expected fee should be the sum of the Origin and Destination fees
+	// plus the call value of 1 MATIC * 0.5 USD.
+	expectedFee = big.NewInt(101_000_000) // 101 usd
 	s.Equal(expectedFee, fee)
 }
 
