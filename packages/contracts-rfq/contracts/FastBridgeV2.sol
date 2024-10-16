@@ -114,11 +114,13 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
         // transfer origin collateral back to original sender
         uint256 amount = transaction.originAmount + transaction.originFeeAmount;
+        address to = transaction.originSender;
+        address token = transaction.originToken;
 
-        if (transaction.originToken == UniversalTokenLib.ETH_ADDRESS) {
-            Address.sendValue(payable(transaction.originSender), amount);
+        if (token == UniversalTokenLib.ETH_ADDRESS) {
+            Address.sendValue(payable(to), amount);
         } else {
-            IERC20(transaction.originToken).safeTransfer(transaction.originSender, amount);
+            IERC20(token).safeTransfer(to, amount);
         }
 
         emit BridgeDepositRefunded(transactionId, transaction.originSender, transaction.originToken, amount);
@@ -305,14 +307,16 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // update protocol fees if origin fee amount exists
         if (transaction.originFeeAmount > 0) protocolFees[transaction.originToken] += transaction.originFeeAmount;
 
+        address token = transaction.originToken;
+        uint256 amount = transaction.originAmount;
+
         // transfer origin collateral to specified address (protocol fee was pre-deducted at deposit)
-        if (transaction.originToken == UniversalTokenLib.ETH_ADDRESS) {
-            Address.sendValue(payable(to), transaction.originAmount);
+        if (token == UniversalTokenLib.ETH_ADDRESS) {
+            Address.sendValue(payable(to), amount);
         } else {
-            IERC20(transaction.originToken).safeTransfer(to, transaction.originAmount);
+            IERC20(token).safeTransfer(to, amount);
         }
 
-        // solhint-disable-next-line max-line-length
         emit BridgeDepositClaimed(
             transactionId,
             bridgeTxDetails[transactionId].proofRelayer,
