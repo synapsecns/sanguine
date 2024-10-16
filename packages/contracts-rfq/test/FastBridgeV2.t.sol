@@ -50,6 +50,9 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
     bytes internal invalidRequestV2;
     bytes internal mockRequestV3;
 
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testFastBridgeV2Test() external {}
+
     function createInvalidRequestV2(bytes memory requestV2) public pure returns (bytes memory result) {
         // Copy everything but the last byte
         result = new bytes(requestV2.length - 1);

@@ -76,10 +76,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         });
     }
 
-    function expectBridgeProofDisputed(bytes32 txId, address guard) public {
+    function expectBridgeProofDisputed(bytes32 txId, address relayer) public {
         vm.expectEmit(address(fastBridge));
-        // Note: BridgeProofDisputed event has a mislabeled address parameter, this is actually the guard
-        emit BridgeProofDisputed({transactionId: txId, relayer: guard});
+        emit BridgeProofDisputed({transactionId: txId, relayer: relayer});
     }
 
     function expectBridgeDepositRefunded(IFastBridge.BridgeParams memory bridgeParams, bytes32 txId) public {
@@ -386,11 +385,11 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
         expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
         prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
-        expectBridgeProofDisputed(txId, guard);
+        expectBridgeProofDisputed(txId, relayerA);
         dispute(guard, txId);
         expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"02"});
         prove({caller: relayerB, transactionId: txId, destTxHash: hex"02", relayer: relayerA});
-        expectBridgeProofDisputed(txId, guard);
+        expectBridgeProofDisputed(txId, relayerA);
         dispute(guard, txId);
         expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"03"});
         prove({caller: relayerB, transactionId: txId, destTxHash: hex"03", relayer: relayerA});
@@ -662,7 +661,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bytes32 txId = getTxId(tokenTx);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
-        expectBridgeProofDisputed({txId: txId, guard: guard});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
@@ -674,7 +673,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
         skip(CLAIM_DELAY);
-        expectBridgeProofDisputed({txId: txId, guard: guard});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
@@ -686,7 +685,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bytes32 txId = getTxId(ethTx);
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
         prove({caller: relayerA, bridgeTx: ethTx, destTxHash: hex"01"});
-        expectBridgeProofDisputed({txId: txId, guard: guard});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
@@ -699,7 +698,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
         prove({caller: relayerA, bridgeTx: ethTx, destTxHash: hex"01"});
         skip(CLAIM_DELAY);
-        expectBridgeProofDisputed({txId: txId, guard: guard});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
