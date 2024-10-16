@@ -6,7 +6,7 @@ import {RecipientMock} from "./mocks/RecipientMock.sol";
 
 // solhint-disable func-name-mixedcase, no-empty-blocks
 contract FastBridgeV2GasBenchmarkDstArbitraryCallTest is FastBridgeV2GasBenchmarkDstTest {
-    // To get an idea about how much overhead the arbitrary call adds to the relaying process, we use a mock
+    // To get an idea about how much overhead the Zap adds to the relaying process, we use a mock
     // recipient that has the hook function implemented as a no-op.
     // The mocked zapData are chosen to be similar to the real use cases:
     // - user address

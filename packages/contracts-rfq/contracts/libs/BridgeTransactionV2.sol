@@ -80,7 +80,7 @@ library BridgeTransactionV2Lib {
             // New V2 fields: exclusivity
             bridgeTx.exclusivityRelayer,
             bridgeTx.exclusivityEndTime,
-            // New V2 fields: arbitrary call
+            // New V2 fields: Zap
             bridgeTx.zapNative,
             bridgeTx.zapData
         );
@@ -223,7 +223,7 @@ library BridgeTransactionV2Lib {
         }
     }
 
-    /// @notice Extracts the call value from the encoded transaction.
+    /// @notice Extracts the Zap's native value from the encoded transaction.
     function zapNative(bytes calldata encodedTx) internal pure returns (uint256 zapNative_) {
         // Load 32 bytes from the offset. No shift is applied, as we need the full 256 bits.
         assembly {
@@ -231,7 +231,7 @@ library BridgeTransactionV2Lib {
         }
     }
 
-    /// @notice Extracts the call params from the encoded transaction.
+    /// @notice Extracts the Zap's data from the encoded transaction.
     function zapData(bytes calldata encodedTx) internal pure returns (bytes calldata zapData_) {
         zapData_ = encodedTx[OFFSET_ZAP_DATA:];
     }

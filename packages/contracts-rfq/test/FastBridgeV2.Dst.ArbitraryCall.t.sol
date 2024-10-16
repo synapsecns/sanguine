@@ -25,7 +25,7 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
         setEthTestZapData(ZAP_DATA);
     }
 
-    /// @notice We override the "expect event" function to also check for the arbitrary call
+    /// @notice We override the "expect event" function to also check for the Zap
     /// made to the token recipient.
     function expectBridgeRelayed(
         IFastBridgeV2.BridgeTransactionV2 memory bridgeTx,

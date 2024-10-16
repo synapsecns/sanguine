@@ -237,7 +237,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         bridgeRelayDetails[transactionId] =
             BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
-        // transfer tokens to recipient on destination chain and do an arbitrary call if requested
+        // transfer tokens to recipient on destination chain and trigger Zap if requested
         address to = request.destRecipient();
         address token = request.destToken();
         uint256 amount = request.destAmount();
@@ -263,23 +263,34 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             if (zapNative != 0) revert ZapNativeNotSupported();
             // Check that the correct msg.value was sent
             if (msg.value != amount) revert MsgValueIncorrect();
+            // Don't do an ETH transfer yet: we will handle it alongside the Zap below
         } else {
             // For ERC20s, we check that the correct msg.value was sent
             if (msg.value != zapNative) revert MsgValueIncorrect();
             // We need to transfer the tokens from the Relayer to the recipient first before performing an
-            // optional post-transfer arbitrary call.
+            // optional post-transfer Zap.
             IERC20(token).safeTransferFrom(msg.sender, to, amount);
         }
-
+        // At this point we have done:
+        // - Transferred the requested amount of ERC20 tokens to the recipient.
+        // At this point we have confirmed:
+        // - For ERC20s: msg.value matches the requested zapNative amount.
+        // - For ETH: msg.value matches the requested destAmount.
+        // Remaining optional things to do:
+        // - Forward the full msg.value to the recipient (if non-zero).
+        // - Trigger a Zap (if zapData is present).
         bytes calldata zapData = request.zapData();
         if (zapData.length != 0) {
-            // Arbitrary call requested, perform it while supplying full msg.value to the recipient
+            // Zap Data is present: Zap has been requested by the recipient. Trigger it forwarding the full msg.value.
+
             // Note: if token has a fee on transfers, the recipient will have received less than `amount`.
             // This is a very niche edge case and should be handled by the recipient contract.
-            _checkedCallRecipient({recipient: to, token: token, amount: amount, zapData: zapData});
+            _triggerZapWithChecks({recipient: to, token: token, amount: amount, zapData: zapData});
         } else if (msg.value != 0) {
-            // No arbitrary call requested, but msg.value was sent. This is either a relay with ETH,
-            // or a non-zero zapNative request with an ERC20. In both cases, transfer the ETH to the recipient.
+            // Zap Data is missing, but msg.value was sent. This could happen in two different cases:
+            // - Relay with ETH is happening.
+            // - Relay with ERC20 is happening, with a `zapNative > 0` request.
+            // In both cases, we need to transfer the full msg.value to the recipient.
             Address.sendValue(payable(to), msg.value);
         }
     }
@@ -381,11 +392,14 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @notice Calls the Recipient's hook function with the specified zapData and performs
     /// all the necessary checks for the returned value.
-    function _checkedCallRecipient(address recipient, address token, uint256 amount, bytes calldata zapData) internal {
-        bytes memory hookData =
-            abi.encodeCall(IFastBridgeRecipient.fastBridgeTransferReceived, (token, amount, zapData));
+    function _triggerZapWithChecks(address recipient, address token, uint256 amount, bytes calldata zapData) internal {
         // This will bubble any revert messages from the hook function
-        bytes memory returnData = Address.functionCallWithValue({target: recipient, data: hookData, value: msg.value});
+        bytes memory returnData = Address.functionCallWithValue({
+            target: recipient,
+            data: abi.encodeCall(IFastBridgeRecipient.fastBridgeTransferReceived, (token, amount, zapData)),
+            // Note: see `relay()` for reasoning behind passing msg.value
+            value: msg.value
+        });
         // Explicit revert if no return data at all
         if (returnData.length == 0) revert RecipientNoReturnValue();
         // Check that exactly a single return value was returned
