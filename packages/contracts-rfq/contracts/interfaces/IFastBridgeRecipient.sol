@@ -5,7 +5,7 @@ interface IFastBridgeRecipient {
     function fastBridgeTransferReceived(
         address token,
         uint256 amount,
-        bytes memory callParams
+        bytes memory zapData
     )
         external
         payable

@@ -30,18 +30,18 @@ interface IFastBridgeV2 is IFastBridge {
     /// for backwards compatibility.
     /// Note: quoteRelayer and quoteExclusivitySeconds are either both zero (indicating no exclusivity)
     /// or both non-zero (indicating exclusivity for the given period).
-    /// Note: callValue > 0 can NOT be used with destToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE (ETH_ADDRESS)
+    /// Note: zapNative > 0 can NOT be used with destToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE (ETH_ADDRESS)
     /// @param quoteRelayer             Relayer that provided the quote for the transaction
     /// @param quoteExclusivitySeconds  Period of time the quote relayer is guaranteed exclusivity after user's deposit
     /// @param quoteId                  Unique quote identifier used for tracking the quote
-    /// @param callValue                ETH value to send to the recipient (if any)
-    /// @param callParams               Parameters for the arbitrary call to the destination recipient (if any)
+    /// @param zapNative                ETH value to send to the recipient (if any)
+    /// @param zapData                  Parameters for the arbitrary call to the destination recipient (if any)
     struct BridgeParamsV2 {
         address quoteRelayer;
         int256 quoteExclusivitySeconds;
         bytes quoteId;
-        uint256 callValue;
-        bytes callParams;
+        uint256 zapNative;
+        bytes zapData;
     }
 
     /// @notice Updated bridge transaction struct to include parameters introduced in FastBridgeV2.
@@ -57,12 +57,12 @@ interface IFastBridgeV2 is IFastBridge {
         uint256 originAmount; // amount in on origin bridge less originFeeAmount
         uint256 destAmount;
         uint256 originFeeAmount;
-        uint256 callValue; // ETH value to send to the recipient (if any) - replaces V1's sendChainGas flag
+        uint256 zapNative; // ETH value to send to the recipient (if any) - replaces V1's sendChainGas flag
         uint256 deadline; // user specified deadline for destination relay
         uint256 nonce;
         address exclusivityRelayer;
         uint256 exclusivityEndTime;
-        bytes callParams;
+        bytes zapData;
     }
 
     event BridgeQuoteDetails(bytes32 indexed transactionId, bytes quoteId);
