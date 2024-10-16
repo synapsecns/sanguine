@@ -19,6 +19,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     using SafeERC20 for IERC20;
     using UniversalTokenLib for address;
 
+    /// @notice Address reserved for native gas token (ETH on Ethereum and most L2s, AVAX on Avalanche, etc)
+    address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
     /// @notice Dispute period for relayed transactions
     uint256 public constant DISPUTE_PERIOD = 30 minutes;
 
@@ -121,7 +124,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         address to = request.originSender();
         address token = request.originToken();
         uint256 amount = request.originAmount() + request.originFeeAmount();
-        if (token == UniversalTokenLib.ETH_ADDRESS) {
+        if (token == NATIVE_GAS_TOKEN) {
             Address.sendValue(payable(to), amount);
         } else {
             IERC20(token).safeTransfer(to, amount);
@@ -258,12 +261,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
         // All state changes have been done at this point, can proceed to the external calls.
         // This follows the checks-effects-interactions pattern to mitigate potential reentrancy attacks.
-        if (token == UniversalTokenLib.ETH_ADDRESS) {
-            // For ETH non-zero zapNative is not allowed
+        if (token == NATIVE_GAS_TOKEN) {
+            // For the native gas token, additional zapNative is not allowed
             if (zapNative != 0) revert ZapNativeNotSupported();
             // Check that the correct msg.value was sent
             if (msg.value != amount) revert MsgValueIncorrect();
-            // Don't do an ETH transfer yet: we will handle it alongside the Zap below
+            // Don't do a native transfer yet: we will handle it alongside the Zap below
         } else {
             // For ERC20s, we check that the correct msg.value was sent
             if (msg.value != zapNative) revert MsgValueIncorrect();
@@ -275,7 +278,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // - Transferred the requested amount of ERC20 tokens to the recipient.
         // At this point we have confirmed:
         // - For ERC20s: msg.value matches the requested zapNative amount.
-        // - For ETH: msg.value matches the requested destAmount.
+        // - For the native gas token: msg.value matches the requested destAmount.
         // Remaining optional things to do:
         // - Forward the full msg.value to the recipient (if non-zero).
         // - Trigger a Zap (if zapData is present).
@@ -288,7 +291,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             _triggerZapWithChecks({recipient: to, token: token, amount: amount, zapData: zapData});
         } else if (msg.value != 0) {
             // Zap Data is missing, but msg.value was sent. This could happen in two different cases:
-            // - Relay with ETH is happening.
+            // - Relay with the native gas token is happening.
             // - Relay with ERC20 is happening, with a `zapNative > 0` request.
             // In both cases, we need to transfer the full msg.value to the recipient.
             Address.sendValue(payable(to), msg.value);
@@ -343,7 +346,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (originFeeAmount > 0) protocolFees[token] += originFeeAmount;
 
         // transfer origin collateral to specified address (protocol fee was pre-deducted at deposit)
-        if (token == UniversalTokenLib.ETH_ADDRESS) {
+        if (token == NATIVE_GAS_TOKEN) {
             Address.sendValue(payable(to), amount);
         } else {
             IERC20(token).safeTransfer(to, amount);
@@ -373,8 +376,8 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// claimed by the relayer who completed the relay on destination chain, or refunded back to the user,
     /// should no one complete the relay.
     function _takeBridgedUserAsset(address token, uint256 amount) internal returns (uint256 amountTaken) {
-        if (token == UniversalTokenLib.ETH_ADDRESS) {
-            // For ETH we just need to check that the supplied msg.value is correct.
+        if (token == NATIVE_GAS_TOKEN) {
+            // For the native gas token, we just need to check that the supplied msg.value is correct.
             // Supplied `msg.value` is already in FastBridgeV2 custody.
             if (amount != msg.value) revert MsgValueIncorrect();
             amountTaken = msg.value;
@@ -442,7 +445,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
         // Check V2 params
         if (paramsV2.zapData.length > MAX_ZAP_DATA_LENGTH) revert ZapDataLengthAboveMax();
-        if (paramsV2.zapNative != 0 && params.destToken == UniversalTokenLib.ETH_ADDRESS) {
+        if (paramsV2.zapNative != 0 && params.destToken == NATIVE_GAS_TOKEN) {
             revert ZapNativeNotSupported();
         }
         // exclusivityEndTime must be in range (0 .. params.deadline]
