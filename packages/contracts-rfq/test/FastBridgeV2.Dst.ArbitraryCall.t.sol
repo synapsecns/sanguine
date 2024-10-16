@@ -49,10 +49,8 @@ contract FastBridgeV2DstArbitraryCallTest is FastBridgeV2DstExclusivityTest {
         pure
         returns (bytes memory)
     {
-        // fastBridgeTransferReceived(token, amount, zapData)
-        return abi.encodeCall(
-            RecipientMock.fastBridgeTransferReceived, (bridgeTx.destToken, bridgeTx.destAmount, ZAP_DATA)
-        );
+        // zap(token, amount, zapData)
+        return abi.encodeCall(RecipientMock.zap, (bridgeTx.destToken, bridgeTx.destAmount, ZAP_DATA));
     }
 
     // ═══════════════════════════════════════════════ RECIPIENT EOA ═══════════════════════════════════════════════════

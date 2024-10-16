@@ -11,7 +11,7 @@ import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 import {IFastBridgeV2} from "./interfaces/IFastBridgeV2.sol";
 import {IFastBridgeV2Errors} from "./interfaces/IFastBridgeV2Errors.sol";
-import {IFastBridgeRecipient} from "./interfaces/IFastBridgeRecipient.sol";
+import {IZapRecipient} from "./interfaces/IZapRecipient.sol";
 
 /// @notice FastBridgeV2 is a contract for bridging tokens across chains.
 contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
@@ -399,7 +399,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // This will bubble any revert messages from the hook function
         bytes memory returnData = Address.functionCallWithValue({
             target: recipient,
-            data: abi.encodeCall(IFastBridgeRecipient.fastBridgeTransferReceived, (token, amount, zapData)),
+            data: abi.encodeCall(IZapRecipient.zap, (token, amount, zapData)),
             // Note: see `relay()` for reasoning behind passing msg.value
             value: msg.value
         });
@@ -408,7 +408,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // Check that exactly a single return value was returned
         if (returnData.length != 32) revert RecipientIncorrectReturnValue();
         // Return value should be abi-encoded hook function selector
-        if (bytes32(returnData) != bytes32(IFastBridgeRecipient.fastBridgeTransferReceived.selector)) {
+        if (bytes32(returnData) != bytes32(IZapRecipient.zap.selector)) {
             revert RecipientIncorrectReturnValue();
         }
     }
