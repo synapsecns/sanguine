@@ -28,6 +28,13 @@ export const BRIDGE_MAP = {
       destination: ['JEWEL'],
       swappable: [],
     },
+    '0x163f8C2467924be0ae7B5347228CABF260318753': {
+      decimals: 18,
+      symbol: 'WLD',
+      origin: ['RFQ.WLD'],
+      destination: ['RFQ.WLD'],
+      swappable: [],
+    },
     '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
       decimals: 18,
       symbol: 'nUSD',
@@ -885,13 +892,6 @@ export const BRIDGE_MAP = {
       symbol: 'WLD',
       origin: ['RFQ.WLD'],
       destination: ['RFQ.WLD'],
-      swappable: [],
-    },
-    '0x4200000000000000000000000000000000000006': {
-      decimals: 18,
-      symbol: 'WETH',
-      origin: ['RFQ.ETH'],
-      destination: [],
       swappable: [],
     },
     '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1': {
