@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/rest-api",
-  "version": "1.4.5",
+  "version": "1.5.0",
   "private": "true",
   "engines": {
     "node": ">=18.17.0"
@@ -22,8 +22,9 @@
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/units": "5.7.0",
-    "@synapsecns/sdk-router": "^0.11.3",
+    "@synapsecns/sdk-router": "^0.11.4",
     "bignumber": "^1.1.0",
+    "dotenv": "^16.4.5",
     "ethers": "5.7.2",
     "express": "^4.18.2",
     "express-validator": "^7.2.0",
