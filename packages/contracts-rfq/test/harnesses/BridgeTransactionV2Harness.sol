@@ -52,8 +52,8 @@ contract BridgeTransactionV2Harness {
         return BridgeTransactionV2Lib.originFeeAmount(encodedTx);
     }
 
-    function callValue(bytes calldata encodedTx) public pure returns (uint256) {
-        return BridgeTransactionV2Lib.callValue(encodedTx);
+    function zapNative(bytes calldata encodedTx) public pure returns (uint256) {
+        return BridgeTransactionV2Lib.zapNative(encodedTx);
     }
 
     function deadline(bytes calldata encodedTx) public pure returns (uint256) {
@@ -72,7 +72,7 @@ contract BridgeTransactionV2Harness {
         return BridgeTransactionV2Lib.exclusivityEndTime(encodedTx);
     }
 
-    function callParams(bytes calldata encodedTx) public pure returns (bytes calldata) {
-        return BridgeTransactionV2Lib.callParams(encodedTx);
+    function zapData(bytes calldata encodedTx) public pure returns (bytes calldata) {
+        return BridgeTransactionV2Lib.zapData(encodedTx);
     }
 }
