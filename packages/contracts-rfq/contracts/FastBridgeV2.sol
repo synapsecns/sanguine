@@ -195,12 +195,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 originAmount: originAmount,
                 destAmount: params.destAmount,
                 originFeeAmount: originFeeAmount,
-                callValue: paramsV2.callValue,
                 deadline: params.deadline,
                 nonce: senderNonces[params.sender]++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
                 // We checked exclusivityEndTime to be in range (0 .. params.deadline] above, so can safely cast
                 exclusivityEndTime: uint256(exclusivityEndTime),
+                callValue: paramsV2.callValue,
                 callParams: paramsV2.callParams
             })
         );

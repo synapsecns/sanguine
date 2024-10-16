@@ -18,11 +18,11 @@ library BridgeTransactionV2Lib {
     // uint256  originAmount            [090 .. 122)
     // uint256  destAmount              [122 .. 154)
     // uint256  originFeeAmount         [154 .. 186)
-    // uint256  callValue               [186 .. 218)
-    // uint256  deadline                [218 .. 250)
-    // uint256  nonce                   [250 .. 282)
-    // address  exclusivityRelayer      [282 .. 302)
-    // uint256  exclusivityEndTime      [302 .. 334)
+    // uint256  deadline                [186 .. 218)
+    // uint256  nonce                   [218 .. 250)
+    // address  exclusivityRelayer      [250 .. 270)
+    // uint256  exclusivityEndTime      [270 .. 302)
+    // uint256  callValue               [302 .. 334)
     // bytes    callParams              [334 .. ***)
 
     // forgefmt: disable-start
@@ -35,11 +35,11 @@ library BridgeTransactionV2Lib {
     uint256 private constant OFFSET_ORIGIN_AMOUNT        = 90;
     uint256 private constant OFFSET_DEST_AMOUNT          = 122;
     uint256 private constant OFFSET_ORIGIN_FEE_AMOUNT    = 154;
-    uint256 private constant OFFSET_CALL_VALUE           = 186;
-    uint256 private constant OFFSET_DEADLINE             = 218;
-    uint256 private constant OFFSET_NONCE                = 250;
-    uint256 private constant OFFSET_EXCLUSIVITY_RELAYER  = 282;
-    uint256 private constant OFFSET_EXCLUSIVITY_END_TIME = 302;
+    uint256 private constant OFFSET_DEADLINE             = 186;
+    uint256 private constant OFFSET_NONCE                = 218;
+    uint256 private constant OFFSET_EXCLUSIVITY_RELAYER  = 250;
+    uint256 private constant OFFSET_EXCLUSIVITY_END_TIME = 270;
+    uint256 private constant OFFSET_CALL_VALUE           = 302;
     uint256 private constant OFFSET_CALL_PARAMS          = 334;
     // forgefmt: disable-end
 
@@ -74,11 +74,14 @@ library BridgeTransactionV2Lib {
             firstPart,
             bridgeTx.destAmount,
             bridgeTx.originFeeAmount,
-            bridgeTx.callValue,
+            // Note: we skip the deprecated `sendChainGas` flag, which was present in BridgeTransaction V1
             bridgeTx.deadline,
             bridgeTx.nonce,
+            // New V2 fields: exclusivity
             bridgeTx.exclusivityRelayer,
             bridgeTx.exclusivityEndTime,
+            // New V2 fields: arbitrary call
+            bridgeTx.callValue,
             bridgeTx.callParams
         );
     }
@@ -188,14 +191,6 @@ library BridgeTransactionV2Lib {
         }
     }
 
-    /// @notice Extracts the call value from the encoded transaction.
-    function callValue(bytes calldata encodedTx) internal pure returns (uint256 callValue_) {
-        // Load 32 bytes from the offset. No shift is applied, as we need the full 256 bits.
-        assembly {
-            callValue_ := calldataload(add(encodedTx.offset, OFFSET_CALL_VALUE))
-        }
-    }
-
     /// @notice Extracts the deadline from the encoded transaction.
     function deadline(bytes calldata encodedTx) internal pure returns (uint256 deadline_) {
         // Load 32 bytes from the offset. No shift is applied, as we need the full 256 bits.
@@ -225,6 +220,14 @@ library BridgeTransactionV2Lib {
         // Load 32 bytes from the offset. No shift is applied, as we need the full 256 bits.
         assembly {
             exclusivityEndTime_ := calldataload(add(encodedTx.offset, OFFSET_EXCLUSIVITY_END_TIME))
+        }
+    }
+
+    /// @notice Extracts the call value from the encoded transaction.
+    function callValue(bytes calldata encodedTx) internal pure returns (uint256 callValue_) {
+        // Load 32 bytes from the offset. No shift is applied, as we need the full 256 bits.
+        assembly {
+            callValue_ := calldataload(add(encodedTx.offset, OFFSET_CALL_VALUE))
         }
     }
 
