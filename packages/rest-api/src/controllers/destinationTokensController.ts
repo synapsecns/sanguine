@@ -34,7 +34,6 @@ export const destinationTokensController = async (req, res) => {
     res.status(500).json({
       error:
         'An unexpected error occurred in /destinationTokens. Please try again later.',
-      details: err.message,
     })
   }
 }
