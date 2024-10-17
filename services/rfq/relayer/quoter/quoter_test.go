@@ -354,12 +354,12 @@ func (s *QuoterSuite) TestGetDestAmount() {
 		DestBalance:   balance,
 	}
 	setQuoteParams := func(originQuoteOffsetBps, destQuoteOffsetBps, quoteWidthBps float64) {
-		s.config.BaseChainConfig.QuoteWidthBps = quoteWidthBps
 		tokenCfg := s.config.Chains[origin].Tokens["USDC"]
 		tokenCfg.QuoteOffsetBps = originQuoteOffsetBps
 		s.config.Chains[origin].Tokens["USDC"] = tokenCfg
 		tokenCfg = s.config.Chains[dest].Tokens["USDC"]
 		tokenCfg.QuoteOffsetBps = destQuoteOffsetBps
+		tokenCfg.QuoteWidthBps = quoteWidthBps
 		s.config.Chains[dest].Tokens["USDC"] = tokenCfg
 		s.manager.SetConfig(s.config)
 	}
@@ -398,12 +398,10 @@ func (s *QuoterSuite) TestGetDestAmount() {
 	expectedAmount = big.NewInt(960_000_000)
 	s.Equal(expectedAmount, destAmount)
 
-	// Set QuoteWidthBps to -100, should default to balance.
+	// Set QuoteWidthBps to -100, should error.
 	setQuoteParams(0, 0, -100)
 	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
-	s.NoError(err)
-	expectedAmount = balance
-	s.Equal(expectedAmount, destAmount)
+	s.Error(err)
 
 	// Set origin offset to 100, should return 101% of balance.
 	setQuoteParams(100, 0, 0)
