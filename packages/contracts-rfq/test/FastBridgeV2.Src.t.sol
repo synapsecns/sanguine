@@ -176,14 +176,14 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         checkEthBalancesAfterBridge(userB);
     }
 
-    function test_bridge_token_revert_approvedZero() public {
+    function test_bridge_token_revert_approvedZero() public virtual {
         vm.prank(userA);
         srcToken.approve(address(fastBridge), 0);
         vm.expectRevert();
         bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 
-    function test_bridge_token_revert_approvedNotEnough() public {
+    function test_bridge_token_revert_approvedNotEnough() public virtual {
         vm.prank(userA);
         srcToken.approve(address(fastBridge), tokenParams.originAmount - 1);
         vm.expectRevert();
@@ -205,7 +205,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: ethParams.originAmount + 1, params: ethParams});
     }
 
-    function test_bridge_eth_revert_zeroMsgValue() public {
+    function test_bridge_eth_revert_zeroMsgValue() public virtual {
         vm.expectRevert(MsgValueIncorrect.selector);
         bridge({caller: userA, msgValue: 0, params: ethParams});
     }
@@ -228,7 +228,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 
-    function test_bridge_revert_zeroOriginToken() public {
+    function test_bridge_revert_zeroOriginToken() public virtual {
         tokenParams.originToken = address(0);
         vm.expectRevert(ZeroAddress.selector);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
@@ -240,7 +240,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 
-    function test_bridge_revert_zeroSender() public {
+    function test_bridge_revert_zeroSender() public virtual {
         tokenParams.sender = address(0);
         vm.expectRevert(ZeroAddress.selector);
         bridge({caller: userA, msgValue: 0, params: tokenParams});

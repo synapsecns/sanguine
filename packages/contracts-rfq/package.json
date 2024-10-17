@@ -8,6 +8,7 @@
     "contracts/**/*.sol"
   ],
   "dependencies": {
+    "@openzeppelin/contracts-4.5.0": "npm:@openzeppelin/contracts@4.5.0",
     "@openzeppelin/contracts": "5.0.1"
   },
   "devDependencies": {
@@ -19,6 +20,7 @@
     "build:contracts": "forge build",
     "build:slither": "forge build --out=out --build-info --force",
     "test:coverage": "echo 'Please use foundry'",
+    "coverage:filter": "lcov -r lcov.info '*legacy*' -o lcov.info",
     "test": "forge test",
     "gas:bench": "forge test --mc GasBenchmark --gas-report",
     "lint": "forge fmt && npm run solhint",
