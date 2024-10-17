@@ -818,7 +818,7 @@ func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}
-	quoteWidthBps, err := m.config.GetQuoteWidthBps(input.DestChainID)
+	quoteWidthBps, err := m.config.GetQuoteWidthBps(input.DestChainID, tokenName)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote width bps: %w", err)
 	}
