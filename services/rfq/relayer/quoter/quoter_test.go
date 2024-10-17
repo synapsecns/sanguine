@@ -289,7 +289,6 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 		minQuoteAmount: "500",
 		maxBalance:     "0",
 	})
-<<<<<<< HEAD
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
@@ -302,8 +301,6 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 		minQuoteAmount: "500",
 		maxBalance:     "0",
 	})
-=======
->>>>>>> 6b4c78e81c6f00d973a30ec772bcf2e42894daca
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
