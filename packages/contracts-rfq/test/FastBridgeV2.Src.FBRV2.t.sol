@@ -5,8 +5,12 @@ import {IFastBridgeRouter, SwapQuery} from "../contracts/legacy/rfq/interfaces/I
 
 import {FastBridgeV2SrcTest, IFastBridge} from "./FastBridgeV2.Src.t.sol";
 
+// solhint-disable func-name-mixedcase
 contract FastBridgeV2SrcFBRouterV2Test is FastBridgeV2SrcTest {
     address public router;
+
+    error FastBridgeRouterV2__OriginSenderNotSpecified();
+    error TokenNotContract();
 
     function setUp() public virtual override {
         super.setUp();
@@ -42,5 +46,39 @@ contract FastBridgeV2SrcFBRouterV2Test is FastBridgeV2SrcTest {
                 rawParams: destQueryParams
             })
         });
+    }
+
+    // ══════════════════════════════════════════════ TEST OVERRIDES ═══════════════════════════════════════════════════
+
+    function test_bridge_token_revert_approvedZero() public virtual override {
+        vm.prank(userA);
+        srcToken.approve(router, 0);
+        vm.expectRevert();
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_token_revert_approvedNotEnough() public virtual override {
+        vm.prank(userA);
+        srcToken.approve(router, tokenParams.originAmount - 1);
+        vm.expectRevert();
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_eth_revert_zeroMsgValue() public virtual override {
+        vm.expectRevert(TokenNotContract.selector);
+        bridge({caller: userA, msgValue: 0, params: ethParams});
+    }
+
+    function test_bridge_revert_zeroOriginToken() public virtual override {
+        tokenParams.originToken = address(0);
+        vm.expectRevert(TokenNotContract.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_revert_zeroSender() public virtual override {
+        vm.etch(userA, "Mock contract code");
+        tokenParams.sender = address(0);
+        vm.expectRevert(FastBridgeRouterV2__OriginSenderNotSpecified.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 }
