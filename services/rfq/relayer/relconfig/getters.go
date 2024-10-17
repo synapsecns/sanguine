@@ -20,7 +20,6 @@ var DefaultChainConfig = ChainConfig{
 	DestGasEstimate:         100000,
 	MinGasToken:             "100000000000000000", // 1 ETH
 	QuotePct:                NewFloatPtr(100),
-	QuoteWidthBps:           0,
 	QuoteFixedFeeMultiplier: NewFloatPtr(1),
 	RelayFixedFeeMultiplier: NewFloatPtr(1),
 }
