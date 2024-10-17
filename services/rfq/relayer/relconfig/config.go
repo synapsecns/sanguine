@@ -124,6 +124,8 @@ type TokenConfig struct {
 	PriceUSD float64 `yaml:"price_usd"`
 	// MinQuoteAmount is the minimum amount to quote for this token in human-readable units.
 	MinQuoteAmount string `yaml:"min_quote_amount"`
+	// MaxRelayAmount is the maximum amount to quote and relay for this token in human-readable units.
+	MaxRelayAmount string `yaml:"max_relay_amount"`
 	// RebalanceMethods are the supported methods for rebalancing.
 	RebalanceMethods []string `yaml:"rebalance_methods"`
 	// MaintenanceBalancePct is the percentage of the total balance under which a rebalance will be triggered.

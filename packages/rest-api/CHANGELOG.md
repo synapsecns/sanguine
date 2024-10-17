@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.4.9...@synapsecns/rest-api@1.5.0) (2024-10-15)
+
+
+### Features
+
+* **rest-api:** Primary RPCs get omnirpc ([#3294](https://github.com/synapsecns/sanguine/issues/3294)) ([31a3ce9](https://github.com/synapsecns/sanguine/commit/31a3ce9f1a90d47425dae6ef969b28de3895a6aa))
+
+
+
+
+
 ## [1.4.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.4.8...@synapsecns/rest-api@1.4.9) (2024-10-11)
 
 **Note:** Version bump only for package @synapsecns/rest-api
