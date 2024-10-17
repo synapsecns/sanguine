@@ -258,6 +258,18 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
+	// Set QuotePct to 50 with QuoteOffset of -1%. Should be 1% less than 50% of balance.
+	setQuoteParams(quoteParams{
+		quotePct:       50,
+		quoteOffset:    -100,
+		minQuoteAmount: "0",
+		maxBalance:     "0",
+	})
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(495_000_000)
+	s.Equal(expectedAmount, quoteAmount)
+
 	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
 	setQuoteParams(quoteParams{
 		quotePct:       25,
@@ -277,6 +289,21 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 		minQuoteAmount: "500",
 		maxBalance:     "0",
 	})
+<<<<<<< HEAD
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(500_000_000)
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
+	setQuoteParams(quoteParams{
+		quotePct:       25,
+		quoteOffset:    0,
+		minQuoteAmount: "500",
+		maxBalance:     "0",
+	})
+=======
+>>>>>>> 6b4c78e81c6f00d973a30ec772bcf2e42894daca
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)

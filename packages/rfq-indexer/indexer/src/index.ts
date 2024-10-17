@@ -16,6 +16,7 @@ ponder.on('FastBridgeV2:BridgeRequested', async ({ event, context }) => {
     args: {
       transactionId,
       sender,
+      request,
       destChainId,
       originToken,
       destToken,
@@ -33,6 +34,7 @@ ponder.on('FastBridgeV2:BridgeRequested', async ({ event, context }) => {
     data: {
       transactionId,
       sender: trim(sender),
+      request: request,
       originChainId: Number(chainId),
       originChain: getChainName(Number(chainId)),
       destChainId: Number(destChainId),

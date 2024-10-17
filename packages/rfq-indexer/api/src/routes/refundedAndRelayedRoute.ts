@@ -41,7 +41,7 @@ const router = express.Router()
  *                   BridgeDispute:
  *                     type: object
  *                     description: Dispute information (if available)
- *       404:
+ *       200:
  *         description: No refunded and relayed transactions found
  *         content:
  *           application/json:
