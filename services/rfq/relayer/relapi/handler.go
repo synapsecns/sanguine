@@ -196,17 +196,7 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	if util.IsGasToken(req.TokenAddress) {
 		nonce, err = h.submitter.SubmitTransaction(ctx, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 			bc := bind.NewBoundContract(req.To, abi.ABI{}, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client)
-			if transactor.GasPrice != nil {
-				transactor.Value = value
-				// nolint: wrapcheck
-				return bc.Transfer(transactor)
-			}
-			var signer *types.Transaction
-			signer, err = transactor.Signer(h.submitter.Address(), tx)
-			if err != nil {
-				return nil, fmt.Errorf("could not get signer: %w", err)
-			}
-			return signer, nil
+			return bc.Transfer(transactor)
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not submit transaction: %s", err.Error())})
