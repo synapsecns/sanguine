@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.4.0...@synapsecns/explorer-ui@0.5.0) (2024-10-16)
+
+
+### Features
+
+* **explorer-ui:** Explorer maintenance banner message ([#3301](https://github.com/synapsecns/sanguine/issues/3301)) ([3e282e0](https://github.com/synapsecns/sanguine/commit/3e282e08fa7331af2377116e401970d1ecc2feb4))
+
+
+
+
+
 # [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/explorer-ui@0.3.11...@synapsecns/explorer-ui@0.4.0) (2024-10-10)
 
 
