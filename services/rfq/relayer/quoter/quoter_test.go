@@ -402,6 +402,7 @@ func (s *QuoterSuite) TestGetDestAmount() {
 	setQuoteParams(0, 0, -100)
 	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.Error(err)
+	s.Nil(destAmount)
 
 	// Set origin offset to 100, should return 101% of balance.
 	setQuoteParams(100, 0, 0)
