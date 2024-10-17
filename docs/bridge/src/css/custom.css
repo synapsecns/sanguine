@@ -21,6 +21,13 @@
 
   --ifm-background-surface-color: #f8f8f8;
 
+  --syn-method: hsl(225deg 100% 45%);
+  
+  --syn-fig-green: hsl(165deg 100% 28%);
+  --syn-fig-blue: hsl(210deg 100% 45%);
+  --syn-fig-purple: hsl(285deg 100% 50%);
+  --syn-fig-magenta: hsl(330deg 100% 60%);
+
   letter-spacing: .0125em;
   line-height: 1.7;
 }
@@ -48,6 +55,13 @@
 
   --ifm-color-success-contrast-background: hsl(165deg 40% 12.5%);
   --ifm-color-success-dark: hsl(165deg 40% 25%);
+
+  --syn-method: hsl(50deg 100% 65%);
+  
+  --syn-fig-green: hsl(120deg 100% 50%);
+  --syn-fig-blue: hsl(180deg 100% 50%);
+  --syn-fig-purple: hsl(285deg 100% 70%);
+  --syn-fig-magenta: hsl(330deg 100% 60%);
 }
 
 h1 { font-weight: 400 }
@@ -78,7 +92,6 @@ svg.flowAnimation text {
 
 figure {
   margin: 0;
-  width: fit-content;
 }
 
 figcaption {

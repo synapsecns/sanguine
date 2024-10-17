@@ -12,6 +12,7 @@ type Client interface {
 }
 
 // Request is a request builder.
+// TODO: this needs to support tracing.
 type Request interface {
 	// SetBody sets the request body
 	SetBody(body []byte) Request

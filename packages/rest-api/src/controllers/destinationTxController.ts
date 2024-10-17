@@ -46,7 +46,7 @@ export const destinationTxController = async (req, res) => {
     })
 
     const graphqlData = await graphqlResponse.json()
-    const toInfo = graphqlData.data.bridgeTransactions[0]?.toInfo || null
+    const toInfo = graphqlData.data.bridgeTransactions?.[0]?.toInfo || null
 
     if (toInfo) {
       const { tokenAddress, value, chainID, ...restToInfo } = toInfo

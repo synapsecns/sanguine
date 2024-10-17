@@ -8,7 +8,7 @@ const router = express.Router()
  * @openapi
  * /transaction-id/{transactionId}:
  *   get:
- *     summary: Get transaction details by ID
+ *     summary: Get transaction details by ID or the origin transaction hash
  *     description: Retrieves detailed information about a transaction, including deposit, relay, proof, claim, and refund data if available
  *     parameters:
  *       - in: path
@@ -16,7 +16,7 @@ const router = express.Router()
  *         required: true
  *         schema:
  *           type: string
- *         description: The unique identifier of the transaction
+ *         description: The unique identifier of the transaction or the origin transaction hash
  *     responses:
  *       200:
  *         description: Successful response
