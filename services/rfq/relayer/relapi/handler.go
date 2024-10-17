@@ -3,6 +3,7 @@ package relapi
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"net/http"
 
@@ -196,6 +197,7 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	if util.IsGasToken(req.TokenAddress) {
 		nonce, err = h.submitter.SubmitTransaction(ctx, big.NewInt(int64(req.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 			bc := bind.NewBoundContract(req.To, abi.ABI{}, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client, h.chains[req.ChainID].Client)
+			transactor.Value = core.CopyBigInt(value)
 			return bc.Transfer(transactor)
 		})
 		if err != nil {
