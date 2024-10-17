@@ -440,20 +440,23 @@ func (c Config) GetMaxBalance(chainID int, addr common.Address) *big.Int {
 }
 
 // GetQuoteWidthBps returns the QuoteWidthBps for the given chainID.
-func (c Config) GetQuoteWidthBps(chainID int) (value float64, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "QuoteWidthBps")
-	if err != nil {
-		return value, err
+func (c Config) GetQuoteWidthBps(chainID int, tokenName string) (value float64, err error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return 0, fmt.Errorf("no chain config for chain %d", chainID)
 	}
 
-	value, ok := rawValue.(float64)
+	tokenCfg, ok := chainCfg.Tokens[tokenName]
 	if !ok {
-		return value, fmt.Errorf("failed to cast QuoteWidthBps to float")
+		return 0, fmt.Errorf("no token config for chain %d and token %s", chainID, tokenName)
 	}
-	if value <= 0 {
-		value = DefaultChainConfig.QuoteWidthBps
+
+	width := tokenCfg.QuoteWidthBps
+	if width < 0 {
+		return 0, fmt.Errorf("quote width bps must be positive: %f", width)
 	}
-	return value, nil
+
+	return width, nil
 }
 
 // GetQuoteFixedFeeMultiplier returns the QuoteFixedFeeMultiplier for the given chainID.
