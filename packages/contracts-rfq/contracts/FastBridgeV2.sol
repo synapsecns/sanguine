@@ -79,12 +79,14 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function dispute(bytes32 transactionId) external onlyRole(GUARD_ROLE) {
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
 
-        if ($.status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
-        if (_timeSince($.proofBlockTimestamp) > DISPUTE_PERIOD) {
+        address disputedRelayer = $.proofRelayer;
+        BridgeStatus status = $.status;
+        uint40 proofBlockTimestamp = $.proofBlockTimestamp;
+
+        if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        if (_timeSince(proofBlockTimestamp) > DISPUTE_PERIOD) {
             revert DisputePeriodPassed();
         }
-
-        address disputedRelayer = $.proofRelayer;
 
         // @dev relayer gets slashed effectively if dest relay has gone thru
         $.status = BridgeStatus.REQUESTED;
