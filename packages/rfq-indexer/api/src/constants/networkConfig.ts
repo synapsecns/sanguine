@@ -8,6 +8,7 @@ import {
   linea,
   bsc,
   blast,
+  worldchain,
 } from 'viem/chains'
 
 import { FastBridgeV2Abi } from './abis/FastBridgeV2'
@@ -111,6 +112,17 @@ export const networkConfig: NetworkConfig = {
     },
     client: createPublicClient({
       chain: blast,
+      transport: http(),
+    }),
+  },
+  480: {
+    name: 'Worldchain',
+    FastBridgeV2: {
+      address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E',
+      abi: FastBridgeV2Abi,
+    },
+    client: createPublicClient({
+      chain: worldchain,
       transport: http(),
     }),
   },
