@@ -80,7 +80,6 @@ export const destinationTxController = async (req, res) => {
     return res.status(500).json({
       error:
         'An unexpected error occurred in /destinationTx. Please try again later.',
-      details: err.message,
     })
   }
 }
