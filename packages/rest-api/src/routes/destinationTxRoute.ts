@@ -54,6 +54,9 @@ const router = express.Router()
  *                     tokenSymbol:
  *                       type: string
  *                       description: The symbol of the token transferred
+ *                     blockNumber:
+ *                       type: integer
+ *                       description: The block number of the transaction
  *                     formattedTime:
  *                       type: string
  *                       description: The formatted time of the transaction
@@ -78,6 +81,9 @@ const router = express.Router()
  *                     tokenSymbol:
  *                       type: string
  *                       description: The symbol of the token transferred
+ *                     blockNumber:
+ *                       type: integer
+ *                       description: The block number of the transaction
  *                     formattedTime:
  *                       type: string
  *                       description: The formatted time of the transaction
@@ -138,9 +144,11 @@ const router = express.Router()
  *                 status:
  *                   type: string
  *                 fromInfo:
- *                   type: null
+ *                   type: object
+ *                   nullable: true
  *                 toInfo:
- *                   type: null
+ *                   type: object
+ *                   nullable: true
  *       500:
  *         description: Server error
  *         content:
