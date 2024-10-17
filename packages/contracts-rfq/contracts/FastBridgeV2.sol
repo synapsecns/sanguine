@@ -300,17 +300,21 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
 
+        address proofRelayer = $.proofRelayer;
+        BridgeStatus status = $.status;
+        uint40 proofBlockTimestamp = $.proofBlockTimestamp;
+
         // update bridge tx status if able to claim origin collateral
-        if ($.status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
 
         // if "to" is zero addr, permissionlessly send funds to proven relayer
         if (to == address(0)) {
-            to = $.proofRelayer;
-        } else if ($.proofRelayer != msg.sender) {
+            to = proofRelayer;
+        } else if (proofRelayer != msg.sender) {
             revert SenderIncorrect();
         }
 
-        if (_timeSince($.proofBlockTimestamp) <= DISPUTE_PERIOD) {
+        if (_timeSince(proofBlockTimestamp) <= DISPUTE_PERIOD) {
             revert DisputePeriodNotPassed();
         }
 
@@ -329,7 +333,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             IERC20(token).safeTransfer(to, amount);
         }
 
-        emit BridgeDepositClaimed(transactionId, $.proofRelayer, to, transaction.originToken, transaction.originAmount);
+        emit BridgeDepositClaimed(transactionId, proofRelayer, to, transaction.originToken, transaction.originAmount);
     }
 
     function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status) {
