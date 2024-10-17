@@ -157,7 +157,7 @@ func (b *Bot) traceCommand() *slacker.CommandDefinition {
 func (b *Bot) rfqLookupCommand() *slacker.CommandDefinition {
 	return &slacker.CommandDefinition{
 		Command:     "rfq <tx>",
-		Description: "find a rfq transaction by either tx hash or txid on all configured relayers",
+		Description: "find a rfq transaction by either tx hash or txid from the rfq-indexer api",
 		Examples: []string{
 			"rfq 0x30f96b45ba689c809f7e936c140609eb31c99b182bef54fccf49778716a7e1ca",
 		},
