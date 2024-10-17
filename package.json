@@ -12,8 +12,7 @@
     "nohoist": [
       "**/typechain",
       "**/@typechain/*",
-      "**/@openzeppelin/contracts-upgradeable",
-      "**/@openzeppelin/contracts",
+      "**/@openzeppelin/*",
       "**/@synapsecns/solidity-devops",
       "**/ds-test",
       "**/forge-std"
