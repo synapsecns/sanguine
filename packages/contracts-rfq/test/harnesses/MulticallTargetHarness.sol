@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {MulticallTarget} from "../../contracts/utils/MulticallTarget.sol";
 
+// solhint-disable no-empty-blocks
 contract MulticallTargetHarness is MulticallTarget {
     address public addressField;
     uint256 public uintField;
@@ -10,6 +11,9 @@ contract MulticallTargetHarness is MulticallTarget {
     string public constant REVERT_MESSAGE = "gm, this is a revert message";
 
     error CustomError();
+
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testMulticallTargetHarness() external {}
 
     function setMsgSenderAsAddressField() external returns (address) {
         addressField = msg.sender;

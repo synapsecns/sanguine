@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.8.2...@synapsecns/contracts-rfq@0.8.3) (2024-10-16)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.8.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.8.1...@synapsecns/contracts-rfq@0.8.2) (2024-10-15)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+## [0.8.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.8.0...@synapsecns/contracts-rfq@0.8.1) (2024-10-14)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+# [0.8.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.7.3...@synapsecns/contracts-rfq@0.8.0) (2024-10-14)
+
+
+### Features
+
+* **contracts-rfq:** arbitrary call with value [SLT-233] [SLT-318] ([#3246](https://github.com/synapsecns/sanguine/issues/3246)) ([0df8f08](https://github.com/synapsecns/sanguine/commit/0df8f08b3617e84f1ae5d71b5e45f172e08ce2db))
+
+
+
+
+
 ## [0.7.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.7.2...@synapsecns/contracts-rfq@0.7.3) (2024-10-11)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq
