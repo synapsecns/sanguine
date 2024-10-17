@@ -3,6 +3,11 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/flowchartsman/swaggerui"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/ginhelper"
@@ -12,17 +17,10 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/config"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/swagger"
-	"go.opentelemetry.io/otel/trace"
-	"net/http"
-	"strconv"
-	"sync"
-	"time"
 )
 
 // RPCProxy proxies rpc request to the fastest endpoint. Requests fallback in cases where data is not available.
 type RPCProxy struct {
-	// tracer is the tracer for the proxy
-	tracer trace.Tracer
 	// chainManager contains a list of chains and latency ordered rpcs
 	chainManager chainmanager.ChainManager
 	// config contains the config for each chain
@@ -50,9 +48,8 @@ func NewProxy(config config.Config, handler metrics.Handler) *RPCProxy {
 		chainManager:    chainmanager.NewChainManagerFromConfig(config, handler),
 		refreshInterval: time.Second * time.Duration(config.RefreshInterval),
 		port:            config.Port,
-		client:          omniHTTP.NewClient(omniHTTP.ClientTypeFromString(config.ClientType)),
+		client:          omniHTTP.NewClient(handler, omniHTTP.ClientTypeFromString(config.ClientType)),
 		handler:         handler,
-		tracer:          handler.Tracer(),
 	}
 }
 

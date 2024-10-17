@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 
@@ -34,7 +35,7 @@ type JSONError struct {
 
 // rpcTransaction is an eth rpc transaction (copied from ethclient).
 type rpcTransaction struct {
-	//nolint: unused
+	//lint:ignore U1000 it's okay.
 	tx *types.Transaction
 	txExtraInfo
 }

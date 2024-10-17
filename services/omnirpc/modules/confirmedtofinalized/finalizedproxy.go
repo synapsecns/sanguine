@@ -6,6 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"math/big"
+	"net/http"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
@@ -22,10 +27,6 @@ import (
 	"github.com/synapsecns/sanguine/services/omnirpc/swagger"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"io"
-	"math/big"
-	"net/http"
-	"time"
 )
 
 // FinalizedProxy is the interface for the finalized proxy.
@@ -58,7 +59,7 @@ func NewProxy(proxyURL string, handler metrics.Handler, port, maxSubmitAhead, ch
 		proxyURL:       proxyURL,
 		handler:        handler,
 		port:           uint16(port),
-		client:         omniHTTP.NewRestyClient(),
+		client:         omniHTTP.NewRestyClient(handler),
 		logger:         handler.ExperimentalLogger(),
 		maxSubmitAhead: maxSubmitAhead,
 		chainID:        chainID,
