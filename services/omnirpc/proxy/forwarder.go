@@ -97,7 +97,7 @@ func (r *RPCProxy) ReleaseForwarder(f *Forwarder) {
 // Forward forwards the rpc request to the servers and makes assertions around confirmation thresholds.
 // required confirmations can be used to override the required confirmations count.
 func (r *RPCProxy) Forward(c *gin.Context, chainID uint32, requiredConfirmationsOverride *uint16) {
-	ctx, span := r.handler.Tracer().Start(c, "rpcRequest",
+	ctx, span := r.handler.Tracer().Start(c, "Forward",
 		trace.WithAttributes(attribute.Int("chainID", int(chainID))),
 	)
 
