@@ -90,6 +90,8 @@ export interface BridgeProofDisputedEvents {
   transactionHash: ColumnType<string>
   chainId: ColumnType<number>
   chain: ColumnType<string>
+  originChainId: ColumnType<number>
+  originChain: ColumnType<string>
 }
 // Add any other shared types used across the API
 export type EventType =
