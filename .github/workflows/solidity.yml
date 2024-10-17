@@ -222,6 +222,12 @@ jobs:
         env:
           FOUNDRY_FUZZ_RUNS: 10
 
+      # Some of the packages may want to exclude certain files from the coverage report (legacy code, scripts, tests)
+      - name: Apply filters to coverage report
+        if: ${{ matrix.package != 'solidity-devops' }}
+        working-directory: './packages/${{matrix.package}}'
+        run: npm run coverage:filter --if-present
+
       - name: Send Coverage (Codecov)
         if: ${{ matrix.package != 'solidity-devops' }}
         uses: Wandalen/wretry.action@v1.0.36
