@@ -17,15 +17,11 @@ export const destinationTxController = async (req, res) => {
   try {
     const { originChainId, txHash } = req.query
 
-    const graphqlData = await fetchBridgeTransaction(originChainId, txHash)
+    const bridgeTxn = await fetchBridgeTransaction(originChainId, txHash)
 
-    const {
-      fromInfo = null,
-      toInfo = null,
-      kappa = null,
-    } = graphqlData?.data?.bridgeTransactions?.[0] || {}
+    const { fromInfo = null, toInfo = null, kappa = null } = bridgeTxn || {}
 
-    if (!fromInfo && !toInfo) {
+    if (!bridgeTxn) {
       payload = {
         status: 'not found',
         fromInfo,

@@ -5,13 +5,21 @@ import fastBridgeRouterAbi from '../constants/abis/fastBridgeRouter.json'
 import { FAST_BRIDGE_ROUTER_ADDRESS_MAP } from '../constants'
 import { CHAINS_BY_ID } from '../constants/chains'
 
+const providerCache = new Map()
+
 export const getBridgeStatus = async (
   originChainId: string | number,
   kappa: string
 ) => {
   const chainInfo = CHAINS_BY_ID[originChainId]
   const rpcUrl = chainInfo.rpcUrls.primary || chainInfo.rpcUrls.fallback
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+
+  let provider = providerCache.get(rpcUrl)
+
+  if (!provider) {
+    provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+    providerCache.set(rpcUrl, provider)
+  }
 
   const routerAddress = FAST_BRIDGE_ROUTER_ADDRESS_MAP[originChainId]
 

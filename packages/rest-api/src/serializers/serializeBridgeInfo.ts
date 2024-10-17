@@ -2,8 +2,9 @@ import { ethers } from 'ethers'
 
 import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 import { getTokenDecimals } from '../utils/getTokenDecimals'
+import { BridgeTransactionInfo } from '../types'
 
-export const serializeBridgeInfo = (info) => {
+export const serializeBridgeInfo = (info: BridgeTransactionInfo) => {
   const { tokenAddress, value, chainID, ...restInfo } = info
 
   const tokenInfo = tokenAddressToToken(chainID.toString(), tokenAddress)

@@ -1,3 +1,5 @@
+import { BridgeTransaction } from '../types'
+
 export const fetchBridgeTransaction = async (
   originChainId: number | string,
   txHash: string
@@ -47,5 +49,13 @@ export const fetchBridgeTransaction = async (
 
   const graphqlData = await graphqlResponse.json()
 
-  return graphqlData
+  if (
+    graphqlData.data &&
+    graphqlData.data.bridgeTransactions &&
+    graphqlData.data.bridgeTransactions.length > 0
+  ) {
+    return graphqlData.data.bridgeTransactions[0] as BridgeTransaction
+  }
+
+  return null
 }
