@@ -114,7 +114,6 @@ export const bridgeLimitsController = async (req, res) => {
     res.status(500).json({
       error:
         'An unexpected error occurred in /bridgeLimits. Please try again later.',
-      details: err.message,
     })
   }
 }

@@ -9,7 +9,9 @@ import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
 
-contract FastBridge is IFastBridge, Admin {
+import {MulticallTarget} from "./utils/MulticallTarget.sol";
+
+contract FastBridge is IFastBridge, MulticallTarget, Admin {
     using SafeERC20 for IERC20;
     using UniversalTokenLib for address;
 

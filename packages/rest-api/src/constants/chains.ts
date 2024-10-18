@@ -1,13 +1,14 @@
 import _ from 'lodash'
 
 import { Chain } from '../types'
+import { getOmniRpcUrl } from '../utils/getOmniRpcUrl'
 
 export const ETHEREUM: Chain = {
   id: 1,
   name: 'Ethereum',
   rpcUrls: {
-    primary: 'https://ethereum.blockpi.network/v1/rpc/public',
-    fallback: 'https://rpc.ankr.com/eth',
+    primary: getOmniRpcUrl(1),
+    fallback: 'https://ethereum.blockpi.network/v1/rpc/public',
   },
   explorerUrl: 'https://etherscan.com',
   explorerName: 'Etherscan',
@@ -27,8 +28,8 @@ export const ARBITRUM: Chain = {
   id: 42161,
   name: 'Arbitrum',
   rpcUrls: {
-    primary: 'https://arbitrum.blockpi.network/v1/rpc/public',
-    fallback: 'https://arb1.arbitrum.io/rpc',
+    primary: getOmniRpcUrl(42161),
+    fallback: 'https://arbitrum.blockpi.network/v1/rpc/public',
   },
   explorerUrl: 'https://arbiscan.io',
   explorerName: 'Arbiscan',
@@ -48,8 +49,8 @@ export const BNBCHAIN: Chain = {
   id: 56,
   name: 'BNB Chain',
   rpcUrls: {
-    primary: 'https://bsc-dataseed1.ninicoin.io/',
-    fallback: 'https://bsc-dataseed2.ninicoin.io',
+    primary: getOmniRpcUrl(56),
+    fallback: 'https://bsc-dataseed1.ninicoin.io/',
   },
   explorerUrl: 'https://bscscan.com',
   explorerName: 'BscScan',
@@ -69,8 +70,8 @@ export const AVALANCHE: Chain = {
   id: 43114,
   name: 'Avalanche',
   rpcUrls: {
-    primary: 'https://api.avax.network/ext/bc/C/rpc',
-    fallback: 'https://1rpc.io/avax/c',
+    primary: getOmniRpcUrl(43114),
+    fallback: 'https://api.avax.network/ext/bc/C/rpc',
   },
   explorerUrl: 'https://snowtrace.io/',
   explorerName: 'Snowtrace',
@@ -90,8 +91,8 @@ export const CANTO: Chain = {
   id: 7700,
   name: 'Canto',
   rpcUrls: {
-    primary: 'https://mainnode.plexnode.org:8545',
-    fallback: 'https://canto.slingshot.finance',
+    primary: getOmniRpcUrl(7700),
+    fallback: 'https://mainnode.plexnode.org:8545',
   },
   explorerUrl: 'https://tuber.build/',
   explorerName: 'Canto Explorer',
@@ -111,8 +112,8 @@ export const OPTIMISM: Chain = {
   id: 10,
   name: 'Optimism',
   rpcUrls: {
-    primary: 'https://mainnet.optimism.io',
-    fallback: 'https://1rpc.io/op',
+    primary: getOmniRpcUrl(10),
+    fallback: 'https://mainnet.optimism.io',
   },
   explorerUrl: 'https://optimistic.etherscan.io',
   explorerName: 'Optimism Explorer',
@@ -132,8 +133,8 @@ export const POLYGON: Chain = {
   id: 137,
   name: 'Polygon',
   rpcUrls: {
-    primary: 'https://polygon-bor.publicnode.com',
-    fallback: 'https://polygon.llamarpc.com',
+    primary: getOmniRpcUrl(137),
+    fallback: 'https://polygon-bor.publicnode.com',
   },
   explorerUrl: 'https://polygonscan.com',
   explorerName: 'PolygonScan',
@@ -153,8 +154,8 @@ export const DFK: Chain = {
   id: 53935,
   name: 'DFK Chain',
   rpcUrls: {
-    primary: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
-    fallback: 'https://dfkchain.api.onfinality.io/public',
+    primary: getOmniRpcUrl(53935),
+    fallback: 'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
   },
   explorerUrl: 'https://subnets.avax.network/defi-kingdoms',
   explorerName: 'DFK Subnet Explorer',
@@ -174,8 +175,8 @@ export const KLAYTN: Chain = {
   id: 8217,
   name: 'Klaytn',
   rpcUrls: {
-    primary: 'https://klaytn.blockpi.network/v1/rpc/public',
-    fallback: 'https://klaytn.api.onfinality.io/public',
+    primary: getOmniRpcUrl(8217),
+    fallback: 'https://klaytn.blockpi.network/v1/rpc/public',
   },
   explorerUrl: 'https://scope.klaytn.com',
   explorerName: 'Klaytn Explorer',
@@ -195,8 +196,8 @@ export const FANTOM: Chain = {
   id: 250,
   name: 'Fantom',
   rpcUrls: {
-    primary: 'https://rpc.ftm.tools',
-    fallback: 'https://fantom-rpc.gateway.pokt.network/',
+    primary: getOmniRpcUrl(250),
+    fallback: 'https://rpc.ftm.tools',
   },
   explorerUrl: 'https://ftmscan.com',
   explorerName: 'FTMScan',
@@ -216,8 +217,8 @@ export const CRONOS: Chain = {
   id: 25,
   name: 'Cronos',
   rpcUrls: {
-    primary: 'https://evm-cronos.crypto.org',
-    fallback: 'https://cronos.blockpi.network/v1/rpc/public',
+    primary: getOmniRpcUrl(25),
+    fallback: 'https://evm-cronos.crypto.org',
   },
   explorerUrl: 'https://cronoscan.com',
   explorerName: 'CronoScan',
@@ -237,8 +238,8 @@ export const BOBA: Chain = {
   id: 288,
   name: 'Boba Chain',
   rpcUrls: {
-    primary: 'https://mainnet.boba.network',
-    fallback: 'https://replica.boba.network',
+    primary: getOmniRpcUrl(288),
+    fallback: 'https://mainnet.boba.network',
   },
   explorerUrl: 'https://bobascan.com',
   explorerName: 'Boba Explorer',
@@ -258,8 +259,8 @@ export const METIS: Chain = {
   id: 1088,
   name: 'Metis',
   rpcUrls: {
-    primary: 'https://andromeda.metis.io/?owner=1088',
-    fallback: 'https://metis-mainnet.public.blastapi.io',
+    primary: getOmniRpcUrl(1088),
+    fallback: 'https://andromeda.metis.io/?owner=1088',
   },
   explorerUrl: 'https://andromeda-explorer.metis.io',
   explorerName: 'Metis Explorer',
@@ -279,8 +280,8 @@ export const AURORA: Chain = {
   id: 1313161554,
   name: 'Aurora',
   rpcUrls: {
-    primary: 'https://mainnet.aurora.dev',
-    fallback: 'https://1rpc.io/aurora',
+    primary: getOmniRpcUrl(1313161554),
+    fallback: 'https://mainnet.aurora.dev',
   },
   explorerUrl: 'https://explorer.mainnet.aurora.dev',
   explorerName: 'Aurora Explorer',
@@ -300,8 +301,8 @@ export const HARMONY: Chain = {
   id: 1666600000,
   name: 'Harmony',
   rpcUrls: {
-    primary: 'https://api.harmony.one',
-    fallback: 'https://api.s0.t.hmny.io',
+    primary: getOmniRpcUrl(1666600000),
+    fallback: 'https://api.harmony.one',
   },
   explorerUrl: 'https://explorer.harmony.one',
   explorerName: 'Harmony Explorer',
@@ -321,8 +322,8 @@ export const MOONBEAM: Chain = {
   id: 1284,
   name: 'Moonbeam',
   rpcUrls: {
-    primary: 'https://rpc.api.moonbeam.network',
-    fallback: 'https://moonbeam.public.blastapi.io',
+    primary: getOmniRpcUrl(1284),
+    fallback: 'https://rpc.api.moonbeam.network',
   },
   explorerUrl: 'https://moonbeam.moonscan.io',
   explorerName: 'Moonbeam Explorer',
@@ -342,8 +343,8 @@ export const MOONRIVER: Chain = {
   id: 1285,
   name: 'Moonriver',
   rpcUrls: {
-    primary: 'https://rpc.api.moonriver.moonbeam.network',
-    fallback: 'https://moonriver.public.blastapi.io',
+    primary: getOmniRpcUrl(1285),
+    fallback: 'https://rpc.api.moonriver.moonbeam.network',
   },
   explorerUrl: 'https://moonriver.moonscan.io',
   explorerName: 'Moonriver Explorer',
@@ -363,8 +364,8 @@ export const DOGE: Chain = {
   id: 2000,
   name: 'Dogechain',
   rpcUrls: {
-    primary: 'https://rpc.dogechain.dog',
-    fallback: 'https://rpc01-sg.dogechain.dog',
+    primary: getOmniRpcUrl(2000),
+    fallback: 'https://rpc.dogechain.dog',
   },
   explorerUrl: 'https://explorer.dogechain.dog',
   explorerName: 'Dogechain Explorer',
@@ -384,8 +385,8 @@ export const BASE: Chain = {
   id: 8453,
   name: 'Base',
   rpcUrls: {
-    primary: 'https://base.blockpi.network/v1/rpc/public',
-    fallback: 'https://developer-access-mainnet.base.org',
+    primary: getOmniRpcUrl(8453),
+    fallback: 'https://base.blockpi.network/v1/rpc/public',
   },
   explorerUrl: 'https://basescan.org',
   explorerName: 'BaseScan',
@@ -405,9 +406,9 @@ export const BLAST: Chain = {
   id: 81457,
   name: 'Blast',
   rpcUrls: {
-    primary:
+    primary: getOmniRpcUrl(81457),
+    fallback:
       'https://lingering-indulgent-replica.blast-mainnet.quiknode.pro/6667a8f4be701cb6549b415d567bc706fb2f13a8/',
-    fallback: 'https://blast.blockpi.network/v1/rpc/publicChain',
   },
   explorerUrl: 'https://blastscan.io',
   explorerName: 'Blastscan',
@@ -427,8 +428,8 @@ export const SCROLL: Chain = {
   id: 534352,
   name: 'Scroll',
   rpcUrls: {
-    primary: 'https://rpc.scroll.io/',
-    fallback: 'https://scroll.blockpi.network/v1/rpc/public',
+    primary: getOmniRpcUrl(534352),
+    fallback: 'https://rpc.scroll.io/',
   },
   explorerUrl: 'https://scrollscan.com',
   explorerName: 'Scrollscan',
@@ -448,8 +449,8 @@ export const LINEA: Chain = {
   id: 59144,
   name: 'Linea',
   rpcUrls: {
-    primary: 'https://rpc.linea.build',
-    fallback: 'https://linea.blockpi.network/v1/rpc/public',
+    primary: getOmniRpcUrl(59144),
+    fallback: 'https://rpc.linea.build',
   },
   explorerUrl: 'https://lineascan.build',
   explorerName: 'LineaScan',
