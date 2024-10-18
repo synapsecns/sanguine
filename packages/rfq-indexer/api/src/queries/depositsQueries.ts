@@ -17,6 +17,7 @@ export const qDeposits = () => {
       'BridgeRequestEvents.originAmountFormatted',
       'BridgeRequestEvents.destAmountFormatted',
       'BridgeRequestEvents.sender',
+      'BridgeRequestEvents.request',
       'BridgeRequestEvents.sendChainGas',
     ])
     .where('BridgeRequestEvents.blockTimestamp', '>', 1722729600)

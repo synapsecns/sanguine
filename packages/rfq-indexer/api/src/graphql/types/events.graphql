@@ -17,6 +17,7 @@ scalar BigInt
     destAmountFormatted: String!
     destChainId: Int!
     destChain: String!
+    request: String!
     sendChainGas: Boolean!
   }
 
