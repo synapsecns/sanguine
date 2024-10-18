@@ -138,6 +138,7 @@ func (i *IntegrationSuite) setupBackends() {
 	i.omniClient = omnirpcClient.NewOmnirpcClient(i.omniServer, i.metrics, omnirpcClient.WithCaptureReqRes())
 
 	i.setupCCTP()
+	i.setupRecipientMock()
 }
 
 // setupBe sets up one backend
@@ -215,6 +216,23 @@ func (i *IntegrationSuite) setupCCTP() {
 				if err != nil {
 					return fmt.Errorf("could not set remote token messenger: %w", err)
 				}
+			}
+			return nil
+		}, retry.WithMaxTotalTime(30*time.Second))
+		i.NoError(err)
+	}
+}
+
+func (i *IntegrationSuite) setupRecipientMock() {
+	testBackends := core.ToSlice(i.originBackend, i.destBackend)
+
+	for _, b := range testBackends {
+		backend := b
+		err := retry.WithBackoff(i.GetTestContext(), func(_ context.Context) (err error) {
+			handle := i.manager.Get(i.GetTestContext(), backend, testutil.RecipientMockType)
+			err = i.waitForContractDeployment(i.GetTestContext(), backend, handle.Address())
+			if err != nil {
+				return fmt.Errorf("failed to wait for contract deployment: %w", err)
 			}
 			return nil
 		}, retry.WithMaxTotalTime(30*time.Second))

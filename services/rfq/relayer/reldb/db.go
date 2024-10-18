@@ -13,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 )
 
 // Writer is the interface for writing to the database.
@@ -81,7 +81,10 @@ type QuoteRequest struct {
 	DestTokenDecimals   uint8
 	TransactionID       [32]byte
 	Sender              common.Address
-	Transaction         fastbridge.IFastBridgeBridgeTransaction
+	// For now, SendChainGas is the only distinction between v1 and v2,
+	// so no need to duplicate other fields within TransactionV1.
+	TransactionV1 fastbridgev2.IFastBridgeBridgeTransaction
+	Transaction   fastbridgev2.IFastBridgeV2BridgeTransactionV2
 	// Status is the quote request status
 	Status       QuoteRequestStatus
 	OriginTxHash common.Hash
