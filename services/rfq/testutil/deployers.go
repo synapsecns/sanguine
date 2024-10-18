@@ -14,7 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 	"github.com/synapsecns/sanguine/ethergo/manager"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgemulti"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
 )
 
@@ -113,9 +113,9 @@ func NewFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend ba
 // Deploy deploys the fast bridge contract.
 func (f FastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return f.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return fastbridge.DeployFastBridge(transactOps, backend, transactOps.From)
+		return fastbridgemulti.DeployFastBridge(transactOps, backend, transactOps.From)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return fastbridge.NewFastBridgeRef(address, backend)
+		return fastbridgemulti.NewFastBridgeRef(address, backend)
 	})
 }
 
