@@ -7,6 +7,9 @@ on:
       - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
       - 'packages/solidity-devops/**'
+    branches:
+      # Solidity workflows are irrelevant for the FE release branch
+      - '!fe-release'
   push:
     paths:
       - 'packages/contracts-core/**'
