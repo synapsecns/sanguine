@@ -46,7 +46,6 @@ interface IFastBridgeV2 is IFastBridge {
 
     /// @notice Updated bridge transaction struct to include parameters introduced in FastBridgeV2.
     /// Note: only `exclusivityRelayer` can fill such a transaction until `exclusivityEndTime`.
-    /// TODO: consider changing the encoding scheme to prevent spending extra gas on decoding.
     struct BridgeTransactionV2 {
         uint32 originChainId;
         uint32 destChainId;
@@ -57,12 +56,13 @@ interface IFastBridgeV2 is IFastBridge {
         uint256 originAmount; // amount in on origin bridge less originFeeAmount
         uint256 destAmount;
         uint256 originFeeAmount;
-        uint256 zapNative; // ETH value to send to the recipient (if any) - replaces V1's sendChainGas flag
+        // Note: sendChainGas flag from V1 is deprecated
         uint256 deadline; // user specified deadline for destination relay
         uint256 nonce;
         address exclusivityRelayer;
         uint256 exclusivityEndTime;
-        bytes zapData;
+        uint256 zapNative; // ETH value to send to the recipient (if any)
+        bytes zapData; // data to pass for the Zap action (if any)
     }
 
     event BridgeQuoteDetails(bytes32 indexed transactionId, bytes quoteId);
