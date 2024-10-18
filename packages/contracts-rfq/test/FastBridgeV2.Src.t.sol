@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {BridgeTransactionV2Lib} from "../contracts/libs/BridgeTransactionV2.sol";
+
 import {FastBridgeV2SrcBaseTest, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.Src.Base.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
@@ -36,7 +38,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         emit BridgeRequested({
             transactionId: txId,
             sender: bridgeTx.originSender,
-            request: abi.encode(bridgeTx),
+            request: BridgeTransactionV2Lib.encodeV2(bridgeTx),
             destChainId: bridgeTx.destChainId,
             originToken: bridgeTx.originToken,
             destToken: bridgeTx.destToken,
@@ -909,5 +911,83 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         refund({caller: refunder, bridgeTx: tokenTx});
         vm.expectRevert(StatusIncorrect.selector);
         refund({caller: refunder, bridgeTx: tokenTx});
+    }
+
+    // ═════════════════════════════════════════════ INVALID PAYLOADS ══════════════════════════════════════════════════
+
+    function test_prove_revert_requestV1() public {
+        // V1 doesn't have any version field
+        expectRevertUnsupportedVersion(0);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.prove(mockRequestV1, hex"01");
+    }
+
+    function test_prove_revert_invalidRequestV2() public {
+        expectRevertInvalidEncodedTx();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.prove(invalidRequestV2, hex"01");
+    }
+
+    function test_prove_revert_requestV3() public {
+        expectRevertUnsupportedVersion(3);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.prove(mockRequestV3, hex"01");
+    }
+
+    function test_claim_revert_requestV1() public {
+        // V1 doesn't have any version field
+        expectRevertUnsupportedVersion(0);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(mockRequestV1);
+    }
+
+    function test_claim_revert_invalidRequestV2() public {
+        expectRevertInvalidEncodedTx();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(invalidRequestV2);
+    }
+
+    function test_claim_revert_requestV3() public {
+        expectRevertUnsupportedVersion(3);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(mockRequestV3);
+    }
+
+    function test_claim_toDiffAddress_revert_requestV1() public {
+        // V1 doesn't have any version field
+        expectRevertUnsupportedVersion(0);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(mockRequestV1, relayerB);
+    }
+
+    function test_claim_toDiffAddress_revert_invalidRequestV2() public {
+        expectRevertInvalidEncodedTx();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(invalidRequestV2, relayerB);
+    }
+
+    function test_claim_toDiffAddress_revert_requestV3() public {
+        expectRevertUnsupportedVersion(3);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(mockRequestV3, relayerB);
+    }
+
+    function test_refund_revert_requestV1() public {
+        // V1 doesn't have any version field
+        expectRevertUnsupportedVersion(0);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.refund(mockRequestV1);
+    }
+
+    function test_refund_revert_invalidRequestV2() public {
+        expectRevertInvalidEncodedTx();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.refund(invalidRequestV2);
+    }
+
+    function test_refund_revert_requestV3() public {
+        expectRevertUnsupportedVersion(3);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.refund(mockRequestV3);
     }
 }
