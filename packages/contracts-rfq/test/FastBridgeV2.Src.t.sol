@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {BridgeTransactionV2Lib} from "../contracts/libs/BridgeTransactionV2.sol";
+
 import {FastBridgeV2SrcBaseTest, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.Src.Base.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
@@ -36,13 +38,13 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         emit BridgeRequested({
             transactionId: txId,
             sender: bridgeTx.originSender,
-            request: abi.encode(bridgeTx),
+            request: BridgeTransactionV2Lib.encodeV2(bridgeTx),
             destChainId: bridgeTx.destChainId,
             originToken: bridgeTx.originToken,
             destToken: bridgeTx.destToken,
             originAmount: bridgeTx.originAmount,
             destAmount: bridgeTx.destAmount,
-            sendChainGas: bridgeTx.sendChainGas
+            sendChainGas: bridgeTx.callValue > 0
         });
     }
 
@@ -74,10 +76,9 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         });
     }
 
-    function expectBridgeProofDisputed(bytes32 txId, address guard) public {
+    function expectBridgeProofDisputed(bytes32 txId, address relayer) public {
         vm.expectEmit(address(fastBridge));
-        // Note: BridgeProofDisputed event has a mislabeled address parameter, this is actually the guard
-        emit BridgeProofDisputed({transactionId: txId, relayer: guard});
+        emit BridgeProofDisputed({transactionId: txId, relayer: relayer});
     }
 
     function expectBridgeDepositRefunded(IFastBridge.BridgeParams memory bridgeParams, bytes32 txId) public {
@@ -177,6 +178,25 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         checkEthBalancesAfterBridge(userB);
     }
 
+    function test_bridge_token_revert_approvedZero() public virtual {
+        vm.prank(userA);
+        srcToken.approve(address(fastBridge), 0);
+        vm.expectRevert();
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_token_revert_approvedNotEnough() public virtual {
+        vm.prank(userA);
+        srcToken.approve(address(fastBridge), tokenParams.originAmount - 1);
+        vm.expectRevert();
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_token_revert_nonZeroMsgValue() public {
+        vm.expectRevert();
+        bridge({caller: userA, msgValue: tokenParams.originAmount, params: tokenParams});
+    }
+
     function test_bridge_eth_revert_lowerMsgValue() public {
         vm.expectRevert(MsgValueIncorrect.selector);
         bridge({caller: userA, msgValue: ethParams.originAmount - 1, params: ethParams});
@@ -187,7 +207,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: ethParams.originAmount + 1, params: ethParams});
     }
 
-    function test_bridge_eth_revert_zeroMsgValue() public {
+    function test_bridge_eth_revert_zeroMsgValue() public virtual {
         vm.expectRevert(MsgValueIncorrect.selector);
         bridge({caller: userA, msgValue: 0, params: ethParams});
     }
@@ -210,7 +230,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 
-    function test_bridge_revert_zeroOriginToken() public {
+    function test_bridge_revert_zeroOriginToken() public virtual {
         tokenParams.originToken = address(0);
         vm.expectRevert(ZeroAddress.selector);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
@@ -222,7 +242,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 
-    function test_bridge_revert_zeroSender() public {
+    function test_bridge_revert_zeroSender() public virtual {
         tokenParams.sender = address(0);
         vm.expectRevert(ZeroAddress.selector);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
@@ -365,11 +385,11 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
         expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"01"});
         prove({caller: relayerB, transactionId: txId, destTxHash: hex"01", relayer: relayerA});
-        expectBridgeProofDisputed(txId, guard);
+        expectBridgeProofDisputed(txId, relayerA);
         dispute(guard, txId);
         expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"02"});
         prove({caller: relayerB, transactionId: txId, destTxHash: hex"02", relayer: relayerA});
-        expectBridgeProofDisputed(txId, guard);
+        expectBridgeProofDisputed(txId, relayerA);
         dispute(guard, txId);
         expectBridgeProofProvided({txId: txId, relayer: relayerA, destTxHash: hex"03"});
         prove({caller: relayerB, transactionId: txId, destTxHash: hex"03", relayer: relayerA});
@@ -641,7 +661,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bytes32 txId = getTxId(tokenTx);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
-        expectBridgeProofDisputed({txId: txId, guard: guard});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
@@ -653,7 +673,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: 0, params: tokenParams});
         prove({caller: relayerA, bridgeTx: tokenTx, destTxHash: hex"01"});
         skip(CLAIM_DELAY);
-        expectBridgeProofDisputed({txId: txId, guard: guard});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(address(srcToken)), INITIAL_PROTOCOL_FEES_TOKEN);
@@ -665,7 +685,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bytes32 txId = getTxId(ethTx);
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
         prove({caller: relayerA, bridgeTx: ethTx, destTxHash: hex"01"});
-        expectBridgeProofDisputed({txId: txId, guard: guard});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
@@ -678,7 +698,7 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams});
         prove({caller: relayerA, bridgeTx: ethTx, destTxHash: hex"01"});
         skip(CLAIM_DELAY);
-        expectBridgeProofDisputed({txId: txId, guard: guard});
+        expectBridgeProofDisputed({txId: txId, relayer: relayerA});
         dispute({caller: guard, txId: txId});
         assertEq(fastBridge.bridgeStatuses(txId), IFastBridgeV2.BridgeStatus.REQUESTED);
         assertEq(fastBridge.protocolFees(ETH_ADDRESS), INITIAL_PROTOCOL_FEES_ETH);
@@ -891,5 +911,83 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
         refund({caller: refunder, bridgeTx: tokenTx});
         vm.expectRevert(StatusIncorrect.selector);
         refund({caller: refunder, bridgeTx: tokenTx});
+    }
+
+    // ═════════════════════════════════════════════ INVALID PAYLOADS ══════════════════════════════════════════════════
+
+    function test_prove_revert_requestV1() public {
+        // V1 doesn't have any version field
+        expectRevertUnsupportedVersion(0);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.prove(mockRequestV1, hex"01");
+    }
+
+    function test_prove_revert_invalidRequestV2() public {
+        expectRevertInvalidEncodedTx();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.prove(invalidRequestV2, hex"01");
+    }
+
+    function test_prove_revert_requestV3() public {
+        expectRevertUnsupportedVersion(3);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.prove(mockRequestV3, hex"01");
+    }
+
+    function test_claim_revert_requestV1() public {
+        // V1 doesn't have any version field
+        expectRevertUnsupportedVersion(0);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(mockRequestV1);
+    }
+
+    function test_claim_revert_invalidRequestV2() public {
+        expectRevertInvalidEncodedTx();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(invalidRequestV2);
+    }
+
+    function test_claim_revert_requestV3() public {
+        expectRevertUnsupportedVersion(3);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(mockRequestV3);
+    }
+
+    function test_claim_toDiffAddress_revert_requestV1() public {
+        // V1 doesn't have any version field
+        expectRevertUnsupportedVersion(0);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(mockRequestV1, relayerB);
+    }
+
+    function test_claim_toDiffAddress_revert_invalidRequestV2() public {
+        expectRevertInvalidEncodedTx();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(invalidRequestV2, relayerB);
+    }
+
+    function test_claim_toDiffAddress_revert_requestV3() public {
+        expectRevertUnsupportedVersion(3);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.claim(mockRequestV3, relayerB);
+    }
+
+    function test_refund_revert_requestV1() public {
+        // V1 doesn't have any version field
+        expectRevertUnsupportedVersion(0);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.refund(mockRequestV1);
+    }
+
+    function test_refund_revert_invalidRequestV2() public {
+        expectRevertInvalidEncodedTx();
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.refund(invalidRequestV2);
+    }
+
+    function test_refund_revert_requestV3() public {
+        expectRevertUnsupportedVersion(3);
+        vm.prank({msgSender: relayerA, txOrigin: relayerA});
+        fastBridge.refund(mockRequestV3);
     }
 }

@@ -31,7 +31,7 @@ const StandardPageContainer = ({
 
     if (unsupported) {
       unsupportedToaster = toast.error(
-        t('Connected to an unsupported network; Please switch networks.'),
+        t('Connected to an unsupported network; Please switch networks'),
         { id: 'unsupported-popup', duration: 5000 }
       )
     } else {

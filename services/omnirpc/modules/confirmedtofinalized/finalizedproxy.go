@@ -18,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	"github.com/synapsecns/sanguine/services/omnirpc/modules/mixins"
 	"github.com/synapsecns/sanguine/services/omnirpc/swagger"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -189,10 +190,7 @@ func (r *finalizedProxyImpl) checkShouldRequest(parentCtx context.Context, req r
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	tx := new(types.Transaction)
-
-	hex := common.FromHex(string(bytes.ReplaceAll(req.Params[0], []byte{'"'}, []byte{})))
-	err = tx.UnmarshalBinary(hex)
+	tx, err := mixins.ReqToTX(req)
 	if err != nil {
 		return false
 	}

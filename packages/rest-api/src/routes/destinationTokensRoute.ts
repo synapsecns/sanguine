@@ -93,8 +93,6 @@ const router = express.Router()
  *               properties:
  *                 error:
  *                   type: string
- *                 details:
- *                   type: string
  */
 
 router.get(

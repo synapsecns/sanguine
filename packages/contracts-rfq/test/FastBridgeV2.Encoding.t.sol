@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {BridgeTransactionV2Lib} from "../contracts/libs/BridgeTransactionV2.sol";
+
 import {FastBridgeV2, FastBridgeV2Test, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
@@ -41,33 +43,31 @@ contract FastBridgeV2EncodingTest is FastBridgeV2Test {
         assertEq(a.exclusivityEndTime, b.exclusivityEndTime);
     }
 
-    function test_getBridgeTransaction(IFastBridge.BridgeTransaction memory bridgeTx) public view {
-        bytes memory request = abi.encode(bridgeTx);
+    function test_getBridgeTransaction(IFastBridge.BridgeTransaction memory bridgeTxV1) public view {
+        bytes memory request = abi.encode(bridgeTxV1);
         IFastBridge.BridgeTransaction memory decodedTx = fastBridge.getBridgeTransaction(request);
-        assertEq(decodedTx, bridgeTx);
+        assertEq(decodedTx, bridgeTxV1);
     }
 
-    // The addition of variable length field (callParams) in BridgeTransactionV2 breaks the compatibility
-    // with the original BridgeTransaction struct.
-    // Solidity's abi.encode(bridgeTxV2) will use the first 32 bytes to encode the data offset for the whole struct,
-    // which is ALWAYS equal to 32 (data starts right after the offset). This is weird, but it is what it is.
-    // https://ethereum.stackexchange.com/questions/152971/abi-encode-decode-mystery-additional-32-byte-field-uniswap-v2
-    function test_getBridgeTransaction_supportsV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTxV2) public {
-        // TODO: reevaluate the necessity of this test if/when the encoding scheme is changed
-        vm.skip(true);
-        bytes memory request = abi.encode(bridgeTxV2);
+    /// @notice We expect all the V1 fields except for `sendChainGas` to match.
+    /// `sendChainGas` is replaced with `callValue` in V2, therefore we expect non-zero `callValue`
+    /// to match `sendChainGas = true` in V1
+    function test_getBridgeTransaction_supportsV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTxV2) public view {
+        bytes memory request = BridgeTransactionV2Lib.encodeV2(bridgeTxV2);
         IFastBridge.BridgeTransaction memory decodedTx = fastBridge.getBridgeTransaction(request);
-        assertEq(decodedTx, extractV1(bridgeTxV2));
+        IFastBridge.BridgeTransaction memory expectedTx = extractV1(bridgeTxV2);
+        expectedTx.sendChainGas = bridgeTxV2.callValue > 0;
+        assertEq(decodedTx, expectedTx);
     }
 
     function test_getBridgeTransactionV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTxV2) public view {
-        bytes memory request = abi.encode(bridgeTxV2);
+        bytes memory request = BridgeTransactionV2Lib.encodeV2(bridgeTxV2);
         IFastBridgeV2.BridgeTransactionV2 memory decodedTxV2 = fastBridge.getBridgeTransactionV2(request);
         assertEq(decodedTxV2, bridgeTxV2);
     }
 
-    function test_getBridgeTransactionV2_revert_usedRequestV1(IFastBridge.BridgeTransaction memory bridgeTx) public {
-        bytes memory request = abi.encode(bridgeTx);
+    function test_getBridgeTransactionV2_revert_usedRequestV1(IFastBridge.BridgeTransaction memory bridgeTxV1) public {
+        bytes memory request = abi.encode(bridgeTxV1);
         vm.expectRevert();
         fastBridge.getBridgeTransactionV2(request);
     }

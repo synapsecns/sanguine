@@ -6,6 +6,7 @@ import {FastBridgeV2SrcExclusivityTest} from "./FastBridgeV2.Src.Exclusivity.t.s
 // solhint-disable func-name-mixedcase, ordering
 contract FastBridgeV2SrcArbitraryCallTest is FastBridgeV2SrcExclusivityTest {
     bytes public constant CALL_PARAMS = abi.encode("Hello, World!");
+    uint256 public constant CALL_VALUE = 1_337_420;
 
     function createFixturesV2() public virtual override {
         super.createFixturesV2();
@@ -40,5 +41,57 @@ contract FastBridgeV2SrcArbitraryCallTest is FastBridgeV2SrcExclusivityTest {
         setEthTestCallParams(callParams);
         vm.expectRevert(CallParamsLengthAboveMax.selector);
         bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
+    }
+
+    // ══════════════════════════════════════ WITH CALL VALUE, NO CALL PARAMS ══════════════════════════════════════════
+
+    function test_bridge_token_withCallValue_noCallParams() public {
+        setTokenTestCallParams("");
+        setTokenTestCallValue(CALL_VALUE);
+        test_bridge_token();
+    }
+
+    function test_bridge_token_diffSender_withCallValue_noCallParams() public {
+        setTokenTestCallParams("");
+        setTokenTestCallValue(CALL_VALUE);
+        test_bridge_token_diffSender();
+    }
+
+    function test_bridge_eth_withCallValue_noCallParams_revert() public {
+        setEthTestCallParams("");
+        setEthTestCallValue(CALL_VALUE);
+        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
+    }
+
+    function test_bridge_eth_diffSender_withCallValue_noCallParams_revert() public {
+        setEthTestCallParams("");
+        setEthTestCallValue(CALL_VALUE);
+        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
+    }
+
+    // ═══════════════════════════════════════ WITH CALL VALUE & CALL PARAMS ═══════════════════════════════════════════
+
+    function test_bridge_token_withCallValue_withCallParams() public {
+        setTokenTestCallValue(CALL_VALUE);
+        test_bridge_token();
+    }
+
+    function test_bridge_token_diffSender_withCallValue_withCallParams() public {
+        setTokenTestCallValue(CALL_VALUE);
+        test_bridge_token_diffSender();
+    }
+
+    function test_bridge_eth_withCallValue_withCallParams_revert() public {
+        setEthTestCallValue(CALL_VALUE);
+        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        bridge({caller: userA, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
+    }
+
+    function test_bridge_eth_diffSender_withCallValue_withCallParams_revert() public {
+        setEthTestCallValue(CALL_VALUE);
+        vm.expectRevert(NativeTokenCallValueNotSupported.selector);
+        bridge({caller: userB, msgValue: ethParams.originAmount, params: ethParams, paramsV2: ethParamsV2});
     }
 }

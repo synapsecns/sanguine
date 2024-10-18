@@ -1,30 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {FastBridgeV2DstTest, IFastBridgeV2} from "./FastBridgeV2.Dst.t.sol";
+import {FastBridgeV2DstTest} from "./FastBridgeV2.Dst.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
 contract FastBridgeV2DstExclusivityTest is FastBridgeV2DstTest {
     uint256 public constant EXCLUSIVITY_PERIOD = 60 seconds;
 
     function createFixturesV2() public virtual override {
-        tokenParamsV2 = IFastBridgeV2.BridgeParamsV2({
-            quoteRelayer: relayerA,
-            quoteExclusivitySeconds: int256(EXCLUSIVITY_PERIOD),
-            quoteId: "",
-            callParams: ""
-        });
-        ethParamsV2 = IFastBridgeV2.BridgeParamsV2({
-            quoteRelayer: relayerB,
-            quoteExclusivitySeconds: int256(EXCLUSIVITY_PERIOD),
-            quoteId: "",
-            callParams: ""
-        });
-
-        tokenTx.exclusivityRelayer = relayerA;
-        tokenTx.exclusivityEndTime = block.timestamp + EXCLUSIVITY_PERIOD;
-        ethTx.exclusivityRelayer = relayerB;
-        ethTx.exclusivityEndTime = block.timestamp + EXCLUSIVITY_PERIOD;
+        setTokenTestExclusivityParams(relayerA, EXCLUSIVITY_PERIOD);
+        setEthTestExclusivityParams(relayerB, EXCLUSIVITY_PERIOD);
     }
 
     // ═══════════════════════════════════════════════ RELAY: TOKEN ════════════════════════════════════════════════════

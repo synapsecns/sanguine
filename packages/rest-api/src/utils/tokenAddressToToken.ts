@@ -16,5 +16,6 @@ export const tokenAddressToToken = (chain: string, tokenAddress: string) => {
     address: tokenAddress,
     symbol: tokenInfo.symbol,
     decimals: tokenInfo.decimals,
+    swappable: tokenInfo.swappable,
   }
 }

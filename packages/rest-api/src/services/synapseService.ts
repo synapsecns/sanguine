@@ -4,7 +4,8 @@ import { SynapseSDK } from '@synapsecns/sdk-router'
 import { CHAINS_ARRAY } from '../constants/chains'
 
 const providers = CHAINS_ARRAY.map(
-  (chain) => new JsonRpcProvider(chain.rpcUrls.primary)
+  (chain) =>
+    new JsonRpcProvider(chain.rpcUrls.primary || chain.rpcUrls.fallback)
 )
 const chainIds = CHAINS_ARRAY.map((chain) => chain.id)
 
