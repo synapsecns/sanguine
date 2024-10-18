@@ -83,7 +83,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @inheritdoc IFastBridge
     function dispute(bytes32 transactionId) external onlyRole(GUARD_ROLE) {
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
-
+        // Aggregate the read operations from the same storage slot
         address disputedRelayer = $.proofRelayer;
         BridgeStatus status = $.status;
         uint40 proofBlockTimestamp = $.proofBlockTimestamp;
@@ -304,7 +304,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         request.validateV2();
         bytes32 transactionId = keccak256(request);
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
-
+        // Aggregate the read operations from the same storage slot
         address proofRelayer = $.proofRelayer;
         BridgeStatus status = $.status;
         uint40 proofBlockTimestamp = $.proofBlockTimestamp;
