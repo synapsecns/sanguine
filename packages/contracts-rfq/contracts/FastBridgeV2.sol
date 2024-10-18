@@ -4,6 +4,7 @@ pragma solidity 0.8.24;
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
+import {BridgeTransactionV2Lib} from "./libs/BridgeTransactionV2.sol";
 import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 
 import {Admin} from "./Admin.sol";
@@ -14,6 +15,7 @@ import {IFastBridgeRecipient} from "./interfaces/IFastBridgeRecipient.sol";
 
 /// @notice FastBridgeV2 is a contract for bridging tokens across chains.
 contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
+    using BridgeTransactionV2Lib for bytes;
     using SafeERC20 for IERC20;
     using UniversalTokenLib for address;
 
@@ -54,114 +56,142 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 quoteRelayer: address(0),
                 quoteExclusivitySeconds: 0,
                 quoteId: bytes(""),
+                callValue: 0,
                 callParams: bytes("")
             })
         });
     }
 
     /// @inheritdoc IFastBridge
-    function relay(bytes memory request) external payable {
+    function relay(bytes calldata request) external payable {
+        // relay override will validate the request
         relay({request: request, relayer: msg.sender});
     }
 
     /// @inheritdoc IFastBridge
-    function prove(bytes memory request, bytes32 destTxHash) external {
+    function prove(bytes calldata request, bytes32 destTxHash) external {
+        request.validateV2();
         prove({transactionId: keccak256(request), destTxHash: destTxHash, relayer: msg.sender});
     }
 
     /// @inheritdoc IFastBridgeV2
-    function claim(bytes memory request) external {
+    function claim(bytes calldata request) external {
+        // claim override will validate the request
         claim({request: request, to: address(0)});
     }
 
     /// @inheritdoc IFastBridge
     function dispute(bytes32 transactionId) external onlyRole(GUARD_ROLE) {
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
-        if (_timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD) {
+        BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
+
+        address disputedRelayer = $.proofRelayer;
+        BridgeStatus status = $.status;
+        uint40 proofBlockTimestamp = $.proofBlockTimestamp;
+
+        if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        if (_timeSince(proofBlockTimestamp) > DISPUTE_PERIOD) {
             revert DisputePeriodPassed();
         }
 
-        // @dev relayer gets slashed effectively if dest relay has gone thru
-        bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
-        bridgeTxDetails[transactionId].proofRelayer = address(0);
-        bridgeTxDetails[transactionId].proofBlockTimestamp = 0;
-        bridgeTxDetails[transactionId].proofBlockNumber = 0;
+        // Note: these are storage writes
+        $.status = BridgeStatus.REQUESTED;
+        $.proofRelayer = address(0);
+        $.proofBlockTimestamp = 0;
+        $.proofBlockNumber = 0;
 
-        emit BridgeProofDisputed(transactionId, msg.sender);
+        emit BridgeProofDisputed(transactionId, disputedRelayer);
     }
 
     /// @inheritdoc IFastBridge
-    function refund(bytes memory request) external {
+    function refund(bytes calldata request) external {
+        request.validateV2();
         bytes32 transactionId = keccak256(request);
+        BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
 
-        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
+        if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
 
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
-
-        if (hasRole(REFUNDER_ROLE, msg.sender)) {
-            // Refunder can refund if deadline has passed
-            if (block.timestamp <= transaction.deadline) revert DeadlineNotExceeded();
-        } else {
-            // Permissionless refund is allowed after REFUND_DELAY
-            if (block.timestamp <= transaction.deadline + REFUND_DELAY) revert DeadlineNotExceeded();
-        }
-
-        // if all checks passed, set to REFUNDED status
-        bridgeTxDetails[transactionId].status = BridgeStatus.REFUNDED;
+        uint256 deadline = request.deadline();
+        // Permissionless refund is allowed after REFUND_DELAY
+        if (!hasRole(REFUNDER_ROLE, msg.sender)) deadline += REFUND_DELAY;
+        if (block.timestamp <= deadline) revert DeadlineNotExceeded();
+        // Note: this is a storage write
+        $.status = BridgeStatus.REFUNDED;
 
         // transfer origin collateral back to original sender
-        address to = transaction.originSender;
-        address token = transaction.originToken;
-        uint256 amount = transaction.originAmount + transaction.originFeeAmount;
-        token.universalTransfer(to, amount);
+        address to = request.originSender();
+        address token = request.originToken();
+        uint256 amount = request.originAmount() + request.originFeeAmount();
+        if (token == UniversalTokenLib.ETH_ADDRESS) {
+            Address.sendValue(payable(to), amount);
+        } else {
+            IERC20(token).safeTransfer(to, amount);
+        }
 
         emit BridgeDepositRefunded(transactionId, to, token, amount);
     }
 
     /// @inheritdoc IFastBridge
     function canClaim(bytes32 transactionId, address relayer) external view returns (bool) {
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
-        if (bridgeTxDetails[transactionId].proofRelayer != relayer) revert SenderIncorrect();
-        return _timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) > DISPUTE_PERIOD;
+        BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
+
+        if ($.status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        if ($.proofRelayer != relayer) revert SenderIncorrect();
+        return _timeSince($.proofBlockTimestamp) > DISPUTE_PERIOD;
     }
 
     /// @inheritdoc IFastBridge
-    function getBridgeTransaction(bytes memory request) external pure returns (BridgeTransaction memory) {
-        // TODO: the note below isn't true anymore with the BridgeTransactionV2 struct
-        // since the variable length `callParams` was added. This needs to be fixed/acknowledged.
-
-        // Note: when passing V2 request, this will decode the V1 fields correctly since the new fields were
-        // added as the last fields of the struct and hence the ABI decoder will simply ignore the extra data.
-        return abi.decode(request, (BridgeTransaction));
+    /// @dev This method is added to achieve backwards compatibility with decoding requests into V1 structs:
+    /// - `callValue` is partially reported as a zero/non-zero flag
+    /// - `callParams` is ignored
+    /// In order to process all kinds of requests use getBridgeTransactionV2 instead.
+    function getBridgeTransaction(bytes calldata request) external view returns (BridgeTransaction memory) {
+        // Try decoding into V2 struct first. This will revert if V1 struct is passed
+        try this.getBridgeTransactionV2(request) returns (BridgeTransactionV2 memory txV2) {
+            // Note: we entirely ignore the callParams field, as it was not present in V1
+            return BridgeTransaction({
+                originChainId: txV2.originChainId,
+                destChainId: txV2.destChainId,
+                originSender: txV2.originSender,
+                destRecipient: txV2.destRecipient,
+                originToken: txV2.originToken,
+                destToken: txV2.destToken,
+                originAmount: txV2.originAmount,
+                destAmount: txV2.destAmount,
+                originFeeAmount: txV2.originFeeAmount,
+                sendChainGas: txV2.callValue != 0,
+                deadline: txV2.deadline,
+                nonce: txV2.nonce
+            });
+        } catch {
+            // Fallback to V1 struct
+            return abi.decode(request, (BridgeTransaction));
+        }
     }
 
     /// @inheritdoc IFastBridgeV2
-    // TODO: reduce cyclomatic complexity alongside arbitrary call
-    // solhint-disable-next-line code-complexity
+    function getBridgeTransactionV2(bytes calldata request) external pure returns (BridgeTransactionV2 memory) {
+        request.validateV2();
+        return BridgeTransactionV2Lib.decodeV2(request);
+    }
+
+    /// @inheritdoc IFastBridgeV2
     function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
-        // check bridge params
-        if (params.dstChainId == block.chainid) revert ChainIncorrect();
-        if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
-        if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
-        if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
-        if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
-        if (paramsV2.callParams.length > MAX_CALL_PARAMS_LENGTH) revert CallParamsLengthAboveMax();
         int256 exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
-        // exclusivityEndTime must be in range (0 .. params.deadline]
-        if (exclusivityEndTime <= 0 || exclusivityEndTime > int256(params.deadline)) {
-            revert ExclusivityParamsIncorrect();
-        }
+        _validateBridgeParams(params, paramsV2, exclusivityEndTime);
+
         // transfer tokens to bridge contract
-        // @dev use returned originAmount in request in case of transfer fees
-        uint256 originAmount = _pullToken(address(this), params.originToken, params.originAmount);
+        /// @dev use returned originAmount in request in case of transfer fees
+        uint256 originAmount = _takeBridgedUserAsset(params.originToken, params.originAmount);
 
         // track amount of origin token owed to protocol
         uint256 originFeeAmount;
-        if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
-        originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
+        if (protocolFeeRate > 0) {
+            originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
+            originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
+        }
 
         // set status to requested
-        bytes memory request = abi.encode(
+        bytes memory request = BridgeTransactionV2Lib.encodeV2(
             BridgeTransactionV2({
                 originChainId: uint32(block.chainid),
                 destChainId: params.dstChainId,
@@ -172,147 +202,143 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
                 originAmount: originAmount,
                 destAmount: params.destAmount,
                 originFeeAmount: originFeeAmount,
-                sendChainGas: params.sendChainGas,
                 deadline: params.deadline,
                 nonce: senderNonces[params.sender]++, // increment nonce on every bridge
                 exclusivityRelayer: paramsV2.quoteRelayer,
                 // We checked exclusivityEndTime to be in range (0 .. params.deadline] above, so can safely cast
                 exclusivityEndTime: uint256(exclusivityEndTime),
+                callValue: paramsV2.callValue,
                 callParams: paramsV2.callParams
             })
         );
         bytes32 transactionId = keccak256(request);
         bridgeTxDetails[transactionId].status = BridgeStatus.REQUESTED;
 
-        emit BridgeRequested(
-            transactionId,
-            params.sender,
-            request,
-            params.dstChainId,
-            params.originToken,
-            params.destToken,
-            originAmount,
-            params.destAmount,
-            params.sendChainGas
-        );
+        emit BridgeRequested({
+            transactionId: transactionId,
+            sender: params.sender,
+            request: request,
+            destChainId: params.dstChainId,
+            originToken: params.originToken,
+            destToken: params.destToken,
+            originAmount: originAmount,
+            destAmount: params.destAmount,
+            sendChainGas: paramsV2.callValue != 0
+        });
         emit BridgeQuoteDetails(transactionId, paramsV2.quoteId);
     }
 
     /// @inheritdoc IFastBridgeV2
-    // TODO: reduce cyclomatic complexity alongside arbitrary call
-    // solhint-disable-next-line code-complexity
-    function relay(bytes memory request, address relayer) public payable {
-        if (relayer == address(0)) revert ZeroAddress();
-        // Check if the transaction has already been relayed
+    function relay(bytes calldata request, address relayer) public payable {
+        request.validateV2();
         bytes32 transactionId = keccak256(request);
-        if (bridgeRelays(transactionId)) revert TransactionRelayed();
-        // Decode the transaction and check that it could be relayed on this chain
-        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
-        if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
-        // Check the deadline for relay to happen
-        if (block.timestamp > transaction.deadline) revert DeadlineExceeded();
-        // Check the exclusivity period, if it is still ongoing
-        // forgefmt: disable-next-item
-        if (
-            transaction.exclusivityRelayer != address(0) &&
-            transaction.exclusivityRelayer != relayer &&
-            block.timestamp <= transaction.exclusivityEndTime
-        ) {
-            revert ExclusivityPeriodNotPassed();
-        }
+        _validateRelayParams(request, transactionId, relayer);
         // mark bridge transaction as relayed
         bridgeRelayDetails[transactionId] =
             BridgeRelay({blockNumber: uint48(block.number), blockTimestamp: uint48(block.timestamp), relayer: relayer});
 
-        // transfer tokens to recipient on destination chain and gas rebate if requested
-        address to = transaction.destRecipient;
-        address token = transaction.destToken;
-        uint256 amount = transaction.destAmount;
+        // transfer tokens to recipient on destination chain and do an arbitrary call if requested
+        address to = request.destRecipient();
+        address token = request.destToken();
+        uint256 amount = request.destAmount();
+        uint256 callValue = request.callValue();
+
+        // Emit the event before any external calls
+        emit BridgeRelayed({
+            transactionId: transactionId,
+            relayer: relayer,
+            to: to,
+            originChainId: request.originChainId(),
+            originToken: request.originToken(),
+            destToken: token,
+            originAmount: request.originAmount(),
+            destAmount: amount,
+            chainGasAmount: callValue
+        });
 
         // All state changes have been done at this point, can proceed to the external calls.
         // This follows the checks-effects-interactions pattern to mitigate potential reentrancy attacks.
-        if (transaction.callParams.length == 0) {
-            // No arbitrary call requested, so we just pull the tokens from the Relayer to the recipient,
-            // or transfer ETH to the recipient (if token is ETH_ADDRESS)
-            _pullToken(to, token, amount);
-        } else if (token != UniversalTokenLib.ETH_ADDRESS) {
-            // Arbitrary call requested with ERC20: pull the tokens from the Relayer to the recipient first
-            _pullToken(to, token, amount);
-            // Follow up with the hook function call
-            _checkedCallRecipient({
-                recipient: to,
-                msgValue: 0,
-                token: token,
-                amount: amount,
-                callParams: transaction.callParams
-            });
+        if (token == UniversalTokenLib.ETH_ADDRESS) {
+            // For ETH non-zero callValue is not allowed
+            if (callValue != 0) revert NativeTokenCallValueNotSupported();
+            // Check that the correct msg.value was sent
+            if (msg.value != amount) revert MsgValueIncorrect();
         } else {
-            // Arbitrary call requested with ETH: combine the ETH transfer with the call
-            _checkedCallRecipient({
-                recipient: to,
-                msgValue: amount,
-                token: token,
-                amount: amount,
-                callParams: transaction.callParams
-            });
+            // For ERC20s, we check that the correct msg.value was sent
+            if (msg.value != callValue) revert MsgValueIncorrect();
+            // We need to transfer the tokens from the Relayer to the recipient first before performing an
+            // optional post-transfer arbitrary call.
+            IERC20(token).safeTransferFrom(msg.sender, to, amount);
         }
 
-        emit BridgeRelayed(
-            transactionId,
-            relayer,
-            to,
-            transaction.originChainId,
-            transaction.originToken,
-            transaction.destToken,
-            transaction.originAmount,
-            transaction.destAmount,
-            // chainGasAmount is 0 since the gas rebate function is deprecated
-            0
-        );
+        bytes calldata callParams = request.callParams();
+        if (callParams.length != 0) {
+            // Arbitrary call requested, perform it while supplying full msg.value to the recipient
+            // Note: if token has a fee on transfers, the recipient will have received less than `amount`.
+            // This is a very niche edge case and should be handled by the recipient contract.
+            _checkedCallRecipient({recipient: to, token: token, amount: amount, callParams: callParams});
+        } else if (msg.value != 0) {
+            // No arbitrary call requested, but msg.value was sent. This is either a relay with ETH,
+            // or a non-zero callValue request with an ERC20. In both cases, transfer the ETH to the recipient.
+            Address.sendValue(payable(to), msg.value);
+        }
     }
 
     /// @inheritdoc IFastBridgeV2
     function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
+        BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
+
         // update bridge tx status given proof provided
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.REQUESTED) revert StatusIncorrect();
-        bridgeTxDetails[transactionId].status = BridgeStatus.RELAYER_PROVED;
-        bridgeTxDetails[transactionId].proofBlockTimestamp = uint40(block.timestamp);
-        bridgeTxDetails[transactionId].proofBlockNumber = uint48(block.number);
-        bridgeTxDetails[transactionId].proofRelayer = relayer;
+        if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
+        // Note: these are storage writes
+        $.status = BridgeStatus.RELAYER_PROVED;
+        $.proofBlockTimestamp = uint40(block.timestamp);
+        $.proofBlockNumber = uint48(block.number);
+        $.proofRelayer = relayer;
 
         emit BridgeProofProvided(transactionId, relayer, destTxHash);
     }
 
     /// @inheritdoc IFastBridge
-    function claim(bytes memory request, address to) public {
+    function claim(bytes calldata request, address to) public {
+        request.validateV2();
         bytes32 transactionId = keccak256(request);
-        BridgeTransactionV2 memory transaction = getBridgeTransactionV2(request);
+        BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
+
+        address proofRelayer = $.proofRelayer;
+        BridgeStatus status = $.status;
+        uint40 proofBlockTimestamp = $.proofBlockTimestamp;
 
         // update bridge tx status if able to claim origin collateral
-        if (bridgeTxDetails[transactionId].status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
+        if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
 
         // if "to" is zero addr, permissionlessly send funds to proven relayer
         if (to == address(0)) {
-            to = bridgeTxDetails[transactionId].proofRelayer;
-        } else if (bridgeTxDetails[transactionId].proofRelayer != msg.sender) {
+            to = proofRelayer;
+        } else if (proofRelayer != msg.sender) {
             revert SenderIncorrect();
         }
 
-        if (_timeSince(bridgeTxDetails[transactionId].proofBlockTimestamp) <= DISPUTE_PERIOD) {
+        if (_timeSince(proofBlockTimestamp) <= DISPUTE_PERIOD) {
             revert DisputePeriodNotPassed();
         }
-
-        bridgeTxDetails[transactionId].status = BridgeStatus.RELAYER_CLAIMED;
+        // Note: this is a storage write
+        $.status = BridgeStatus.RELAYER_CLAIMED;
 
         // update protocol fees if origin fee amount exists
-        if (transaction.originFeeAmount > 0) protocolFees[transaction.originToken] += transaction.originFeeAmount;
+        address token = request.originToken();
+        uint256 amount = request.originAmount();
+        uint256 originFeeAmount = request.originFeeAmount();
+        if (originFeeAmount > 0) protocolFees[token] += originFeeAmount;
 
-        // transfer origin collateral less fee to specified address
-        address token = transaction.originToken;
-        uint256 amount = transaction.originAmount;
-        token.universalTransfer(to, amount);
+        // transfer origin collateral to specified address (protocol fee was pre-deducted at deposit)
+        if (token == UniversalTokenLib.ETH_ADDRESS) {
+            Address.sendValue(payable(to), amount);
+        } else {
+            IERC20(token).safeTransfer(to, amount);
+        }
 
-        emit BridgeDepositClaimed(transactionId, bridgeTxDetails[transactionId].proofRelayer, to, token, amount);
+        emit BridgeDepositClaimed(transactionId, proofRelayer, to, token, amount);
     }
 
     function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status) {
@@ -320,8 +346,10 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     }
 
     function bridgeProofs(bytes32 transactionId) public view returns (uint96 timestamp, address relayer) {
-        timestamp = bridgeTxDetails[transactionId].proofBlockTimestamp;
-        relayer = bridgeTxDetails[transactionId].proofRelayer;
+        BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
+
+        timestamp = $.proofBlockTimestamp;
+        relayer = $.proofRelayer;
     }
 
     /// @inheritdoc IFastBridgeV2
@@ -330,31 +358,24 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         return bridgeRelayDetails[transactionId].relayer != address(0);
     }
 
-    /// @inheritdoc IFastBridgeV2
-    function getBridgeTransactionV2(bytes memory request) public pure returns (BridgeTransactionV2 memory) {
-        return abi.decode(request, (BridgeTransactionV2));
-    }
-
-    /// @notice Pulls a requested token from the user to the requested recipient.
-    /// @dev Be careful of re-entrancy issues when msg.value > 0 and recipient != address(this)
-    function _pullToken(address recipient, address token, uint256 amount) internal returns (uint256 amountPulled) {
-        if (token != UniversalTokenLib.ETH_ADDRESS) {
-            token.assertIsContract();
-            // Token needs to be pulled only if msg.value is zero
-            // This way user can specify WETH as the origin asset
-            if (msg.value != 0) revert MsgValueIncorrect();
-            // Record token balance before transfer
-            amountPulled = IERC20(token).balanceOf(recipient);
-            IERC20(token).safeTransferFrom(msg.sender, recipient, amount);
-            // Use the difference between the recorded balance and the current balance as the amountPulled
-            amountPulled = IERC20(token).balanceOf(recipient) - amountPulled;
-        } else {
-            // Otherwise, we need to check that ETH amount matches msg.value
+    /// @notice Takes the bridged asset from the user into FastBridgeV2 custody. It will be later
+    /// claimed by the relayer who completed the relay on destination chain, or refunded back to the user,
+    /// should no one complete the relay.
+    function _takeBridgedUserAsset(address token, uint256 amount) internal returns (uint256 amountTaken) {
+        if (token == UniversalTokenLib.ETH_ADDRESS) {
+            // For ETH we just need to check that the supplied msg.value is correct.
+            // Supplied `msg.value` is already in FastBridgeV2 custody.
             if (amount != msg.value) revert MsgValueIncorrect();
-            // Transfer value to recipient if not this address
-            if (recipient != address(this)) token.universalTransfer(recipient, amount);
-            // We will forward msg.value in the external call later, if recipient is not this contract
-            amountPulled = msg.value;
+            amountTaken = msg.value;
+        } else {
+            // For ERC20s, token is explicitly transferred from the user to FastBridgeV2.
+            // We don't allow non-zero `msg.value` to avoid extra funds from being stuck in FastBridgeV2.
+            token.assertIsContract();
+            if (msg.value != 0) revert MsgValueIncorrect();
+            amountTaken = IERC20(token).balanceOf(address(this));
+            IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+            // Use the balance difference as the amount taken in case of fee on transfer tokens.
+            amountTaken = IERC20(token).balanceOf(address(this)) - amountTaken;
         }
     }
 
@@ -362,17 +383,16 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// all the necessary checks for the returned value.
     function _checkedCallRecipient(
         address recipient,
-        uint256 msgValue,
         address token,
         uint256 amount,
-        bytes memory callParams
+        bytes calldata callParams
     )
         internal
     {
         bytes memory hookData =
             abi.encodeCall(IFastBridgeRecipient.fastBridgeTransferReceived, (token, amount, callParams));
         // This will bubble any revert messages from the hook function
-        bytes memory returnData = Address.functionCallWithValue({target: recipient, data: hookData, value: msgValue});
+        bytes memory returnData = Address.functionCallWithValue({target: recipient, data: hookData, value: msg.value});
         // Explicit revert if no return data at all
         if (returnData.length == 0) revert RecipientNoReturnValue();
         // Check that exactly a single return value was returned
@@ -392,6 +412,50 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function _timeSince(uint40 proofBlockTimestamp) internal view returns (uint256 delta) {
         unchecked {
             delta = uint40(block.timestamp) - proofBlockTimestamp;
+        }
+    }
+
+    /// @notice Performs all the necessary checks for a bridge to happen.
+    /// @dev There's no good way to refactor this function to reduce cyclomatic complexity due to
+    /// the number of checks that need to be performed, so we skip the code-complexity rule here.
+    // solhint-disable-next-line code-complexity
+    function _validateBridgeParams(
+        BridgeParams memory params,
+        BridgeParamsV2 memory paramsV2,
+        int256 exclusivityEndTime
+    )
+        internal
+        view
+    {
+        // Check V1 (legacy) params
+        if (params.dstChainId == block.chainid) revert ChainIncorrect();
+        if (params.originAmount == 0 || params.destAmount == 0) revert AmountIncorrect();
+        if (params.sender == address(0) || params.to == address(0)) revert ZeroAddress();
+        if (params.originToken == address(0) || params.destToken == address(0)) revert ZeroAddress();
+        if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert DeadlineTooShort();
+        // Check V2 params
+        if (paramsV2.callParams.length > MAX_CALL_PARAMS_LENGTH) revert CallParamsLengthAboveMax();
+        if (paramsV2.callValue != 0 && params.destToken == UniversalTokenLib.ETH_ADDRESS) {
+            revert NativeTokenCallValueNotSupported();
+        }
+        // exclusivityEndTime must be in range (0 .. params.deadline]
+        if (exclusivityEndTime <= 0 || exclusivityEndTime > int256(params.deadline)) {
+            revert ExclusivityParamsIncorrect();
+        }
+    }
+
+    /// @notice Performs all the necessary checks for a relay to happen.
+    function _validateRelayParams(bytes calldata request, bytes32 transactionId, address relayer) internal view {
+        if (relayer == address(0)) revert ZeroAddress();
+        // Check if the transaction has already been relayed
+        if (bridgeRelays(transactionId)) revert TransactionRelayed();
+        if (request.destChainId() != block.chainid) revert ChainIncorrect();
+        // Check the deadline for relay to happen
+        if (block.timestamp > request.deadline()) revert DeadlineExceeded();
+        // Check the exclusivity period, if it is still ongoing
+        address exclRelayer = request.exclusivityRelayer();
+        if (exclRelayer != address(0) && exclRelayer != relayer && block.timestamp <= request.exclusivityEndTime()) {
+            revert ExclusivityPeriodNotPassed();
         }
     }
 }

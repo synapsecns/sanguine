@@ -1,0 +1,11 @@
+
+node_modules/
+
+*.tsbuildinfo
+
+dist/
+
+.env
+
+config*.yaml
+!config-template.yaml
