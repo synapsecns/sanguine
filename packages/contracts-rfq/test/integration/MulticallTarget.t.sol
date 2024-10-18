@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity ^0.8.20;
 
-import {FastBridge, IFastBridge} from "../contracts/FastBridge.sol";
-import {IMulticallTarget} from "../contracts/interfaces/IMulticallTarget.sol";
-import {DisputePeriodNotPassed} from "../contracts/libs/Errors.sol";
+import {IFastBridge} from "../../contracts/interfaces/IFastBridge.sol";
+import {IFastBridgeV2} from "../../contracts/interfaces/IFastBridgeV2.sol";
+import {IMulticallTarget} from "../../contracts/interfaces/IMulticallTarget.sol";
+import {DisputePeriodNotPassed} from "../../contracts/libs/Errors.sol";
 
-import {MockERC20} from "./MockERC20.sol";
+import {MockERC20} from "../MockERC20.sol";
 
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase, ordering
-contract FastBridgeMulticallTargetTest is Test {
+abstract contract MulticallTargetIntegrationTest is Test {
     address internal constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint256 internal constant DEADLINE_PERIOD = 1 days;
     uint256 internal constant SKIP_PERIOD = 1 hours;
@@ -18,7 +19,7 @@ contract FastBridgeMulticallTargetTest is Test {
     uint32 internal constant LOCAL_CHAIN_ID = 1337;
     uint32 internal constant REMOTE_CHAIN_ID = 7331;
 
-    FastBridge internal fastBridge;
+    address internal fastBridge;
 
     address internal user = makeAddr("User");
     address internal userRemote = makeAddr("User Remote");
@@ -38,8 +39,7 @@ contract FastBridgeMulticallTargetTest is Test {
 
     function setUp() public {
         vm.chainId(LOCAL_CHAIN_ID);
-        fastBridge = new FastBridge(address(this));
-        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayer);
+        fastBridge = deployAndConfigureFastBridge();
         token = new MockERC20("Token", 18);
         dealTokens(user);
         dealTokens(relayer);
@@ -49,14 +49,22 @@ contract FastBridgeMulticallTargetTest is Test {
         prove(provenEthTx);
         skip(SKIP_PERIOD);
         // Sanity checks
-        checkStatus(bridgedTokenTxId, FastBridge.BridgeStatus.REQUESTED);
-        checkStatus(provenEthTxId, FastBridge.BridgeStatus.RELAYER_PROVED);
-        checkStatus(remoteTokenTxId, FastBridge.BridgeStatus.NULL);
+        checkStatus(bridgedTokenTxId, IFastBridgeV2.BridgeStatus.REQUESTED);
+        checkStatus(provenEthTxId, IFastBridgeV2.BridgeStatus.RELAYER_PROVED);
+        checkStatus(remoteTokenTxId, IFastBridgeV2.BridgeStatus.NULL);
         assertEq(token.balanceOf(user), 0);
         assertEq(user.balance, 0 ether);
         assertEq(token.balanceOf(relayer), 1 ether);
         assertEq(relayer.balance, 1 ether);
     }
+
+    function deployAndConfigureFastBridge() public virtual returns (address);
+
+    function getEncodedBridgeTx(IFastBridge.BridgeTransaction memory bridgeTx)
+        public
+        view
+        virtual
+        returns (bytes memory);
 
     function dealTokens(address to) public {
         token.mint(to, 1 ether);
@@ -108,16 +116,15 @@ contract FastBridgeMulticallTargetTest is Test {
             deadline: block.timestamp + SKIP_PERIOD,
             nonce: 420
         });
-
-        bridgedTokenTxId = keccak256(abi.encode(bridgedTokenTx));
-        provenEthTxId = keccak256(abi.encode(provenEthTx));
-        remoteTokenTxId = keccak256(abi.encode(remoteTokenTx));
+        bridgedTokenTxId = keccak256(getEncodedBridgeTx(bridgedTokenTx));
+        provenEthTxId = keccak256(getEncodedBridgeTx(provenEthTx));
+        remoteTokenTxId = keccak256(getEncodedBridgeTx(remoteTokenTx));
     }
 
     function bridge(IFastBridge.BridgeTransaction memory bridgeTx) public {
         uint256 msgValue = bridgeTx.originToken == ETH_ADDRESS ? bridgeTx.originAmount : 0;
         vm.prank(user);
-        fastBridge.bridge{value: msgValue}(
+        IFastBridge(fastBridge).bridge{value: msgValue}(
             IFastBridge.BridgeParams({
                 dstChainId: bridgeTx.destChainId,
                 sender: bridgeTx.originSender,
@@ -133,28 +140,28 @@ contract FastBridgeMulticallTargetTest is Test {
     }
 
     function prove(IFastBridge.BridgeTransaction memory bridgeTx) public {
-        bytes memory request = abi.encode(bridgeTx);
+        bytes memory request = getEncodedBridgeTx(bridgeTx);
         vm.prank(relayer);
-        fastBridge.prove(request, hex"01");
+        IFastBridge(fastBridge).prove(request, hex"01");
     }
 
     function getData() public view returns (bytes[] memory data) {
         data = new bytes[](3);
-        data[0] = abi.encodeCall(fastBridge.prove, (abi.encode(bridgedTokenTx), hex"02"));
-        data[1] = abi.encodeCall(fastBridge.claim, (abi.encode(provenEthTx), claimTo));
-        data[2] = abi.encodeCall(fastBridge.relay, (abi.encode(remoteTokenTx)));
+        data[0] = abi.encodeCall(IFastBridge.prove, (getEncodedBridgeTx(bridgedTokenTx), hex"02"));
+        data[1] = abi.encodeCall(IFastBridge.claim, (getEncodedBridgeTx(provenEthTx), claimTo));
+        data[2] = abi.encodeCall(IFastBridge.relay, (getEncodedBridgeTx(remoteTokenTx)));
     }
 
-    function checkStatus(bytes32 txId, FastBridge.BridgeStatus expected) public view {
-        FastBridge.BridgeStatus status = fastBridge.bridgeStatuses(txId);
+    function checkStatus(bytes32 txId, IFastBridgeV2.BridgeStatus expected) public view {
+        IFastBridgeV2.BridgeStatus status = IFastBridgeV2(fastBridge).bridgeStatuses(txId);
         assertEq(uint8(status), uint8(expected));
     }
 
     function test_sequentialExecution() public {
         vm.startPrank(relayer);
-        fastBridge.prove(abi.encode(bridgedTokenTx), hex"02");
-        fastBridge.claim(abi.encode(provenEthTx), claimTo);
-        fastBridge.relay(abi.encode(remoteTokenTx));
+        IFastBridge(fastBridge).prove(getEncodedBridgeTx(bridgedTokenTx), hex"02");
+        IFastBridge(fastBridge).claim(getEncodedBridgeTx(provenEthTx), claimTo);
+        IFastBridge(fastBridge).relay(getEncodedBridgeTx(remoteTokenTx));
         vm.stopPrank();
         checkHappyPath();
     }
@@ -163,9 +170,9 @@ contract FastBridgeMulticallTargetTest is Test {
 
     function checkHappyPath() public view {
         // Check statuses
-        checkStatus(bridgedTokenTxId, FastBridge.BridgeStatus.RELAYER_PROVED);
-        checkStatus(provenEthTxId, FastBridge.BridgeStatus.RELAYER_CLAIMED);
-        assertTrue(fastBridge.bridgeRelays(remoteTokenTxId));
+        checkStatus(bridgedTokenTxId, IFastBridgeV2.BridgeStatus.RELAYER_PROVED);
+        checkStatus(provenEthTxId, IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        assertTrue(IFastBridgeV2(fastBridge).bridgeRelays(remoteTokenTxId));
         // Check balances
         assertEq(token.balanceOf(user), 1 ether);
         assertEq(user.balance, 0 ether);
@@ -176,9 +183,9 @@ contract FastBridgeMulticallTargetTest is Test {
 
     function checkHappyPathNoClaim() public view {
         // Check statuses
-        checkStatus(bridgedTokenTxId, FastBridge.BridgeStatus.RELAYER_PROVED);
-        checkStatus(provenEthTxId, FastBridge.BridgeStatus.RELAYER_PROVED);
-        assertTrue(fastBridge.bridgeRelays(remoteTokenTxId));
+        checkStatus(bridgedTokenTxId, IFastBridgeV2.BridgeStatus.RELAYER_PROVED);
+        checkStatus(provenEthTxId, IFastBridgeV2.BridgeStatus.RELAYER_PROVED);
+        assertTrue(IFastBridgeV2(fastBridge).bridgeRelays(remoteTokenTxId));
         // Check balances
         assertEq(token.balanceOf(user), 1 ether);
         assertEq(user.balance, 0 ether);
@@ -190,7 +197,7 @@ contract FastBridgeMulticallTargetTest is Test {
     function test_multicallNoResults_ignoreReverts_success() public {
         bytes[] memory data = getData();
         vm.prank(relayer);
-        fastBridge.multicallNoResults({data: data, ignoreReverts: true});
+        IMulticallTarget(fastBridge).multicallNoResults({data: data, ignoreReverts: true});
         checkHappyPath();
     }
 
@@ -199,14 +206,14 @@ contract FastBridgeMulticallTargetTest is Test {
         rewind(SKIP_PERIOD - 15 minutes);
         bytes[] memory data = getData();
         vm.prank(relayer);
-        fastBridge.multicallNoResults({data: data, ignoreReverts: true});
+        IMulticallTarget(fastBridge).multicallNoResults({data: data, ignoreReverts: true});
         checkHappyPathNoClaim();
     }
 
     function test_multicallNoResults_dontIgnoreReverts_success() public {
         bytes[] memory data = getData();
         vm.prank(relayer);
-        fastBridge.multicallNoResults({data: data, ignoreReverts: false});
+        IMulticallTarget(fastBridge).multicallNoResults({data: data, ignoreReverts: false});
         checkHappyPath();
     }
 
@@ -216,7 +223,7 @@ contract FastBridgeMulticallTargetTest is Test {
         bytes[] memory data = getData();
         vm.expectRevert(DisputePeriodNotPassed.selector);
         vm.prank(relayer);
-        fastBridge.multicallNoResults({data: data, ignoreReverts: false});
+        IMulticallTarget(fastBridge).multicallNoResults({data: data, ignoreReverts: false});
     }
 
     // ═══════════════════════════════════════════════ WITH RESULTS ════════════════════════════════════════════════════
@@ -249,7 +256,8 @@ contract FastBridgeMulticallTargetTest is Test {
     function test_multicallWithResults_ignoreReverts_success() public {
         bytes[] memory data = getData();
         vm.prank(relayer);
-        IMulticallTarget.Result[] memory results = fastBridge.multicallWithResults({data: data, ignoreReverts: true});
+        IMulticallTarget.Result[] memory results =
+            IMulticallTarget(fastBridge).multicallWithResults({data: data, ignoreReverts: true});
         checkHappyPath();
         checkHappyPathResults(results);
     }
@@ -259,7 +267,8 @@ contract FastBridgeMulticallTargetTest is Test {
         rewind(SKIP_PERIOD - 15 minutes);
         bytes[] memory data = getData();
         vm.prank(relayer);
-        IMulticallTarget.Result[] memory results = fastBridge.multicallWithResults({data: data, ignoreReverts: true});
+        IMulticallTarget.Result[] memory results =
+            IMulticallTarget(fastBridge).multicallWithResults({data: data, ignoreReverts: true});
         checkHappyPathNoClaim();
         checkHappyPathNoClaimResults(results);
     }
@@ -267,7 +276,8 @@ contract FastBridgeMulticallTargetTest is Test {
     function test_multicallWithResults_dontIgnoreReverts_success() public {
         bytes[] memory data = getData();
         vm.prank(relayer);
-        IMulticallTarget.Result[] memory results = fastBridge.multicallWithResults({data: data, ignoreReverts: false});
+        IMulticallTarget.Result[] memory results =
+            IMulticallTarget(fastBridge).multicallWithResults({data: data, ignoreReverts: false});
         checkHappyPath();
         checkHappyPathResults(results);
     }
@@ -278,6 +288,6 @@ contract FastBridgeMulticallTargetTest is Test {
         bytes[] memory data = getData();
         vm.expectRevert(DisputePeriodNotPassed.selector);
         vm.prank(relayer);
-        fastBridge.multicallWithResults({data: data, ignoreReverts: false});
+        IMulticallTarget(fastBridge).multicallWithResults({data: data, ignoreReverts: false});
     }
 }
