@@ -117,17 +117,17 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         // Note: this is a storage write
         $.status = BridgeStatus.REFUNDED;
 
-        // transfer origin collateral back to original sender
         address to = request.originSender();
         address token = request.originToken();
         uint256 amount = request.originAmount() + request.originFeeAmount();
+        // Emit the event before any external calls
+        emit BridgeDepositRefunded(transactionId, to, token, amount);
+
         if (token == UniversalTokenLib.ETH_ADDRESS) {
             Address.sendValue(payable(to), amount);
         } else {
             IERC20(token).safeTransfer(to, amount);
         }
-
-        emit BridgeDepositRefunded(transactionId, to, token, amount);
     }
 
     /// @inheritdoc IFastBridge
@@ -330,15 +330,14 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         uint256 amount = request.originAmount();
         uint256 originFeeAmount = request.originFeeAmount();
         if (originFeeAmount > 0) protocolFees[token] += originFeeAmount;
+        // Emit the event before any external calls
+        emit BridgeDepositClaimed(transactionId, proofRelayer, to, token, amount);
 
-        // transfer origin collateral to specified address (protocol fee was pre-deducted at deposit)
         if (token == UniversalTokenLib.ETH_ADDRESS) {
             Address.sendValue(payable(to), amount);
         } else {
             IERC20(token).safeTransfer(to, amount);
         }
-
-        emit BridgeDepositClaimed(transactionId, proofRelayer, to, token, amount);
     }
 
     function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status) {
