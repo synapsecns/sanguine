@@ -2,22 +2,28 @@ package http
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/bytemap"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // CaptureClient is a mock client used for checking response values.
 type CaptureClient struct {
 	requests     []*CapturedRequest
 	responseFunc MakeResponseFunc
+	handler      metrics.Handler
 }
 
 // MakeResponseFunc is used for mocking responses.
 type MakeResponseFunc func(c *CapturedRequest) (Response, error)
 
 // NewCaptureClient creates  anew client for testing.
-func NewCaptureClient(responseFunc MakeResponseFunc) *CaptureClient {
-	return &CaptureClient{requests: []*CapturedRequest{}, responseFunc: responseFunc}
+func NewCaptureClient(handler metrics.Handler, responseFunc MakeResponseFunc) *CaptureClient {
+	return &CaptureClient{requests: []*CapturedRequest{}, responseFunc: responseFunc, handler: handler}
 }
 
 // Requests turns a list of sent requests. These are not mutation safe.
@@ -30,6 +36,7 @@ func (c *CaptureClient) NewRequest() Request {
 	request := CapturedRequest{
 		Client:        c,
 		StringHeaders: make(map[string]string),
+		Handler:       c.handler,
 	}
 	c.requests = append(c.requests, &request)
 	return &request
@@ -56,6 +63,8 @@ type CapturedRequest struct {
 	// RequestURIBytes is the request uri bytes. Notably, this will not include
 	// RequestURI's set by SetRequestURI
 	RequestURIBytes []byte
+	// Metrics is the metrics handler
+	Handler metrics.Handler
 }
 
 var _ Client = &CaptureClient{}
@@ -92,8 +101,30 @@ func (c *CapturedRequest) SetRequestURI(uri string) Request {
 
 // Do calls responseFunc for testing.
 func (c *CapturedRequest) Do() (Response, error) {
-	//nolint: wrapcheck
-	return c.Client.responseFunc(c)
+	_, span := c.Handler.Tracer().Start(
+		c.Context,
+		"Do",
+		trace.WithAttributes(
+			attribute.String("uri", c.RequestURI),
+			attribute.String("headers", fmt.Sprintf("%v", c.StringHeaders)),
+			attribute.String("body", common.Bytes2Hex(c.Body)),
+		),
+	)
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
+	resp, err := c.Client.responseFunc(c)
+	if err != nil {
+		return nil, err
+	}
+
+	span.SetAttributes(
+		attribute.String("response", common.Bytes2Hex(resp.Body())),
+		attribute.Int("status", resp.StatusCode()),
+	)
+
+	return resp, err
 }
 
 var _ Request = &CapturedRequest{}

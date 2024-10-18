@@ -1,11 +1,12 @@
 package http_test
 
 import (
-	"github.com/brianvoe/gofakeit/v6"
-	. "github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
+
+	"github.com/brianvoe/gofakeit/v6"
+	. "github.com/stretchr/testify/assert"
 )
 
 var jsonOptions = &gofakeit.JSONOptions{
@@ -42,9 +43,9 @@ func (c *HTTPSuite) TestClient() {
 		}))
 
 		req := client.NewRequest()
+		req.SetContext(c.GetTestContext())
 		req.SetRequestURI(svr.URL)
 		req.SetBody(mockBody)
-		req.SetContext(c.GetTestContext())
 		for key, val := range headers {
 			if gofakeit.Bool() {
 				req.SetHeader(key, val)

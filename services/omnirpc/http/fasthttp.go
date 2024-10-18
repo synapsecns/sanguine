@@ -3,12 +3,16 @@ package http
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/ImVexed/fasturl"
 	"github.com/puzpuzpuz/xsync"
 	http2 "github.com/synapsecns/fasthttp-http2"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/valyala/fasthttp"
-	"sync"
-	"time"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // dialer is an allocated fasthttp dialer for increasing dns cache time.
@@ -26,6 +30,7 @@ type fastHTTPClient struct {
 	// no longer needed. This allows Request recycling, reduces GC pressure
 	// and usually improves performance.
 	reqPool sync.Pool
+	handler metrics.Handler
 }
 
 // FastClient is an interface for storing both fasthttp.Clients and fasthttp.HostClients.
@@ -42,16 +47,20 @@ var _ FastClient = &fasthttp.HostClient{}
 // while substantially faster than resty, this can be a bad choice in certain cases:
 //   - Context Cancellation not respected: fasthttp does not support context cancellation, so we hardcode a timeout here
 //     this is less than ideal and puts additional load on both the application and rpc servers since we pessimistically fetch
-func NewFastHTTPClient() Client {
-	return &fastHTTPClient{clients: xsync.NewMapOf[FastClient](), defaultClient: &fasthttp.Client{
-		NoDefaultUserAgentHeader:      true,
-		Dial:                          dialer.Dial,
-		DialDualStack:                 false,
-		ReadTimeout:                   time.Second * 30,
-		WriteTimeout:                  time.Second * 30,
-		DisableHeaderNamesNormalizing: true,
-		DisablePathNormalizing:        true,
-	}}
+func NewFastHTTPClient(handler metrics.Handler) Client {
+	return &fastHTTPClient{
+		clients: xsync.NewMapOf[FastClient](),
+		defaultClient: &fasthttp.Client{
+			NoDefaultUserAgentHeader:      true,
+			Dial:                          dialer.Dial,
+			DialDualStack:                 false,
+			ReadTimeout:                   time.Second * 30,
+			WriteTimeout:                  time.Second * 30,
+			DisableHeaderNamesNormalizing: true,
+			DisablePathNormalizing:        true,
+		},
+		handler: handler,
+	}
 }
 
 type rawResponse struct {
@@ -135,9 +144,10 @@ func (f *fastHTTPClient) AcquireRequest() *fastHTTPRequest {
 	v := f.reqPool.Get()
 	if v == nil {
 		return &fastHTTPRequest{
-			&fasthttp.Request{},
-			f,
-			nil,
+			Request: &fasthttp.Request{},
+			client:  f,
+			context: nil,
+			handler: f.handler,
 		}
 	}
 	//nolint: forcetypeassert
@@ -158,6 +168,7 @@ type fastHTTPRequest struct {
 	// we need to respect context cancellation even after response
 	//nolint: containedctx
 	context context.Context
+	handler metrics.Handler
 }
 
 // Reset clears request contents.
@@ -193,6 +204,18 @@ func (f *fastHTTPRequest) SetRequestURI(uri string) Request {
 }
 
 func (f *fastHTTPRequest) Do() (Response, error) {
+	_, span := f.handler.Tracer().Start(
+		f.context,
+		"Do",
+		trace.WithAttributes(
+			attribute.String("uri", f.Request.URI().String()),
+			attribute.String("headers", fmt.Sprintf("%v", f.Request.Header.String())),
+			attribute.String("body", string(f.Request.Body())),
+		),
+	)
+	defer func() {
+		metrics.EndSpan(span)
+	}()
 	defer f.Reset()
 
 	uri := f.Request.URI()
