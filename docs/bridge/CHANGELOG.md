@@ -3,6 +3,60 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.4.3...@synapsecns/bridge-docs@0.4.4) (2024-10-15)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.4.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.4.2...@synapsecns/bridge-docs@0.4.3) (2024-10-15)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+## [0.4.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.4.1...@synapsecns/bridge-docs@0.4.2) (2024-10-12)
+
+
+### Bug Fixes
+
+* **docs:** Fixes gh link ([#3280](https://github.com/synapsecns/sanguine/issues/3280)) ([f1dfc82](https://github.com/synapsecns/sanguine/commit/f1dfc82bc26d60262a92feda671d44a6d54a3ce1))
+
+
+
+
+
+## [0.4.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.4.0...@synapsecns/bridge-docs@0.4.1) (2024-10-12)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
+# [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.3.11...@synapsecns/bridge-docs@0.4.0) (2024-10-10)
+
+
+### Features
+
+* **synapse-constants:** adds preinstall step ([#3269](https://github.com/synapsecns/sanguine/issues/3269)) ([acd61de](https://github.com/synapsecns/sanguine/commit/acd61de4846d9b23d7aa834b8f2eefcaae486c7d))
+
+
+
+
+
+## [0.3.11](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.3.10...@synapsecns/bridge-docs@0.3.11) (2024-10-10)
+
+**Note:** Version bump only for package @synapsecns/bridge-docs
+
+
+
+
+
 ## [0.3.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/bridge-docs@0.3.9...@synapsecns/bridge-docs@0.3.10) (2024-10-08)
 
 **Note:** Version bump only for package @synapsecns/bridge-docs

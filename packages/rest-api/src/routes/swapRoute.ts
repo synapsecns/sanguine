@@ -8,7 +8,8 @@ import { isTokenAddress } from '../utils/isTokenAddress'
 import { isTokenSupportedOnChain } from '../utils/isTokenSupportedOnChain'
 import { checksumAddresses } from '../middleware/checksumAddresses'
 import { normalizeNativeTokenAddress } from '../middleware/normalizeNativeTokenAddress'
-import { validSwap } from '../validations/validSwap'
+import { validSwapTokens } from '../validations/validSwapTokens'
+import { validSwapChain } from '../validations/validSwapChain'
 
 const router = express.Router()
 
@@ -119,8 +120,6 @@ const router = express.Router()
  *               properties:
  *                 error:
  *                   type: string
- *                 details:
- *                   type: string
  *
  * components:
  *   schemas:
@@ -165,9 +164,16 @@ router.get(
     check('amount').exists().withMessage('amount is required').isNumeric(),
     check()
       .custom((_value, { req }) => {
+        const { chain } = req.query
+
+        return validSwapChain(chain)
+      })
+      .withMessage('Swap not supported for given chain'),
+    check()
+      .custom((_value, { req }) => {
         const { chain, fromToken, toToken } = req.query
 
-        return validSwap(chain, fromToken, toToken)
+        return validSwapTokens(chain, fromToken, toToken)
       })
       .withMessage('Swap not supported for given tokens'),
   ],
