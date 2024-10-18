@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/modules/confirmedtofinalized"
 	"github.com/synapsecns/sanguine/services/omnirpc/modules/harmonyproxy"
+	"github.com/synapsecns/sanguine/services/omnirpc/modules/pimlico"
 	"github.com/synapsecns/sanguine/services/omnirpc/modules/receiptsbackup"
 
 	"github.com/phayes/freeport"
@@ -209,6 +210,25 @@ var receiptsProxy = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		simpleProxy := receiptsbackup.NewProxy(c.String(rpcFlag.Name), c.String(backupRPCFlag.Name), c.Duration(recieptsTimeoutFlag.Name), metrics.Get(), c.Int(portFlag.Name), c.Int(chainIDFlag.Name))
+
+		err := simpleProxy.Run(c.Context)
+		if err != nil {
+			return fmt.Errorf("return err: %w", err)
+		}
+		return nil
+	},
+}
+
+var pimlicoProxy = &cli.Command{
+	Name:  "pimlico-proxy",
+	Usage: "A rpc proxy for pimlico",
+	Flags: []cli.Flag{
+		rpcFlag,
+		portFlag,
+		pimlicoFlag,
+	},
+	Action: func(c *cli.Context) error {
+		simpleProxy := pimlico.NewProxy(c.String(pimlicoFlag.Name), c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
 
 		err := simpleProxy.Run(c.Context)
 		if err != nil {

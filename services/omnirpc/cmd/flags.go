@@ -64,3 +64,8 @@ var recieptsTimeoutFlag = &cli.DurationFlag{
 	Name:  "receipts-timeout",
 	Usage: "timeout to use for hanging receipts requests",
 }
+
+var pimlicoFlag = &cli.StringFlag{
+	Name:  "pimlico",
+	Usage: "pimlico url to use for pimlico requests",
+}
