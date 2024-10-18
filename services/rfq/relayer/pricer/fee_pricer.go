@@ -5,9 +5,11 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -162,11 +164,21 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 			if err != nil {
 				return nil, fmt.Errorf("could not get client: %w", err)
 			}
+			parsedABI, err := abi.JSON(strings.NewReader(fastbridgev2.IFastBridgeRecipientMetaData.ABI))
+			if err != nil {
+				return nil, fmt.Errorf("could not parse ABI: %w", err)
+			}
+			methodName := "fastBridgeTransferReceived"
+			encodedData, err := parsedABI.Pack(methodName, tx.DestToken, tx.DestAmount, tx.CallParams)
+			if err != nil {
+				return nil, fmt.Errorf("could not encode function call: %w", err)
+			}
+
 			callMsg := ethereum.CallMsg{
 				From:  f.relayerAddress,
 				To:    &tx.DestRecipient,
 				Value: tx.CallValue,
-				Data:  tx.CallParams,
+				Data:  encodedData,
 			}
 			gasEstimate, err := client.EstimateGas(ctx, callMsg)
 			if err != nil {
