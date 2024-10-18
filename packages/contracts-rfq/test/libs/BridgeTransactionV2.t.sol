@@ -29,12 +29,12 @@ contract BridgeTransactionV2Test is Test {
         assertEq(a.originAmount, b.originAmount);
         assertEq(a.destAmount, b.destAmount);
         assertEq(a.originFeeAmount, b.originFeeAmount);
-        assertEq(a.callValue, b.callValue);
+        assertEq(a.zapNative, b.zapNative);
         assertEq(a.deadline, b.deadline);
         assertEq(a.nonce, b.nonce);
         assertEq(a.exclusivityRelayer, b.exclusivityRelayer);
         assertEq(a.exclusivityEndTime, b.exclusivityEndTime);
-        assertEq(a.callParams, b.callParams);
+        assertEq(a.zapData, b.zapData);
     }
 
     function test_roundtrip(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public view {
@@ -49,12 +49,12 @@ contract BridgeTransactionV2Test is Test {
         assertEq(harness.originAmount(encodedTx), bridgeTx.originAmount);
         assertEq(harness.destAmount(encodedTx), bridgeTx.destAmount);
         assertEq(harness.originFeeAmount(encodedTx), bridgeTx.originFeeAmount);
-        assertEq(harness.callValue(encodedTx), bridgeTx.callValue);
+        assertEq(harness.zapNative(encodedTx), bridgeTx.zapNative);
         assertEq(harness.deadline(encodedTx), bridgeTx.deadline);
         assertEq(harness.nonce(encodedTx), bridgeTx.nonce);
         assertEq(harness.exclusivityRelayer(encodedTx), bridgeTx.exclusivityRelayer);
         assertEq(harness.exclusivityEndTime(encodedTx), bridgeTx.exclusivityEndTime);
-        assertEq(harness.callParams(encodedTx), bridgeTx.callParams);
+        assertEq(harness.zapData(encodedTx), bridgeTx.zapData);
     }
 
     function test_roundtrip_decodeV2(IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public view {

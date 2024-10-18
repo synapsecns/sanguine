@@ -77,10 +77,10 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         dstToken = new MockERC20("DstToken", 6);
         createFixtures();
         mockRequestV1 = abi.encode(extractV1(tokenTx));
-        // Invalid V2 request is formed before `createFixturesV2` to ensure it's not using callParams
+        // Invalid V2 request is formed before `createFixturesV2` to ensure it's not using zapData
         invalidRequestV2 = createInvalidRequestV2(BridgeTransactionV2Lib.encodeV2(tokenTx));
         createFixturesV2();
-        // Mock V3 request is formed after `createFixturesV2` to ensure it's using callParams if needed
+        // Mock V3 request is formed after `createFixturesV2` to ensure it's using zapData if needed
         mockRequestV3 = createMockRequestV3(BridgeTransactionV2Lib.encodeV2(ethTx));
         fastBridge = deployFastBridge();
         configureFastBridge();
@@ -161,15 +161,15 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
             quoteRelayer: address(0),
             quoteExclusivitySeconds: 0,
             quoteId: bytes(""),
-            callValue: 0,
-            callParams: bytes("")
+            zapNative: 0,
+            zapData: bytes("")
         });
         ethParamsV2 = IFastBridgeV2.BridgeParamsV2({
             quoteRelayer: address(0),
             quoteExclusivitySeconds: 0,
             quoteId: bytes(""),
-            callValue: 0,
-            callParams: bytes("")
+            zapNative: 0,
+            zapData: bytes("")
         });
 
         tokenTx.exclusivityRelayer = address(0);
@@ -197,14 +197,14 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         txV2.nonce = txV1.nonce;
     }
 
-    function setTokenTestCallParams(bytes memory callParams) public {
-        tokenParamsV2.callParams = callParams;
-        tokenTx.callParams = callParams;
+    function setTokenTestZapData(bytes memory zapData) public {
+        tokenParamsV2.zapData = zapData;
+        tokenTx.zapData = zapData;
     }
 
-    function setTokenTestCallValue(uint256 callValue) public {
-        tokenParamsV2.callValue = callValue;
-        tokenTx.callValue = callValue;
+    function setTokenTestZapNative(uint256 zapNative) public {
+        tokenParamsV2.zapNative = zapNative;
+        tokenTx.zapNative = zapNative;
     }
 
     function setTokenTestExclusivityParams(address relayer, uint256 exclusivitySeconds) public {
@@ -216,14 +216,14 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         tokenTx.exclusivityEndTime = block.timestamp + exclusivitySeconds;
     }
 
-    function setEthTestCallParams(bytes memory callParams) public {
-        ethParamsV2.callParams = callParams;
-        ethTx.callParams = callParams;
+    function setEthTestZapData(bytes memory zapData) public {
+        ethParamsV2.zapData = zapData;
+        ethTx.zapData = zapData;
     }
 
-    function setEthTestCallValue(uint256 callValue) public {
-        ethParamsV2.callValue = callValue;
-        ethTx.callValue = callValue;
+    function setEthTestZapNative(uint256 zapNative) public {
+        ethParamsV2.zapNative = zapNative;
+        ethTx.zapNative = zapNative;
     }
 
     function setEthTestExclusivityParams(address relayer, uint256 exclusivitySeconds) public {
