@@ -88,7 +88,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             revert DisputePeriodPassed();
         }
 
-        // @dev relayer gets slashed effectively if dest relay has gone thru
+        // Note: these are storage writes
         $.status = BridgeStatus.REQUESTED;
         $.proofRelayer = address(0);
         $.proofBlockTimestamp = 0;
@@ -115,7 +115,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             if (block.timestamp <= transaction.deadline + REFUND_DELAY) revert DeadlineNotExceeded();
         }
 
-        // if all checks passed, set to REFUNDED status
+        // Note: this is a storage write
         $.status = BridgeStatus.REFUNDED;
 
         // transfer origin collateral back to original sender
@@ -285,6 +285,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
         // update bridge tx status given proof provided
         if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
+        // Note: these are storage writes
         $.status = BridgeStatus.RELAYER_PROVED;
         $.proofBlockTimestamp = uint40(block.timestamp);
         $.proofBlockNumber = uint48(block.number);
@@ -317,7 +318,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         if (_timeSince(proofBlockTimestamp) <= DISPUTE_PERIOD) {
             revert DisputePeriodNotPassed();
         }
-
+        // Note: this is a storage write
         $.status = BridgeStatus.RELAYER_CLAIMED;
 
         // update protocol fees if origin fee amount exists
