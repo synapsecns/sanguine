@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/ImVexed/fasturl"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/puzpuzpuz/xsync"
 	http2 "github.com/synapsecns/fasthttp-http2"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -179,69 +178,27 @@ func (f *fastHTTPRequest) Reset() {
 }
 
 func (f *fastHTTPRequest) SetBody(body []byte) Request {
-	_, span := f.handler.Tracer().Start(
-		f.context,
-		"SetBody",
-		trace.WithAttributes(attribute.String("body", common.Bytes2Hex(body))),
-	)
-	defer func() {
-		metrics.EndSpan(span)
-	}()
 	f.Request.SetBodyRaw(body)
 	return f
 }
 
 // SetContext does nothing on fasthttp request.
 func (f *fastHTTPRequest) SetContext(ctx context.Context) Request {
-	_, span := f.handler.Tracer().Start(
-		ctx,
-		"SetContext",
-	)
-	span.AddEvent("SetContext")
-	defer func() {
-		metrics.EndSpan(span)
-	}()
 	f.context = ctx
 	return f
 }
 
 func (f *fastHTTPRequest) SetHeader(key, value string) Request {
-	_, span := f.handler.Tracer().Start(
-		f.context,
-		"SetHeader",
-		trace.WithAttributes(attribute.String("SetHeader", key)),
-		trace.WithAttributes(attribute.String("value", value)),
-	)
-	defer func() {
-		metrics.EndSpan(span)
-	}()
 	f.Request.Header.Set(key, value)
 	return f
 }
 
 func (f *fastHTTPRequest) SetHeaderBytes(key, value []byte) Request {
-	_, span := f.handler.Tracer().Start(
-		f.context,
-		"SetHeaderBytes",
-		trace.WithAttributes(attribute.String("key", common.Bytes2Hex(key))),
-		trace.WithAttributes(attribute.String("value", common.Bytes2Hex(value))),
-	)
-	defer func() {
-		metrics.EndSpan(span)
-	}()
 	f.Request.Header.SetBytesKV(key, value)
 	return f
 }
 
 func (f *fastHTTPRequest) SetRequestURI(uri string) Request {
-	_, span := f.handler.Tracer().Start(
-		f.context,
-		"SetRequestURI",
-		trace.WithAttributes(attribute.String("uri", uri)),
-	)
-	defer func() {
-		metrics.EndSpan(span)
-	}()
 	f.Request.SetRequestURI(uri)
 	return f
 }
@@ -250,6 +207,11 @@ func (f *fastHTTPRequest) Do() (Response, error) {
 	_, span := f.handler.Tracer().Start(
 		f.context,
 		"Do",
+		trace.WithAttributes(
+			attribute.String("uri", f.Request.URI().String()),
+			attribute.String("headers", fmt.Sprintf("%v", f.Request.Header.String())),
+			attribute.String("body", string(f.Request.Body())),
+		),
 	)
 	defer func() {
 		metrics.EndSpan(span)
