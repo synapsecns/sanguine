@@ -344,10 +344,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         }
     }
 
+    /// @inheritdoc IFastBridgeV2
     function bridgeStatuses(bytes32 transactionId) public view returns (BridgeStatus status) {
         return bridgeTxDetails[transactionId].status;
     }
 
+    /// @inheritdoc IFastBridgeV2
     function bridgeProofs(bytes32 transactionId) public view returns (uint96 timestamp, address relayer) {
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
 
