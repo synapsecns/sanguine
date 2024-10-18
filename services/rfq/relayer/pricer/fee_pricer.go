@@ -160,29 +160,9 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	// If specified, calculate and add the call fee, as well as the call value which will be paid by the relayer
 	if tx != nil {
 		if tx.CallParams != nil {
-			client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
+			gasEstimate, err := f.getZapGasEstimate(ctx, destination, tx)
 			if err != nil {
-				return nil, fmt.Errorf("could not get client: %w", err)
-			}
-			parsedABI, err := abi.JSON(strings.NewReader(fastbridgev2.IFastBridgeRecipientMetaData.ABI))
-			if err != nil {
-				return nil, fmt.Errorf("could not parse ABI: %w", err)
-			}
-			methodName := "fastBridgeTransferReceived"
-			encodedData, err := parsedABI.Pack(methodName, tx.DestToken, tx.DestAmount, tx.CallParams)
-			if err != nil {
-				return nil, fmt.Errorf("could not encode function call: %w", err)
-			}
-
-			callMsg := ethereum.CallMsg{
-				From:  f.relayerAddress,
-				To:    &tx.DestRecipient,
-				Value: tx.CallValue,
-				Data:  encodedData,
-			}
-			gasEstimate, err := client.EstimateGas(ctx, callMsg)
-			if err != nil {
-				return nil, fmt.Errorf("could not estimate gas: %w", err)
+				return nil, err
 			}
 			callFee, err := f.getFee(ctx, destination, destination, int(gasEstimate), denomToken, isQuote)
 			if err != nil {
@@ -209,6 +189,43 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 
 	span.SetAttributes(attribute.String("destination_fee", fee.String()))
 	return fee, nil
+}
+
+// cache so that we don't have to parse the ABI every time
+var recipientABI *abi.ABI
+
+const methodName = "fastBridgeTransferReceived"
+
+func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) (gasEstimate uint64, err error) {
+	client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
+	if err != nil {
+		return 0, fmt.Errorf("could not get client: %w", err)
+	}
+
+	if recipientABI == nil {
+		parsedABI, err := abi.JSON(strings.NewReader(fastbridgev2.IFastBridgeRecipientMetaData.ABI))
+		if err != nil {
+			return 0, fmt.Errorf("could not parse ABI: %w", err)
+		}
+		recipientABI = &parsedABI
+	}
+	encodedData, err := recipientABI.Pack(methodName, tx.DestToken, tx.DestAmount, tx.CallParams)
+	if err != nil {
+		return 0, fmt.Errorf("could not encode function call: %w", err)
+	}
+
+	callMsg := ethereum.CallMsg{
+		From:  f.relayerAddress,
+		To:    &tx.DestRecipient,
+		Value: tx.CallValue,
+		Data:  encodedData,
+	}
+	gasEstimate, err = client.EstimateGas(ctx, callMsg)
+	if err != nil {
+		return 0, fmt.Errorf("could not estimate gas: %w", err)
+	}
+
+	return gasEstimate, nil
 }
 
 func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) (_ *big.Int, err error) {
