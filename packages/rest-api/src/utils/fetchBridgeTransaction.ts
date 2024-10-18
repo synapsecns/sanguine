@@ -1,50 +1,26 @@
+import { EXPLORER_GRAPHQL_URL } from '../constants'
 import { BridgeTransaction } from '../types'
+import { constructBridgeTransactionsQuery } from './constructBridgeTransactionsQuery'
 
-export const fetchBridgeTransaction = async (
-  originChainId: number | string,
-  txHash: string
-) => {
-  const graphqlEndpoint = 'https://explorer.omnirpc.io/graphql'
-  const graphqlQuery = `
-      {
-        bridgeTransactions(
-          useMv: true
-          chainIDFrom: ${originChainId}
-          txnHash: "${txHash}"
-        ) {
-          kappa
-          fromInfo {
-            chainID
-            address
-            txnHash
-            value
-            USDValue
-            tokenSymbol
-            tokenAddress
-            blockNumber
-            formattedTime
-          }
-          toInfo {
-            chainID
-            address
-            txnHash
-            value
-            USDValue
-            tokenSymbol
-            tokenAddress
-            blockNumber
-            formattedTime
-          }
-        }
-      }
-    `
+export const fetchBridgeTransaction = async ({
+  originChainId,
+  txnHash,
+  kappa,
+}: {
+  originChainId?: number | string
+  txnHash?: string | null
+  kappa?: string | null
+}) => {
+  const params = { useMv: true, originChainId, txnHash, kappa }
 
-  const graphqlResponse = await fetch(graphqlEndpoint, {
+  const query = constructBridgeTransactionsQuery(params)
+
+  const graphqlResponse = await fetch(EXPLORER_GRAPHQL_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ query: graphqlQuery }),
+    body: JSON.stringify({ query }),
   })
 
   const graphqlData = await graphqlResponse.json()

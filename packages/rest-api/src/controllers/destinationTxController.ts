@@ -17,7 +17,10 @@ export const destinationTxController = async (req, res) => {
   try {
     const { originChainId, txHash } = req.query
 
-    const bridgeTxn = await fetchBridgeTransaction(originChainId, txHash)
+    const bridgeTxn = await fetchBridgeTransaction({
+      originChainId,
+      txnHash: txHash,
+    })
 
     const { fromInfo = null, toInfo = null, kappa = null } = bridgeTxn || {}
 
