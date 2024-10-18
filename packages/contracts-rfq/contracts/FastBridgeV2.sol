@@ -87,12 +87,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         address disputedRelayer = $.proofRelayer;
         BridgeStatus status = $.status;
         uint40 proofBlockTimestamp = $.proofBlockTimestamp;
-
+        // Can only dispute a RELAYER_PROVED transaction within the dispute period
         if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
         if (_timeSince(proofBlockTimestamp) > DISPUTE_PERIOD) {
             revert DisputePeriodPassed();
         }
-
+        // Update status to REQUESTED and delete the disputed proof details
         // Note: these are storage writes
         $.status = BridgeStatus.REQUESTED;
         $.proofRelayer = address(0);
@@ -107,13 +107,14 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         request.validateV2();
         bytes32 transactionId = keccak256(request);
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
-
+        // Can only refund a REQUESTED transaction after its deadline expires
         if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
-
         uint256 deadline = request.deadline();
-        // Permissionless refund is allowed after REFUND_DELAY
+        // Permissionless refund is only allowed after REFUND_DELAY on top of the deadline
         if (!hasRole(REFUNDER_ROLE, msg.sender)) deadline += REFUND_DELAY;
         if (block.timestamp <= deadline) revert DeadlineNotExceeded();
+        // Update status to REFUNDED and return the full amount (collateral + protocol fees) to the original sender.
+        // The protocol fees are only updated when the transaction is claimed, so we don't need to update them here.
         // Note: this is a storage write
         $.status = BridgeStatus.REFUNDED;
 
@@ -122,7 +123,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         uint256 amount = request.originAmount() + request.originFeeAmount();
         // Emit the event before any external calls
         emit BridgeDepositRefunded(transactionId, to, token, amount);
-
+        // Complete the user refund as the last transaction action
         if (token == UniversalTokenLib.ETH_ADDRESS) {
             Address.sendValue(payable(to), amount);
         } else {
@@ -133,7 +134,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     /// @inheritdoc IFastBridge
     function canClaim(bytes32 transactionId, address relayer) external view returns (bool) {
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
-
+        // The correct relayer can only claim a RELAYER_PROVED transaction after the dispute period
         if ($.status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
         if ($.proofRelayer != relayer) revert SenderIncorrect();
         return _timeSince($.proofBlockTimestamp) > DISPUTE_PERIOD;
@@ -288,8 +289,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     function prove(bytes32 transactionId, bytes32 destTxHash, address relayer) public onlyRole(RELAYER_ROLE) {
         BridgeTxDetails storage $ = bridgeTxDetails[transactionId];
 
-        // update bridge tx status given proof provided
+        // Can only prove a REQUESTED transaction
         if ($.status != BridgeStatus.REQUESTED) revert StatusIncorrect();
+        // Update status to RELAYER_PROVED and store the proof details
         // Note: these are storage writes
         $.status = BridgeStatus.RELAYER_PROVED;
         $.proofBlockTimestamp = uint40(block.timestamp);
@@ -309,30 +311,32 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         BridgeStatus status = $.status;
         uint40 proofBlockTimestamp = $.proofBlockTimestamp;
 
-        // update bridge tx status if able to claim origin collateral
+        // Can only claim a RELAYER_PROVED transaction after the dispute period
         if (status != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
-
-        // if "to" is zero addr, permissionlessly send funds to proven relayer
-        if (to == address(0)) {
-            to = proofRelayer;
-        } else if (proofRelayer != msg.sender) {
-            revert SenderIncorrect();
-        }
-
         if (_timeSince(proofBlockTimestamp) <= DISPUTE_PERIOD) {
             revert DisputePeriodNotPassed();
         }
+
+        if (to == address(0)) {
+            // Anyone could claim the funds on behalf of the proven relayer
+            to = proofRelayer;
+        } else if (proofRelayer != msg.sender) {
+            // Only the proven relayer could specify an address to claim the funds to
+            revert SenderIncorrect();
+        }
+
+        // Update status to RELAYER_CLAIMED and transfer the origin collateral to the specified claim address
         // Note: this is a storage write
         $.status = BridgeStatus.RELAYER_CLAIMED;
 
-        // update protocol fees if origin fee amount exists
         address token = request.originToken();
         uint256 amount = request.originAmount();
+        // Update protocol fees if origin fee amount exists
         uint256 originFeeAmount = request.originFeeAmount();
         if (originFeeAmount > 0) protocolFees[token] += originFeeAmount;
         // Emit the event before any external calls
         emit BridgeDepositClaimed(transactionId, proofRelayer, to, token, amount);
-
+        // Complete the relayer claim as the last transaction action
         if (token == UniversalTokenLib.ETH_ADDRESS) {
             Address.sendValue(payable(to), amount);
         } else {
