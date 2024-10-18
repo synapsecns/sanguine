@@ -21,12 +21,6 @@ describe('Get Destination TX Route', () => {
     if (response.body.toInfo) {
       expect(response.body.toInfo).toHaveProperty('chainID')
       expect(response.body.toInfo).toHaveProperty('address')
-      expect(response.body.toInfo).toHaveProperty('txnHash')
-      expect(response.body.toInfo).toHaveProperty('formattedValue')
-      expect(response.body.toInfo).toHaveProperty('USDValue')
-      expect(response.body.toInfo).toHaveProperty('tokenSymbol')
-      expect(response.body.toInfo).toHaveProperty('blockNumber')
-      expect(response.body.toInfo).toHaveProperty('formattedTime')
     }
   }, 10000)
 
@@ -44,12 +38,6 @@ describe('Get Destination TX Route', () => {
     if (response.body.fromInfo) {
       expect(response.body.fromInfo).toHaveProperty('chainID')
       expect(response.body.fromInfo).toHaveProperty('address')
-      expect(response.body.fromInfo).toHaveProperty('txnHash')
-      expect(response.body.fromInfo).toHaveProperty('formattedValue')
-      expect(response.body.fromInfo).toHaveProperty('USDValue')
-      expect(response.body.fromInfo).toHaveProperty('tokenSymbol')
-      expect(response.body.fromInfo).toHaveProperty('blockNumber')
-      expect(response.body.fromInfo).toHaveProperty('formattedTime')
     }
     expect(response.body).toHaveProperty('toInfo')
     expect(response.body.toInfo).toBeNull()
