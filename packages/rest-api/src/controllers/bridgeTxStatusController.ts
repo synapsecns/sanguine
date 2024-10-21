@@ -15,10 +15,14 @@ export const bridgeTxStatusController = async (req, res) => {
   try {
     const { destChainId, bridgeModule, synapseTxId } = req.query
 
+    const txIdWith0x = !synapseTxId.startsWith('0x')
+      ? `0x${synapseTxId}`
+      : synapseTxId
+
     const status = await Synapse.getBridgeTxStatus(
       Number(destChainId),
       bridgeModule,
-      synapseTxId
+      txIdWith0x
     )
 
     if (status) {
