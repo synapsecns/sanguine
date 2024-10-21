@@ -1,5 +1,6 @@
 import express from 'express'
 import swaggerUi from 'swagger-ui-express'
+import { createProxyMiddleware } from 'http-proxy-middleware'
 
 import { specs } from './swagger'
 import routes from './routes'
@@ -9,6 +10,27 @@ const app = express()
 const port = process.env.PORT || 3000
 
 app.use(express.json())
+
+const apiProxyRoutes = [
+  {
+    route: '/rfq-indexer-api',
+    target: 'https://rfq-indexer-production.up.railway.app/',
+  },
+  { route: '/rfq-api', target: 'https://rfq-api.omnirpc.io/' },
+]
+
+apiProxyRoutes.forEach(({ route, target }) => {
+  app.use(
+    route,
+    createProxyMiddleware({
+      target,
+      changeOrigin: true,
+      pathRewrite: {
+        [`^${route}`]: '',
+      },
+    })
+  )
+})
 
 app.use((req, res, next) => {
   logger.info({
