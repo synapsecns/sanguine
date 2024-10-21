@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.0...@synapsecns/contracts-rfq@0.9.1) (2024-10-18)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
+# [0.9.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.8.4...@synapsecns/contracts-rfq@0.9.0) (2024-10-18)
+
+
+### Features
+
+* **contracts-rfq:** add version to `BridgeTransaction`, tight packing [SLT-328] [SLT-273] ([#3284](https://github.com/synapsecns/sanguine/issues/3284)) ([a0d8a39](https://github.com/synapsecns/sanguine/commit/a0d8a39013b1ae332a80a2a624b99b0e7bb50722))
+* **contracts-rfq:** FastBridge v1 multicall [SLT-324] ([#3313](https://github.com/synapsecns/sanguine/issues/3313)) ([bd6bd2d](https://github.com/synapsecns/sanguine/commit/bd6bd2db4be4b2a8b43357f0293bceaef294039d))
+
+
+
+
+
+## [0.8.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.8.3...@synapsecns/contracts-rfq@0.8.4) (2024-10-18)
+
+**Note:** Version bump only for package @synapsecns/contracts-rfq
+
+
+
+
+
 ## [0.8.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.8.2...@synapsecns/contracts-rfq@0.8.3) (2024-10-16)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq

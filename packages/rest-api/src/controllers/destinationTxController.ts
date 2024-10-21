@@ -1,9 +1,10 @@
 import { validationResult } from 'express-validator'
-import { ethers } from 'ethers'
 
-import { getTokenDecimals } from '../utils/getTokenDecimals'
-import { tokenAddressToToken } from '../utils/tokenAddressToToken'
 import { logger } from '../middleware/logger'
+import { getBridgeStatus } from '../utils/getBridgeStatus'
+import { BridgeStatus } from '../constants/enums'
+import { fetchBridgeTransaction } from '../utils/fetchBridgeTransaction'
+import { serializeBridgeInfo } from '../serializers/serializeBridgeInfo'
 
 export const destinationTxController = async (req, res) => {
   const errors = validationResult(req)
@@ -11,87 +12,73 @@ export const destinationTxController = async (req, res) => {
     return res.status(400).json({ errors: errors.array() })
   }
 
+  let payload = {}
+
   try {
     const { originChainId, txHash } = req.query
 
-    const graphqlEndpoint = 'https://explorer.omnirpc.io/graphql'
-    const graphqlQuery = `
-      {
-        bridgeTransactions(
-          useMv: true
-          chainIDFrom: ${originChainId}
-          txnHash: "${txHash}"
-        ) {
-          toInfo {
-            chainID
-            address
-            txnHash
-            value
-            USDValue
-            tokenSymbol
-            tokenAddress
-            blockNumber
-            formattedTime
-          }
-        }
-      }
-    `
-
-    const graphqlResponse = await fetch(graphqlEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query: graphqlQuery }),
+    const bridgeTxn = await fetchBridgeTransaction({
+      originChainId,
+      txnHash: txHash,
     })
 
-    const graphqlData = await graphqlResponse.json()
-    const toInfo = graphqlData.data.bridgeTransactions?.[0]?.toInfo || null
+    const { fromInfo = null, toInfo = null, kappa = null } = bridgeTxn || {}
 
-    if (toInfo) {
-      const { tokenAddress, value, chainID, ...restToInfo } = toInfo
-
-      const tokenInfo = tokenAddressToToken(chainID.toString(), tokenAddress)
-      const tokenDecimals = getTokenDecimals(chainID, tokenAddress)
-      const formattedValue = ethers.utils.formatUnits(value, tokenDecimals)
-
-      const payload = {
-        status: 'completed',
-        toInfo: {
-          chainID,
-          ...restToInfo,
-          tokenSymbol: tokenInfo ? tokenInfo?.symbol : null,
-          formattedValue: `${formattedValue}`,
-        },
+    if (!bridgeTxn) {
+      payload = {
+        status: 'not found',
+        fromInfo,
+        toInfo,
       }
 
       logger.info(`Successful destinationTxController response`, {
         query: req.query,
         payload,
       })
-      res.json(payload)
-    } else {
-      const payload = {
-        status: 'pending',
-        toInfo: null,
-      }
-
-      logger.info(`Successful destinationTxController response`, {
-        query: req.query,
-        payload,
-      })
-      res.json(payload)
+      return res.status(404).json(payload)
     }
+
+    if (fromInfo && !toInfo) {
+      const status = await getBridgeStatus(originChainId, kappa)
+
+      if (status === BridgeStatus.REFUNDED) {
+        payload = {
+          status: 'refunded',
+          fromInfo: serializeBridgeInfo(fromInfo),
+          toInfo,
+        }
+      } else {
+        payload = {
+          status: 'pending',
+          fromInfo: serializeBridgeInfo(fromInfo),
+          toInfo,
+        }
+      }
+    }
+
+    if (fromInfo && toInfo) {
+      payload = {
+        status: 'completed',
+        fromInfo: serializeBridgeInfo(fromInfo),
+        toInfo: serializeBridgeInfo(toInfo),
+      }
+    }
+
+    logger.info(`Successful destinationTxController response`, {
+      query: req.query,
+      payload,
+    })
+
+    return res.json(payload)
   } catch (err) {
     logger.error(`Error in destinationTxController`, {
       query: req.query,
       error: err.message,
       stack: err.stack,
     })
-    res.status(500).json({
+    return res.status(500).json({
       error:
         'An unexpected error occurred in /destinationTx. Please try again later.',
-      details: err.message,
     })
   }
 }
