@@ -242,6 +242,7 @@ func (s *PricerSuite) TestGetTotalFee() {
 	tx = &fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 		CallValue:  big.NewInt(1 * 1e18),
 		CallParams: []byte{},
+		DestAmount: big.NewInt(1 * 1e18),
 	}
 	clientDestination.On(testsuite.GetFunctionName(clientDestination.EstimateGas), mock.Anything, mock.Anything).Once().Return(uint64(1_000_000), nil)
 	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true, tx)
