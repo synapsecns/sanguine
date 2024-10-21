@@ -10,28 +10,34 @@ export const destinationTokensController = async (req, res) => {
     return res.status(400).json({ errors: errors.array() })
   }
 
+  let payload
+
   try {
     const { fromChain, fromToken } = req.query
 
     const fromTokenInfo = tokenAddressToToken(fromChain.toString(), fromToken)
 
-    const constructedKey = `${fromTokenInfo.symbol}-${fromChain}`
+    if (!fromTokenInfo) {
+      payload = []
+    } else {
+      const constructedKey = `${fromTokenInfo.symbol}-${fromChain}`
 
-    const payload = BRIDGE_ROUTE_MAPPING[constructedKey]
+      payload = BRIDGE_ROUTE_MAPPING[constructedKey]
+    }
 
     logger.info(`Successful destinationTokensController response`, {
       query: req.query,
       payload,
     })
 
-    res.json(payload)
+    return res.json(payload)
   } catch (err) {
     logger.error(`Error in destinationTokensController`, {
       query: req.query,
       error: err.message,
       stack: err.stack,
     })
-    res.status(500).json({
+    return res.status(500).json({
       error:
         'An unexpected error occurred in /destinationTokens. Please try again later.',
     })
