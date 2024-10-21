@@ -12,6 +12,7 @@ fs_permissions = [
 ]
 
 [fmt]
+ignore = ["contracts/legacy/**/*.sol"]
 line_length = 120
 multiline_func_header = 'all'
 number_underscore = 'thousands'

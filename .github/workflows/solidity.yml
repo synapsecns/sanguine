@@ -7,6 +7,9 @@ on:
       - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
       - 'packages/solidity-devops/**'
+    branches:
+      # Solidity workflows are irrelevant for the FE release branch
+      - '!fe-release'
   push:
     paths:
       - 'packages/contracts-core/**'
@@ -174,6 +177,7 @@ jobs:
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
           target: './packages/${{matrix.package}}'
+          slither-config: './packages/${{matrix.package}}/slither.config.json'
           ignore-compile: true
           sarif: results.sarif
           solc-version: 0.8.17
@@ -204,6 +208,9 @@ jobs:
       - name: Installing dependencies
         run: yarn install --immutable
 
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
@@ -221,6 +228,12 @@ jobs:
         # Limit the number of fuzz runs to speed up the coverage
         env:
           FOUNDRY_FUZZ_RUNS: 10
+
+      # Some of the packages may want to exclude certain files from the coverage report (legacy code, scripts, tests)
+      - name: Apply filters to coverage report
+        if: ${{ matrix.package != 'solidity-devops' }}
+        working-directory: './packages/${{matrix.package}}'
+        run: npm run coverage:filter --if-present
 
       - name: Send Coverage (Codecov)
         if: ${{ matrix.package != 'solidity-devops' }}
