@@ -170,10 +170,11 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	return fee, nil
 }
 
+//nolint:gosec
 func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2, fee *big.Int) (*big.Int, error) {
 	span := trace.SpanFromContext(ctx)
 
-	if tx.CallParams != nil {
+	if tx.CallParams != nil && len(tx.CallParams) > 0 {
 		gasEstimate, err := f.getZapGasEstimate(ctx, destination, tx)
 		if err != nil {
 			return nil, err
@@ -186,7 +187,7 @@ func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomTok
 		span.SetAttributes(attribute.String("call_fee", callFee.String()))
 	}
 
-	if tx.CallValue != nil {
+	if tx.CallValue != nil && tx.CallValue.Sign() > 0 {
 		callValueFloat := new(big.Float).SetInt(tx.CallValue)
 		valueDenom, err := f.getDenomFee(ctx, destination, destination, denomToken, callValueFloat)
 		if err != nil {
