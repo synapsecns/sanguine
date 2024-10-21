@@ -1201,11 +1201,9 @@ export const WKLAY: BridgeableToken = {
 
 export const MATIC: BridgeableToken = {
   addresses: {
-    [CHAINS.POLYGON.id]: NativeTokenAddress,
     [CHAINS.DFK.id]: '0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e',
   },
   decimals: {
-    [CHAINS.POLYGON.id]: 18,
     [CHAINS.DFK.id]: 18,
   },
   symbol: 'MATIC',
@@ -1218,7 +1216,24 @@ export const MATIC: BridgeableToken = {
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/matic.237cd2b6.svg',
 }
 
-export const WMATIC: BridgeableToken = {
+export const POL: BridgeableToken = {
+  addresses: {
+    [CHAINS.POLYGON.id]: NativeTokenAddress,
+  },
+  decimals: {
+    [CHAINS.POLYGON.id]: 18,
+  },
+  symbol: 'MATIC',
+  name: 'MATIC',
+  swapableType: 'MATIC',
+  color: 'blue',
+  priorityRank: 300,
+  routeSymbol: 'POL',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/matic.237cd2b6.svg',
+}
+
+export const WPOL: BridgeableToken = {
   addresses: {
     [CHAINS.POLYGON.id]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   },
@@ -1230,7 +1245,7 @@ export const WMATIC: BridgeableToken = {
   swapableType: 'MATIC',
   color: 'blue',
   priorityRank: 350,
-  routeSymbol: 'WMATIC',
+  routeSymbol: 'WPOL',
   imgUrl:
     'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/matic.237cd2b6.svg',
 }
