@@ -28,6 +28,13 @@ export const BRIDGE_MAP = {
       destination: ['JEWEL'],
       swappable: [],
     },
+    '0x163f8C2467924be0ae7B5347228CABF260318753': {
+      decimals: 18,
+      symbol: 'WLD',
+      origin: ['RFQ.WLD'],
+      destination: ['RFQ.WLD'],
+      swappable: [],
+    },
     '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
       decimals: 18,
       symbol: 'nUSD',
@@ -455,6 +462,13 @@ export const BRIDGE_MAP = {
       destination: ['L2DAO'],
       swappable: [],
     },
+    '0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1': {
+      decimals: 18,
+      symbol: 'WLD',
+      origin: ['RFQ.WLD'],
+      destination: ['RFQ.WLD'],
+      swappable: [],
+    },
   },
   '25': {
     '0x396c9c192dd323995346632581BEF92a31AC623b': {
@@ -873,11 +887,18 @@ export const BRIDGE_MAP = {
     },
   },
   '480': {
-    '0x4200000000000000000000000000000000000006': {
+    '0x2cFc85d8E48F8EAB294be644d9E25C3030863003': {
       decimals: 18,
-      symbol: 'WETH',
-      origin: ['RFQ.ETH'],
-      destination: [],
+      symbol: 'WLD',
+      origin: ['RFQ.WLD'],
+      destination: ['RFQ.WLD'],
+      swappable: [],
+    },
+    '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1': {
+      decimals: 6,
+      symbol: 'USDC.e',
+      origin: ['RFQ.USDC'],
+      destination: ['RFQ.USDC'],
       swappable: [],
     },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {

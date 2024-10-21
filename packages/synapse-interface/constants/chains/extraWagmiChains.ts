@@ -75,6 +75,7 @@ export const worldchain = {
   },
   rpcUrls: {
     default: { http: ['https://worldchain-mainnet.g.alchemy.com/public'] },
+    public: { http: ['https://worldchain-mainnet.g.alchemy.com/public'] },
   },
   blockExplorers: {
     default: {
@@ -85,7 +86,6 @@ export const worldchain = {
   contracts: {
     multicall3: {
       address: '0xca11bde05977b3631167028862be2a173976ca11',
-      //  need to get correct block number
       blockCreated: 1517589,
     },
   },
