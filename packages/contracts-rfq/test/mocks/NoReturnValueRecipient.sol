@@ -11,5 +11,5 @@ contract NoReturnValueRecipient {
     function testNoReturnValueRecipient() external {}
 
     /// @notice Incorrectly implemented - method does not return anything.
-    function fastBridgeTransferReceived(address, uint256, bytes memory) external payable {}
+    function zap(address, uint256, bytes memory) external payable {}
 }

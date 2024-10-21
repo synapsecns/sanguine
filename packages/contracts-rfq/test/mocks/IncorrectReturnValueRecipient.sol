@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {IFastBridgeRecipient} from "../../contracts/interfaces/IFastBridgeRecipient.sol";
+import {IZapRecipient} from "../../contracts/interfaces/IZapRecipient.sol";
 
 // solhint-disable no-empty-blocks
 /// @notice Incorrectly implemented recipient mock for testing purposes. DO NOT USE IN PRODUCTION.
-contract IncorrectReturnValueRecipient is IFastBridgeRecipient {
+contract IncorrectReturnValueRecipient is IZapRecipient {
     /// @notice Mock needs to accept ETH
     receive() external payable {}
 
@@ -13,8 +13,8 @@ contract IncorrectReturnValueRecipient is IFastBridgeRecipient {
     function testIncorrectReturnValueRecipient() external {}
 
     /// @notice Incorrectly implemented - method returns incorrect value.
-    function fastBridgeTransferReceived(address, uint256, bytes memory) external payable returns (bytes4) {
+    function zap(address, uint256, bytes memory) external payable returns (bytes4) {
         // Flip the last bit
-        return IFastBridgeRecipient.fastBridgeTransferReceived.selector ^ 0x00000001;
+        return IZapRecipient.zap.selector ^ 0x00000001;
     }
 }
