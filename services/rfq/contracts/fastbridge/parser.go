@@ -1,7 +1,8 @@
-package fastbridge
+package fastbridgemulti
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 )

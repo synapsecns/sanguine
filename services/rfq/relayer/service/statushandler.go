@@ -60,6 +60,8 @@ type QuoteRequestHandler struct {
 	tokenNames map[string]relconfig.TokenConfig
 	// balanceMtx is the mutex for balances.
 	balanceMtx mapmutex.StringMapMutex
+	// multicallDispatcher is the multicall dispatcher.
+	multicallDispatcher MulticallDispatcher
 	// cfg is the relayer config.
 	cfg relconfig.Config
 }
@@ -107,9 +109,10 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 			r.metrics,
 			originTokens,
 		),
-		tokenNames: originTokens,
-		balanceMtx: r.balanceMtx,
-		cfg:        r.cfg,
+		tokenNames:          originTokens,
+		balanceMtx:          r.balanceMtx,
+		multicallDispatcher: r.multicallDispatcher,
+		cfg:                 r.cfg,
 	}
 
 	// wrap in deadline middleware since the relay has not yet happened

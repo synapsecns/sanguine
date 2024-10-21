@@ -1,15 +1,16 @@
-package fastbridge_test
+package fastbridgemulti_test
 
 import (
+	"math/big"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgemulti"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
-	"math/big"
-	"testing"
 )
 
 // FastBridgeSuite tests the basic test suite.
@@ -40,7 +41,7 @@ func (s *FastBridgeSuite) SetupTest() {
 // TestStatusEnum makes sure.
 func (s *FastBridgeSuite) TestStatusEnum() {
 	_, fb := s.manager.GetMockFastBridge(s.GetTestContext(), s.backend)
-	for _, status := range fastbridge.GetAllBridgeStatuses() {
+	for _, status := range fastbridgemulti.GetAllBridgeStatuses() {
 		solstatus, err := fb.GetEnumKeyByValue(&bind.CallOpts{Context: s.GetTestContext()}, status.Int())
 		s.Require().NoError(err, "error getting enum key by value")
 		s.Require().Equal(solstatus, status.String(), "status %s does not match. BridgeStatus enums out of sync.", status)
