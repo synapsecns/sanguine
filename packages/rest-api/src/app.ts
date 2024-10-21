@@ -5,6 +5,8 @@ import { createProxyMiddleware } from 'http-proxy-middleware'
 import { specs } from './swagger'
 import routes from './routes'
 import { logger } from './middleware/logger'
+import fs from 'fs'
+import path from 'path'
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -98,3 +100,6 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
 })
+
+const outputPath = path.join(__dirname, 'swagger-output.json')
+fs.writeFileSync(outputPath, JSON.stringify(specs, null, 2), 'utf-8')

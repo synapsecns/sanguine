@@ -6,6 +6,8 @@ import { specs } from './swagger'
 import routes from './routes'
 import { schema } from './graphql/schema'
 import { overrideJsonBigIntSerialization } from './utils/overrideJsonBigIntSerialization'
+import fs from 'fs'
+import path from 'path'
 
 const app = express()
 const port = process.env.PORT || 3001
@@ -30,3 +32,7 @@ export const server = app.listen(port, () => {
   console.info('REST requests go through http://localhost:3001/api')
   console.info('GraphQL requests go through http://localhost:3001/graphql')
 })
+
+// export swagger json to a file dynamically
+const outputPath = path.join(__dirname, 'swagger-output.json')
+fs.writeFileSync(outputPath, JSON.stringify(specs, null, 2), 'utf-8')
