@@ -1049,7 +1049,6 @@ export const WKLAY = new Token({
 
 export const MATIC = new Token({
   addresses: {
-    [CHAINS.POLYGON.id]: zeroAddress,
     [CHAINS.DFK.id]: '0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e',
   },
   decimals: 18,
@@ -1064,7 +1063,23 @@ export const MATIC = new Token({
   routeSymbol: 'MATIC',
 })
 
-export const WMATIC = new Token({
+export const POL = new Token({
+  addresses: {
+    [CHAINS.POLYGON.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'MATIC',
+  name: 'MATIC',
+  logo: maticLogo,
+  isNative: true,
+  swapableType: 'MATIC',
+  color: 'blue',
+  visibilityRank: 90,
+  priorityRank: 300,
+  routeSymbol: 'POL',
+})
+
+export const WPOL = new Token({
   addresses: {
     [CHAINS.POLYGON.id]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   },
@@ -1076,7 +1091,7 @@ export const WMATIC = new Token({
   color: 'blue',
   visibilityRank: 90,
   priorityRank: 350,
-  routeSymbol: 'WMATIC',
+  routeSymbol: 'WPOL',
 })
 
 export const FTM = new Token({
