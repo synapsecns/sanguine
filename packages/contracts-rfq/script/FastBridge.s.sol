@@ -7,6 +7,9 @@ import {Script} from "forge-std/Script.sol";
 contract DeployFastBridge is Script {
     FastBridge public bridge;
 
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testDeployFastBridge() external {}
+
     /// e.g. forge script contracts/script/FastBridge.s.sol --sig "run(address, address[])" 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720 "[0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f]"
     function run(address owner, address[] memory relayers) external {
         vm.startBroadcast();

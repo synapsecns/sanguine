@@ -63,3 +63,30 @@ export const dogechain = {
     },
   },
 }
+
+export const worldchain = {
+  id: 480,
+  name: 'World Chain',
+  network: 'worldchain',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: { http: ['https://worldchain-mainnet.g.alchemy.com/public'] },
+    public: { http: ['https://worldchain-mainnet.g.alchemy.com/public'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'World Chain Explorer',
+      url: 'https://worldchain-mainnet.explorer.alchemy.com',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 1517589,
+    },
+  },
+}

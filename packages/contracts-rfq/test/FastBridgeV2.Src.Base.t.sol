@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {BridgeTransactionV2Lib} from "../contracts/libs/BridgeTransactionV2.sol";
+
 import {FastBridgeV2, FastBridgeV2Test, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.t.sol";
 
 // solhint-disable func-name-mixedcase, ordering
@@ -72,17 +74,17 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
 
     function prove(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx, bytes32 destTxHash) public {
         vm.prank({msgSender: caller, txOrigin: caller});
-        fastBridge.prove(abi.encode(bridgeTx), destTxHash);
+        fastBridge.prove(BridgeTransactionV2Lib.encodeV2(bridgeTx), destTxHash);
     }
 
     function claim(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public {
         vm.prank({msgSender: caller, txOrigin: caller});
-        fastBridge.claim(abi.encode(bridgeTx));
+        fastBridge.claim(BridgeTransactionV2Lib.encodeV2(bridgeTx));
     }
 
     function claim(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx, address to) public {
         vm.prank({msgSender: caller, txOrigin: caller});
-        fastBridge.claim(abi.encode(bridgeTx), to);
+        fastBridge.claim(BridgeTransactionV2Lib.encodeV2(bridgeTx), to);
     }
 
     function dispute(address caller, bytes32 txId) public {
@@ -92,7 +94,7 @@ abstract contract FastBridgeV2SrcBaseTest is FastBridgeV2Test {
 
     function refund(address caller, IFastBridgeV2.BridgeTransactionV2 memory bridgeTx) public {
         vm.prank({msgSender: caller, txOrigin: caller});
-        fastBridge.refund(abi.encode(bridgeTx));
+        fastBridge.refund(BridgeTransactionV2Lib.encodeV2(bridgeTx));
     }
 
     function test_nonce() public view {

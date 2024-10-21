@@ -3,8 +3,11 @@ pragma solidity ^0.8.20;
 
 import {FastBridgeV2GasBenchmarkSrcTest} from "./FastBridgeV2.GasBench.Src.t.sol";
 
-// solhint-disable func-name-mixedcase, ordering
+// solhint-disable func-name-mixedcase, no-empty-blocks
 contract FastBridgeV2GasBenchmarkSrcProtocolFeesTest is FastBridgeV2GasBenchmarkSrcTest {
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testFastBridgeV2GasBenchmarkSrcProtocolFeesTest() external {}
+
     function configureFastBridge() public virtual override {
         super.configureFastBridge();
         fastBridge.grantRole(fastBridge.GOVERNOR_ROLE(), address(this));
@@ -27,10 +30,10 @@ contract FastBridgeV2GasBenchmarkSrcProtocolFeesTest is FastBridgeV2GasBenchmark
         provenTokenTx = tokenTx;
         bridgedEthTx = ethTx;
         provenEthTx = ethTx;
-
-        bridgedTokenTx.nonce = 0;
-        bridgedEthTx.nonce = 1;
-        provenTokenTx.nonce = 2;
-        provenEthTx.nonce = 3;
+        // See FastBridgeV2GasBenchmarkSrcTest.initExistingTxs for why these start from 1, not 0
+        bridgedTokenTx.nonce = 1;
+        bridgedEthTx.nonce = 2;
+        provenTokenTx.nonce = 3;
+        provenEthTx.nonce = 4;
     }
 }

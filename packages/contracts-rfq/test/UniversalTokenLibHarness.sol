@@ -3,8 +3,11 @@ pragma solidity ^0.8.17;
 
 import {UniversalTokenLib} from "../contracts/libs/UniversalToken.sol";
 
-// solhint-disable ordering
+// solhint-disable no-empty-blocks, ordering
 contract UniversalTokenLibHarness {
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testUniversalTokenLibHarness() external {}
+
     function universalTransfer(address token, address to, uint256 value) public {
         UniversalTokenLib.universalTransfer(token, to, value);
     }

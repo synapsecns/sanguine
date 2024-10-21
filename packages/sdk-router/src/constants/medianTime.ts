@@ -54,4 +54,5 @@ export const MEDIAN_TIME_RFQ = {
   [SupportedChainId.LINEA]: 15,
   [SupportedChainId.BLAST]: 15,
   [SupportedChainId.SCROLL]: 15,
+  [SupportedChainId.WORLDCHAIN]: 15,
 }

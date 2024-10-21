@@ -30,14 +30,17 @@ interface IFastBridgeV2 is IFastBridge {
     /// for backwards compatibility.
     /// Note: quoteRelayer and quoteExclusivitySeconds are either both zero (indicating no exclusivity)
     /// or both non-zero (indicating exclusivity for the given period).
+    /// Note: callValue > 0 can NOT be used with destToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE (ETH_ADDRESS)
     /// @param quoteRelayer             Relayer that provided the quote for the transaction
     /// @param quoteExclusivitySeconds  Period of time the quote relayer is guaranteed exclusivity after user's deposit
     /// @param quoteId                  Unique quote identifier used for tracking the quote
+    /// @param callValue                ETH value to send to the recipient (if any)
     /// @param callParams               Parameters for the arbitrary call to the destination recipient (if any)
     struct BridgeParamsV2 {
         address quoteRelayer;
         int256 quoteExclusivitySeconds;
         bytes quoteId;
+        uint256 callValue;
         bytes callParams;
     }
 
@@ -54,7 +57,7 @@ interface IFastBridgeV2 is IFastBridge {
         uint256 originAmount; // amount in on origin bridge less originFeeAmount
         uint256 destAmount;
         uint256 originFeeAmount;
-        bool sendChainGas;
+        uint256 callValue; // ETH value to send to the recipient (if any) - replaces V1's sendChainGas flag
         uint256 deadline; // user specified deadline for destination relay
         uint256 nonce;
         address exclusivityRelayer;
@@ -67,7 +70,7 @@ interface IFastBridgeV2 is IFastBridge {
     /// @notice Initiates bridge on origin chain to be relayed by off-chain relayer, with the ability
     /// to provide temporary exclusivity fill rights for the quote relayer.
     /// @param params   The parameters required to bridge
-    /// @param paramsV2 The parameters for exclusivity fill rights (optional, could be left empty)
+    /// @param paramsV2 The parameters for exclusivity fill rights (optional, can be left empty)
     function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) external payable;
 
     /// @notice Relays destination side of bridge transaction by off-chain relayer

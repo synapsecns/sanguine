@@ -61,6 +61,14 @@ The metrics endpoint is exposed on `/metrics` on port `8080` by default and is c
 
 **Note: this server failing to bind to `METRICS_PORT` will not cause the application to fail to start. The error will be logged.**
 
+Most metrics come with a `# HELP` explanation that explains them, for example:
+
+```promql
+# HELP process_uptime_seconds The uptime of the process in seconds
+# TYPE process_uptime_seconds gauge
+process_uptime_seconds{otel_scope_name="standard_metrics",otel_scope_version=""} 24.241680459
+```
+
 ## Logger
 
 Currently, the entire sanguine codebase uses [ipfs go-log]("https://github.com/ipfs/go-log"). As pointed out in [#1521](https://github.com/synapsecns/sanguine/issues/1521), this is not a good long term solution since the logs are not currently appended to opentelemetry, and so new traces require telemtry.
@@ -80,3 +88,4 @@ Note: because both  [ipfs go-log]("https://github.com/ipfs/go-log") and [otelzap
 ### Using the logger
 
 Since the logger is dependent on the `context` to derive the current span, you need to always use `logger.Ctx(ctx)` or `logger.InfoCtx`. One thing under consideration is removing the non-ctx methods
+

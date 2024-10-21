@@ -15,7 +15,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/uuid"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
@@ -23,7 +22,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/util"
-	"go.opentelemetry.io/otel/attribute"
 	"gotest.tools/assert"
 )
 
@@ -104,95 +102,6 @@ func assertBigIntsCopiedEqual(tb testing.TB, original *big.Int, newVal *big.Int,
 	if original.Cmp(newVal) != 0 {
 		tb.Errorf("%s is not equal", fieldName)
 	}
-}
-
-func TestAddressPtrToString(t *testing.T) {
-	// Test case 1: Address is nil
-	var address *common.Address
-	assert.Equal(t, submitter.AddressPtrToString(address), submitter.NullFieldAttribute)
-
-	// Test case 2: Address is not nil
-	address = core.PtrTo[common.Address](common.HexToAddress("0x1234567890123456789012345678901234567890"))
-	assert.Equal(t, submitter.AddressPtrToString(address), "0x1234567890123456789012345678901234567890")
-}
-
-func TestBigPtrToString(t *testing.T) {
-	// Test case: num is nil
-	var num *big.Int
-	expected := submitter.NullFieldAttribute
-	result := submitter.BigPtrToString(num)
-	if result != expected {
-		t.Errorf("bigPtrToString(nil) = %q; want %q", result, expected)
-	}
-
-	// Test case: num is an integer
-	num = big.NewInt(123)
-	expected = "123"
-	result = submitter.BigPtrToString(num)
-	if result != expected {
-		t.Errorf("bigPtrToString(123) = %q; want %q", result, expected)
-	}
-}
-
-func (s *SubmitterSuite) TestTxToAttributesNullFields() {
-	s.checkEmptyTx(types.NewTx(&types.DynamicFeeTx{}))
-	s.checkEmptyTx(types.NewTx(&types.LegacyTx{}))
-}
-
-func (s *SubmitterSuite) checkEmptyTx(rawTx *types.Transaction) {
-	tx := makeAttrMap(rawTx, uuid.New().String())
-
-	s.Require().Equal(tx[submitter.HashAttr].AsString(), rawTx.Hash().Hex())
-	s.Require().Equal(tx[submitter.NonceAttr].AsInt64(), int64(0))
-	s.Require().Equal(tx[submitter.GasLimitAttr].AsInt64(), int64(0))
-	s.Require().Equal(tx[submitter.ToAttr].AsString(), submitter.NullFieldAttribute)
-	s.Require().Equal(tx[submitter.ValueAttr].AsString(), "0")
-	s.Require().Equal(tx[submitter.DataAttr].AsString(), "")
-
-	if rawTx.Type() == types.DynamicFeeTxType {
-		s.Require().Equal(tx[submitter.GasTipCapAttr].AsString(), "0")
-		s.Require().Equal(tx[submitter.GasFeeCapAttr].AsString(), "0")
-	}
-	if rawTx.Type() == types.LegacyTxType {
-		s.Require().Equal(tx[submitter.GasPriceAttr].AsString(), "0")
-	}
-}
-
-func (s *SubmitterSuite) TestTxToAttributesLegacyTX() {
-	mockTX := mocks.GetMockTxes(s.GetTestContext(), s.T(), 1, types.LegacyTxType)[0]
-	mapAttr := makeAttrMap(mockTX, uuid.New().String())
-
-	s.Require().Equal(mapAttr[submitter.HashAttr].AsString(), mockTX.Hash().String())
-	s.Require().Equal(mapAttr[submitter.NonceAttr].AsInt64(), int64(mockTX.Nonce()))
-	s.Require().Equal(mapAttr[submitter.GasLimitAttr].AsInt64(), int64(mockTX.Gas()))
-	s.Require().Equal(mapAttr[submitter.ToAttr].AsString(), mockTX.To().String())
-	s.Require().Equal(mapAttr[submitter.ValueAttr].AsString(), mockTX.Value().String())
-	s.Require().Equal(mapAttr[submitter.DataAttr].AsString(), "")
-
-	s.Require().Equal(mapAttr[submitter.GasPriceAttr].AsString(), mockTX.GasPrice().String())
-	_, hasFeeCap := mapAttr[submitter.GasFeeCapAttr]
-	_, hasTipCap := mapAttr[submitter.GasTipCapAttr]
-	s.Require().False(hasFeeCap)
-	s.Require().False(hasTipCap)
-	s.Require().NotNil(mapAttr[submitter.FromAttr])
-}
-
-func (s *SubmitterSuite) TestTxToAttributesDynamicTX() {
-	mockTX := mocks.GetMockTxes(s.GetTestContext(), s.T(), 1, types.DynamicFeeTxType)[0]
-	mapAttr := makeAttrMap(mockTX, uuid.New().String())
-
-	s.Require().Equal(mapAttr[submitter.HashAttr].AsString(), mockTX.Hash().String())
-	s.Require().Equal(mapAttr[submitter.NonceAttr].AsInt64(), int64(mockTX.Nonce()))
-	s.Require().Equal(mapAttr[submitter.GasLimitAttr].AsInt64(), int64(mockTX.Gas()))
-	s.Require().Equal(mapAttr[submitter.ToAttr].AsString(), mockTX.To().String())
-	s.Require().Equal(mapAttr[submitter.ValueAttr].AsString(), mockTX.Value().String())
-	s.Require().Equal(mapAttr[submitter.DataAttr].AsString(), "")
-
-	s.Require().Equal(mapAttr[submitter.GasFeeCapAttr].AsString(), mockTX.GasFeeCap().String())
-	s.Require().Equal(mapAttr[submitter.GasTipCapAttr].AsString(), mockTX.GasTipCap().String())
-	_, hasGasPrice := mapAttr[submitter.GasPriceAttr]
-	s.Require().False(hasGasPrice)
-	s.Require().NotNil(mapAttr[submitter.FromAttr])
 }
 
 func (s *SubmitterSuite) TestSortTxes() {
@@ -287,15 +196,6 @@ func (s *SubmitterSuite) TestGroupTxesByNonce() {
 			}
 		}
 	}
-}
-
-func makeAttrMap(tx *types.Transaction, UUID string) map[string]attribute.Value {
-	mapAttr := make(map[string]attribute.Value)
-	attr := submitter.TxToAttributes(tx, UUID)
-	for _, a := range attr {
-		mapAttr[string(a.Key)] = a.Value
-	}
-	return mapAttr
 }
 
 // Test for the outersection function.

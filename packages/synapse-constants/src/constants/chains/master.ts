@@ -504,3 +504,29 @@ export const LINEA: Chain = {
   },
   color: 'black',
 }
+
+export const WORLDCHAIN: Chain = {
+  priorityRank: 99,
+  id: 480,
+  chainSymbol: 'WORLDCHAIN',
+  name: 'World Chain',
+  codeName: 'worldchain',
+  chainImg:
+    'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://worldchain-mainnet.g.alchemy.com/public',
+    fallback: 'https://worldchain-mainnet.g.alchemy.com/public',
+  },
+  explorerUrl: 'https://worldchain-mainnet.explorer.alchemy.com',
+  explorerName: 'World Chain Explorer',
+  explorerImg:
+    'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
+  blockTime: 3000,
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  color: 'black',
+}

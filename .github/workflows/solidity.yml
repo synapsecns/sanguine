@@ -7,6 +7,9 @@ on:
       - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
       - 'packages/solidity-devops/**'
+    branches:
+      # Solidity workflows are irrelevant for the FE release branch
+      - '!fe-release'
   push:
     paths:
       - 'packages/contracts-core/**'
@@ -121,7 +124,7 @@ jobs:
           cancel_others: 'true'
   slither:
     name: Slither
-    if: ${{ needs.changes.outputs.package_count > 0 }}
+    if: ${{ needs.changes.outputs.package_count > 0 && needs.changes.outputs.packages != '["solidity-devops"]' }}
     # see https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/setting-up-code-scanning-for-a-repository
     runs-on: ubuntu-latest
     needs: changes
@@ -174,6 +177,7 @@ jobs:
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
           target: './packages/${{matrix.package}}'
+          slither-config: './packages/${{matrix.package}}/slither.config.json'
           ignore-compile: true
           sarif: results.sarif
           solc-version: 0.8.17
@@ -204,6 +208,9 @@ jobs:
       - name: Installing dependencies
         run: yarn install --immutable
 
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
@@ -222,6 +229,12 @@ jobs:
         env:
           FOUNDRY_FUZZ_RUNS: 10
 
+      # Some of the packages may want to exclude certain files from the coverage report (legacy code, scripts, tests)
+      - name: Apply filters to coverage report
+        if: ${{ matrix.package != 'solidity-devops' }}
+        working-directory: './packages/${{matrix.package}}'
+        run: npm run coverage:filter --if-present
+
       - name: Send Coverage (Codecov)
         if: ${{ matrix.package != 'solidity-devops' }}
         uses: Wandalen/wretry.action@v1.0.36
@@ -239,7 +252,7 @@ jobs:
   gas-diff:
     runs-on: ubuntu-latest
     name: Foundry Gas Diff
-    if: ${{ needs.changes.outputs.package_count > 0 }}
+    if: ${{ needs.changes.outputs.package_count > 0 && needs.changes.outputs.packages != '["solidity-devops"]' }}
     needs: changes
     strategy:
       fail-fast: false
@@ -267,7 +280,9 @@ jobs:
       - name: Run tests and generate gas report
         working-directory: './packages/${{matrix.package}}'
         # Run separate set of tests (no fuzzing) to get accurate average gas cost estimates
-        run: forge test --mc GasBenchmark --gas-report > "../../gas-report-${{ matrix.package }}.ansi"
+        # Note: we use `npm run` with `--if-present` flag, allows not to define a gas:bench script in every package
+        # This is not natively supported by yarn yet, see: https://github.com/yarnpkg/yarn/pull/7159
+        run: npm run gas:bench --if-present > "../../gas-report-${{ matrix.package }}.ansi"
 
       - name: Compare gas reports
         uses: Rubilmax/foundry-gas-diff@v3.18
@@ -290,7 +305,7 @@ jobs:
   size-check:
     name: Foundry Size Check
     runs-on: ubuntu-latest
-    if: ${{ needs.changes.outputs.package_count > 0 }}
+    if: ${{ needs.changes.outputs.package_count > 0 && needs.changes.outputs.packages != '["solidity-devops"]' }}
     needs: changes
     strategy:
       fail-fast: false

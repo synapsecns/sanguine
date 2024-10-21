@@ -25,7 +25,7 @@ const options = {
 }
 
 const config: Config = {
-  title: 'Synapse Bridge Docs',
+  title: 'Synapse Docs',
   tagline: 'The future is cross-chain.',
   favicon: 'brand-assets/synapse-mark.svg',
 
@@ -55,20 +55,35 @@ const config: Config = {
     [
       'classic',
       {
+        gtag: {
+          trackingID: 'G-BBC13LQXBD',
+          anonymizeIP: true,
+        },
         docs: {
           sidebarPath: './sidebars.ts',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/synapsecns/sanguine/tree/master/docs/bridge/',
+            'https://github.com/synapsecns/sanguine/edit/master/docs/bridge/',
           docRootComponent: '@theme/DocRoot',
           docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
           // docItemComponent: '@theme/ApiItem', // derived from docusaurus-theme-openapi-docs
+          routeBasePath: 'docs',
+          path: 'docs',
+        },
+        blog: {
+          showReadingTime: true,
+          editUrl:
+            'https://github.com/synapsecns/sanguine/tree/master/docs/bridge/',
+          blogSidebarTitle: 'All posts',
+          blogSidebarCount: 'ALL',
+          path: 'blog-posts',
+          routeBasePath: 'blog',
+          // authorsMapPath: 'blog-posts/authors.yml',
         },
         theme: {
           customCss: './src/css/custom.css',
         },
-        blog: false,
       } satisfies Preset.Options,
     ],
   ],
@@ -79,18 +94,24 @@ const config: Config = {
     },
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
-    announcementBar: {
-      id: 'announcementBar-v3.2', // Increment on change
-      // content: `⭐️ If you like Docusaurus, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/facebook/docusaurus">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/docusaurus">Twitter ${TwitterSvg}</a>`,
-      content: `⚠️️ <b>Caution! These docs are a work in progress. Information may be incorrect or incomplete. For the current docs, please see <a href="https://docs.synapseprotocol.com/">here</a> </b>`,
-    },
+    // announcementBar: {
+    // id: 'announcementBar-v3.2', // Increment on change
+    // content: `⭐️ If you like Docusaurus, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/facebook/docusaurus">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/docusaurus">Twitter ${TwitterSvg}</a>`,
+    // },
     navbar: {
-      title: 'Synapse Bridge Docs',
+      title: 'Synapse Docs',
       logo: {
         alt: 'Synapse logo mark',
         src: 'brand-assets/synapse-mark.svg',
       },
       items: [
+        {
+          type: 'doc',
+          docId: 'About/index',
+          position: 'left',
+          label: 'Docs',
+        },
+        { to: '/blog', label: 'Blog', position: 'left' },
         {
           href: 'https://github.com/synapsecns/sanguine',
           label: 'GitHub',
@@ -101,15 +122,6 @@ const config: Config = {
     footer: {
       // style: 'dark',
       links: [
-        // {
-        //   title: 'Docs',
-        //   items: [
-        //     {
-        //       label: 'Tutorial',
-        //       to: '/docs/intro',
-        //     },
-        //   ],
-        // },
         {
           title: 'Community',
           items: [
@@ -132,7 +144,7 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              href: 'https://github.com/synapsecns/sanguine',
             },
           ],
         },

@@ -16,6 +16,9 @@ contract FastBridgeMock is IFastBridge, Admin {
     /// @dev to prevent replays
     uint256 public nonce;
 
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testFastBridgeMock() external {}
+
     function getBridgeTransaction(bytes memory request) public pure returns (BridgeTransaction memory) {
         return abi.decode(request, (BridgeTransaction));
     }

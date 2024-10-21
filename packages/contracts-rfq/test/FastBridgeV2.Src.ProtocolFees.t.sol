@@ -3,8 +3,11 @@ pragma solidity ^0.8.20;
 
 import {FastBridgeV2SrcTest} from "./FastBridgeV2.Src.t.sol";
 
-// solhint-disable func-name-mixedcase, ordering
+// solhint-disable func-name-mixedcase, no-empty-blocks
 contract FastBridgeV2SrcProtocolFeesTest is FastBridgeV2SrcTest {
+    /// @notice We include an empty "test" function so that this contract does not appear in the coverage report.
+    function testFastBridgeV2SrcProtocolFeesTest() external {}
+
     function configureFastBridge() public virtual override {
         super.configureFastBridge();
         fastBridge.grantRole(fastBridge.GOVERNOR_ROLE(), address(this));

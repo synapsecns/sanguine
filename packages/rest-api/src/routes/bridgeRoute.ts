@@ -180,8 +180,6 @@ const router = express.Router()
  *               properties:
  *                 error:
  *                   type: string
- *                 details:
- *                   type: string
  *
  * components:
  *   schemas:

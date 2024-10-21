@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.7...@synapsecns/solidity-devops@0.4.8) (2024-10-09)
+
+
+### Bug Fixes
+
+* **solidity-devops:** always add verifier options to `forge script` ([#3254](https://github.com/synapsecns/sanguine/issues/3254)) ([a3fd580](https://github.com/synapsecns/sanguine/commit/a3fd5801ca5255cd79c3ae85520b3021b2a55ade))
+
+
+
+
+
+## [0.4.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.6...@synapsecns/solidity-devops@0.4.7) (2024-10-09)
+
+**Note:** Version bump only for package @synapsecns/solidity-devops
+
+
+
+
+
 ## [0.4.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.4.5...@synapsecns/solidity-devops@0.4.6) (2024-09-24)
 
 

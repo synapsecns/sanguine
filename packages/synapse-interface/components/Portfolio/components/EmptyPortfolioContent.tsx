@@ -19,7 +19,7 @@ export const EmptyPortfolioContent = ({
   return (
     <div id="empty-portfolio-content" className="p-4">
       <p className="text-[#C2C2D6] mb-4">
-        {t('No bridgeable assets found for {address} on {chainName}.', {
+        {t('No bridgeable assets found for {address} on {chainName}', {
           address: connectedAddress && shortened,
           chainName: connectedChain?.name,
         })}

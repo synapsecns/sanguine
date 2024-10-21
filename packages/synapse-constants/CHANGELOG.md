@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.7.0...@synapsecns/synapse-constants@1.8.0) (2024-10-21)
+
+
+### Features
+
+* **synapse-constants:** chain and token updates ([#3320](https://github.com/synapsecns/sanguine/issues/3320)) ([d0f6e6f](https://github.com/synapsecns/sanguine/commit/d0f6e6fb57b3aa08f97737572aaf7a6230161878))
+
+
+
+
+
+# [1.7.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.6.1...@synapsecns/synapse-constants@1.7.0) (2024-10-10)
+
+
+### Features
+
+* **synapse-constants:** adds preinstall step ([#3269](https://github.com/synapsecns/sanguine/issues/3269)) ([acd61de](https://github.com/synapsecns/sanguine/commit/acd61de4846d9b23d7aa834b8f2eefcaae486c7d))
+
+
+
+
+
+## [1.6.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-constants@1.6.0...@synapsecns/synapse-constants@1.6.1) (2024-10-10)
+
+**Note:** Version bump only for package @synapsecns/synapse-constants
+
+
+
+
+
 # 1.6.0 (2024-10-05)
 
 

@@ -749,6 +749,7 @@ export const ETH = new Token({
     [CHAINS.BLAST.id]: nullAddress,
     [CHAINS.SCROLL.id]: nullAddress,
     [CHAINS.LINEA.id]: nullAddress,
+    [CHAINS.WORLDCHAIN.id]: nullAddress,
   },
   decimals: 18,
   symbol: 'ETH',
@@ -911,6 +912,7 @@ export const USDCe = new Token({
     [CHAINS.ARBITRUM.id]: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
     [CHAINS.AURORA.id]: '0xB12BFcA5A55806AaF64E99521918A4bf0fC40802',
     [CHAINS.POLYGON.id]: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+    [CHAINS.WORLDCHAIN.id]: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
   },
   decimals: 6,
   symbol: 'USDC.e',
@@ -1114,7 +1116,6 @@ export const WKLAY = new Token({
 
 export const MATIC = new Token({
   addresses: {
-    [CHAINS.POLYGON.id]: zeroAddress,
     [CHAINS.DFK.id]: '0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e',
   },
   decimals: 18,
@@ -1130,7 +1131,24 @@ export const MATIC = new Token({
   coingeckoId: 'matic-network',
 })
 
-export const WMATIC = new Token({
+export const POL = new Token({
+  addresses: {
+    [CHAINS.POLYGON.id]: zeroAddress,
+  },
+  decimals: 18,
+  symbol: 'MATIC',
+  name: 'MATIC',
+  logo: 'https://8f3ea9f2.sanguine-fe.pages.dev/_next/static/media/matic.237cd2b6.svg',
+  isNative: true,
+  swapableType: 'MATIC',
+  color: 'blue',
+  visibilityRank: 90,
+  priorityRank: 3,
+  routeSymbol: 'POL',
+  coingeckoId: 'matic-network',
+})
+
+export const WPOL = new Token({
   addresses: {
     [CHAINS.POLYGON.id]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   },
@@ -1142,7 +1160,7 @@ export const WMATIC = new Token({
   color: 'blue',
   visibilityRank: 90,
   priorityRank: 3,
-  routeSymbol: 'WMATIC',
+  routeSymbol: 'WPOL',
 })
 
 export const FTM = new Token({
@@ -1275,4 +1293,24 @@ export const SPECTRAL = new Token({
   swapableType: 'SPEC',
   color: 'blue',
   routeSymbol: 'SPEC',
+})
+
+export const WLD = new Token({
+  priorityRank: 106,
+  addresses: {
+    [CHAINS.ETH.id]: '0x163f8c2467924be0ae7b5347228cabf260318753',
+    [CHAINS.OPTIMISM.id]: '0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1',
+    [CHAINS.WORLDCHAIN.id]: '0x2cFc85d8E48F8EAB294be644d9E25C3030863003',
+  },
+  decimals: {
+    [CHAINS.ETH.id]: 18,
+    [CHAINS.OPTIMISM.id]: 18,
+    [CHAINS.WORLDCHAIN.id]: 18,
+  },
+  symbol: 'WLD',
+  name: 'Worldcoin',
+  logo: 'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
+  swapableType: 'WLD',
+  color: 'gray',
+  routeSymbol: 'WLD',
 })

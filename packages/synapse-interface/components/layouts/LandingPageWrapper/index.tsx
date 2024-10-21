@@ -59,10 +59,10 @@ export function LandingPageWrapper({ children }: { children: any }) {
         style={TODO_REMOVE_wrapperStyle}
       >
         <AnnouncementBanner
-          bannerId="2024-07-22-rfq"
-          bannerContent="Synapse now supports Linea - bridge to & from in 10 seconds"
-          startDate={new Date('2024-07-10T18:45:09+00:00')}
-          endDate={new Date('2024-08-15T18:45:09+00:00')}
+          bannerId="2024-10-10-rfq"
+          bannerContent="Synapse now supports World Chain! Bridge to & from in 10 seconds"
+          startDate={new Date('2024-10-09T18:45:09+00:00')}
+          endDate={new Date('2024-11-15T18:45:09+00:00')}
         />
         <MaintenanceBanners />
         <LandingNav />
