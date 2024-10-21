@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/util"
@@ -46,7 +46,7 @@ func (r *Relayer) startChainIndexers(ctx context.Context) error {
 func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) {
 	chainListener := r.chainListeners[chainID]
 
-	parser, err := fastbridge.NewParser(chainListener.Address())
+	parser, err := fastbridgev2.NewParser(chainListener.Address())
 	if err != nil {
 		return fmt.Errorf("could not parse: %w", err)
 	}
@@ -74,12 +74,12 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 		}()
 
 		switch event := parsedEvent.(type) {
-		case *fastbridge.FastBridgeBridgeRequested:
+		case *fastbridgev2.FastBridgeV2BridgeRequested:
 			err = r.handleBridgeRequestedLog(ctx, event, uint64(chainID))
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
-		case *fastbridge.FastBridgeBridgeRelayed:
+		case *fastbridgev2.FastBridgeV2BridgeRelayed:
 			// blocking lock on the txid mutex to ensure state transitions are not overrwitten
 			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
 			defer unlocker.Unlock()
@@ -94,7 +94,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			if err != nil {
 				return fmt.Errorf("could not handle relay: %w", err)
 			}
-		case *fastbridge.FastBridgeBridgeProofProvided:
+		case *fastbridgev2.FastBridgeV2BridgeProofProvided:
 			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
 			defer unlocker.Unlock()
 
@@ -108,7 +108,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 			if err != nil {
 				return fmt.Errorf("could not handle proof provided: %w", err)
 			}
-		case *fastbridge.FastBridgeBridgeDepositClaimed:
+		case *fastbridgev2.FastBridgeV2BridgeDepositClaimed:
 			unlocker := r.handlerMtx.Lock(hexutil.Encode(event.TransactionId[:]))
 			defer unlocker.Unlock()
 
@@ -136,7 +136,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 var ethDecimals uint8 = 18
 
 // getDecimals gets the decimals for the origin and dest tokens.
-func (r *Relayer) getDecimalsFromBridgeTx(parentCtx context.Context, bridgeTx fastbridge.IFastBridgeBridgeTransaction) (originDecimals *uint8, destDecimals *uint8, err error) {
+func (r *Relayer) getDecimalsFromBridgeTx(parentCtx context.Context, bridgeTx fastbridgev2.IFastBridgeV2BridgeTransactionV2) (originDecimals *uint8, destDecimals *uint8, err error) {
 	ctx, span := r.metrics.Tracer().Start(parentCtx, "getDecimals", trace.WithAttributes(
 		attribute.String("sender", bridgeTx.OriginSender.String()),
 	))
@@ -207,7 +207,7 @@ func getDecimalsKey(addr common.Address, chainID uint32) string {
 	return fmt.Sprintf("%s-%d", addr.Hex(), chainID)
 }
 
-func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed) error {
+func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridgev2.FastBridgeV2BridgeDepositClaimed) error {
 	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted, nil)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)

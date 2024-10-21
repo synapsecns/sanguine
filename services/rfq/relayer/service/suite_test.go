@@ -16,7 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	omnirpcHelper "github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemockv2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
@@ -100,7 +100,7 @@ func (r *RelayerTestSuite) TestStore() {
 	r.NoError(err)
 
 	//nolint: typecheck
-	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
+	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemockv2.IFastBridgeBridgeParams{
 		DstChainId:   uint32(r.destBackend.GetChainID()),
 		To:           mocks.MockAddress(),
 		OriginToken:  originToken.Address(),
@@ -109,6 +109,7 @@ func (r *RelayerTestSuite) TestStore() {
 		DestAmount:   big.NewInt(2),
 		Deadline:     big.NewInt(3),
 	})
+	r.NoError(err)
 	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
 
 	r.T().Skip("TODO, test storage")
@@ -137,7 +138,7 @@ func (r *RelayerTestSuite) TestCommit() {
 	r.NoError(err)
 
 	//nolint: typecheck
-	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemock.IFastBridgeBridgeParams{
+	tx, err := oc.MockBridgeRequest(auth.TransactOpts, [32]byte(crypto.Keccak256([]byte("3"))), mocks.MockAddress(), fastbridgemockv2.IFastBridgeBridgeParams{
 		DstChainId:   uint32(r.destBackend.GetChainID()),
 		To:           mocks.MockAddress(),
 		OriginToken:  originToken.Address(),
@@ -146,6 +147,7 @@ func (r *RelayerTestSuite) TestCommit() {
 		DestAmount:   big.NewInt(2),
 		Deadline:     big.NewInt(3),
 	})
+	r.NoError(err)
 	r.originBackend.WaitForConfirmation(r.GetTestContext(), tx)
 
 	r.T().Skip("TODO, test storage")
