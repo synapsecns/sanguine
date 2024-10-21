@@ -22,6 +22,7 @@ type Bridge struct {
 	DestAmountFormatted   string `json:"destAmountFormatted"`
 	Sender                string `json:"sender"`
 	SendChainGas          int    `json:"sendChainGas"`
+	Request               string `json:"request"`
 }
 
 // BridgeRequest contains the bridge request information.
@@ -29,7 +30,6 @@ type BridgeRequest struct {
 	BlockNumber     string `json:"blockNumber"`
 	BlockTimestamp  int64  `json:"blockTimestamp"`
 	TransactionHash string `json:"transactionHash"`
-	Request         string `json:"request"`
 }
 
 // BridgeRelay contains the bridge relay information.
