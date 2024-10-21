@@ -27,12 +27,23 @@ func (e *exporter) stuckHeroCountStats(parentCtx context.Context, owner common.A
 
 	dfkClient := dfk.NewClient(e.client, e.cfg.DFKUrl)
 
-	stuckHeroes, err := dfkClient.StuckHeroes(ctx, core.PtrTo[int64](0), core.PtrTo(owner.String()))
-	if err != nil {
-		return fmt.Errorf("could not get stuck hero count: %w", err)
+	var totalStuckHeroes int64
+	var skip int64
+	var limit int64 = 100
+
+	for {
+		stuckHeroes, err := dfkClient.StuckHeroes(ctx, core.PtrTo(skip), core.PtrTo(limit), core.PtrTo(owner.String()))
+		if err != nil {
+			return fmt.Errorf("could not get stuck hero count: %w", err)
+		}
+		totalStuckHeroes += int64(len(stuckHeroes.Heroes))
+		if len(stuckHeroes.Heroes) < int(limit) {
+			break
+		}
+		skip += limit
 	}
 
-	e.otelRecorder.RecordStuckHeroCount(int64(len(stuckHeroes.Heroes)), chainName)
+	e.otelRecorder.RecordStuckHeroCount(totalStuckHeroes, chainName)
 
 	return nil
 }
