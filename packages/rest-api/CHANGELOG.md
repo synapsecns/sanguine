@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.6.1...@synapsecns/rest-api@1.7.0) (2024-10-21)
+
+
+### Features
+
+* **rest-api:** Chain and token updates ([#3319](https://github.com/synapsecns/sanguine/issues/3319)) ([065315d](https://github.com/synapsecns/sanguine/commit/065315d6994a940dabc7ab06d2b74c650105e41f))
+
+
+
+
+
+## [1.6.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.6.0...@synapsecns/rest-api@1.6.1) (2024-10-20)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
 # [1.6.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.5.0...@synapsecns/rest-api@1.6.0) (2024-10-18)
 
 

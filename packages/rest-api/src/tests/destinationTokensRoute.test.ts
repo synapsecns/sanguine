@@ -3,7 +3,7 @@ import express from 'express'
 
 import destinationTokensRoute from '../routes/destinationTokensRoute'
 import { NativeGasAddress, ZeroAddress } from '../constants'
-import { USDC, USDT } from '../constants/bridgeable'
+import { ONEETH, USDC, USDT } from '../constants/bridgeable'
 
 const app = express()
 app.use('/destinationTokens', destinationTokensRoute)
@@ -61,7 +61,7 @@ describe('destinatonTokens Route', () => {
 
     expect(response.status).toBe(200)
     expect(Array.isArray(response.body)).toBe(true)
-    expect(response.body.length).toBe(5)
+    expect(response.body.length).toBe(6)
     expect(response.body[0]).toHaveProperty('symbol')
     expect(response.body[0]).toHaveProperty('address')
     expect(response.body[0]).toHaveProperty('chainId')
@@ -79,6 +79,17 @@ describe('destinatonTokens Route', () => {
     expect(response.body[0]).toHaveProperty('symbol')
     expect(response.body[0]).toHaveProperty('address')
     expect(response.body[0]).toHaveProperty('chainId')
+  })
+
+  it('should return empty list if there are no destinations', async () => {
+    const response = await request(app).get('/destinationTokens').query({
+      fromChain: '1666600000',
+      fromToken: ONEETH.addresses[1666600000].toLowerCase(),
+    })
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(response.body)).toBe(true)
+    expect(response.body.length).toEqual(0)
   })
 
   it('should return 400 for unsupported fromChain', async () => {
