@@ -180,6 +180,7 @@ type DateResultByChain {
   blast: Float
   scroll: Float
   linea: Float
+  worldchain: Float
   total:  Float
 }
 

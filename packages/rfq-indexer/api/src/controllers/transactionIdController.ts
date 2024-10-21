@@ -1,7 +1,14 @@
 import { Request, Response } from 'express'
 
 import { db } from '../db'
-import { qDeposits, qRelays, qProofs, qClaims, qRefunds, qDisputes } from '../queries'
+import {
+  qDeposits,
+  qRelays,
+  qProofs,
+  qClaims,
+  qRefunds,
+  qDisputes,
+} from '../queries'
 import { nest_results } from '../utils/nestResults'
 
 export const getTransactionById = async (req: Request, res: Response) => {
@@ -18,8 +25,8 @@ export const getTransactionById = async (req: Request, res: Response) => {
         )
       )
       .with('relays', () => qRelays())
-      .with('proofs', () => qProofs({activeOnly: false})) // display proofs even if they have been invalidated/replaced by a dispute
-      .with('disputes', () => qDisputes({activeOnly: true})) // do not show disputes that have been invalidated/replaced by a proof
+      .with('proofs', () => qProofs({ activeOnly: false })) // display proofs even if they have been invalidated/replaced by a dispute
+      .with('disputes', () => qDisputes({ activeOnly: true })) // do not show disputes that have been invalidated/replaced by a proof
       .with('claims', () => qClaims())
       .with('refunds', () => qRefunds())
       .with('combined', (qb) =>
@@ -27,7 +34,11 @@ export const getTransactionById = async (req: Request, res: Response) => {
           .selectFrom('deposits')
           .leftJoin('relays', 'transactionId_deposit', 'transactionId_relay')
           .leftJoin('proofs', 'transactionId_deposit', 'transactionId_proof')
-          .leftJoin('disputes', 'transactionId_deposit', 'transactionId_dispute')
+          .leftJoin(
+            'disputes',
+            'transactionId_deposit',
+            'transactionId_dispute'
+          )
           .leftJoin('claims', 'transactionId_deposit', 'transactionId_claim')
           .leftJoin('refunds', 'transactionId_deposit', 'transactionId_refund')
           .selectAll('deposits')

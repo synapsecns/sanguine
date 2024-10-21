@@ -100,30 +100,31 @@ type ComplexityRoot struct {
 	}
 
 	DateResultByChain struct {
-		Arbitrum  func(childComplexity int) int
-		Aurora    func(childComplexity int) int
-		Avalanche func(childComplexity int) int
-		Base      func(childComplexity int) int
-		Blast     func(childComplexity int) int
-		Boba      func(childComplexity int) int
-		Bsc       func(childComplexity int) int
-		Canto     func(childComplexity int) int
-		Cronos    func(childComplexity int) int
-		Date      func(childComplexity int) int
-		Dfk       func(childComplexity int) int
-		Dogechain func(childComplexity int) int
-		Ethereum  func(childComplexity int) int
-		Fantom    func(childComplexity int) int
-		Harmony   func(childComplexity int) int
-		Klaytn    func(childComplexity int) int
-		Linea     func(childComplexity int) int
-		Metis     func(childComplexity int) int
-		Moonbeam  func(childComplexity int) int
-		Moonriver func(childComplexity int) int
-		Optimism  func(childComplexity int) int
-		Polygon   func(childComplexity int) int
-		Scroll    func(childComplexity int) int
-		Total     func(childComplexity int) int
+		Arbitrum   func(childComplexity int) int
+		Aurora     func(childComplexity int) int
+		Avalanche  func(childComplexity int) int
+		Base       func(childComplexity int) int
+		Blast      func(childComplexity int) int
+		Boba       func(childComplexity int) int
+		Bsc        func(childComplexity int) int
+		Canto      func(childComplexity int) int
+		Cronos     func(childComplexity int) int
+		Date       func(childComplexity int) int
+		Dfk        func(childComplexity int) int
+		Dogechain  func(childComplexity int) int
+		Ethereum   func(childComplexity int) int
+		Fantom     func(childComplexity int) int
+		Harmony    func(childComplexity int) int
+		Klaytn     func(childComplexity int) int
+		Linea      func(childComplexity int) int
+		Metis      func(childComplexity int) int
+		Moonbeam   func(childComplexity int) int
+		Moonriver  func(childComplexity int) int
+		Optimism   func(childComplexity int) int
+		Polygon    func(childComplexity int) int
+		Scroll     func(childComplexity int) int
+		Total      func(childComplexity int) int
+		Worldchain func(childComplexity int) int
 	}
 
 	HeroType struct {
@@ -659,6 +660,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DateResultByChain.Total(childComplexity), true
+
+	case "DateResultByChain.worldchain":
+		if e.complexity.DateResultByChain.Worldchain == nil {
+			break
+		}
+
+		return e.complexity.DateResultByChain.Worldchain(childComplexity), true
 
 	case "HeroType.heroID":
 		if e.complexity.HeroType.HeroID == nil {
@@ -1664,6 +1672,7 @@ type DateResultByChain {
   blast: Float
   scroll: Float
   linea: Float
+  worldchain: Float
   total:  Float
 }
 
@@ -4832,6 +4841,47 @@ func (ec *executionContext) fieldContext_DateResultByChain_linea(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _DateResultByChain_worldchain(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateResultByChain_worldchain(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Worldchain, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DateResultByChain_worldchain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DateResultByChain",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _DateResultByChain_total(ctx context.Context, field graphql.CollectedField, obj *model.DateResultByChain) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_DateResultByChain_total(ctx, field)
 	if err != nil {
@@ -7190,6 +7240,8 @@ func (ec *executionContext) fieldContext_Query_dailyStatisticsByChain(ctx contex
 				return ec.fieldContext_DateResultByChain_scroll(ctx, field)
 			case "linea":
 				return ec.fieldContext_DateResultByChain_linea(ctx, field)
+			case "worldchain":
+				return ec.fieldContext_DateResultByChain_worldchain(ctx, field)
 			case "total":
 				return ec.fieldContext_DateResultByChain_total(ctx, field)
 			}
@@ -10434,6 +10486,8 @@ func (ec *executionContext) _DateResultByChain(ctx context.Context, sel ast.Sele
 			out.Values[i] = ec._DateResultByChain_scroll(ctx, field, obj)
 		case "linea":
 			out.Values[i] = ec._DateResultByChain_linea(ctx, field, obj)
+		case "worldchain":
+			out.Values[i] = ec._DateResultByChain_worldchain(ctx, field, obj)
 		case "total":
 			out.Values[i] = ec._DateResultByChain_total(ctx, field, obj)
 		default:

@@ -10,6 +10,7 @@ export interface BridgeRequestEvents {
   originChainId: ColumnType<number>
   originChain: ColumnType<string>
   sender: ColumnType<string>
+  request: ColumnType<string>
   originToken: ColumnType<string>
   destToken: ColumnType<string>
   originAmount: ColumnType<bigint>
