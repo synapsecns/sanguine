@@ -14,7 +14,7 @@ describe('Index Route', () => {
 
     const keys = Object.keys(response.body)
 
-    expect(keys.length).toBe(63)
+    expect(keys.length).toBe(64)
     expect(response.body['ETH']['addresses']['1']).toBe(
       '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
     )

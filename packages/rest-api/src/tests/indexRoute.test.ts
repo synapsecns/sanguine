@@ -27,6 +27,6 @@ describe('Index Route', () => {
     expect(response.body.availableChains.length).toBe(23)
 
     expect(response.body).toHaveProperty('availableTokens')
-    expect(response.body.availableTokens.length).toBe(63)
+    expect(response.body.availableTokens.length).toBe(64)
   })
 })
