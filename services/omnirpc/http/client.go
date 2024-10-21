@@ -3,6 +3,8 @@ package http
 import (
 	"context"
 	"strings"
+
+	"github.com/synapsecns/sanguine/core/metrics"
 )
 
 // Client contains a post client for interacting with json rpc servers.
@@ -62,14 +64,14 @@ func init() {
 
 // NewClient creates a client from the client type
 // defaults to fast http.
-func NewClient(clientType ClientType) Client {
+func NewClient(handler metrics.Handler, clientType ClientType) Client {
 	switch clientType {
 	case FastHTTP:
-		return NewFastHTTPClient()
+		return NewFastHTTPClient(handler)
 	case Resty:
-		return NewRestyClient()
+		return NewRestyClient(handler)
 	default:
-		return NewRestyClient()
+		return NewRestyClient(handler)
 	}
 }
 
