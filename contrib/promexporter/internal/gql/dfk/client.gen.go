@@ -59,9 +59,10 @@ const StuckHeroesDocument = `query StuckHeroes ($skip: Int, $owner: String) {
 }
 `
 
-func (c *Client) StuckHeroes(ctx context.Context, skip *int64, owner *string, httpRequestOptions ...client.HTTPRequestOption) (*StuckHeroes, error) {
+func (c *Client) StuckHeroes(ctx context.Context, skip *int64, limit *int64, owner *string, httpRequestOptions ...client.HTTPRequestOption) (*StuckHeroes, error) {
 	vars := map[string]interface{}{
 		"skip":  skip,
+		"limit": limit,
 		"owner": owner,
 	}
 
