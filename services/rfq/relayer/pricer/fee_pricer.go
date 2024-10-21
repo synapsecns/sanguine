@@ -124,6 +124,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	return fee, nil
 }
 
+//golint:gosec,cyclop
 func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) (*big.Int, error) {
 	var err error
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getDestinationFee", trace.WithAttributes(
@@ -191,7 +192,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	return fee, nil
 }
 
-// cache so that we don't have to parse the ABI every time
+// cache so that we don't have to parse the ABI every time.
 var recipientABI *abi.ABI
 
 const methodName = "fastBridgeTransferReceived"
