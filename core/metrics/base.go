@@ -43,7 +43,7 @@ type baseHandler struct {
 	tracer      trace.Tracer
 	name        string
 	propagator  propagation.TextMapPropagator
-	// deprecated: will be removed in a future version
+	// Deprecated: will be removed in a future version
 	meter MeterProvider
 	// handler is an integrated handler for everything exported over http. This includes prometheus
 	// or http-based sampling methods for other providers.
