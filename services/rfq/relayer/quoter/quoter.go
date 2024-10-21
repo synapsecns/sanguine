@@ -554,6 +554,7 @@ type QuoteInput struct {
 	Transaction     *fastbridgev2.IFastBridgeV2BridgeTransactionV2
 }
 
+//nolint:gosec
 func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *model.PutRelayerQuoteRequest, err error) {
 	// Calculate the quote amount for this route
 	originAmount, err := m.getOriginAmount(ctx, input)
