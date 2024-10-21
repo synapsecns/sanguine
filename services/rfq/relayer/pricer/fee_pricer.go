@@ -124,7 +124,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	return fee, nil
 }
 
-//nolint:gosec,cyclop,nestif
+//nolint:gosec
 func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) (*big.Int, error) {
 	var err error
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getDestinationFee", trace.WithAttributes(
@@ -160,35 +160,46 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 
 	// If specified, calculate and add the call fee, as well as the call value which will be paid by the relayer
 	if tx != nil {
-		if tx.CallParams != nil {
-			gasEstimate, err := f.getZapGasEstimate(ctx, destination, tx)
-			if err != nil {
-				return nil, err
-			}
-			callFee, err := f.getFee(ctx, destination, destination, int(gasEstimate), denomToken, isQuote)
-			if err != nil {
-				return nil, err
-			}
-			fee = new(big.Int).Add(fee, callFee)
-			span.SetAttributes(attribute.String("call_fee", callFee.String()))
-		}
-
-		if tx.CallValue != nil {
-			callValueFloat := new(big.Float).SetInt(tx.CallValue)
-			valueDenom, err := f.getDenomFee(ctx, destination, destination, denomToken, callValueFloat)
-			if err != nil {
-				return nil, err
-			}
-			valueScaled, err := f.getFeeWithMultiplier(ctx, destination, isQuote, valueDenom)
-			if err != nil {
-				return nil, err
-			}
-			fee = new(big.Int).Add(fee, valueScaled)
-			span.SetAttributes(attribute.String("value_scaled", valueScaled.String()))
+		fee, err = f.addZapFees(ctx, destination, denomToken, isQuote, tx, fee)
+		if err != nil {
+			return nil, err
 		}
 	}
 
 	span.SetAttributes(attribute.String("destination_fee", fee.String()))
+	return fee, nil
+}
+
+func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2, fee *big.Int) (*big.Int, error) {
+	span := trace.SpanFromContext(ctx)
+
+	if tx.CallParams != nil {
+		gasEstimate, err := f.getZapGasEstimate(ctx, destination, tx)
+		if err != nil {
+			return nil, err
+		}
+		callFee, err := f.getFee(ctx, destination, destination, int(gasEstimate), denomToken, isQuote)
+		if err != nil {
+			return nil, err
+		}
+		fee = new(big.Int).Add(fee, callFee)
+		span.SetAttributes(attribute.String("call_fee", callFee.String()))
+	}
+
+	if tx.CallValue != nil {
+		callValueFloat := new(big.Float).SetInt(tx.CallValue)
+		valueDenom, err := f.getDenomFee(ctx, destination, destination, denomToken, callValueFloat)
+		if err != nil {
+			return nil, err
+		}
+		valueScaled, err := f.getFeeWithMultiplier(ctx, destination, isQuote, valueDenom)
+		if err != nil {
+			return nil, err
+		}
+		fee = new(big.Int).Add(fee, valueScaled)
+		span.SetAttributes(attribute.String("value_scaled", valueScaled.String()))
+	}
+
 	return fee, nil
 }
 
@@ -210,7 +221,11 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, t
 		}
 		recipientABI = &parsedABI
 	}
-	encodedData, err := recipientABI.Pack(methodName, tx.DestToken, tx.DestAmount, tx.CallParams)
+	destAmount := tx.DestAmount
+	if destAmount == nil {
+		destAmount = big.NewInt(0)
+	}
+	encodedData, err := recipientABI.Pack(methodName, tx.DestToken, destAmount, tx.CallParams)
 	if err != nil {
 		return 0, fmt.Errorf("could not encode function call: %w", err)
 	}
