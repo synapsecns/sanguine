@@ -241,7 +241,7 @@ func (s *PricerSuite) TestGetTotalFee() {
 	// Calculate the total fee with v2 call value and call params.
 	tx = &fastbridgev2.IFastBridgeV2BridgeTransactionV2{
 		CallValue:  big.NewInt(1 * 1e18),
-		CallParams: []byte{},
+		CallParams: []byte{1},
 		DestAmount: big.NewInt(1 * 1e18),
 	}
 	clientDestination.On(testsuite.GetFunctionName(clientDestination.EstimateGas), mock.Anything, mock.Anything).Once().Return(uint64(1_000_000), nil)
