@@ -318,7 +318,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         }
 
         if (to == address(0)) {
-            // Anyone could claim the funds on behalf of the proven relayer
+            // Anyone could claim the funds to the proven relayer on their behalf
             to = proofRelayer;
         } else if (proofRelayer != msg.sender) {
             // Only the proven relayer could specify an address to claim the funds to
