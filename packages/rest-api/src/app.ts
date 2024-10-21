@@ -14,7 +14,9 @@ app.use(express.json())
 const apiProxyRoutes = [
   {
     route: '/rfq-indexer-api',
-    target: 'https://rfq-indexer-production.up.railway.app/',
+    target:
+      process.env.RFQ_INDEXER_API_URL ||
+      'https://triumphant-magic-production.up.railway.app',
   },
   { route: '/rfq-api', target: 'https://rfq-api.omnirpc.io/' },
 ]
