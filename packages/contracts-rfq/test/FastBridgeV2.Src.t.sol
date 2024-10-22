@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {BridgeTransactionV2Lib} from "../contracts/libs/BridgeTransactionV2.sol";
+import {TokenNotContract} from "../contracts/libs/Errors.sol";
 
 import {FastBridgeV2SrcBaseTest, IFastBridge, IFastBridgeV2} from "./FastBridgeV2.Src.Base.t.sol";
 
@@ -251,6 +252,12 @@ contract FastBridgeV2SrcTest is FastBridgeV2SrcBaseTest {
     function test_bridge_revert_zeroRecipient() public {
         tokenParams.to = address(0);
         vm.expectRevert(ZeroAddress.selector);
+        bridge({caller: userA, msgValue: 0, params: tokenParams});
+    }
+
+    function test_bridge_revert_originTokenNotContract() public {
+        tokenParams.originToken = makeAddr("Random EOA");
+        vm.expectRevert(TokenNotContract.selector);
         bridge({caller: userA, msgValue: 0, params: tokenParams});
     }
 
