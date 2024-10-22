@@ -36,6 +36,8 @@ type PendingProvenModel struct {
 	Origin uint32
 	// RelayerAddress is the address of the relayer that called prove()
 	RelayerAddress string
+	// FastBridgeAddress is the address of the fast bridge contract
+	FastBridgeAddress string
 	// TransactionID is the transaction id of the event
 	TransactionID string `gorm:"column:transaction_id;primaryKey"`
 	// TxHash is the hash of the relay transaction on destination
@@ -49,12 +51,13 @@ type PendingProvenModel struct {
 // FromPendingProven converts a quote request to an object that can be stored in the db.
 func FromPendingProven(proven guarddb.PendingProven) PendingProvenModel {
 	return PendingProvenModel{
-		Origin:         proven.Origin,
-		RelayerAddress: proven.RelayerAddress.Hex(),
-		TransactionID:  hexutil.Encode(proven.TransactionID[:]),
-		TxHash:         proven.TxHash.Hex(),
-		Status:         proven.Status,
-		BlockNumber:    proven.BlockNumber,
+		Origin:            proven.Origin,
+		RelayerAddress:    proven.RelayerAddress.Hex(),
+		FastBridgeAddress: proven.FastBridgeAddress.Hex(),
+		TransactionID:     hexutil.Encode(proven.TransactionID[:]),
+		TxHash:            proven.TxHash.Hex(),
+		Status:            proven.Status,
+		BlockNumber:       proven.BlockNumber,
 	}
 }
 
