@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/contracts-rfq",
   "license": "MIT",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "FastBridge contracts.",
   "private": true,
   "files": [
