@@ -34,8 +34,10 @@ type Config struct {
 
 // ChainConfig represents the configuration for a chain.
 type ChainConfig struct {
-	// Bridge is the rfq bridge contract address.
-	RFQAddress string `yaml:"rfq_address"`
+	// RFQAddressV1 is the rfq bridge contract address.
+	RFQAddressV1 string `yaml:"rfq_address_v1"`
+	// RFQAddressV2 is the rfq bridge contract address.
+	RFQAddressV2 string `yaml:"rfq_address_v2"`
 	// Confirmations is the number of required confirmations.
 	Confirmations uint64 `yaml:"confirmations"`
 }
@@ -83,13 +85,22 @@ func (c Config) GetChains() map[int]ChainConfig {
 	return c.Chains
 }
 
-// GetRFQAddress returns the RFQ address for the given chain.
-func (c Config) GetRFQAddress(chainID int) (string, error) {
+// GetRFQAddressV1 returns the RFQ address for the given chain.
+func (c Config) GetRFQAddressV1(chainID int) (string, error) {
 	chainCfg, ok := c.Chains[chainID]
 	if !ok {
 		return "", fmt.Errorf("chain config not found for chain %d", chainID)
 	}
-	return chainCfg.RFQAddress, nil
+	return chainCfg.RFQAddressV1, nil
+}
+
+// GetRFQAddressV2 returns the RFQ address for the given chain.
+func (c Config) GetRFQAddressV2(chainID int) (string, error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return "", fmt.Errorf("chain config not found for chain %d", chainID)
+	}
+	return chainCfg.RFQAddressV2, nil
 }
 
 const defaultDBSelectorIntervalSeconds = 1
