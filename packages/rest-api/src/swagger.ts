@@ -1,4 +1,6 @@
-import swaggerJsdoc from 'swagger-jsdoc'
+import swaggerUi from 'swagger-ui-express'
+import fs from 'fs'
+import path from 'path'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require('../package.json')
@@ -8,21 +10,12 @@ const serverUrl = isDevelopment
   ? 'http://localhost:3000'
   : 'https://api.synapseprotocol.com'
 
-const options: swaggerJsdoc.Options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Synapse Protocol REST API',
-      version: packageJson.version,
-      description: 'API documentation for the Synapse Protocol REST API',
-    },
-    servers: [
-      {
-        url: serverUrl,
-      },
-    ],
-  },
-  apis: ['./src/routes/*.ts', './src/*.ts'],
-}
+// Load the merged swagger.json
+const swaggerFilePath = path.resolve(__dirname, '../swagger.json')  // Corrected path
+const swaggerDocument = JSON.parse(fs.readFileSync(swaggerFilePath, 'utf8'))
 
-export const specs = swaggerJsdoc(options)
+// Optional: Dynamically update the `servers` field if needed
+swaggerDocument.info.version = packageJson.version
+swaggerDocument.servers = [{ url: serverUrl }]
+
+export const specs = swaggerDocument

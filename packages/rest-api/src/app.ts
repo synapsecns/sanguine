@@ -16,9 +16,7 @@ app.use(express.json())
 const apiProxyRoutes = [
   {
     route: '/rfq-indexer-api',
-    target:
-      process.env.RFQ_INDEXER_API_URL ||
-      'https://triumphant-magic-production.up.railway.app',
+    target: 'https://triumphant-magic-production.up.railway.app',
   },
   { route: '/rfq-api', target: 'https://rfq-api.omnirpc.io/' },
 ]
@@ -101,5 +99,3 @@ process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
 })
 
-const outputPath = path.join(__dirname, 'swagger-output.json')
-fs.writeFileSync(outputPath, JSON.stringify(specs, null, 2), 'utf-8')
