@@ -12,6 +12,7 @@ import (
 // Start starts the command line.
 func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
+
 	app.Name = buildInfo.Name()
 	app.Version = buildInfo.Version()
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())

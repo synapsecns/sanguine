@@ -85,18 +85,24 @@ func NewWithExperimentalLogger(ctx context.Context, logger logger.ExperimentalLo
 	return server
 }
 
+// TODO: this is an anti-pattern and needs to be replaced by an option asap.
+var CorsEnabled = true
+
 func newBase() *gin.Engine {
 	server := gin.New()
 	// required for opentracing.
 	server.ContextWithFallback = true
-	server.Use(helmet.Default())
+
 	server.Use(gin.Recovery())
-	server.Use(cors.New(cors.Config{
-		AllowAllOrigins: true,
-		AllowHeaders:    []string{"*"},
-		AllowMethods:    []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodPatch, http.MethodDelete, http.MethodOptions},
-		MaxAge:          12 * time.Hour,
-	}))
+	if CorsEnabled {
+		server.Use(helmet.Default())
+		server.Use(cors.New(cors.Config{
+			AllowAllOrigins: true,
+			AllowHeaders:    []string{"*"},
+			AllowMethods:    []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodPatch, http.MethodDelete, http.MethodOptions},
+			MaxAge:          12 * time.Hour,
+		}))
+	}
 
 	// configure the request id
 	server.Use(requestid.New(
