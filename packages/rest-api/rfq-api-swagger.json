@@ -1,0 +1,544 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "contact": {},
+    "title": "RFQ API",
+    "version": "1"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/ack": {
+      "put": {
+        "tags": [
+          "ack"
+        ],
+        "summary": "Relay ack",
+        "description": "cache an ack request to synchronize relayer actions.",
+        "requestBody": {
+          "description": "query params",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutRelayerQuoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/bulk_quotes": {
+      "put": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Upsert quotes",
+        "description": "upsert bulk quotes from relayer.",
+        "requestBody": {
+          "description": "query params",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutBulkQuotesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/contracts": {
+      "get": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Get contract addresses",
+        "description": "get quotes from all relayers.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/model.GetContractsResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/open_quote_requests": {
+      "get": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Get open quote requests",
+        "description": "Get all open quote requests that are currently in Received or Pending status.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/model.GetOpenQuoteRequestsResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes": {
+      "get": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Get quotes",
+        "description": "get quotes from all relayers.",
+        "parameters": [
+          {
+            "name": "originChainID",
+            "in": "query",
+            "description": "origin chain id to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "originTokenAddr",
+            "in": "query",
+            "description": "origin chain id to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destChainID",
+            "in": "query",
+            "description": "destination chain id to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "destTokenAddr",
+            "in": "query",
+            "description": "destination token address to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "relayerAddr",
+            "in": "query",
+            "description": "relayer address to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/model.GetQuoteResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Upsert quote",
+        "description": "upsert a quote from relayer.",
+        "requestBody": {
+          "description": "query params",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutRelayerQuoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/rfq": {
+      "put": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Handle user quote request",
+        "description": "Handle user quote request and return the best quote available.",
+        "requestBody": {
+          "description": "User quote request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutRFQRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.PutRFQResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/rfq_stream": {
+      "get": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Handle WebSocket connection for active quote requests",
+        "description": "Establish a WebSocket connection to receive active quote requests.",
+        "responses": {
+          "101": {
+            "description": "Switching Protocols",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "model.GetContractsResponse": {
+        "type": "object",
+        "properties": {
+          "contracts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Contracts is a map of chain id to contract address"
+          }
+        }
+      },
+      "model.GetOpenQuoteRequestsResponse": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "dest_chain_id": {
+            "type": "integer"
+          },
+          "dest_token": {
+            "type": "string"
+          },
+          "expiration_window": {
+            "type": "integer"
+          },
+          "origin_amount": {
+            "type": "string"
+          },
+          "origin_chain_id": {
+            "type": "integer"
+          },
+          "origin_token": {
+            "type": "string"
+          },
+          "user_address": {
+            "type": "string"
+          }
+        }
+      },
+      "model.GetQuoteResponse": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string",
+            "description": "DestAmount is the max amount of liquidity which exists for a given destination token, provided in the destination token decimals"
+          },
+          "dest_chain_id": {
+            "type": "integer",
+            "description": "DestChainID is the chain which the relayer is willing to relay to"
+          },
+          "dest_fast_bridge_address": {
+            "type": "string",
+            "description": "DestFastBridgeAddress is the address of the fast bridge contract on the destination chain"
+          },
+          "dest_token_addr": {
+            "type": "string",
+            "description": "DestToken is the token address for which the relayer willing to relay to"
+          },
+          "fixed_fee": {
+            "type": "string",
+            "description": "FixedFee is the fixed fee for the quote, provided in the destination token terms"
+          },
+          "max_origin_amount": {
+            "type": "string",
+            "description": "MaxOriginAmount is the maximum amount of origin tokens bridgeable"
+          },
+          "origin_chain_id": {
+            "type": "integer",
+            "description": "OriginChainID is the chain which the relayer is willing to relay from"
+          },
+          "origin_fast_bridge_address": {
+            "type": "string",
+            "description": "OriginFastBridgeAddress is the address of the fast bridge contract on the origin chain"
+          },
+          "origin_token_addr": {
+            "type": "string",
+            "description": "OriginTokenAddr is the token address for which the relayer willing to relay from"
+          },
+          "relayer_addr": {
+            "type": "string",
+            "description": "Address of the relayer providing the quote"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "UpdatedAt is the time that the quote was last upserted"
+          }
+        }
+      },
+      "model.PutBulkQuotesRequest": {
+        "type": "object",
+        "properties": {
+          "quotes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.PutRelayerQuoteRequest"
+            }
+          }
+        }
+      },
+      "model.PutRFQRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/model.QuoteData"
+          },
+          "integrator_id": {
+            "type": "string"
+          },
+          "quote_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "user_address": {
+            "type": "string"
+          }
+        }
+      },
+      "model.PutRFQResponse": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string"
+          },
+          "quote_id": {
+            "type": "string"
+          },
+          "quote_type": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "relayer_address": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "model.PutRelayerQuoteRequest": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string"
+          },
+          "dest_chain_id": {
+            "type": "integer"
+          },
+          "dest_fast_bridge_address": {
+            "type": "string"
+          },
+          "dest_token_addr": {
+            "type": "string"
+          },
+          "fixed_fee": {
+            "type": "string"
+          },
+          "max_origin_amount": {
+            "type": "string"
+          },
+          "origin_chain_id": {
+            "type": "integer"
+          },
+          "origin_fast_bridge_address": {
+            "type": "string"
+          },
+          "origin_token_addr": {
+            "type": "string"
+          }
+        }
+      },
+      "model.QuoteData": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string"
+          },
+          "dest_chain_id": {
+            "type": "integer"
+          },
+          "dest_token_addr": {
+            "type": "string"
+          },
+          "expiration_window": {
+            "type": "integer"
+          },
+          "origin_amount": {
+            "type": "string"
+          },
+          "origin_chain_id": {
+            "type": "integer"
+          },
+          "origin_token_addr": {
+            "type": "string"
+          },
+          "quote_id": {
+            "type": "string"
+          },
+          "relayer_address": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "x-original-swagger-version": "2.0"
+}

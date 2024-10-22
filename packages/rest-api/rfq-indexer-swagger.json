@@ -1,0 +1,687 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "RFQ Indexer API",
+    "version": "1.0.00",
+    "description": "API documentation for the RFQ Indexer API"
+  },
+  "servers": [
+    {
+      "url": "https://triumphant-magic-production.up.railway.app/api",
+      "description": "Production Server"
+    },
+    {
+      "url": "http://localhost:3001/api",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/conflicting-proofs": {
+      "get": {
+        "summary": "Get conflicting proofs",
+        "description": "Retrieves a list of transactions where the relayer in the proof differs from the relayer in the relay event",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No conflicting proofs found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disputes": {
+      "get": {
+        "summary": "Get all active disputes",
+        "description": "Retrieves a list of all active disputes",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No disputes found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invalid-relays": {
+      "get": {
+        "summary": "Get recent invalid relays",
+        "description": "Retrieves a list of recent invalid relay events from the past 2 weeks",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No recent invalid relays found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pending-transactions/missing-claim": {
+      "get": {
+        "summary": "Get pending transactions missing claim",
+        "description": "Retrieves a list of transactions that have been deposited, relayed, and proven, but not yet claimed",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactions missing claim found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pending-transactions/missing-proof": {
+      "get": {
+        "summary": "Get pending transactions missing proof",
+        "description": "Retrieves a list of transactions that have been deposited and relayed, but not yet proven",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deposit": {
+                        "type": "object"
+                      },
+                      "relay": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactions missing proof found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pending-transactions/missing-relay": {
+      "get": {
+        "summary": "Get pending transactions missing relay",
+        "description": "Retrieves a list of transactions that have been deposited, but not yet relayed or refunded",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deposit": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactions missing relay found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pending-transactions/exceed-deadline": {
+      "get": {
+        "summary": "Get pending transactions exceed deadline",
+        "description": "Retrieves a list of transactions that have been deposited, but not yet relayed or refunded and have exceeded the deadline",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deposit": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactionst that exceed the deadline found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/refunded-and-relayed": {
+      "get": {
+        "summary": "Get refunded and relayed transactions",
+        "description": "Retrieves a list of transactions that have been both refunded and relayed",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No refunded and relayed transactions found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction-id/{transactionId}": {
+      "get": {
+        "summary": "Get transaction details by ID or the origin transaction hash",
+        "description": "Retrieves detailed information about a transaction, including deposit, relay, proof, claim, and refund data if available",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier of the transaction or the origin transaction hash"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Bridge": {
+                      "type": "object",
+                      "description": "General transaction fields"
+                    },
+                    "BridgeRequest": {
+                      "type": "object",
+                      "description": "Deposit information"
+                    },
+                    "BridgeRelay": {
+                      "type": "object",
+                      "description": "Relay information"
+                    },
+                    "BridgeRefund": {
+                      "type": "object",
+                      "description": "Refund information"
+                    },
+                    "BridgeProof": {
+                      "type": "object",
+                      "description": "Proof information (if available)"
+                    },
+                    "BridgeClaim": {
+                      "type": "object",
+                      "description": "Claim information (if available)"
+                    },
+                    "BridgeDispute": {
+                      "type": "object",
+                      "description": "Dispute information (if available)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": []
+}

@@ -11,960 +11,6 @@
     }
   ],
   "paths": {
-    "swagger": "2.0",
-    "info": {
-      "title": "RFQ Indexer API",
-      "version": "1.0.00",
-      "description": "API documentation for the RFQ Indexer API"
-    },
-    "paths": {
-      "/conflicting-proofs": {
-        "get": {
-          "summary": "Get conflicting proofs",
-          "description": "Retrieves a list of transactions where the relayer in the proof differs from the relayer in the relay event",
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "Bridge": {
-                          "type": "object",
-                          "description": "General transaction fields"
-                        },
-                        "BridgeRequest": {
-                          "type": "object",
-                          "description": "Deposit information"
-                        },
-                        "BridgeRelay": {
-                          "type": "object",
-                          "description": "Relay information"
-                        },
-                        "BridgeRefund": {
-                          "type": "object",
-                          "description": "Refund information"
-                        },
-                        "BridgeProof": {
-                          "type": "object",
-                          "description": "Proof information (if available)"
-                        },
-                        "BridgeClaim": {
-                          "type": "object",
-                          "description": "Claim information (if available)"
-                        },
-                        "BridgeDispute": {
-                          "type": "object",
-                          "description": "Dispute information (if available)"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "No conflicting proofs found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Server error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/disputes": {
-        "get": {
-          "summary": "Get all active disputes",
-          "description": "Retrieves a list of all active disputes",
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "Bridge": {
-                          "type": "object",
-                          "description": "General transaction fields"
-                        },
-                        "BridgeRequest": {
-                          "type": "object",
-                          "description": "Deposit information"
-                        },
-                        "BridgeRelay": {
-                          "type": "object",
-                          "description": "Relay information"
-                        },
-                        "BridgeRefund": {
-                          "type": "object",
-                          "description": "Refund information"
-                        },
-                        "BridgeProof": {
-                          "type": "object",
-                          "description": "Proof information (if available)"
-                        },
-                        "BridgeClaim": {
-                          "type": "object",
-                          "description": "Claim information (if available)"
-                        },
-                        "BridgeDispute": {
-                          "type": "object",
-                          "description": "Dispute information (if available)"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "No disputes found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Server error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/invalid-relays": {
-        "get": {
-          "summary": "Get recent invalid relays",
-          "description": "Retrieves a list of recent invalid relay events from the past 2 weeks",
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "Bridge": {
-                          "type": "object",
-                          "description": "General transaction fields"
-                        },
-                        "BridgeRequest": {
-                          "type": "object",
-                          "description": "Deposit information"
-                        },
-                        "BridgeRelay": {
-                          "type": "object",
-                          "description": "Relay information"
-                        },
-                        "BridgeRefund": {
-                          "type": "object",
-                          "description": "Refund information"
-                        },
-                        "BridgeProof": {
-                          "type": "object",
-                          "description": "Proof information (if available)"
-                        },
-                        "BridgeClaim": {
-                          "type": "object",
-                          "description": "Claim information (if available)"
-                        },
-                        "BridgeDispute": {
-                          "type": "object",
-                          "description": "Dispute information (if available)"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "No recent invalid relays found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Server error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/pending-transactions/missing-claim": {
-        "get": {
-          "summary": "Get pending transactions missing claim",
-          "description": "Retrieves a list of transactions that have been deposited, relayed, and proven, but not yet claimed",
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "Bridge": {
-                          "type": "object",
-                          "description": "General transaction fields"
-                        },
-                        "BridgeRequest": {
-                          "type": "object",
-                          "description": "Deposit information"
-                        },
-                        "BridgeRelay": {
-                          "type": "object",
-                          "description": "Relay information"
-                        },
-                        "BridgeRefund": {
-                          "type": "object",
-                          "description": "Refund information"
-                        },
-                        "BridgeProof": {
-                          "type": "object",
-                          "description": "Proof information (if available)"
-                        },
-                        "BridgeClaim": {
-                          "type": "object",
-                          "description": "Claim information (if available)"
-                        },
-                        "BridgeDispute": {
-                          "type": "object",
-                          "description": "Dispute information (if available)"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "No pending transactions missing claim found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Server error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/pending-transactions/missing-proof": {
-        "get": {
-          "summary": "Get pending transactions missing proof",
-          "description": "Retrieves a list of transactions that have been deposited and relayed, but not yet proven",
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "deposit": {
-                          "type": "object"
-                        },
-                        "relay": {
-                          "type": "object"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "No pending transactions missing proof found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Server error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/pending-transactions/missing-relay": {
-        "get": {
-          "summary": "Get pending transactions missing relay",
-          "description": "Retrieves a list of transactions that have been deposited, but not yet relayed or refunded",
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "deposit": {
-                          "type": "object"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "No pending transactions missing relay found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Server error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/pending-transactions/exceed-deadline": {
-        "get": {
-          "summary": "Get pending transactions exceed deadline",
-          "description": "Retrieves a list of transactions that have been deposited, but not yet relayed or refunded and have exceeded the deadline",
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "deposit": {
-                          "type": "object"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "No pending transactionst that exceed the deadline found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Server error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/refunded-and-relayed": {
-        "get": {
-          "summary": "Get refunded and relayed transactions",
-          "description": "Retrieves a list of transactions that have been both refunded and relayed",
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "Bridge": {
-                          "type": "object",
-                          "description": "General transaction fields"
-                        },
-                        "BridgeRequest": {
-                          "type": "object",
-                          "description": "Deposit information"
-                        },
-                        "BridgeRelay": {
-                          "type": "object",
-                          "description": "Relay information"
-                        },
-                        "BridgeRefund": {
-                          "type": "object",
-                          "description": "Refund information"
-                        },
-                        "BridgeProof": {
-                          "type": "object",
-                          "description": "Proof information (if available)"
-                        },
-                        "BridgeClaim": {
-                          "type": "object",
-                          "description": "Claim information (if available)"
-                        },
-                        "BridgeDispute": {
-                          "type": "object",
-                          "description": "Dispute information (if available)"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "No refunded and relayed transactions found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Server error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/transaction-id/{transactionId}": {
-        "get": {
-          "summary": "Get transaction details by ID or the origin transaction hash",
-          "description": "Retrieves detailed information about a transaction, including deposit, relay, proof, claim, and refund data if available",
-          "parameters": [
-            {
-              "in": "path",
-              "name": "transactionId",
-              "required": true,
-              "schema": {
-                "type": "string"
-              },
-              "description": "The unique identifier of the transaction or the origin transaction hash"
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful response",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "Bridge": {
-                        "type": "object",
-                        "description": "General transaction fields"
-                      },
-                      "BridgeRequest": {
-                        "type": "object",
-                        "description": "Deposit information"
-                      },
-                      "BridgeRelay": {
-                        "type": "object",
-                        "description": "Relay information"
-                      },
-                      "BridgeRefund": {
-                        "type": "object",
-                        "description": "Refund information"
-                      },
-                      "BridgeProof": {
-                        "type": "object",
-                        "description": "Proof information (if available)"
-                      },
-                      "BridgeClaim": {
-                        "type": "object",
-                        "description": "Claim information (if available)"
-                      },
-                      "BridgeDispute": {
-                        "type": "object",
-                        "description": "Dispute information (if available)"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "Transaction not found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Server error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "definitions": {
-      "model.GetContractsResponse": {
-        "type": "object",
-        "properties": {
-          "contracts": {
-            "description": "Contracts is a map of chain id to contract address",
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "model.GetOpenQuoteRequestsResponse": {
-        "type": "object",
-        "properties": {
-          "created_at": {
-            "type": "string"
-          },
-          "dest_chain_id": {
-            "type": "integer"
-          },
-          "dest_token": {
-            "type": "string"
-          },
-          "expiration_window": {
-            "type": "integer"
-          },
-          "origin_amount": {
-            "type": "string"
-          },
-          "origin_chain_id": {
-            "type": "integer"
-          },
-          "origin_token": {
-            "type": "string"
-          },
-          "user_address": {
-            "type": "string"
-          }
-        }
-      },
-      "model.GetQuoteResponse": {
-        "type": "object",
-        "properties": {
-          "dest_amount": {
-            "description": "DestAmount is the max amount of liquidity which exists for a given destination token, provided in the destination token decimals",
-            "type": "string"
-          },
-          "dest_chain_id": {
-            "description": "DestChainID is the chain which the relayer is willing to relay to",
-            "type": "integer"
-          },
-          "dest_fast_bridge_address": {
-            "description": "DestFastBridgeAddress is the address of the fast bridge contract on the destination chain",
-            "type": "string"
-          },
-          "dest_token_addr": {
-            "description": "DestToken is the token address for which the relayer willing to relay to",
-            "type": "string"
-          },
-          "fixed_fee": {
-            "description": "FixedFee is the fixed fee for the quote, provided in the destination token terms",
-            "type": "string"
-          },
-          "max_origin_amount": {
-            "description": "MaxOriginAmount is the maximum amount of origin tokens bridgeable",
-            "type": "string"
-          },
-          "origin_chain_id": {
-            "description": "OriginChainID is the chain which the relayer is willing to relay from",
-            "type": "integer"
-          },
-          "origin_fast_bridge_address": {
-            "description": "OriginFastBridgeAddress is the address of the fast bridge contract on the origin chain",
-            "type": "string"
-          },
-          "origin_token_addr": {
-            "description": "OriginTokenAddr is the token address for which the relayer willing to relay from",
-            "type": "string"
-          },
-          "relayer_addr": {
-            "description": "Address of the relayer providing the quote",
-            "type": "string"
-          },
-          "updated_at": {
-            "description": "UpdatedAt is the time that the quote was last upserted",
-            "type": "string"
-          }
-        }
-      },
-      "model.PutBulkQuotesRequest": {
-        "type": "object",
-        "properties": {
-          "quotes": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "dest_amount": {
-                  "type": "string"
-                },
-                "dest_chain_id": {
-                  "type": "integer"
-                },
-                "dest_fast_bridge_address": {
-                  "type": "string"
-                },
-                "dest_token_addr": {
-                  "type": "string"
-                },
-                "fixed_fee": {
-                  "type": "string"
-                },
-                "max_origin_amount": {
-                  "type": "string"
-                },
-                "origin_chain_id": {
-                  "type": "integer"
-                },
-                "origin_fast_bridge_address": {
-                  "type": "string"
-                },
-                "origin_token_addr": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      },
-      "model.PutRFQRequest": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "object",
-            "properties": {
-              "dest_amount": {
-                "type": "string"
-              },
-              "dest_chain_id": {
-                "type": "integer"
-              },
-              "dest_token_addr": {
-                "type": "string"
-              },
-              "expiration_window": {
-                "type": "integer"
-              },
-              "origin_amount": {
-                "type": "string"
-              },
-              "origin_chain_id": {
-                "type": "integer"
-              },
-              "origin_token_addr": {
-                "type": "string"
-              },
-              "quote_id": {
-                "type": "string"
-              },
-              "relayer_address": {
-                "type": "string"
-              }
-            }
-          },
-          "integrator_id": {
-            "type": "string"
-          },
-          "quote_types": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "user_address": {
-            "type": "string"
-          }
-        }
-      },
-      "model.PutRFQResponse": {
-        "type": "object",
-        "properties": {
-          "dest_amount": {
-            "type": "string"
-          },
-          "quote_id": {
-            "type": "string"
-          },
-          "quote_type": {
-            "type": "string"
-          },
-          "reason": {
-            "type": "string"
-          },
-          "relayer_address": {
-            "type": "string"
-          },
-          "success": {
-            "type": "boolean"
-          }
-        }
-      },
-      "model.PutRelayerQuoteRequest": {
-        "type": "object",
-        "properties": {
-          "dest_amount": {
-            "type": "string"
-          },
-          "dest_chain_id": {
-            "type": "integer"
-          },
-          "dest_fast_bridge_address": {
-            "type": "string"
-          },
-          "dest_token_addr": {
-            "type": "string"
-          },
-          "fixed_fee": {
-            "type": "string"
-          },
-          "max_origin_amount": {
-            "type": "string"
-          },
-          "origin_chain_id": {
-            "type": "integer"
-          },
-          "origin_fast_bridge_address": {
-            "type": "string"
-          },
-          "origin_token_addr": {
-            "type": "string"
-          }
-        }
-      },
-      "model.QuoteData": {
-        "type": "object",
-        "properties": {
-          "dest_amount": {
-            "type": "string"
-          },
-          "dest_chain_id": {
-            "type": "integer"
-          },
-          "dest_token_addr": {
-            "type": "string"
-          },
-          "expiration_window": {
-            "type": "integer"
-          },
-          "origin_amount": {
-            "type": "string"
-          },
-          "origin_chain_id": {
-            "type": "integer"
-          },
-          "origin_token_addr": {
-            "type": "string"
-          },
-          "quote_id": {
-            "type": "string"
-          },
-          "relayer_address": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "openapi": "3.0.0",
-    "servers": [
-      {
-        "url": "https://triumphant-magic-production.up.railway.app/api",
-        "description": "Production Server"
-      },
-      {
-        "url": "http://localhost:3001/api",
-        "description": "Local Development Server"
-      }
-    ],
-    "components": {},
-    "tags": [],
     "/bridgeLimits": {
       "get": {
         "summary": "Get min/max origin values for bridge quote",
@@ -1424,9 +470,7 @@
                         "properties": {
                           "type": {
                             "type": "string",
-                            "enum": [
-                              "BigNumber"
-                            ]
+                            "enum": ["BigNumber"]
                           },
                           "hex": {
                             "type": "string"
@@ -1525,11 +569,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "enum": [
-                "SynapseRFQ",
-                "SynapseBridge",
-                "SynapseCCTP"
-              ]
+              "enum": ["SynapseRFQ", "SynapseBridge", "SynapseCCTP"]
             },
             "description": "The bridge module used for the transaction"
           },
@@ -2344,9 +1384,7 @@
                       "properties": {
                         "type": {
                           "type": "string",
-                          "enum": [
-                            "BigNumber"
-                          ]
+                          "enum": ["BigNumber"]
                         },
                         "hex": {
                           "type": "string"
@@ -2442,11 +1480,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "enum": [
-                "SynapseRFQ",
-                "SynapseBridge",
-                "SynapseCCTP"
-              ]
+              "enum": ["SynapseRFQ", "SynapseBridge", "SynapseCCTP"]
             },
             "description": "The bridge module used for the transaction"
           },
@@ -2658,6 +1692,971 @@
           }
         }
       }
+    },
+    "/conflicting-proofs": {
+      "get": {
+        "summary": "Get conflicting proofs",
+        "description": "Retrieves a list of transactions where the relayer in the proof differs from the relayer in the relay event",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No conflicting proofs found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/disputes": {
+      "get": {
+        "summary": "Get all active disputes",
+        "description": "Retrieves a list of all active disputes",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No disputes found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invalid-relays": {
+      "get": {
+        "summary": "Get recent invalid relays",
+        "description": "Retrieves a list of recent invalid relay events from the past 2 weeks",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No recent invalid relays found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pending-transactions/missing-claim": {
+      "get": {
+        "summary": "Get pending transactions missing claim",
+        "description": "Retrieves a list of transactions that have been deposited, relayed, and proven, but not yet claimed",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactions missing claim found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pending-transactions/missing-proof": {
+      "get": {
+        "summary": "Get pending transactions missing proof",
+        "description": "Retrieves a list of transactions that have been deposited and relayed, but not yet proven",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deposit": {
+                        "type": "object"
+                      },
+                      "relay": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactions missing proof found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pending-transactions/missing-relay": {
+      "get": {
+        "summary": "Get pending transactions missing relay",
+        "description": "Retrieves a list of transactions that have been deposited, but not yet relayed or refunded",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deposit": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactions missing relay found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pending-transactions/exceed-deadline": {
+      "get": {
+        "summary": "Get pending transactions exceed deadline",
+        "description": "Retrieves a list of transactions that have been deposited, but not yet relayed or refunded and have exceeded the deadline",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deposit": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No pending transactionst that exceed the deadline found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/refunded-and-relayed": {
+      "get": {
+        "summary": "Get refunded and relayed transactions",
+        "description": "Retrieves a list of transactions that have been both refunded and relayed",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Bridge": {
+                        "type": "object",
+                        "description": "General transaction fields"
+                      },
+                      "BridgeRequest": {
+                        "type": "object",
+                        "description": "Deposit information"
+                      },
+                      "BridgeRelay": {
+                        "type": "object",
+                        "description": "Relay information"
+                      },
+                      "BridgeRefund": {
+                        "type": "object",
+                        "description": "Refund information"
+                      },
+                      "BridgeProof": {
+                        "type": "object",
+                        "description": "Proof information (if available)"
+                      },
+                      "BridgeClaim": {
+                        "type": "object",
+                        "description": "Claim information (if available)"
+                      },
+                      "BridgeDispute": {
+                        "type": "object",
+                        "description": "Dispute information (if available)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No refunded and relayed transactions found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction-id/{transactionId}": {
+      "get": {
+        "summary": "Get transaction details by ID or the origin transaction hash",
+        "description": "Retrieves detailed information about a transaction, including deposit, relay, proof, claim, and refund data if available",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier of the transaction or the origin transaction hash"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Bridge": {
+                      "type": "object",
+                      "description": "General transaction fields"
+                    },
+                    "BridgeRequest": {
+                      "type": "object",
+                      "description": "Deposit information"
+                    },
+                    "BridgeRelay": {
+                      "type": "object",
+                      "description": "Relay information"
+                    },
+                    "BridgeRefund": {
+                      "type": "object",
+                      "description": "Refund information"
+                    },
+                    "BridgeProof": {
+                      "type": "object",
+                      "description": "Proof information (if available)"
+                    },
+                    "BridgeClaim": {
+                      "type": "object",
+                      "description": "Claim information (if available)"
+                    },
+                    "BridgeDispute": {
+                      "type": "object",
+                      "description": "Dispute information (if available)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ack": {
+      "put": {
+        "tags": ["ack"],
+        "summary": "Relay ack",
+        "description": "cache an ack request to synchronize relayer actions.",
+        "requestBody": {
+          "description": "query params",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutRelayerQuoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/bulk_quotes": {
+      "put": {
+        "tags": ["quotes"],
+        "summary": "Upsert quotes",
+        "description": "upsert bulk quotes from relayer.",
+        "requestBody": {
+          "description": "query params",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutBulkQuotesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/contracts": {
+      "get": {
+        "tags": ["quotes"],
+        "summary": "Get contract addresses",
+        "description": "get quotes from all relayers.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/model.GetContractsResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/open_quote_requests": {
+      "get": {
+        "tags": ["quotes"],
+        "summary": "Get open quote requests",
+        "description": "Get all open quote requests that are currently in Received or Pending status.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/model.GetOpenQuoteRequestsResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes": {
+      "get": {
+        "tags": ["quotes"],
+        "summary": "Get quotes",
+        "description": "get quotes from all relayers.",
+        "parameters": [
+          {
+            "name": "originChainID",
+            "in": "query",
+            "description": "origin chain id to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "originTokenAddr",
+            "in": "query",
+            "description": "origin chain id to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destChainID",
+            "in": "query",
+            "description": "destination chain id to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "destTokenAddr",
+            "in": "query",
+            "description": "destination token address to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "relayerAddr",
+            "in": "query",
+            "description": "relayer address to filter quotes by",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/model.GetQuoteResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["quotes"],
+        "summary": "Upsert quote",
+        "description": "upsert a quote from relayer.",
+        "requestBody": {
+          "description": "query params",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutRelayerQuoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/rfq": {
+      "put": {
+        "tags": ["quotes"],
+        "summary": "Handle user quote request",
+        "description": "Handle user quote request and return the best quote available.",
+        "requestBody": {
+          "description": "User quote request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/model.PutRFQRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/model.PutRFQResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/rfq_stream": {
+      "get": {
+        "tags": ["quotes"],
+        "summary": "Handle WebSocket connection for active quote requests",
+        "description": "Establish a WebSocket connection to receive active quote requests.",
+        "responses": {
+          "101": {
+            "description": "Switching Protocols",
+            "headers": {
+              "X-Api-Version": {
+                "description": "API Version Number - See docs for more info",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2667,11 +2666,217 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": [
-              "BigNumber"
-            ]
+            "enum": ["BigNumber"]
           },
           "hex": {
+            "type": "string"
+          }
+        }
+      },
+      "model.GetContractsResponse": {
+        "type": "object",
+        "properties": {
+          "contracts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Contracts is a map of chain id to contract address"
+          }
+        }
+      },
+      "model.GetOpenQuoteRequestsResponse": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "dest_chain_id": {
+            "type": "integer"
+          },
+          "dest_token": {
+            "type": "string"
+          },
+          "expiration_window": {
+            "type": "integer"
+          },
+          "origin_amount": {
+            "type": "string"
+          },
+          "origin_chain_id": {
+            "type": "integer"
+          },
+          "origin_token": {
+            "type": "string"
+          },
+          "user_address": {
+            "type": "string"
+          }
+        }
+      },
+      "model.GetQuoteResponse": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string",
+            "description": "DestAmount is the max amount of liquidity which exists for a given destination token, provided in the destination token decimals"
+          },
+          "dest_chain_id": {
+            "type": "integer",
+            "description": "DestChainID is the chain which the relayer is willing to relay to"
+          },
+          "dest_fast_bridge_address": {
+            "type": "string",
+            "description": "DestFastBridgeAddress is the address of the fast bridge contract on the destination chain"
+          },
+          "dest_token_addr": {
+            "type": "string",
+            "description": "DestToken is the token address for which the relayer willing to relay to"
+          },
+          "fixed_fee": {
+            "type": "string",
+            "description": "FixedFee is the fixed fee for the quote, provided in the destination token terms"
+          },
+          "max_origin_amount": {
+            "type": "string",
+            "description": "MaxOriginAmount is the maximum amount of origin tokens bridgeable"
+          },
+          "origin_chain_id": {
+            "type": "integer",
+            "description": "OriginChainID is the chain which the relayer is willing to relay from"
+          },
+          "origin_fast_bridge_address": {
+            "type": "string",
+            "description": "OriginFastBridgeAddress is the address of the fast bridge contract on the origin chain"
+          },
+          "origin_token_addr": {
+            "type": "string",
+            "description": "OriginTokenAddr is the token address for which the relayer willing to relay from"
+          },
+          "relayer_addr": {
+            "type": "string",
+            "description": "Address of the relayer providing the quote"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "UpdatedAt is the time that the quote was last upserted"
+          }
+        }
+      },
+      "model.PutBulkQuotesRequest": {
+        "type": "object",
+        "properties": {
+          "quotes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/model.PutRelayerQuoteRequest"
+            }
+          }
+        }
+      },
+      "model.PutRFQRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/model.QuoteData"
+          },
+          "integrator_id": {
+            "type": "string"
+          },
+          "quote_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "user_address": {
+            "type": "string"
+          }
+        }
+      },
+      "model.PutRFQResponse": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string"
+          },
+          "quote_id": {
+            "type": "string"
+          },
+          "quote_type": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "relayer_address": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "model.PutRelayerQuoteRequest": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string"
+          },
+          "dest_chain_id": {
+            "type": "integer"
+          },
+          "dest_fast_bridge_address": {
+            "type": "string"
+          },
+          "dest_token_addr": {
+            "type": "string"
+          },
+          "fixed_fee": {
+            "type": "string"
+          },
+          "max_origin_amount": {
+            "type": "string"
+          },
+          "origin_chain_id": {
+            "type": "integer"
+          },
+          "origin_fast_bridge_address": {
+            "type": "string"
+          },
+          "origin_token_addr": {
+            "type": "string"
+          }
+        }
+      },
+      "model.QuoteData": {
+        "type": "object",
+        "properties": {
+          "dest_amount": {
+            "type": "string"
+          },
+          "dest_chain_id": {
+            "type": "integer"
+          },
+          "dest_token_addr": {
+            "type": "string"
+          },
+          "expiration_window": {
+            "type": "integer"
+          },
+          "origin_amount": {
+            "type": "string"
+          },
+          "origin_chain_id": {
+            "type": "integer"
+          },
+          "origin_token_addr": {
+            "type": "string"
+          },
+          "quote_id": {
+            "type": "string"
+          },
+          "relayer_address": {
             "type": "string"
           }
         }
