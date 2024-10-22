@@ -71,7 +71,7 @@
     "babel-jest": "^25.2.6",
     "big.js": "^5.2.2",
     "decimal.js-light": "^2.5.1",
-    "ethers": "^5.7.2",
+    "ethers": "^6.0.0",
     "jest": "^29.7.0",
     "jsbi": "^4.3.0",
     "node-cache": "^5.1.2",
