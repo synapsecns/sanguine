@@ -557,9 +557,9 @@ func (r *QuoterAPIServer) PutRFQRequest(c *gin.Context) {
 			Reason:  "no quotes found",
 		}
 	} else {
-		quoteType := quoteTypeActive
-		if activeQuote == nil {
-			quoteType = quoteTypePassive
+		quoteType := quoteTypePassive
+		if quote.QuoteID == activeQuote.QuoteID {
+			quoteType = quoteTypeActive
 		}
 		span.SetAttributes(
 			attribute.String("quote_type", quoteType),
