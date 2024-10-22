@@ -8,6 +8,7 @@ interface IFastBridgeV2Errors {
     error MsgValueIncorrect();
     error SenderIncorrect();
     error StatusIncorrect();
+    error TokenNotContract();
     error ZapDataLengthAboveMax();
     error ZapNativeNotSupported();
     error ZeroAddress();

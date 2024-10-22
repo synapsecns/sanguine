@@ -5,7 +5,6 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 import {BridgeTransactionV2Lib} from "./libs/BridgeTransactionV2.sol";
-import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 
 import {Admin} from "./Admin.sol";
 import {IFastBridge} from "./interfaces/IFastBridge.sol";
@@ -17,7 +16,6 @@ import {IZapRecipient} from "./interfaces/IZapRecipient.sol";
 contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
     using BridgeTransactionV2Lib for bytes;
     using SafeERC20 for IERC20;
-    using UniversalTokenLib for address;
 
     /// @notice Address reserved for native gas token (ETH on Ethereum and most L2s, AVAX on Avalanche, etc)
     address public constant NATIVE_GAS_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
@@ -389,8 +387,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
         } else {
             // For ERC20s, token is explicitly transferred from the user to FastBridgeV2.
             // We don't allow non-zero `msg.value` to avoid extra funds from being stuck in FastBridgeV2.
-            token.assertIsContract();
             if (msg.value != 0) revert MsgValueIncorrect();
+            // Throw an explicit error if the provided token address is not a contract
+            if (token.code.length == 0) revert TokenNotContract();
             amountTaken = IERC20(token).balanceOf(address(this));
             IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
             // Use the balance difference as the amount taken in case of fee on transfer tokens.
