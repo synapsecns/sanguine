@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/guard/guarddb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -77,12 +78,13 @@ func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbri
 	}()
 
 	proven := guarddb.PendingProven{
-		Origin:         uint32(chainID),
-		RelayerAddress: event.Relayer,
-		TransactionID:  event.TransactionId,
-		TxHash:         event.TransactionHash,
-		Status:         guarddb.ProveCalled,
-		BlockNumber:    event.Raw.BlockNumber,
+		Origin:            uint32(chainID),
+		RelayerAddress:    event.Relayer,
+		FastBridgeAddress: event.Raw.Address,
+		TransactionID:     event.TransactionId,
+		TxHash:            event.TransactionHash,
+		Status:            guarddb.ProveCalled,
+		BlockNumber:       event.Raw.BlockNumber,
 	}
 	err = g.db.StorePendingProven(ctx, proven)
 	if err != nil {
@@ -147,9 +149,9 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 		}
 	} else {
 		// trigger dispute
-		contract, ok := g.contracts[int(bridgeRequest.Transaction.OriginChainId)]
-		if !ok {
-			return fmt.Errorf("could not get contract for chain: %d", bridgeRequest.Transaction.OriginChainId)
+		contract, err := g.getContract(int(bridgeRequest.Transaction.OriginChainId), proven.FastBridgeAddress)
+		if err != nil {
+			return fmt.Errorf("could not get contract: %w", err)
 		}
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(bridgeRequest.Transaction.OriginChainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 			tx, err = contract.Dispute(transactor, proven.TransactionID)
@@ -175,8 +177,6 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 
 //nolint:cyclop
 func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest) (bool, error) {
-	span := trace.SpanFromContext(ctx)
-
 	// get the receipt for this tx on dest chain
 	chainClient, err := g.client.GetChainClient(ctx, int(bridgeRequest.Transaction.DestChainId))
 	if err != nil {
@@ -190,9 +190,29 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 	if err != nil {
 		return false, fmt.Errorf("could not get receipt: %w", err)
 	}
-	rfqAddr, err := g.cfg.GetRFQAddress(int(bridgeRequest.Transaction.DestChainId))
+
+	var valid bool
+	if g.isV2Address(int(bridgeRequest.Transaction.DestChainId), proven.FastBridgeAddress) {
+		valid, err = g.isProveValidV2(ctx, proven, bridgeRequest, receipt)
+		if err != nil {
+			return false, fmt.Errorf("could not check prove validity v2: %w", err)
+		}
+	} else {
+		valid, err = g.isProveValidV1(ctx, proven, bridgeRequest, receipt)
+		if err != nil {
+			return false, fmt.Errorf("could not check prove validity v1: %w", err)
+		}
+	}
+
+	return valid, nil
+}
+
+func (g *Guard) isProveValidV1(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest, receipt *types.Receipt) (bool, error) {
+	span := trace.SpanFromContext(ctx)
+
+	rfqAddr, err := g.cfg.GetRFQAddressV1(int(bridgeRequest.Transaction.DestChainId))
 	if err != nil {
-		return false, fmt.Errorf("could not get rfq address: %w", err)
+		return false, fmt.Errorf("could not get rfq address v1: %w", err)
 	}
 	parser, err := fastbridge.NewParser(common.HexToAddress(rfqAddr))
 	if err != nil {
@@ -221,33 +241,101 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 			continue
 		}
 
-		return relayMatchesBridgeRequest(event, bridgeRequest), nil
+		details := relayDetails{
+			TransactionID: event.TransactionId,
+			OriginAmount:  event.OriginAmount,
+			DestAmount:    event.DestAmount,
+			OriginChainID: event.OriginChainId,
+			To:            event.OriginToken,
+			DestToken:     event.DestToken,
+		}
+
+		return relayMatchesBridgeRequest(details, bridgeRequest), nil
 	}
 
 	return false, nil
 }
 
-func relayMatchesBridgeRequest(event *fastbridge.FastBridgeBridgeRelayed, bridgeRequest *guarddb.BridgeRequest) bool {
+func (g *Guard) isProveValidV2(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest, receipt *types.Receipt) (bool, error) {
+	span := trace.SpanFromContext(ctx)
+
+	rfqAddr, err := g.cfg.GetRFQAddressV2(int(bridgeRequest.Transaction.DestChainId))
+	if err != nil {
+		return false, fmt.Errorf("could not get rfq address v2: %w", err)
+	}
+	parser, err := fastbridge.NewParser(common.HexToAddress(rfqAddr))
+	if err != nil {
+		return false, fmt.Errorf("could not get parser: %w", err)
+	}
+
+	for _, log := range receipt.Logs {
+		_, parsedEvent, ok := parser.ParseEvent(*log)
+		if !ok {
+			continue
+		}
+
+		if log.Address != common.HexToAddress(rfqAddr) {
+			span.AddEvent(fmt.Sprintf("log address %s does not match rfq address %s", log.Address.Hex(), rfqAddr))
+			continue
+		}
+
+		event, ok := parsedEvent.(*fastbridgev2.FastBridgeV2BridgeRelayed)
+		if !ok {
+			span.AddEvent("event is not a BridgeRelayed event")
+			continue
+		}
+
+		if event.Relayer != proven.RelayerAddress {
+			span.AddEvent(fmt.Sprintf("relayer address %s does not match prover address %s", event.Relayer.Hex(), proven.RelayerAddress.Hex()))
+			continue
+		}
+
+		details := relayDetails{
+			TransactionID: event.TransactionId,
+			OriginAmount:  event.OriginAmount,
+			DestAmount:    event.DestAmount,
+			OriginChainID: event.OriginChainId,
+			To:            event.OriginToken,
+			DestToken:     event.DestToken,
+		}
+
+		return relayMatchesBridgeRequest(details, bridgeRequest), nil
+	}
+
+	return false, nil
+}
+
+type relayDetails struct {
+	TransactionID [32]byte
+	OriginAmount  *big.Int
+	DestAmount    *big.Int
+	OriginChainID uint32
+	To            common.Address
+	OriginToken   common.Address
+	DestToken     common.Address
+}
+
+func relayMatchesBridgeRequest(details relayDetails, bridgeRequest *guarddb.BridgeRequest) bool {
 	// TODO: is this exhaustive?
-	if event.TransactionId != bridgeRequest.TransactionID {
+	if details.TransactionID != bridgeRequest.TransactionID {
 		return false
 	}
-	if event.OriginAmount.Cmp(bridgeRequest.Transaction.OriginAmount) != 0 {
+	if details.OriginAmount.Cmp(bridgeRequest.Transaction.OriginAmount) != 0 {
 		return false
 	}
-	if event.DestAmount.Cmp(bridgeRequest.Transaction.DestAmount) != 0 {
+	if details.DestAmount.Cmp(bridgeRequest.Transaction.DestAmount) != 0 {
 		return false
 	}
-	if event.OriginChainId != bridgeRequest.Transaction.OriginChainId {
+	if details.OriginChainID != bridgeRequest.Transaction.OriginChainId {
 		return false
 	}
-	if event.To != bridgeRequest.Transaction.DestRecipient {
+	if details.To != bridgeRequest.Transaction.DestRecipient {
 		return false
 	}
-	if event.OriginToken != bridgeRequest.Transaction.OriginToken {
+	if details.OriginToken != bridgeRequest.Transaction.OriginToken {
 		return false
 	}
-	if event.DestToken != bridgeRequest.Transaction.DestToken {
+	if details.DestToken != bridgeRequest.Transaction.DestToken {
 		return false
 	}
 	return true
