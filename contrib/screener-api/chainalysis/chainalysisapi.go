@@ -89,7 +89,13 @@ func (c *clientImpl) ScreenAddress(parentCtx context.Context, address string) (b
 		}
 	}()
 
-	return c.checkBlacklist(ctx, address)
+	result, err := c.checkBlacklist(ctx, address)
+	// timeout hotfix
+	if err != nil && errors.Is(err, errCouldNotGetResponse) {
+		return false, nil
+	}
+
+	return result, err
 }
 
 // pessimisticRegister registers an address if its not in memory cache. This happens regardless it was registered before.
@@ -101,6 +107,8 @@ func (c *clientImpl) pessimisticRegister(ctx context.Context, address string) er
 	}
 	return nil
 }
+
+var errCouldNotGetResponse = errors.New("could not get response")
 
 func (c *clientImpl) checkBlacklist(ctx context.Context, address string) (bool, error) {
 	var resp *resty.Response
@@ -115,13 +123,16 @@ func (c *clientImpl) checkBlacklist(ctx context.Context, address string) (bool, 
 				return fmt.Errorf("could not get response: %w", err)
 			}
 
+			fmt.Println(string(resp.Body()))
+
 			if resp.StatusCode() != http.StatusOK {
 				return fmt.Errorf("could not get response: %s", resp.Status())
 			}
+
 			return nil
-		}, retry.WithMax(time.Second))
+		}, retry.WithMax(time.Second), retry.WithMaxTotalTime(time.Second*10))
 	if err != nil {
-		return false, fmt.Errorf("could not get response: %w", err)
+		return false, errCouldNotGetResponse
 	}
 
 	// address has been registered and retrieved, let's screen it and cache whether it is risky or not.
