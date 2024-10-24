@@ -74,12 +74,13 @@ func (p PendingProvenModel) ToPendingProven() (*guarddb.PendingProven, error) {
 	}
 
 	return &guarddb.PendingProven{
-		Origin:         p.Origin,
-		RelayerAddress: common.HexToAddress(p.RelayerAddress),
-		TransactionID:  transactionID,
-		TxHash:         common.HexToHash(p.TxHash),
-		Status:         p.Status,
-		BlockNumber:    p.BlockNumber,
+		Origin:            p.Origin,
+		RelayerAddress:    common.HexToAddress(p.RelayerAddress),
+		FastBridgeAddress: common.HexToAddress(p.FastBridgeAddress),
+		TransactionID:     transactionID,
+		TxHash:            common.HexToHash(p.TxHash),
+		Status:            p.Status,
+		BlockNumber:       p.BlockNumber,
 	}, nil
 }
 

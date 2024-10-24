@@ -273,7 +273,7 @@ func (g Guard) runChainIndexerV1(ctx context.Context, chainID int) (err error) {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeProofProvided:
-			err = g.handleProofProvidedLog(ctx, event, chainID)
+			err = g.handleProofProvidedLog(ctx, event, chainID, log.Address)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
@@ -341,13 +341,24 @@ func (g Guard) runChainIndexerV2(ctx context.Context, chainID int) (err error) {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
 		// following events match ABIs exactly, so no need to differentiate
-		case *fastbridge.FastBridgeBridgeProofProvided:
-			err = g.handleProofProvidedLog(ctx, event, chainID)
+		case *fastbridgev2.FastBridgeV2BridgeProofProvided:
+			v1Event := &fastbridge.FastBridgeBridgeProofProvided{
+				TransactionId:   event.TransactionId,
+				Relayer:         event.Relayer,
+				TransactionHash: event.TransactionHash,
+				Raw:             event.Raw,
+			}
+			err = g.handleProofProvidedLog(ctx, v1Event, chainID, log.Address)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
-		case *fastbridge.FastBridgeBridgeProofDisputed:
-			err = g.handleProofDisputedLog(ctx, event)
+		case *fastbridgev2.FastBridgeV2BridgeProofDisputed:
+			v1Event := &fastbridge.FastBridgeBridgeProofDisputed{
+				TransactionId: event.TransactionId,
+				Relayer:       event.Relayer,
+				Raw:           event.Raw,
+			}
+			err = g.handleProofDisputedLog(ctx, v1Event)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
