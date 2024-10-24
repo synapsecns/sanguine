@@ -10,7 +10,6 @@ contract FastBridgeV2SrcFBRouterV2Test is FastBridgeV2SrcTest {
     address public router;
 
     error FastBridgeRouterV2__OriginSenderNotSpecified();
-    error TokenNotContract();
 
     function setUp() public virtual override {
         super.setUp();
