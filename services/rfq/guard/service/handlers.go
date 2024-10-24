@@ -149,18 +149,11 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 		}
 	} else {
 		// trigger dispute
-		contract, err := g.getContract(int(bridgeRequest.Transaction.OriginChainId), proven.FastBridgeAddress)
-		if err != nil {
-			return fmt.Errorf("could not get contract: %w", err)
+		if g.isV2Address(int(bridgeRequest.Transaction.OriginChainId), proven.FastBridgeAddress) {
+			err = g.disputeV2(ctx, proven, bridgeRequest)
+		} else {
+			err = g.disputeV1(ctx, proven, bridgeRequest)
 		}
-		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(bridgeRequest.Transaction.OriginChainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-			tx, err = contract.Dispute(transactor, proven.TransactionID)
-			if err != nil {
-				return nil, fmt.Errorf("could not dispute: %w", err)
-			}
-
-			return tx, nil
-		})
 		if err != nil {
 			return fmt.Errorf("could not dispute: %w", err)
 		}
@@ -170,6 +163,46 @@ func (g *Guard) handleProveCalled(parentCtx context.Context, proven *guarddb.Pen
 		if err != nil {
 			return fmt.Errorf("could not update pending proven status: %w", err)
 		}
+	}
+
+	return nil
+}
+
+func (g *Guard) disputeV1(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest) error {
+	contract, ok := g.contractsV1[int(bridgeRequest.Transaction.OriginChainId)]
+	if !ok {
+		return errors.New("could not get contract")
+	}
+	_, err := g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(bridgeRequest.Transaction.OriginChainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		tx, err = contract.Dispute(transactor, proven.TransactionID)
+		if err != nil {
+			return nil, fmt.Errorf("could not dispute: %w", err)
+		}
+
+		return tx, nil
+	})
+	if err != nil {
+		return fmt.Errorf("could not dispute: %w", err)
+	}
+
+	return nil
+}
+
+func (g *Guard) disputeV2(ctx context.Context, proven *guarddb.PendingProven, bridgeRequest *guarddb.BridgeRequest) error {
+	contract, ok := g.contractsV2[int(bridgeRequest.Transaction.OriginChainId)]
+	if !ok {
+		return errors.New("could not get contract")
+	}
+	_, err := g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(bridgeRequest.Transaction.OriginChainId)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		tx, err = contract.Dispute(transactor, proven.TransactionID)
+		if err != nil {
+			return nil, fmt.Errorf("could not dispute: %w", err)
+		}
+
+		return tx, nil
+	})
+	if err != nil {
+		return fmt.Errorf("could not dispute: %w", err)
 	}
 
 	return nil
@@ -214,7 +247,10 @@ func (g *Guard) isProveValidV1(ctx context.Context, proven *guarddb.PendingProve
 	if err != nil {
 		return false, fmt.Errorf("could not get rfq address v1: %w", err)
 	}
-	parser, err := fastbridge.NewParser(common.HexToAddress(rfqAddr))
+	if rfqAddr == nil {
+		return false, errors.New("rfq address v1 is nil")
+	}
+	parser, err := fastbridge.NewParser(common.HexToAddress(*rfqAddr))
 	if err != nil {
 		return false, fmt.Errorf("could not get parser: %w", err)
 	}
@@ -225,8 +261,8 @@ func (g *Guard) isProveValidV1(ctx context.Context, proven *guarddb.PendingProve
 			continue
 		}
 
-		if log.Address != common.HexToAddress(rfqAddr) {
-			span.AddEvent(fmt.Sprintf("log address %s does not match rfq address %s", log.Address.Hex(), rfqAddr))
+		if log.Address != common.HexToAddress(*rfqAddr) {
+			span.AddEvent(fmt.Sprintf("log address %s does not match rfq address %s", log.Address.Hex(), *rfqAddr))
 			continue
 		}
 
