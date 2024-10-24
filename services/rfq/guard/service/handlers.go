@@ -67,7 +67,7 @@ func (g *Guard) handleBridgeRequestedLog(parentCtx context.Context, req *fastbri
 	return nil
 }
 
-func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbridge.FastBridgeBridgeProofProvided, chainID int, contractAddr common.Address) (err error) {
+func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbridge.FastBridgeBridgeProofProvided, chainID int) (err error) {
 	ctx, span := g.metrics.Tracer().Start(parentCtx, "handleProofProvidedLog-guard", trace.WithAttributes(
 		attribute.Int(metrics.Origin, chainID),
 		attribute.String("transaction_id", hexutil.Encode(event.TransactionId[:])),
@@ -80,7 +80,7 @@ func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbri
 	proven := guarddb.PendingProven{
 		Origin:            uint32(chainID),
 		RelayerAddress:    event.Relayer,
-		FastBridgeAddress: contractAddr,
+		FastBridgeAddress: event.Raw.Address,
 		TransactionID:     event.TransactionId,
 		TxHash:            event.TransactionHash,
 		Status:            guarddb.ProveCalled,

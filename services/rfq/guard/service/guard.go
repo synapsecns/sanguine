@@ -273,7 +273,7 @@ func (g Guard) runChainIndexerV1(ctx context.Context, chainID int) (err error) {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
 		case *fastbridge.FastBridgeBridgeProofProvided:
-			err = g.handleProofProvidedLog(ctx, event, chainID, log.Address)
+			err = g.handleProofProvidedLog(ctx, event, chainID)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
@@ -348,7 +348,7 @@ func (g Guard) runChainIndexerV2(ctx context.Context, chainID int) (err error) {
 				TransactionHash: event.TransactionHash,
 				Raw:             event.Raw,
 			}
-			err = g.handleProofProvidedLog(ctx, v1Event, chainID, log.Address)
+			err = g.handleProofProvidedLog(ctx, v1Event, chainID)
 			if err != nil {
 				return fmt.Errorf("could not handle request: %w", err)
 			}
