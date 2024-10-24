@@ -336,6 +336,22 @@ func (b *Bot) rfqRefund() *slacker.CommandDefinition {
 				return
 			}
 
+			isRelayed, err := fastBridgeContract.BridgeRelays(nil, [32]byte(common.Hex2Bytes(rawRequest.TxID)))
+			if err != nil {
+				_, err := ctx.Response().Reply("error fetching bridge relays")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+			if isRelayed {
+				_, err := ctx.Response().Reply("transaction has already been relayed")
+				if err != nil {
+					log.Println(err)
+				}
+				return
+			}
+
 			nonce, err := b.submitter.SubmitTransaction(ctx.Context(), big.NewInt(int64(rawRequest.OriginChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 				tx, err = fastBridgeContract.Refund(transactor, common.Hex2Bytes(rawRequest.QuoteRequestRaw))
 				if err != nil {
