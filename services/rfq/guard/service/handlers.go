@@ -226,7 +226,7 @@ func (g *Guard) isProveValid(ctx context.Context, proven *guarddb.PendingProven,
 	}
 
 	var valid bool
-	if g.isV2Address(int(bridgeRequest.Transaction.DestChainId), proven.FastBridgeAddress) {
+	if g.isV2Address(int(bridgeRequest.Transaction.OriginChainId), proven.FastBridgeAddress) {
 		valid, err = g.isProveValidV2(ctx, proven, bridgeRequest, receipt)
 		if err != nil {
 			return false, fmt.Errorf("could not check prove validity v2: %w", err)
@@ -283,7 +283,8 @@ func (g *Guard) isProveValidV1(ctx context.Context, proven *guarddb.PendingProve
 			OriginAmount:  event.OriginAmount,
 			DestAmount:    event.DestAmount,
 			OriginChainID: event.OriginChainId,
-			To:            event.OriginToken,
+			To:            event.To,
+			OriginToken:   event.OriginToken,
 			DestToken:     event.DestToken,
 		}
 
@@ -300,7 +301,7 @@ func (g *Guard) isProveValidV2(ctx context.Context, proven *guarddb.PendingProve
 	if err != nil {
 		return false, fmt.Errorf("could not get rfq address v2: %w", err)
 	}
-	parser, err := fastbridge.NewParser(common.HexToAddress(rfqAddr))
+	parser, err := fastbridgev2.NewParser(common.HexToAddress(rfqAddr))
 	if err != nil {
 		return false, fmt.Errorf("could not get parser: %w", err)
 	}
@@ -332,7 +333,8 @@ func (g *Guard) isProveValidV2(ctx context.Context, proven *guarddb.PendingProve
 			OriginAmount:  event.OriginAmount,
 			DestAmount:    event.DestAmount,
 			OriginChainID: event.OriginChainId,
-			To:            event.OriginToken,
+			To:            event.To,
+			OriginToken:   event.OriginToken,
 			DestToken:     event.DestToken,
 		}
 
