@@ -20,7 +20,6 @@ var DefaultChainConfig = ChainConfig{
 	DestGasEstimate:         100000,
 	MinGasToken:             "100000000000000000", // 1 ETH
 	QuotePct:                NewFloatPtr(100),
-	QuoteWidthBps:           0,
 	QuoteFixedFeeMultiplier: NewFloatPtr(1),
 	RelayFixedFeeMultiplier: NewFloatPtr(1),
 }
@@ -440,20 +439,23 @@ func (c Config) GetMaxBalance(chainID int, addr common.Address) *big.Int {
 }
 
 // GetQuoteWidthBps returns the QuoteWidthBps for the given chainID.
-func (c Config) GetQuoteWidthBps(chainID int) (value float64, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "QuoteWidthBps")
-	if err != nil {
-		return value, err
+func (c Config) GetQuoteWidthBps(chainID int, tokenName string) (value float64, err error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return 0, fmt.Errorf("no chain config for chain %d", chainID)
 	}
 
-	value, ok := rawValue.(float64)
+	tokenCfg, ok := chainCfg.Tokens[tokenName]
 	if !ok {
-		return value, fmt.Errorf("failed to cast QuoteWidthBps to float")
+		return 0, fmt.Errorf("no token config for chain %d and token %s", chainID, tokenName)
 	}
-	if value <= 0 {
-		value = DefaultChainConfig.QuoteWidthBps
+
+	width := tokenCfg.QuoteWidthBps
+	if width < 0 {
+		return 0, fmt.Errorf("quote width bps must be positive: %f", width)
 	}
-	return value, nil
+
+	return width, nil
 }
 
 // GetQuoteFixedFeeMultiplier returns the QuoteFixedFeeMultiplier for the given chainID.
@@ -738,6 +740,41 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	}
 	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
 		return big.NewInt(defaultMinQuoteAmount)
+	}
+
+	// Scale the minQuoteAmount by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return quoteAmountScaled
+}
+
+var defaultMaxRelayAmount *big.Int // nil
+
+// GetMaxRelayAmount returns the quote amount for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+func (c Config) GetMaxRelayAmount(chainID int, addr common.Address) *big.Int {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return defaultMaxRelayAmount
+	}
+
+	var tokenCfg *TokenConfig
+	for _, cfg := range chainCfg.Tokens {
+		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
+			cfgCopy := cfg
+			tokenCfg = &cfgCopy
+			break
+		}
+	}
+	if tokenCfg == nil {
+		return defaultMaxRelayAmount
+	}
+	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxRelayAmount)
+	if !ok {
+		return defaultMaxRelayAmount
+	}
+	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
+		return defaultMaxRelayAmount
 	}
 
 	// Scale the minQuoteAmount by the token decimals.

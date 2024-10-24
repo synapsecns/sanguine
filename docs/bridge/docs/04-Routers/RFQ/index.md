@@ -75,3 +75,7 @@ In a successful dispute, the relayer loses their claimable funds. This design is
 ## Unfulfilled requests
 
 If a request is not fulfilled, users can reclaim their funds by using the [`claim`](https://vercel-rfq-docs.vercel.app/contracts/FastBridge.sol/contract.FastBridge.html#claim) function once the optimistic window has passed.
+
+## Load Tester
+
+The [`rfq-loadtest`](https://github.com/synapsecns/sanguine/tree/master/packages/rfq-loadtest) tool can be used to rapidly send ETH bridges for the purpose of load testing.

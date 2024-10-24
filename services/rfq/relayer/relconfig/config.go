@@ -99,9 +99,6 @@ type ChainConfig struct {
 	MinGasToken string `yaml:"min_gas_token"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct *float64 `yaml:"quote_pct"`
-	// QuoteWidthBps is the number of basis points to deduct from the dest amount.
-	// Note that this parameter is applied on a chain level and must be positive.
-	QuoteWidthBps float64 `yaml:"quote_width_bps"`
 	// QuoteFixedFeeMultiplier is the multiplier for the fixed fee, applied when generating quotes.
 	QuoteFixedFeeMultiplier *float64 `yaml:"quote_fixed_fee_multiplier"`
 	// RelayFixedFeeMultiplier is the multiplier for the fixed fee, applied when relaying.
@@ -124,6 +121,8 @@ type TokenConfig struct {
 	PriceUSD float64 `yaml:"price_usd"`
 	// MinQuoteAmount is the minimum amount to quote for this token in human-readable units.
 	MinQuoteAmount string `yaml:"min_quote_amount"`
+	// MaxRelayAmount is the maximum amount to quote and relay for this token in human-readable units.
+	MaxRelayAmount string `yaml:"max_relay_amount"`
 	// RebalanceMethods are the supported methods for rebalancing.
 	RebalanceMethods []string `yaml:"rebalance_methods"`
 	// MaintenanceBalancePct is the percentage of the total balance under which a rebalance will be triggered.
@@ -140,6 +139,9 @@ type TokenConfig struct {
 	// Note that this value can be positive or negative; if positive it effectively increases the quoted price
 	// of the given token, and vice versa.
 	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
+	// QuoteWidthBps is the number of basis points to deduct from the dest amount.
+	// Note that this parameter must be positive.
+	QuoteWidthBps float64 `yaml:"quote_width_bps"`
 	// MaxBalance is the maximum balance that should be accumulated for this token on this chain (human-readable units)
 	MaxBalance *string `yaml:"max_balance"`
 }
