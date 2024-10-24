@@ -10,7 +10,7 @@ import {MockERC20} from "../MockERC20.sol";
 
 import {Test} from "forge-std/Test.sol";
 
-// solhint-disable func-name-mixedcase, ordering
+// solhint-disable func-name-mixedcase, max-states-count, ordering
 abstract contract MulticallTargetIntegrationTest is Test {
     address internal constant ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint256 internal constant DEADLINE_PERIOD = 1 days;
@@ -33,6 +33,10 @@ abstract contract MulticallTargetIntegrationTest is Test {
     IFastBridge.BridgeTransaction internal provenEthTx;
     IFastBridge.BridgeTransaction internal remoteTokenTx;
 
+    bytes internal encodedBridgedTokenTx;
+    bytes internal encodedProvenEthTx;
+    bytes internal encodedRemoteTokenTx;
+
     bytes32 internal bridgedTokenTxId;
     bytes32 internal provenEthTxId;
     bytes32 internal remoteTokenTxId;
@@ -46,7 +50,7 @@ abstract contract MulticallTargetIntegrationTest is Test {
         createFixtures();
         bridge(bridgedTokenTx);
         bridge(provenEthTx);
-        prove(provenEthTx);
+        prove(encodedProvenEthTx);
         skip(SKIP_PERIOD);
         // Sanity checks
         checkStatus(bridgedTokenTxId, IFastBridgeV2.BridgeStatus.REQUESTED);
@@ -91,8 +95,8 @@ abstract contract MulticallTargetIntegrationTest is Test {
         provenEthTx = IFastBridge.BridgeTransaction({
             originChainId: LOCAL_CHAIN_ID,
             destChainId: REMOTE_CHAIN_ID,
-            originSender: userRemote,
-            destRecipient: user,
+            originSender: user,
+            destRecipient: userRemote,
             originToken: ETH_ADDRESS,
             destToken: ETH_ADDRESS,
             originAmount: 1 ether,
@@ -116,9 +120,12 @@ abstract contract MulticallTargetIntegrationTest is Test {
             deadline: block.timestamp + SKIP_PERIOD,
             nonce: 420
         });
-        bridgedTokenTxId = keccak256(getEncodedBridgeTx(bridgedTokenTx));
-        provenEthTxId = keccak256(getEncodedBridgeTx(provenEthTx));
-        remoteTokenTxId = keccak256(getEncodedBridgeTx(remoteTokenTx));
+        encodedBridgedTokenTx = getEncodedBridgeTx(bridgedTokenTx);
+        encodedProvenEthTx = getEncodedBridgeTx(provenEthTx);
+        encodedRemoteTokenTx = getEncodedBridgeTx(remoteTokenTx);
+        bridgedTokenTxId = keccak256(encodedBridgedTokenTx);
+        provenEthTxId = keccak256(encodedProvenEthTx);
+        remoteTokenTxId = keccak256(encodedRemoteTokenTx);
     }
 
     function bridge(IFastBridge.BridgeTransaction memory bridgeTx) public {
@@ -139,17 +146,16 @@ abstract contract MulticallTargetIntegrationTest is Test {
         );
     }
 
-    function prove(IFastBridge.BridgeTransaction memory bridgeTx) public {
-        bytes memory request = getEncodedBridgeTx(bridgeTx);
+    function prove(bytes memory encodedBridgeTx) public {
         vm.prank(relayer);
-        IFastBridge(fastBridge).prove(request, hex"01");
+        IFastBridge(fastBridge).prove(encodedBridgeTx, hex"01");
     }
 
     function getData() public view returns (bytes[] memory data) {
         data = new bytes[](3);
-        data[0] = abi.encodeCall(IFastBridge.prove, (getEncodedBridgeTx(bridgedTokenTx), hex"02"));
-        data[1] = abi.encodeCall(IFastBridge.claim, (getEncodedBridgeTx(provenEthTx), claimTo));
-        data[2] = abi.encodeCall(IFastBridge.relay, (getEncodedBridgeTx(remoteTokenTx)));
+        data[0] = abi.encodeCall(IFastBridge.prove, (encodedBridgedTokenTx, hex"02"));
+        data[1] = abi.encodeCall(IFastBridge.claim, (encodedProvenEthTx, claimTo));
+        data[2] = abi.encodeCall(IFastBridge.relay, (encodedRemoteTokenTx));
     }
 
     function checkStatus(bytes32 txId, IFastBridgeV2.BridgeStatus expected) public view {
@@ -159,9 +165,9 @@ abstract contract MulticallTargetIntegrationTest is Test {
 
     function test_sequentialExecution() public {
         vm.startPrank(relayer);
-        IFastBridge(fastBridge).prove(getEncodedBridgeTx(bridgedTokenTx), hex"02");
-        IFastBridge(fastBridge).claim(getEncodedBridgeTx(provenEthTx), claimTo);
-        IFastBridge(fastBridge).relay(getEncodedBridgeTx(remoteTokenTx));
+        IFastBridge(fastBridge).prove(encodedBridgedTokenTx, hex"02");
+        IFastBridge(fastBridge).claim(encodedProvenEthTx, claimTo);
+        IFastBridge(fastBridge).relay(encodedRemoteTokenTx);
         vm.stopPrank();
         checkHappyPath();
     }
