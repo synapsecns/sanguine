@@ -67,6 +67,7 @@ func (g *Guard) handleBridgeRequestedLog(parentCtx context.Context, req *fastbri
 	return nil
 }
 
+//nolint:gosec
 func (g *Guard) handleProofProvidedLog(parentCtx context.Context, event *fastbridge.FastBridgeBridgeProofProvided, chainID int) (err error) {
 	ctx, span := g.metrics.Tracer().Start(parentCtx, "handleProofProvidedLog-guard", trace.WithAttributes(
 		attribute.Int(metrics.Origin, chainID),

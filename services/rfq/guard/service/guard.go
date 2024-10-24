@@ -292,7 +292,7 @@ func (g Guard) runChainIndexerV1(ctx context.Context, chainID int) (err error) {
 	return nil
 }
 
-//nolint:cyclop
+//nolint:cyclop,gosec
 func (g Guard) runChainIndexerV2(ctx context.Context, chainID int) (err error) {
 	chainListener := g.listenersV2[chainID]
 
