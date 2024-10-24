@@ -34,8 +34,10 @@ type Config struct {
 
 // ChainConfig represents the configuration for a chain.
 type ChainConfig struct {
-	// Bridge is the rfq bridge contract address.
-	RFQAddress string `yaml:"rfq_address"`
+	// RFQAddressV1 is the rfq bridge contract address.
+	RFQAddressV1 *string `yaml:"rfq_address_v1"`
+	// RFQAddressV2 is the rfq bridge contract address.
+	RFQAddressV2 string `yaml:"rfq_address_v2"`
 	// Confirmations is the number of required confirmations.
 	Confirmations uint64 `yaml:"confirmations"`
 }
@@ -66,12 +68,19 @@ func LoadConfig(path string) (config Config, err error) {
 // Validate validates the config.
 func (c Config) Validate() (err error) {
 	for chainID := range c.Chains {
-		addr, err := c.GetRFQAddress(chainID)
+		addrV1, err := c.GetRFQAddressV1(chainID)
 		if err != nil {
 			return fmt.Errorf("could not get rfq address: %w", err)
 		}
-		if !common.IsHexAddress(addr) {
-			return fmt.Errorf("invalid rfq address: %s", addr)
+		if addrV1 != nil && !common.IsHexAddress(*addrV1) {
+			return fmt.Errorf("invalid rfq address: %s", *addrV1)
+		}
+		addrV2, err := c.GetRFQAddressV2(chainID)
+		if err != nil {
+			return fmt.Errorf("could not get rfq address: %w", err)
+		}
+		if !common.IsHexAddress(addrV2) {
+			return fmt.Errorf("invalid rfq address: %s", addrV2)
 		}
 	}
 
@@ -83,13 +92,22 @@ func (c Config) GetChains() map[int]ChainConfig {
 	return c.Chains
 }
 
-// GetRFQAddress returns the RFQ address for the given chain.
-func (c Config) GetRFQAddress(chainID int) (string, error) {
+// GetRFQAddressV1 returns the RFQ address for the given chain.
+func (c Config) GetRFQAddressV1(chainID int) (*string, error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return nil, fmt.Errorf("chain config not found for chain %d", chainID)
+	}
+	return chainCfg.RFQAddressV1, nil
+}
+
+// GetRFQAddressV2 returns the RFQ address for the given chain.
+func (c Config) GetRFQAddressV2(chainID int) (string, error) {
 	chainCfg, ok := c.Chains[chainID]
 	if !ok {
 		return "", fmt.Errorf("chain config not found for chain %d", chainID)
 	}
-	return chainCfg.RFQAddress, nil
+	return chainCfg.RFQAddressV2, nil
 }
 
 const defaultDBSelectorIntervalSeconds = 1
@@ -115,7 +133,8 @@ func NewGuardConfigFromRelayer(relayerCfg relconfig.Config) Config {
 	}
 	for chainID, chainCfg := range relayerCfg.GetChains() {
 		cfg.Chains[chainID] = ChainConfig{
-			RFQAddress:    chainCfg.RFQAddress,
+			RFQAddressV1:  chainCfg.RFQAddressV1,
+			RFQAddressV2:  chainCfg.RFQAddress,
 			Confirmations: chainCfg.FinalityConfirmations,
 		}
 	}
