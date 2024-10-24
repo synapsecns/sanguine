@@ -464,6 +464,27 @@ export const LINEA: Chain = {
   },
 }
 
+export const WORLDCHAIN: Chain = {
+  id: 480,
+  name: 'World Chain',
+  rpcUrls: {
+    primary: 'https://worldchain-mainnet.g.alchemy.com/public',
+    fallback: 'https://worldchain-mainnet.g.alchemy.com/public',
+  },
+  explorerUrl: 'https://worldchain-mainnet.explorer.alchemy.com',
+  explorerName: 'World Chain Explorer',
+  blockTime: 3000,
+  imgUrl:
+    'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
+  networkName: 'World Chain',
+  networkUrl: 'https://worldchain-mainnet.g.alchemy.com/public',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+}
+
 export const CHAINS = {
   ETHEREUM,
   ARBITRUM,
@@ -487,6 +508,7 @@ export const CHAINS = {
   BLAST,
   SCROLL,
   LINEA,
+  WORLDCHAIN,
 }
 
 export const CHAINS_ARRAY = Object.values(CHAINS)
