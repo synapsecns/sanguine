@@ -68,7 +68,14 @@ func LoadConfig(path string) (config Config, err error) {
 // Validate validates the config.
 func (c Config) Validate() (err error) {
 	for chainID := range c.Chains {
-		addr, err := c.GetRFQAddress(chainID)
+		addr, err := c.GetRFQAddressV1(chainID)
+		if err != nil {
+			return fmt.Errorf("could not get rfq address: %w", err)
+		}
+		if !common.IsHexAddress(addr) {
+			return fmt.Errorf("invalid rfq address: %s", addr)
+		}
+		addr, err = c.GetRFQAddressV2(chainID)
 		if err != nil {
 			return fmt.Errorf("could not get rfq address: %w", err)
 		}
@@ -126,7 +133,8 @@ func NewGuardConfigFromRelayer(relayerCfg relconfig.Config) Config {
 	}
 	for chainID, chainCfg := range relayerCfg.GetChains() {
 		cfg.Chains[chainID] = ChainConfig{
-			RFQAddress:    chainCfg.RFQAddress,
+			RFQAddressV1:  chainCfg.RFQAddressV1,
+			RFQAddressV2:  chainCfg.RFQAddress,
 			Confirmations: chainCfg.FinalityConfirmations,
 		}
 	}
