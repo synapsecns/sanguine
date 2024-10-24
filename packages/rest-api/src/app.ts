@@ -1,38 +1,15 @@
 import express from 'express'
 import swaggerUi from 'swagger-ui-express'
-import { createProxyMiddleware } from 'http-proxy-middleware'
 
 import { specs } from './swagger'
 import routes from './routes'
 import { logger } from './middleware/logger'
-import fs from 'fs'
-import path from 'path'
+import { isRFQAPIRequest, isRFQIndexerRequest, rfqApiProxy, rfqIndexerProxy} from './utils/isGatewayRoute'
 
 const app = express()
 const port = process.env.PORT || 3000
 
 app.use(express.json())
-
-const apiProxyRoutes = [
-  {
-    route: '/rfq-indexer-api',
-    target: 'https://triumphant-magic-production.up.railway.app',
-  },
-  { route: '/rfq-api', target: 'https://rfq-api.omnirpc.io/' },
-]
-
-apiProxyRoutes.forEach(({ route, target }) => {
-  app.use(
-    route,
-    createProxyMiddleware({
-      target,
-      changeOrigin: true,
-      pathRewrite: {
-        [`^${route}`]: '',
-      },
-    })
-  )
-})
 
 app.use((req, res, next) => {
   logger.info({
@@ -44,7 +21,6 @@ app.use((req, res, next) => {
   })
 
   const originalPath = req.path
-
   const originalJson = res.json
   res.json = function (body) {
     logger.info({
@@ -60,7 +36,15 @@ app.use((req, res, next) => {
     return originalJson.call(this, body)
   }
 
-  next()
+   if (isRFQAPIRequest(originalPath)) {
+    return rfqApiProxy(req, res, next);
+  }
+
+  if (isRFQIndexerRequest(originalPath)) {
+    return rfqIndexerProxy(req, res, next);
+  }
+
+  return next();
 })
 
 app.listen(port, () => {
@@ -98,4 +82,3 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
 })
-
