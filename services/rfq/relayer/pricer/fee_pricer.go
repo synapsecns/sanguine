@@ -208,9 +208,10 @@ func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomTok
 }
 
 // cache so that we don't have to parse the ABI every time.
-var recipientABI *abi.ABI
+var fastBridgeV2ABI *abi.ABI
+var requestABI *abi.ABI
 
-const methodName = "fastBridgeTransferReceived"
+const methodName = "relay"
 
 func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) (gasEstimate uint64, err error) {
 	client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(destination)))
@@ -218,18 +219,22 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, t
 		return 0, fmt.Errorf("could not get client: %w", err)
 	}
 
-	if recipientABI == nil {
-		parsedABI, err := abi.JSON(strings.NewReader(fastbridgev2.IFastBridgeRecipientMetaData.ABI))
+	// Parse the ABI or load it from cache.
+	if fastBridgeV2ABI == nil {
+		parsedABI, err := abi.JSON(strings.NewReader(fastbridgev2.IFastBridgeV2MetaData.ABI))
 		if err != nil {
 			return 0, fmt.Errorf("could not parse ABI: %w", err)
 		}
-		recipientABI = &parsedABI
+		fastBridgeV2ABI = &parsedABI
 	}
-	destAmount := tx.DestAmount
-	if destAmount == nil {
-		destAmount = big.NewInt(0)
+
+	// Pack the relay() call.
+	request, err := packBridgeTransactionV2(tx)
+	if err != nil {
+		return 0, fmt.Errorf("could not pack bridge transaction: %w", err)
 	}
-	encodedData, err := recipientABI.Pack(methodName, tx.DestToken, destAmount, tx.CallParams)
+
+	encodedData, err := fastBridgeV2ABI.Pack(methodName, request, f.relayerAddress)
 	if err != nil {
 		return 0, fmt.Errorf("could not encode function call: %w", err)
 	}
@@ -246,6 +251,51 @@ func (f *feePricer) getZapGasEstimate(ctx context.Context, destination uint32, t
 	}
 
 	return gasEstimate, nil
+}
+
+// packBridgeTransactionV2 packs a BridgeTransactionV2 struct into bytes
+func packBridgeTransactionV2(tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) ([]byte, error) {
+	arguments := abi.Arguments{
+		{Type: abi.Type{T: abi.UintTy, Size: 32}},  // originChainId
+		{Type: abi.Type{T: abi.UintTy, Size: 32}},  // destChainId
+		{Type: abi.Type{T: abi.AddressTy}},         // originSender
+		{Type: abi.Type{T: abi.AddressTy}},         // destRecipient
+		{Type: abi.Type{T: abi.AddressTy}},         // originToken
+		{Type: abi.Type{T: abi.AddressTy}},         // destToken
+		{Type: abi.Type{T: abi.UintTy, Size: 256}}, // originAmount
+		{Type: abi.Type{T: abi.UintTy, Size: 256}}, // destAmount
+		{Type: abi.Type{T: abi.UintTy, Size: 256}}, // originFeeAmount
+		{Type: abi.Type{T: abi.UintTy, Size: 256}}, // callValue
+		{Type: abi.Type{T: abi.UintTy, Size: 256}}, // deadline
+		{Type: abi.Type{T: abi.UintTy, Size: 256}}, // nonce
+		{Type: abi.Type{T: abi.AddressTy}},         // exclusivityRelayer
+		{Type: abi.Type{T: abi.UintTy, Size: 256}}, // exclusivityEndTime
+		{Type: abi.Type{T: abi.BytesTy}},           // callParams
+	}
+
+	values := []interface{}{
+		tx.OriginChainId,
+		tx.DestChainId,
+		tx.OriginSender,
+		tx.DestRecipient,
+		tx.OriginToken,
+		tx.DestToken,
+		tx.OriginAmount,
+		tx.DestAmount,
+		tx.OriginFeeAmount,
+		tx.CallValue,
+		tx.Deadline,
+		tx.Nonce,
+		tx.ExclusivityRelayer,
+		tx.ExclusivityEndTime,
+		tx.CallParams,
+	}
+
+	packed, err := arguments.Pack(values...)
+	if err != nil {
+		return nil, fmt.Errorf("could not pack bridge transaction: %w", err)
+	}
+	return packed, nil
 }
 
 func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2) (_ *big.Int, err error) {
