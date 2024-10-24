@@ -455,7 +455,7 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 		span.SetAttributes(attribute.String("gas_value", gasValue.String()))
 	}
 
-	gasBalance, err := i.GetCommittableBalance(ctx, chainID, util.EthAddress)
+	gasBalance, err := i.GetCommittableBalance(ctx, chainID, util.EthAddress, SkipDBCache())
 	if err != nil {
 		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
 	}
