@@ -46,7 +46,7 @@ const router = express.Router()
  *                   BridgeDispute:
  *                     type: object
  *                     description: Dispute information (if available)
- *       404:
+ *       200:
  *         description: No pending transactions missing claim found
  *         content:
  *           application/json:
@@ -87,7 +87,7 @@ router.get('/missing-claim', pendingTransactionsMissingClaimController)
  *                     type: object
  *                   relay:
  *                     type: object
- *       404:
+ *       200:
  *         description: No pending transactions missing proof found
  *         content:
  *           application/json:
@@ -126,7 +126,7 @@ router.get('/missing-proof', pendingTransactionsMissingProofController)
  *                 properties:
  *                   deposit:
  *                     type: object
- *       404:
+ *       200:
  *         description: No pending transactions missing relay found
  *         content:
  *           application/json:
@@ -165,7 +165,7 @@ router.get('/missing-relay', pendingTransactionsMissingRelayController)
  *                 properties:
  *                   deposit:
  *                     type: object
- *       404:
+ *       200:
  *         description: No pending transactionst that exceed the deadline found
  *         content:
  *           application/json:
