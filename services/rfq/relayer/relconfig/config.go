@@ -75,8 +75,8 @@ type Config struct {
 type ChainConfig struct {
 	// RFQAddress is the rfq bridge contract address (v2).
 	RFQAddress string `yaml:"rfq_address"`
-	// RFQAddressV1 is the rfq bridge contract address (v1).
-	RFQAddressV1 string `yaml:"rfq_address_v1"`
+	// RFQAddressV1 is the rfq bridge contract address (v1, optional).
+	RFQAddressV1 *string `yaml:"rfq_address_v1"`
 	// Confirmations is the number of required confirmations.
 	Confirmations uint64 `yaml:"confirmations"`
 	// FinalityConfirmations is the number of required confirmations before proving.
