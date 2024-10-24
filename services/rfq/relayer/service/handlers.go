@@ -175,6 +175,19 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return nil
 	}
 
+	allowed, err := q.limiter.IsAllowed(ctx, &request)
+	if err != nil {
+		return fmt.Errorf("could not check if allowed: %w", err)
+	}
+	if !allowed {
+		span.AddEvent(
+			fmt.Sprintf(
+				"cannot relay due to rate limit. waiting for %d block confirmations before relaying.",
+				q.cfg.BaseChainConfig.LimitConfirmations),
+		)
+		return nil
+	}
+
 	// check balance and mark it as CommitPending or NotEnoughInventory.
 	// note that this will update the request.Status in-place.
 	err = q.commitPendingBalance(ctx, span, &request)
@@ -235,19 +248,6 @@ func (q *QuoteRequestHandler) commitPendingBalance(ctx context.Context, span tra
 	if committableBalance.Cmp(request.Transaction.DestAmount) < 0 {
 		request.Status = reldb.NotEnoughInventory
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory, &request.Status)
-		if err != nil {
-			return fmt.Errorf("could not update request status: %w", err)
-		}
-		return nil
-	}
-
-	allowed, err := q.limiter.IsAllowed(ctx, request)
-	if err != nil {
-		return fmt.Errorf("could not check if allowed: %w", err)
-	}
-	if !allowed {
-		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedConfirmed, &request.Status)
-		span.AddEvent("cannot relay due to rate limit. waiting for one block confirmation before relaying.")
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
 		}
