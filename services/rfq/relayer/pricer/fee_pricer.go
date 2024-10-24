@@ -160,7 +160,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 
 	// If specified, calculate and add the call fee, as well as the call value which will be paid by the relayer
 	if tx != nil {
-		fee, err = f.addZapFees(ctx, destination, denomToken, isQuote, tx, fee)
+		fee, err = f.addZapFees(ctx, destination, denomToken, tx, fee)
 		if err != nil {
 			return nil, err
 		}
@@ -170,8 +170,11 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	return fee, nil
 }
 
+// addZapFees incorporates the cost of the call and the call value into the fee.
+// Note that to be conservative, we always use the QuoteFixedFeeMultiplier over the RelayFixedFeeMultiplier.
+//
 //nolint:gosec
-func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomToken string, isQuote bool, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2, fee *big.Int) (*big.Int, error) {
+func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomToken string, tx *fastbridgev2.IFastBridgeV2BridgeTransactionV2, fee *big.Int) (*big.Int, error) {
 	span := trace.SpanFromContext(ctx)
 
 	if len(tx.CallParams) > 0 {
@@ -179,7 +182,7 @@ func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomTok
 		if err != nil {
 			return nil, err
 		}
-		callFee, err := f.getFee(ctx, destination, destination, int(gasEstimate), denomToken, isQuote)
+		callFee, err := f.getFee(ctx, destination, destination, int(gasEstimate), denomToken, true)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +196,7 @@ func (f *feePricer) addZapFees(ctx context.Context, destination uint32, denomTok
 		if err != nil {
 			return nil, err
 		}
-		valueScaled, err := f.getFeeWithMultiplier(ctx, destination, isQuote, valueDenom)
+		valueScaled, err := f.getFeeWithMultiplier(ctx, destination, true, valueDenom)
 		if err != nil {
 			return nil, err
 		}
