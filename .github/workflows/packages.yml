@@ -41,72 +41,75 @@ jobs:
       - name: Run tests # Run tests of all packages
         run: npx lerna exec npm run ci:lint --parallel
 
+      - name: Run spellcheck # Run spellcheck of all packages
+        run: npx lerna exec npm run ci:spellcheck --parallel
+
   test:
-      runs-on: ubuntu-latest
-      env:
-        SDK_RPC_URL: ${{ secrets.SDK_RPC_URL }}
+    runs-on: ubuntu-latest
+    env:
+      SDK_RPC_URL: ${{ secrets.SDK_RPC_URL }}
 
-      steps:
-        - name: 'Checkout'
-          uses: actions/checkout@v4
-          with:
-            fetch-depth: 2
-            submodules: 'recursive'
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          submodules: 'recursive'
 
-        - name: Setup NodeJS
-          uses: ./.github/actions/setup-nodejs
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
 
-        # Foundry is required for build
-        - name: Install Foundry
-          uses: foundry-rs/foundry-toolchain@v1
-          with:
-            version: nightly
+      # Foundry is required for build
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
 
-        - name: Verify Changed files
-          uses: tj-actions/verify-changed-files@v11.1
-          id: verify-yarn-lock
-          with:
-            files: |
-              yarn.lock
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v11.1
+        id: verify-yarn-lock
+        with:
+          files: |
+            yarn.lock
 
-        - name: Add Label
-          if: ${{ steps.verify-yarn-lock.outputs.files_changed == 'true' && github.event_name != 'push' }}
-          uses: ./.github/actions/add-label
-          with:
-            label: 'needs-yarn-install'
+      - name: Add Label
+        if: ${{ steps.verify-yarn-lock.outputs.files_changed == 'true' && github.event_name != 'push' }}
+        uses: ./.github/actions/add-label
+        with:
+          label: 'needs-yarn-install'
 
-        - name: Remove Label
-          if: ${{ steps.verify-yarn-lock.outputs.files_changed != 'true' && github.event_name != 'push' }}
-          uses: ./.github/actions/remove-label
-          with:
-            label: 'needs-yarn-install'
+      - name: Remove Label
+        if: ${{ steps.verify-yarn-lock.outputs.files_changed != 'true' && github.event_name != 'push' }}
+        uses: ./.github/actions/remove-label
+        with:
+          label: 'needs-yarn-install'
 
-        - name: List all changed files tracked and untracked files
-          if: steps.verify-changed-files.outputs.files_changed == 'true'
-          run: |
-            echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+      - name: List all changed files tracked and untracked files
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
 
-        - name: Run tests # Run tests of all packages
-          run: yarn test:coverage
+      - name: Run tests # Run tests of all packages
+        run: yarn test:coverage
 
-        - name: LCOV move
-          run: mv lcov/lcov.info lcov.info
+      - name: LCOV move
+        run: mv lcov/lcov.info lcov.info
 
-        - name: Send Coverage (Codecov)
-          uses: Wandalen/wretry.action@v1.0.36
-          with:
-            action: codecov/codecov-action@v3
-            with: |
-              token: ${{ secrets.CODECOV }}
-              fail_ci_if_error: true # optional (default = false)
-              verbose: true # optional (default = false)
-              flags: packages
-              files: lcov.info
-            attempt_limit: 5
-            attempt_delay: 30000
+      - name: Send Coverage (Codecov)
+        uses: Wandalen/wretry.action@v1.0.36
+        with:
+          action: codecov/codecov-action@v3
+          with: |
+            token: ${{ secrets.CODECOV }}
+            fail_ci_if_error: true # optional (default = false)
+            verbose: true # optional (default = false)
+            flags: packages
+            files: lcov.info
+          attempt_limit: 5
+          attempt_delay: 30000
 
-        - name: Run build # Run tests of all packages
-          run: npx lerna exec npm run build --parallel || true # only for codecov
-          env:
-            CODECOV_TOKEN: ${{ secrets.CODECOV }}
-            GH_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+      - name: Run build # Run tests of all packages
+        run: npx lerna exec npm run build --parallel || true # only for codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV }}
+          GH_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}

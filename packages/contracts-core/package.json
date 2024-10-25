@@ -14,7 +14,8 @@
     "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{contracts,script,test}/**/*.sol'",
     "lint:fix": "yarn lint:contracts:fix",
     "lint": "forge fmt",
-    "ci:lint": "forge fmt --check && solhint -c .solhint.json '{contracts,script,test}/**/*.sol'"
+    "ci:lint": "forge fmt --check && solhint -c .solhint.json '{contracts,script,test}/**/*.sol'",
+    "ci:spellcheck": " "
   },
   "files": [
     "contracts/**/*.sol",

@@ -62,7 +62,7 @@ The rebalance amount is the smaller of the maximum rebalance amount on origin, a
 
 #### Example
 
-| # | CCTP | USDC | `maintenence_pct` | `initial_pct`
+| # | CCTP | USDC | `maintenance_pct` | `initial_pct`
 |---|------|------|-------------------|-
 | 1 | Yes  | 20%  | 40%               | 100 USDC
 | 2 | Yes  | 20%  | 40%               | 900 USDC
@@ -172,7 +172,7 @@ base_chain_config: # this is hte base chain config, other chains override it
 chains:
   1:
     rfq_address: "0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E" # rfq contract address on eth
-    synapse_cctp_address: "0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E" # ccctp contract address on eth
+    synapse_cctp_address: "0x12715a66773BD9C54534a01aBF01d05F6B4Bd35E" # cctp contract address on eth
     token_messenger_address: "0xbd3fa81b58ba92a82136038b25adec7066af3155" # token messenger address on eth, note: only one of token_messenger_address or synapse_cctp_address actually needs to be present
     cctp_start_block: 19341000
     confirmations: 2

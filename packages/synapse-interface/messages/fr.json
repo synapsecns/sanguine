@@ -37,7 +37,7 @@
     "New": "Nouveau",
     "Gas token": "Jeton de gaz",
     "Not bridgeable": "Non transférable",
-    "Succesfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "Transfert initié avec succès de {fromToken} sur {originChainName} vers {toToken} sur {destinationChainName}",
+    "Successfully initiated bridge from {fromToken} on {originChainName} to {toToken} on {destinationChainName}": "Transfert initié avec succès de {fromToken} sur {originChainName} vers {toToken} sur {destinationChainName}",
     "Slippage": "Glissement",
     "Router": "Routeur",
     "Powered by Synapse": "Propulsé par Synapse",

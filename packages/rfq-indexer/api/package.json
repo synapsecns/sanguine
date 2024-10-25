@@ -13,6 +13,7 @@
     "dev": "dotenv -e .env -- tsx watch src/app.ts",
     "lint:check": " ",
     "ci:lint": " ",
+    "ci:spellcheck": " ",
     "build:go": " ",
     "build": " ",
     "build:slither": " ",

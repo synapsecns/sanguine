@@ -8,6 +8,7 @@
     "build": "cp src/pyRepeater.py dist/ && tsc",
     "lint": "eslint .",
     "ci:lint": "eslint .",
+    "ci:spellcheck": " ",
     "typecheck": "tsc",
     "test:coverage": "echo 'No tests defined.'",
     "build:go": " ",

@@ -14,6 +14,7 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
+    "ci:spellcheck": " ",
     "test": "jest",
     "test:coverage": "jest --collect-coverage"
   },

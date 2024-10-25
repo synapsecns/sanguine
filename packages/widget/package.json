@@ -24,6 +24,7 @@
     "test:coverage": "echo 'No tests defined.'",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
+    "ci:spellcheck": " ",
     "build:go": " ",
     "build:slither": " ",
     "prepare": "rollup -c --bundleConfigAsCjs"
