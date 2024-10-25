@@ -139,7 +139,8 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 
 	fee := big.NewInt(0)
 
-	// Calculate the destination fee if it will not be covered by Zap fees
+	// Calculate the static L2 fee if it won't be incorporated by directly estimating the relay() call
+	// in addZapFees().
 	if quoteRequest == nil || quoteRequest.Transaction.CallParams == nil {
 		gasEstimate, err := f.config.GetDestGasEstimate(int(destination))
 		if err != nil {
