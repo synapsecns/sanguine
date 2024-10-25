@@ -394,7 +394,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 }
 
 //nolint:gosec
-func (i *IntegrationSuite) TestArbitraryCall() {
+func (i *IntegrationSuite) TestBridgeZap() {
 	// start the relayer and guard
 	go func() {
 		_ = i.relayer.Start(i.GetTestContext())
@@ -402,6 +402,8 @@ func (i *IntegrationSuite) TestArbitraryCall() {
 	go func() {
 		_ = i.guard.Start(i.GetTestContext())
 	}()
+
+	fmt.Printf("omnirpc url: %s\n", i.destBackend.RPCAddress())
 
 	// load token contracts
 	const startAmount = 1000

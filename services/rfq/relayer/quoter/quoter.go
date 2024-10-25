@@ -21,7 +21,6 @@ import (
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridgev2"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -234,7 +233,7 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 	if err != nil {
 		return false, fmt.Errorf("error getting dest token ID: %w", err)
 	}
-	fee, err := m.feePricer.GetTotalFee(ctx, quote.Transaction.OriginChainId, quote.Transaction.DestChainId, destTokenID, false, &quote.Transaction)
+	fee, err := m.feePricer.GetTotalFee(ctx, quote.Transaction.OriginChainId, quote.Transaction.DestChainId, destTokenID, false, &quote)
 	if err != nil {
 		return false, fmt.Errorf("error getting total fee: %w", err)
 	}
@@ -551,7 +550,7 @@ type QuoteInput struct {
 	OriginBalance   *big.Int
 	DestBalance     *big.Int
 	DestRFQAddr     string
-	Transaction     *fastbridgev2.IFastBridgeV2BridgeTransactionV2
+	QuoteRequest    *reldb.QuoteRequest
 }
 
 //nolint:gosec
@@ -572,7 +571,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 		logger.Error("Error getting dest token ID", "error", err)
 		return nil, fmt.Errorf("error getting dest token ID: %w", err)
 	}
-	fee, err := m.feePricer.GetTotalFee(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), destToken, true, input.Transaction)
+	fee, err := m.feePricer.GetTotalFee(ctx, uint32(input.OriginChainID), uint32(input.DestChainID), destToken, true, input.QuoteRequest)
 	if err != nil {
 		logger.Error("Error getting total fee", "error", err)
 		return nil, fmt.Errorf("error getting total fee: %w", err)
