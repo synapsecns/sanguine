@@ -257,7 +257,8 @@ func (s *PricerSuite) TestGetTotalFee() {
 
 	// The expected fee should be the sum of the Origin and Destination fees
 	// plus the call value of 1 MATIC * 0.5 USD.
-	expectedFee = big.NewInt(101_000_000) // 101 usd
+	// Note that the static L2 fee is covered by the Zap fees.
+	expectedFee = big.NewInt(100_750_000) // 100.75 usd
 	s.Equal(expectedFee, fee)
 }
 
