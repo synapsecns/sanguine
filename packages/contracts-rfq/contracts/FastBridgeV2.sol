@@ -177,7 +177,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridgeV2
     function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
-        int256 exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
+        int256 exclusivityEndTime = paramsV2.quoteExclusivitySeconds != 0
+            ? int256(block.timestamp) + paramsV2.quoteExclusivitySeconds
+            : int256(0);
         _validateBridgeParams(params, paramsV2, exclusivityEndTime);
 
         // transfer tokens to bridge contract
@@ -444,7 +446,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
             revert NativeTokenCallValueNotSupported();
         }
         // exclusivityEndTime must be in range (0 .. params.deadline]
-        if (exclusivityEndTime <= 0 || exclusivityEndTime > int256(params.deadline)) {
+        if (exclusivityEndTime < 0 || exclusivityEndTime > int256(params.deadline)) {
             revert ExclusivityParamsIncorrect();
         }
     }

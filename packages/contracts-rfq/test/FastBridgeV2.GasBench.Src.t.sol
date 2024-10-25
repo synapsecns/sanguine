@@ -50,13 +50,13 @@ contract FastBridgeV2GasBenchmarkSrcTest is FastBridgeV2SrcBaseTest {
 
     function createFixturesV2() public virtual override {
         super.createFixturesV2();
-        bridgedTokenTx.exclusivityEndTime = block.timestamp;
-        provenTokenTx.exclusivityEndTime = block.timestamp;
-        bridgedEthTx.exclusivityEndTime = block.timestamp;
-        provenEthTx.exclusivityEndTime = block.timestamp;
+        bridgedTokenTx.exclusivityEndTime = 0;
+        provenTokenTx.exclusivityEndTime = 0;
+        bridgedEthTx.exclusivityEndTime = 0;
+        provenEthTx.exclusivityEndTime = 0;
         // Actual tx will be submitted one block later
-        tokenTx.exclusivityEndTime = block.timestamp + BLOCK_TIME;
-        ethTx.exclusivityEndTime = block.timestamp + BLOCK_TIME;
+        tokenTx.exclusivityEndTime = 0;
+        ethTx.exclusivityEndTime = 0;
     }
 
     function mintTokens() public virtual override {

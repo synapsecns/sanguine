@@ -173,9 +173,9 @@ abstract contract FastBridgeV2Test is Test, IFastBridgeV2Errors {
         });
 
         tokenTx.exclusivityRelayer = address(0);
-        tokenTx.exclusivityEndTime = block.timestamp;
+        tokenTx.exclusivityEndTime = 0;
         ethTx.exclusivityRelayer = address(0);
-        ethTx.exclusivityEndTime = block.timestamp;
+        ethTx.exclusivityEndTime = 0;
     }
 
     function setStorageBridgeTxV2(
