@@ -243,7 +243,7 @@ func (r *HarmonyProxy) makeReq(parentCtx context.Context, body []byte) (_ []byte
 	return respBody, nil
 }
 
-const expectedVersion = "Harmony (C) 2023. harmony, version v8396-v2024.2.0-0-gc44c2ea8c"
+const expectedVersion = "Harmony (C) 2023. harmony, version v8421-v2024.3.0-0-g2e824e126"
 
 // nolint: cyclop
 func (r *HarmonyProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash common.Hash, rawBody []byte, checkVersion bool) (_ []byte, err error) {
