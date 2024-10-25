@@ -137,16 +137,28 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// Calculate the destination fee
-	gasEstimate, err := f.config.GetDestGasEstimate(int(destination))
-	if err != nil {
-		return nil, fmt.Errorf("could not get dest gas estimate: %w", err)
-	}
-	fee, err := f.getFee(ctx, destination, destination, gasEstimate, denomToken, isQuote)
-	if err != nil {
-		return nil, err
+	fee := big.NewInt(0)
+
+	// Calculate the destination fee if it will not be covered by Zap fees
+	if quoteRequest == nil || quoteRequest.Transaction.CallParams == nil {
+		gasEstimate, err := f.config.GetDestGasEstimate(int(destination))
+		if err != nil {
+			return nil, fmt.Errorf("could not get dest gas estimate: %w", err)
+		}
+		fee, err = f.getFee(ctx, destination, destination, gasEstimate, denomToken, isQuote)
+		if err != nil {
+			return nil, err
+		}
 	}
 	span.SetAttributes(attribute.String("raw_fee", fee.String()))
+
+	// If specified, calculate and add the call fee, as well as the call value which will be paid by the relayer
+	if quoteRequest != nil {
+		fee, err = f.addZapFees(ctx, destination, denomToken, quoteRequest, fee)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// If specified, calculate and add the L1 fee
 	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(destination, false)
@@ -157,14 +169,6 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 		}
 		fee = new(big.Int).Add(fee, l1Fee)
 		span.SetAttributes(attribute.String("l1_fee", l1Fee.String()))
-	}
-
-	// If specified, calculate and add the call fee, as well as the call value which will be paid by the relayer
-	if quoteRequest != nil {
-		fee, err = f.addZapFees(ctx, destination, denomToken, quoteRequest, fee)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	span.SetAttributes(attribute.String("destination_fee", fee.String()))
