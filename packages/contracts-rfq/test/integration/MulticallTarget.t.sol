@@ -295,12 +295,12 @@ abstract contract MulticallTargetIntegrationTest is Test {
 
     function test_manyActions_sequentialNonMulticall() public {
         // send X contiguous bridges, proofs, and claims -- and X non-contiguous relays to the same bridger
-        manyActions_flow(5, TestExecutionMode.Sequential_NonMulticall);
+        manyActions_flow(15, TestExecutionMode.Sequential_NonMulticall);
     }
 
     function test_manyActions_multicall() public {
         // send X contiguous bridges, proofs, and claims -- and X non-contiguous relays to the same bridger
-        manyActions_flow(5, TestExecutionMode.Multicall);
+        manyActions_flow(15, TestExecutionMode.Multicall);
     }
 
     // will either execute a single batched multicall, or many sequential txns
