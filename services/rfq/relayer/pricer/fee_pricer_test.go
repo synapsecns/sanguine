@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
 var defaultPrices = map[string]float64{"ETH": 2000., "USDC": 1., "MATIC": 0.5}
@@ -227,10 +228,13 @@ func (s *PricerSuite) TestGetTotalFee() {
 	s.Equal(expectedFee, fee)
 
 	// Calculate the total fee with v2 call value.
-	tx := &fastbridgev2.IFastBridgeV2BridgeTransactionV2{
-		CallValue: big.NewInt(1 * 1e18),
+	quoteRequest := &reldb.QuoteRequest{
+		RawRequest: []byte{},
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+			CallValue: big.NewInt(1 * 1e18),
+		},
 	}
-	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true, tx)
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true, quoteRequest)
 	s.NoError(err)
 
 	// The expected fee should be the sum of the Origin and Destination fees, i.e. 100_750_000,
@@ -239,13 +243,16 @@ func (s *PricerSuite) TestGetTotalFee() {
 	s.Equal(expectedFee, fee)
 
 	// Calculate the total fee with v2 call value and call params.
-	tx = &fastbridgev2.IFastBridgeV2BridgeTransactionV2{
-		CallValue:  big.NewInt(1 * 1e18),
-		CallParams: []byte{1},
-		DestAmount: big.NewInt(1 * 1e18),
+	quoteRequest = &reldb.QuoteRequest{
+		RawRequest: []byte{},
+		Transaction: fastbridgev2.IFastBridgeV2BridgeTransactionV2{
+			CallValue:  big.NewInt(1 * 1e18),
+			CallParams: []byte{1},
+			DestAmount: big.NewInt(1 * 1e18),
+		},
 	}
 	clientDestination.On(testsuite.GetFunctionName(clientDestination.EstimateGas), mock.Anything, mock.Anything).Once().Return(uint64(1_000_000), nil)
-	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true, tx)
+	fee, err = feePricer.GetTotalFee(s.GetTestContext(), s.origin, s.destination, "USDC", true, quoteRequest)
 	s.NoError(err)
 
 	// The expected fee should be the sum of the Origin and Destination fees
