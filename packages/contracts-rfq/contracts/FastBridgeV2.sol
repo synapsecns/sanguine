@@ -177,10 +177,12 @@ contract FastBridgeV2 is Admin, IFastBridgeV2, IFastBridgeV2Errors {
 
     /// @inheritdoc IFastBridgeV2
     function bridge(BridgeParams memory params, BridgeParamsV2 memory paramsV2) public payable {
-        int256 exclusivityEndTime = paramsV2.quoteRelayer != address(0)
-            // prettier-ignore
-            ? int256(block.timestamp) + paramsV2.quoteExclusivitySeconds
-            : int256(0);
+        int256 exclusivityEndTime = 0;
+        // if relayer exclusivity is not intended for this bridge, set exclusivityEndTime to static zero
+        // otherwise, set exclusivity to expire at the current block ts offset by quoteExclusivitySeconds
+        if (paramsV2.quoteRelayer != address(0)) {
+            exclusivityEndTime = int256(block.timestamp) + paramsV2.quoteExclusivitySeconds;
+        }
         _validateBridgeParams(params, paramsV2, exclusivityEndTime);
 
         // transfer tokens to bridge contract
