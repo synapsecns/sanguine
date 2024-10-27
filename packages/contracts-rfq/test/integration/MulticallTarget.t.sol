@@ -150,7 +150,6 @@ abstract contract MulticallTargetIntegrationTest is Test {
         dealTokens(relayer, countOfTxnsToCreate);
 
         for (uint8 i = 0; i < countOfTxnsToCreate; i++) {
-            // prepare relays for execution later
             IFastBridge.BridgeTransaction memory toRelayTx = IFastBridge.BridgeTransaction({
                 originChainId: REMOTE_CHAIN_ID,
                 destChainId: LOCAL_CHAIN_ID,
@@ -171,7 +170,6 @@ abstract contract MulticallTargetIntegrationTest is Test {
 
             toRelay[i] = TestBridgeTransactionWithMetadata({transaction: toRelayTx, encodedData: encoded, txId: txId});
 
-            // prepare *and* execute bridges, to be subsequently proven & claimed
             IFastBridge.BridgeTransaction memory toBridgeProveClaimTx = IFastBridge.BridgeTransaction({
                 originChainId: LOCAL_CHAIN_ID,
                 destChainId: REMOTE_CHAIN_ID,
