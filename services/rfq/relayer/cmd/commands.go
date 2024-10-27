@@ -53,6 +53,17 @@ var runCommand = &cli.Command{
 	},
 }
 
+// runCommand runs the rfq relayer.
+var sleepCommand = &cli.Command{
+	Name:        "sleep",
+	Description: "run the relayer",
+	Flags:       []cli.Flag{configFlag, &commandline.LogLevel},
+	Action: func(c *cli.Context) (err error) {
+		time.Sleep(time.Hour)
+		return nil
+	},
+}
+
 var relayerURLFlag = &cli.StringFlag{
 	Name:  "relayer-url",
 	Usage: "relayer url",
