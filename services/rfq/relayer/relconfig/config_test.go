@@ -31,7 +31,6 @@ func TestChainGetters(t *testing.T) {
 				L1FeeDestGasEstimate:    40000,
 				MinGasToken:             "1000",
 				QuotePct:                relconfig.NewFloatPtr(0),
-				QuoteWidthBps:           10,
 				QuoteFixedFeeMultiplier: relconfig.NewFloatPtr(1.1),
 				RebalanceConfigs: relconfig.RebalanceConfigs{
 					Synapse: &relconfig.SynapseCCTPRebalanceConfig{
@@ -60,7 +59,6 @@ func TestChainGetters(t *testing.T) {
 			L1FeeDestGasEstimate:    40001,
 			MinGasToken:             "1001",
 			QuotePct:                relconfig.NewFloatPtr(51),
-			QuoteWidthBps:           11,
 			QuoteFixedFeeMultiplier: relconfig.NewFloatPtr(1.2),
 			RebalanceConfigs: relconfig.RebalanceConfigs{
 				Synapse: &relconfig.SynapseCCTPRebalanceConfig{
@@ -91,7 +89,6 @@ func TestChainGetters(t *testing.T) {
 				L1FeeDestGasEstimate:    40000,
 				MinGasToken:             "1000",
 				QuotePct:                relconfig.NewFloatPtr(50),
-				QuoteWidthBps:           10,
 				QuoteFixedFeeMultiplier: relconfig.NewFloatPtr(1.1),
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
@@ -257,20 +254,6 @@ func TestChainGetters(t *testing.T) {
 		assert.Equal(t, chainVal, 0.)
 	})
 
-	t.Run("GetQuoteWidthBps", func(t *testing.T) {
-		defaultVal, err := cfg.GetQuoteWidthBps(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.QuoteWidthBps)
-
-		baseVal, err := cfgWithBase.GetQuoteWidthBps(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.QuoteWidthBps)
-
-		chainVal, err := cfgWithBase.GetQuoteWidthBps(chainID)
-		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuoteWidthBps)
-	})
-
 	t.Run("GetQuoteFixedFeeMultiplier", func(t *testing.T) {
 		defaultVal, err := cfg.GetQuoteFixedFeeMultiplier(badChainID)
 		assert.NoError(t, err)
@@ -311,7 +294,6 @@ func TestGetQuoteOffset(t *testing.T) {
 				L1FeeDestGasEstimate:    40000,
 				MinGasToken:             "1000",
 				QuotePct:                relconfig.NewFloatPtr(50),
-				QuoteWidthBps:           10,
 				QuoteFixedFeeMultiplier: relconfig.NewFloatPtr(1.1),
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {

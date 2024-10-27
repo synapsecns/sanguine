@@ -237,16 +237,44 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 	if err != nil {
 		return false, fmt.Errorf("error getting total fee: %w", err)
 	}
-
 	cost := new(big.Int).Add(quote.Transaction.DestAmount, fee)
 
-	span.AddEvent("fee", trace.WithAttributes(attribute.String("fee", fee.String())))
-	span.AddEvent("cost", trace.WithAttributes(attribute.String("cost", cost.String())))
-	span.AddEvent("dest_amount", trace.WithAttributes(attribute.String("dest_amount", quote.Transaction.DestAmount.String())))
-	span.AddEvent("origin_amount", trace.WithAttributes(attribute.String("origin_amount", quote.Transaction.OriginAmount.String())))
+	// adjust amounts for our internal offsets on origin / dest token values
+	originAmountAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.OriginChainId, quote.Transaction.OriginToken, quote.Transaction.OriginAmount)
+	if err != nil {
+		return false, fmt.Errorf("error getting origin amount with offset: %w", err)
+	}
+	// assume that fee is denominated in dest token terms
+	costAdj, err := m.getAmountWithOffset(ctx, quote.Transaction.DestChainId, quote.Transaction.DestToken, cost)
+	if err != nil {
+		return false, fmt.Errorf("error getting cost with offset: %w", err)
+	}
 
-	// NOTE: this logic assumes that the origin and destination tokens have the same price.
-	return quote.Transaction.OriginAmount.Cmp(cost) >= 0, nil
+	span.SetAttributes(
+		attribute.String("origin_amount_adj", originAmountAdj.String()),
+		attribute.String("cost_adj", costAdj.String()),
+		attribute.String("origin_amount", quote.Transaction.OriginAmount.String()),
+		attribute.String("dest_amount", quote.Transaction.DestAmount.String()),
+		attribute.String("fee", fee.String()),
+		attribute.String("cost", cost.String()),
+	)
+
+	return originAmountAdj.Cmp(costAdj) >= 0, nil
+}
+
+func (m *Manager) getAmountWithOffset(ctx context.Context, chainID uint32, tokenAddr common.Address, amount *big.Int) (*big.Int, error) {
+	tokenName, err := m.config.GetTokenName(chainID, tokenAddr.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("error getting token name: %w", err)
+	}
+	// apply offset directly to amount without considering origin/dest
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(int(chainID), tokenName, true)
+	if err != nil {
+		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
+	}
+	amountAdj := m.applyOffset(ctx, quoteOffsetBps, amount)
+
+	return amountAdj, nil
 }
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
@@ -580,7 +608,7 @@ func (m *Manager) generateQuote(ctx context.Context, input QuoteInput) (quote *m
 	}
 
 	// Build the quote
-	destAmount, err := m.getDestAmount(ctx, originAmount, input.DestChainID, destToken)
+	destAmount, err := m.getDestAmount(ctx, originAmount, destToken, input)
 	if err != nil {
 		logger.Error("Error getting dest amount", "error", err)
 		return nil, fmt.Errorf("error getting dest amount: %w", err)
@@ -679,17 +707,6 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, input QuoteInput) (
 	balanceFlt := new(big.Float).SetInt(input.DestBalance)
 	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
-	// Apply the quoteOffset to origin token.
-	tokenName, err := m.config.GetTokenName(uint32(input.DestChainID), input.DestTokenAddr.Hex())
-	if err != nil {
-		return nil, fmt.Errorf("error getting token name: %w", err)
-	}
-	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(input.OriginChainID, tokenName, true)
-	if err != nil {
-		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
-	}
-	quoteAmount = m.applyOffset(ctx, quoteOffsetBps, quoteAmount)
-
 	// Clip the quoteAmount by the minQuoteAmount
 	minQuoteAmount := m.config.GetMinQuoteAmount(input.DestChainID, input.DestTokenAddr)
 	if quoteAmount.Cmp(minQuoteAmount) < 0 {
@@ -784,7 +801,7 @@ func (m *Manager) deductGasCost(parentCtx context.Context, quoteAmount *big.Int,
 
 var errMinGasExceedsQuoteAmount = errors.New("min gas token exceeds quote amount")
 
-func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int, chainID int, tokenName string) (*big.Int, error) {
+func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int, tokenName string, input QuoteInput) (*big.Int, error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getDestAmount", trace.WithAttributes(
 		attribute.String("quote_amount", originAmount.String()),
 	))
@@ -792,20 +809,27 @@ func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int
 		metrics.EndSpan(span)
 	}()
 
-	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(chainID, tokenName, false)
+	// Apply origin, destination, and quote width offsets
+	originOffsetBps, err := m.config.GetQuoteOffsetBps(input.OriginChainID, tokenName, true)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}
-	quoteWidthBps, err := m.config.GetQuoteWidthBps(chainID)
+	destOffsetBps, err := m.config.GetQuoteOffsetBps(input.DestChainID, tokenName, false)
+	if err != nil {
+		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
+	}
+	quoteWidthBps, err := m.config.GetQuoteWidthBps(input.DestChainID, tokenName)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote width bps: %w", err)
 	}
-	totalOffsetBps := quoteOffsetBps + quoteWidthBps
+	totalOffsetBps := originOffsetBps + destOffsetBps + quoteWidthBps
 	destAmount := m.applyOffset(ctx, totalOffsetBps, originAmount)
 
 	span.SetAttributes(
-		attribute.Float64("quote_offset_bps", quoteOffsetBps),
+		attribute.Float64("origin_offset_bps", originOffsetBps),
+		attribute.Float64("dest_offset_bps", destOffsetBps),
 		attribute.Float64("quote_width_bps", quoteWidthBps),
+		attribute.Float64("total_offset_bps", totalOffsetBps),
 		attribute.String("dest_amount", destAmount.String()),
 	)
 	return destAmount, nil

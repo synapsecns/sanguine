@@ -171,6 +171,35 @@ func (s *QuoterSuite) TestIsProfitable() {
 	// Set fee to less than breakeven; i.e. destAmount < originAmount - fee.
 	quote.Transaction.DestAmount = balance
 	s.False(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	origin := int(s.origin)
+	dest := int(s.destination)
+	setQuoteOffsets := func(originOffset, destOffset float64) {
+		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
+		originTokenCfg.QuoteOffsetBps = originOffset
+		s.config.Chains[origin].Tokens["USDC"] = originTokenCfg
+		destTokenCfg := s.config.Chains[dest].Tokens["USDC"]
+		destTokenCfg.QuoteOffsetBps = destOffset
+		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
+		s.manager.SetConfig(s.config)
+	}
+	quote.Transaction.DestAmount = new(big.Int).Sub(balance, fee)
+
+	// Set dest offset to 20%; we send a token that is more valuable -> not profitable
+	setQuoteOffsets(0, 2000)
+	s.False(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	// Set dest offset to -20%; we send a token that is less valuable -> profitable
+	setQuoteOffsets(0, -2000)
+	s.True(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	// Set origin offset to 20%; we get a token that is more valuable -> not profitable
+	setQuoteOffsets(2000, 0)
+	s.True(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	// Set origin offset to -20%; we send a token that is less valuable -> not profitable
+	setQuoteOffsets(-2000, 0)
+	s.False(s.manager.IsProfitable(s.GetTestContext(), quote))
 }
 
 func (s *QuoterSuite) TestGetOriginAmount() {
@@ -224,6 +253,7 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 		minQuoteAmount: "0",
 		maxBalance:     "0",
 	})
+<<<<<<< HEAD
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
@@ -248,6 +278,8 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 		minQuoteAmount: "500",
 		maxBalance:     "0",
 	})
+=======
+>>>>>>> master
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
@@ -260,6 +292,21 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 		minQuoteAmount: "500",
 		maxBalance:     "0",
 	})
+<<<<<<< HEAD
+=======
+	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(500_000_000)
+	s.Equal(expectedAmount, quoteAmount)
+
+	// Set QuotePct to 25 with MinQuoteAmount of 500; should be 50% of balance.
+	setQuoteParams(quoteParams{
+		quotePct:       25,
+		quoteOffset:    0,
+		minQuoteAmount: "500",
+		maxBalance:     "0",
+	})
+>>>>>>> master
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(500_000_000)
@@ -328,53 +375,83 @@ func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 func (s *QuoterSuite) TestGetDestAmount() {
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
-	chainID := int(s.destination)
-	setQuoteParams := func(quoteOffsetBps, quoteWidthBps float64) {
-		s.config.BaseChainConfig.QuoteWidthBps = quoteWidthBps
-		tokenCfg := s.config.Chains[chainID].Tokens["USDC"]
-		tokenCfg.QuoteOffsetBps = quoteOffsetBps
-		s.config.Chains[chainID].Tokens["USDC"] = tokenCfg
+	origin := int(s.origin)
+	dest := int(s.destination)
+	input := quoter.QuoteInput{
+		OriginChainID: int(s.origin),
+		DestChainID:   int(s.destination),
+		OriginBalance: balance,
+		DestBalance:   balance,
+	}
+	setQuoteParams := func(originQuoteOffsetBps, destQuoteOffsetBps, quoteWidthBps float64) {
+		tokenCfg := s.config.Chains[origin].Tokens["USDC"]
+		tokenCfg.QuoteOffsetBps = originQuoteOffsetBps
+		s.config.Chains[origin].Tokens["USDC"] = tokenCfg
+		tokenCfg = s.config.Chains[dest].Tokens["USDC"]
+		tokenCfg.QuoteOffsetBps = destQuoteOffsetBps
+		tokenCfg.QuoteWidthBps = quoteWidthBps
+		s.config.Chains[dest].Tokens["USDC"] = tokenCfg
 		s.manager.SetConfig(s.config)
 	}
 
 	// Set default quote params; should return the balance.
-	destAmount, err := s.manager.GetDestAmount(s.GetTestContext(), balance, chainID, "USDC")
+	destAmount, err := s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
 	expectedAmount := balance
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteWidthBps to 100, should return 99% of balance.
-	setQuoteParams(0, 100)
-	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, chainID, "USDC")
+	setQuoteParams(0, 0, 100)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(990_000_000)
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteWidthBps to 500, should return 95% of balance.
-	setQuoteParams(0, 500)
-	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, chainID, "USDC")
+	setQuoteParams(0, 0, 500)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(950_000_000)
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteWidthBps to 500 and QuoteOffsetBps to 100, should return 94% of balance.
-	setQuoteParams(100, 500)
-	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, chainID, "USDC")
+	setQuoteParams(0, 100, 500)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(940_000_000)
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteWidthBps to 500 and QuoteOffsetBps to -100, should return 96% of balance.
-	setQuoteParams(-100, 500)
-	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, chainID, "USDC")
+	setQuoteParams(0, -100, 500)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
 	expectedAmount = big.NewInt(960_000_000)
 	s.Equal(expectedAmount, destAmount)
 
-	// Set QuoteWidthBps to -100, should default to balance.
-	setQuoteParams(0, -100)
-	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, chainID, "USDC")
+	// Set QuoteWidthBps to -100, should error.
+	setQuoteParams(0, 0, -100)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
+	s.Error(err)
+	s.Nil(destAmount)
+
+	// Set origin offset to 100, should return 101% of balance.
+	setQuoteParams(100, 0, 0)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
 	s.NoError(err)
-	expectedAmount = balance
+	expectedAmount = big.NewInt(1_010_000_000)
+	s.Equal(expectedAmount, destAmount)
+
+	// Set origin offset to -100, should return 99% of balance.
+	setQuoteParams(-100, 0, 0)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(990_000_000)
+	s.Equal(expectedAmount, destAmount)
+
+	// Set origin offset to 100, dest offset to 300, should return 98% of balance.
+	setQuoteParams(100, 300, 0)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, "USDC", input)
+	s.NoError(err)
+	expectedAmount = big.NewInt(980_000_000)
 	s.Equal(expectedAmount, destAmount)
 }

@@ -5,6 +5,7 @@ import { showFirstValidationError } from '../middleware/showFirstValidationError
 import { bridgeTxStatusController } from '../controllers/bridgeTxStatusController'
 import { CHAINS_ARRAY } from '../constants/chains'
 import { VALID_BRIDGE_MODULES } from '../constants'
+import { validateKappa } from '../validations/validateKappa'
 
 const router = express.Router()
 
@@ -112,8 +113,6 @@ const router = express.Router()
  *               properties:
  *                 error:
  *                   type: string
- *                 details:
- *                   type: string
  */
 router.get(
   '/',
@@ -136,7 +135,10 @@ router.get(
     check('synapseTxId')
       .exists()
       .withMessage('synapseTxId is required')
-      .isString(),
+      .isString()
+      .withMessage('synapseTxId must be a string')
+      .custom((value) => validateKappa(value))
+      .withMessage('synapseTxId must be valid hex string'),
   ],
   showFirstValidationError,
   bridgeTxStatusController

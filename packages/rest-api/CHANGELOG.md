@@ -3,6 +3,55 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.7.0...@synapsecns/rest-api@1.7.1) (2024-10-22)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+# [1.7.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.6.1...@synapsecns/rest-api@1.7.0) (2024-10-21)
+
+
+### Features
+
+* **rest-api:** Chain and token updates ([#3319](https://github.com/synapsecns/sanguine/issues/3319)) ([065315d](https://github.com/synapsecns/sanguine/commit/065315d6994a940dabc7ab06d2b74c650105e41f))
+
+
+
+
+
+## [1.6.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.6.0...@synapsecns/rest-api@1.6.1) (2024-10-20)
+
+**Note:** Version bump only for package @synapsecns/rest-api
+
+
+
+
+
+# [1.6.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.5.0...@synapsecns/rest-api@1.6.0) (2024-10-18)
+
+
+### Features
+
+* **rest-api:** `/destinationTx` returns status of `refunded` when RFQ transaction has been refunded [SLT-350] ([#3307](https://github.com/synapsecns/sanguine/issues/3307)) ([e79f9c3](https://github.com/synapsecns/sanguine/commit/e79f9c3b72d4ec8d0fad24d7c7af21b077258ad4))
+
+
+
+
+
+# [1.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.4.9...@synapsecns/rest-api@1.5.0) (2024-10-15)
+
+
+### Features
+
+* **rest-api:** Primary RPCs get omnirpc ([#3294](https://github.com/synapsecns/sanguine/issues/3294)) ([31a3ce9](https://github.com/synapsecns/sanguine/commit/31a3ce9f1a90d47425dae6ef969b28de3895a6aa))
+
+
+
+
+
 ## [1.4.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/rest-api@1.4.8...@synapsecns/rest-api@1.4.9) (2024-10-11)
 
 **Note:** Version bump only for package @synapsecns/rest-api

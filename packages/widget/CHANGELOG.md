@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.8.0...@synapsecns/widget@0.9.0) (2024-10-24)
+
+
+### Features
+
+* **widget:** Chain & token update ([#3331](https://github.com/synapsecns/sanguine/issues/3331)) ([294306c](https://github.com/synapsecns/sanguine/commit/294306c81b51b48bda374f44cbc71435a1337ffc))
+
+
+
+
+
+# [0.8.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.7.4...@synapsecns/widget@0.8.0) (2024-10-21)
+
+
+### Features
+
+* **synapse-constants:** chain and token updates ([#3320](https://github.com/synapsecns/sanguine/issues/3320)) ([d0f6e6f](https://github.com/synapsecns/sanguine/commit/d0f6e6fb57b3aa08f97737572aaf7a6230161878))
+
+
+
+
+
 ## [0.7.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.7.3...@synapsecns/widget@0.7.4) (2024-10-11)
 
 **Note:** Version bump only for package @synapsecns/widget
