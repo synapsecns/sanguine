@@ -43,6 +43,7 @@ import vstaLogo from '@assets/icons/vsta.svg'
 import wbtcLogo from '@assets/icons/wbtc.svg'
 import wethLogo from '@assets/icons/weth.svg'
 import wldLogo from '@assets/icons/wld.svg'
+import bnbLogo from '@assets/icons/bnb.svg'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
@@ -1268,4 +1269,21 @@ export const WLD = new Token({
   color: 'gray',
   priorityRank: 106,
   routeSymbol: 'WLD',
+})
+
+export const BNB = new Token({
+  priorityRank: 300,
+  visibilityRank: 300,
+  addresses: {
+    [CHAINS.BNB.id]: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+  },
+  decimals: {
+    [CHAINS.BNB.id]: 18,
+  },
+  symbol: 'BNB',
+  name: 'BNB',
+  logo: bnbLogo,
+  swapableType: 'BNB',
+  color: 'yellow',
+  routeSymbol: 'BNB',
 })
