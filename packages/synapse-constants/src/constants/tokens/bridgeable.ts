@@ -1328,5 +1328,5 @@ export const BNB = new Token({
   swapableType: 'BNB',
   color: 'yellow',
   routeSymbol: 'BNB',
-  logo: 'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.8488424c.svg',
+  logo: 'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.5948fe5e.svg',
 })

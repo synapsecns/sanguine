@@ -1446,5 +1446,5 @@ export const BNB: BridgeableToken = {
   color: 'yellow',
   routeSymbol: 'BNB',
   imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.8488424c.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.5948fe5e.svg',
 }
