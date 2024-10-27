@@ -45,11 +45,11 @@ abstract contract MulticallTargetIntegrationTest is Test {
         vm.chainId(LOCAL_CHAIN_ID);
         fastBridge = deployAndConfigureFastBridge();
         token = new MockERC20("Token", 18);
-        dealTokens(user);
-        dealTokens(relayer);
+        dealTokens(user, 1);
+        dealTokens(relayer, 1);
         createFixtures();
-        bridge(bridgedTokenTx);
-        bridge(provenEthTx);
+        bridge(bridgedTokenTx, user);
+        bridge(provenEthTx, user);
         prove(encodedProvenEthTx);
         skip(SKIP_PERIOD);
         // Sanity checks
@@ -70,9 +70,10 @@ abstract contract MulticallTargetIntegrationTest is Test {
         virtual
         returns (bytes memory);
 
-    function dealTokens(address to) public {
-        token.mint(to, 1 ether);
-        deal(to, 1 ether);
+    function dealTokens(address to, uint8 amountUnits) public {
+        uint256 amountWei = amountUnits * 1 ether;
+        token.mint(to, amountWei);
+        deal(to, amountWei);
         vm.prank(to);
         token.approve(address(fastBridge), type(uint256).max);
     }
@@ -128,9 +129,74 @@ abstract contract MulticallTargetIntegrationTest is Test {
         remoteTokenTxId = keccak256(encodedRemoteTokenTx);
     }
 
-    function bridge(IFastBridge.BridgeTransaction memory bridgeTx) public {
+    struct TestBridgeTransactionWithMetadata {
+        IFastBridge.BridgeTransaction transaction;
+        bytes encodedData;
+        bytes32 txId;
+    }
+
+    function createMany(uint8 countOfTxnsToCreate)
+        public
+        returns (
+            TestBridgeTransactionWithMetadata[] memory toRelay,
+            TestBridgeTransactionWithMetadata[] memory toBridgeProveClaimData
+        )
+    {
+        toRelay = new TestBridgeTransactionWithMetadata[](countOfTxnsToCreate);
+        toBridgeProveClaimData = new TestBridgeTransactionWithMetadata[](countOfTxnsToCreate);
+
+        // fund user & relayer
+        dealTokens(user, countOfTxnsToCreate);
+        dealTokens(relayer, countOfTxnsToCreate);
+
+        for (uint8 i = 0; i < countOfTxnsToCreate; i++) {
+            IFastBridge.BridgeTransaction memory toRelayTx = IFastBridge.BridgeTransaction({
+                originChainId: REMOTE_CHAIN_ID,
+                destChainId: LOCAL_CHAIN_ID,
+                originSender: userRemote,
+                destRecipient: user,
+                originToken: remoteToken,
+                destToken: address(token),
+                originAmount: 1.01 ether,
+                destAmount: 1 ether,
+                originFeeAmount: 0,
+                sendChainGas: false,
+                deadline: block.timestamp + SKIP_PERIOD,
+                nonce: remoteTokenTx.nonce + i
+            });
+
+            bytes memory encoded = getEncodedBridgeTx(toRelayTx);
+            bytes32 txId = keccak256(encoded);
+
+            toRelay[i] = TestBridgeTransactionWithMetadata({transaction: toRelayTx, encodedData: encoded, txId: txId});
+
+            IFastBridge.BridgeTransaction memory toBridgeProveClaimTx = IFastBridge.BridgeTransaction({
+                originChainId: LOCAL_CHAIN_ID,
+                destChainId: REMOTE_CHAIN_ID,
+                originSender: user,
+                destRecipient: userRemote,
+                originToken: address(token),
+                destToken: remoteToken,
+                originAmount: 1 ether,
+                destAmount: 0.98 ether,
+                originFeeAmount: 0,
+                sendChainGas: false,
+                deadline: block.timestamp + DEADLINE_PERIOD,
+                nonce: 2 + i
+            });
+
+            encoded = getEncodedBridgeTx(toBridgeProveClaimTx);
+            txId = keccak256(encoded);
+
+            toBridgeProveClaimData[i] =
+            // solhint-disable-next-line max-line-length
+             TestBridgeTransactionWithMetadata({transaction: toBridgeProveClaimTx, encodedData: encoded, txId: txId});
+        }
+    }
+
+    function bridge(IFastBridge.BridgeTransaction memory bridgeTx, address bridgeUser) public {
         uint256 msgValue = bridgeTx.originToken == ETH_ADDRESS ? bridgeTx.originAmount : 0;
-        vm.prank(user);
+        vm.prank(bridgeUser);
         IFastBridge(fastBridge).bridge{value: msgValue}(
             IFastBridge.BridgeParams({
                 dstChainId: bridgeTx.destChainId,
@@ -158,6 +224,54 @@ abstract contract MulticallTargetIntegrationTest is Test {
         data[2] = abi.encodeCall(IFastBridge.relay, (encodedRemoteTokenTx));
     }
 
+    enum TestAction {
+        bridge,
+        prove,
+        claim,
+        relay
+    }
+
+    function getDataMany(
+        TestBridgeTransactionWithMetadata[] memory testBridgeTxns,
+        TestAction action
+    )
+        public
+        view
+        returns (bytes[] memory data)
+    {
+        data = new bytes[](testBridgeTxns.length);
+
+        for (uint8 i = 0; i < testBridgeTxns.length; i++) {
+            if (action == TestAction.bridge) {
+                data[i] = abi.encodeCall(
+                    IFastBridge.bridge,
+                    (
+                        IFastBridge.BridgeParams({
+                            dstChainId: testBridgeTxns[i].transaction.destChainId,
+                            sender: testBridgeTxns[i].transaction.originSender,
+                            to: testBridgeTxns[i].transaction.destRecipient,
+                            originToken: testBridgeTxns[i].transaction.originToken,
+                            destToken: testBridgeTxns[i].transaction.destToken,
+                            originAmount: testBridgeTxns[i].transaction.originAmount,
+                            destAmount: testBridgeTxns[i].transaction.destAmount,
+                            sendChainGas: testBridgeTxns[i].transaction.sendChainGas,
+                            deadline: testBridgeTxns[i].transaction.deadline
+                        })
+                    )
+                );
+            }
+            if (action == TestAction.prove) {
+                data[i] = abi.encodeCall(IFastBridge.prove, (testBridgeTxns[i].encodedData, hex"02"));
+            }
+            if (action == TestAction.claim) {
+                data[i] = abi.encodeCall(IFastBridge.claim, (testBridgeTxns[i].encodedData, claimTo));
+            }
+            if (action == TestAction.relay) {
+                data[i] = abi.encodeCall(IFastBridge.relay, (testBridgeTxns[i].encodedData));
+            }
+        }
+    }
+
     function checkStatus(bytes32 txId, IFastBridgeV2.BridgeStatus expected) public view {
         IFastBridgeV2.BridgeStatus status = IFastBridgeV2(fastBridge).bridgeStatuses(txId);
         assertEq(uint8(status), uint8(expected));
@@ -170,6 +284,103 @@ abstract contract MulticallTargetIntegrationTest is Test {
         IFastBridge(fastBridge).relay(encodedRemoteTokenTx);
         vm.stopPrank();
         checkHappyPath();
+    }
+
+    enum TestExecutionMode {
+        Sequential_NonMulticall,
+        Multicall
+    }
+
+    function test_manyActions_sequentialNonMulticall() public {
+        // send X contiguous bridges, proofs, and claims -- and X non-contiguous relays to the same bridger
+        manyActions_flow(15, TestExecutionMode.Sequential_NonMulticall);
+    }
+
+    function test_manyActions_multicall() public {
+        // send X contiguous bridges, proofs, and claims -- and X non-contiguous relays to the same bridger
+        manyActions_flow(15, TestExecutionMode.Multicall);
+    }
+
+    // will either execute a single batched multicall, or many sequential txns
+    function manyActions_execute(
+        TestBridgeTransactionWithMetadata[] memory transactions,
+        TestAction action,
+        TestExecutionMode mode,
+        address pranker
+    )
+        internal
+    {
+        bytes[] memory data = getDataMany(transactions, action);
+        if (mode == TestExecutionMode.Multicall) {
+            vm.prank(pranker);
+            IMulticallTarget(fastBridge).multicallNoResults({data: data, ignoreReverts: false});
+        } else {
+            executeSequentialTransactions(transactions, action, pranker);
+        }
+    }
+
+    function executeSequentialTransactions(
+        TestBridgeTransactionWithMetadata[] memory transactions,
+        TestAction action,
+        address pranker
+    )
+        internal
+    {
+        for (uint8 i = 0; i < transactions.length; i++) {
+            if (action == TestAction.bridge) {
+                // bridge already pranks as user, no need to prank
+                bridge(transactions[i].transaction, user);
+            } else if (action == TestAction.prove) {
+                vm.prank(pranker);
+                IFastBridge(fastBridge).prove(transactions[i].encodedData, hex"02");
+            } else if (action == TestAction.claim) {
+                vm.prank(pranker);
+                IFastBridge(fastBridge).claim(transactions[i].encodedData, claimTo);
+            } else if (action == TestAction.relay) {
+                vm.prank(pranker);
+                IFastBridge(fastBridge).relay(transactions[i].encodedData);
+            }
+            // Check status after each action
+            manyActions_checkStatusAfter(transactions[i].txId, action);
+        }
+    }
+
+    function manyActions_checkStatusAfter(bytes32 txId, TestAction action) internal view {
+        if (action == TestAction.bridge) {
+            checkStatus(txId, IFastBridgeV2.BridgeStatus.REQUESTED);
+        } else if (action == TestAction.prove) {
+            checkStatus(txId, IFastBridgeV2.BridgeStatus.RELAYER_PROVED);
+        } else if (action == TestAction.claim) {
+            checkStatus(txId, IFastBridgeV2.BridgeStatus.RELAYER_CLAIMED);
+        }
+        // No status check needed for relay action
+    }
+
+    // Shared flow & asserts regardless of whether executing manyAction test via MC or a sequence of non-MC txns
+    function manyActions_flow(uint8 countOfTxnsToCreate, TestExecutionMode testExecutionMode) internal {
+        uint256 relayerOriginalBalWei = token.balanceOf(relayer);
+        uint256 userOriginalBalWei = token.balanceOf(user);
+
+        (
+            TestBridgeTransactionWithMetadata[] memory toRelay,
+            TestBridgeTransactionWithMetadata[] memory toBridgeProveClaim
+        ) = createMany(countOfTxnsToCreate);
+
+        manyActions_execute(toBridgeProveClaim, TestAction.bridge, testExecutionMode, user);
+        assertEq(token.balanceOf(user), 0 ether);
+
+        manyActions_execute(toBridgeProveClaim, TestAction.prove, testExecutionMode, relayer);
+
+        skip(SKIP_PERIOD);
+
+        manyActions_execute(toBridgeProveClaim, TestAction.claim, testExecutionMode, relayer);
+
+        assertEq(token.balanceOf(relayer), relayerOriginalBalWei + (countOfTxnsToCreate * 1 ether));
+
+        manyActions_execute(toRelay, TestAction.relay, testExecutionMode, relayer);
+
+        assertEq(token.balanceOf(relayer), relayerOriginalBalWei);
+        assertEq(token.balanceOf(user), userOriginalBalWei + (countOfTxnsToCreate * 1 ether));
     }
 
     // ════════════════════════════════════════════════ NO RESULTS ═════════════════════════════════════════════════════
