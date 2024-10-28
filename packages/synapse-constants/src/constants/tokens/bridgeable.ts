@@ -750,6 +750,7 @@ export const ETH = new Token({
     [CHAINS.SCROLL.id]: nullAddress,
     [CHAINS.LINEA.id]: nullAddress,
     [CHAINS.WORLDCHAIN.id]: nullAddress,
+    [CHAINS.BNB.id]: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
   },
   decimals: 18,
   symbol: 'ETH',
@@ -1313,20 +1314,4 @@ export const WLD = new Token({
   swapableType: 'WLD',
   color: 'gray',
   routeSymbol: 'WLD',
-})
-
-export const BNB = new Token({
-  priorityRank: 300,
-  addresses: {
-    [CHAINS.BNB.id]: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-  },
-  decimals: {
-    [CHAINS.BNB.id]: 18,
-  },
-  symbol: 'BNB',
-  name: 'BNB',
-  swapableType: 'BNB',
-  color: 'yellow',
-  routeSymbol: 'BNB',
-  logo: 'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.5948fe5e.svg',
 })

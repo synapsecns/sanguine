@@ -522,6 +522,13 @@ export const BRIDGE_MAP = {
       destination: ['JUMP'],
       swappable: [],
     },
+    '0x2170Ed0880ac9A755fd29B2688956BD959F933F8': {
+      decimals: 18,
+      symbol: 'ETH',
+      origin: ['RFQ.ETH'],
+      destination: [],
+      swappable: [],
+    },
     '0x23b891e5C62E0955ae2bD185990103928Ab817b3': {
       decimals: 18,
       symbol: 'nUSD',
@@ -569,13 +576,6 @@ export const BRIDGE_MAP = {
         '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
       ],
     },
-    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
-      decimals: 18,
-      symbol: 'BNB',
-      origin: ['RFQ.BNB'],
-      destination: [],
-      swappable: [],
-    },
     '0xa4080f1778e69467E905B8d6F72f6e441f9e9484': {
       decimals: 18,
       symbol: 'SYN',
@@ -588,13 +588,6 @@ export const BRIDGE_MAP = {
       symbol: 'DOG',
       origin: ['DOG'],
       destination: ['DOG'],
-      swappable: [],
-    },
-    '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c': {
-      decimals: 18,
-      symbol: 'WBNB',
-      origin: ['RFQ.BNB'],
-      destination: [],
       swappable: [],
     },
     '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56': {

@@ -808,6 +808,7 @@ export const ETH: BridgeableToken = {
     [CHAINS.SCROLL.id]: NativeTokenAddress,
     [CHAINS.LINEA.id]: NativeTokenAddress,
     [CHAINS.WORLDCHAIN.id]: NativeTokenAddress,
+    [CHAINS.BNBCHAIN.id]: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
   },
   decimals: {
     [CHAINS.ETHEREUM.id]: 18,
@@ -821,6 +822,7 @@ export const ETH: BridgeableToken = {
     [CHAINS.SCROLL.id]: 18,
     [CHAINS.LINEA.id]: 18,
     [CHAINS.WORLDCHAIN.id]: 18,
+    [CHAINS.BNBCHAIN.id]: 18,
   },
   symbol: 'ETH',
   name: 'Ethereum',
@@ -1430,21 +1432,4 @@ export const WLD: BridgeableToken = {
   routeSymbol: 'WLD',
   imgUrl:
     'https://synapse-interface-worldchain.sanguine-fe.pages.dev/_next/static/media/worldchain.62d1dfd2.svg',
-}
-
-export const BNB: BridgeableToken = {
-  priorityRank: 300,
-  addresses: {
-    [CHAINS.BNBCHAIN.id]: NativeTokenAddress,
-  },
-  decimals: {
-    [CHAINS.BNBCHAIN.id]: 18,
-  },
-  symbol: 'BNB',
-  name: 'BNB',
-  swapableType: 'BNB',
-  color: 'yellow',
-  routeSymbol: 'BNB',
-  imgUrl:
-    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.5948fe5e.svg',
 }
