@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.4...@synapsecns/contracts-rfq@0.10.0) (2024-10-28)
+
+
+### Features
+
+* **contracts-rfq:** Multicall in FastBridgeV2 [SLT-369] ([#3315](https://github.com/synapsecns/sanguine/issues/3315)) ([1daa5f4](https://github.com/synapsecns/sanguine/commit/1daa5f45951aa7841c220f9ce3c1023231c7dcba)), closes [#3335](https://github.com/synapsecns/sanguine/issues/3335)
+
+
+
+
+
 ## [0.9.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/contracts-rfq@0.9.3...@synapsecns/contracts-rfq@0.9.4) (2024-10-28)
 
 **Note:** Version bump only for package @synapsecns/contracts-rfq
